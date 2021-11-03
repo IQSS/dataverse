@@ -606,6 +606,7 @@ function reinitializePrimefacesComponentsJS() {
             fixBodyWidth(false);
 
             $(window).off("resize", fixBodyWidth);
+            applyFocusReturn();
         }
 
         // Change default focus element
@@ -753,14 +754,17 @@ function reinitializePrimefacesComponentsJS() {
 
             /* Move pagination controls inside a container */
             var paginatorMainContainer = document.getElementById(this.pagesContainer.prevObject.attr("id"));
-            var buttonContainer = document.createElement("div");
-            buttonContainer.classList.add("ui-paginator-container");
-            paginatorMainContainer.insertBefore(buttonContainer, paginatorMainContainer.firstChild);
 
-            var paginationElements = paginatorMainContainer.querySelectorAll("a[class*=ui-paginator]:not(a.ui-paginator-page), span.ui-paginator-pages");
-            
-            for (var i=0; i<paginationElements.length; i++) {
-                buttonContainer.appendChild(paginationElements[i]);
+            if (paginatorMainContainer) {
+                var buttonContainer = document.createElement("div");
+                buttonContainer.classList.add("ui-paginator-container");
+                paginatorMainContainer.insertBefore(buttonContainer, paginatorMainContainer.firstChild);
+    
+                var paginationElements = paginatorMainContainer.querySelectorAll("a[class*=ui-paginator]:not(a.ui-paginator-page), span.ui-paginator-pages");
+                
+                for (var i=0; i<paginationElements.length; i++) {
+                    buttonContainer.appendChild(paginationElements[i]);
+                }
             }
         }
 
@@ -1240,6 +1244,39 @@ function fix_submenus_overflow($element) {
             $ddHolder.toggleClass("open", ($btnDropDown.offset().left > $(this).offset().left))
         }
     })
+}
+
+/* Fix focus return when closing a modal window */
+function setFocusReturn(element) {
+    var targetElement;
+
+    if (element == null) {
+        return;
+    }
+    else if (element instanceof Element || element instanceof HTMLDocument) {
+        targetElement = element;
+    }
+    else {
+        targetElement = document.getElementById(element.source);
+    }
+
+    targetElement.dataset.returnFocus = true;
+}
+function applyFocusReturn() {
+    /* Do checks in case something bugs out and there are multiple/none focus return points set */
+    var returnFocusElements = document.querySelectorAll("*[data-return-focus]");
+
+    if (returnFocusElements.length > 0) {
+        returnFocusElements[0].focus();
+
+        for (var i=0; i < returnFocusElements.length; i++) {
+            returnFocusElements[i].removeAttribute("data-return-focus");
+        }
+    }
+}
+function primeFacesShowModal(name, element) {
+    PF(name).show();
+    setFocusReturn(element);
 }
 
 $(document).ready(function() {

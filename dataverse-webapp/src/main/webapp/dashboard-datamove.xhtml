@@ -152,7 +152,7 @@
                                              value="#{bundle['dashboard.datamove.button.move']}"
                                              update="dataset-move-form"
                                              validateClient="true"
-                                             oncomplete="if (args &amp;&amp; !args.validationFailed) PF('datamoveConfirmation').show();"/>
+                                             oncomplete="if (args &amp;&amp; !args.validationFailed) primeFacesShowModal('datamoveConfirmation', this);"/>
                             <p:button styleClass="btn btn-default button-cancel" outcome="dashboard" value="#{bundle['cancel']}"/>
                         </div>
                         <p:dialog id="datamoveConfirmation" header="#{bundle['dashboard.card.datamove.manage']}"
@@ -284,7 +284,7 @@
                                              value="#{bundle['dashboard.datamove.dataverse.button.move']}"
                                              update="dataverse-move-form"
                                              validateClient="true"
-                                             oncomplete="if (args &amp;&amp; !args.validationFailed) PF('dataverseMoveConfirmation').show();"/>
+                                             oncomplete="if (args &amp;&amp; !args.validationFailed) primeFacesShowModal('dataverseMoveConfirmation', this);"/>
                             <p:button styleClass="btn btn-default button-cancel" outcome="dashboard" value="#{bundle['cancel']}"/>
                         </div>
                         <p:dialog id="dataverseMoveConfirmation" header="#{bundle['dashboard.card.datamove.manage']}"

@@ -90,7 +90,7 @@
                                                                        value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
                                                                        action="#{selectGuestbookPage.viewSelectedGuestbook(guestbook)}"
                                                                        update=":selectGuestbookForm"
-                                                                       oncomplete="PF('viewGuestbook').show();"/>
+                                                                       oncomplete="primeFacesShowModal('viewGuestbook', this);"/>
                                                     </p:column>
                                                 </p:dataTable>
                                             </ui:fragment>

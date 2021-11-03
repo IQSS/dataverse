@@ -9,7 +9,7 @@
     <o:form useRequestURI="true">
         <p:remoteCommand name="showRepositorySupportContactDialog"
                 actionListener="#{sendFeedbackDialog.initUserInput}"
-                oncomplete="PF('contactForm').show()"
+                oncomplete="primeFacesShowModal('contactForm', this)"
                 update=":contactDialog">
             <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
             <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>

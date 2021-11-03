@@ -54,7 +54,7 @@
                                             <p:commandLink id="configureButton" styleClass="btn btn-default pull-right"
                                                            actionListener="#{managePermissionsPage.initAccessSettings}"
                                                            update="accessDialog"
-                                                           oncomplete="PF('accessForm').show();">
+                                                           oncomplete="primeFacesShowModal('accessForm', this);">
                                                 <span class="glyphicon glyphicon-cog" aria-hidden="true"/> #{bundle['dataverse.permissions.access.accessBtn']}
                                             </p:commandLink>
                                             <p class="help-block clearfix">#{bundle['dataverse.permissions.tip']}</p>
@@ -125,7 +125,7 @@
                                         <p:commandLink id="userGroupsAdd" styleClass="btn btn-default"
                                                        actionListener="#{managePermissionsPage.initAssigneeDialog}"
                                                        update="userGroupDialog"
-                                                       oncomplete="PF('userGroupsForm').show();handleResizeDialog('userGroupDialog');">
+                                                       oncomplete="primeFacesShowModal('userGroupsForm', this);handleResizeDialog('userGroupDialog');">
                                             <span class="glyphicon glyphicon-user" aria-hidden="true"/> #{bundle['dataverse.permissions.usersOrGroups.assignBtn']}
                                             <o:skipValidators />
                                         </p:commandLink>
@@ -156,7 +156,7 @@
                                                 </h:outputFormat>
                                                 <p:commandLink styleClass="btn btn-default"
                                                                rendered="#{managePermissionsPage.dvObject eq roleAssignment.definitionPoint}"
-                                                               onclick="PF('confirmation').show()">
+                                                               onclick="primeFacesShowModal('confirmation', this)">
                                                     <f:setPropertyActionListener value="#{roleAssignment.roleAssignment}" target="#{managePermissionsPage.selectedRoleAssignment}" />
                                                     <span class="glyphicon glyphicon-remove" aria-hidden="true"/> #{bundle['dataverse.permissions.usersOrGroups.removeBtn']}
                                                     <span class="sr-only">
@@ -195,7 +195,7 @@
                                         <p:commandLink id="rolesAdd" styleClass="btn btn-default"
                                                        rendered="#{managePermissionsPage.dvObject.instanceofDataverse and dataverseSession.user.superuser}"
                                                        actionListener="#{managePermissionsPage.createNewRole()}"
-                                                       oncomplete="PF('roleForm').show();handleResizeDialog('rolesPermissionsDialog');"
+                                                       oncomplete="primeFacesShowModal('roleForm', this);handleResizeDialog('rolesPermissionsDialog');"
                                                        
                                                        update="@widgetVar(roleForm) :#{p:resolveClientId('rolesPermissionsForm:editRolePanel', view)}">
                                             <span class="glyphicon glyphicon-plus" aria-hidden="true"/> #{bundle['dataverse.permissions.roles.add']}
@@ -212,7 +212,7 @@
                                                                ariaLabel="#{bundle['dataverse.permissions.roles.edit']} #{role.name}"
                                                                rendered="#{!empty role.owner and managePermissionsPage.dvObject.instanceofDataverse and dataverseSession.user.superuser}"
                                                                actionListener="#{managePermissionsPage.editRole(role.id)}"
-                                                               oncomplete="PF('roleForm').show();handleResizeDialog('rolesPermissionsDialog');"
+                                                               oncomplete="primeFacesShowModal('roleForm', this);handleResizeDialog('rolesPermissionsDialog');"
                                                                update="@widgetVar(roleForm)">
                                                     <span class="glyphicon glyphicon-pencil"></span>
                                                     <o:skipValidators />
@@ -221,7 +221,7 @@
                                                                ariaLabel="#{bundle['dataverse.permissions.roles.copy']} #{role.name}"
                                                                rendered="#{managePermissionsPage.dvObject.instanceofDataverse and dataverseSession.user.superuser}"
                                                                actionListener="#{managePermissionsPage.cloneRole(role.id)}"
-                                                               oncomplete="PF('roleForm').show();handleResizeDialog('rolesPermissionsDialog');"
+                                                               oncomplete="primeFacesShowModal('roleForm', this);handleResizeDialog('rolesPermissionsDialog');"
                                                                update="@widgetVar(roleForm)">
                                                     <span class="glyphicon glyphicon-duplicate"></span>
                                                     <o:skipValidators />

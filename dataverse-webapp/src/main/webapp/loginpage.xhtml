@@ -115,7 +115,7 @@
                                         </h:outputFormat>
                                         <h:outputText value="#{bundle['login.institution.support.beforeLink']} " />
                                         <p:commandLink value="#{installationConfig.supportTeamName}"
-                                                       oncomplete="PF('contactForm').show()" update=":contactDialog"
+                                                       oncomplete="primeFacesShowModal('contactForm', this)" update=":contactDialog"
                                                        actionListener="#{sendFeedbackDialog.initUserInput}">
                                             <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
                                             <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
@@ -178,7 +178,7 @@
                                             <o:param value="#{settingsWrapper.guidesVersion}"/>
                                             <o:param>
                                                 <p:commandLink value="#{installationConfig.supportTeamName}"
-                                                               oncomplete="PF('contactForm').show()"
+                                                               oncomplete="primeFacesShowModal('contactForm', this)"
                                                                update=":contactDialog"
                                                                actionListener="#{sendFeedbackDialog.initUserInput}">
                                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>

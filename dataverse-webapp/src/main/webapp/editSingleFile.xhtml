@@ -156,7 +156,7 @@
                                             <li role="none">
                                                 <p:commandLink id="fileProvenanceButton"
                                                                update=":fileForm:editProvenancePopup"
-                                                               oncomplete="PF('editProvenancePopup').show();"
+                                                               oncomplete="primeFacesShowModal('editProvenancePopup', this);"
                                                                pt:role="menuitem"
                                                 >
                                                     <f:actionListener binding="#{provPopupFragmentBean.updatePopupStateAndDataset(fileMetadata, EditSingleFilePage.dataset)}" />
@@ -169,7 +169,7 @@
                                             <p:commandLink id="fileTagsButton"
                                                            update="@form"
                                                            action="#{FileTagModal.initForSingleFile(EditSingleFilePage.fileMetadata, EditSingleFilePage.dataset)}"
-                                                           oncomplete="PF('editFileTagsPopup').show();"
+                                                           oncomplete="primeFacesShowModal('editFileTagsPopup', this);"
                                                            pt:role="menuitem"
                                             >
                                                 #{bundle['file.tags']}
@@ -179,7 +179,7 @@
                                                                                 and not EditSingleFilePage.thumbnailIsFromDatasetLogoRatherThanDatafile}">
                                             <p:commandLink id="fileSetThumbnailBtn"
                                                            update=":fileForm:fileSetThumbnail"
-                                                           oncomplete="PF('fileSetThumbnail').show()"
+                                                           oncomplete="primeFacesShowModal('fileSetThumbnail', this)"
                                                            pt:role="menuitem"
                                             >
                                                 #{bundle['file.setThumbnail']}
@@ -188,7 +188,7 @@
                                         <li role="none" jsf:rendered="#{fileMetadata.dataFile.image
                                                                                 and EditSingleFilePage.thumbnailIsFromDatasetLogoRatherThanDatafile}">
                                             <p:commandLink id="fileSetThumbnailBtn2"
-                                                           oncomplete="PF('fileThumbnailConfirm').show()"
+                                                           oncomplete="primeFacesShowModal('fileThumbnailConfirm', this)"
                                                            pt:role="menuitem">
                                                 #{bundle['file.setThumbnail']}
                                             </p:commandLink>

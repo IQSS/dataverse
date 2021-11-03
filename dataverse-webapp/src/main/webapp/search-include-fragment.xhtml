@@ -40,7 +40,7 @@
             <div class="button-block pull-right">
                 <!-- ADD DATA -->
                 <ui:fragment rendered="#{!dataverseSession.user.authenticated and SearchIncludeFragment.couldCreateDatasetOrDataverseIfWasAuthenticated()}">
-                    <button type="button" class="btn btn-default btn-access" onclick="PF('addData_popup').show()">
+                    <button type="button" class="btn btn-default btn-access" onclick="primeFacesShowModal('addData_popup', this)">
                         <span class="glyphicon glyphicon-plus" aria-hidden="true"/> #{bundle['dataverse.results.btn.addData']}
                     </button>
                 </ui:fragment>

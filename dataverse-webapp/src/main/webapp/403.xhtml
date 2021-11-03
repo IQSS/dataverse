@@ -30,7 +30,7 @@
                             <h:outputFormat value="#{bundle['error.support.message']}" escape="false">
                                 <o:param>
                                     <p:commandLink value="#{installationConfig.supportTeamName}"
-                                                oncomplete="PF('contactForm').show()" update=":contactDialog" />
+                                                oncomplete="primeFacesShowModal('contactForm', this)" update=":contactDialog" />
                                 </o:param>
                             </h:outputFormat>   
                         </o:form>

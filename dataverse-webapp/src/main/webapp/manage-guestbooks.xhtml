@@ -129,7 +129,7 @@
                                     <div class="btn-group" role="group">
                                         <p:commandLink type="button" styleClass="btn btn-default btn-access bootstrap-button-tooltip"
                                                        action="#{manageGuestbooksPage.viewSelectedGuestbook(guestbook)}"
-                                                       oncomplete="PF('viewGuestbook').show();"
+                                                       oncomplete="primeFacesShowModal('viewGuestbook', this);"
                                                        update=":manageGuestbooksForm"
                                                        title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view']}">
                                             <span class="glyphicon glyphicon-eye-open no-text"></span>
@@ -148,7 +148,7 @@
                                         <p:commandLink type="button" styleClass="btn btn-default btn-access bootstrap-button-tooltip"
                                                        action="#{manageGuestbooksPage.setSelectedGuestbook(guestbook)}"
                                                        rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id and guestbook.deletable}"
-                                                       oncomplete="PF('deleteConfirmation').show();"
+                                                       oncomplete="primeFacesShowModal('deleteConfirmation', this);"
                                                        title="#{bundle['dataset.manageGuestbooks.tab.action.btn.delete']}">
                                             <span class="glyphicon glyphicon-trash no-text"></span>
                                         </p:commandLink>

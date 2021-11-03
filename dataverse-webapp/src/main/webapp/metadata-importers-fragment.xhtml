@@ -41,7 +41,7 @@
                                              disabled="#{empty pageBean.selectedImporter}"
                                              process="@form"
                                              update="importMetadataDialog"
-                                             oncomplete="PF('importMetadataWidget').show()"/>
+                                             oncomplete="primeFacesShowModal('importMetadataWidget', this)"/>
                         </div>
                     </p:fragment>
                 </div>

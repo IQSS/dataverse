@@ -35,7 +35,7 @@
                                         <span class="glyphicon glyphicon-sort"/> #{bundle['dashboard.license.reorderButton']}
                                     </p:commandLink>
 
-                                    <p:commandLink onclick="PF('newLicense').show();" styleClass="btn btn-default btn-access">
+                                    <p:commandLink onclick="primeFacesShowModal('newLicense', this);" styleClass="btn btn-default btn-access">
                                         <span class="glyphicon glyphicon-plus"/> #{bundle['dashboard.license.newLicense.add']}
                                     </p:commandLink>
                                 </div>
@@ -73,7 +73,7 @@
                                                        title="#{bundle['dashboard.license.localePreviewButton']}"
                                                        update=":licenseLocalizedPreviewContent"
                                                        action="#{LicenseListingPage.setLicenseForPreview(license)}"
-                                                       onclick="PF('licenseLocalizedPreview').show();">
+                                                       onclick="primeFacesShowModal('licenseLocalizedPreview', this);">
                                             <span style="text-align: center" class="glyphicon glyphicon-eye-open"/>
                                         </p:commandLink>
                                     </div>
@@ -84,7 +84,7 @@
                                                        title="#{bundle['dashboard.license.editLicenseButton']}"
                                                        update=":licenseEditForm"
                                                        action="#{LicenseListingPage.setLicenseForEdit(license)}"
-                                                       onclick="PF('licenseEdit').show(); ">
+                                                       onclick="primeFacesShowModal('licenseEdit', this); ">
                                             <span style="text-align: center" class="glyphicon glyphicon-edit"/>
                                         </p:commandLink>
                                     </div>

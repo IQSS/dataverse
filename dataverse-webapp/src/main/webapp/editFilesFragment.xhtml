@@ -62,7 +62,7 @@
                                                     escape="false">
                                         <o:param>
                                             <p:commandLink value="#{installationConfig.supportTeamName}"
-                                                           oncomplete="PF('contactForm').show()" update=":contactDialog"
+                                                           oncomplete="primeFacesShowModal('contactForm', this)" update=":contactDialog"
                                                            actionListener="#{sendFeedbackDialog.initUserInput}">
                                                 <f:setPropertyActionListener
                                                         target="#{sendFeedbackDialog.messageSubject}" value=""/>
@@ -261,7 +261,7 @@
                                                             escape="false">
                                                 <o:param>
                                                     <p:commandLink value="#{installationConfig.supportTeamName}"
-                                                                   oncomplete="PF('contactForm').show()"
+                                                                   oncomplete="primeFacesShowModal('contactForm', this)"
                                                                    update=":contactDialog"
                                                                    actionListener="#{sendFeedbackDialog.initUserInput}">
                                                         <f:setPropertyActionListener
@@ -311,7 +311,7 @@
                                                             escape="false">
                                                 <o:param>
                                                     <p:commandLink value="#{installationConfig.supportTeamName}"
-                                                                   oncomplete="PF('contactForm').show()"
+                                                                   oncomplete="primeFacesShowModal('contactForm', this)"
                                                                    update=":contactDialog"
                                                                    actionListener="#{sendFeedbackDialog.initUserInput}">
                                                         <f:setPropertyActionListener
@@ -555,12 +555,12 @@
                                     </button>
                                     <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
                                         <li class="#{lockedFromEdits ? 'disabled' : ''}">
-                                            <p:commandLink onclick="checkFilesSelected();">
+                                            <p:commandLink onclick="checkFilesSelected(this);">
                                                 <h:outputText value="#{bundle['file.delete']}"/>
                                             </p:commandLink>
                                         </li>
                                         <li class="#{lockedFromEdits ? 'disabled' : ''}">
-                                            <p:commandLink onclick="checkFilesForLicenseEdit();">
+                                            <p:commandLink onclick="checkFilesForLicenseEdit(this);">
                                                 <h:outputText value="#{bundle['file.license']}"/>
                                             </p:commandLink>
                                         </li>
@@ -579,7 +579,7 @@
                                         <li class="#{lockedFromEdits  ? 'disabled' : ''}">
                                             <p:commandLink id="fileProvenanceButton"
                                                            update=":datasetForm:editProvenancePopup"
-                                                           oncomplete="PF('editProvenancePopup').show();">
+                                                           oncomplete="primeFacesShowModal('editProvenancePopup', this);">
                                                 <f:actionListener
                                                         binding="#{provPopupFragmentBean.updatePopupStateAndDataset(fileMetadata, EditDatafilesPage.dataset)}"/>
                                                 #{bundle['file.provenance']}
@@ -591,7 +591,7 @@
                                         <p:commandLink id="fileCategoriesButton"
                                                        actionListener="#{EditDatafilesPage.refreshTagsPopUp(fileMetadata)}"
                                                        action="#{FileTagModal.initForSingleFile(EditDatafilesPage.selectedFile, EditDatafilesPage.dataset)}"
-                                                       update="@form" oncomplete="PF('editFileTagsPopup').show();">
+                                                       update="@form" oncomplete="primeFacesShowModal('editFileTagsPopup', this);">
                                             #{bundle['file.tags']}
                                         </p:commandLink>
                                     </li>
@@ -600,7 +600,7 @@
                                                        rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image and not EditDatafilesPage.thumbnailIsFromDatasetLogoRatherThanDatafile}"
                                                        actionListener="#{EditDatafilesPage.setFileMetadataSelectedForThumbnailPopup(fileMetadata)}"
                                                        update=":datasetForm:fileSetThumbnail"
-                                                       oncomplete="PF('fileSetThumbnail').show()">
+                                                       oncomplete="primeFacesShowModal('fileSetThumbnail', this)">
                                             #{bundle['file.setThumbnail']}
                                         </p:commandLink>
                                     </li>
@@ -608,7 +608,7 @@
                                         <p:commandLink id="fileSetThumbnailBtn2"
                                                        rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image and EditDatafilesPage.thumbnailIsFromDatasetLogoRatherThanDatafile}"
                                                        actionListener="#{EditDatafilesPage.setFileMetadataSelectedForThumbnailPopup(fileMetadata)}"
-                                                       oncomplete="PF('fileThumbnailConfirm').show()">
+                                                       oncomplete="primeFacesShowModal('fileThumbnailConfirm', this)">
                                             #{bundle['file.setThumbnail']}
                                         </p:commandLink>
                                     </li>
@@ -618,7 +618,7 @@
                                                                or ((empty fileMetadata.dataFile.id) and dataFileServiceBean.isSpssSavFile(fileMetadata.dataFile))}"
                                                        actionListener="#{EditDatafilesPage.setFileMetadataSelectedForIngestOptionsPopup(fileMetadata)}"
                                                        update=":datasetForm:fileAdvancedOptions"
-                                                       oncomplete="PF('fileAdvancedOptions').show()">
+                                                       oncomplete="primeFacesShowModal('fileAdvancedOptions', this)">
                                             #{bundle['file.advancedIngestOptions']}
                                         </p:commandLink>
                                     </li>
@@ -988,21 +988,21 @@
             $('button[id$="allDeletesFinished"]').trigger('click');
         }
 
-        function checkFilesSelected() {
+        function checkFilesSelected(button) {
             var count = PF('filesTable').getSelectedRowsCount();
             if (count > 0) {
-                PF('deleteFileConfirmation').show();
+                primeFacesShowModal('deleteFileConfirmation', button);
             } else {
-                PF('selectFilesForDeleteFragment').show();
+                primeFacesShowModal('selectFilesForDeleteFragment', button);
             }
         }
 
-        function checkFilesForLicenseEdit() {
+        function checkFilesForLicenseEdit(button) {
             var count = PF('filesTable').getSelectedRowsCount();
             if (count > 0) {
-                PF('editSelectedFilesLicense').show();
+                primeFacesShowModal('editSelectedFilesLicense', button);
             } else {
-                PF('selectFilesForLicenseEdit').show();
+                primeFacesShowModal('selectFilesForLicenseEdit', button);
             }
         }
 

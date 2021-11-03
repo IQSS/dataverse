@@ -45,7 +45,7 @@
                                         <span class="text-muted" jsf:rendered="#{DatasetWidgetsPage.datasetThumbnail == null}"><em>#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.default']}</em></span>
                                         <p:commandButton update="@all" value="#{bundle.remove}" action="#{DatasetWidgetsPage.flagDatasetThumbnailForRemoval()}" rendered="#{DatasetWidgetsPage.datasetThumbnail != null and DatasetWidgetsPage.datasetThumbnail.fromDataFile != true}" />
                                         <div jsf:rendered="#{DatasetWidgetsPage.datasetThumbnail.fromDataFile == true}">
-                                            <button type="button" class="btn btn-default" onclick="PF('confrmRemove').show()">#{bundle.remove}</button>
+                                            <button type="button" class="btn btn-default" onclick="primeFacesShowModal('confrmRemove', this)">#{bundle.remove}</button>
                                         </div>
                                     </div>
                                     <div class="col-sm-8">
@@ -56,7 +56,7 @@
                                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.selectAvailable.title']}"></span>
                                             </label>
                                             <div>
-                                                <button type="button" class="btn btn-default" onclick="PF('selectFileThumbnail').show()">#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.selectThumbnail']}</button>
+                                                <button type="button" class="btn btn-default" onclick="primeFacesShowModal('selectFileThumbnail', this)">#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.selectThumbnail']}</button>
                                             </div>
                                         </div>
                                         <div class="form-group">

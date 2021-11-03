@@ -167,7 +167,7 @@
                                 <div class="btn-group" id="datasetButtonBar" role="group">
                                     <p:commandLink class="text-button btn-contact bootstrap-button-tooltip"
                                                    title="#{bundle['dataset.email.datasetContactBtn']}"
-                                                   update=":contactDialog" oncomplete="PF('contactForm').show()"
+                                                   update=":contactDialog" oncomplete="primeFacesShowModal('contactForm', this)"
                                                    actionListener="#{sendFeedbackDialog.initUserInput}">
                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
@@ -180,7 +180,7 @@
                                     <p:commandLink styleClass="text-button btn-share bootstrap-button-tooltip"
                                                    rendered="#{!DatasetPage.workingVersion.deaccessioned}"
                                                    title="#{bundle['dataset.share.datasetShare']}"
-                                                   oncomplete="PF('shareDialog').show();sharrre();">
+                                                   oncomplete="primeFacesShowModal('shareDialog', this);sharrre();">
                                         <span class="glyphicon glyphicon-share" aria-hidden="true"/> #{bundle['share']}
                                     </p:commandLink>
                                 </div>
@@ -214,7 +214,7 @@
                                         <!-- Publish Buttons -->
                                         <p:commandLink type="button"
                                                        styleClass="btn btn-default btn-access #{conditionallyDisable}"
-                                                       onclick="PF('publishConfirm').show()"
+                                                       onclick="primeFacesShowModal('publishConfirm', this)"
                                                        rendered="#{!DatasetPage.dataset.released
                                                                    and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
                                                                    and DatasetPage.dataset.owner.released
@@ -225,7 +225,7 @@
     
                                         <p:commandLink type="button"
                                                        styleClass="btn btn-default btn-access #{conditionallyDisable}"
-                                                       onclick="PF('noFilesInDataset').show()"
+                                                       onclick="primeFacesShowModal('noFilesInDataset', this)"
                                                        rendered="#{!DatasetPage.dataset.released
                                                                    and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
                                                                    and DatasetPage.canPublishDataset()
@@ -235,7 +235,7 @@
     
                                         <p:commandLink type="button"
                                                        styleClass="btn btn-default btn-access #{conditionallyDisable}"
-                                                       onclick="PF('releaseDraft').show()"
+                                                       onclick="primeFacesShowModal('releaseDraft', this)"
                                                        rendered="#{DatasetPage.dataset.released
                                                         and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
                                                         and DatasetPage.dataset.owner.released
@@ -247,7 +247,7 @@
                                         <!-- 4.2.1:  replaced permissionServiceBean.on(DatasetPage.dataset.owner).has('PublishDataverse') with DatasetPage.canPublishDataverse() -->
                                         <p:commandLink type="button"
                                                        styleClass="btn btn-default btn-access #{conditionallyDisable}"
-                                                       onclick="PF('mayNotRelease').show()"
+                                                       onclick="primeFacesShowModal('mayNotRelease', this)"
                                                        rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and
                                                         !DatasetPage.dataset.owner.released
                                                                    and DatasetPage.canPublishDataset()
@@ -258,7 +258,7 @@
     
                                         <p:commandLink type="button"
                                                        styleClass="btn btn-default btn-access #{conditionallyDisable}"
-                                                       onclick="PF('publishParent').show()"
+                                                       onclick="primeFacesShowModal('publishParent', this)"
                                                        rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
                                                                    and DatasetPage.canPublishDataverse()
                                                                    and (DatasetPage.dataset.owner.owner == null
@@ -275,7 +275,7 @@
                                                                    and (DatasetPage.dataset.owner.owner != null and !DatasetPage.dataset.owner.owner.released)
                                                                    and DatasetPage.canPublishDataset()
                                                                    and DatasetPage.isLatestDatasetWithAnyFilesIncluded()}"
-                                                       onclick="PF('maynotPublishParent').show()">
+                                                       onclick="primeFacesShowModal('maynotPublishParent', this)">
                                             <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                         </p:commandLink>
                                         <!-- END: Publish Buttons -->
@@ -283,7 +283,7 @@
                                         <!-- Return to Author Button -->
                                         <p:commandLink id="returnForModificationButton" type="button" styleClass="btn btn-default btn-access #{(DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview)
                                                                                                               ? 'disabled' : ''}"
-                                                       onclick="PF('sendBackToContributor').show()"
+                                                       onclick="primeFacesShowModal('sendBackToContributor', this)"
                                                        rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.latestVersion.inReview
                                                                    and DatasetPage.canPublishDataset()}">
                                             <span class="glyphicon glyphicon-repeat"/> #{bundle['dataset.rejectBtn']}
@@ -300,7 +300,7 @@
                                             <p:commandLink
                                                     styleClass="btn btn-default btn-access"
                                                     disabled="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked}"
-                                                    oncomplete="PF('inreview').show();"
+                                                    oncomplete="primeFacesShowModal('inreview', this);"
                                                     actionListener="#{DatasetPage.loadFilesTermDiffs}"
                                                     update="inreview"
                                             >
@@ -315,7 +315,7 @@
                                     <p:commandLink
                                             rendered="#{DatasetPage.canLinkDatasetToSomeDataverse()}"
                                             type="button" styleClass="btn btn-default btn-access"
-                                            oncomplete="PF('linkDatasetForm').show();"
+                                            oncomplete="primeFacesShowModal('linkDatasetForm', this);"
                                             update="linkDatasetForm">
                                         <span class="glyphicon glyphicon-link"/> #{bundle['link']}
                                     </p:commandLink>
@@ -352,7 +352,7 @@
                                                 <p:commandLink id="setEmbargo"
                                                                action="#{DatasetPage.initCurrentEmbargo()}"
                                                                update="setEmbargoPanel"
-                                                               oncomplete="PF('setEmbargoConfirmation').show()"
+                                                               oncomplete="primeFacesShowModal('setEmbargoConfirmation', this)"
                                                                rendered="#{DatasetPage.isUserAbleToSetOrUpdateEmbargo() or DatasetPage.isUserAbleToLiftEmbargo()}"
                                                 >
                                                     <h:outputText
@@ -394,7 +394,7 @@
                                                 </li>
                                                 <li>
                                                     <p:commandLink id="privateUrl"
-                                                                   oncomplete="PF('privateUrlConfirmation').show()"
+                                                                   oncomplete="primeFacesShowModal('privateUrlConfirmation', this)"
                                                                    action="#{DatasetPage.initPrivateUrlPopUp()}"
                                                                    update="privateUrlPanel">
                                                         <h:outputText
@@ -414,7 +414,7 @@
                                                 <li class="divider"></li>
                                                 <li>
                                                     <p:commandLink id="deleteDataset"
-                                                                   onclick="PF('deleteConfirmation').show()">
+                                                                   onclick="primeFacesShowModal('deleteConfirmation', this)">
                                                         <h:outputText
                                                                 value="#{bundle['dataset.editBtn.itemLabel.deleteDataset']}"/>
                                                     </p:commandLink>
@@ -425,7 +425,7 @@
                                                 <li class="divider"></li>
                                                 <li>
                                                     <p:commandLink id="deleteVersion"
-                                                                   onclick="PF('deleteVersionConfirmation').show()">
+                                                                   onclick="primeFacesShowModal('deleteVersionConfirmation', this)">
                                                         <h:outputText
                                                                 value="#{bundle['dataset.editBtn.itemLabel.deleteDraft']}"/>
                                                     </p:commandLink>
@@ -832,7 +832,7 @@
                                              oncomplete="if (args &amp;&amp; !args.validationFailed) { PF('setEmbargoConfirmation').hide(); } else { #{DatasetPage.initCurrentEmbargo()}; }"
                             />
                             <p:commandButton value="#{bundle['dataset.embargo.lift.button']}"
-                                             onclick="PF('setEmbargoConfirmation').hide();PF('removeEmbargoConfirmation').show()"
+                                             onclick="PF('setEmbargoConfirmation').hide();primeFacesShowModal('removeEmbargoConfirmation', this)"
                                              rendered="#{DatasetPage.isUserAbleToLiftEmbargo()}" update="setEmbargoPanel"/>
                             <p:commandButton styleClass="btn btn-default"
                                              value="#{bundle.close}"
@@ -859,7 +859,7 @@
                                          update="setEmbargoPanel,:messagePanel, dataset-summary-metadata"
                                          onclick="PF('removeEmbargoConfirmation').hide();"/>
                         <p:commandButton value="#{bundle.cancel}"
-                                         onclick="PF('removeEmbargoConfirmation').hide();PF('setEmbargoConfirmation').show();"
+                                         onclick="PF('removeEmbargoConfirmation').hide();primeFacesShowModal('setEmbargoConfirmation', this);"
                                          type="button"/>
                     </div>
                 </p:dialog>
@@ -912,7 +912,7 @@
                                              rendered="#{empty(DatasetPage.privateUrl)}" />
                             <p:commandButton value="#{bundle['dataset.privateurl.disablePrivateUrl']}"
                                              action="#{DatasetPage.setPrivateUrlJustCreatedToFalse()}"
-                                             onclick="PF('privateUrlConfirmation').hide();PF('disablePrivateUrlConfirmation').show()"
+                                             onclick="PF('privateUrlConfirmation').hide();primeFacesShowModal('disablePrivateUrlConfirmation', this)"
                                              rendered="#{!empty(DatasetPage.privateUrl)}" update="privateUrlPanel, staticMessagesPanel"/>
                             <p:commandButton styleClass="btn btn-default" value="#{bundle.close}"
                                              onclick="PF('privateUrlConfirmation').hide();"
@@ -931,7 +931,7 @@
                                          update="privateUrlPanel staticMessagesPanel, :messagePanel"
                                          onclick="PF('disablePrivateUrlConfirmation').hide();"/>
                         <p:commandButton value="#{bundle.cancel}"
-                                         onclick="PF('disablePrivateUrlConfirmation').hide();PF('privateUrlConfirmation').show();"
+                                         onclick="PF('disablePrivateUrlConfirmation').hide();primeFacesShowModal('privateUrlConfirmation', this);"
                                          type="button"/>
                     </div>
                 </p:dialog>
@@ -943,7 +943,7 @@
                             <h:outputFormat value="#{bundle['dataverse.link.dataset.choose']}" escape="false">
                                 <o:param>
                                     <p:commandLink value="#{installationConfig.supportTeamName}"
-                                                   oncomplete="PF('linkDatasetForm').hide();PF('contactForm').show()"
+                                                   oncomplete="PF('linkDatasetForm').hide();primeFacesShowModal('contactForm', this)"
                                                    update=":contactDialog"
                                                    actionListener="#{sendFeedbackDialog.initUserInput}">
                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}"

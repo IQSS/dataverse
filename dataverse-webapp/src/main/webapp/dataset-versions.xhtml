@@ -23,14 +23,14 @@
         <h:panelGroup id="versionsContent">
 
             <div class="text-right margin-bottom">
-                <p:commandLink type="button" styleClass="btn btn-default" onclick="testCheckBoxes();"
+                <p:commandLink type="button" styleClass="btn btn-default" onclick="testCheckBoxes(this);"
                                rendered="#{datasetVersionsTab.comparableVersionsCount > 2}">
                     <span class="glyphicon glyphicon-transfer"/> #{bundle['file.dataFilesTab.versions.viewDiffBtn']}
                 </p:commandLink>
                 <p:commandButton value="#{bundle['file.dataFilesTab.button.direct']}" id="compareVersions"
                                  style="display:none"
                                  update="detailsBlocks"
-                                 oncomplete="PF('detailsBlocks').show();post_differences();"
+                                 oncomplete="primeFacesShowModal('detailsBlocks', this);post_differences();"
                                  actionListener="#{datasetVersionsTab.updateVersionDiffForModalFromSelected()}">
                 </p:commandButton>
             </div>
@@ -154,7 +154,7 @@
                     <p:commandLink rendered="#{(!empty(versionSummary.differenceFromPreviousVersion)
                                     and versionSummary.differenceFromPreviousVersion.isNotEmpty())}"
                                    actionListener="#{datasetVersionsTab.updateVersionDiffForDialog(versionSummary.differenceFromPreviousVersion)}"
-                                   oncomplete="PF('detailsBlocks').show();post_differences();"
+                                   oncomplete="primeFacesShowModal('detailsBlocks', this);post_differences();"
                                    update="@form"
                                    value="#{bundle['file.dataFilesTab.versions.viewDetails.btn']}"></p:commandLink>
                 </p:column><!-- end: summary column -->
@@ -458,10 +458,10 @@
     </p:dialog>
 
     <script>
-        function testCheckBoxes() {
+        function testCheckBoxes(button) {
             var count = PF('versionsTable').getSelectedRowsCount();
             if (count !== 2) {
-                PF('needTwoVersionsToCompare').show();
+                primeFacesShowModal('needTwoVersionsToCompare', button);
             } else {
                 $('button[id$="compareVersions"]').trigger('click');
             }

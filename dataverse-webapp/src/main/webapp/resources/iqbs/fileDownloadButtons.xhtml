@@ -213,7 +213,7 @@
                    process="@this"
                    action="#{FileDownloadRequestHelper.replaceRequestAccessWithSingleFile(cc.attrs.fileMetadata.dataFile)}"
                    update="#{cc.attrs.updateOnRequestAccess}"
-                   oncomplete="PF('requestAccessPopup').show()"
+                   oncomplete="primeFacesShowModal('requestAccessPopup', this)"
                    id="requestAccessPopupButton"
                    disabled="#{cc.attrs.fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
         <span class="glyphicon glyphicon-bullhorn"/> #{cc.attrs.fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
@@ -222,7 +222,7 @@
                    styleClass="btn btn-default btn-request"
                    process="@this"
                    rendered="#{!dataverseSession.user.authenticated}"
-                   onclick="PF('accessSignUpLogIn_popup').show()">
+                   onclick="primeFacesShowModal('accessSignUpLogIn_popup', this)">
         <span class="glyphicon glyphicon-bullhorn"/> #{bundle['file.requestAccess']}
     </p:commandLink>
 

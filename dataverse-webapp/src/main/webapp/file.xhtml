@@ -55,7 +55,7 @@
                                 <!-- Email/Share Button Group -->
                                 <div class="btn-group" id="datasetButtonBar" role="group" jsf:rendered="#{!widgetWrapper.widgetView}">
                                     <p:commandLink class="text-button btn-contact bootstrap-button-tooltip" title="#{bundle['dataset.email.datasetContactBtn']}"
-                                                   update=":contactDialog" oncomplete="PF('contactForm').show()" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                                   update=":contactDialog" oncomplete="primeFacesShowModal('contactForm', this)" actionListener="#{sendFeedbackDialog.initUserInput}">
                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
@@ -64,7 +64,7 @@
                                     </p:commandLink>
                                     <p:commandLink styleClass="text-button btn-share bootstrap-button-tooltip" rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}"
                                                    title="#{bundle['dataset.share.datasetShare']}"
-                                                   oncomplete="PF('shareDialog').show();sharrre();">
+                                                   oncomplete="primeFacesShowModal('shareDialog', this);sharrre();">
                                         <span class="glyphicon glyphicon-share" aria-hidden="true"/> #{bundle['share']}
                                     </p:commandLink>
                                 </div>
@@ -116,7 +116,7 @@
                                     <!-- Edit Button Group -->
                                     <div class="btn-group" jsf:rendered="#{FilePage.canUpdateDataset()
                                                              and (dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile))}">
-                                        <p:commandLink styleClass="btn btn-default btn-access" onclick="PF('fileAlreadyReplacedPrevious').show()">
+                                        <p:commandLink styleClass="btn btn-default btn-access" onclick="primeFacesShowModal('fileAlreadyReplacedPrevious', this)">
                                             <span class="glyphicon glyphicon-pencil" aria-hidden="true"/> #{bundle['dataset.editBtn']}
                                         </p:commandLink>
                                     </div>
@@ -135,7 +135,7 @@
                                                     <p:commandLink id="fileProvenanceButton"
                                                                pt:role="menuitem"
                                                                update="editProvenancePopup"
-                                                               oncomplete="PF('editProvenancePopup').show();">
+                                                               oncomplete="primeFacesShowModal('editProvenancePopup', this);">
                                                                <f:actionListener binding="#{provPopupFragmentBean.updatePopupState(FilePage.fileMetadata, true)}" /> <!--clearProvenanceUpdates() -->
                                                                 #{bundle['file.provenance']}
                                                     </p:commandLink>
@@ -162,7 +162,7 @@
                                             <li role="none"><!-- start: already replaced replace file link -->
                                                 <p:commandLink
                                                                 pt:role="menuitem"
-                                                                onclick="PF('fileAlreadyReplacedDraft').show();">
+                                                                onclick="primeFacesShowModal('fileAlreadyReplacedDraft', this);">
                                                     <h:outputText value="#{bundle['file.replace']}"/>
                                                 </p:commandLink>
                                             <!-- end replace file link --></li>
@@ -171,7 +171,7 @@
                                                 <li role="none">
                                                     <p:commandLink
                                                                pt:role="menuitem"
-                                                               onclick="PF('deleteFileConfirmation').show();">
+                                                               onclick="primeFacesShowModal('deleteFileConfirmation', this);">
                                                         <h:outputText value= "#{bundle['file.delete']}"/>
                                                     </p:commandLink>
                                                 </li>
@@ -432,7 +432,7 @@
                                     <div class="btn-group" jsf:rendered="#{!widgetWrapper.widgetView and (dataverseSession.user.authenticated
                                                          and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)
                                                          and (dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile)))}">
-                                        <p:commandLink styleClass="btn btn-default btn-access" onclick="PF('fileAlreadyReplacedPrevious').show()"
+                                        <p:commandLink styleClass="btn btn-default btn-access" onclick="primeFacesShowModal('fileAlreadyReplacedPrevious', this)"
                                                        disabled="#{FilePage.lockedFromEdits}">
                                             <span class="glyphicon glyphicon-pencil" aria-hidden="true"/> #{bundle['dataset.editBtn']}
                                         </p:commandLink>

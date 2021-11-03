@@ -64,7 +64,7 @@
                             <div class="btn-group" role="group">
                                 <p:commandLink styleClass="text-button btn-contact bootstrap-button-tooltip"
                                                title="#{bundle['dataverse.contact']}"
-                                               update=":contactDialog" oncomplete="PF('contactForm').show()"
+                                               update=":contactDialog" oncomplete="primeFacesShowModal('contactForm', this)"
                                                actionListener="#{sendFeedbackDialog.initUserInput}">
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
@@ -76,7 +76,7 @@
                                 </p:commandLink>
                                 <p:commandLink styleClass="text-button btn-share bootstrap-button-tooltip"
                                                title="#{bundle['dataverse.share.dataverseShare']}"
-                                               oncomplete="PF('shareDialog').show();sharrre();">
+                                               oncomplete="primeFacesShowModal('shareDialog', this);sharrre();">
                                     <span class="glyphicon glyphicon-share" aria-hidden="true"/> #{bundle['share']}
                                 </p:commandLink>
                             </div>
@@ -104,12 +104,12 @@
                             <ui:fragment
                                     rendered="#{permissionsWrapper.canIssuePublishDataverseCommand(DataversePage.dataverse)}">
                                 <button type="button" class="btn btn-default btn-access"
-                                        onclick="PF('confirmation').show()"
+                                        onclick="primeFacesShowModal('confirmation', this)"
                                         jsf:rendered="#{!DataversePage.dataverse.released and (empty DataversePage.dataverse.owner or DataversePage.dataverse.owner.released)}">
                                     <span class="glyphicon glyphicon-globe"/> #{bundle['dataverse.publish.btn']}
                                 </button>
                                 <button type="button" class="btn btn-default btn-access"
-                                        onclick="PF('mayNotRelease').show()"
+                                        onclick="primeFacesShowModal('mayNotRelease', this)"
                                         jsf:rendered="#{!DataversePage.dataverse.released and (!empty DataversePage.dataverse.owner and !DataversePage.dataverse.owner.released)}">
                                     <span class="glyphicon glyphicon-globe"/> #{bundle['dataverse.publish.btn']}
                                 </button>
@@ -127,7 +127,7 @@
                                         role="menu" aria-labelledby="linkToDataverse">
                                     <li class="#{LinkToDataverseDialog.canLinkDataverse ? '' : 'disabled'}" role="none">
                                         <p:commandLink action="#{LinkToDataverseDialog.setupDialogForDataverseLinking()}"
-                                                        oncomplete="PF('linkDataverseForm').show()"
+                                                        oncomplete="primeFacesShowModal('linkDataverseForm', this)"
                                                         update=":linkDataverseForm"
                                                         disabled="#{!LinkToDataverseDialog.canLinkDataverse}"
                                                         pt:role="menuitem"
@@ -137,7 +137,7 @@
                                     </li>
                                     <li class="#{LinkToDataverseDialog.canLinkSavedSearch ? '' : 'disabled'}" role="none">
                                         <p:commandLink action="#{LinkToDataverseDialog.setupDialogForSavedSearchLinking()}"
-                                                        oncomplete="PF('linkDataverseForm').show()"
+                                                        oncomplete="primeFacesShowModal('linkDataverseForm', this)"
                                                         update=":linkDataverseForm"
                                                         disabled="#{!LinkToDataverseDialog.canLinkSavedSearch}"
                                                         pt:role="menuitem"
@@ -235,7 +235,7 @@
                                     <li role="none" jsf:rendered="#{FeaturedDataversesDialog.canEditFeaturedDataverses}">
                                         <p:commandLink id="browseOpts"
                                                         action="#{FeaturedDataversesDialog.setupDialog()}"
-                                                        oncomplete="PF('browseOptsForm').show()"
+                                                        oncomplete="primeFacesShowModal('browseOptsForm', this)"
                                                         update="dataverseForm:browseOptsForm"
                                                         pt:role="menuitem">
                                             <h:outputText value="#{bundle['dataverse.option.featuredDataverse']}"/>
@@ -245,7 +245,7 @@
                                                                          and permissionsWrapper.canIssueDeleteDataverseCommand(DataversePage.dataverse)}">
                                         <li class="divider"></li>
                                         <li role="none">
-                                            <p:commandLink id="deleteDataset" onclick="PF('deleteConfirmation').show()" pt:role="menuitem">
+                                            <p:commandLink id="deleteDataset" onclick="primeFacesShowModal('deleteConfirmation', this)" pt:role="menuitem">
                                                 <h:outputText value="#{bundle['dataverse.option.deleteDataverse']}"/>
                                             </p:commandLink>
                                         </li>

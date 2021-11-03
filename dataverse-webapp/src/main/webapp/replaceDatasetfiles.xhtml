@@ -270,7 +270,7 @@
                                                             <p:commandLink id="fileProvenanceButton"
                                                                            pt:role="menuitem"
                                                                            update="@form"
-                                                                           oncomplete="PF('editProvenancePopup').show();">
+                                                                           oncomplete="primeFacesShowModal('editProvenancePopup', this);">
                                                                 <f:actionListener
                                                                         binding="#{provPopupFragmentBean.updatePopupStateAndDataset(fileMetadata, ReplaceDatafilesPage.dataset)}"/>
                                                                 #{bundle['file.provenance']}
@@ -284,12 +284,12 @@
                                                                        actionListener="#{ReplaceDatafilesPage.refreshTagsPopUp(fileMetadata)}"
                                                                        action="#{FileTagModal.initForSingleFile(fileMetadata, ReplaceDatafilesPage.dataset)}"
                                                                        update="@form"
-                                                                       oncomplete="PF('editFileTagsPopup').show();">
+                                                                       oncomplete="primeFacesShowModal('editFileTagsPopup', this);">
                                                             #{bundle['file.tags']}
                                                         </p:commandLink>
                                                     </li>
                                                     <li class="#{ReplaceDatafilesPage.isLockedFromEdits() ? 'disabled' : ''}" role="none">
-                                                        <p:commandLink onclick="PF('deleteFileConfirmation').show();" pt:role="menuitem">
+                                                        <p:commandLink onclick="primeFacesShowModal('deleteFileConfirmation', this);" pt:role="menuitem">
                                                             <h:outputText value="#{bundle['file.delete']}"/>
                                                         </p:commandLink>
                                                     </li>
@@ -379,12 +379,12 @@
                         $('button[id$="allDeletesFinished"]').trigger('click');
                     }
 
-                    function checkFilesSelected() {
+                    function checkFilesSelected(button) {
                         var count = PF('filesTable').getSelectedRowsCount();
                         if (count > 0) {
-                            PF('deleteFileConfirmation').show();
+                            primeFacesShowModal('deleteFileConfirmation', button);
                         } else {
-                            PF('selectFilesForDeleteFragment').show();
+                            primeFacesShowModal('selectFilesForDeleteFragment', button);
                         }
                     }
 

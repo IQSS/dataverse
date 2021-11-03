@@ -21,7 +21,7 @@
             <ul class="dropdown-menu pull-right text-left" role="menu">
                 <!-- Worldmap unpublished -->
                 <li jsf:rendered="#{worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata)}">
-                    <a onclick="PF('mapData_popup').show()" href="javascript:void(0);">#{bundle['file.map']}</a>
+                    <a onclick="primeFacesShowModal('mapData_popup', this)" href="javascript:void(0);">#{bundle['file.map']}</a>
                 </li>
                 <!-- Worldmap published -->
                 <li jsf:rendered="#{worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata)}">
@@ -37,7 +37,7 @@
                         <p:commandLink
                             update="@([id$=configureToolPopup])"
                             action="#{configureFragmentBean.setConfigurePopupTool(tool)}"
-                            oncomplete="PF('configureToolPopup').show()">
+                            oncomplete="primeFacesShowModal('configureToolPopup', this)">
                             <f:actionListener binding="#{configureFragmentBean.setConfigureFileId(fileId)}" />
                             #{tool.displayName}
                         </p:commandLink>

@@ -104,7 +104,7 @@
                                              styleClass="btn btn-default"
                                              type="button">
                                 <p:ajax event="click"
-                                        oncomplete="PF('removeRolesConfirm').show();"
+                                        oncomplete="primeFacesShowModal('removeRolesConfirm', this);"
                                         process="@this"
                                         listener="#{DashboardUsersPage.setSelectedUserInfo(user)}"
                                         update=":dashboardUsersForm:removeRolesConfirm"/>
@@ -123,7 +123,7 @@
                                                      disabled="#{user.id == dataverseSession.user.id}">
                                 <p:ajax event="change"
                                         process="@this"
-                                        oncomplete="PF('toggleSuperuserConfirmation').show();"
+                                        oncomplete="primeFacesShowModal('toggleSuperuserConfirmation', this);"
                                         update=":dashboardUsersForm:toggleSuperuserConfirmation"
                                 />
                             </p:selectBooleanCheckbox>
@@ -134,7 +134,7 @@
                                            title="#{bundle['dashboard.list_users.tbl_header.action.button']}"
                                            update=":dashboardUsersForm:userMoreInfoDialog"
                                            actionListener="#{DashboardUsersPage.setSelectedUserInfo(user)}"
-                                           oncomplete="PF('userMoreInfoDialog').show();">
+                                           oncomplete="primeFacesShowModal('userMoreInfoDialog', this);">
                                 <span style="text-align: center" class="glyphicon glyphicon-eye-open"/>
                             </p:commandLink>
                         </p:column>

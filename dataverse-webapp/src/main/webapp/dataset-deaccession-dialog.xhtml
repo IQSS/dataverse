@@ -15,7 +15,7 @@
             process="@this"
             update="@none"
             action="#{datasetDeaccessionDialog.reloadAndRenderDialog()}"
-            oncomplete="PF('deaccessDatasetDialog').show();" />
+            oncomplete="primeFacesShowModal('deaccessDatasetDialog', this);" />
 
     <p:outputPanel id="deaccessionContentPanel">
         <p:autoUpdate />
@@ -76,7 +76,7 @@
             
             <div class="button-block">
                 <p:commandLink styleClass="btn btn-default" value="#{bundle.deaccession}"  
-                               oncomplete="if (args &amp;&amp; !args.validationFailed) PF('deaccessionConfirmation').show();">
+                               oncomplete="if (args &amp;&amp; !args.validationFailed) primeFacesShowModal('deaccessionConfirmation', this);">
                 </p:commandLink>
                 <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle.cancel}"
                         immediate ="true" 

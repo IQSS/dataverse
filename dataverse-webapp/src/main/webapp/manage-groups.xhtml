@@ -34,7 +34,7 @@
                                        actionListener="#{manageGroupsPage.initExplicitGroupDialog}"
                                        process="@this @widgetVar(explicitGroupForm)"
                                        update="explicitGroupNewDialog"
-                                       oncomplete="PF('explicitGroupForm').show();handleResizeDialog('explicitGroupNewDialog');">
+                                       oncomplete="primeFacesShowModal('explicitGroupForm', this);handleResizeDialog('explicitGroupNewDialog');">
                             <span class="glyphicon glyphicon-plus" aria-hidden="true" /> #{bundle['dataverse.manageGroups.createBtn']}
                             <o:skipValidators />
                         </p:commandLink>
@@ -81,7 +81,7 @@
                                 <div class="btn-group" role="group">
                                     <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
                                                    action="#{manageGroupsPage.viewSelectedGroup(explicitGroup)}"
-                                                   oncomplete="PF('viewGroup').show();"
+                                                   oncomplete="primeFacesShowModal('viewGroup', this);"
                                                    process="@this @widgetVar(viewGroup)"
                                                    update="@widgetVar(viewGroup)"
                                                    ariaLabel="#{bundle['dataverse.manageGroups.tab.action.btn.edit']} #{explicitGroup.displayName}"
@@ -90,7 +90,7 @@
                                     </p:commandLink>
                                     <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
                                                    action="#{manageGroupsPage.setSelectedGroup(explicitGroup)}"
-                                                   oncomplete="PF('deleteConfirmation').show()"
+                                                   oncomplete="primeFacesShowModal('deleteConfirmation', this)"
                                                    process="@this"
                                                    update=":manageGroupsForm"
                                                    ariaLabel="#{bundle['dataverse.manageGroups.tab.action.btn.delete']} #{explicitGroup.displayName}"

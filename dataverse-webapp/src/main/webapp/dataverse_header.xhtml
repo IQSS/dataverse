@@ -137,7 +137,7 @@
                                 <ui:fragment rendered="#{empty settingsWrapper.getSettingValue(':NavbarSupportUrl')}">
                                     <li>
                                         <o:form useRequestURI="true" class="navbar-form navbar-left navbar-form-link">
-                                            <p:commandLink oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                            <p:commandLink oncomplete="primeFacesShowModal('contactForm', this)" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
                                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
                                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
                                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>

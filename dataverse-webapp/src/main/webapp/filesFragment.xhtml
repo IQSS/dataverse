@@ -313,13 +313,13 @@
                         <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
                             <ui:fragment rendered="#{!datasetFilesTab.dataset.released or !datasetFilesTab.workingVersion.hasPackageFile}">
                                 <li class="#{datasetFilesTab.lockedFromEdits ? 'disabled' : ''}">
-                                    <p:commandLink onclick="testFilesSelectedForDelete();" id="deleteSelectedFile">
+                                    <p:commandLink onclick="testFilesSelectedForDelete(this);" id="deleteSelectedFile">
                                         <h:outputText value="#{bundle['file.delete']}"/>
                                     </p:commandLink>
                                 </li>
                             </ui:fragment>
                                 <li class="#{datasetFilesTab.lockedFromEdits ? 'disabled' : ''}">
-                                    <p:commandLink onclick="testFilesSelectedForEditMetadata();"
+                                    <p:commandLink onclick="testFilesSelectedForEditMetadata(this);"
                                                    id="editMetadataSelectedFile"
                                                    process="@this"
                                                    action="#{datasetFilesTab.editFileMetadata()}">
@@ -327,13 +327,13 @@
                                     </p:commandLink>
                                 </li>
                                 <li class="#{datasetFilesTab.lockedFromEdits ? 'disabled' : ''}">
-                                    <p:commandLink onclick="testFilesSelectedForEditLicense();" id="editLicenseSelectedFile">
+                                    <p:commandLink onclick="testFilesSelectedForEditLicense(this);" id="editLicenseSelectedFile">
                                         <h:outputText value="#{bundle['file.license']}" />
                                     </p:commandLink>
                                 </li>
                                 <li class="#{datasetFilesTab.lockedFromEdits ? 'disabled' : ''}">
                                     <p:commandLink id="fileCategoriesLinkTwo"
-                                                   onclick="testFilesSelectedForTags()">
+                                                   onclick="testFilesSelectedForTags(this)">
                                         #{bundle['file.tags']}
                                     </p:commandLink>
                                 </li>
@@ -390,7 +390,7 @@
                     </p:commandLink>
                     <p:commandLink rendered="#{datasetFilesTab.fileAccessRequestMultiSignUpButtonRequired}"
                                     type="button" styleClass="btn btn-default btn-request"
-                                    onclick="PF('accessSignUpLogIn_popup').show()"
+                                    onclick="primeFacesShowModal('accessSignUpLogIn_popup', this)"
                                     disabled="#{datasetFilesTab.locked}">
                         <span class="glyphicon glyphicon-bullhorn"/> #{bundle['file.requestAccess']}
                     </p:commandLink>
@@ -444,7 +444,7 @@
         <p:remoteCommand name="refreshTagsCommand"
                          onstart="#{FileTagModal.initForMultipleFiles(datasetFilesTab.retrieveSelectedFiles(), datasetFilesTab.dataset)}"
                          update="@form"
-                         oncomplete="PF('fileTagsPopup').show();"/>
+                         oncomplete="primeFacesShowModal('fileTagsPopup', this);"/>
 
         <iqbs:fileTagsDialog dialogWidgetId="fileTagsPopup"
                              showRemoveUnusedTags="true"
@@ -677,37 +677,37 @@
 
         <script type="text/javascript">
 
-                function testFilesSelectedForTags() {
+                function testFilesSelectedForTags(button) {
                     var count = PF('filesTable').getSelectedRowsCount();
                     if (count === 0) {
-                        PF('selectFilesForEditTags').show();
+                        primeFacesShowModal('selectFilesForEditTags', button);
                     } else {
                         refreshTagsCommand();
                     }
                 }
 
-                function testFilesSelectedForDelete() {
+                function testFilesSelectedForDelete(button) {
                     var count = PF('filesTable').getSelectedRowsCount();
                     if (count === 0) {
-                        PF('selectFilesForDelete').show();
+                        primeFacesShowModal('selectFilesForDelete', button);
                     } else {
-                        PF('deleteSelectedFileConfirmation').show();
+                        primeFacesShowModal('deleteSelectedFileConfirmation', button);
                     }
                 }
 
-                function testFilesSelectedForEditLicense() {
+                function testFilesSelectedForEditLicense(button) {
                     var count = PF('filesTable').getSelectedRowsCount();
                     if (count === 0) {
-                        PF('selectFilesForEditLicense').show();
+                        primeFacesShowModal('selectFilesForEditLicense', button);
                     } else {
-                        PF('editTermsOfUseDialog').show();
+                        primeFacesShowModal('editTermsOfUseDialog', button);
                     }
                 }
 
-                function testFilesSelectedForEditMetadata() {
+                function testFilesSelectedForEditMetadata(button) {
                     var count = PF('filesTable').getSelectedRowsCount();
                     if (count === 0) {
-                        PF('selectFilesForEditMetadata').show();
+                        primeFacesShowModal('selectFilesForEditMetadata', button);
                     } //else {
                     // I commented out the code below; if there's
                     // 1 or more file selected, I don't want this

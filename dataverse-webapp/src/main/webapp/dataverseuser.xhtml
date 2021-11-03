@@ -353,7 +353,7 @@
                                             <h:outputText value="#{bundle['user.isShibUser']}" />
                                             <h:outputText value=" #{bundle['user.helpShibUserMigrateOffShibBeforeLink']} " />
                                             <p:commandLink value="#{installationConfig.supportTeamName}"
-                                                           oncomplete="PF('contactForm').show()" update=":contactDialog"
+                                                           oncomplete="primeFacesShowModal('contactForm', this)" update=":contactDialog"
                                                            actionListener="#{sendFeedbackDialog.initUserInput}">
                                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
                                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
@@ -371,7 +371,7 @@
                                                 <f:param value="#{DataverseUserPage.userAuthProvider.info.title}"/>
                                             </h:outputFormat>
                                             <p:commandLink value="#{installationConfig.supportTeamName}"
-                                                           oncomplete="PF('contactForm').show()" update=":contactDialog"
+                                                           oncomplete="primeFacesShowModal('contactForm', this)" update=":contactDialog"
                                                            actionListener="#{sendFeedbackDialog.initUserInput}">
                                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
                                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>

@@ -123,7 +123,7 @@
                                                    title="#{bundle['dataset.manageTemplates.tab.action.btn.view']}"
                                                    ariaLabel="#{bundle['dataset.manageTemplates.tab.action.btn.view']} #{template.name}"
                                                    action="#{manageTemplatesPage.viewSelectedTemplate(template)}"
-                                                   oncomplete="PF('viewTemplate').show();"
+                                                   oncomplete="primeFacesShowModal('viewTemplate', this);"
                                                    update="@form">
                                         <span class="glyphicon glyphicon-eye-open" aria-hidden="true"/>
                                     </p:commandLink>
@@ -147,7 +147,7 @@
                                                    update="@form"
                                                    action="#{manageTemplatesPage.setSelectedTemplate(template)}"
                                                    rendered="#{manageTemplatesPage.dataverse.id eq template.dataverse.id}"
-                                                   oncomplete="PF('deleteConfirmation').show();">
+                                                   oncomplete="primeFacesShowModal('deleteConfirmation', this);">
                                         <span class="glyphicon glyphicon-trash" aria-hidden="true"/>
                                     </p:commandLink>
                                 </div>
