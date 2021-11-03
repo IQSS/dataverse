@@ -7,6 +7,7 @@ import com.jayway.restassured.response.Response;
 import java.util.logging.Logger;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.junit.Ignore;
 import com.jayway.restassured.path.json.JsonPath;
@@ -22,6 +23,8 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
+
 import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
@@ -50,6 +53,7 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObjectBuilder;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
+import static javax.ws.rs.core.Response.Status.OK;
 import static org.junit.Assert.assertEquals;
 import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -2299,7 +2303,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertEquals(200, deleteUserResponse.getStatusCode());
 
     }
-
+    
     @Test
     public void testReCreateDataset() {
 
@@ -2368,9 +2372,125 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertEquals(200, deleteUserResponse.getStatusCode());
     }
 
+    @Test
+    public void testCurationLabelAPIs() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response setCurationLabelSets = UtilIT.setSetting(SettingsServiceBean.Key.AllowedCurationLabels, "{\"StandardProcess\":[\"Author contacted\", \"Privacy Review\", \"Awaiting paper publication\", \"Final Approval\"],\"AlternateProcess\":[\"State 1\",\"State 2\",\"State 3\"]}");
+        setCurationLabelSets.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        
+        //Set curation label set on dataverse
+        //Valid option, bad user
+        Response setDataverseCurationLabelSetResponse = UtilIT.setDataverseCurationLabelSet(dataverseAlias, apiToken, "AlternateProcess");
+        setDataverseCurationLabelSetResponse.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+        
+        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        assertEquals(200, makeSuperUser.getStatusCode());
+
+        //Non-existent option
+        Response setDataverseCurationLabelSetResponse2 = UtilIT.setDataverseCurationLabelSet(dataverseAlias, apiToken, "OddProcess");
+        setDataverseCurationLabelSetResponse2.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        //Valid option, superuser
+        Response setDataverseCurationLabelSetResponse3 = UtilIT.setDataverseCurationLabelSet(dataverseAlias, apiToken, "AlternateProcess");
+        setDataverseCurationLabelSetResponse3.then().assertThat().statusCode(OK.getStatusCode());
+
+        
+        // Create a dataset using native api
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        // Get the curation label set in use
+        Response response = UtilIT.getDatasetCurationLabelSet(datasetId, apiToken);
+        response.then().assertThat().statusCode(OK.getStatusCode());
+        //Verify that the set name is what was set on the dataverse
+        String labelSetName = getData(response.getBody().asString());
+        // full should be {"message":"AlternateProcess"}
+        assertTrue(labelSetName.contains("AlternateProcess"));
+        
+        // Now set a label
+        //Option from the wrong set
+        Response response2 = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "Author contacted");
+        response2.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        // Valid option
+        Response response3 = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "State 1");
+        response3.then().assertThat().statusCode(OK.getStatusCode());
+    }
+
     private String getData(String body) {
         try (StringReader rdr = new StringReader(body)) {
             return Json.createReader(rdr).readObject().getJsonObject("data").toString();
         }
     }
+
+    @Test
+    public void testFilesUnchangedAfterDatasetMetadataUpdate() throws IOException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        createUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.prettyPrint();
+        createDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String datasetPid = JsonPath.from(createDataset.asString()).getString("data.persistentId");
+        Integer datasetId = JsonPath.from(createDataset.asString()).getInt("data.id");
+
+        Path pathtoScript = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "run.sh");
+        java.nio.file.Files.write(pathtoScript, "#!/bin/bash\necho hello".getBytes());
+
+        JsonObjectBuilder json1 = Json.createObjectBuilder()
+                .add("description", "A script to reproduce results.")
+                .add("directoryLabel", "code");
+
+        Response uploadReadme1 = UtilIT.uploadFileViaNative(datasetId.toString(), pathtoScript.toString(), json1.build(), apiToken);
+        uploadReadme1.prettyPrint();
+        uploadReadme1.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("run.sh"))
+                .body("data.files[0].directoryLabel", equalTo("code"));
+
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        Response getDatasetJsonBeforeUpdate = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJsonBeforeUpdate.prettyPrint();
+        getDatasetJsonBeforeUpdate.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.latestVersion.files[0].label", equalTo("run.sh"))
+                .body("data.latestVersion.files[0].directoryLabel", equalTo("code"));
+        
+        String pathToJsonFile = "doc/sphinx-guides/source/_static/api/dataset-update-metadata.json";
+        Response updateTitle = UtilIT.updateDatasetMetadataViaNative(datasetPid, pathToJsonFile, apiToken);
+        updateTitle.prettyPrint();
+        updateTitle.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        Response getDatasetJsonAfterUpdate = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJsonAfterUpdate.prettyPrint();
+        getDatasetJsonAfterUpdate.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.latestVersion.files[0].label", equalTo("run.sh"))
+                .body("data.latestVersion.files[0].directoryLabel", equalTo("code"));
+        
+    }
+    
 }

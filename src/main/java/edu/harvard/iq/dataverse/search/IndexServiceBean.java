@@ -785,6 +785,9 @@ public class IndexServiceBean {
             if (datasetVersion.isInReview()) {
                 solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, IN_REVIEW_STRING);
             }
+            if(datasetVersion.getExternalStatusLabel()!=null) {
+                solrInputDocument.addField(SearchFields.EXTERNAL_STATUS, datasetVersion.getExternalStatusLabel());
+            }
 
             Map<Long, JsonObject> cvocMap = datasetFieldService.getCVocConf(false);
             for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
@@ -1081,7 +1084,12 @@ public class IndexServiceBean {
                                 String msg = "filePublicationTimestamp was null for fileMetadata id " + fileMetadata.getId() + " (file id " + datafile.getId() + ")";
                                 logger.info(msg);
                             }
-                            datafileSolrInputDocument.addField(SearchFields.ACCESS, datafile.isRestricted() ? SearchConstants.RESTRICTED : SearchConstants.PUBLIC);
+                            datafileSolrInputDocument.addField(SearchFields.ACCESS,
+                                    FileUtil.isActivelyEmbargoed(datafile)
+                                            ? (fileMetadata.isRestricted() ? SearchConstants.EMBARGOEDTHENRESTRICTED
+                                                    : SearchConstants.EMBARGOEDTHENPUBLIC)
+                                            : (fileMetadata.isRestricted() ? SearchConstants.RESTRICTED
+                                                    : SearchConstants.PUBLIC));
                         } else {
                             logger.fine("indexing file with fileCreateTimestamp. " + fileMetadata.getId() + " (file id " + datafile.getId() + ")");
                             Timestamp fileCreateTimestamp = datafile.getCreateDate();
@@ -1092,7 +1100,11 @@ public class IndexServiceBean {
                                 logger.info(msg);
                             }
                             datafileSolrInputDocument.addField(SearchFields.ACCESS,
-                                    fileMetadata.isRestricted() ? SearchConstants.RESTRICTED : SearchConstants.PUBLIC);
+                                    FileUtil.isActivelyEmbargoed(fileMetadata)
+                                            ? (fileMetadata.isRestricted() ? SearchConstants.EMBARGOEDTHENRESTRICTED
+                                                    : SearchConstants.EMBARGOEDTHENPUBLIC)
+                                            : (fileMetadata.isRestricted() ? SearchConstants.RESTRICTED
+                                                    : SearchConstants.PUBLIC));
                         }
                         if (datafile.isHarvested()) {
                             datafileSolrInputDocument.addField(SearchFields.IS_HARVESTED, true);
