@@ -225,6 +225,44 @@ public class DatasetServiceBean implements java.io.Serializable {
         return typedQuery.getResultList();
     }
     
+        /**
+     * For docs, see the equivalent method on the DataverseServiceBean.
+     * @param numPartitions
+     * @param partitionId
+     * @param skipIndexed
+     * @return a list of datasets
+     * @see DataverseServiceBean#findAllOrSubset(long, long, boolean)
+     */     
+    public List<Long> findAllOrSubsetOrderByFileMetadata(boolean skipIndexed) {
+
+        String skipClause = skipIndexed ? "AND o.indexTime is null " : "";
+        Query query = em.createNativeQuery(" Select distinct(o.id), count(f.id) as numFiles FROM dvobject o " +
+            "left join dvobject f on f.owner_id = o.id  where o.dtype = 'Dataset' "
+                + skipClause
+                + " group by o.id "
+                + "ORDER BY count(f.id) asc, o.id");
+
+        List<Object[]> queryResults;
+        queryResults = query.getResultList();
+
+        List<Long> retVal = new ArrayList();
+        for (Object[] result : queryResults) {
+            Long dsId;           
+            if (result[0] != null) {
+                try {
+                    dsId = Long.parseLong(result[0].toString()) ;
+                } catch (Exception ex) {
+                    dsId = null;
+                }
+                if (dsId == null) {
+                    continue;
+                }
+                retVal.add(dsId);
+            }
+        }
+        return retVal;
+    }
+    
     /**
      * Merges the passed dataset to the persistence context.
      * @param ds the dataset whose new state we want to persist.
