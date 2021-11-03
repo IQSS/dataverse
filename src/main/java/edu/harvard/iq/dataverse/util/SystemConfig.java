@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.util;
 
 import com.ocpsoft.pretty.PrettyContext;
-import com.rometools.utils.Strings;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
@@ -1125,7 +1124,7 @@ public class SystemConfig {
     public Map<String, String[]> getCurationLabels() {
         Map<String, String[]> labelMap = new HashMap<String, String[]>();
         String setting = settingsService.getValueForKey(SettingsServiceBean.Key.AllowedCurationLabels, "");
-        if (!Strings.isEmpty(setting)) {
+        if (!setting.isEmpty()) {
             try {
                 JsonReader jsonReader = Json.createReader(new StringReader(setting));
 
