@@ -1,10 +1,18 @@
 #!/usr/bin/perl 
 $count = 0;  # total count of queries encountered
 $parsed = 0; # count of queries parsed
+
 while (<>) 
 {
-    chop; 
-    if ( /execute [^:]*: (select .*)$/i || /execute [^:]*: (insert .*)$/i || /execute [^:]*: (update .*)$/i)
+    chop;
+
+    # a freaky multi-line notation for "SELECT EXISTS" (very rare; something administrative?)
+    if ( /execute [^:]*: (select exists.*)$/i )
+    {
+	$query_multiline = $1;
+	$count++;
+    }
+    elsif ( /execute [^:]*: (select .*)$/i || /execute [^:]*: (insert .*)$/i || /execute [^:]*: (update .*)$/i || /execute [^:]*: (delete .*)$/i )
     {
 	$query = $1; 
 	$count++; 
@@ -24,7 +32,14 @@ while (<>)
     }
     elsif (/^.*[A-Z][A-Z][A-Z]\s.*DETAIL:  parameters: (.*)$/i)
     {
-#	print STDERR "detail line encountered.\n";
+	#print STDERR "detail line encountered.\n";
+
+	if ( $query_multiline )
+	{
+	    $query = $query_multiline;
+	    $query_multiline = "";
+	}
+	
 	unless ($query)
 	{
 	    die "DETAIL statement encountered (" . $_ . ", no query\n";
@@ -54,6 +69,10 @@ while (<>)
 	print $query . "\n"; 
 	$parsed++; 
 	$query = "";
+    }
+    elsif ( $query_multiline )
+    {
+	$query_multiline .= $_; 
     }
 }
 print STDERR "total queries encountered: $count\n";

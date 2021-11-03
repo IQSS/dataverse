@@ -55,7 +55,8 @@ pg_log directory. This of course only shows the queries counted by
 type. I.e. the above shows that there were 6248 "SELECT ... FROM
 ROLEASSIGNMENT" queries, but not which specific objects the
 application was looking up. I.e., the queries are truncated at the
-"WHERE" part in order to give a compact, sorted summary.
+"WHERE" (or "SET" or "VALUES") part in order to give a compact, sorted
+summary.
 
 If you want to look at these details, they are saved in the file
 called "tail.parsed". There you will find fully extended queries, for
