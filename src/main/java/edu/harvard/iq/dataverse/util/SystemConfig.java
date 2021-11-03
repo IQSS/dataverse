@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.util;
 
 import com.ocpsoft.pretty.PrettyContext;
+import com.rometools.utils.Strings;
+
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -1122,38 +1124,41 @@ public class SystemConfig {
     }
     public Map<String, String[]> getCurationLabels() {
         Map<String, String[]> labelMap = new HashMap<String, String[]>();
+        String setting = settingsService.getValueForKey(SettingsServiceBean.Key.AllowedCurationLabels, "");
+        if (!Strings.isEmpty(setting)) {
+            try {
+                JsonReader jsonReader = Json.createReader(new StringReader(setting));
 
-        try {
-            JsonReader jsonReader = Json.createReader(new StringReader(settingsService.getValueForKey(SettingsServiceBean.Key.AllowedCurationLabels, "")));
+                Pattern pattern = Pattern.compile("(^[\\w ]+$)"); // alphanumeric, underscore and whitespace allowed
 
-            Pattern pattern = Pattern.compile("(^[\\w ]+$)"); // alphanumeric, underscore and whitespace allowed
+                JsonObject labelSets = jsonReader.readObject();
+                for (String key : labelSets.keySet()) {
+                    JsonArray labels = (JsonArray) labelSets.getJsonArray(key);
+                    String[] labelArray = new String[labels.size()];
 
-            JsonObject labelSets = jsonReader.readObject();
-            for (String key : labelSets.keySet()) {
-                JsonArray labels = (JsonArray) labelSets.getJsonArray(key);
-                String[] labelArray = new String[labels.size()];
-                
-                boolean allLabelsOK = true;
-                Iterator<JsonValue> iter = labels.iterator();
-                int i=0;
-                while(iter.hasNext()) {
-                    String label = ((JsonString)iter.next()).getString();
-                    Matcher matcher = pattern.matcher(label);
-                    if (!matcher.matches()) {
-                        logger.warning("Label rejected: " + label + ", Label set " + key + " ignored.");
-                        allLabelsOK = false;
-                        break;
+                    boolean allLabelsOK = true;
+                    Iterator<JsonValue> iter = labels.iterator();
+                    int i = 0;
+                    while (iter.hasNext()) {
+                        String label = ((JsonString) iter.next()).getString();
+                        Matcher matcher = pattern.matcher(label);
+                        if (!matcher.matches()) {
+                            logger.warning("Label rejected: " + label + ", Label set " + key + " ignored.");
+                            allLabelsOK = false;
+                            break;
+                        }
+                        labelArray[i] = label;
+                        i++;
                     }
-                    labelArray[i] = label;
-                    i++;
+                    if (allLabelsOK) {
+                        labelMap.put(key, labelArray);
+                    }
                 }
-                if (allLabelsOK) {
-                    labelMap.put(key, labelArray);
-                }
+            } catch (Exception e) {
+                logger.warning("Unable to parse " + SettingsServiceBean.Key.AllowedCurationLabels.name() + ": "
+                        + e.getLocalizedMessage());
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            logger.warning("Unable to parse " + SettingsServiceBean.Key.AllowedCurationLabels.name() + ": " + e.getLocalizedMessage());
-            e.printStackTrace();
         }
         return labelMap;
     }
