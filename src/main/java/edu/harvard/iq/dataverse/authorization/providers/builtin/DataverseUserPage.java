@@ -17,25 +17,20 @@ import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.UserNameValidator;
 import edu.harvard.iq.dataverse.UserNotification;
-import static edu.harvard.iq.dataverse.UserNotification.Type.CREATEDV;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthUtil;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
-import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
-import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailException;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailUtil;
 import edu.harvard.iq.dataverse.mydata.MyDataPage;
-import edu.harvard.iq.dataverse.passwordreset.PasswordValidator;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -213,7 +208,7 @@ public class DataverseUserPage implements java.io.Serializable {
         
         // SF fix for issue 3752
         // checks if username has any invalid characters 
-        boolean userNameValid = userName != null && UserNameValidator.isUserNameValid(userName, null);
+        boolean userNameValid = userName != null && UserNameValidator.isUserNameValid(userName);
         
         if (editMode == EditMode.CREATE && userNameFound) {
             ((UIInput) toValidate).setValid(false);
