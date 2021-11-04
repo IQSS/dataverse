@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
@@ -24,8 +23,7 @@ public class RevokeRoleCommand extends AbstractVoidCommand {
 	private final RoleAssignment toBeRevoked;
 
 	public RevokeRoleCommand(RoleAssignment toBeRevoked, DataverseRequest aRequest) {
-        // for data file, report affect object as owning dataset
-        super(aRequest, toBeRevoked.getDefinitionPoint() instanceof DataFile ? toBeRevoked.getDefinitionPoint().getOwner() : toBeRevoked.getDefinitionPoint());
+        super(aRequest, toBeRevoked.getDefinitionPoint());
 		this.toBeRevoked = toBeRevoked;
 	}
 	

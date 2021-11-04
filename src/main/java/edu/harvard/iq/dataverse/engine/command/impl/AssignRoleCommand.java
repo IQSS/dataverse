@@ -32,6 +32,7 @@ public class AssignRoleCommand extends AbstractCommand<RoleAssignment> {
 
     private final DataverseRole role;
     private final RoleAssignee grantee;
+    //Kept for convenience -could get this as the only DVObject AbstractCommand<>.getAffectedDvObjects() instead of having a local defPoint
     private final DvObject defPoint;
     private final String privateUrlToken;
     private boolean anonymizedAccess;
@@ -45,7 +46,7 @@ public class AssignRoleCommand extends AbstractCommand<RoleAssignment> {
      */
     public AssignRoleCommand(RoleAssignee anAssignee, DataverseRole aRole, DvObject assignmentPoint, DataverseRequest aRequest, String privateUrlToken) {
         // for data file check permission on owning dataset
-        super(aRequest, assignmentPoint instanceof DataFile ? assignmentPoint.getOwner() : assignmentPoint);
+        super(aRequest, assignmentPoint);
         role = aRole;
         grantee = anAssignee;
         defPoint = assignmentPoint;
