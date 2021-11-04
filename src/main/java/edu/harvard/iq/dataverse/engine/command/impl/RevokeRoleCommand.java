@@ -41,5 +41,7 @@ public class RevokeRoleCommand extends AbstractVoidCommand {
                 : Collections.singleton(Permission.ManageDatasetPermissions));
     }
     
-    @Override public String describe() { return toBeRevoked.getAssigneeIdentifier() + " has had the role: " + toBeRevoked.getRole() + " REVOKED on " + toBeRevoked.getDefinitionPoint().accept(DvObject.NameIdPrinter); }
+    @Override public String describe() { 
+	    return toBeRevoked.getAssigneeIdentifier() + " has had the role: " + toBeRevoked.getRole() + " REVOKED on " + toBeRevoked.getDefinitionPoint().accept(DvObject.NameIdPrinter); 
+    }
 }
