@@ -683,14 +683,15 @@
             <!-- select text encoding, for SPSS-SAV (and, and possibly, other) (this option is only available during ingest) data files; not implemented yet -->
             <div class="form-group" jsf:rendered="#{!(empty EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup)
                                         and (empty EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup.id)
-                                        and dataFileServiceBean.isSpssSavFile(EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup.dataFile)}">
+                                        and (dataFileServiceBean.isSpssSavFile(EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup.dataFile)
+                                            or dataFileServiceBean.isSpssPorFile(EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup.dataFile))}">
                 <label for="spssSavEncodingLanguage" class="col-sm-4 control-label">
-                    #{bundle['file.spss-savEncoding']}
+                    #{bundle['file.encoding']}
                 </label>
                 <div class="col-sm-8">
-                    <p class="help-block">#{bundle['file.spss-savEncoding.title']}</p>
+                    <p class="help-block">#{bundle['file.encoding.title']}</p>
                     <p class="form-control-static"><h:outputText id="selectedEncoding"
-                                                                 value="#{bundle['file.spss-savEncoding.current']} #{EditDatafilesPage.ingestLanguageEncoding}"/>
+                                                                 value="#{bundle['file.encoding.current']} #{EditDatafilesPage.ingestLanguageEncoding}"/>
                     </p>
                     <p:tieredMenu id="spssSavEncodingLanguage" styleClass="form-control">
                         <p:submenu label="#{bundle['editfilesfragment.mainlabel']}">
