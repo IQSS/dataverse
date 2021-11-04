@@ -620,8 +620,8 @@ input:disabled {
 // It will not read any checkbox labels.
 .ui-helper-hidden-accessible {
     input, select {
-        -webkit-transform: none; 
-        -moz-transform: none; 
+        -webkit-transform: none;
+        -moz-transform: none;
         -ms-transform: none;
         transform: none;
     }
@@ -3055,7 +3055,7 @@ table[id$="resultsTable"] {
 			font-size: 0.867em;
 		}
 
-		.label-container > .label { 
+		.label-container > .label {
 			display: inline-block;
 		}
 	}
@@ -3361,12 +3361,14 @@ div.filesTable {
 }
 
 .datasetfield-value + .datasetfield-value {
-	border-top: 1px solid $gray-border-color;
-	padding-top: 8px;
-
 	p {
 		margin-top: 10px;
 	}
+}
+
+.datasetfield-value.datasetfield-separable + .datasetfield-value.datasetfield-separable {
+	border-top: 1px solid $gray-border-color;
+	padding-top: 8px;
 }
 
 /* Fix submenu entries not accessible by keyboard */

@@ -1,78 +1,40 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.persistence.dataset;
 
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
-import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 /**
  * @author skraffmi
  */
 public class DatasetFieldTypeTest {
 
-    public DatasetFieldTypeTest() {
-    }
 
-    @BeforeClass
-    public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
-
-    /**
-     * Test of setInclude method, of class DatasetFieldType.
-     */
-
-
-    /**
-     * Test of isSanitizeHtml method, of class DatasetFieldType.
-     */
     @Test
     public void testIsSanitizeHtml() {
         System.out.println("isSanitizeHtml");
         DatasetFieldType instance = new DatasetFieldType();
         instance.setFieldType(FieldType.TEXT);
         Boolean result = instance.isSanitizeHtml();
-        assertFalse(result);
+        assertThat(result).isFalse();
 
         //if textbox then sanitize - allow tags
         instance.setFieldType(FieldType.TEXTBOX);
         result = instance.isSanitizeHtml();
-        assertEquals(true, result);
+        assertThat(result).isTrue();
 
         //if textbox then don't sanitize - allow tags
         instance.setFieldType(FieldType.EMAIL);
         result = instance.isSanitizeHtml();
-        assertEquals(false, result);
+        assertThat(result).isFalse();
 
         //URL, too
         instance.setFieldType(FieldType.URL);
         result = instance.isSanitizeHtml();
-        assertEquals(true, result);
+        assertThat(result).isTrue();
     }
 
     @Test
@@ -81,27 +43,27 @@ public class DatasetFieldTypeTest {
         DatasetFieldType instance = new DatasetFieldType();
         instance.setFieldType(FieldType.TEXT);
         Boolean result = instance.isEscapeOutputText();
-        assertTrue(result);
+        assertThat(result).isTrue();
 
         //if Disaplay Format includes a link then don't escape
         instance.setDisplayFormat("'<a target=\"_blank\" href=\"http://www.rcsb.org/pdb/explore/explore.do?structureId=#VALUE\">PDB (RCSB) #VALUE</a>'");
         result = instance.isEscapeOutputText();
-        assertFalse(result);
+        assertThat(result).isFalse();
 
         //if textbox then sanitize - allow tags
         instance.setFieldType(FieldType.TEXTBOX);
         result = instance.isEscapeOutputText();
-        assertFalse(result);
+        assertThat(result).isFalse();
 
         //if textbox then don't sanitize - allow tags
         instance.setFieldType(FieldType.EMAIL);
         result = instance.isEscapeOutputText();
-        assertTrue(result);
+        assertThat(result).isTrue();
 
         //URL, too
         instance.setFieldType(FieldType.URL);
         result = instance.isEscapeOutputText();
-        assertEquals(false, result);
+        assertThat(result).isFalse();
 
     }
 
@@ -118,7 +80,7 @@ public class DatasetFieldTypeTest {
         boolean parentAllowsMutlipleValues = datasetFieldType.isThisOrParentAllowsMultipleValues();
 
         //then
-        Assert.assertTrue(parentAllowsMutlipleValues);
+        assertThat(parentAllowsMutlipleValues).isTrue();
     }
 
     @Test
@@ -134,7 +96,36 @@ public class DatasetFieldTypeTest {
         boolean parentAllowsMutlipleValues = datasetFieldType.isThisOrParentAllowsMultipleValues();
 
         //then
-        Assert.assertFalse(parentAllowsMutlipleValues);
+        assertThat(parentAllowsMutlipleValues).isFalse();
     }
 
+    @ParameterizedTest
+    @CsvSource({
+            "true, true, true, true",
+            "true, true, false, false",
+            "true, false, true, true",
+            "true, false, false, false",
+            "false, true, true, false",
+            "false, true, false, false",
+            "false, false, true, false",
+            "false, false, false, false",
+    })
+    void isSeparableOnGui(boolean allowMultiples, boolean compound, boolean containsTextbox, boolean shouldBeSeparable) {
+        // given
+        DatasetFieldType fieldType = new DatasetFieldType();
+        fieldType.setAllowMultiples(allowMultiples);
+        if (compound) {
+            DatasetFieldType child = new DatasetFieldType();
+            child.setFieldType(containsTextbox ? FieldType.TEXTBOX : FieldType.TEXT);
+            fieldType.getChildDatasetFieldTypes().add(child);
+        } else {
+            fieldType.setFieldType(containsTextbox ? FieldType.TEXTBOX : FieldType.TEXT);
+        }
+
+        // when
+        boolean separableOnGui = fieldType.isSeparableOnGui();
+
+        // then
+        assertThat(separableOnGui).isEqualTo(shouldBeSeparable);
+    }
 }

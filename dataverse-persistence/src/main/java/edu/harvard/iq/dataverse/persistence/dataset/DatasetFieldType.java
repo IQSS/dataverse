@@ -445,6 +445,18 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         return allowMultiples || isParentAllowsMutlipleValues();
     }
 
+    /**
+     * Indicates whether gui should visually separate instances of this field.
+     */
+    public boolean isSeparableOnGui() {
+        return isAllowMultiples()
+                && (isCompound()
+                        ? childDatasetFieldTypes.stream()
+                            .map(DatasetFieldType::getFieldType)
+                            .anyMatch(FieldType.TEXTBOX::equals)
+                        : fieldType.equals(FieldType.TEXTBOX));
+    }
+
     // -------------------- PRIVATE --------------------
 
     private String getLocaleTitleWithParent() {

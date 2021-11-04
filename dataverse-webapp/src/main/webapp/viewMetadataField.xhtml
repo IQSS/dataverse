@@ -17,15 +17,15 @@
                 <h:outputText value="#{bundle['dataset.contact.tip']}"/>
             </p>
         </ui:fragment>
-        
+
         <ui:repeat var="datasetField" value="#{fieldsByType.datasetFields}" varStatus="fieldsLoop">
-            <div style="#{fieldsLoop.last ? '': 'padding-bottom: 10px;'}" class="datasetfield-value">
-            
+            <div style="#{fieldsLoop.last ? '': 'padding-bottom: 10px;'}" class="datasetfield-value
+            #{datasetField.datasetFieldType.separableOnGui ? 'datasetfield-separable' : ''}">
                 <ui:repeat var="value" value="#{datasetField.values}" varStatus="valuesLoop">
                         <h:outputText value="#{valuesLoop.first?'':'; '}#{ value }"
                                 escape="false"/>
                 </ui:repeat>
-                
+
                 <ui:repeat var="childField" value="#{datasetField.datasetFieldsChildren}" varStatus="childLoop">
                     <div jsf:rendered="#{childField.parentDisplayFormatIsNewLine}">
                             <ui:repeat value="#{childField.values}" var="value" varStatus="valuesLoop">
@@ -39,7 +39,7 @@
                                         escape="false"/>
                         </ui:repeat>
                 </ui:repeat>
-            
+
             </div>
         </ui:repeat>
     </div>
