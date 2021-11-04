@@ -23,7 +23,7 @@ of such instances.
 
 The email portion of :ref:`systemEmail` will be visible via OAI-PMH (from the "Identify" verb).
 
-How does it work? 
+How does it work?
 -----------------
 
 Only the published, unrestricted datasets in your Dataverse installation can
@@ -69,11 +69,11 @@ Some useful examples of search queries to define OAI sets:
   
   Note also that the search terms limiting the results to published and local datasets **are added to the query automatically**, so you don't need to worry about that. 
   
-- A query to create a set to include the datasets from a specific Dataverse collection: 
+- A query to create a set to include the datasets from a specific Dataverse collection:
 
   ``parentId:NNN``
 
-  where NNN is the database id of the Dataverse collection object (consult the Dataverse table of the SQL database used by the application to verify the database id).
+  where NNN is the database id of the Dataverse collection object (to verify the database ID, consult the Dataverse table of the SQL database used by the application or use the :ref:`view-dataverse` API endpoint).
   
   Note that this query does **not** provide datasets that are linked into the specified Dataverse collection.
 
@@ -81,15 +81,19 @@ Some useful examples of search queries to define OAI sets:
 
   ``subtreePaths:"/NNN"``
 
-  where NNN is the database id of the Dataverse collection object (consult the Dataverse table of the SQL database used by the application to verify the database id). 
+  where NNN is the database ID of the Dataverse collection (to verify the database ID, consult the Dataverse table of the SQL database used by the application or use the :ref:`view-dataverse` API endpoint). If the Dataverse collection has one or more parent collections, the subtreePaths query has to include the database IDs of each of the collection's parent collections, up to but excluding the "Root" collection. For example:
 
-- A query to find all the dataset by a certain author: 
+  ``subtreePaths:"/AAA/BBB/NNN"``
+
+  where NNN is the database ID of the Dataverse collection containing the desired dataset and AAA and BBB are the database IDs of the parent collections.
+
+- A query to find all the dataset by a certain author:
 
   ``authorName:YYY``
 
   where YYY is the name. 
 
-- Complex queries can be created with multiple logical AND and OR operators. For example, 
+- Complex queries can be created with multiple logical AND and OR operators. For example,
 
   ``(authorName:YYY OR authorName:ZZZ) AND dsPublicationDate:NNNN``
   
