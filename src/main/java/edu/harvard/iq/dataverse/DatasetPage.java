@@ -3088,12 +3088,17 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setSelectAllFiles(boolean selectAllFiles) {
         this.selectAllFiles = selectAllFiles;
+        //Reset param in page see #8180
+        setValidateFilesOutcome(null);
     }
 
     public void toggleAllSelected(){
         //This is here so that if the user selects all on the dataset page
         // s/he will get all files on download
         this.selectAllFiles = !this.selectAllFiles;
+        //Reset param in page see #8180
+        setValidateFilesOutcome(null);
+
     }
 
 
