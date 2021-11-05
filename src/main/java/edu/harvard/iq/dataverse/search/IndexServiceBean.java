@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.DataverseLinkingServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
+import edu.harvard.iq.dataverse.Embargo;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -36,6 +37,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -940,8 +942,18 @@ public class IndexServiceBean {
                 logger.fine(
                         "We are indexing a draft version of a dataset that has a released version. We'll be checking file metadatas if they are exact clones of the released versions.");
             }
+            LocalDate embargoEndDate=null;
+            LocalDate end = null;
             for (FileMetadata fileMetadata : fileMetadatas) {
-                
+               
+                Embargo emb= fileMetadata.getDataFile().getEmbargo();
+                if(emb!=null) {
+                    end = emb.getDateAvailable();
+                    if(embargoEndDate==null || end.isAfter(embargoEndDate)) {
+                        embargoEndDate=end;
+                    }
+                }
+
                 boolean indexThisMetadata = true;
                 if (checkForDuplicateMetadata) {
                     
@@ -983,7 +995,10 @@ public class IndexServiceBean {
                     datafileSolrInputDocument.addField(SearchFields.PERSISTENT_URL, dataset.getPersistentURL());
                     datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
                     datafileSolrInputDocument.addField(SearchFields.CATEGORY_OF_DATAVERSE, dataset.getDataverseContext().getIndexableCategoryName());
-
+                    if(end!=null) {
+                        datafileSolrInputDocument.addField(SearchFields.EMBARGO_END_DATE, end.toEpochDay()); 
+                    }
+                    
                     /* Full-text indexing using Apache Tika */
                     if (doFullTextIndexing) {
                         if (!dataset.isHarvested() && !fileMetadata.getDataFile().isRestricted() && !fileMetadata.getDataFile().isFilePackage()) {
@@ -1084,7 +1099,12 @@ public class IndexServiceBean {
                                 String msg = "filePublicationTimestamp was null for fileMetadata id " + fileMetadata.getId() + " (file id " + datafile.getId() + ")";
                                 logger.info(msg);
                             }
-                            datafileSolrInputDocument.addField(SearchFields.ACCESS, datafile.isRestricted() ? SearchConstants.RESTRICTED : SearchConstants.PUBLIC);
+                            datafileSolrInputDocument.addField(SearchFields.ACCESS,
+                                    FileUtil.isActivelyEmbargoed(datafile)
+                                            ? (fileMetadata.isRestricted() ? SearchConstants.EMBARGOEDTHENRESTRICTED
+                                                    : SearchConstants.EMBARGOEDTHENPUBLIC)
+                                            : (fileMetadata.isRestricted() ? SearchConstants.RESTRICTED
+                                                    : SearchConstants.PUBLIC));
                         } else {
                             logger.fine("indexing file with fileCreateTimestamp. " + fileMetadata.getId() + " (file id " + datafile.getId() + ")");
                             Timestamp fileCreateTimestamp = datafile.getCreateDate();
@@ -1095,7 +1115,11 @@ public class IndexServiceBean {
                                 logger.info(msg);
                             }
                             datafileSolrInputDocument.addField(SearchFields.ACCESS,
-                                    fileMetadata.isRestricted() ? SearchConstants.RESTRICTED : SearchConstants.PUBLIC);
+                                    FileUtil.isActivelyEmbargoed(fileMetadata)
+                                            ? (fileMetadata.isRestricted() ? SearchConstants.EMBARGOEDTHENRESTRICTED
+                                                    : SearchConstants.EMBARGOEDTHENPUBLIC)
+                                            : (fileMetadata.isRestricted() ? SearchConstants.RESTRICTED
+                                                    : SearchConstants.PUBLIC));
                         }
                         if (datafile.isHarvested()) {
                             datafileSolrInputDocument.addField(SearchFields.IS_HARVESTED, true);
@@ -1243,6 +1267,9 @@ public class IndexServiceBean {
                         docs.add(datafileSolrInputDocument);
                     }
                 }
+            }
+            if(embargoEndDate!=null) {
+              solrInputDocument.addField(SearchFields.EMBARGO_END_DATE, embargoEndDate.toEpochDay());
             }
         }
         
