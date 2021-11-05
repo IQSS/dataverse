@@ -38,5 +38,7 @@ public class SearchConstants {
 
     public static final String PUBLIC = "Public";
     public static final String RESTRICTED = "Restricted";
+    public static final String EMBARGOEDTHENRESTRICTED = "EmbargoedThenRestricted";
+    public static final String EMBARGOEDTHENPUBLIC = "EmbargoedThenPublic";
 
 }

@@ -9,19 +9,36 @@ import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.logging.Logger;
+
 import javax.ejb.EJB;
+import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
+import javax.faces.context.FacesContext;
+import javax.faces.validator.ValidatorException;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonValue;
 import javax.mail.internet.InternetAddress;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -35,8 +52,10 @@ import org.json.JSONObject;
 @Named
 public class SettingsWrapper implements java.io.Serializable {
 
+    static final Logger logger = Logger.getLogger(SettingsWrapper.class.getCanonicalName());
+    
     @EJB
-    SettingsServiceBean settingService;
+    SettingsServiceBean settingsService;
 
     @EJB
     DataverseServiceBean dataverseService;
@@ -47,7 +66,10 @@ public class SettingsWrapper implements java.io.Serializable {
     private Map<String, String> settingsMap;
     
     // Related to a specific setting for guide urls
-    private String guidesBaseUrl = null; 
+    private String guidesBaseUrl = null;
+    
+    private boolean embargoDateChecked = false;
+    private LocalDate maxEmbargoDate = null;
 
  
     public String get(String settingKey) {
@@ -119,7 +141,7 @@ public class SettingsWrapper implements java.io.Serializable {
     private void initSettingsMap() {
         // initialize settings map
         settingsMap = new HashMap<>();
-        for (Setting setting : settingService.listAll()) {
+        for (Setting setting : settingsService.listAll()) {
             settingsMap.put(setting.getName(), setting.getContent());
         }
     }
@@ -291,6 +313,171 @@ public class SettingsWrapper implements java.io.Serializable {
         }
         return anonymizedFieldTypes.contains(df.getDatasetFieldType().getName());
     }
+    
+    public LocalDate getMaxEmbargoDate() {
+        if (!embargoDateChecked) {
+            String months = getValueForKey(SettingsServiceBean.Key.MaxEmbargoDurationInMonths);
+            Long maxMonths = null;
+            if (months != null) {
+                try {
+                    maxMonths = Long.parseLong(months);
+                } catch (NumberFormatException nfe) {
+                    logger.warning("Cant interpret :MaxEmbargoDurationInMonths as a long");
+                }
+            }
 
+            if (maxMonths != null && maxMonths != 0) {
+                if (maxMonths == -1) {
+                    maxMonths = 12000l; // Arbitrary cutoff at 1000 years - needs to keep maxDate < year 999999999 and
+                                        // somehwere 1K> x >10K years the datepicker widget stops showing a popup
+                                        // calendar
+                }
+                maxEmbargoDate = LocalDate.now().plusMonths(maxMonths);
+            }
+            embargoDateChecked = true;
+        }
+        return maxEmbargoDate;
+    }
+    
+    public LocalDate getMinEmbargoDate() {
+            return LocalDate.now().plusDays(1);
+    }
+    
+    public boolean isValidEmbargoDate(Embargo e) {
+        
+        if (e.getDateAvailable()==null || (isEmbargoAllowed() && e.getDateAvailable().isAfter(LocalDate.now())
+                && e.getDateAvailable().isBefore(getMaxEmbargoDate().plusDays(1)))) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    public boolean isEmbargoAllowed() {
+        //Need a valid :MaxEmbargoDurationInMonths setting to allow embargoes
+        return getMaxEmbargoDate()!=null;
+    }
+    
+    public void validateEmbargoDate(FacesContext context, UIComponent component, Object value)
+            throws ValidatorException {
+        UIComponent cb = component.findComponent("embargoCheckbox");
+        UIInput endComponent = (UIInput) cb;
+        boolean removedState = false;
+        if (endComponent != null) {
+            try {
+                removedState = (Boolean) endComponent.getSubmittedValue();
+            } catch (NullPointerException npe) {
+                // Do nothing - checkbox is not being shown (and is therefore not checked)
+            }
+        }
+        if (!removedState && value == null) {
+            String msgString = BundleUtil.getStringFromBundle("embargo.date.required");
+            FacesMessage msg = new FacesMessage(msgString);
+            msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+            throw new ValidatorException(msg);
+        }
+        Embargo newE = new Embargo(((LocalDate) value), null);
+        if (!isValidEmbargoDate(newE)) {
+            String minDate = getMinEmbargoDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            String maxDate = getMaxEmbargoDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            String msgString = BundleUtil.getStringFromBundle("embargo.date.invalid", Arrays.asList(minDate, maxDate));
+            // If we don't throw an exception here, the datePicker will use it's own
+            // vaidator and display a default message. The value for that can be set by
+            // adding validatorMessage="#{bundle['embargo.date.invalid']}" (a version with
+            // no params) to the datepicker
+            // element in file-edit-popup-fragment.html, but it would be better to catch all
+            // problems here (so we can show a message with the min/max dates).
+            FacesMessage msg = new FacesMessage(msgString);
+            msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+            throw new ValidatorException(msg);
+        }
+    }
+
+    Map<String,String> languageMap = null;
+    
+    Map<String, String> getBaseMetadataLanguageMap(boolean refresh) {
+        if (languageMap == null || refresh) {
+            languageMap = new HashMap<String, String>();
+
+            /* If MetadataLanaguages is set, use it.
+             * If not, we can't assume anything and should avoid assuming a metadata language
+             */
+            String mlString = getValueForKey(SettingsServiceBean.Key.MetadataLanguages,"");
+            
+            if(mlString.isEmpty()) {
+                mlString="[]";
+            }
+            JsonReader jsonReader = Json.createReader(new StringReader(mlString));
+            JsonArray languages = jsonReader.readArray();
+            for(JsonValue jv: languages) {
+                JsonObject lang = (JsonObject) jv;
+                languageMap.put(lang.getString("locale"), lang.getString("title"));
+            }
+        }
+        return languageMap;
+    }
+    
+    public Map<String, String> getMetadataLanguages(DvObjectContainer target) {
+        Map<String,String> currentMap = new HashMap<String,String>();
+        currentMap.putAll(getBaseMetadataLanguageMap(true));
+        languageMap.put(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE, getDefaultMetadataLanguageLabel(target));
+        return languageMap;
+    }
+    
+    private String getDefaultMetadataLanguageLabel(DvObjectContainer target) {
+        String mlLabel = Locale.getDefault().getDisplayLanguage();
+        Dataverse parent = target.getOwner();
+        boolean fromAncestor=false;
+        if(parent != null) {
+            mlLabel = parent.getEffectiveMetadataLanguage();
+            //recurse dataverse chain to root and if any have a metadata language set, fromAncestor is true
+            while(parent!=null) {
+                if(!parent.getMetadataLanguage().equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
+                    fromAncestor=true;
+                    break;
+                }
+                parent=parent.getOwner();
+            }
+        }
+        if(mlLabel.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
+            mlLabel = getBaseMetadataLanguageMap(false).get(getDefaultMetadataLanguage());
+        }
+        if(fromAncestor) {
+            mlLabel = mlLabel + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
+        } else {
+            mlLabel = mlLabel + " " + BundleUtil.getStringFromBundle("dataverse.default");
+        }
+        return mlLabel;
+    }
+    
+    public String getDefaultMetadataLanguage() {
+        Map<String, String> mdMap = getBaseMetadataLanguageMap(false);
+        if(mdMap.size()>=1) {
+            if(mdMap.size()==1) {
+                //One entry - it's the default
+            return (String) mdMap.keySet().toArray()[0];
+            } else {
+                //More than one - :MetadataLanguages is set so we use the default
+                return DvObjectContainer.DEFAULT_METADATA_LANGUAGE_CODE;
+            }
+        } else {
+            // None - :MetadataLanguages is not set so return null to turn off the display (backward compatibility)
+            return null;
+        }
+    }
+
+    List<String> allowedExternalStatuses = null;
+
+    public List<String> getAllowedExternalStatuses(Dataset d) {
+        String setName = d.getEffectiveCurationLabelSetName();
+        if(setName.equals(SystemConfig.CURATIONLABELSDISABLED)) {
+            return new ArrayList<String>();
+        }
+        String[] labelArray = systemConfig.getCurationLabels().get(setName);
+        if(labelArray==null) {
+            return new ArrayList<String>();
+        }
+        return Arrays.asList(labelArray);
+    }
 }
 

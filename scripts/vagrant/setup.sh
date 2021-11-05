@@ -24,11 +24,10 @@ alternatives --set java /usr/lib/jvm/jre-11-openjdk/bin/java
 java -version
 
 # maven included in centos8 requires 1.8.0 - download binary instead
-# current version is 3.6.3 - requires newer jacoco.pom.xml
-wget -q https://www-us.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
-tar xfz apache-maven-3.6.3-bin.tar.gz
+wget -q https://archive.apache.org/dist/maven/maven-3/3.8.2/binaries/apache-maven-3.8.2-bin.tar.gz
+tar xfz apache-maven-3.8.2-bin.tar.gz
 mkdir /opt/maven
-mv apache-maven-3.6.3/* /opt/maven/
+mv apache-maven-3.8.2/* /opt/maven/
 echo "export JAVA_HOME=/usr/lib/jvm/jre-openjdk" > /etc/profile.d/maven.sh
 echo "export M2_HOME=/opt/maven" >> /etc/profile.d/maven.sh
 echo "export MAVEN_HOME=/opt/maven" >> /etc/profile.d/maven.sh
@@ -52,7 +51,7 @@ SOLR_USER=solr
 echo "Ensuring Unix user '$SOLR_USER' exists"
 useradd $SOLR_USER || :
 DOWNLOAD_DIR='/dataverse/downloads'
-PAYARA_ZIP="$DOWNLOAD_DIR/payara-5.2021.4.zip"
+PAYARA_ZIP="$DOWNLOAD_DIR/payara-5.2021.5.zip"
 SOLR_TGZ="$DOWNLOAD_DIR/solr-8.8.1.tgz"
 if [ ! -f $PAYARA_ZIP ] || [ ! -f $SOLR_TGZ ]; then
     echo "Couldn't find $PAYARA_ZIP or $SOLR_TGZ! Running download script...."
