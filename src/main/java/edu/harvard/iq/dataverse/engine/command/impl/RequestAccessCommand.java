@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
 
 /**
  *
@@ -55,6 +56,9 @@ public class RequestAccessCommand extends AbstractCommand<DataFile> {
             throw new CommandException(BundleUtil.getStringFromBundle("file.requestAccess.notAllowed.alreadyHasDownloadPermisssion"), this);
         }
 
+        if(FileUtil.isActivelyEmbargoed(file)) {
+            throw new CommandException(BundleUtil.getStringFromBundle("file.requestAccess.notAllowed.embargoed"), this);
+        }
         file.getFileAccessRequesters().add(requester);
         if (sendNotification) {
             ctxt.fileDownload().sendRequestFileAccessNotification(this.file.getOwner(), this.file.getId(), requester);
