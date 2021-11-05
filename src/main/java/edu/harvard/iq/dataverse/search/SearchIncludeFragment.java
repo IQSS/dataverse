@@ -24,6 +24,8 @@ import edu.harvard.iq.dataverse.WidgetWrapper;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,6 +43,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
+
 
 //@ViewScoped
 @RequestScoped
@@ -1373,6 +1376,15 @@ public class SearchIncludeFragment implements java.io.Serializable {
             dvObjectParentIds = null;
         }
         
+    }
+    
+    public boolean isActivelyEmbargoed(SolrSearchResult result) {
+        Long embargoEndDate = result.getEmbargoEndDate();
+        if(embargoEndDate != null) {
+            return LocalDate.now().toEpochDay() < embargoEndDate;
+        } else {
+            return false;
+        }
     }
     
     public enum SortOrder {
