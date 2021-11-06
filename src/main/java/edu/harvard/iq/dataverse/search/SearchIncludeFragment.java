@@ -23,13 +23,7 @@ import edu.harvard.iq.dataverse.ThumbnailServiceWrapper;
 import edu.harvard.iq.dataverse.WidgetWrapper;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-<<<<<<< HEAD
-import edu.harvard.iq.dataverse.util.FileUtil;
-=======
-import edu.harvard.iq.dataverse.util.SystemConfig;
-
 import java.time.LocalDate;
->>>>>>> develop
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
