@@ -8,7 +8,6 @@ import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFacet;
@@ -24,7 +23,13 @@ import edu.harvard.iq.dataverse.ThumbnailServiceWrapper;
 import edu.harvard.iq.dataverse.WidgetWrapper;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+<<<<<<< HEAD
 import edu.harvard.iq.dataverse.util.FileUtil;
+=======
+import edu.harvard.iq.dataverse.util.SystemConfig;
+
+import java.time.LocalDate;
+>>>>>>> develop
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -42,6 +47,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
+
 
 //@ViewScoped
 @RequestScoped
@@ -1375,16 +1381,12 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
     
     public boolean isActivelyEmbargoed(SolrSearchResult result) {
-        if(result.getEntity().isInstanceofDataset()) {
-            DatasetVersion dv = datasetVersionService.retrieveDatasetVersionByVersionId(result.getDatasetVersionId()).getDatasetVersion();
-            return FileUtil.isActivelyEmbargoed(dv.getFileMetadatas());
-        } else if (result.getEntity().isInstanceofDataFile()) {
-            DataFile df = (DataFile)result.getEntity();
-            df.setEmbargo(dataFileService.findEmbargo(df.getId()));
-            return (FileUtil.isActivelyEmbargoed((DataFile) result.getEntity()));
-        } 
+        Long embargoEndDate = result.getEmbargoEndDate();
+        if(embargoEndDate != null) {
+            return LocalDate.now().toEpochDay() < embargoEndDate;
+        } else {
             return false;
-        
+        }
     }
     
     public enum SortOrder {

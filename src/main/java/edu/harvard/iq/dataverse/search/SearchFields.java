@@ -265,5 +265,6 @@ public class SearchFields {
 
 
     public static final String FULL_TEXT = "_text_";
+    public static final String EMBARGO_END_DATE = "embargoEndDate";
 
 }
