@@ -7,7 +7,6 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataverse.DataverseUtil;
 import edu.harvard.iq.dataverse.engine.command.Command;
-import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateSavedSearchCommand;
@@ -17,7 +16,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.search.FacetCategory;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
-import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchIncludeFragment;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
@@ -32,15 +30,13 @@ import java.util.List;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
-import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -1212,10 +1208,60 @@ public class DataversePage implements java.io.Serializable {
     	}
    		String label = DataAccess.getStorageDriverLabelFor(storageDriverId);
    		if(fromAncestor) {
-   			label = label + " " + BundleUtil.getStringFromBundle("dataverse.storage.inherited");
+   			label = label + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
    		} else {
-   			label = label + " " + BundleUtil.getStringFromBundle("dataverse.storage.default");
+   			label = label + " " + BundleUtil.getStringFromBundle("dataverse.default");
    		}
    		return label;
     }
+    
+    public Set<Entry<String, String>> getMetadataLanguages() {
+        return settingsWrapper.getMetadataLanguages(this.dataverse).entrySet();
+    }
+    
+    public Set<Entry<String, String>> getCurationLabelSetOptions() {
+        HashMap<String, String> setNames = new HashMap<String, String>();
+        Set<String> allowedSetNames = systemConfig.getCurationLabels().keySet();
+        if (allowedSetNames.size() > 0) {
+            // Add an entry for the default (inherited from an ancestor or the system
+            // default)
+            String inheritedLabelSet = getCurationLabelSetNameLabel();
+            if (!StringUtils.isBlank(inheritedLabelSet)) {
+                setNames.put(inheritedLabelSet,SystemConfig.DEFAULTCURATIONLABELSET);
+            }
+            // Add an entry for disabled
+            setNames.put(BundleUtil.getStringFromBundle("dataverse.curationLabels.disabled"), SystemConfig.CURATIONLABELSDISABLED);
+            allowedSetNames.forEach(name -> {
+                setNames.put(name, name);
+            });
+        }
+        return setNames.entrySet();
+    }
+
+    public String getCurationLabelSetNameLabel() {
+        Dataverse parent = dataverse.getOwner();
+        String setName = null;
+        boolean fromAncestor = false;
+        if (parent != null) {
+            setName = parent.getEffectiveCurationLabelSetName();
+            // recurse dataverse chain to root and if any have a curation label set name set,
+            // fromAncestor is true
+            while (parent != null) {
+                if (!parent.getCurationLabelSetName().equals(SystemConfig.DEFAULTCURATIONLABELSET)) {
+                    fromAncestor = true;
+                    break;
+                }
+                parent = parent.getOwner();
+            }
+        }
+        if (setName != null) {
+            if (fromAncestor) {
+                setName = setName + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
+            } else {
+                setName = setName + " " + BundleUtil.getStringFromBundle("dataverse.default");
+            }
+        }
+        return setName;
+    }
+
 }
