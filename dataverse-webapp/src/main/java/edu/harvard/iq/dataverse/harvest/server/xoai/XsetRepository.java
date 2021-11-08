@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.harvest.server.xoai;
 
 import org.dspace.xoai.dataprovider.handlers.results.ListSetsResult;
@@ -25,19 +20,20 @@ public class XsetRepository implements SetRepository {
 
     private OAISetServiceBean setService;
 
+    // -------------------- CONSTRUCTORS --------------------
+
     public XsetRepository(OAISetServiceBean setService) {
         super();
         this.setService = setService;
     }
 
+    // -------------------- GETTERS --------------------
+
     public OAISetServiceBean getSetService() {
         return setService;
     }
 
-    public void setSetService(OAISetServiceBean setService) {
-        this.setService = setService;
-    }
-
+    // -------------------- LOGIC --------------------
 
     @Override
     public boolean supportSets() {
@@ -67,16 +63,21 @@ public class XsetRepository implements SetRepository {
             }
         }
 
-        return new ListSetsResult(offset + length < XOAISets.size(), XOAISets.subList(offset, Math.min(offset + length, XOAISets.size())));
+        return new ListSetsResult(offset + length < XOAISets.size(),
+                XOAISets.subList(offset, Math.min(offset + length, XOAISets.size())));
     }
 
     @Override
     public boolean exists(String setSpec) {
-        //for (Set s : this.sets)
-        //    if (s.getSpec().equals(setSpec))
-        //        return true;
-
-        return false;
+        List<OAISet> sets = setService.findAllNamedSets();
+        return sets.stream()
+                .map(OAISet::getName)
+                .anyMatch(setSpec::equals);
     }
 
+    // -------------------- SETTERS --------------------
+
+    public void setSetService(OAISetServiceBean setService) {
+        this.setService = setService;
+    }
 }
