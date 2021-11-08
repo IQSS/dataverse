@@ -694,16 +694,6 @@ public class IngestServiceBean {
             return false;
         }
 
-        if (ingestRequest != null) {
-            if (ingestRequest.getTextEncoding() != null && ingestPlugin != null && !"".equals(ingestRequest.getTextEncoding())) {
-                logger.fine("Setting language encoding to " + ingestRequest.getTextEncoding());
-                ingestPlugin.setDataLanguageEncoding(ingestRequest.getTextEncoding());
-            }
-            if (ingestRequest.getLabelsFile() != null) {
-                additionalData = new File(ingestRequest.getLabelsFile());
-            }
-        }
-
         if (forceTypeCheck) {
             FileTypeDetector fileTypeDetector = new FileTypeDetector();
             String newType = fileTypeDetector.detectTabularFileType(localFile.get(), dataFile.getContentType());
@@ -725,6 +715,16 @@ public class IngestServiceBean {
             }
 
             dataFile.setContentType(newType);
+        }
+
+        if (ingestRequest != null) {
+            if (ingestRequest.getTextEncoding() != null && !"".equals(ingestRequest.getTextEncoding())) {
+                logger.fine("Setting language encoding to " + ingestRequest.getTextEncoding());
+                ingestPlugin.setDataLanguageEncoding(ingestRequest.getTextEncoding());
+            }
+            if (ingestRequest.getLabelsFile() != null) {
+                additionalData = new File(ingestRequest.getLabelsFile());
+            }
         }
 
         TabularDataIngest tabDataIngest = null;

@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
+import edu.harvard.iq.dataverse.api.dto.ReingestOptionDTO;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.datafile.DataFileCreator;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
@@ -27,6 +28,7 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -43,6 +45,7 @@ import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -299,10 +302,17 @@ public class Files extends AbstractApiBean {
     // a datafile that's already ingested as Tabular; for example, to address a
     // bug that has been found in an ingest plugin.
 
+    /**
+     * Usage:
+     * curl -X POST localhost:8080/api/files/{id}/reingest?key=… --upload-file xxx.json -H "Content-type:application/json"
+     * curl -X POST localhost:8080/api/files/{id}/reingest?key=… -d @xxx.json -H "Content-type:application/json"
+     */
+
     @POST
     @ApiWriteOperation
     @Path("{id}/reingest")
-    public Response reingest(@PathParam("id") String id) {
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response reingest(@PathParam("id") String id, ReingestOptionDTO options) {
 
         AuthenticatedUser u;
         try {
@@ -347,7 +357,11 @@ public class Files extends AbstractApiBean {
             dataFile.setIngestRequest(new IngestRequest(dataFile));
         }
 
-        dataFile.getIngestRequest().setForceTypeCheck(true);
+        IngestRequest ingestRequest = dataFile.getIngestRequest();
+        ingestRequest.setForceTypeCheck(true);
+        if (options != null && StringUtils.isNotBlank(options.getEncoding())) {
+            ingestRequest.setTextEncoding(options.getEncoding());
+        }
 
         // update the datafile, to save the newIngest request in the database:
         dataFile = fileService.save(dataFile);
