@@ -806,6 +806,8 @@
                                     validator="#{DatasetPage.validateEmbargoDate}"
                                     locale="#{dataverseSession.localeCode}"
                                     timeZone="UTC"
+                                    mode="inline"
+                                    widgetVar="embargoDatePickerCalendar"
                             />
                             <p:calendar
                                     id="embargoDatePickerMaxLimited"
@@ -820,6 +822,8 @@
                                     validator="#{DatasetPage.validateEmbargoDate}"
                                     locale="#{dataverseSession.localeCode}"
                                     timeZone="UTC"
+                                    mode="inline"
+                                    widgetVar="embargoDatePickerMaxLimitedCalendar"
                             />
                             <p:message id="embargoMsg" for="embargoDatePicker" display="text" />
                             <p:message id="embargoMsgMaxLimited" for="embargoDatePickerMaxLimited" display="text" />
@@ -841,6 +845,29 @@
                                              resetValues="true"
                             />
                         </div>
+                        <script type="text/javascript">
+                            // Move input to the correct place and make it usable
+                            
+                            $(document).ready(function() {
+                                var datePickerInput = $("#datasetForm\\:embargoDatePicker_input");
+                                var calendar = (PF("embargoDatePickerCalendar") ? PF("embargoDatePickerCalendar") : PF("embargoDatePickerMaxLimitedCalendar"));
+
+                                if (calendar) {
+                                    datePickerInput.val($.datepicker.formatDate("yy-mm-dd", calendar.getDate()));
+                                }
+
+                                if (datePickerInput.length  > 0) {
+                                    datePickerInput.attr("type", "text")
+                                    datePickerInput.insertAfter($("label[for*=embargoDatePicker_input]").next());
+    
+                                    datePickerInput.on("input", function() {
+                                        if (calendar) {
+                                            calendar.setDate(this.value);
+                                        }
+                                    });
+                                }
+                            });
+                        </script>
                     </p:fragment>
                 </p:dialog>
                 <!-- Confirm embargo lift -->

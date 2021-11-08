@@ -3571,6 +3571,11 @@ div.filesTable {
 			@include btn-access;
 			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.07);
 		}
+
+		&.ui-state-active:not(input):not(textarea):not(th):not(ul):not(.ui-radiobutton-box) {
+			background: $link-color;
+			color: #fff;
+		}
 	}
 
 	.ui-icon {
@@ -3753,6 +3758,18 @@ input[type=password].form-control {
 /* Fix for the unnecessary scrollbar in some modals */
 div.ui-dialog.largePopUp {
 	overflow: hidden;
+}
+
+/* Fix embargo modal on mobile */
+@media screen and (max-width: $screen-xs-max), screen and (max-height: 760px) {
+	#datasetForm\:SetEmbargo {
+		top: 0 !important;
+	}
+}
+
+/* DatePicker */
+.ui-datepicker-inline {
+	margin: 1em auto 0;
 }
 
 /* Modal end */
@@ -4460,8 +4477,15 @@ body.font-size-percent-200 {
 	}
 
 	.ui-dialog.ui-widget-content {
-		.ui-state-default:not(input):not(textarea):not(th):not(ul):not(.ui-radiobutton-box), a.btn:not(input):not(textarea):not(th):not(ul):not(.ui-radiobutton-box) {
-			@include contrast-button($contrast-background-color, $contrast-foreground-color, $contrast-hover-color, $contrast-link-color);
+		.ui-state-default, a.btn {
+			&:not(input):not(textarea):not(th):not(ul):not(.ui-radiobutton-box){
+				@include contrast-button($contrast-background-color, $contrast-foreground-color, $contrast-hover-color, $contrast-link-color);
+			}
+
+			&.ui-state-active:not(input):not(textarea):not(th):not(ul):not(.ui-radiobutton-box) {
+				background: $contrast-link-color;
+				color: $contrast-background-color;
+			}
 		}
 
 		.button-block {
