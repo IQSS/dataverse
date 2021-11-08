@@ -7,4 +7,4 @@ Dataverse now supports the HTTP "Range" header, which allows users to download p
 - `bytes=-10` gets the last 10 bytes.
 - `bytes=9-` gets all bytes except the first 10.
 
-Only a single range is supported. For more information, see the [Data Access API](https://guides.dataverse.org/en/latest/api/dataaccess.html) section of the API Guide.
+Only a single range is supported. For more information, see the [Data Access API](https://guides.dataverse.org/en/5.9/api/dataaccess.html) section of the API Guide.
