@@ -713,12 +713,9 @@ public class DataversePage implements java.io.Serializable {
     }
 
     public boolean isRootDataverse() {        
-        return dataverse == null ? false : dataverse.getOwner() == null;
+        return dataverse.getOwner() == null;
     }
 
-    // Wondering what this method is for - what would be the situation, where 
-    // we only have the id of the parent dataverse, but it hasn't been instantiated
-    // yet? It doesn't appear like it's being used anywyere. -- L.A. 5.7
     public Dataverse getOwner() {
         return (ownerId != null) ? dataverseService.find(ownerId) : null;
     }

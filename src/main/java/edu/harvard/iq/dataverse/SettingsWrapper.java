@@ -211,8 +211,6 @@ public class SettingsWrapper implements java.io.Serializable {
         return guidesVersion;
     }
     
-    // OK to call SystemConfig - the method does not rely on database 
-    // settings.
     public String getDataverseSiteUrl() {
         if (siteUrl == null) {
             siteUrl = systemConfig.getDataverseSiteUrl();
@@ -220,8 +218,6 @@ public class SettingsWrapper implements java.io.Serializable {
         return siteUrl;
     }
     
-    // OK to call SystemConfig - the value is based on a JVM option; no 
-    // extra database lookups. 
     public Long getZipDownloadLimit(){
         if (zipDownloadLimit == null) {
             String zipLimitOption = getValueForKey(SettingsServiceBean.Key.ZipDownloadLimit);
@@ -232,8 +228,7 @@ public class SettingsWrapper implements java.io.Serializable {
 
     public boolean isPublicInstall(){
         if (publicInstall == null) {
-            boolean saneDefault = false;
-            publicInstall = isTrueForKey(SettingsServiceBean.Key.PublicInstall, saneDefault);
+            publicInstall = systemConfig.isPublicInstall();
         }
         return publicInstall; 
     }
@@ -247,8 +242,7 @@ public class SettingsWrapper implements java.io.Serializable {
     
     public boolean isRsyncDownload() {
         if (rsyncDownload == null) {
-            String downloadMethods = getValueForKey(SettingsServiceBean.Key.DownloadMethods);
-            rsyncDownload = downloadMethods != null && downloadMethods.toLowerCase().contains(SystemConfig.FileDownloadMethods.RSYNC.toString());
+            rsyncDownload = systemConfig.isRsyncDownload();
         }
         return rsyncDownload;
     }
@@ -281,12 +275,7 @@ public class SettingsWrapper implements java.io.Serializable {
     
     public boolean isDataFilePIDSequentialDependent(){
         if (dataFilePIDSequentialDependent == null) {
-            dataFilePIDSequentialDependent = false;
-            String doiIdentifierType = getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
-            String doiDataFileFormat = getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
-            if (doiIdentifierType.equals("storedProcGenerated") && doiDataFileFormat.equals("DEPENDENT")){
-                dataFilePIDSequentialDependent = true;
-            }
+            dataFilePIDSequentialDependent = systemConfig.isDataFilePIDSequentialDependent();
         }
         return dataFilePIDSequentialDependent;
     }
@@ -574,12 +563,12 @@ public class SettingsWrapper implements java.io.Serializable {
     }
     
     // The following 2 methods may be unnecessary *with the current implementation* of 
-    // how the application version is retrieved (the values are initialized and caached inside 
+    // how the application version is retrieved (the values are initialized and cached inside 
     // SystemConfig once per thread - see the code there); 
     // But in case we switch to some other method, that requires a database 
     // lookup like other settings, it should be here. 
     // This would be a prime candidate for moving into some kind of an 
-    // APPLICATION-scope caching singleton. -- L.A. 5.7
+    // APPLICATION-scope caching singleton. -- L.A. 5.8
     public String getAppVersion() {
         if (appVersion == null) {
             appVersion = systemConfig.getVersion();
@@ -596,14 +585,13 @@ public class SettingsWrapper implements java.io.Serializable {
     
     public boolean isShibPassiveLoginEnabled() {
         if (shibPassiveLoginEnabled == null) {
-            boolean defaultResponse = false;
-            shibPassiveLoginEnabled = isTrueForKey(SettingsServiceBean.Key.ShibPassiveLoginEnabled, defaultResponse);
+            shibPassiveLoginEnabled = systemConfig.isShibPassiveLoginEnabled();
         }
         return shibPassiveLoginEnabled;
     }
     
-    // This method may not be necessary *currently* either (the value is 
-    // stored in the bundle). -- L.A. 5.7
+    // Caching this result may not be saving much, *currently* (since the value is 
+    // stored in the bundle). -- L.A. 5.8
     public String getFooterCopyrightAndYear() {
         if (footerCopyrightAndYear == null) {
             footerCopyrightAndYear = systemConfig.getFooterCopyrightAndYear();

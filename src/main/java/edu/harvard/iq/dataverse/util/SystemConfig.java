@@ -135,7 +135,7 @@ public class SystemConfig {
     // once, on the first call (see the code below)... But this is a @Stateless 
     // bean... so that would mean "once per thread"? - this would be a prime 
     // candidate for being moved into some kind of an application-scoped caching
-    // service... some CachingService @Singleton - ? (L.A. 5.7)
+    // service... some CachingService @Singleton - ? (L.A. 5.8)
     public String getVersion(boolean withBuildNumber) {
         
         if (appVersionString == null) {
