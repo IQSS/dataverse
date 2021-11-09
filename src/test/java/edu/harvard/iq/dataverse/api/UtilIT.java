@@ -730,13 +730,33 @@ public class UtilIT {
     }
 
     static Response downloadFile(Integer fileId, String apiToken) {
-        return given()
-                /**
-                 * Data Access API does not support X-Dataverse-key header -
-                 * https://github.com/IQSS/dataverse/issues/2662
-                 */
-                //.header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/access/datafile/" + fileId + "?key=" + apiToken);
+        String nullByteRange = null;
+        String nullFormat = null;
+        String nullImageThumb = null;
+        return downloadFile(fileId, nullByteRange, nullFormat, nullImageThumb, apiToken);
+    }
+
+    static Response downloadFile(Integer fileId, String byteRange, String format, String imageThumb, String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (byteRange != null) {
+            requestSpecification.header("Range", "bytes=" + byteRange);
+        }
+        String optionalFormat = "";
+        if (format != null) {
+            optionalFormat = "&format=" + format;
+        }
+        String optionalImageThumb = "";
+        if (format != null) {
+            optionalImageThumb = "&imageThumb=" + imageThumb;
+        }
+        /**
+         * Data Access API does not support X-Dataverse-key header -
+         * https://github.com/IQSS/dataverse/issues/2662
+         *
+         * Actually, these days it does. We could switch.
+         */
+        //.header(API_TOKEN_HTTP_HEADER, apiToken)
+        return requestSpecification.get("/api/access/datafile/" + fileId + "?key=" + apiToken + optionalFormat + optionalImageThumb);
     }
     
     static Response downloadTabularFile(Integer fileId) {

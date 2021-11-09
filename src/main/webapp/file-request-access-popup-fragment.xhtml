@@ -10,9 +10,11 @@
 
         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
         <p class="help-block">
-            #{bundle['file.requestAccessTermsDialog.tip']}
+            #{someActivelyEmbargoedFiles ? bundle['file.requestAccessTermsDialog.embargoed.tip'] : bundle['file.requestAccessTermsDialog.tip']}
         </p>
-        
+        <p class="help-block" jsf:rendered="#{someActivelyEmbargoedFiles}">
+            #{bundle['file.requestAccessTermsDialog.embargoed']}
+        </p>
         <div class="form-horizontal">
             <div class="form-group" jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.license and workingVersion.termsOfUseAndAccess.license.name != 'CC0' and !empty workingVersion.termsOfUseAndAccess.termsOfUse}">
                 <label class="col-sm-3 control-label">

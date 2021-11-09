@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.util.json;
 
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.AuxiliaryFile;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
@@ -21,11 +22,6 @@ import edu.harvard.iq.dataverse.License;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.MetadataBlock;
-import edu.harvard.iq.dataverse.RoleAssignment;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
@@ -607,15 +603,18 @@ public class JsonPrinter {
         if (new GlobalId(df).toURL() != null){
             pidURL = new GlobalId(df).toURL().toString();
         }
-        
+
+        JsonObjectBuilder embargo = df.getEmbargo() != null ? JsonPrinter.json(df.getEmbargo()) : null;
+
         return jsonObjectBuilder()
                 .add("id", df.getId())
                 .add("persistentId", df.getGlobalIdString())
                 .add("pidURL", pidURL)
                 .add("filename", fileName)
-                .add("contentType", df.getContentType())            
-                .add("filesize", df.getFilesize())            
-                .add("description", df.getDescription())    
+                .add("contentType", df.getContentType())
+                .add("filesize", df.getFilesize())
+                .add("description", df.getDescription())
+                .add("embargo", embargo)
                 //.add("released", df.isReleased())
                 //.add("restricted", df.isRestricted())
                 .add("storageIdentifier", df.getStorageIdentifier())
@@ -806,6 +805,11 @@ public class JsonPrinter {
                     .add("name", aFacet.getDatasetFieldType().getDisplayName());
     }
 
+    public static JsonObjectBuilder json(Embargo embargo) {
+        return jsonObjectBuilder().add("dateAvailable", embargo.getDateAvailable().toString()).add("reason",
+                embargo.getReason());
+    }
+
     public static JsonObjectBuilder json(License license) {
         return jsonObjectBuilder()
             .add("id", license.getId())
@@ -815,7 +819,7 @@ public class JsonPrinter {
             .add("iconUrl", license.getIconUrl().toString())
             .add("active", license.isActive());
     }
-        
+
     public static Collector<String, JsonArrayBuilder, JsonArrayBuilder> stringsToJsonArray() {
         return new Collector<String, JsonArrayBuilder, JsonArrayBuilder>() {
 
