@@ -11,6 +11,8 @@ import javax.validation.ConstraintValidatorContext;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 
 
@@ -35,8 +37,33 @@ public class DatasetFieldValidator implements ConstraintValidator<ValidateDatase
         }
 
         // if value is not primitive or not empty
+        // Heads up that "value" is sometimes null! Should || be && instead?
         if (!dsfType.isPrimitive() || !StringUtils.isBlank(value.getValue())) {
-            return true;
+            boolean invalidCharactersFound = false;
+            String errorMessage = null;
+            if (value != null && value.getValue() != null) {
+                // https://github.com/primefaces/primefaces/issues/3875 is related
+                // in that when you type a \f (form feed) in the "create dataset"
+                // page, the partial-response will include it, causing the page to be
+                // broken. https://github.com/eclipse-ee4j/mojarra/pull/4534 contains
+                // a fix, but it wasn't merged.
+                String invalidCharacters = "^.*[\f\u0002].*$";
+                Pattern p = Pattern.compile(invalidCharacters);
+                Matcher m = p.matcher(value.getValue());
+                invalidCharactersFound = m.find();
+                errorMessage = BundleUtil.getStringFromBundle("invalidcharacter");
+            }
+            if (invalidCharactersFound) {
+                try {
+                    context.buildConstraintViolationWithTemplate(errorMessage).addConstraintViolation();
+                } catch (NullPointerException npe) {
+                    // This catch is copied from below.
+                    //if there's no context for the error we can't put it anywhere....
+                }
+                return false;
+            } else {
+                return true;
+            }
         }
        
         if (value.isRequired()) { 

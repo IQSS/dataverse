@@ -58,6 +58,9 @@ public class DatasetFieldValidatorTest {
         testPrimitiveDatasetField("test isValid() for required primitive with empty value", true, "", datasetVersion, false);
         testPrimitiveDatasetField("test isValid() for required primitive with nonempty value",  true, "test", datasetVersion, true);
         testPrimitiveDatasetField("test isValid() for not required primitive", false, "", datasetVersion, true);
+        testPrimitiveDatasetField("test isValid() without special characters",  true, "test", datasetVersion, true); // true = valid
+        testPrimitiveDatasetField("test isValid() with special character: form feed",  true, "te\fst", datasetVersion, false); // false = not valid
+        testPrimitiveDatasetField("test isValid() with special character: start of text",  true, "te\u0002st", datasetVersion, false); // false = not valid
 
         // the compound tests are defined by parent/child1 required and child1/child2 values
         testCompoundDatasetField("test isValid() for false/false compound with empty/empty children", false, false, "", "", datasetVersion, true);
