@@ -203,7 +203,7 @@ public class IndexBatchServiceBean {
 
         int datasetIndexCount = 0;
         int datasetFailureCount = 0;
-        List<Long> datasetIds = datasetService.findAllOrSubsetOrderByFileMetadata(skipIndexed);
+        List<Long> datasetIds = datasetService.findAllOrSubsetOrderByFilesOwned(skipIndexed);
         for (Long id : datasetIds) {
             try {
                 datasetIndexCount++;

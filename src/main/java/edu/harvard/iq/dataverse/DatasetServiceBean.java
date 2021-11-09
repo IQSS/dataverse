@@ -233,7 +233,14 @@ public class DatasetServiceBean implements java.io.Serializable {
      * @return a list of datasets
      * @see DataverseServiceBean#findAllOrSubset(long, long, boolean)
      */     
-    public List<Long> findAllOrSubsetOrderByFileMetadata(boolean skipIndexed) {
+    public List<Long> findAllOrSubsetOrderByFilesOwned(boolean skipIndexed) {
+        /*
+        Disregards deleted or replaced files when determining 'size' of dataset.
+        Could possibly make more efficient by getting file metadata counts
+        of latest published/draft version.
+        Also disregards partitioning which is no longer supported.
+        SEK - 11/09/2021
+        */
 
         String skipClause = skipIndexed ? "AND o.indexTime is null " : "";
         Query query = em.createNativeQuery(" Select distinct(o.id), count(f.id) as numFiles FROM dvobject o " +
