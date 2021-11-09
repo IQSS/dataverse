@@ -22,7 +22,6 @@ import edu.harvard.iq.dataverse.search.response.FilterQuery;
 import edu.harvard.iq.dataverse.search.response.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.response.SolrSearchResult;
 import org.apache.commons.lang.StringUtils;
-import org.apache.pdfbox.filter.FilterFactory;
 import org.omnifaces.cdi.Param;
 
 import javax.annotation.PostConstruct;
@@ -262,7 +261,14 @@ public class SearchIncludeFragment {
         /**
          * @todo centralize this into SearchServiceBean
          */
-        Optional<String> filterDownToSubtree = buildSubtreeFilterIfNeeded(dataverse);
+        Optional<String> filterDownToSubtree;
+        if (!dataverse.isRoot()) {
+            dataversePath = dataverseDao.determineDataversePath(dataverse);
+            filterDownToSubtree = Optional.of(SearchFields.SUBTREE + ":\"" + dataversePath + "\"");
+        } else {
+            filterDownToSubtree = Optional.empty();
+        }
+
         filterDownToSubtree.ifPresent(filterQueriesFinal::add);
 
         filterQueriesFinal.addAll(filterQueries);
@@ -736,11 +742,4 @@ public class SearchIncludeFragment {
                 || permissionService.userOn(AuthenticatedUsers.get(), dataverse).has(Permission.AddDataset);
     }
 
-    private Optional<String> buildSubtreeFilterIfNeeded(Dataverse dataverse) {
-        if (!dataverse.isRoot()) {
-            String dataversePath = dataverseDao.determineDataversePath(dataverse);
-            return Optional.of(SearchFields.SUBTREE + ":\"" + dataversePath + "\"");
-        }
-        return Optional.empty();
-    }
 }
