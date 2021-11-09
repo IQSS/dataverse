@@ -1260,7 +1260,9 @@ function setFocusReturn(element) {
         targetElement = document.getElementById(element.source);
     }
 
-    targetElement.dataset.returnFocus = true;
+    if (targetElement) {
+        targetElement.dataset.returnFocus = true;
+    }
 }
 function applyFocusReturn() {
     /* Do checks in case something bugs out and there are multiple/none focus return points set */

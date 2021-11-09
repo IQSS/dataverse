@@ -273,7 +273,7 @@
                                         <p:commandLink type="button" rendered="#{!harvestingClientsPage.initialSettingsValidated}"
                                                         id="validateInitialSettingsBtn"
                                                         styleClass="btn btn-default"
-                                                        oncomplete="primeFacesShowModal('newHarvestingClientForm', this);"
+                                                        oncomplete="PF('newHarvestingClientForm').show();"
                                                         update=":harvestingClientsForm:newHarvestingClientDialog"
                                                         action="#{harvestingClientsPage.validateInitialSettings()}">
                                             <span class="glyphicon glyphicon-menu-right"/> #{bundle.next}
@@ -353,7 +353,7 @@
                                                         id="createStepTwoPrevious"
                                                         styleClass="btn btn-default"
                                                         update=":harvestingClientsForm:newHarvestingClientDialog"
-                                                        oncomplete="primeFacesShowModal('newHarvestingClientForm', this);"
+                                                        oncomplete="PF('newHarvestingClientForm').show();"
                                                         action="#{harvestingClientsPage.backToStepOne()}">
                                             <span class="glyphicon glyphicon-menu-left"/> #{bundle.previous}
                                         </p:commandLink>
@@ -449,7 +449,7 @@
                                                         id="createStepThreePrevious"
                                                         styleClass="btn btn-default"
                                                         update=":harvestingClientsForm:newHarvestingClientDialog"
-                                                        oncomplete="primeFacesShowModal('newHarvestingClientForm', this);"
+                                                        oncomplete="PF('newHarvestingClientForm').show();"
                                                         action="#{harvestingClientsPage.backToStepTwo()}">
                                             <span class="glyphicon glyphicon-menu-left"/> #{bundle.previous}
                                         </p:commandLink>
@@ -457,7 +457,7 @@
                                                         id="createStepThreeNext"
                                                         styleClass="btn btn-default"
                                                         update=":harvestingClientsForm:newHarvestingClientDialog"
-                                                        oncomplete="primeFacesShowModal('newHarvestingClientForm', this);"
+                                                        oncomplete="PF('newHarvestingClientForm').show();"
                                                         action="#{harvestingClientsPage.goToStepFour()}">
                                             <span class="glyphicon glyphicon-menu-right"/> #{bundle.next}
                                         </p:commandLink>
@@ -510,7 +510,7 @@
                                                         id="createStepFourPrevious"
                                                         styleClass="btn btn-default"
                                                         update=":harvestingClientsForm:newHarvestingClientDialog"
-                                                        oncomplete="primeFacesShowModal('newHarvestingClientForm', this);"
+                                                        oncomplete="PF('newHarvestingClientForm').show();"
                                                         action="#{harvestingClientsPage.backToStepThree()}">
                                             <span class="glyphicon glyphicon-menu-left"/> #{bundle.previous}
                                         </p:commandLink>
@@ -520,7 +520,7 @@
                                                        value="#{bundle['harvestclients.newClientDialog.btn.create']}"
                                                        update="newHarvestingClientDialogContent :messagePanel :harvestingClientsForm clientsTable emptyClientsTable"
                                                        actionListener="#{harvestingClientsPage.createClient}"
-                                                       oncomplete="if (args &amp;&amp; !args.validationFailed) PF('newHarvestingClientForm').hide(); else primeFacesShowModal('newHarvestingClientForm', this);">
+                                                       oncomplete="if (args &amp;&amp; !args.validationFailed) PF('newHarvestingClientForm').hide(); else PF('newHarvestingClientForm').show();">
                                             <f:param name="DO_VALIDATION" value="true"/>
                                         </p:commandLink>
                                         <p:commandLink type="button" styleClass="btn btn-default"
@@ -528,7 +528,7 @@
                                                        value="#{bundle['harvestclients.viewEditDialog.btn.save']}"
                                                        update="newHarvestingClientDialogContent :messagePanel :harvestingClientsForm clientsTable emptyClientsTable"
                                                        actionListener="#{harvestingClientsPage.saveClient}"
-                                                       oncomplete="if (args &amp;&amp; !args.validationFailed) PF('newHarvestingClientForm').hide(); else primeFacesShowModal('newHarvestingClientForm', this);"/>
+                                                       oncomplete="if (args &amp;&amp; !args.validationFailed) PF('newHarvestingClientForm').hide(); else PF('newHarvestingClientForm').show();"/>
                                         <button type="button" jsf:rendered="#{harvestingClientsPage.initialSettingsValidated}" class="btn btn-default" onclick="PF('newHarvestingClientForm').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
                                     </div>
                                 </div>

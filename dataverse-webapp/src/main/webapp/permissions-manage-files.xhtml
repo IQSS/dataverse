@@ -239,7 +239,7 @@
                         </div>
                         <div class="button-block">
                             <p:commandLink type="button" styleClass="btn btn-default"
-                                           update="userGroups restrictedFiles @([id$=Messages])" onclick="primeFacesShowModal('confirmation', this)">
+                                           update="userGroups restrictedFiles @([id$=Messages])" onclick="PF('confirmation').show()">
                                 <span class="glyphicon glyphicon-remove"/>
                                 <h:outputText value="#{bundle['dataverse.permissionsFiles.viewRemoveDialog.removeBtn']}"/>
                             </p:commandLink>

@@ -152,7 +152,7 @@
                                  value="#{bundle.continue}"
                                  disabled="#{provPopupFragmentBean.isDataFilePublishedWithDraftRendering() and !provPopupFragmentBean.isDatasetInDraftRendering()}"
                                  update="provPopupOutput,assignMessages,confirmProvenancePopup"
-                                 oncomplete="if (args &amp;&amp; !args.validationFailed) { PF('editProvenancePopup').hide();primeFacesShowModal('confirmProvenancePopup', this); }" />
+                                 oncomplete="if (args &amp;&amp; !args.validationFailed) { PF('editProvenancePopup').hide();PF('confirmProvenancePopup').show(); }" />
 
                 <p:commandButton id="editProvenancePopupCancelButton" value="#{bundle.cancel}"
                                  update="provPopupOutput,assignMessages,confirmProvenancePopup"

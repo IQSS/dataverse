@@ -76,7 +76,7 @@
             
             <div class="button-block">
                 <p:commandLink styleClass="btn btn-default" value="#{bundle.deaccession}"  
-                               oncomplete="if (args &amp;&amp; !args.validationFailed) primeFacesShowModal('deaccessionConfirmation', this);">
+                               oncomplete="if (args &amp;&amp; !args.validationFailed) PF('deaccessionConfirmation').show();">
                 </p:commandLink>
                 <p:commandLink type="button" styleClass="btn btn-default" value="#{bundle.cancel}"
                         immediate ="true" 
