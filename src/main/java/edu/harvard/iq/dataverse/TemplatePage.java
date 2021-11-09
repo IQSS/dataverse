@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -183,6 +184,10 @@ public class TemplatePage implements java.io.Serializable {
         Long createdId = new Long(0);
         Template created;
         try {
+            Iterator<DatasetField> dsfItSort = template.getDatasetFields().iterator();
+            while (dsfItSort.hasNext()) {
+                dsfItSort.next().setValueDisplayOrder();
+            }
             if (editMode == EditMode.CREATE) {
                 template.setCreateTime(new Timestamp(new Date().getTime()));
                 template.setUsageCount(new Long(0));
