@@ -28,7 +28,6 @@ import javax.json.JsonWriter;
 import javax.json.JsonWriterFactory;
 import javax.json.JsonValue.ValueType;
 import javax.json.stream.JsonGenerator;
-import javax.persistence.NoResultException;
 import javax.ws.rs.BadRequestException;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
@@ -196,13 +195,9 @@ public class JSONLDUtil {
                                     setSemTerm(terms, key, licenseSvc.getDefault());
                                 }
                                 else {
-                                    try {
                                         License license = licenseSvc.getByNameOrUri(jsonld.getString(key));
+                                        if (license == null) throw new BadRequestException("Invalid license");
                                         setSemTerm(terms, key, license);
-                                    }
-                                    catch (NoResultException e) {
-                                        throw new BadRequestException("Invalid license");
-                                    }
                                 }
                             }
                             else if (key.equals("https://dataverse.org/schema/core#fileRequestAccess")) {

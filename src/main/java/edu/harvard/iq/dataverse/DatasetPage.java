@@ -92,7 +92,6 @@ import javax.json.JsonObject;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
 
-import javax.persistence.NoResultException;
 import javax.validation.ConstraintViolation;
 import org.apache.commons.httpclient.HttpClient;
 //import org.primefaces.context.RequestContext;
@@ -367,12 +366,13 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public License getSelectedLicenseById(){
-        try {
-            return licenseServiceBean.getById(licenseId);
-        } catch (NoResultException e) {
-            logger.log(Level.WARNING, "License with ID {0} doesn't exist.", licenseId);
-        }
-        return null;
+        License license = licenseServiceBean.getById(licenseId);
+            if (license != null) {
+                return license;
+            } else {
+                logger.log(Level.WARNING, "License with ID {0} doesn't exist.", licenseId);
+                return null;
+            }
     }
 
     // TODO: Consider renaming "configureTools" to "fileConfigureTools".
@@ -3600,8 +3600,6 @@ public class DatasetPage implements java.io.Serializable {
             logger.log(Level.SEVERE, "CommandException, when attempting to update the dataset: " + ex.getMessage(), ex);
             populateDatasetUpdateFailureMessage();
             return returnToDraftVersion();
-        } catch (NoResultException e) {
-            logger.log(Level.SEVERE,"License with ID {0} doesn't exist.", licenseId);
         }
 
         // Have we just deleted some draft datafiles (successfully)?
@@ -3707,12 +3705,13 @@ public class DatasetPage implements java.io.Serializable {
      *
      * @param editVersion
      */
-    private void setLicense(DatasetVersion editVersion) throws NoResultException {
+    private void setLicense(DatasetVersion editVersion){
         TermsOfUseAndAccess terms = editVersion.getTermsOfUseAndAccess();
         if (licenseId == null) {
             terms.setLicense(null);
         } else {
             License license = licenseServiceBean.getById(licenseId);
+            if (license == null) license = licenseServiceBean.getDefault();
             terms.setLicense(license);
             terms.clearCustomTermsVariables();
         }

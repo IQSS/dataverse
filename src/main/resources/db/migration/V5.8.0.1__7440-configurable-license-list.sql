@@ -15,10 +15,13 @@ BEGIN
     WHEN unique_violation THEN RAISE NOTICE 'CC0 has already been added to the license table';
   END;
 
+  BEGIN
+      UPDATE termsofuseandaccess
+        SET license_id = (SELECT license.id FROM license WHERE license.name = 'CC0')
+        WHERE termsofuseandaccess.license = 'CC0' AND termsofuseandaccess.license_id IS NULL;
+  EXCEPTION
+    WHEN undefined_column THEN RAISE NOTICE 'license is not in table - new instance';
+  END;
+
 END $$;
-
-UPDATE termsofuseandaccess
-SET license_id = (SELECT license.id FROM license WHERE license.name = 'CC0')
-WHERE termsofuseandaccess.license = 'CC0' AND termsofuseandaccess.license_id IS NULL;
-
 ALTER TABLE termsofuseandaccess DROP COLUMN IF EXISTS license;

@@ -46,8 +46,6 @@ import edu.harvard.iq.dataverse.settings.Setting;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceException;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -56,7 +54,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 
 import java.io.InputStream;
 import java.io.StringReader;
@@ -74,8 +71,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.omnifaces.el.functions.Strings;
 
 import java.util.List;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
@@ -113,7 +108,6 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.function.Consumer;
 import javax.inject.Inject;
 import javax.json.JsonArray;
 import javax.persistence.Query;
@@ -2085,12 +2079,9 @@ public class Admin extends AbstractApiBean {
     @GET
     @Path("/licenses/{id}")
     public Response getLicenseById(@PathParam("id") long id) {
-        try {
-            License license = licenseService.getById(id);
-            return ok(json(license));
-        } catch (NoResultException nre) {
-            return error(Response.Status.NOT_FOUND, "License with ID " + id + " not found");
-        }
+	    License license = licenseService.getById(id);
+	    if (license == null) return error(Response.Status.NOT_FOUND, "License with ID " + id + " not found");
+	    return ok(json(license));
     }
 
     @POST
@@ -2113,39 +2104,35 @@ public class Admin extends AbstractApiBean {
 	}
 
     @PUT
-    @Path("/licenses/default")
-    public Response setDefault(long id) {
+    @Path("/licenses/default/{id}")
+    public Response setDefault(@PathParam("id") long id) {
         try {
-            licenseService.setDefault(id);
+            if (licenseService.setDefault(id) == 0) return error(Response.Status.NOT_FOUND, "License with ID " + id + " not found");
             return ok("Default license ID set to " + id);
         }
-        catch (IllegalArgumentException | NoResultException e) {
-        	if (e instanceof IllegalArgumentException) {
-		        return badRequest(e.getMessage());
-	        } else {
-        		return error(Response.Status.NOT_FOUND, "License with ID " + id + " not found");
-	        }
+        catch (IllegalArgumentException illegalArgumentException) {
+        	return badRequest(illegalArgumentException.getMessage());
         }
     }
 
     @DELETE
     @Path("/licenses/{id}")
     public Response deleteLicenseById(@PathParam("id") long id) {
-        try {
-	        try {
-		        if (licenseService.getById(id).isDefault()){
-			        return error(Status.CONFLICT, "Please make sure the license is not the default before deleting it. ");
-		        }
-	        } catch (NoResultException e) {
-		        return error(Status.NOT_FOUND, "License with ID " + id + " not found");
-	        }
-	        int result = licenseService.deleteById(id);
-            if (result == 1) {
-                return ok("OK. License with ID " + id + " was deleted.");
-            }
-            return error(Response.Status.NOT_FOUND, "License with ID " + id + " not found");
-        } catch(IllegalStateException e) {
-            return error(Response.Status.CONFLICT, e.getMessage());
-        }
+	    try {
+		    License license = licenseService.getById(id);
+		    if (license == null) {
+			    return error(Status.NOT_FOUND, "License with ID " + id + " not found");
+		    } else if (license.isDefault()){
+			    return error(Status.CONFLICT, "Please make sure the license is not the default before deleting it. ");
+		    } else {
+			    if (licenseService.deleteById(id) == 1) {
+				    return ok("OK. License with ID " + id + " was deleted.");
+			    } else {
+				    return error(Status.CONFLICT, "Couldn't delete license with ID: " + id);
+			    }
+		    }
+	    } catch(IllegalStateException e) {
+		    return error(Response.Status.CONFLICT, e.getMessage());
+	    }
     }
 }
