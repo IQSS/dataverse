@@ -96,10 +96,11 @@ Look at https://github.com/IQSS/dataverse/blob/master/CONTRIBUTING.md for variou
 Summary of Git commands
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-This section provides sequences of Git commands for two scenarios:
+This section provides sequences of Git commands for three scenarios:
 
 * preparing the first request, when the IQSS Dataverse Software repository and the forked repository are identical
 * creating an additional request after some time, when the IQSS Dataverse Software repository is ahead of the forked repository
+* while your pull requests are in review the develop branch has been updated, so you have to keep your code base synchronized with the current state of develop branch
 
 In the examples we use 123-COOL-FEATURE as the name of the feature branch, and https://github.com/YOUR_NAME/dataverse.git as your forked repository's URL. In practice modify both accordingly.
 
@@ -150,6 +151,35 @@ In the examples we use 123-COOL-FEATURE as the name of the feature branch, and h
         git push -u origin 123-COOL-FEATURE
 
         # ... then create pull request at github.com/YOUR_NAME/dataverse
+
+
+**3rd scenario: synchronize your branch with develop branch**
+
+.. code-block:: bash
+
+        git checkout develop
+
+        # update local develop banch from https://github.com/IQSS/dataverse
+        git fetch upstream develop
+        git rebase upstream/develop
+
+        # update remote develop branch at https://github.com/YOUR_NAME/dataverse
+        git push
+
+        # change to the already existing feature branch
+        git checkout 123-COOL-FEATURE
+
+        # merge changes of develop to the feature branch
+        git merge develop
+
+        # check if there are conflicts, if there are follow the next command, otherwise skip to next block
+        # 1. fix the relevant files (including testing)
+        # 2. commit changes
+        git add <fixed files>
+        git commit
+
+        # update remote feature branch at https://github.com/YOUR_NAME/dataverse
+        git push
 
 
 How to Resolve Conflicts in Your Pull Request
