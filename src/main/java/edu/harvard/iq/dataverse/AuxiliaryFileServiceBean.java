@@ -4,10 +4,13 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -18,6 +21,10 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+import javax.ws.rs.ClientErrorException;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.core.Response;
+
 import org.apache.tika.Tika;
 
 /**
@@ -62,8 +69,8 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
      * @return success boolean - returns whether the save was successful
      */
     public AuxiliaryFile processAuxiliaryFile(InputStream fileInputStream, DataFile dataFile, String formatTag, String formatVersion, String origin, boolean isPublic, String type) {
-    
-        StorageIO<DataFile> storageIO =null;
+
+        StorageIO<DataFile> storageIO = null;
         AuxiliaryFile auxFile = new AuxiliaryFile();
         String auxExtension = formatTag + "_" + formatVersion;
         try {
@@ -73,12 +80,20 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
             // If the db fails for any reason, then rollback
             // by removing the auxfile from storage.
             storageIO = dataFile.getStorageIO();
-            MessageDigest md = MessageDigest.getInstance(systemConfig.getFileFixityChecksumAlgorithm().toString());
-            DigestInputStream di 
-                = new DigestInputStream(fileInputStream, md); 
-  
-            storageIO.saveInputStreamAsAux(fileInputStream, auxExtension);          
-            auxFile.setChecksum(FileUtil.checksumDigestToString(di.getMessageDigest().digest())    );
+            if (storageIO.isAuxObjectCached(auxExtension)) {
+                throw new ClientErrorException("Auxiliary file already exists", Response.Status.CONFLICT);
+            }
+            MessageDigest md;
+            try {
+                md = MessageDigest.getInstance(systemConfig.getFileFixityChecksumAlgorithm().toString());
+            } catch (NoSuchAlgorithmException e) {
+                logger.severe("NoSuchAlgorithmException for system fixity algorithm: " + systemConfig.getFileFixityChecksumAlgorithm().toString());
+                throw new InternalServerErrorException();
+            }
+            DigestInputStream di = new DigestInputStream(fileInputStream, md);
+
+            storageIO.saveInputStreamAsAux(fileInputStream, auxExtension);
+            auxFile.setChecksum(FileUtil.checksumDigestToString(di.getMessageDigest().digest()));
 
             Tika tika = new Tika();
             auxFile.setContentType(tika.detect(storageIO.getAuxFileAsInputStream(auxExtension)));
@@ -87,20 +102,20 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
             auxFile.setOrigin(origin);
             auxFile.setIsPublic(isPublic);
             auxFile.setType(type);
-            auxFile.setDataFile(dataFile);         
+            auxFile.setDataFile(dataFile);
             auxFile.setFileSize(storageIO.getAuxObjectSize(auxExtension));
             auxFile = save(auxFile);
         } catch (IOException ioex) {
-            logger.info("IO Exception trying to save auxiliary file: " + ioex.getMessage());
-            return null;
-        } catch (Exception e) {
+            logger.severe("IO Exception trying to save auxiliary file: " + ioex.getMessage());
+            throw new InternalServerErrorException();
+        } catch (RuntimeException e) {
             // If anything fails during database insert, remove file from storage
             try {
                 storageIO.deleteAuxObject(auxExtension);
-            } catch(IOException ioex) {
-                    logger.info("IO Exception trying remove auxiliary file in exception handler: " + ioex.getMessage());
-            return null;
+            } catch (IOException ioex) {
+                logger.warning("IO Exception trying remove auxiliary file in exception handler: " + ioex.getMessage());
             }
+            throw e;
         }
         return auxFile;
     }
@@ -117,6 +132,35 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
             return retVal;
         } catch(Exception ex) {
             return null;
+        }
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<AuxiliaryFile> listAuxiliaryFiles(DataFile dataFile, String origin) {
+        
+        Query query = em.createQuery("select object(o) from AuxiliaryFile as o where o.dataFile.id = :dataFileId and o.origin = :origin");
+                
+        query.setParameter("dataFileId", dataFile.getId());
+        query.setParameter("origin", origin);
+        try {
+            List<AuxiliaryFile> retVal = (List<AuxiliaryFile>)query.getResultList();
+            return retVal;
+        } catch(Exception ex) {
+            return null;
+        }
+    }
+
+    public void deleteAuxiliaryFile(DataFile dataFile, String formatTag, String formatVersion) throws IOException {
+        AuxiliaryFile af = lookupAuxiliaryFile(dataFile, formatTag, formatVersion);
+        if (af == null) {
+            throw new FileNotFoundException();
+        }
+        em.remove(af);
+        StorageIO<?> storageIO;
+        storageIO = dataFile.getStorageIO();
+        String auxExtension = formatTag + "_" + formatVersion;
+        if (storageIO.isAuxObjectCached(auxExtension)) {
+            storageIO.deleteAuxObject(auxExtension);
         }
     }
 

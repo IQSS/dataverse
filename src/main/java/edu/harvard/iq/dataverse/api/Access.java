@@ -74,6 +74,7 @@ import java.io.InputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.Timestamp;
@@ -119,6 +120,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.RedirectionException;
+import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.MediaType;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -538,6 +540,49 @@ public class Access extends AbstractApiBean {
         return retValue; 
     }
     
+    
+    /*
+     * GET method for retrieving various auxiliary files associated with 
+     * a tabular datafile.
+     */
+    
+    @Path("datafile/{fileId}/auxiliary/{origin}")
+    @GET
+    public Response listDatafileMetadataAux(@PathParam("fileId") String fileId,
+            @PathParam("origin") String origin,
+            @QueryParam("key") String apiToken,
+            @Context UriInfo uriInfo,
+            @Context HttpHeaders headers,
+            @Context HttpServletResponse response) throws ServiceUnavailableException {
+
+        DataFile df = findDataFileOrDieWrapper(fileId);
+
+        if (apiToken == null || apiToken.equals("")) {
+            apiToken = headers.getHeaderString(API_KEY_HEADER);
+        }
+
+        List<AuxiliaryFile> auxFileList = auxiliaryFileService.listAuxiliaryFiles(df, origin);
+
+        if (auxFileList == null || auxFileList.isEmpty()) {
+            throw new NotFoundException("No Auxiliary files exist for datafile " + fileId + " and the specified origin");
+        }
+        boolean isAccessAllowed = isAccessAuthorized(df, apiToken);
+        JsonArrayBuilder jab = Json.createArrayBuilder();
+        auxFileList.forEach(auxFile -> {
+            if (isAccessAllowed || auxFile.getIsPublic()) {
+                JsonObjectBuilder job = Json.createObjectBuilder();
+                job.add("formatTag", auxFile.getFormatTag());
+                job.add("formatVersion", auxFile.getFormatVersion());
+                job.add("fileSize", auxFile.getFileSize());
+                job.add("contentType", auxFile.getContentType());
+                job.add("isPublic", auxFile.getIsPublic());
+                job.add("type",  auxFile.getType());
+                jab.add(job);
+            }
+        });
+        return ok(jab);
+    }
+
     /*
      * GET method for retrieving various auxiliary files associated with 
      * a tabular datafile.
@@ -563,10 +608,6 @@ public class Access extends AbstractApiBean {
         DownloadInfo dInfo = new DownloadInfo(df);
         boolean publiclyAvailable = false; 
 
-        if (!df.isTabularData()) {
-            throw new BadRequestException("tabular data required");
-        } 
-        
         DownloadInstance downloadInstance;
         AuxiliaryFile auxFile = null;
         
@@ -1248,12 +1289,8 @@ public class Access extends AbstractApiBean {
             return error(FORBIDDEN, "User not authorized to edit the dataset.");
         }
 
-        if (!dataFile.isTabularData()) {
-            return error(BAD_REQUEST, "Not a tabular DataFile (db id=" + fileId + ")");
-        }
-
         AuxiliaryFile saved = auxiliaryFileService.processAuxiliaryFile(fileInputStream, dataFile, formatTag, formatVersion, origin, isPublic, type);
-      
+
         if (saved!=null) {
             return ok(json(saved));
         } else {
@@ -1262,6 +1299,50 @@ public class Access extends AbstractApiBean {
     }
   
     
+
+    /**
+     * 
+     * @param fileId
+     * @param formatTag
+     * @param formatVersion
+     * @param origin
+     * @param isPublic
+     * @param fileInputStream
+     * @param contentDispositionHeader
+     * @param formDataBodyPart
+     * @return 
+     */
+    @Path("datafile/{fileId}/auxiliary/{formatTag}/{formatVersion}")
+    @DELETE
+    public Response deleteAuxiliaryFileWithVersion(@PathParam("fileId") Long fileId,
+            @PathParam("formatTag") String formatTag,
+            @PathParam("formatVersion") String formatVersion) {
+        AuthenticatedUser authenticatedUser;
+        try {
+            authenticatedUser = findAuthenticatedUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(FORBIDDEN, "Authorized users only.");
+        }
+
+        DataFile dataFile = dataFileService.find(fileId);
+        if (dataFile == null) {
+            return error(BAD_REQUEST, "File not found based on id " + fileId + ".");
+        }
+
+        if (!permissionService.userOn(authenticatedUser, dataFile.getOwner()).has(Permission.EditDataset)) {
+            return error(FORBIDDEN, "User not authorized to edit the dataset.");
+        }
+
+        try {
+            auxiliaryFileService.deleteAuxiliaryFile(dataFile, formatTag, formatVersion);
+        } catch (FileNotFoundException e) {
+            throw new NotFoundException();
+        } catch(IOException io) {
+            throw new ServerErrorException("IO Exception trying remove auxiliary file", Response.Status.INTERNAL_SERVER_ERROR, io);
+        }
+
+        return ok("Auxiliary file deleted.");
+    }
 
   
     
