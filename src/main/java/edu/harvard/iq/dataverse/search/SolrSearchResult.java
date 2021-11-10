@@ -116,6 +116,8 @@ public class SolrSearchResult {
     
     private String filePersistentId = null;
     
+    private Long embargoEndDate;
+    
     public String getDvTree() {
         return dvTree;
     }
@@ -1216,5 +1218,13 @@ public class SolrSearchResult {
     public void setExternalStatus(String externalStatus) {
         this.externalStatus = externalStatus;
         
+    }
+
+    public Long getEmbargoEndDate() {
+        return embargoEndDate;
+    }
+
+    public void setEmbargoEndDate(Long embargoEndDate) {
+        this.embargoEndDate = embargoEndDate;
     }
 }
