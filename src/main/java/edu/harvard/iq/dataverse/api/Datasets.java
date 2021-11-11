@@ -26,6 +26,7 @@ import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
+import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -81,7 +82,7 @@ import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
-import edu.harvard.iq.dataverse.S3PackageImporter;
+
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -131,20 +132,12 @@ import java.io.StringReader;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -186,9 +179,12 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.omnifaces.el.functions.Strings;
-
 import com.amazonaws.services.s3.model.PartETag;
+import com.beust.jcommander.Strings;
+import edu.harvard.iq.dataverse.Embargo;
+import edu.harvard.iq.dataverse.EmbargoServiceBean;
+import edu.harvard.iq.dataverse.S3PackageImporter;
+import javax.json.JsonValue;
 
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
@@ -242,6 +238,9 @@ public class Datasets extends AbstractApiBean {
     
     @EJB
     DatasetExternalCitationsServiceBean datasetExternalCitationsService;
+
+    @EJB
+    EmbargoServiceBean embargoService;
     
     @Inject
     MakeDataCountLoggingServiceBean mdcLogService;
@@ -314,6 +313,7 @@ public class Datasets extends AbstractApiBean {
                     .type(mediaType).
                     build();
         } catch (Exception wr) {
+            logger.warning(wr.getMessage());
             return error(Response.Status.FORBIDDEN, "Export Failed");
         }
     }
@@ -1373,6 +1373,267 @@ public class Datasets extends AbstractApiBean {
             }
         }
     }
+
+    @POST
+    @Path("{id}/files/actions/:set-embargo")
+    public Response createFileEmbargo(@PathParam("id") String id, String jsonBody){
+
+        // user is authenticated
+        AuthenticatedUser authenticatedUser = null;
+        try {
+            authenticatedUser = findAuthenticatedUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(Status.UNAUTHORIZED, "Authentication is required.");
+        }
+
+        Dataset dataset;
+        try {
+            dataset = findDatasetOrDie(id);
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+
+        // client is superadmin or (client has EditDataset permission on these files and files are unreleased)
+        /*
+         * This is only a pre-test - if there's no draft version, there are clearly no
+         * files that a normal user can change. The converse is not true. A draft
+         * version could contain only files that have already been released. Further, we
+         * haven't checked the file list yet so the user could still be trying to change
+         * released files even if there are some unreleased/draft-only files. Doing this
+         * check here does avoid having to do further parsing for some error cases. It
+         * also checks the user can edit this dataset, so we don't have to make that
+         * check later.
+         */
+        
+        if ((!authenticatedUser.isSuperuser() && (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) ) || !permissionService.userOn(authenticatedUser, dataset).has(Permission.EditDataset)) {
+            return error(Status.FORBIDDEN, "Either the files are released and user is not a superuser or user does not have EditDataset permissions");
+        }
+
+        // check if embargoes are allowed(:MaxEmbargoDurationInMonths), gets the :MaxEmbargoDurationInMonths setting variable, if 0 or not set(null) return 400
+        long maxEmbargoDurationInMonths = 0;
+        try {
+            maxEmbargoDurationInMonths  = Long.parseLong(settingsService.get(SettingsServiceBean.Key.MaxEmbargoDurationInMonths.toString()));
+        } catch (NumberFormatException nfe){
+            if (nfe.getMessage().contains("null")) {
+                return error(Status.BAD_REQUEST, "No Embargoes allowed");
+            }
+        }
+        if (maxEmbargoDurationInMonths == 0){
+            return error(Status.BAD_REQUEST, "No Embargoes allowed");
+        }
+
+        StringReader rdr = new StringReader(jsonBody);
+        JsonObject json = Json.createReader(rdr).readObject();
+
+        Embargo embargo = new Embargo();
+       
+
+        LocalDate currentDateTime = LocalDate.now();
+        LocalDate dateAvailable = LocalDate.parse(json.getString("dateAvailable"));
+
+        // check :MaxEmbargoDurationInMonths if -1
+        LocalDate maxEmbargoDateTime = maxEmbargoDurationInMonths != -1 ? LocalDate.now().plusMonths(maxEmbargoDurationInMonths) : null;
+        // dateAvailable is not in the past
+        if (dateAvailable.isAfter(currentDateTime)){
+            embargo.setDateAvailable(dateAvailable);
+        } else {
+            return error(Status.BAD_REQUEST, "Date available can not be in the past");
+        }
+        
+        // dateAvailable is within limits
+        if (maxEmbargoDateTime != null){
+            if (dateAvailable.isAfter(maxEmbargoDateTime)){
+                return error(Status.BAD_REQUEST, "Date available can not exceed MaxEmbargoDurationInMonths: "+maxEmbargoDurationInMonths);
+            }
+        }
+        
+        embargo.setReason(json.getString("reason"));
+
+        List<DataFile> datasetFiles = dataset.getFiles();
+        List<DataFile> filesToEmbargo = new LinkedList<>();
+
+        // extract fileIds from json, find datafiles and add to list
+        if (json.containsKey("fileIds")){
+            JsonArray fileIds = json.getJsonArray("fileIds");
+            for (JsonValue jsv : fileIds) {
+                try {
+                    DataFile dataFile = findDataFileOrDie(jsv.toString());
+                    filesToEmbargo.add(dataFile);
+                } catch (WrappedResponse ex) {
+                    return ex.getResponse();
+                }
+            }
+        }
+
+        List<Embargo> orphanedEmbargoes = new ArrayList<Embargo>();
+        // check if files belong to dataset
+        if (datasetFiles.containsAll(filesToEmbargo)) {
+            JsonArrayBuilder restrictedFiles = Json.createArrayBuilder();
+            boolean badFiles = false;
+            for (DataFile datafile : filesToEmbargo) {
+                // superuser can overrule an existing embargo, even on released files
+                if (datafile.isReleased() && !authenticatedUser.isSuperuser()) {
+                    restrictedFiles.add(datafile.getId());
+                    badFiles = true;
+                }
+            }
+            if (badFiles) {
+                return Response.status(Status.FORBIDDEN)
+                        .entity(NullSafeJsonBuilder.jsonObjectBuilder().add("status", STATUS_ERROR)
+                                .add("message", "You do not have permission to embargo the following files")
+                                .add("files", restrictedFiles).build())
+                        .type(MediaType.APPLICATION_JSON_TYPE).build();
+            }
+            embargo=embargoService.merge(embargo);
+            // Good request, so add the embargo. Track any existing embargoes so we can
+            // delete them if there are no files left that reference them.
+            for (DataFile datafile : filesToEmbargo) {
+                Embargo emb = datafile.getEmbargo();
+                if (emb != null) {
+                    emb.getDataFiles().remove(datafile);
+                    if (emb.getDataFiles().isEmpty()) {
+                        orphanedEmbargoes.add(emb);
+                    }
+                }
+                // Save merges the datafile with an embargo into the context
+                datafile.setEmbargo(embargo);
+                fileService.save(datafile);
+            }
+            //Call service to get action logged
+            long embargoId = embargoService.save(embargo, authenticatedUser.getIdentifier());
+            if (orphanedEmbargoes.size() > 0) {
+                for (Embargo emb : orphanedEmbargoes) {
+                    embargoService.deleteById(emb.getId(), authenticatedUser.getIdentifier());
+                }
+            }
+            //If superuser, report changes to any released files
+            if (authenticatedUser.isSuperuser()) {
+                String releasedFiles = filesToEmbargo.stream().filter(d -> d.isReleased())
+                        .map(d -> d.getId().toString()).collect(Collectors.joining(","));
+                if (!releasedFiles.isBlank()) {
+                    actionLogSvc
+                            .log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "embargoAddedTo")
+                                    .setInfo("Embargo id: " + embargo.getId() + " added for released file(s), id(s) "
+                                            + releasedFiles + ".")
+                                    .setUserIdentifier(authenticatedUser.getIdentifier()));
+                }
+            }
+            return ok(Json.createObjectBuilder().add("message", "Files were embargoed"));
+        } else {
+            return error(BAD_REQUEST, "Not all files belong to dataset");
+        }
+    }
+
+    @POST
+    @Path("{id}/files/actions/:unset-embargo")
+    public Response removeFileEmbargo(@PathParam("id") String id, String jsonBody){
+
+        // user is authenticated
+        AuthenticatedUser authenticatedUser = null;
+        try {
+            authenticatedUser = findAuthenticatedUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(Status.UNAUTHORIZED, "Authentication is required.");
+        }
+
+        Dataset dataset;
+        try {
+            dataset = findDatasetOrDie(id);
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+
+        // client is superadmin or (client has EditDataset permission on these files and files are unreleased)
+        // check if files are unreleased(DRAFT?)
+        //ToDo - here and below - check the release status of files and not the dataset state (draft dataset version still can have released files)
+        if ((!authenticatedUser.isSuperuser() && (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) ) || !permissionService.userOn(authenticatedUser, dataset).has(Permission.EditDataset)) {
+            return error(Status.FORBIDDEN, "Either the files are released and user is not a superuser or user does not have EditDataset permissions");
+        }
+
+        // check if embargoes are allowed(:MaxEmbargoDurationInMonths), gets the :MaxEmbargoDurationInMonths setting variable, if 0 or not set(null) return 400
+        //Todo - is 400 right for embargoes not enabled
+        //Todo - handle getting Long for duration in one place (settings getLong method? or is that only in wrapper (view scoped)?
+        int maxEmbargoDurationInMonths = 0;
+        try {
+            maxEmbargoDurationInMonths  = Integer.parseInt(settingsService.get(SettingsServiceBean.Key.MaxEmbargoDurationInMonths.toString()));
+        } catch (NumberFormatException nfe){
+            if (nfe.getMessage().contains("null")) {
+                return error(Status.BAD_REQUEST, "No Embargoes allowed");
+            }
+        }
+        if (maxEmbargoDurationInMonths == 0){
+            return error(Status.BAD_REQUEST, "No Embargoes allowed");
+        }
+
+        StringReader rdr = new StringReader(jsonBody);
+        JsonObject json = Json.createReader(rdr).readObject();
+
+        List<DataFile> datasetFiles = dataset.getFiles();
+        List<DataFile> embargoFilesToUnset = new LinkedList<>();
+
+        // extract fileIds from json, find datafiles and add to list
+        if (json.containsKey("fileIds")){
+            JsonArray fileIds = json.getJsonArray("fileIds");
+            for (JsonValue jsv : fileIds) {
+                try {
+                    DataFile dataFile = findDataFileOrDie(jsv.toString());
+                    embargoFilesToUnset.add(dataFile);
+                } catch (WrappedResponse ex) {
+                    return ex.getResponse();
+                }
+            }
+        }
+        
+        List<Embargo> orphanedEmbargoes = new ArrayList<Embargo>();
+        // check if files belong to dataset
+        if (datasetFiles.containsAll(embargoFilesToUnset)) {
+            JsonArrayBuilder restrictedFiles = Json.createArrayBuilder();
+            boolean badFiles = false;
+            for (DataFile datafile : embargoFilesToUnset) {
+                // superuser can overrule an existing embargo, even on released files
+                if (datafile.getEmbargo()==null || ((datafile.isReleased() && datafile.getEmbargo() != null) && !authenticatedUser.isSuperuser())) {
+                    restrictedFiles.add(datafile.getId());
+                    badFiles = true;
+                }
+            }
+            if (badFiles) {
+                return Response.status(Status.FORBIDDEN)
+                        .entity(NullSafeJsonBuilder.jsonObjectBuilder().add("status", STATUS_ERROR)
+                                .add("message", "The following files do not have embargoes or you do not have permission to remove their embargoes")
+                                .add("files", restrictedFiles).build())
+                        .type(MediaType.APPLICATION_JSON_TYPE).build();
+            }
+            // Good request, so remove the embargo from the files. Track any existing embargoes so we can
+            // delete them if there are no files left that reference them.
+            for (DataFile datafile : embargoFilesToUnset) {
+                Embargo emb = datafile.getEmbargo();
+                if (emb != null) {
+                    emb.getDataFiles().remove(datafile);
+                    if (emb.getDataFiles().isEmpty()) {
+                        orphanedEmbargoes.add(emb);
+                    }
+                }
+                // Save merges the datafile with an embargo into the context
+                datafile.setEmbargo(null);
+                fileService.save(datafile);
+            }
+            if (orphanedEmbargoes.size() > 0) {
+                for (Embargo emb : orphanedEmbargoes) {
+                    embargoService.deleteById(emb.getId(), authenticatedUser.getIdentifier());
+                }
+            }
+            String releasedFiles = embargoFilesToUnset.stream().filter(d -> d.isReleased()).map(d->d.getId().toString()).collect(Collectors.joining(","));
+            if(!releasedFiles.isBlank()) {
+                ActionLogRecord removeRecord = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "embargoRemovedFrom").setInfo("Embargo removed from released file(s), id(s) " + releasedFiles + ".");
+                removeRecord.setUserIdentifier(authenticatedUser.getIdentifier());
+                actionLogSvc.log(removeRecord);
+            }
+            return ok(Json.createObjectBuilder().add("message", "Embargo(es) were removed from files"));
+        } else {
+            return error(BAD_REQUEST, "Not all files belong to dataset");
+        }
+    }
+
     
     @PUT
     @Path("{linkedDatasetId}/link/{linkingDataverseAlias}") 

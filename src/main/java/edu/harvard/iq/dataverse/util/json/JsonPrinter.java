@@ -18,14 +18,15 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataverseTheme;
-import edu.harvard.iq.dataverse.authorization.DataverseRole;
-import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
+import edu.harvard.iq.dataverse.Embargo;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
@@ -611,15 +612,18 @@ public class JsonPrinter {
         if (new GlobalId(df).toURL() != null){
             pidURL = new GlobalId(df).toURL().toString();
         }
+
+        JsonObjectBuilder embargo = df.getEmbargo() != null ? JsonPrinter.json(df.getEmbargo()) : null;
         
         return jsonObjectBuilder()
                 .add("id", df.getId())
                 .add("persistentId", df.getGlobalIdString())
                 .add("pidURL", pidURL)
                 .add("filename", fileName)
-                .add("contentType", df.getContentType())            
-                .add("filesize", df.getFilesize())            
-                .add("description", df.getDescription())    
+                .add("contentType", df.getContentType())
+                .add("filesize", df.getFilesize())
+                .add("description", df.getDescription())
+                .add("embargo", embargo)
                 //.add("released", df.isReleased())
                 .add("restricted", df.isRestricted())
                 .add("notaryServiceBound", df.isNotaryServiceBound())           // 2019-06
@@ -881,6 +885,11 @@ public class JsonPrinter {
         return jsonObjectBuilder()
                     .add("id", String.valueOf(aFacet.getId())) // TODO should just be id I think
                     .add("name", aFacet.getDatasetFieldType().getDisplayName());
+    }
+
+    public static JsonObjectBuilder json(Embargo embargo) {
+        return jsonObjectBuilder().add("dateAvailable", embargo.getDateAvailable().toString()).add("reason",
+                embargo.getReason());
     }
         
     public static Collector<String, JsonArrayBuilder, JsonArrayBuilder> stringsToJsonArray() {
