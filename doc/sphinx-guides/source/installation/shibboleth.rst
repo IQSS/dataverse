@@ -156,7 +156,7 @@ Configure Shibboleth
 shibboleth2.xml
 ~~~~~~~~~~~~~~~
 
-``/etc/shibboleth/shibboleth2.xml`` should look something like the :download:`sample shibboleth2.xml file <../_static/installation/files/etc/shibboleth/shibboleth2.xml>` below, but you must substitute your hostname in the ``entityID`` value. If your starting point is a ``shibboleth2.xml`` file provided by someone else, you must ensure that ``attributePrefix="AJP_"`` is added under ``ApplicationDefaults`` per the `Shibboleth wiki <https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPJavaInstall>`_ . Without the ``AJP_`` configuration in place, the required :ref:`shibboleth-attributes` will be null and users will be unable to log in.
+``/etc/shibboleth/shibboleth2.xml`` should look something like the :download:`sample shibboleth2.xml file <../_static/installation/files/etc/shibboleth/shibboleth2.xml>` below, but you must substitute your hostname in the ``entityID`` value. If your starting point is a ``shibboleth2.xml`` file provided by someone else, you must ensure that ``attributePrefix="AJP_"`` is added under ``ApplicationDefaults`` per the `Shibboleth wiki <https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPJavaInstall>`_. Without the ``AJP_`` configuration in place, the required :ref:`shibboleth-attributes` will be null and users will be unable to log in.
 
 .. literalinclude:: ../_static/installation/files/etc/shibboleth/shibboleth2.xml
    :language: xml
@@ -173,9 +173,9 @@ Identity Federation
 
 Rather than or in addition to specifying individual Identity Provider(s) you may wish to broaden the number of users who can log into your Dataverse installation by registering your Dataverse installation as a Service Provider (SP) within an identity federation. For example, in the United States, users from the `many institutions registered with the "InCommon" identity federation <https://incommon.org/community-organizations/>`_ that release the `"Research & Scholarship Attribute Bundle" <https://refeds.org/research-and-scholarship>`_  will be able to log into your Dataverse installation if you register it as an `InCommon Service Provider <https://spaces.at.internet2.edu/display/federation/federation-manager-add-sp>`_ that is part of the `Research & Scholarship (R&S) category <https://refeds.org/research-and-scholarship>`_.
 
-The details of how to register with an identity federation are out of scope for this document, but a good starting point may be this list of identity federations across the world: https://refeds.org/federations
+The details of how to register with an identity federation are out of scope for this document, but a good starting point may be `this list of identity federations across the world <https://refeds.org/federations>`_.
 
-One of the benefits of using ``shibd`` is that it can be configured to periodically poll your identity federation for updates as new Identity Providers (IdPs) join the federation you've registered with. For the InCommon federation, the following page describes how to download and verify signed InCommon metadata every hour: https://spaces.at.internet2.edu/display/federation/Download+InCommon+metadata . You can also see an example of this as ``maxRefreshDelay="3600"`` in the commented out section of the ``shibboleth2.xml`` file above.
+One of the benefits of using ``shibd`` is that it can be configured to periodically poll your identity federation for updates as new Identity Providers (IdPs) join the federation you've registered with. For the InCommon federation, `this page describes how to download and verify signed InCommon metadata every hour <https://spaces.at.internet2.edu/display/federation/Download+InCommon+metadata>`_. You can also see an example of this as ``maxRefreshDelay="3600"`` in the commented out section of the ``shibboleth2.xml`` file above.
 
 Once you've joined a federation the list of IdPs in the dropdown can be quite long! If you're curious how many are in the list you could try something like this: ``curl https://dataverse.example.edu/Shibboleth.sso/DiscoFeed | jq '.[].entityID' | wc -l``
 
@@ -192,7 +192,7 @@ The following attributes are required for a successful Shibboleth login:
 - sn
 - email
 
-See also https://www.incommon.org/federation/attributesummary.html and https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPAttributeAccess
+See also https://incommon.org/federation/attributes/ and https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPAttributeAccess
 
 attribute-map.xml
 ~~~~~~~~~~~~~~~~~
@@ -214,7 +214,7 @@ SELinux is set to "enforcing" by default on RHEL/CentOS, but unfortunately Shibb
 Disable SELinux
 ~~~~~~~~~~~~~~~
 
-The first and easiest option is to set ``SELINUX=permisive`` in ``/etc/selinux/config`` and run ``setenforce permissive`` or otherwise disable SELinux to get Shibboleth to work. This is apparently what the Shibboleth project expects because their wiki page at https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPSELinux says, "At the present time, we do not support the SP in conjunction with SELinux, and at minimum we know that communication between the mod_shib and shibd components will fail if it's enabled. Other problems may also occur."
+The first and easiest option is to set ``SELINUX=permisive`` in ``/etc/selinux/config`` and run ``setenforce permissive`` or otherwise disable SELinux to get Shibboleth to work. This is apparently what the Shibboleth project expects because `their wiki page <https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPSELinux>_` says, "At the present time, we do not support the SP in conjunction with SELinux, and at minimum we know that communication between the mod_shib and shibd components will fail if it's enabled. Other problems may also occur."
 
 Reconfigure SELinux to Accommodate Shibboleth
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
