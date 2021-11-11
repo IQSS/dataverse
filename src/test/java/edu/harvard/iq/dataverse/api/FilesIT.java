@@ -11,8 +11,12 @@ import static edu.harvard.iq.dataverse.api.AccessIT.apiToken;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.File;
+import java.io.IOException;
 import static java.lang.Thread.sleep;
 import java.math.BigDecimal;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,6 +31,7 @@ import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
+import static javax.ws.rs.core.Response.Status.REQUESTED_RANGE_NOT_SATISFIABLE;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static junit.framework.Assert.assertEquals;
 import org.hamcrest.CoreMatchers;
@@ -38,6 +43,7 @@ import org.junit.AfterClass;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import org.junit.Ignore;
 
 public class FilesIT {
 
@@ -1579,5 +1585,203 @@ public class FilesIT {
     private void msgt(String m){
         dashes(); msg(m); dashes();
     }
-    
+
+    @Test
+    public void testRange() throws IOException {
+
+        Response createUser = UtilIT.createRandomUser();
+//        createUser.prettyPrint();
+        String authorUsername = UtilIT.getUsernameFromResponse(createUser);
+        String authorApiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(authorApiToken);
+//        createDataverse.prettyPrint();
+        createDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, authorApiToken);
+//        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = JsonPath.from(createDataset.asString()).getString("data.persistentId");
+
+        Path pathToTxt = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "file.txt");
+        String contentOfTxt = ""
+                + "first is the worst\n"
+                + "second is the best\n"
+                + "third is the one with the hairy chest\n";
+        java.nio.file.Files.write(pathToTxt, contentOfTxt.getBytes());
+
+        Response uploadFileTxt = UtilIT.uploadFileViaNative(datasetId.toString(), pathToTxt.toString(), authorApiToken);
+//        uploadFileTxt.prettyPrint();
+        uploadFileTxt.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("file.txt"));
+
+        Integer fileIdTxt = JsonPath.from(uploadFileTxt.body().asString()).getInt("data.files[0].dataFile.id");
+
+        // Download the whole file.
+        Response downloadTxtNoArgs = UtilIT.downloadFile(fileIdTxt, null, null, null, authorApiToken);
+        downloadTxtNoArgs.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body(equalTo("first is the worst\n"
+                        + "second is the best\n"
+                        + "third is the one with the hairy chest\n"));
+
+        // Download the first 10 bytes.
+        Response downloadTxtFirst10 = UtilIT.downloadFile(fileIdTxt, "0-9", null, null, authorApiToken);
+        downloadTxtFirst10.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body(equalTo("first is t"));
+
+        // Download the last 6 bytes.
+        Response downloadTxtLast6 = UtilIT.downloadFile(fileIdTxt, "-6", null, null, authorApiToken);
+        downloadTxtLast6.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body(equalTo("chest\n"));
+
+        // Download some bytes from the middle.
+        Response downloadTxtMiddle = UtilIT.downloadFile(fileIdTxt, "09-19", null, null, authorApiToken);
+        downloadTxtMiddle.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body(equalTo("the worst\ns"));
+
+        // Skip the first 10 bytes and download the rest.
+        Response downloadTxtSkipFirst10 = UtilIT.downloadFile(fileIdTxt, "9-", null, null, authorApiToken);
+        downloadTxtSkipFirst10.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body(equalTo("the worst\n"
+                        + "second is the best\n"
+                        + "third is the one with the hairy chest\n"));
+
+        Path pathToCsv = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "data.csv");
+        String contentOfCsv = ""
+                + "name,pounds,species\n"
+                + "Marshall,40,dog\n"
+                + "Tiger,17,cat\n"
+                + "Panther,21,cat\n";
+        java.nio.file.Files.write(pathToCsv, contentOfCsv.getBytes());
+
+        Response uploadFileCsv = UtilIT.uploadFileViaNative(datasetId.toString(), pathToCsv.toString(), authorApiToken);
+//        uploadFileCsv.prettyPrint();
+        uploadFileCsv.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("data.csv"));
+
+        Integer fileIdCsv = JsonPath.from(uploadFileCsv.body().asString()).getInt("data.files[0].dataFile.id");
+
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToCsv, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", authorApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
+        // Just the tabular file, not the original, no byte range. Vanilla.
+        Response downloadFileNoArgs = UtilIT.downloadFile(fileIdCsv, null, null, null, authorApiToken);
+        downloadFileNoArgs.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body(equalTo("name\tpounds\tspecies\n"
+                        + "\"Marshall\"\t40\t\"dog\"\n"
+                        + "\"Tiger\"\t17\t\"cat\"\n"
+                        + "\"Panther\"\t21\t\"cat\"\n"));
+
+        // first 10 bytes of tabular format
+        Response downloadTabFirstTen = UtilIT.downloadFile(fileIdCsv, "0-9", null, null, authorApiToken);
+        downloadTabFirstTen.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body(equalTo("name\tpound"));
+
+        // first 30 bytes of tabular format
+        Response downloadTabFirst30 = UtilIT.downloadFile(fileIdCsv, "0-29", null, null, authorApiToken);
+        downloadTabFirst30.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body(equalTo("name\tpounds\tspecies\n"
+                        + "\"Marshall\""));
+
+        // last 16 bytes of tabular format
+        Response downloadTabLast16 = UtilIT.downloadFile(fileIdCsv, "-16", null, null, authorApiToken);
+        downloadTabLast16.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body(equalTo("nther\"\t21\t\"cat\"\n"));
+
+        Response downloadTabMiddleBytesHeader = UtilIT.downloadFile(fileIdCsv, "1-7", null, null, authorApiToken);
+        downloadTabMiddleBytesHeader.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body(equalTo("ame\tpou"));
+
+        Response downloadTabMiddleBytesBody = UtilIT.downloadFile(fileIdCsv, "31-43", null, null, authorApiToken);
+        downloadTabMiddleBytesBody.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body(equalTo("40\t\"dog\"\n"
+                        + "\"Tig"));
+
+        // Original version of tabular file (CSV in this case).
+        Response downloadOrig = UtilIT.downloadFile(fileIdCsv, null, "original", null, authorApiToken);
+        downloadOrig.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body(equalTo("name,pounds,species\n"
+                        + "Marshall,40,dog\n"
+                        + "Tiger,17,cat\n"
+                        + "Panther,21,cat\n"));
+
+        // first ten bytes
+        Response downloadOrigFirstTen = UtilIT.downloadFile(fileIdCsv, "0-9", "original", null, authorApiToken);
+        downloadOrigFirstTen.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body(equalTo("name,pound"));
+
+        // last ten bytes
+        Response downloadOrigLastTen = UtilIT.downloadFile(fileIdCsv, "-10", "original", null, authorApiToken);
+        downloadOrigLastTen.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body(equalTo("er,21,cat\n"));
+
+        // middle bytes
+        Response downloadOrigMiddle = UtilIT.downloadFile(fileIdCsv, "29-39", "original", null, authorApiToken);
+        downloadOrigMiddle.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body(equalTo("40,dog\nTige"));
+
+        String pathToZipWithImage = "scripts/search/data/binary/trees.zip";
+        Response uploadFileZipWithImage = UtilIT.uploadFileViaNative(datasetId.toString(), pathToZipWithImage, authorApiToken);
+//        uploadFileZipWithImage.prettyPrint();
+        uploadFileZipWithImage.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("trees.png"));
+
+        Integer fileIdPng = JsonPath.from(uploadFileZipWithImage.body().asString()).getInt("data.files[0].dataFile.id");
+
+        String trueOrWidthInPixels = "true";
+        Response getFileThumbnailImageA = UtilIT.getFileThumbnail(fileIdPng.toString(), trueOrWidthInPixels, authorApiToken);
+        getFileThumbnailImageA.then().assertThat()
+                .contentType("image/png")
+                .statusCode(OK.getStatusCode());
+
+        // Yes, you can get a range of bytes from a thumbnail.
+        String imageThumbPixels = "true";
+        Response downloadThumbnail = UtilIT.downloadFile(fileIdPng, "0-149", null, imageThumbPixels, authorApiToken);
+//        downloadThumbnail.prettyPrint();
+        downloadThumbnail.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response multipleRangesNotSupported = UtilIT.downloadFile(fileIdTxt, "0-9,20-29", null, null, authorApiToken);
+        // "Error due to Range header: Only one range is allowed."
+        multipleRangesNotSupported.prettyPrint();
+        multipleRangesNotSupported.then().assertThat().statusCode(REQUESTED_RANGE_NOT_SATISFIABLE.getStatusCode());
+
+        Response startLargerThanEndError = UtilIT.downloadFile(fileIdTxt, "20-10", null, null, authorApiToken);
+        // "Error due to Range header: Start is larger than end or size of file."
+        startLargerThanEndError.prettyPrint();
+        startLargerThanEndError.then().assertThat().statusCode(REQUESTED_RANGE_NOT_SATISFIABLE.getStatusCode());
+
+        Response rangeBeyondFileSize = UtilIT.downloadFile(fileIdTxt, "88888-99999", null, null, authorApiToken);
+        // "Error due to Range header: Start is larger than end or size of file."
+        rangeBeyondFileSize.prettyPrint();
+        rangeBeyondFileSize.then().assertThat().statusCode(REQUESTED_RANGE_NOT_SATISFIABLE.getStatusCode());
+
+//        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, authorApiToken);
+//        publishDataverse.then().assertThat().statusCode(OK.getStatusCode());
+//        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPid, "major", authorApiToken);
+//        publishDataset.then().assertThat().statusCode(OK.getStatusCode());
+
+    }
+
 }

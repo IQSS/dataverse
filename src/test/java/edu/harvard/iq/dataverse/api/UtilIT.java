@@ -37,8 +37,13 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import static com.jayway.restassured.path.xml.XmlPath.from;
 import static com.jayway.restassured.RestAssured.given;
+import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.StringReader;
+import java.util.Collections;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -720,13 +725,33 @@ public class UtilIT {
     }
 
     static Response downloadFile(Integer fileId, String apiToken) {
-        return given()
-                /**
-                 * Data Access API does not support X-Dataverse-key header -
-                 * https://github.com/IQSS/dataverse/issues/2662
-                 */
-                //.header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/access/datafile/" + fileId + "?key=" + apiToken);
+        String nullByteRange = null;
+        String nullFormat = null;
+        String nullImageThumb = null;
+        return downloadFile(fileId, nullByteRange, nullFormat, nullImageThumb, apiToken);
+    }
+
+    static Response downloadFile(Integer fileId, String byteRange, String format, String imageThumb, String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (byteRange != null) {
+            requestSpecification.header("Range", "bytes=" + byteRange);
+        }
+        String optionalFormat = "";
+        if (format != null) {
+            optionalFormat = "&format=" + format;
+        }
+        String optionalImageThumb = "";
+        if (format != null) {
+            optionalImageThumb = "&imageThumb=" + imageThumb;
+        }
+        /**
+         * Data Access API does not support X-Dataverse-key header -
+         * https://github.com/IQSS/dataverse/issues/2662
+         *
+         * Actually, these days it does. We could switch.
+         */
+        //.header(API_TOKEN_HTTP_HEADER, apiToken)
+        return requestSpecification.get("/api/access/datafile/" + fileId + "?key=" + apiToken + optionalFormat + optionalImageThumb);
     }
     
     static Response downloadTabularFile(Integer fileId) {
@@ -2666,5 +2691,36 @@ public class UtilIT {
                 .body(jsonLDBody.getBytes(StandardCharsets.UTF_8))
                 .post("/api/dataverses/" + dataverseAlias +"/datasets");
         return response;
+    }
+    
+    static Response setDataverseCurationLabelSet(String alias, String apiToken, String labelSetName) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .put("/api/admin/dataverse/" + alias + "/curationLabelSet?name=" + labelSetName);
+        return response;
+    }
+    
+    static Response getDatasetCurationLabelSet(Integer datasetId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId + "/curationLabelSet");
+        return response;
+    }
+    
+    static Response setDatasetCurationLabel(Integer datasetId, String apiToken, String label) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .put("/api/datasets/" + datasetId + "/curationStatus?label=" + label);
+        return response;
+    }
+
+    private static DatasetField constructPrimitive(String fieldName, String value) {
+        DatasetField field = new DatasetField();
+        field.setDatasetFieldType(
+                new DatasetFieldType(fieldName, DatasetFieldType.FieldType.TEXT, false));
+        field.setDatasetFieldValues(
+                Collections.singletonList(
+                        new DatasetFieldValue(field, value)));
+        return field;
     }
 }

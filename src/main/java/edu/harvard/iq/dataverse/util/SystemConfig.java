@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.util;
 
 import com.ocpsoft.pretty.PrettyContext;
+
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -9,6 +10,8 @@ import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+
 import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorUtil;
@@ -21,6 +24,7 @@ import java.net.UnknownHostException;
 import java.time.Year;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -29,6 +33,9 @@ import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -116,6 +123,9 @@ public class SystemConfig {
     private static final String JVM_TIMER_SERVER_OPTION = "dataverse.timerServer";
     
     private static final long DEFAULT_GUESTBOOK_RESPONSES_DISPLAY_LIMIT = 5000L; 
+    
+    public final static String DEFAULTCURATIONLABELSET = "DEFAULT";
+    public final static String CURATIONLABELSDISABLED = "DISABLED";
     
     public String getVersion() {
         return getVersion(false);
@@ -1110,5 +1120,45 @@ public class SystemConfig {
         }
         // -1 means no limit is set;
         return -1;
+    }
+    public Map<String, String[]> getCurationLabels() {
+        Map<String, String[]> labelMap = new HashMap<String, String[]>();
+        String setting = settingsService.getValueForKey(SettingsServiceBean.Key.AllowedCurationLabels, "");
+        if (!setting.isEmpty()) {
+            try {
+                JsonReader jsonReader = Json.createReader(new StringReader(setting));
+
+                Pattern pattern = Pattern.compile("(^[\\w ]+$)"); // alphanumeric, underscore and whitespace allowed
+
+                JsonObject labelSets = jsonReader.readObject();
+                for (String key : labelSets.keySet()) {
+                    JsonArray labels = (JsonArray) labelSets.getJsonArray(key);
+                    String[] labelArray = new String[labels.size()];
+
+                    boolean allLabelsOK = true;
+                    Iterator<JsonValue> iter = labels.iterator();
+                    int i = 0;
+                    while (iter.hasNext()) {
+                        String label = ((JsonString) iter.next()).getString();
+                        Matcher matcher = pattern.matcher(label);
+                        if (!matcher.matches()) {
+                            logger.warning("Label rejected: " + label + ", Label set " + key + " ignored.");
+                            allLabelsOK = false;
+                            break;
+                        }
+                        labelArray[i] = label;
+                        i++;
+                    }
+                    if (allLabelsOK) {
+                        labelMap.put(key, labelArray);
+                    }
+                }
+            } catch (Exception e) {
+                logger.warning("Unable to parse " + SettingsServiceBean.Key.AllowedCurationLabels.name() + ": "
+                        + e.getLocalizedMessage());
+                e.printStackTrace();
+            }
+        }
+        return labelMap;
     }
 }
