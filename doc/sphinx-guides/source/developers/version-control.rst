@@ -134,7 +134,7 @@ In the examples we use 123-COOL-FEATURE as the name of the feature branch, and h
 
         git checkout develop
 
-        # update local develop banch from https://github.com/IQSS/dataverse
+        # update local develop branch from https://github.com/IQSS/dataverse
         git fetch upstream develop
         git rebase upstream/develop
 
@@ -159,7 +159,7 @@ In the examples we use 123-COOL-FEATURE as the name of the feature branch, and h
 
         git checkout develop
 
-        # update local develop banch from https://github.com/IQSS/dataverse
+        # update local develop branch from https://github.com/IQSS/dataverse
         git fetch upstream develop
         git rebase upstream/develop
 
