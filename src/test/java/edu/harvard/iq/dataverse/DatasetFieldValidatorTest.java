@@ -123,4 +123,33 @@ public class DatasetFieldValidatorTest {
         assertEquals( test, expectedOutcome, datasetFieldValidator.isValid(child1DatasetField, constraintValidatorContext));
     }
     
+    @Test
+    public void testRemoveInvalidCharacters() {
+        assertEquals("test", removeInvalidPrimitive("test"));
+        assertEquals("test", removeInvalidPrimitive("te\fst"));
+        assertEquals("test", removeInvalidPrimitive("te\u0002st"));
+        assertEquals("test", removeInvalidPrimitive("\fte\u0002st\f"));
+    }
+
+    private String removeInvalidPrimitive(String value) {
+        Dataverse dataverse = new Dataverse();
+        Dataset dataset = new Dataset();
+        dataset.setOwner(dataverse);
+        DatasetVersion dsv = new DatasetVersion();
+        dsv.setDataset(dataset);
+
+        DatasetFieldType primitiveDSFType = new DatasetFieldType("primitive", DatasetFieldType.FieldType.TEXT, false);
+        boolean required = false;
+        primitiveDSFType.setRequired(required);
+
+        DatasetField testDatasetField = new DatasetField();
+        testDatasetField.setDatasetVersion(dsv);
+        testDatasetField.setDatasetFieldType(primitiveDSFType);
+        testDatasetField.setSingleValue(value);
+
+        DatasetFieldValidator datasetFieldValidator = new DatasetFieldValidator();
+        datasetFieldValidator.isValid(testDatasetField, constraintValidatorContext);
+        return testDatasetField.getValue();
+    }
+
 }
