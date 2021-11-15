@@ -185,6 +185,13 @@ pre {
     display: none;
 }
 
+button.ui-button .ui-icon.glyphicon {
+	text-indent: 0;
+}
+button.ui-button:not(.ui-button-icon-only) .ui-icon.glyphicon {
+	margin-left: 4px;
+}
+
 /* Bootstrap tooltips and popovers */
 .tooltip {
 	font-size: 0.8em;
@@ -310,8 +317,11 @@ pre {
 		border-radius: $border-radius;
 		color: $main-text-color;
 
-		.ui-icon {
+		.ui-icon:not(.glyphicon) {
 			background-image: url($primefaces-main);
+		}
+		.ui-icon.glyphicon {
+			background-image: none;
 		}
 	}
 
@@ -1425,16 +1435,24 @@ input.fancy-checkbox[type=checkbox] {
 
 /* Buttons */
 
+$button-padding: 6px 12px 5.1px;
+
 .button-block {
 	button, a {
-		padding: 6px 12px;
+		padding: $button-padding;
 		color: $link-color;
-
-		span.ui-button-text {
-			line-height: 1.42857143;
-			padding: 0;
-		}
 	}
+}
+
+button, a, span, input[type="button"] {
+	&.ui-button {
+		padding: $button-padding;
+	}
+}
+
+.ui-button .ui-button-text {
+	line-height: 1.42857143;
+	padding: 0;
 }
 
 .input-group-btn {
@@ -1447,6 +1465,26 @@ input.fancy-checkbox[type=checkbox] {
 
 button.btn-default.ui-button-text-only .ui-button-text {
 	font-size: 1em;
+}
+
+.ui-button-text-icon-left .ui-button-text {
+	padding: 0;
+	margin-left: 24px;
+}
+
+button.ui-state-default, .ui-widget-content button.ui-state-default {
+	box-shadow: rgba(255, 255, 255, 0.15) 0px 1px 0px 0px inset, rgba(0, 0, 0, 0.075) 0px 1px 1px 0px;
+}
+
+a.btn:not(.btn-primary):hover {
+	color: $link-color;
+}
+
+/* Fix misaligned focus outline; hide button text while maintaining WCAG */
+.ui-button-icon-only .ui-button-text {
+	text-indent: 0;
+	opacity: 0;
+	overflow: hidden;
 }
 
 /* Tabs */
@@ -3425,8 +3463,11 @@ div.filesTable {
 }
 
 .ui-state-default, .ui-widget-header, .ui-widget-content {
-	.ui-icon {
+	.ui-icon:not(.glyphicon) {
 		background-image: url($primefaces-main);
+	}
+	.ui-icon.glyphicon {
+		background-image: none;
 	}
 }
 
@@ -3536,7 +3577,7 @@ div.filesTable {
 		}
 
 		button, a, input[type="button"] {
-			padding: 6px 12px;
+			padding: $button-padding;
 			color: $link-color;
 
 			&:last-child {
@@ -3578,8 +3619,11 @@ div.filesTable {
 		}
 	}
 
-	.ui-icon {
-		background-image: url($primefaces_main);
+	.ui-icon:not(.glyphicon) {
+		background-image: url($primefaces-main);
+	}
+	.ui-icon.glyphicon {
+		background-image: none;
 	}
 
 	.ui-picklist-list-wrapper {
@@ -3661,7 +3705,7 @@ div.filesTable {
 
 .form-horizontal .button-block {
 	button.button-cancel, a.button-cancel {
-		padding: 6px 12px;
+		padding: $button-padding;
 		color: $link-color;
 
 		&:last-child {
@@ -4350,7 +4394,7 @@ body.font-size-percent-200 {
 		.ui-messages-info, .ui-messages-warn, .ui-messages-error, .ui-messages-fatal {
 			color: $contrast-foreground-color;
 
-			.ui-icon {
+			.ui-icon:not(.glyphicon) {
 				background-image: url($contrast-primefaces-main);
 			}
 		}
@@ -4367,7 +4411,7 @@ body.font-size-percent-200 {
 		}
 	}
 
-	.ui-state-default .ui-icon, .ui-widget-header .ui-icon, .ui-widget-content .ui-icon {
+	.ui-state-default .ui-icon:not(.glyphicon), .ui-widget-header .ui-icon:not(.glyphicon), .ui-widget-content .ui-icon:not(.glyphicon) {
 		background-image: url($contrast-primefaces-main);
 	}
 
@@ -4443,7 +4487,7 @@ body.font-size-percent-200 {
 	* button.ui-button.ui-state-default, span.ui-button.ui-state-default {
 		@include contrast-button($contrast-background-color, $contrast-foreground-color, $contrast-hover-color, $contrast-link-color);
 
-		.ui-icon {
+		.ui-icon:not(.glyphicon) {
 			background-image: url($contrast-primefaces-main-alt);
 		}
 	}
@@ -4594,7 +4638,7 @@ body.font-size-percent-200 {
 		.ui-paginator-next,
 		.ui-paginator-last {
 			&:hover, &:active, &:focus {
-				.ui-icon {
+				.ui-icon:not(.glyphicon) {
 					background-image: url($contrast-primefaces-main-alt);
 				}
 			}
@@ -5185,11 +5229,11 @@ body.font-size-percent-200 {
 		background-color: $contrast-background-color;
 
 		&, .ui-state-default, .ui-widget-header, .ui-widget-content {
-			.ui-icon {
+			.ui-icon:not(.glyphicon) {
 				background-image: url($contrast-primefaces-main);
 			}
 
-			button .ui-icon {
+			button .ui-icon:not(.glyphicon) {
 				background-image: url($contrast-primefaces-main-alt);
 			}
 		}

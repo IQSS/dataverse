@@ -34,10 +34,11 @@
                                     <p:commandLink action="#{LicenseListingPage.redirectToLicenseReorderPage()}" styleClass="btn btn-default btn-access">
                                         <span class="glyphicon glyphicon-sort"/> #{bundle['dashboard.license.reorderButton']}
                                     </p:commandLink>
-
-                                    <p:commandLink onclick="primeFacesShowModal('newLicense', this);" styleClass="btn btn-default btn-access">
-                                        <span class="glyphicon glyphicon-plus"/> #{bundle['dashboard.license.newLicense.add']}
-                                    </p:commandLink>
+                                    
+                                    <p:commandButton onclick="primeFacesShowModal('newLicense', this);" 
+                                        styleClass="btn"
+                                        icon="glyphicon glyphicon-plus"
+                                        value="#{bundle['dashboard.license.newLicense.add']}" />
                                 </div>
                             </div>
                         </div>
@@ -68,25 +69,21 @@
                                       style="width: 15%; text-align: center;">
                                 <div style="display: grid; grid-template-columns: repeat(2, auto); grid-row-gap: 1%;">
                                     <div style="grid-column: 1;">
-                                        <p:commandLink type="button"
-                                                       styleClass="btn btn-default bootstrap-button-tooltip"
-                                                       title="#{bundle['dashboard.license.localePreviewButton']}"
-                                                       update=":licenseLocalizedPreviewContent"
-                                                       action="#{LicenseListingPage.setLicenseForPreview(license)}"
-                                                       onclick="primeFacesShowModal('licenseLocalizedPreview', this);">
-                                            <span style="text-align: center" class="glyphicon glyphicon-eye-open"/>
-                                        </p:commandLink>
+                                        <p:commandButton styleClass="btn btn-default bootstrap-button-tooltip"
+                                            title="#{bundle['dashboard.license.localePreviewButton']}"
+                                            update=":licenseLocalizedPreviewContent"
+                                            action="#{LicenseListingPage.setLicenseForPreview(license)}"
+                                            onclick="primeFacesShowModal('licenseLocalizedPreview', this);"
+                                            icon="glyphicon glyphicon-eye-open" />
                                     </div>
 
                                     <div style="grid-column: 2;">
-                                        <p:commandLink type="button"
-                                                       styleClass="btn btn-default bootstrap-button-tooltip"
-                                                       title="#{bundle['dashboard.license.editLicenseButton']}"
-                                                       update=":licenseEditForm"
-                                                       action="#{LicenseListingPage.setLicenseForEdit(license)}"
-                                                       onclick="primeFacesShowModal('licenseEdit', this); ">
-                                            <span style="text-align: center" class="glyphicon glyphicon-edit"/>
-                                        </p:commandLink>
+                                        <p:commandButton styleClass="btn btn-default bootstrap-button-tooltip"
+                                            title="#{bundle['dashboard.license.editLicenseButton']}"
+                                            update=":licenseEditForm"
+                                            action="#{LicenseListingPage.setLicenseForEdit(license)}"
+                                            onclick="primeFacesShowModal('licenseEdit', this);"
+                                            icon="glyphicon glyphicon-edit" />
                                     </div>
                                 </div>
                             </p:column>
