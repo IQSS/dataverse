@@ -214,7 +214,7 @@ SELinux is set to "enforcing" by default on RHEL/CentOS, but unfortunately Shibb
 Disable SELinux
 ~~~~~~~~~~~~~~~
 
-The first and easiest option is to set ``SELINUX=permisive`` in ``/etc/selinux/config`` and run ``setenforce permissive`` or otherwise disable SELinux to get Shibboleth to work. This is apparently what the Shibboleth project expects because `their wiki page <https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPSELinux>`_ says, "At the present time, we do not support the SP in conjunction with SELinux, and at minimum we know that communication between the mod_shib and shibd components will fail if it's enabled. Other problems may also occur."
+The first and easiest option is to set ``SELINUX=permisive`` in ``/etc/selinux/config`` and run ``setenforce permissive`` or otherwise disable SELinux to get Shibboleth to work. This is apparently what the Shibboleth project expects because their `wiki page <https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPSELinux>`_ says, "At the present time, we do not support the SP in conjunction with SELinux, and at minimum we know that communication between the mod_shib and shibd components will fail if it's enabled. Other problems may also occur."
 
 Reconfigure SELinux to Accommodate Shibboleth
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
