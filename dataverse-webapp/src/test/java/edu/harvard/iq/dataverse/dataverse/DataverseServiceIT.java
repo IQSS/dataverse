@@ -108,6 +108,8 @@ public class DataverseServiceIT extends WebappArquillianDeployment {
     @Transactional(TransactionMode.ROLLBACK)
     public void saveNewDataverse_WithWrongUser() {
         //given
+        final int EXPECTED_DV_COUNT = 5; // Root + 4 dataverses from dbinit
+
         Dataverse dataverse = prepareDataverse();
         dataverseSession.setUser(GuestUser.get());
 
@@ -116,8 +118,7 @@ public class DataverseServiceIT extends WebappArquillianDeployment {
 
         //then
         Assert.assertTrue(savedDataverse.isLeft());
-        Assert.assertEquals(4, dataverseDao.findAll().size());
-
+        Assert.assertEquals(EXPECTED_DV_COUNT, dataverseDao.findAll().size());
     }
 
     @Test

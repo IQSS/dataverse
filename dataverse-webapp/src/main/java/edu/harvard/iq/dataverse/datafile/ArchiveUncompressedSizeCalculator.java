@@ -36,8 +36,8 @@ public class ArchiveUncompressedSizeCalculator {
 
     // -------------------- CONSTRUCTORS --------------------
 
-    ArchiveUncompressedSizeCalculator() { }
-    
+    public ArchiveUncompressedSizeCalculator() { }
+
     @Inject
     public ArchiveUncompressedSizeCalculator(SettingsServiceBean settingsService) {
         this.settingsService = settingsService;
@@ -47,11 +47,11 @@ public class ArchiveUncompressedSizeCalculator {
 
     /**
      * Returns summary size of files that are inside of an archive.
-     * Returns 0 if file is not an archive or there was some problems in calculating. 
+     * Returns 0 if file is not an archive or there was some problems in calculating.
      */
     public Long calculateUncompressedSize(Path archivePath, String finalType, String fileName) {
         Long uncompressedSize = 0L;
-        
+
         if ("application/zip".equals(finalType)) {
             uncompressedSize = extractZipContentsSize(archivePath);
         } else if ("application/vnd.rar".equals(finalType)) {
@@ -108,7 +108,7 @@ public class ArchiveUncompressedSizeCalculator {
                 }
             }
         }
-        
+
         return uncompressedSize;
     }
 

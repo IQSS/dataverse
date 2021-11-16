@@ -6,12 +6,17 @@ import edu.harvard.iq.dataverse.persistence.DatabaseCleaner;
 import edu.harvard.iq.dataverse.persistence.PersistenceArquillianDeployment;
 import edu.harvard.iq.dataverse.persistence.SqlScriptRunner;
 import edu.harvard.iq.dataverse.test.arquillian.ArquillianIntegrationTests;
-import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionScheduler;
+import edu.harvard.iq.dataverse.validation.datasetfield.FieldValidatorRegistry;
+import edu.harvard.iq.dataverse.validation.datasetfield.validators.StandardDateValidator;
+import edu.harvard.iq.dataverse.validation.datasetfield.validators.StandardEmailValidator;
+import edu.harvard.iq.dataverse.validation.datasetfield.validators.StandardInputValidator;
+import edu.harvard.iq.dataverse.validation.datasetfield.validators.StandardIntegerValidator;
+import edu.harvard.iq.dataverse.validation.datasetfield.validators.StandardNumberValidator;
+import edu.harvard.iq.dataverse.validation.datasetfield.validators.StandardUrlValidator;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionWorker;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.FileAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -23,7 +28,6 @@ import javax.annotation.Resource;
 import javax.inject.Inject;
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
-
 import java.io.File;
 import java.util.logging.Logger;
 
@@ -43,13 +47,24 @@ public class WebappArquillianDeployment {
     private SqlScriptRunner sqlScriptRunner;
     @Inject
     private DatabaseCleaner databaseCleaner;
+    @Inject
+    private FieldValidatorRegistry fieldValidatorRegistry;
+
     @Resource
     private UserTransaction transaction;
 
 
     @Before
-    public void before() throws Throwable {
+    public void before() {
         sqlScriptRunner.runScriptFromClasspath("/dbinit.sql");
+
+        // Register validators
+        fieldValidatorRegistry.register(new StandardDateValidator());
+        fieldValidatorRegistry.register(new StandardEmailValidator());
+        fieldValidatorRegistry.register(new StandardInputValidator());
+        fieldValidatorRegistry.register(new StandardIntegerValidator());
+        fieldValidatorRegistry.register(new StandardNumberValidator());
+        fieldValidatorRegistry.register(new StandardUrlValidator());
     }
 
     @After

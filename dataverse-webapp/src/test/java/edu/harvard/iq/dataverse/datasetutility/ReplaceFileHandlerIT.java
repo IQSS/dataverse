@@ -203,6 +203,7 @@ public class ReplaceFileHandlerIT extends WebappArquillianDeployment {
         dataset.setAuthority("10.5072");
         dataset.setIdentifier("FK2/AAAAAA");
         dataset.setProtocol("doi");
+        dataset.setStorageIdentifier("file://" + dataset.getAuthority() + "/" + dataset.getIdentifier());
 
         DatasetVersion editVersion = dataset.getEditVersion();
         editVersion.setVersionState(DatasetVersion.VersionState.RELEASED);

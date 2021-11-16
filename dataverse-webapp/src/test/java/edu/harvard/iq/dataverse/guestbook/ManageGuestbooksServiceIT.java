@@ -39,6 +39,9 @@ public class ManageGuestbooksServiceIT extends WebappArquillianDeployment {
     @Inject
     private DataverseSession dataverseSession;
 
+    @Inject
+    private GuestbookResponseServiceBean guestbookResponseServiceBean;
+
     @EJB
     private AuthenticationServiceBean authenticationServiceBean;
 
@@ -52,6 +55,7 @@ public class ManageGuestbooksServiceIT extends WebappArquillianDeployment {
         // given
         Dataverse dataverse = dataverseDao.findByAlias("ownmetadatablocks");
         long guestbookId = dataverse.getGuestbooks().get(0).getId();
+        guestbookResponseServiceBean.deleteAllByGuestbookId(guestbookId); // delete all guestbook responses
 
         // when
         manageGuestbooksService.deleteGuestbook(guestbookId);

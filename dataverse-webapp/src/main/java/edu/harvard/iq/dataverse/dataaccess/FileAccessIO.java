@@ -42,6 +42,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -81,7 +82,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
             return DATASET_STORAGE_PREFIX + dataset.getAuthority() + "/" + dataset.getIdentifier();
         }
     }
-    
+
     @Override
     public void open(DataAccessOption... options) throws IOException {
 
@@ -124,10 +125,10 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
             }
 
         } else if (dvObject instanceof Dataset) {
-            //This case is for uploading a dataset related auxiliary file 
+            //This case is for uploading a dataset related auxiliary file
             //e.g. image thumbnails/metadata exports
             //TODO: do we really need to do anything here? should we return the dataset directory?
-            //this checks whether a directory for a dataset exists 
+            //this checks whether a directory for a dataset exists
             if (isWriteAccess && !Files.exists(getDatasetDirectory())) {
                 Files.createDirectories(getDatasetDirectory());
             }
@@ -143,7 +144,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     public void savePath(Path fileSystemPath) throws IOException {
 
         // Since this is a local fileystem file, we can use the
-        // quick NIO Files.copy method: 
+        // quick NIO Files.copy method:
 
         Path outputPath = getFileSystemPath();
         Files.copy(fileSystemPath, outputPath, StandardCopyOption.REPLACE_EXISTING);
@@ -226,7 +227,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     // this method copies a local filesystem Path into this DataAccess Auxiliary location:
     @Override
     public void savePathAsAux(Path fileSystemPath, String auxItemTag) throws IOException {
-        // quick Files.copy method: 
+        // quick Files.copy method:
         Path auxPath = getAuxObjectAsPath(auxItemTag);
         Files.copy(fileSystemPath, auxPath, StandardCopyOption.REPLACE_EXISTING);
     }
@@ -294,7 +295,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
             return physicalPath;
         }
 
-        
+
         Path datasetDirectory = getDatasetDirectory();
 
         physicalPath = datasetDirectory.resolve(dvObject.getStorageIdentifier());
@@ -342,7 +343,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         if (dvObject == null) {
             throw new IOException("No DvObject defined in the Data Access Object");
         }
-        
+
         Dataset dataset = null;
         if (dvObject instanceof Dataset) {
             dataset = (Dataset)dvObject;
@@ -358,7 +359,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         List<Path> auxItems = new ArrayList<>();
 
         // cached files for a given datafiles are stored on the filesystem
-        // as <filesystemname>.*; for example, <filename>.thumb64 or 
+        // as <filesystemname>.*; for example, <filename>.thumb64 or
         // <filename>.RData.
 
         String baseName;
@@ -378,18 +379,15 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
             throw new IOException("Could not determine the filesystem directory of the parent dataset.");
         }
 
-        DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
-            @Override
-            public boolean accept(Path file) throws IOException {
-                return (file.getFileName() != null
-                        && file.getFileName().toString().startsWith(baseName + "."));
-            }
-        };
+        DirectoryStream.Filter<Path> filter = file -> (file.getFileName() != null
+                && file.getFileName().toString().startsWith(baseName + "."));
 
         try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(datasetDirectoryPath, filter)) {
             for (Path filePath : dirStream) {
                 auxItems.add(filePath);
             }
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, "Exception encountered: ", ioe);
         }
 
         return auxItems;

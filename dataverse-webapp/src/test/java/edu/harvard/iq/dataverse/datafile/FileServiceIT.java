@@ -195,7 +195,7 @@ public class FileServiceIT extends WebappArquillianDeployment {
         DataFile dataFile = fileMetadata.getDataFile();
         String storageIdentifier = dataFile.getStorageIdentifier().replace("^.*://", "");
         Dataset parent = dataFile.getOwner();
-        Path pathToFile = parent.getFileSystemDirectory(SystemConfig.getFilesDirectoryStatic());
+        Path pathToFile = Paths.get(SystemConfig.getFilesDirectoryStatic(), parent.getAuthority(), parent.getIdentifier());
         return Paths.get(pathToFile.toString(), storageIdentifier);
     }
 

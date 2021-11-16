@@ -51,24 +51,23 @@ public class RorDataServiceIT extends WebappArquillianDeployment {
 
     @Test
     public void refreshRorData() throws IOException {
-        //given
+        // given
         final File file = copyRorDataFromClasspath();
         final AuthenticatedUser authenticatedUser = new AuthenticatedUser();
         authenticatedUser.setSuperuser(true);
         session.setUser(authenticatedUser);
 
-        //when
+        // when
         final RorDataService.UpdateResult niceFile = rorDataService.refreshRorData(file, FormDataContentDisposition
                 .name("niceFile")
                 .fileName(".json")
                 .build());
 
-        //then
-        Assertions.assertThat(niceFile.getTotal()).isEqualTo(1);
-        final List<RorData> rorDatas = rorDataRepository.findAll();
-        Assertions.assertThat(rorDatas.size()).isEqualTo(2);
-        Assertions.assertThat(rorDatas.stream().filter(ror -> ror.getId().equals(101L))
-                                      .findFirst().get().getRorId()).isEqualTo("013cjyk83");
+        // then
+        Assertions.assertThat(niceFile.getTotal()).isEqualTo(2);
+        Assertions.assertThat(rorDataRepository.findAll())
+                .extracting(RorData::getRorId)
+                .containsExactlyInAnyOrder("011xxxx11", "013cjyk83");
     }
 
     private File copyRorDataFromClasspath() throws IOException {

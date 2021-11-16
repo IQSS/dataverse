@@ -37,10 +37,10 @@ class RorDataServiceTest {
 
     @Test
     void refreshRorData() throws IOException {
-        //given
+        // given
         final File file = copyRorDataFromClasspath();
 
-        //when
+        // when
         Mockito.when(rorConverter.toEntity(Mockito.any())).thenReturn(new RorData());
 
         final RorDataService.UpdateResult updateResult = rorDataService.refreshRorData(file, FormDataContentDisposition
@@ -48,9 +48,9 @@ class RorDataServiceTest {
                 .fileName(".json")
                 .build());
 
-        //then
-        Assertions.assertThat(updateResult.getTotal()).isEqualTo(1);
-        Mockito.verify(rorTransactionsService, Mockito.times(2)).saveMany(Mockito.any());
+        // then
+        Assertions.assertThat(updateResult.getTotal()).isEqualTo(2);
+        Mockito.verify(rorTransactionsService, Mockito.times(3)).saveMany(Mockito.any());
         Mockito.verify(rorTransactionsService, Mockito.times(1)).truncateAll();
 
     }

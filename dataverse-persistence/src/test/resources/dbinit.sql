@@ -90,9 +90,6 @@ VALUES (68, 'subDataverse', 'subDataverse', 'aff', 'ORGANIZATIONS_INSTITUTIONS',
 
 -------------------- DATASETS --------------------
 
-INSERT INTO termsofuseandaccess (id, availabilitystatus, citationrequirements, conditions, confidentialitydeclaration, contactforaccess, dataaccessplace, depositorrequirements, disclaimer, fileaccessrequest, license, originalarchive, restrictions, sizeofcollection, specialpermissions, studycompletion, termsofaccess, termsofuse) VALUES (2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, 'CC0', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO termsofuseandaccess (id, availabilitystatus, citationrequirements, conditions, confidentialitydeclaration, contactforaccess, dataaccessplace, depositorrequirements, disclaimer, fileaccessrequest, license, originalarchive, restrictions, sizeofcollection, specialpermissions, studycompletion, termsofaccess, termsofuse) VALUES (36, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, 'CC0', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-
 --- DV:ROOT -> Draft only dataset ---
 INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, authority, identifier, globalidcreatetime, identifierregistered, storageidentifier, releaseuser_id, publicationdate,
                       creator_id, createdate, modificationtime, permissionmodificationtime, indextime, permissionindextime)
@@ -101,8 +98,8 @@ INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, auth
 
 INSERT INTO dataset (id, fileaccessrequest, harvestidentifier, usegenericthumbnail, citationdatedatasetfieldtype_id, harvestingclient_id, guestbook_id, thumbnailfile_id)
     VALUES (66, NULL, NULL, false, NULL, NULL, NULL, NULL);
-INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber, minorversionnumber, unf, termsofuseandaccess_id, archivenote, versionnote, deaccessionlink, createtime, lastupdatetime, releasetime, archivetime, archivalcopylocation)
-    VALUES (41, 1, 66, 'DRAFT', 1, 0, NULL, NULL, NULL, NULL, NULL, '2019-09-26 11:43:58.204', '2019-09-26 11:43:58.204', NULL, NULL, NULL);
+INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber, minorversionnumber, unf, archivenote, versionnote, deaccessionlink, createtime, lastupdatetime, releasetime, archivetime, archivalcopylocation)
+    VALUES (41, 1, 66, 'DRAFT', 1, 0, NULL, NULL, NULL, NULL, '2019-09-26 11:43:58.204', '2019-09-26 11:43:58.204', NULL, NULL, NULL);
 INSERT INTO datasetversionuser (id, lastupdatedate, authenticateduser_id, datasetversion_id) VALUES (44, '2019-09-26 11:43:58.194', 1, 41);
 
 INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (668, NULL, 41, 1, 0, 'Draft only dataset');
@@ -132,8 +129,8 @@ VALUES (71, 'Dataset', 1, false, 'doi', '10.18150', 'FK2/QTVQKZ', NULL, false, '
 
 INSERT INTO dataset (id, fileaccessrequest, harvestidentifier, usegenericthumbnail, citationdatedatasetfieldtype_id, harvestingclient_id, guestbook_id, thumbnailfile_id)
 VALUES (71, NULL, NULL, false, NULL, 12, NULL, NULL);
-INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber, minorversionnumber, unf, termsofuseandaccess_id, archivenote, versionnote, deaccessionlink, createtime, lastupdatetime, releasetime, archivetime, archivalcopylocation)
-VALUES (61, 1, 71, 'DRAFT', 1, 0, NULL, NULL, NULL, NULL, NULL, '2019-09-26 11:43:58.204', '2019-09-26 11:43:58.204', NULL, NULL, NULL);
+INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber, minorversionnumber, unf, archivenote, versionnote, deaccessionlink, createtime, lastupdatetime, releasetime, archivetime, archivalcopylocation)
+VALUES (61, 1, 71, 'DRAFT', 1, 0, NULL, NULL, NULL, NULL, '2019-09-26 11:43:58.204', '2019-09-26 11:43:58.204', NULL, NULL, NULL);
 
 
 --- DV:unreleased -> Draft with files ---
@@ -142,12 +139,12 @@ INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, auth
     VALUES (52, 'Dataset', 51, false, 'doi', '10.18150', 'FK2/MLXK1N', NULL, false, 'file://10.18150/FK2/MLXK1N', NULL, NULL,
             2, '2019-08-22 08:22:33.069', '2019-09-27 12:00:43.188', '2019-08-22 08:22:33.069', NULL, NULL);
 INSERT INTO dataset (id, fileaccessrequest, harvestidentifier, usegenericthumbnail, citationdatedatasetfieldtype_id, harvestingclient_id, guestbook_id, thumbnailfile_id)
-    VALUES (52, NULL, NULL, false, NULL, NULL, 2, NULL);
+    VALUES (52, NULL, NULL, false, NULL, NULL, NULL, NULL);
 INSERT INTO datafilecategory (id, name, dataset_id) VALUES (11, 'Code', 52);
 INSERT INTO datafilecategory (id, name, dataset_id) VALUES (12, 'CustomCategory', 52);
 INSERT INTO datafilecategory (id, name, dataset_id) VALUES (13, 'UnassignedCategory', 52);
-INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber, minorversionnumber, unf, termsofuseandaccess_id, archivenote, versionnote, deaccessionlink, createtime, lastupdatetime, releasetime, archivetime, archivalcopylocation)
-    VALUES (36, 11, 52, 'DRAFT', NULL, NULL, NULL, 36, NULL, NULL, NULL, '2019-08-22 08:22:33.1', '2019-09-27 12:00:43.188', NULL, NULL, NULL);
+INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber, minorversionnumber, unf, archivenote, versionnote, deaccessionlink, createtime, lastupdatetime, releasetime, archivetime, archivalcopylocation)
+    VALUES (36, 11, 52, 'DRAFT', NULL, NULL, 36, NULL, NULL, NULL, '2019-08-22 08:22:33.1', '2019-09-27 12:00:43.188', NULL, NULL, NULL);
 INSERT INTO datasetversionuser (id, lastupdatedate, authenticateduser_id, datasetversion_id) VALUES (38, '2019-08-22 08:23:02.738', 2, 36);
 INSERT INTO datasetversionuser (id, lastupdatedate, authenticateduser_id, datasetversion_id) VALUES (39, '2019-09-27 12:00:43.188', 1, 36);
 
@@ -178,12 +175,12 @@ INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, auth
             2, '2019-08-22 08:22:33.069', '2019-09-27 12:00:43.188', '2019-08-22 08:22:33.069', NULL, NULL);
 INSERT INTO dataset (id, fileaccessrequest, harvestidentifier, usegenericthumbnail, citationdatedatasetfieldtype_id, harvestingclient_id, guestbook_id, thumbnailfile_id)
     VALUES (56, NULL, NULL, false, NULL, NULL, NULL, NULL);
-INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber, minorversionnumber, unf, termsofuseandaccess_id, archivenote, versionnote, deaccessionlink, createtime, lastupdatetime, releasetime, archivetime, archivalcopylocation)
-    VALUES (42, 11, 56, 'ARCHIVED', 1, 0, NULL, 36, 'https://www.google.com/', NULL, NULL, '2019-08-22 08:22:33.1', '2019-09-27 12:00:43.188', '2019-09-27 12:00:43.188', NULL, NULL);
-INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber, minorversionnumber, unf, termsofuseandaccess_id, archivenote, versionnote, deaccessionlink, createtime, lastupdatetime, releasetime, archivetime, archivalcopylocation)
-    VALUES (43, 11, 56, 'RELEASED', 2, 0, NULL, 36, NULL, NULL, NULL, '2019-08-22 08:22:33.1', '2019-09-27 12:00:43.188', '2019-09-27 12:00:43.188', NULL, NULL);
-INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber, minorversionnumber, unf, termsofuseandaccess_id, archivenote, versionnote, deaccessionlink, createtime, lastupdatetime, releasetime, archivetime, archivalcopylocation)
-    VALUES (44, 11, 56, 'DRAFT', NULL, NULL, NULL, 36, NULL, NULL, NULL, '2019-08-22 08:22:33.1', '2019-09-27 12:00:43.188', NULL, NULL, NULL);
+INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber, minorversionnumber, unf, archivenote, versionnote, deaccessionlink, createtime, lastupdatetime, releasetime, archivetime, archivalcopylocation)
+    VALUES (42, 11, 56, 'ARCHIVED', 1, 0, NULL, 'https://www.google.com/', NULL, NULL, '2019-08-22 08:22:33.1', '2019-09-27 12:00:43.188', '2019-09-27 12:00:43.188', NULL, NULL);
+INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber, minorversionnumber, unf, archivenote, versionnote, deaccessionlink, createtime, lastupdatetime, releasetime, archivetime, archivalcopylocation)
+    VALUES (43, 11, 56, 'RELEASED', 2, 0, NULL, NULL, NULL, NULL, '2019-08-22 08:22:33.1', '2019-09-27 12:00:43.188', '2019-09-27 12:00:43.188', NULL, NULL);
+INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber, minorversionnumber, unf, archivenote, versionnote, deaccessionlink, createtime, lastupdatetime, releasetime, archivetime, archivalcopylocation)
+    VALUES (44, 11, 56, 'DRAFT', NULL, NULL, NULL, NULL, NULL, NULL, '2019-08-22 08:22:33.1', '2019-09-27 12:00:43.188', NULL, NULL, NULL);
 INSERT INTO datasetversionuser (id, lastupdatedate, authenticateduser_id, datasetversion_id) VALUES (40, '2019-08-22 08:23:02.738', 2, 42);
 INSERT INTO datasetversionuser (id, lastupdatedate, authenticateduser_id, datasetversion_id) VALUES (41, '2019-08-22 08:23:02.738', 2, 43);
 INSERT INTO datasetversionuser (id, lastupdatedate, authenticateduser_id, datasetversion_id) VALUES (42, '2019-08-22 08:23:02.738', 2, 43);
@@ -195,10 +192,10 @@ INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, auth
             2, '2020-01-03 12:22:33', '2020-01-06 12:00:43', '2020-01-06 12:00:43', NULL, NULL);
 INSERT INTO dataset (id, fileaccessrequest, harvestidentifier, usegenericthumbnail, citationdatedatasetfieldtype_id, harvestingclient_id, guestbook_id, thumbnailfile_id)
     VALUES (57, NULL, NULL, false, NULL, NULL, NULL, NULL);
-INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber, minorversionnumber, unf, termsofuseandaccess_id, archivenote, versionnote, deaccessionlink, createtime, lastupdatetime, releasetime, archivetime, archivalcopylocation)
-    VALUES (50, 1, 57, 'RELEASED', 1, 0, NULL, 36, NULL, NULL, NULL, '2020-01-03 12:22:33', '2020-01-04 01:48:00', '2019-01-04 01:48:00', NULL, NULL);
-INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber, minorversionnumber, unf, termsofuseandaccess_id, archivenote, versionnote, deaccessionlink, createtime, lastupdatetime, releasetime, archivetime, archivalcopylocation)
-    VALUES (51, 1, 57, 'RELEASED', 2, 0, NULL, 36, NULL, NULL, NULL, '2020-01-06 09:10:00', '2020-01-06 12:00:43', '2020-01-06 12:00:43', NULL, NULL);
+INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber, minorversionnumber, unf, archivenote, versionnote, deaccessionlink, createtime, lastupdatetime, releasetime, archivetime, archivalcopylocation)
+    VALUES (50, 1, 57, 'RELEASED', 1, 0, NULL, NULL, NULL, NULL, '2020-01-03 12:22:33', '2020-01-04 01:48:00', '2019-01-04 01:48:00', NULL, NULL);
+INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber, minorversionnumber, unf, archivenote, versionnote, deaccessionlink, createtime, lastupdatetime, releasetime, archivetime, archivalcopylocation)
+    VALUES (51, 1, 57, 'RELEASED', 2, 0, NULL, NULL, NULL, NULL, '2020-01-06 09:10:00', '2020-01-06 12:00:43', '2020-01-06 12:00:43', NULL, NULL);
 
 
 -------------------- DATAFILES --------------------
@@ -238,7 +235,7 @@ INSERT INTO filemetadata (id, description, directorylabel, label, prov_freeform,
 
 -------------------- DATASET CITATION COUNTS --------------------
 
-INSERT INTO datasetCitationscount(id, dataset_id, citationsCount) VALUES(1, 56, 8); 
+INSERT INTO datasetCitationscount(id, dataset_id, citationsCount) VALUES(1, 56, 8);
 
 -------------------- GROUPS --------------------
 
@@ -275,8 +272,8 @@ INSERT INTO guestbookresponse (id, downloadtype, email, institution, name, posit
 VALUES (1, NULL, 'mail@test.com', NULL, 'testResponse', NULL, NULL, NULL, 2, 53, 52, NULL, 2);
 
 -------------------- TEMPLATES --------------------
-INSERT INTO template (id, createtime, name, usagecount, dataverse_id, termsofuseandaccess_id)
- VALUES (1, '2019-08-22 08:23:02.738', 'testTemplate', 0, 1, NULL);
+INSERT INTO template (id, createtime, name, usagecount, dataverse_id)
+ VALUES (1, '2019-08-22 08:23:02.738', 'testTemplate', 0, 1);
 
 -------------------- CONSENTS ---------------------
 INSERT INTO consent (id, name, displayorder, hidden, required)
@@ -343,7 +340,6 @@ SELECT setval('datasetversionuser_id_seq', COALESCE((SELECT MAX(id)+1 FROM datas
 SELECT setval('dvobject_id_seq', COALESCE((SELECT MAX(id)+1 FROM dvobject), 1), false);
 SELECT setval('termsofuse_id_seq', COALESCE((SELECT MAX(id)+1 FROM filetermsofuse), 1), false);
 SELECT setval('filemetadata_id_seq', COALESCE((SELECT MAX(id)+1 FROM filemetadata), 1), false);
-SELECT setval('termsofuseandaccess_id_seq', COALESCE((SELECT MAX(id)+1 FROM termsofuseandaccess), 1), false);
 SELECT setval('template_id_seq', COALESCE((SELECT MAX(id)+1 FROM template), 1), false);
 SELECT setval('datasetfield_id_seq', COALESCE((SELECT MAX(id)+1 FROM datasetfield), 1), false);
 SELECT setval('explicitgroup_id_seq', COALESCE((SELECT MAX(id)+1 FROM explicitgroup), 1), false);

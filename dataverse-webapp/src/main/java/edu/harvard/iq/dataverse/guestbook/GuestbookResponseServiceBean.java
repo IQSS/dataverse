@@ -49,10 +49,10 @@ import java.util.logging.Logger;
 public class GuestbookResponseServiceBean {
     private static final Logger logger = Logger.getLogger(GuestbookResponseServiceBean.class.getCanonicalName());
 
-    // The query below is used for retrieving guestbook responses used to download 
-    // the collected data, in CSV format, from the manage-guestbooks and 
-    // guestbook-results pages. (for entire dataverses, and for the individual 
-    // guestbooks within dataverses, respectively). -- L.A. 
+    // The query below is used for retrieving guestbook responses used to download
+    // the collected data, in CSV format, from the manage-guestbooks and
+    // guestbook-results pages. (for entire dataverses, and for the individual
+    // guestbooks within dataverses, respectively). -- L.A.
     private static final String BASE_QUERY_STRING_FOR_DOWNLOAD_AS_CSV = "select r.id, g.name, df.fieldvalue,  r.responsetime, r.downloadtype,"
             + " m.label, r.dataFile_id, r.name, r.email, r.institution, r.position "
             + "from guestbookresponse r, datasetfield df, filemetadata m, dvobject o, guestbook g  "
@@ -65,9 +65,9 @@ public class GuestbookResponseServiceBean {
             + " and r.dataset_id = o.id "
             + " and r.guestbook_id = g.id ";
 
-    // And this query is used for retrieving guestbook responses for displaying 
-    // on the guestbook-results.xhtml page (the info we show on the page is 
-    // less detailed than what we let the users download as CSV files, so this 
+    // And this query is used for retrieving guestbook responses for displaying
+    // on the guestbook-results.xhtml page (the info we show on the page is
+    // less detailed than what we let the users download as CSV files, so this
     // query has fewer fields than the one above). -- L.A.
     private static final String BASE_QUERY_STRING_FOR_PAGE_DISPLAY = "select  r.id, df.fieldvalue, r.responsetime, r.downloadtype,  m.label, r.name "
             + "from guestbookresponse r, datasetfield df, filemetadata m , dvobject o "
@@ -79,7 +79,7 @@ public class GuestbookResponseServiceBean {
             + " and m.datafile_id = r.datafile_id "
             + " and r.dataset_id = o.id ";
 
-    // And a custom query for retrieving *all* the custom question responses, for 
+    // And a custom query for retrieving *all* the custom question responses, for
     // a given dataverse, or for an individual guestbook within the dataverse:
     private static final String BASE_QUERY_CUSTOM_QUESTION_ANSWERS = "select q.questionstring, r.response, g.id "
             + "from customquestionresponse r, customquestion q, guestbookresponse g, dvobject o "
@@ -117,14 +117,23 @@ public class GuestbookResponseServiceBean {
         return null;
     }
 
+    public void deleteAllByGuestbookId(Long guestbookId) {
+        if (guestbookId == null) {
+            return;
+        }
+        em.createQuery("delete from GuestbookResponse o where o.guestbook.id = :guestbookId")
+                .setParameter("guestbookId", guestbookId)
+                .executeUpdate();
+    }
+
     public List<GuestbookResponse> findByAuthenticatedUserId(AuthenticatedUser user) {
         Query query = em.createNamedQuery("GuestbookResponse.findByAuthenticatedUserId");
         query.setParameter("authenticatedUserId", user.getId());
         return query.getResultList();
     }
 
-    /* 
-       This method is used for streaming downloads of guestbook responses, in 
+    /*
+       This method is used for streaming downloads of guestbook responses, in
        CSV format, both for individual guestbooks, and for entire dataverses
        (with guestbookId = null).
      */
@@ -136,7 +145,7 @@ public class GuestbookResponseServiceBean {
         // Before we do anything else, create a map of all the custom question responses
         // available for this dataverse (or, this individual guestbook within the
         // dataverse; see the comment below, how it's saving us a metric f-ton
-        // of queries now) -- L.A. 
+        // of queries now) -- L.A.
 
         Map<Integer, Object> customQandAs = mapCustomQuestionAnswersAsStrings(dataverseId, guestbookId);
 
@@ -161,18 +170,18 @@ public class GuestbookResponseServiceBean {
 
             StringBuilder sb = new StringBuilder();
 
-            // Since we are formatting the output as comma-separated values, 
-            // we should go to the trouble of removing any commas from the 
+            // Since we are formatting the output as comma-separated values,
+            // we should go to the trouble of removing any commas from the
             // string fields, or the structure of the file will be broken. -- L.A.
 
-            // Guestbook name: 
+            // Guestbook name:
             sb.append("\"");
             sb.append(((String) result[1]).replace("\"", "\"\""));
             sb.append("\"");
             sb.append(SEPARATOR);
 
 
-            // Dataset name: 
+            // Dataset name:
             sb.append("\"");
             sb.append(((String) result[2]).replace("\"", "\"\""));
             sb.append("\"");
@@ -193,7 +202,7 @@ public class GuestbookResponseServiceBean {
             sb.append("\"");
             sb.append(SEPARATOR);
 
-            // file name: 
+            // file name:
             sb.append("\"");
             sb.append(((String) result[5]).replace("\"", "\"\""));
             sb.append("\"");
@@ -205,13 +214,13 @@ public class GuestbookResponseServiceBean {
             sb.append("\"");
             sb.append(SEPARATOR);
 
-            // name supplied in the guestbook response: 
+            // name supplied in the guestbook response:
             sb.append("\"");
             sb.append(result[7] == null ? "" : ((String) result[7]).replace("\"", "\"\""));
             sb.append("\"");
             sb.append(SEPARATOR);
 
-            // email: 
+            // email:
             sb.append("\"");
             sb.append(result[8] == null ? "" : result[8]);
             sb.append("\"");
@@ -223,7 +232,7 @@ public class GuestbookResponseServiceBean {
             sb.append("\"");
             sb.append(SEPARATOR);
 
-            // position: 
+            // position:
             sb.append("\"");
             sb.append(result[10] == null ? "" : ((String) result[10]).replace("\"", "\"\""));
             sb.append("\"");
@@ -231,10 +240,10 @@ public class GuestbookResponseServiceBean {
             // Finally, custom questions and answers, if present:
 
             // (the old implementation, below, would run one extra query FOR EVERY SINGLE
-            // guestbookresponse entry! -- instead, we are now pre-caching all the 
-            // available custom question responses, with a single native query at 
+            // guestbookresponse entry! -- instead, we are now pre-caching all the
+            // available custom question responses, with a single native query at
             // the top of this method. -- L.A.)
-            
+
             /*String cqString = "select q.questionstring, r.response  from customquestionresponse r, customquestion q where q.id = r.customquestion_id and r.guestbookResponse_id = " + result[0];
             List<Object[]> customResponses = em.createNativeQuery(cqString).getResultList();
             if (customResponses != null) {
@@ -252,8 +261,8 @@ public class GuestbookResponseServiceBean {
 
             sb.append(NEWLINE);
 
-            // Finally, write the line out: 
-            // (i.e., we are writing one guestbook response at a time, thus allowing the 
+            // Finally, write the line out:
+            // (i.e., we are writing one guestbook response at a time, thus allowing the
             // whole thing to stream in real time -- L.A.)
             out.write(sb.toString().getBytes());
             out.flush();
@@ -261,8 +270,8 @@ public class GuestbookResponseServiceBean {
     }
 
     /*
-      This method is used to produce an array of guestbook responses for displaying 
-      on the guestbook-responses page. 
+      This method is used to produce an array of guestbook responses for displaying
+      on the guestbook-responses page.
     */
     public List<Object[]> findArrayByGuestbookIdAndDataverseId(Long guestbookId, Long dataverseId, Long limit) {
 
@@ -295,13 +304,13 @@ public class GuestbookResponseServiceBean {
         Map<Integer, Object> customQandAs = null;
 
         if (hasCustomQuestions) {
-            // if this Guestbook has custom questions, let's look up all the 
+            // if this Guestbook has custom questions, let's look up all the
             // custom question-and-answer pairs for this dataverse and guestbook.
             if (limit == null || guestbookResults.size() < limit) {
                 customQandAs = mapCustomQuestionAnswersAsLists(dataverseId, guestbookId, null, null);
             } else {
-                // only select the custom question responses for the current range of 
-                // guestbook responses - can make a difference on a guestbook with 
+                // only select the custom question responses for the current range of
+                // guestbook responses - can make a difference on a guestbook with
                 // an insane amount of responses. -- L.A.
                 customQandAs = mapCustomQuestionAnswersAsLists(dataverseId,
                                                                guestbookId,
@@ -330,7 +339,7 @@ public class GuestbookResponseServiceBean {
                 // Finally, custom questions and answers, if present:
                 if (hasCustomQuestions) {
                     // (the old implementation, below, would run one extra query FOR EVERY SINGLE
-                    // guestbookresponse entry! -- instead, we are now pre-caching all the 
+                    // guestbookresponse entry! -- instead, we are now pre-caching all the
                     // available custom question responses, with a single native query, above.
                     // -- L.A.)
 
@@ -350,8 +359,8 @@ public class GuestbookResponseServiceBean {
     /*
        The 3 methods below are for caching all the custom question responses for this
        guestbook and/or dataverse.
-       The results are saved in maps, and later re-combined with the individual 
-       "normal" guestbook responses, retrieved from GuestbookResponse table. -- L.A. 
+       The results are saved in maps, and later re-combined with the individual
+       "normal" guestbook responses, retrieved from GuestbookResponse table. -- L.A.
     */
     private Map<Integer, Object> mapCustomQuestionAnswersAsLists(Long dataverseId, Long guestbookId, Integer firstResponse, Integer lastResponse) {
         return selectCustomQuestionAnswers(dataverseId, guestbookId, false, firstResponse, lastResponse);
@@ -703,13 +712,13 @@ public class GuestbookResponseServiceBean {
     }
 
     public Long getCountGuestbookResponsesByDatasetId(Long datasetId) {
-        // dataset id is null, will return 0        
+        // dataset id is null, will return 0
         Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId);
         return (Long) query.getSingleResult();
     }
 
     public Long getCountOfAllGuestbookResponses() {
-        // dataset id is null, will return 0        
+        // dataset id is null, will return 0
         Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o;");
         return (Long) query.getSingleResult();
     }

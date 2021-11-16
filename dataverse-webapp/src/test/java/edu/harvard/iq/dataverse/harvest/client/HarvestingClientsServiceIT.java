@@ -97,6 +97,7 @@ public class HarvestingClientsServiceIT extends WebappArquillianDeployment {
     }
 
     @Test
+    @Ignore
     public void shouldDeleteHarvestingClient() {
         // given
         HarvestingClient newHarvestingClient = createHarvestingClient();

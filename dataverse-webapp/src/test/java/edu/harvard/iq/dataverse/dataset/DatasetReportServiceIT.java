@@ -26,7 +26,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
 @RunWith(Arquillian.class)
-@Transactional(TransactionMode.ROLLBACK)
 public class DatasetReportServiceIT extends WebappArquillianDeployment {
     private static final Logger logger = LoggerFactory.getLogger(DatasetReportServiceIT.class);
 
