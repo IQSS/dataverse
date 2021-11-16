@@ -509,35 +509,7 @@ public class Access extends AbstractApiBean {
 
         return retValue;
     }
-    
-    @Path("variable/{varId}/metadata/ddi")
-    @GET
-    @Produces({ "application/xml" })
 
-    public String dataVariableMetadataDDI(@PathParam("varId") Long varId, @QueryParam("fileMetadataId") Long fileMetadataId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
-        String retValue = "";
-        
-        ByteArrayOutputStream outStream = null;
-        try {
-            outStream = new ByteArrayOutputStream();
-
-            ddiExportService.exportDataVariable(
-                    varId,
-                    outStream,
-                    exclude,
-                    include,
-                    fileMetadataId);
-        } catch (Exception e) {
-            // For whatever reason we've failed to generate a partial 
-            // metadata record requested. We simply return an empty string.
-            return retValue;
-        }
-
-        retValue = outStream.toString();
-        
-        return retValue; 
-    }
-    
     /*
      * GET method for retrieving various auxiliary files associated with 
      * a tabular datafile.
