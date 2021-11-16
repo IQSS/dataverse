@@ -512,6 +512,48 @@ public class Access extends AbstractApiBean {
         return retValue;
     }
 
+
+    /*
+     * GET method for retrieving various auxiliary files associated with
+     * a tabular datafile.
+     */
+    @Path("datafile/{fileId}/auxiliary/{origin}")
+    @GET
+    public Response listDatafileMetadataAux(@PathParam("fileId") String fileId,
+            @PathParam("origin") String origin,
+            @QueryParam("key") String apiToken,
+            @Context UriInfo uriInfo,
+            @Context HttpHeaders headers,
+            @Context HttpServletResponse response) throws ServiceUnavailableException {
+
+        DataFile df = findDataFileOrDieWrapper(fileId);
+
+        if (apiToken == null || apiToken.equals("")) {
+            apiToken = headers.getHeaderString(API_KEY_HEADER);
+        }
+
+        List<AuxiliaryFile> auxFileList = auxiliaryFileService.listAuxiliaryFiles(df, origin);
+
+        if (auxFileList == null || auxFileList.isEmpty()) {
+            throw new NotFoundException("No Auxiliary files exist for datafile " + fileId + " and the specified origin");
+        }
+        boolean isAccessAllowed = isAccessAuthorized(df, apiToken);
+        JsonArrayBuilder jab = Json.createArrayBuilder();
+        auxFileList.forEach(auxFile -> {
+            if (isAccessAllowed || auxFile.getIsPublic()) {
+                JsonObjectBuilder job = Json.createObjectBuilder();
+                job.add("formatTag", auxFile.getFormatTag());
+                job.add("formatVersion", auxFile.getFormatVersion());
+                job.add("fileSize", auxFile.getFileSize());
+                job.add("contentType", auxFile.getContentType());
+                job.add("isPublic", auxFile.getIsPublic());
+                job.add("type", auxFile.getType());
+                jab.add(job);
+            }
+        });
+        return ok(jab);
+    }
+
     /*
      * GET method for retrieving various auxiliary files associated with 
      * a tabular datafile.
