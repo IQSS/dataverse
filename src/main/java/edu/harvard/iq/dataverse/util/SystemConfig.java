@@ -1114,7 +1114,7 @@ public class SystemConfig {
     
     public String getDataverseValidationFailureMsg() {
         String defaultMessage = "This dataverse collection cannot be published because it has failed an external metadata validation test.";
-        return settingsService.getValueForKey(SettingsServiceBean.Key.DataverseMetadataValidationFailureMsg, defaultMessage);
+        return settingsService.getValueForKey(SettingsServiceBean.Key.DataverseMetadataPublishValidationFailureMsg, defaultMessage);
     }
     
     public String getDataverseUpdateValidationFailureMsg() {

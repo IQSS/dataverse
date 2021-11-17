@@ -2413,21 +2413,21 @@ can enter for an embargo end date. This limit will be enforced in the popup dial
 :DataverseMetadataValidatorScript
 +++++++++++++++++++++++++++++++++
 
-An optional external script that validates Dataverse collection metadata as it's being updated or published. The script provided should be an executable that takes a single command line argument, the name of the file containing the metadata exported in the native json format. The script should exit with a non-zero error code if the validation fails. If that happens, a failure message (customizable in the next two settings below, `:DataverseMetadataValidationFailureMsg` and `:DataverseMetadataUpdateValidationFailureMsg`) will be shown to the user.
+An optional external script that validates Dataverse collection metadata as it's being updated or published. The script provided should be an executable that takes a single command line argument, the name of the file containing the metadata exported in the native json format. The script should exit with a non-zero error code if the validation fails. If that happens, a failure message (customizable in the next two settings below, `:DataverseMetadataPublishValidationFailureMsg` and `:DataverseMetadataUpdateValidationFailureMsg`) will be shown to the user.
 
 For example:
 
 ``curl -X PUT -d /usr/local/bin/dv_validator.sh http://localhost:8080/api/admin/settings/:DataverseMetadataValidatorScript``
 
 
-:DataverseMetadataValidationFailureMsg
+:DataverseMetadataPublishValidationFailureMsg
 ++++++++++++++++++++++++++++++++++++++
 
 Specifies a custom error message shown to the user when a Dataverse collection fails an external metadata validation (as specified in the setting above) during an attempt to publish. If not specified, the default message "This dataverse collection cannot be published because it has failed an external metadata validation test" will be used.
 
 For example: 
 
-``curl -X PUT -d "This content needs to go through an additional review by the Curation Team before it can be published." http://localhost:8080/api/admin/settings/:DataverseMetadataValidationFailureMsg``
+``curl -X PUT -d "This content needs to go through an additional review by the Curation Team before it can be published." http://localhost:8080/api/admin/settings/:DataverseMetadataPublishValidationFailureMsg``
 
 
 :DataverseMetadataUpdateValidationFailureMsg

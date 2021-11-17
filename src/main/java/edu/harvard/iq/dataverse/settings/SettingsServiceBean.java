@@ -449,7 +449,7 @@ public class SettingsServiceBean {
          */
         DataverseMetadataValidatorScript,
         DatasetMetadataValidatorScript,
-        DataverseMetadataValidationFailureMsg,
+        DataverseMetadataPublishValidationFailureMsg,
         DataverseMetadataUpdateValidationFailureMsg,
         DatasetMetadataValidationFailureMsg,
         ExternalValidationAdminOverride,
