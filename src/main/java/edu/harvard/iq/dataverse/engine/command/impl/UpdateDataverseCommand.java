@@ -61,7 +61,7 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
 	
 	@Override
 	public Dataverse execute(CommandContext ctxt) throws CommandException {
-            logger.info("Entering update dataverse command");
+            logger.fine("Entering update dataverse command");
             
             // Perform any optional validation steps, if defined:
             if (ctxt.systemConfig().isExternalDataverseValidationEnabled()) {
