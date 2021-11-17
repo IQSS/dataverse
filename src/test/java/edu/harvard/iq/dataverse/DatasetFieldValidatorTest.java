@@ -129,6 +129,7 @@ public class DatasetFieldValidatorTest {
         assertEquals("test", removeInvalidPrimitive("te\fst"));
         assertEquals("test", removeInvalidPrimitive("te\u0002st"));
         assertEquals("test", removeInvalidPrimitive("\fte\u0002st\f"));
+        assertEquals("test", removeInvalidPrimitive("te\ufffest"));
     }
 
     private String removeInvalidPrimitive(String value) {

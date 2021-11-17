@@ -32,7 +32,7 @@ public class DatasetFieldValidator implements ConstraintValidator<ValidateDatase
 
         // If invalid characters are found, mutate the value by removing them.
         if (value != null && value.getValue() != null) {
-            String invalidCharacters = "[\f\u0002]";
+            String invalidCharacters = "[\f\u0002\ufffe]";
             Pattern p = Pattern.compile(invalidCharacters);
             Matcher m = p.matcher(value.getValue());
             boolean invalidCharactersFound = m.find();

@@ -3,3 +3,5 @@
 UPDATE datasetfieldvalue SET value = regexp_replace(value, E'\f', '', 'g');
 -- Remove character: start of text (\u0002)
 UPDATE datasetfieldvalue SET value = regexp_replace(value, U&'\0002', '', 'g');
+-- Remove character: not a character (\ufffe)
+UPDATE datasetfieldvalue SET value = regexp_replace(value, U&'\FFFE', '', 'g');
