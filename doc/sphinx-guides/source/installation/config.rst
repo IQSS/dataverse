@@ -2413,7 +2413,7 @@ can enter for an embargo end date. This limit will be enforced in the popup dial
 :DataverseMetadataValidatorScript
 +++++++++++++++++++++++++++++++++
 
-An optional external script that validates Dataverse collection metadata as it's being updated or published. The script provided should be an executable that takes the single command line argument, the name of the file containing the metadata exported in the native json format. The script should exit with a non-zero error code if the validation fails. If that happens, a failure message (customizable in the next two settings below, `:DataverseMetadataValidationFailureMsg` and `DataverseMetadataUpdateValidationFailureMsg`) will be shown to the user.
+An optional external script that validates Dataverse collection metadata as it's being updated or published. The script provided should be an executable that takes a single command line argument, the name of the file containing the metadata exported in the native json format. The script should exit with a non-zero error code if the validation fails. If that happens, a failure message (customizable in the next two settings below, `:DataverseMetadataValidationFailureMsg` and `DataverseMetadataUpdateValidationFailureMsg`) will be shown to the user.
 
 For example:
 
