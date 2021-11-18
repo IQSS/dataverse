@@ -50,7 +50,7 @@
                                         </p:commandLink>
                                     </div>
                                     <div>
-                                        <p:fragment id="userGroupsRequests" rendered="#{!empty manageFilePermissionsPage.fileAccessRequestMap.entrySet().toArray()}">
+                                        <p:fragment id="userGroupsRequests">
                                             <p>
                                                 <span class="highlightBold">#{manageFilePermissionsPage.fileAccessRequestMap.size()} #{bundle['dataverse.permissions.requests']} </span>
                                             </p>
@@ -83,7 +83,7 @@
                                                                        update="@form
                                                                        @([id$=Messages])"
                                                                        >
-                                                            <span class="glyphicon glyphicon-ok"/> #{bundle['dataverse.permissionsFiles.assignDialog.grantBtn']}
+                                                            <span class="glyphicon glyphicon-ok"/>#{bundle['dataverse.permissionsFiles.assignDialog.grantBtn']}
                                                         </p:commandLink>
                                                         <p:commandLink type="button" styleClass="btn btn-default"
                                                                        actionListener="#{manageFilePermissionsPage.rejectAccessToAllRequests(access.key)}"
@@ -325,7 +325,7 @@
                             </div>
                             <div class="button-block">
                                 <p:commandLink type="button" styleClass="btn btn-default" rendered="#{empty manageFilePermissionsPage.fileRequester}"
-                                               update="assignRoleContent userGroups restrictedFilesFragment @([id$=Messages])"
+                                               update="assignRoleContent userGroups userGroupsRequests restrictedFilesFragment @([id$=Messages])"
                                                actionListener="#{manageFilePermissionsPage.grantAccess}"
                                                oncomplete="if (args &amp;&amp; !args.validationFailed) PF('assignWidget').hide();">
                                     <f:param name="DO_VALIDATION" value="true"/>
@@ -333,14 +333,14 @@
                                     <h:outputText value="#{bundle['dataverse.permissionsFiles.assignDialog.grantBtn']}"/>
                                 </p:commandLink>
                                 <p:commandLink type="button" styleClass="btn btn-default" rendered="#{!empty manageFilePermissionsPage.fileRequester}"
-                                               update="assignRoleContent userGroups fileAccessRequests restrictedFilesFragment @([id$=Messages])"
+                                               update="assignRoleContent userGroups userGroupsRequests restrictedFilesFragment @([id$=Messages])"
                                                actionListener="#{manageFilePermissionsPage.grantAccessToRequests(manageFilePermissionsPage.fileRequester)}"
                                                oncomplete="PF('assignWidget').hide();">
                                     <span class="glyphicon glyphicon-ok"/>
                                     <h:outputText value="#{bundle['dataverse.permissionsFiles.assignDialog.grantBtn']}"/>
                                 </p:commandLink>
                                 <p:commandLink type="button" styleClass="btn btn-default" rendered="#{!empty manageFilePermissionsPage.fileRequester}"
-                                               update="assignRoleContent userGroups fileAccessRequests restrictedFilesFragment @([id$=Messages])"
+                                               update="assignRoleContent userGroups userGroupsRequests restrictedFilesFragment @([id$=Messages])"
                                                actionListener="#{manageFilePermissionsPage.rejectAccessToRequestsForSelectedFiles(manageFilePermissionsPage.fileRequester)}"
                                                oncomplete="PF('assignWidget').hide();">
                                     <span class="glyphicon glyphicon-ban-circle"/>
