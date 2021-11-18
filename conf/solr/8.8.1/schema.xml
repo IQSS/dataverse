@@ -342,7 +342,7 @@
     <field name="producerName" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="producerURL" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="productionDate" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="productionPlace" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <field name="productionPlace" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="publication" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="publicationCitation" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="publicationIDNumber" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -359,7 +359,7 @@
     <field name="responseRate" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="samplingErrorEstimates" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="samplingProcedure" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="series" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <field name="series" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="seriesInformation" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="seriesName" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="socialScienceNotes" type="text_en" multiValued="false" stored="true" indexed="true"/>
