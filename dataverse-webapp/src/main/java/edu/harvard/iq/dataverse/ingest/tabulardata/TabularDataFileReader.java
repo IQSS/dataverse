@@ -21,10 +21,15 @@
 package edu.harvard.iq.dataverse.ingest.tabulardata;
 
 import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 
 import static java.lang.System.out;
@@ -39,15 +44,13 @@ import static java.lang.System.out;
  * @author akio sone
  */
 public abstract class TabularDataFileReader {
+    private static final Logger logger = Logger.getLogger(TabularDataFileReader.class.getSimpleName());
 
-
-    /*
-     * TODO: rename! -- L.A. 4.0
-     */
-    public static String SDIO_VERSION = "4.0";
-
+    protected String dataLanguageEncoding;
 
     protected TabularDataFileReaderSpi originatingProvider;
+
+    // -------------------- CONSTRUCTORS --------------------
 
     protected TabularDataFileReader(TabularDataFileReaderSpi originatingProvider) {
         this.originatingProvider = originatingProvider;
@@ -55,6 +58,8 @@ public abstract class TabularDataFileReader {
 
     public TabularDataFileReader() {
     }
+
+    // -------------------- GETTERS --------------------
 
     public TabularDataFileReaderSpi getOriginatingProvider() {
         return originatingProvider;
@@ -64,19 +69,11 @@ public abstract class TabularDataFileReader {
         return originatingProvider.getFormatNames()[0];
     }
 
-    public void dispose() {
-
-    }
-
-    protected String dataLanguageEncoding;
-
     public String getDataLanguageEncoding() {
         return dataLanguageEncoding;
     }
 
-    public void setDataLanguageEncoding(String dataLanguageEncoding) {
-        this.dataLanguageEncoding = dataLanguageEncoding;
-    }
+    // -------------------- LOGIC --------------------
 
     /**
      * Reads the statistical data file from a supplied
@@ -101,14 +98,9 @@ public abstract class TabularDataFileReader {
             throws IOException;
 
 
-    // should this be an abstract method as well? 
-
     public boolean isValid(File ddiFile) throws IOException {
         return false;
     }
-
-    // Utility methods
-
 
     public void printHexDump(byte[] buff, String hdr) {
         int counter = 0;
@@ -150,6 +142,21 @@ public abstract class TabularDataFileReader {
         return nullRemovedString;
     }
 
+    protected Charset selectCharset() {
+        if (StringUtils.isNotBlank(getDataLanguageEncoding())) {
+            try {
+                return Charset.forName(getDataLanguageEncoding());
+            } catch (IllegalArgumentException iae) {
+                logger.log(Level.WARNING,
+                        String.format("Exception while trying to initialize selected charset [%s]. Using UTF-8.", getDataLanguageEncoding()),
+                        iae);
+                return StandardCharsets.UTF_8;
+            }
+        } else {
+            return StandardCharsets.UTF_8;
+        }
+    }
+
     protected String escapeCharacterString(String rawString) {
         /*
          * Some special characters, like new lines and tabs need to
@@ -159,21 +166,26 @@ public abstract class TabularDataFileReader {
          * already in the string need to be escaped themselves.
          */
         String escapedString = rawString.replace("\\", "\\\\");
-        // escape quotes: 
+        // escape quotes:
         escapedString = escapedString.replaceAll("\"", Matcher.quoteReplacement("\\\""));
         // escape tabs and new lines:
         escapedString = escapedString.replaceAll("\t", Matcher.quoteReplacement("\\t"));
         escapedString = escapedString.replaceAll("\n", Matcher.quoteReplacement("\\n"));
         escapedString = escapedString.replaceAll("\r", Matcher.quoteReplacement("\\r"));
 
-        // the escaped version of the string is stored in the tab file 
-        // enclosed in double-quotes; this is in order to be able 
-        // to differentiate between an empty string (tab-delimited empty string in 
-        // double quotes) and a missing value (tab-delimited empty string). 
+        // the escaped version of the string is stored in the tab file
+        // enclosed in double-quotes; this is in order to be able
+        // to differentiate between an empty string (tab-delimited empty string in
+        // double quotes) and a missing value (tab-delimited empty string).
 
         escapedString = "\"" + escapedString + "\"";
 
         return escapedString;
     }
 
+    // -------------------- SETTERS --------------------
+
+    public void setDataLanguageEncoding(String dataLanguageEncoding) {
+        this.dataLanguageEncoding = dataLanguageEncoding;
+    }
 }

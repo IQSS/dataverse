@@ -42,6 +42,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
@@ -110,14 +111,14 @@ public class CSVFileReader extends TabularDataFileReader {
     @Override
     public TabularDataIngest read(BufferedInputStream stream, File dataFile) throws IOException {
         init();
-
+        Charset charset = selectCharset();
         if (stream == null) {
             throw new IngestException(IngestError.UNKNOWN_ERROR);
         }
         TabularDataIngest ingesteddata = new TabularDataIngest();
         DataTable dataTable = new DataTable();
 
-        BufferedReader localBufferedReader = new BufferedReader(new InputStreamReader(stream));
+        BufferedReader localBufferedReader = new BufferedReader(new InputStreamReader(stream, charset));
 
         File tabFileDestination = File.createTempFile("data-", ".tab");
         PrintWriter tabFileWriter = new PrintWriter(tabFileDestination.getAbsolutePath());

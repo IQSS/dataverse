@@ -1,64 +1,52 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.csv;
 
 import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
 import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable.VariableInterval;
 import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable.VariableType;
 import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestError;
 import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestException;
 import org.dataverse.unf.UNFUtil;
 import org.dataverse.unf.UnfException;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
-import java.util.logging.Logger;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+
 
 /**
  * @author oscardssmith
  */
 public class CSVFileReaderTest {
 
-    private static final Logger logger = Logger.getLogger(CSVFileReaderTest.class.getCanonicalName());
-
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
-
     /**
      * Test CSVFileReader with a hellish CSV containing everything nasty I could
      * think of to throw at it.
      */
     @Test
-    public void testRead() {
-        String[] expResult = {"-199	\"hello\"	2013-04-08 13:14:23	2013-04-08 13:14:23	2017-06-20	\"2017/06/20\"	0.0	1	\"2\"	\"823478788778713\"",
+    void testRead() throws IOException, URISyntaxException {
+        final String[] expectedResult = {
+                "-199	\"hello\"	2013-04-08 13:14:23	2013-04-08 13:14:23	2017-06-20	\"2017/06/20\"	0.0	1	\"2\"	\"823478788778713\"",
                 "2	\"Sdfwer\"	2013-04-08 13:14:23	2013-04-08 13:14:23	2017-06-20	\"1100/06/20\"	Inf	2	\"NaN\"	\",1,2,3\"",
                 "0	\"cjlajfo.\"	2013-04-08 13:14:23	2013-04-08 13:14:23	2017-06-20	\"3000/06/20\"	-Inf	3	\"inf\"	\"\\casdf\"",
                 "-1	\"Mywer\"	2013-04-08 13:14:23	2013-04-08 13:14:23	2017-06-20	\"06-20-2011\"	3.141592653	4	\"4.8\"	\"　 \\\"  \"",
                 "266128	\"Sf\"	2013-04-08 13:14:23	2013-04-08 13:14:23	2017-06-20	\"06-20-1917\"	0	5	\"Inf+11\"	\"\"",
                 "0	\"null\"	2013-04-08 13:14:23	2013-04-08 13:14:23	2017-06-20	\"03/03/1817\"	123	6.000001	\"11-2\"	\"\\\"adf\\0\\na\\td\\nsf\\\"\"",
                 "-2389	\"\"	2013-04-08 13:14:23	2013-04-08 13:14:72	2017-06-20	\"2017-03-12\"	NaN	2	\"nap\"	\"💩⌛👩🏻■\""};
-        BufferedReader result = null;
+        BufferedReader result;
         try (FileInputStream fileInputStream =
                      new FileInputStream(Paths.get(CSVFileReaderTest.class.getClassLoader()
                                                            .getResource("csv/ingest/IngestCSV.csv").toURI()).toFile());
@@ -66,24 +54,10 @@ public class CSVFileReaderTest {
             CSVFileReader instance = new CSVFileReader(new CSVFileReaderSpi(), ',');
             File outFile = instance.read(stream, null).getTabDelimitedFile();
             result = new BufferedReader(new FileReader(outFile));
-            logger.fine("Final pass: " + outFile.getPath());
-        } catch (IOException | URISyntaxException ex) {
-            fail("" + ex);
         }
 
-        String foundLine = null;
-        assertNotNull(result);
-        int line = 0;
-        for (String expLine : expResult) {
-            try {
-                foundLine = result.readLine();
-            } catch (IOException ex) {
-                fail();
-            }
-            assertEquals("Error on line " + line, expLine, foundLine);
-            line++;
-        }
-
+        assertThat(result).isNotNull();
+        assertThat(result.lines().collect(Collectors.toList())).isEqualTo(Arrays.asList(expectedResult));
     }
 
     /*
@@ -92,64 +66,48 @@ public class CSVFileReaderTest {
      * individual DataVariables have been properly typed.
      */
     @Test
-    public void testVariables() {
+    void testVariables() throws URISyntaxException, IOException {
         String[] expectedVariableNames = {"ints", "Strings", "Times", "Not quite Times", "Dates", "Not quite Dates",
                 "Numbers", "Not quite Ints", "Not quite Numbers", "Column that hates you, contains many comas, and is verbose and long enough that it would cause ingest to fail if ingest failed when a header was more than 256 characters long. Really, it's just sadistic.　Also to make matters worse, the space at the begining of this sentance was a special unicode space designed to make you angry."};
 
-        VariableType[] expectedVariableTypes = {VariableType.NUMERIC, VariableType.CHARACTER,
+        VariableType[] expectedVariableTypes = {
+                VariableType.NUMERIC, VariableType.CHARACTER,
                 VariableType.CHARACTER, VariableType.CHARACTER, VariableType.CHARACTER, VariableType.CHARACTER,
-                VariableType.NUMERIC, VariableType.NUMERIC, VariableType.CHARACTER, VariableType.CHARACTER};
+                VariableType.NUMERIC, VariableType.NUMERIC, VariableType.CHARACTER, VariableType.CHARACTER
+        };
 
-        VariableInterval[] expectedVariableIntervals = {VariableInterval.DISCRETE, VariableInterval.DISCRETE,
+        VariableInterval[] expectedVariableIntervals = {
+                VariableInterval.DISCRETE, VariableInterval.DISCRETE,
                 VariableInterval.DISCRETE, VariableInterval.DISCRETE, VariableInterval.DISCRETE, VariableInterval.DISCRETE,
-                VariableInterval.CONTINUOUS, VariableInterval.CONTINUOUS, VariableInterval.DISCRETE, VariableInterval.DISCRETE};
+                VariableInterval.CONTINUOUS, VariableInterval.CONTINUOUS, VariableInterval.DISCRETE, VariableInterval.DISCRETE
+        };
 
-        String[] expectedVariableFormatCategories = {null, null, "time", "time", "date", null, null, null, null, null};
+        String[] expectedVariableFormatCategories = { null, null, "time", "time", "date", null, null, null, null, null };
 
-        String[] expectedVariableFormats = {null, null, "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd", null, null, null, null, null};
+        String[] expectedVariableFormats = { null, null, "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd", null, null, null, null, null };
 
         Long expectedNumberOfCases = 7L; // aka the number of lines in the TAB file produced by the ingest plugin
 
-        DataTable result = null;
+        DataTable result;
         try (FileInputStream fileInputStream =
                      new FileInputStream(Paths.get(CSVFileReaderTest.class.getClassLoader()
                                                            .getResource("csv/ingest/IngestCSV.csv").toURI()).toFile());
              BufferedInputStream stream = new BufferedInputStream(fileInputStream)) {
             CSVFileReader instance = new CSVFileReader(new CSVFileReaderSpi(), ',');
             result = instance.read(stream, null).getDataTable();
-        } catch (IOException | URISyntaxException ex) {
-            fail("" + ex);
         }
 
-        assertNotNull(result);
+        assertThat(result).isNotNull();
+        assertThat(result.getDataVariables()).isNotNull();
+        assertThat(result.getVarQuantity()).isEqualTo((long) result.getDataVariables().size());
+        assertThat(result.getVarQuantity()).isEqualTo((long) expectedVariableTypes.length);
+        assertThat(result.getCaseQuantity()).isEqualTo(expectedNumberOfCases);
 
-        assertNotNull(result.getDataVariables());
-
-        assertEquals(result.getVarQuantity(), new Long(result.getDataVariables().size()));
-
-        assertEquals(result.getVarQuantity(), new Long(expectedVariableTypes.length));
-
-        assertEquals(expectedNumberOfCases, result.getCaseQuantity());
-
-        // OK, let's go through the individual variables:
-        for (int i = 0; i < result.getVarQuantity(); i++) {
-
-            assertEquals("variable " + i + ":", expectedVariableNames[i], result.getDataVariables().get(i).getName());
-
-            assertEquals("variable " + i + ":", expectedVariableTypes[i], result.getDataVariables().get(i).getType());
-
-            assertEquals("variable " + i + ":",
-                         expectedVariableIntervals[i],
-                         result.getDataVariables().get(i).getInterval());
-
-            assertEquals("variable " + i + ":",
-                         expectedVariableFormatCategories[i],
-                         result.getDataVariables().get(i).getFormatCategory());
-
-            assertEquals("variable " + i + ":",
-                         expectedVariableFormats[i],
-                         result.getDataVariables().get(i).getFormat());
-        }
+        assertThat(result.getDataVariables()).extracting(DataVariable::getName).contains(expectedVariableNames);
+        assertThat(result.getDataVariables()).extracting(DataVariable::getType).contains(expectedVariableTypes);
+        assertThat(result.getDataVariables()).extracting(DataVariable::getInterval).contains(expectedVariableIntervals);
+        assertThat(result.getDataVariables()).extracting(DataVariable::getFormatCategory).contains(expectedVariableFormatCategories);
+        assertThat(result.getDataVariables()).extracting(DataVariable::getFormat).contains(expectedVariableFormats);
     }
 
     /*
@@ -158,40 +116,33 @@ public class CSVFileReaderTest {
      * are legit.
      */
     @Test
-    public void testSubset() {
+    void testSubset() throws IOException, URISyntaxException {
         Long expectedNumberOfVariables = 13L;
         Long expectedNumberOfCases = 24L; // aka the number of lines in the TAB file produced by the ingest plugin
 
-        File generatedTabFile = null;
-        DataTable generatedDataTable = null;
-
+        TabularDataIngest ingestResult;
         try (FileInputStream st = new FileInputStream(Paths.get(CSVFileReaderTest.class.getClassLoader()
                                                                         .getResource("csv/ingest/election_precincts.csv").toURI()).toFile());
-             BufferedInputStream stream = new BufferedInputStream(st)
-        ) {
-
+             BufferedInputStream stream = new BufferedInputStream(st)) {
             CSVFileReader instance = new CSVFileReader(new CSVFileReaderSpi(), ',');
-
-            TabularDataIngest ingestResult = instance.read(stream, null);
-
-            generatedTabFile = ingestResult.getTabDelimitedFile();
-            generatedDataTable = ingestResult.getDataTable();
-        } catch (IOException | URISyntaxException | NullPointerException ex) {
-            fail("" + ex);
+            ingestResult = instance.read(stream, null);
         }
 
-        assertNotNull(generatedDataTable);
-        assertNotNull(generatedDataTable.getDataVariables());
-        assertEquals(generatedDataTable.getVarQuantity(), new Long(generatedDataTable.getDataVariables().size()));
-        assertEquals(generatedDataTable.getVarQuantity(), expectedNumberOfVariables);
-        assertEquals(expectedNumberOfCases, generatedDataTable.getCaseQuantity());
+        File generatedTabFile = ingestResult.getTabDelimitedFile();
+        DataTable generatedDataTable = ingestResult.getDataTable();
+
+        assertThat(generatedDataTable).isNotNull();
+        assertThat(generatedDataTable.getDataVariables()).isNotNull();
+        assertThat(generatedDataTable.getVarQuantity()).isEqualTo((long) generatedDataTable.getDataVariables().size());
+        assertThat(generatedDataTable.getVarQuantity()).isEqualTo(expectedNumberOfVariables);
+        assertThat(generatedDataTable.getCaseQuantity()).isEqualTo(expectedNumberOfCases);
 
         // And now let's try and subset the individual vectors
         // First, the "continuous" vectors (we should be able to read these as Double[]):
         int[] floatColumns = {2};
 
         Double[][] floatVectors = {
-                {1.0, 3.0, 4.0, 6.0, 7.0, 8.0, 11.0, 12.0, 76.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0},
+                { 1.0, 3.0, 4.0, 6.0, 7.0, 8.0, 11.0, 12.0, 76.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0 },
         };
 
         int vectorCount = 0;
@@ -202,33 +153,27 @@ public class CSVFileReaderTest {
             if (!generatedDataTable.getDataVariables().get(i).isIntervalContinuous()) {
                 fail("Column " + i + " was not properly processed as \"continuous\"");
             }
-            FileInputStream generatedTabInputStream = null;
-            try {
-                generatedTabInputStream = new FileInputStream(generatedTabFile);
-            } catch (FileNotFoundException ioex) {
-                fail("Failed to open generated tab-delimited file for reading" + ioex);
-            }
+            FileInputStream generatedTabInputStream = new FileInputStream(generatedTabFile);
 
-            Double[] columnVector = TabularSubsetGenerator.subsetDoubleVector(generatedTabInputStream,
-                                                                              i,
-                                                                              generatedDataTable.getCaseQuantity().intValue());
+            Double[] columnVector =
+                    TabularSubsetGenerator.subsetDoubleVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
 
-            assertArrayEquals("column " + i + ":", floatVectors[vectorCount++], columnVector);
+            assertThat(columnVector).isEqualTo(floatVectors[vectorCount++]);
         }
 
         // Discrete Numerics (aka, integers):
-        int[] integerColumns = {1, 4, 6, 7, 8, 9, 10, 11, 12};
+        int[] integerColumns = { 1, 4, 6, 7, 8, 9, 10, 11, 12 };
 
         Long[][] longVectors = {
-                {1L, 3L, 4L, 6L, 7L, 8L, 11L, 12L, 76L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L},
-                {1L, 2L, 3L, 4L, 5L, 11L, 13L, 15L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L},
-                {85729227L, 85699791L, 640323976L, 85695847L, 637089796L, 637089973L, 85695001L, 85695077L, 1111111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L},
-                {205871733L, 205871735L, 205871283L, 258627915L, 257444575L, 205871930L, 260047422L, 262439738L, 1111111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L},
-                {205871673L, 205871730L, 205871733L, 205872857L, 258627915L, 257444584L, 205873413L, 262439738L, 1111111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L},
-                {25025000201L, 25025081001L, 25025000701L, 25025050901L, 25025040600L, 25025000502L, 25025040401L, 25025100900L, 1111111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L},
-                {250250502002L, 250250502003L, 250250501013L, 250250408011L, 250250503001L, 250250103001L, 250250406002L, 250250406001L, 1111111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L},
-                {250251011024001L, 250251011013003L, 250251304041007L, 250251011013006L, 250251010016000L, 250251011024002L, 250251001005004L, 250251002003002L, 1111111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L},
-                {2109L, 2110L, 2111L, 2120L, 2121L, 2115L, 2116L, 2122L, 11111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L}
+                { 1L, 3L, 4L, 6L, 7L, 8L, 11L, 12L, 76L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L, 77L },
+                { 1L, 2L, 3L, 4L, 5L, 11L, 13L, 15L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L, 19L },
+                { 85729227L, 85699791L, 640323976L, 85695847L, 637089796L, 637089973L, 85695001L, 85695077L, 1111111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L },
+                { 205871733L, 205871735L, 205871283L, 258627915L, 257444575L, 205871930L, 260047422L, 262439738L, 1111111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L },
+                { 205871673L, 205871730L, 205871733L, 205872857L, 258627915L, 257444584L, 205873413L, 262439738L, 1111111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L },
+                { 25025000201L, 25025081001L, 25025000701L, 25025050901L, 25025040600L, 25025000502L, 25025040401L, 25025100900L, 1111111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L },
+                { 250250502002L, 250250502003L, 250250501013L, 250250408011L, 250250503001L, 250250103001L, 250250406002L, 250250406001L, 1111111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L },
+                { 250251011024001L, 250251011013003L, 250251304041007L, 250251011013006L, 250251010016000L, 250251011024002L, 250251001005004L, 250251002003002L, 1111111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L },
+                { 2109L, 2110L, 2111L, 2120L, 2121L, 2115L, 2116L, 2122L, 11111L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L, 4444444L }
         };
 
         vectorCount = 0;
@@ -238,27 +183,21 @@ public class CSVFileReaderTest {
                     || !generatedDataTable.getDataVariables().get(i).isTypeNumeric()) {
                 fail("Column " + i + " was not properly processed as \"discrete numeric\"");
             }
-            FileInputStream generatedTabInputStream = null;
-            try {
-                generatedTabInputStream = new FileInputStream(generatedTabFile);
-            } catch (FileNotFoundException ioex) {
-                fail("Failed to open generated tab-delimited file for reading" + ioex);
-            }
+            FileInputStream generatedTabInputStream = new FileInputStream(generatedTabFile);
 
-            Long[] columnVector = TabularSubsetGenerator.subsetLongVector(generatedTabInputStream,
-                                                                          i,
-                                                                          generatedDataTable.getCaseQuantity().intValue());
+            Long[] columnVector =
+                    TabularSubsetGenerator.subsetLongVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
 
-            assertArrayEquals("column " + i + ":", longVectors[vectorCount++], columnVector);
+            assertThat(columnVector).isEqualTo(longVectors[vectorCount++]);
         }
 
         // And finally, Strings:
         int[] stringColumns = {0, 3, 5};
 
         String[][] stringVectors = {
-                {"Dog", "Squirrel", "Antelope", "Zebra", "Lion", "Gazelle", "Cat", "Giraffe", "Cat", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey"},
-                {"East Boston", "Charlestown", "South Boston", "Bronx", "Roslindale", "Mission Hill", "Jamaica Plain", "Hyde Park", "Fenway/Kenmore", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens"},
-                {"2-06", "1-09", "1-1A", "1-1B", "2-04", "3-05", "1-1C", "1-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A",}
+                { "Dog", "Squirrel", "Antelope", "Zebra", "Lion", "Gazelle", "Cat", "Giraffe", "Cat", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey", "Donkey" },
+                { "East Boston", "Charlestown", "South Boston", "Bronx", "Roslindale", "Mission Hill", "Jamaica Plain", "Hyde Park", "Fenway/Kenmore", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens", "Queens" },
+                { "2-06", "1-09", "1-1A", "1-1B", "2-04", "3-05", "1-1C", "1-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", "41-10A", }
         };
 
         vectorCount = 0;
@@ -267,18 +206,12 @@ public class CSVFileReaderTest {
             if (!generatedDataTable.getDataVariables().get(i).isTypeCharacter()) {
                 fail("Column " + i + " was not properly processed as a character vector");
             }
-            FileInputStream generatedTabInputStream = null;
-            try {
-                generatedTabInputStream = new FileInputStream(generatedTabFile);
-            } catch (FileNotFoundException ioex) {
-                fail("Failed to open generated tab-delimited file for reading" + ioex);
-            }
+            FileInputStream generatedTabInputStream = new FileInputStream(generatedTabFile);
 
-            String[] columnVector = TabularSubsetGenerator.subsetStringVector(generatedTabInputStream,
-                                                                              i,
-                                                                              generatedDataTable.getCaseQuantity().intValue());
+            String[] columnVector =
+                    TabularSubsetGenerator.subsetStringVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
 
-            assertArrayEquals("column " + i + ":", stringVectors[vectorCount++], columnVector);
+            assertThat(columnVector).isEqualTo(stringVectors[vectorCount++]);
         }
     }
 
@@ -289,7 +222,7 @@ public class CSVFileReaderTest {
      * (thinking about it, the "csv file from hell" may be a better test case for the UNF test)
      */
     @Test
-    public void testVariableUNFs() {
+    void testVariableUNFs() throws IOException, UnfException, URISyntaxException {
         Long expectedNumberOfVariables = 13L;
         Long expectedNumberOfCases = 24L; // aka the number of lines in the TAB file produced by the ingest plugin
 
@@ -306,12 +239,10 @@ public class CSVFileReaderTest {
                 "UNF:6:Mvq3BrdzoNhjndMiVr92Ww==",
                 "UNF:6:KkHM6Qlyv3QlUd+BKqqB3Q==",
                 "UNF:6:EWUVuyXKSpyllsrjHnheig==",
-                "UNF:6:ri9JsRJxM2xpWSIq17oWNw=="};
+                "UNF:6:ri9JsRJxM2xpWSIq17oWNw=="
+        };
 
-        TabularDataIngest ingestResult = null;
-
-        File generatedTabFile = null;
-        DataTable generatedDataTable = null;
+        TabularDataIngest ingestResult;
 
         try (FileInputStream fileInputStream =
                      new FileInputStream(Paths.get(CSVFileReaderTest.class.getClassLoader()
@@ -320,80 +251,35 @@ public class CSVFileReaderTest {
             CSVFileReader instance = new CSVFileReader(new CSVFileReaderSpi(), ',');
 
             ingestResult = instance.read(stream, null);
-
-            generatedTabFile = ingestResult.getTabDelimitedFile();
-            generatedDataTable = ingestResult.getDataTable();
-        } catch (IOException | URISyntaxException ex) {
-            fail("" + ex);
         }
 
-        assertNotNull(generatedDataTable);
+        File generatedTabFile = ingestResult.getTabDelimitedFile();
+        DataTable generatedDataTable = ingestResult.getDataTable();
 
-        assertNotNull(generatedDataTable.getDataVariables());
-
-        assertEquals(generatedDataTable.getVarQuantity(), new Long(generatedDataTable.getDataVariables().size()));
-
-        assertEquals(generatedDataTable.getVarQuantity(), expectedNumberOfVariables);
-
-        assertEquals(expectedNumberOfCases, generatedDataTable.getCaseQuantity());
+        assertThat(generatedDataTable).isNotNull();
+        assertThat(generatedDataTable.getDataVariables()).isNotNull();
+        assertThat(generatedDataTable.getVarQuantity()).isEqualTo((long) generatedDataTable.getDataVariables().size());
+        assertThat(generatedDataTable.getVarQuantity()).isEqualTo(expectedNumberOfVariables);
+        assertThat(generatedDataTable.getCaseQuantity()).isEqualTo(expectedNumberOfCases);
 
         for (int i = 0; i < expectedNumberOfVariables; i++) {
             String unf = null;
 
+            FileInputStream generatedTabInputStream = new FileInputStream(generatedTabFile);
             if (generatedDataTable.getDataVariables().get(i).isIntervalContinuous()) {
-                FileInputStream generatedTabInputStream = null;
-                try {
-                    generatedTabInputStream = new FileInputStream(generatedTabFile);
-                } catch (FileNotFoundException ioex) {
-                    fail("Failed to open generated tab-delimited file for reading" + ioex);
-                }
-
-                Double[] columnVector = TabularSubsetGenerator.subsetDoubleVector(generatedTabInputStream,
-                                                                                  i,
-                                                                                  generatedDataTable.getCaseQuantity().intValue());
-                try {
-                    unf = UNFUtil.calculateUNF(columnVector);
-                } catch (IOException | UnfException ioex) {
-                    fail("Failed to generate the UNF for variable number " + i + ", (" + generatedDataTable.getDataVariables().get(
-                            i).getName() + ", floating point)");
-                }
-
+                Double[] columnVector =
+                        TabularSubsetGenerator.subsetDoubleVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
+                unf = UNFUtil.calculateUNF(columnVector);
             }
             if (generatedDataTable.getDataVariables().get(i).isIntervalDiscrete()
                     && generatedDataTable.getDataVariables().get(i).isTypeNumeric()) {
-
-                FileInputStream generatedTabInputStream = null;
-                try {
-                    generatedTabInputStream = new FileInputStream(generatedTabFile);
-                } catch (FileNotFoundException ioex) {
-                    fail("Failed to open generated tab-delimited file for reading" + ioex);
-                }
-
-                Long[] columnVector = TabularSubsetGenerator.subsetLongVector(generatedTabInputStream,
-                                                                              i,
-                                                                              generatedDataTable.getCaseQuantity().intValue());
-
-                try {
-                    unf = UNFUtil.calculateUNF(columnVector);
-                } catch (IOException | UnfException ioex) {
-                    fail("Failed to generate the UNF for variable number " + i + ", (" + generatedDataTable.getDataVariables().get(
-                            i).getName() + ", integer)");
-                }
-
+                Long[] columnVector =
+                        TabularSubsetGenerator.subsetLongVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
+                unf = UNFUtil.calculateUNF(columnVector);
             }
             if (generatedDataTable.getDataVariables().get(i).isTypeCharacter()) {
-
-                FileInputStream generatedTabInputStream = null;
-                try {
-                    generatedTabInputStream = new FileInputStream(generatedTabFile);
-                } catch (FileNotFoundException ioex) {
-                    fail("Failed to open generated tab-delimited file for reading" + ioex);
-                }
-
-                String[] columnVector = TabularSubsetGenerator.subsetStringVector(generatedTabInputStream,
-                                                                                  i,
-                                                                                  generatedDataTable.getCaseQuantity().intValue());
-
+                String[] columnVector =
+                        TabularSubsetGenerator.subsetStringVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
                 String[] dateFormats = null;
 
                 // Special handling for Character strings that encode dates and times:
@@ -405,22 +291,30 @@ public class CSVFileReaderTest {
                         dateFormats[j] = generatedDataTable.getDataVariables().get(i).getFormat();
                     }
                 }
-
-                try {
-                    if (dateFormats == null) {
-                        unf = UNFUtil.calculateUNF(columnVector);
-                    } else {
-                        unf = UNFUtil.calculateUNF(columnVector, dateFormats);
-                    }
-                } catch (IOException | UnfException iex) {
-                    fail("Failed to generate the UNF for variable number " + i + ", (" + generatedDataTable.getDataVariables().get(
-                            i).getName() + ", " + (dateFormats == null ? "String" : "Date/Time value") + ")");
-                }
+                unf = dateFormats == null ? UNFUtil.calculateUNF(columnVector) : UNFUtil.calculateUNF(columnVector, dateFormats);
             }
 
-            assertEquals("Variable number " + i + ":", expectedUNFs[i], unf);
+            assertThat(unf).isEqualTo(expectedUNFs[i]);
+        }
+    }
+
+    @Test
+    void selectEncoding() throws IOException, URISyntaxException {
+        // given & when
+        DataTable result;
+        try (FileInputStream fileInputStream =
+                     new FileInputStream(Paths.get(CSVFileReaderTest.class.getClassLoader()
+                             .getResource("csv/ingest/ISO8859-2.csv").toURI()).toFile());
+             BufferedInputStream stream = new BufferedInputStream(fileInputStream)) {
+            CSVFileReader instance = new CSVFileReader(new CSVFileReaderSpi(), ',');
+            instance.setDataLanguageEncoding("ISO-8859-2");
+            result = instance.read(stream, null).getDataTable();
         }
 
+        // then
+        assertThat(result.getDataVariables())
+                .extracting(DataVariable::getName)
+                .containsExactly("zażółć wiek", "gęślą płeć", "jaźń kolor oczu");
     }
 
     /**
@@ -428,15 +322,14 @@ public class CSVFileReaderTest {
      * CSVFileReader with a null CSV.
      */
     @Test
-    public void testBrokenCSV() throws IOException, URISyntaxException {
+    void testBrokenCSV() throws IOException, URISyntaxException {
         try {
             new CSVFileReader(new CSVFileReaderSpi(), ',').read(null, null);
             fail("IOException not thrown on null csv");
         } catch (NullPointerException ex) {
-            assertNull(ex.getMessage());
+            assertThat(ex.getMessage()).isNull();
         } catch (IngestException ex) {
-            IngestError expError = IngestError.UNKNOWN_ERROR;
-            assertEquals(expError, ex.getErrorKey());
+            assertThat(ex.getErrorKey()).isEqualTo(IngestError.UNKNOWN_ERROR);
         }
         try (FileInputStream fileInputStream =
                      new FileInputStream(Paths.get(CSVFileReaderTest.class.getClassLoader()
@@ -445,8 +338,7 @@ public class CSVFileReaderTest {
             new CSVFileReader(new CSVFileReaderSpi(), ',').read(stream, null);
             fail("IOException was not thrown when collumns do not align.");
         } catch (IngestException ex) {
-            IngestError expError = IngestError.CSV_RECORD_MISMATCH;
-            assertEquals(expError, ex.getErrorKey());
+            assertThat(ex.getErrorKey()).isEqualTo(IngestError.CSV_RECORD_MISMATCH);
         }
     }
 }

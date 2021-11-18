@@ -526,6 +526,11 @@ public class DataFileServiceBean implements java.io.Serializable {
         return (file != null) && ApplicationMimeType.SPSS_SAV.getMimeValue().equalsIgnoreCase(file.getContentType());
     }
 
+    public boolean isCsvFile(DataFile file) {
+        return (file != null)
+                && (TextMimeType.CSV.getMimeValue().equalsIgnoreCase(file.getContentType())
+                    || TextMimeType.CSV_ALT.getMimeValue().equalsIgnoreCase(file.getContentType()));
+    }
     /*
     public boolean isSpssPorFile (FileMetadata fileMetadata) {
         if (fileMetadata != null && fileMetadata.getDataFile() != null) {

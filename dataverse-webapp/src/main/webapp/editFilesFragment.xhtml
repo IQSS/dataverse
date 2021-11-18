@@ -615,7 +615,8 @@
                                     <li>
                                         <p:commandLink id="advancedIngestOptionsButton"
                                                        rendered="#{((empty fileMetadata.dataFile.id) and dataFileServiceBean.isSpssPorFile(fileMetadata.dataFile))
-                                                               or ((empty fileMetadata.dataFile.id) and dataFileServiceBean.isSpssSavFile(fileMetadata.dataFile))}"
+                                                               or ((empty fileMetadata.dataFile.id) and dataFileServiceBean.isSpssSavFile(fileMetadata.dataFile))
+                                                               or ((empty fileMetadata.dataFile.id) and dataFileServiceBean.isCsvFile(fileMetadata.dataFile))}"
                                                        actionListener="#{EditDatafilesPage.setFileMetadataSelectedForIngestOptionsPopup(fileMetadata)}"
                                                        update=":datasetForm:fileAdvancedOptions"
                                                        oncomplete="primeFacesShowModal('fileAdvancedOptions', this)">
@@ -684,7 +685,8 @@
             <div class="form-group" jsf:rendered="#{!(empty EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup)
                                         and (empty EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup.id)
                                         and (dataFileServiceBean.isSpssSavFile(EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup.dataFile)
-                                            or dataFileServiceBean.isSpssPorFile(EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup.dataFile))}">
+                                            or dataFileServiceBean.isSpssPorFile(EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup.dataFile)
+                                            or dataFileServiceBean.isCsvFile(EditDatafilesPage.fileMetadataSelectedForIngestOptionsPopup.dataFile))}">
                 <label for="spssSavEncodingLanguage" class="col-sm-4 control-label">
                     #{bundle['file.encoding']}
                 </label>

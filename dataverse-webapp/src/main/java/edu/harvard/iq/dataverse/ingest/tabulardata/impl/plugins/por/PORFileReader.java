@@ -366,21 +366,6 @@ public class PORFileReader extends TabularDataFileReader {
         return ingesteddata;
     }
 
-    private Charset selectCharset() {
-        if (StringUtils.isNotBlank(getDataLanguageEncoding())) {
-            try {
-                return Charset.forName(getDataLanguageEncoding());
-            } catch (IllegalArgumentException iae) {
-                logger.log(Level.WARNING,
-                        String.format("Exception while trying to initialize selected charset [%s]. Using UTF-8.", getDataLanguageEncoding()),
-                        iae);
-                return StandardCharsets.UTF_8;
-            }
-        } else {
-            return StandardCharsets.UTF_8;
-        }
-    }
-
     private void decode(String headerId, BufferedReader reader) throws IOException {
         if (headerId.equals("1")) {
             decodeProductName(reader);
