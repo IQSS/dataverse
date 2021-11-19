@@ -2413,15 +2413,14 @@ can enter for an embargo end date. This limit will be enforced in the popup dial
 :DataverseMetadataValidatorScript
 +++++++++++++++++++++++++++++++++
 
-An optional external script that validates Dataverse collection metadata as it's being updated or published. The script provided should be an executable that takes a single command line argument, the name of the file containing the metadata exported in the native json format. The script should exit with a non-zero error code if the validation fails. If that happens, a failure message (customizable in the next two settings below, `:DataverseMetadataPublishValidationFailureMsg` and `:DataverseMetadataUpdateValidationFailureMsg`) will be shown to the user.
+An optional external script that validates Dataverse collection metadata as it's being updated or published. The script provided should be an executable that takes a single command line argument, the name of the file containing the metadata exported in the native json format. I.e., Dataverse application will be exporting the collection metadata in json format, saving it in a temp file, and passing the name of the temp file to the validation script as the command line argument. The script should exit with a non-zero error code if the validation fails. If that happens, a failure message (customizable in the next two settings below, `:DataverseMetadataPublishValidationFailureMsg` and `:DataverseMetadataUpdateValidationFailureMsg`) will be shown to the user.
 
-For example:
+For example, once the following setting is created:
 
 ``curl -X PUT -d /usr/local/bin/dv_validator.sh http://localhost:8080/api/admin/settings/:DataverseMetadataValidatorScript``
 
-
 :DataverseMetadataPublishValidationFailureMsg
-++++++++++++++++++++++++++++++++++++++
++++++++++++++++++++++++++++++++++++++++++++++
 
 Specifies a custom error message shown to the user when a Dataverse collection fails an external metadata validation (as specified in the setting above) during an attempt to publish. If not specified, the default message "This dataverse collection cannot be published because it has failed an external metadata validation test" will be used.
 
@@ -2439,7 +2438,7 @@ Same as above, but specifies a custom error message shown to the user when an ex
 :DatasetMetadataValidatorScript
 +++++++++++++++++++++++++++++++
 
-An optional external script that validates dataset metadata during publishing. The script provided should be an executable that takes a single command line argument, the name of the file containing the metadata exported in the native json format. The script should exit with a non-zero error code if the validation fails. If that happens, the dataset is left unpublished, and a failure message (customizable in the next setting below, `:DatasetMetadataValidationFailureMsg`) will be shown to the user.
+An optional external script that validates dataset metadata during publishing. The script provided should be an executable that takes a single command line argument, the name of the file containing the metadata exported in the native json format. I.e., Dataverse application will be exporting the dataset metadata in json format, saving it in a temp file, and passing the name of the file to the validation script as the command line argument. The script should exit with a non-zero error code if the validation fails. If that happens, the dataset is left unpublished, and a failure message (customizable in the next setting below, `:DatasetMetadataValidationFailureMsg`) will be shown to the user.
 
 For example:
 
