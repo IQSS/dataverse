@@ -512,35 +512,7 @@ public class Access extends AbstractApiBean {
 
         return retValue;
     }
-    
-    @Path("variable/{varId}/metadata/ddi")
-    @GET
-    @Produces({ "application/xml" })
 
-    public String dataVariableMetadataDDI(@PathParam("varId") Long varId, @QueryParam("fileMetadataId") Long fileMetadataId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
-        String retValue = "";
-        
-        ByteArrayOutputStream outStream = null;
-        try {
-            outStream = new ByteArrayOutputStream();
-
-            ddiExportService.exportDataVariable(
-                    varId,
-                    outStream,
-                    exclude,
-                    include,
-                    fileMetadataId);
-        } catch (Exception e) {
-            // For whatever reason we've failed to generate a partial 
-            // metadata record requested. We simply return an empty string.
-            return retValue;
-        }
-
-        retValue = outStream.toString();
-        
-        return retValue; 
-    }
-    
 
     /*
      * GET method for retrieving a list of auxiliary files associated with 
@@ -557,7 +529,7 @@ public class Access extends AbstractApiBean {
         return listAuxiliaryFiles(fileId, null, apiToken, uriInfo, headers, response);
     }
     /*
-     * GET method for retrieving a list auxiliary files associated with 
+     * GET method for retrieving a list auxiliary files associated with
      * a tabular datafile and having the specified origin.
      */
     
@@ -594,7 +566,7 @@ public class Access extends AbstractApiBean {
                 job.add("fileSize", auxFile.getFileSize());
                 job.add("contentType", auxFile.getContentType());
                 job.add("isPublic", auxFile.getIsPublic());
-                job.add("type",  auxFile.getType());
+                job.add("type", auxFile.getType());
                 jab.add(job);
             }
         });
