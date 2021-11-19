@@ -18,6 +18,7 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
@@ -130,24 +131,25 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
         try {
             AuxiliaryFile retVal = (AuxiliaryFile)query.getSingleResult();
             return retVal;
-        } catch(Exception ex) {
+        } catch(NoResultException nr) {
             return null;
         }
     }
     
-    @SuppressWarnings("unchecked")
-    public List<AuxiliaryFile> listAuxiliaryFiles(DataFile dataFile, String origin) {
+
+    public List<AuxiliaryFile> findAuxiliaryFiles(DataFile dataFile, String origin) {
         
-        Query query = em.createQuery("select object(o) from AuxiliaryFile as o where o.dataFile.id = :dataFileId and o.origin = :origin");
-                
-        query.setParameter("dataFileId", dataFile.getId());
-        query.setParameter("origin", origin);
-        try {
-            List<AuxiliaryFile> retVal = (List<AuxiliaryFile>)query.getResultList();
-            return retVal;
-        } catch(Exception ex) {
-            return null;
+        TypedQuery<AuxiliaryFile> query;
+        if (origin == null) {
+            query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFiles", AuxiliaryFile.class);
+        } else {
+            query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFilesByOrigin", AuxiliaryFile.class);
+            query.setParameter("origin", origin);
         }
+        query.setParameter("dataFileId", dataFile.getId());
+        
+        List<AuxiliaryFile> retVal = (List<AuxiliaryFile>)query.getResultList();
+        return retVal;
     }
 
     public void deleteAuxiliaryFile(DataFile dataFile, String formatTag, String formatVersion) throws IOException {
@@ -165,7 +167,7 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
     }
 
     public List<AuxiliaryFile> findAuxiliaryFiles(DataFile dataFile) {
-        TypedQuery query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFiles", AuxiliaryFile.class);
+        TypedQuery<AuxiliaryFile> query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFiles", AuxiliaryFile.class);
         query.setParameter("dataFileId", dataFile.getId());
         return query.getResultList();
     }
@@ -195,13 +197,13 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
     }
 
     public List<String> findAuxiliaryFileTypes(DataFile dataFile) {
-        Query query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFileTypes");
+        TypedQuery<String> query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFileTypes", String.class);
         query.setParameter(1, dataFile.getId());
         return query.getResultList();
     }
 
     public List<AuxiliaryFile> findAuxiliaryFilesByType(DataFile dataFile, String typeString) {
-        TypedQuery query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFilesByType", AuxiliaryFile.class);
+        TypedQuery<AuxiliaryFile> query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFilesByType", AuxiliaryFile.class);
         query.setParameter("dataFileId", dataFile.getId());
         query.setParameter("type", typeString);
         return query.getResultList();
@@ -211,7 +213,7 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
         List<AuxiliaryFile> otherAuxFiles = new ArrayList<>();
         List<String> otherTypes = findAuxiliaryFileTypes(dataFile, false);
         for (String typeString : otherTypes) {
-            TypedQuery query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFilesByType", AuxiliaryFile.class);
+            TypedQuery<AuxiliaryFile> query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFilesByType", AuxiliaryFile.class);
             query.setParameter("dataFileId", dataFile.getId());
             query.setParameter("type", typeString);
             List<AuxiliaryFile> auxFiles = query.getResultList();
@@ -222,7 +224,7 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
     }
 
     public List<AuxiliaryFile> findAuxiliaryFilesWithoutType(DataFile dataFile) {
-        Query query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFilesWithoutType", AuxiliaryFile.class);
+        TypedQuery<AuxiliaryFile> query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFilesWithoutType", AuxiliaryFile.class);
         query.setParameter("dataFileId", dataFile.getId());
         return query.getResultList();
     }
