@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
@@ -83,6 +84,10 @@ public class AuxiliaryFilesIT {
                 .body("data.type", equalTo("DP"))
                 // FIXME: application/json would be better
                 .body("data.contentType", equalTo("text/plain"));
+        Response uploadAuxFileJsonAgain = UtilIT.uploadAuxFile(fileId, pathToAuxFileJson.toString(), formatTagJson, formatVersionJson, mimeTypeJson, true, dpType, apiToken);
+        uploadAuxFileJsonAgain.prettyPrint();
+        uploadAuxFileJsonAgain.then().assertThat()
+                .statusCode(CONFLICT.getStatusCode());
 
         // XML aux file
         Path pathToAuxFileXml = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "data.xml");
@@ -279,6 +284,13 @@ public class AuxiliaryFilesIT {
                 .body("data[0].contentType", equalTo("text/plain"))
                 .body("data[0].isPublic", equalTo(true))
                 .body("data[0].type", equalTo("someType"));
+        
+        Response listAllAuxFiles = UtilIT.listAuxFilesByOrigin(fileId, origin1, apiToken);
+        listAllAuxFiles.prettyPrint();
+        listAllAuxFiles.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(8));
+
 
         Response deleteAuxFileOrigin1 = UtilIT.deleteAuxFile(fileId, formatTagOrigin1, formatVersionOrigin1, apiToken);
         deleteAuxFileOrigin1.prettyPrint();
