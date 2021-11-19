@@ -66,7 +66,7 @@
 	dateOfCollectionStart	Start	Date when the data collection started.	YYYY-MM-DD	date	62	#NAME: #VALUE 	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	dateOfCollection	citation
 	dateOfCollectionEnd	End	Date when the data collection ended.	YYYY-MM-DD	date	63	#NAME: #VALUE 	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	dateOfCollection	citation
 	kindOfData	Kind of Data	Type of data included in the file: survey data, census/enumeration data, aggregate data, clinical data, event/transaction data, program source code, machine-readable text, administrative records data, experimental data, psychological test, textual data, coded textual, coded documents, time budget diaries, observation data/ratings, process-produced data, or other.		text	64		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		citation	http://rdf-vocabulary.ddialliance.org/discovery#kindOfData
-	series	Series	Information about the Dataset series.		none	65	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	series	Series	Information about the Dataset series.		none	65	:	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 	seriesName	Name	Name of the dataset series to which the Dataset belongs.		text	66	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	series	citation
 	seriesInformation	Information	History of the series and summary of those features that apply to the series as a whole.		textbox	67	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	series	citation
 	software	Software	Information about the software used to generate the Dataset.		none	68	,	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation	https://www.w3.org/TR/prov-o/#wasGeneratedBy
