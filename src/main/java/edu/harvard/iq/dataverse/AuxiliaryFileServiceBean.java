@@ -148,7 +148,7 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
         }
         query.setParameter("dataFileId", dataFile.getId());
         
-        List<AuxiliaryFile> retVal = (List<AuxiliaryFile>)query.getResultList();
+        List<AuxiliaryFile> retVal = query.getResultList();
         return retVal;
     }
 
