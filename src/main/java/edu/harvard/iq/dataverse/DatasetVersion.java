@@ -171,6 +171,12 @@ public class DatasetVersion implements Serializable {
     @OneToMany(mappedBy = "datasetVersion", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<WorkflowComment> workflowComments;
 
+    @Column(nullable=true)
+    private String externalStatusLabel;
+    
+    @Transient
+    private DatasetVersionDifference dvd;
+    
     
     public Long getId() {
         return this.id;
@@ -394,6 +400,10 @@ public class DatasetVersion implements Serializable {
     }
 
     public DatasetVersionDifference getDefaultVersionDifference() {
+        //Cache to avoid recalculating the difference many many times in the dataset-versions.xhtml page
+        if(dvd!=null) {
+            return dvd;
+        }
         // if version is deaccessioned ignore it for differences purposes
         int index = 0;
         int size = this.getDataset().getVersions().size();
@@ -405,7 +415,7 @@ public class DatasetVersion implements Serializable {
                 if ((index + 1) <= (size - 1)) {
                     for (DatasetVersion dvTest : this.getDataset().getVersions().subList(index + 1, size)) {
                         if (!dvTest.isDeaccessioned()) {
-                            DatasetVersionDifference dvd = new DatasetVersionDifference(this, dvTest);
+                            dvd = new DatasetVersionDifference(this, dvTest);
                             return dvd;
                         }
                     }
@@ -1616,6 +1626,7 @@ public class DatasetVersion implements Serializable {
 
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
+
         for (DatasetField dsf : this.getFlatDatasetFields()) {
             dsf.setValidationMessage(null); // clear out any existing validation message
             Set<ConstraintViolation<DatasetField>> constraintViolations = validator.validate(dsf);
@@ -1654,7 +1665,7 @@ public class DatasetVersion implements Serializable {
                 }
             }
         }
-        
+
         return returnSet;
     }
     
@@ -1958,6 +1969,14 @@ public class DatasetVersion implements Serializable {
 
     public String getLocaleLastUpdateTime() {
         return DateUtil.formatDate(new Timestamp(lastUpdateTime.getTime()));
+    }
+    
+    public String getExternalStatusLabel() {
+        return externalStatusLabel;
+    }
+
+    public void setExternalStatusLabel(String externalStatusLabel) {
+        this.externalStatusLabel = externalStatusLabel;
     }
 
 }

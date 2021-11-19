@@ -85,9 +85,9 @@ To install Payara, run the following commands:
 
 ``cd /usr/local``
 
-``sudo curl -O -L https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2021.4/payara-5.2021.4.zip``
+``sudo curl -O -L https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2021.5/payara-5.2021.5.zip``
 
-``sudo unzip payara-5.2021.4.zip``
+``sudo unzip payara-5.2021.5.zip``
 
 ``sudo chown -R $USER /usr/local/payara5``
 
@@ -191,6 +191,17 @@ Run the following command:
 ``curl http://localhost:8080/api/admin/settings/:DoiProvider -X PUT -d FAKE``
 
 This will disable DOI registration by using a fake (in-code) DOI provider. Please note that this feature is only available in Dataverse Software 4.10+ and that at present, the UI will give no indication that the DOIs thus minted are fake.
+
+Configure Your Development Environment for GUI Edits
+----------------------------------------------------
+
+Out of the box, a JSF setting is configured for production use and prevents edits to the GUI (xhtml files) from being visible unless you do a full deployment.
+
+It is recommended that you run the following command so that simply saving the xhtml file in Netbeans is enough for the change to show up.
+
+``asadmin create-system-properties "dataverse.jsf.refresh-period=1"``
+
+For more on JSF settings like this, see :ref:`jsf-config`.
 
 Next Steps
 ----------

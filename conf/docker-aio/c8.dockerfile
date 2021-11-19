@@ -24,7 +24,7 @@ COPY disableipv6.conf /etc/sysctl.d/
 RUN rm /etc/httpd/conf/*
 COPY httpd.conf /etc/httpd/conf 
 RUN cd /opt ; tar zxf /tmp/dv/deps/solr-8.8.1dv.tgz 
-RUN cd /opt ; unzip /tmp/dv/deps/payara-5.2021.4.zip ; ln -s /opt/payara5 /opt/glassfish4
+RUN cd /opt ; unzip /tmp/dv/deps/payara-5.2021.5.zip ; ln -s /opt/payara5 /opt/glassfish4
 
 # this copy of domain.xml is the result of running `asadmin set server.monitoring-service.module-monitoring-levels.jvm=LOW` on a default glassfish installation (aka - enable the glassfish REST monitir endpoint for the jvm`
 # this dies under Java 11, do we keep it?
@@ -64,7 +64,6 @@ COPY dv/install/ /opt/dv/
 COPY install.bash /opt/dv/
 COPY entrypoint.bash /opt/dv/
 COPY testdata /opt/dv/testdata
-COPY testdata/updateSchemaMDB.sh /opt/dv/testdata/
 COPY testscripts/* /opt/dv/testdata/
 COPY setupIT.bash /opt/dv
 WORKDIR /opt/dv

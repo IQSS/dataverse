@@ -80,19 +80,14 @@ public class JSONLDUtil {
         DatasetVersion dsv = new DatasetVersion();
 
         JsonObject jsonld = decontextualizeJsonLD(jsonLDBody);
-        String id = null;
-        try {
-            id=jsonld.getString("@id");
-        } catch (NullPointerException npe) {
-            //Do nothing - a null value and other invalid values will be caught in parsing
-        }
-        Optional<GlobalId> maybePid = GlobalId.parse(id);
-        if (maybePid.isPresent()) {
-            ds.setGlobalId(maybePid.get());
-        } else {
-            if(migrating) {
-              // unparsable PID passed. Terminate.
-              throw new BadRequestException("Cannot parse the @id. Make sure it is in valid form - see Dataverse Native API documentation.");
+        if (migrating) {
+            Optional<GlobalId> maybePid = GlobalId.parse(jsonld.getString("@id"));
+            if (maybePid.isPresent()) {
+                ds.setGlobalId(maybePid.get());
+            } else {
+                // unparsable PID passed. Terminate.
+                throw new BadRequestException("Cannot parse the @id '" + jsonld.getString("@id")
+                        + "'. Make sure it is in valid form - see Dataverse Native API documentation.");
             }
         }
 
@@ -103,24 +98,12 @@ public class JSONLDUtil {
         versions.add(dsv);
 
         ds.setVersions(versions);
-        if (jsonld.containsKey(JsonLDTerm.schemaOrg("dateModified").getUrl())) {
-            String dateString = jsonld.getString(JsonLDTerm.schemaOrg("dateModified").getUrl());
-            LocalDateTime dateTime = getDateTimeFrom(dateString);
-            ds.setModificationTime(Timestamp.valueOf(dateTime));
-        }
-        try {
-            if (logger.isLoggable(Level.FINE)) {
-                if (ds.getModificationTime() == null) {
-                    // Create (migrating==false case - modification time will be set in the create
-                    // call, but we need a non-null value to reuse the OREMap method for logging
-                    // here
-                    ds.setModificationTime(Timestamp.from(Instant.now()));
-                }
-                logger.fine("Output dsv: " + new OREMap(dsv, false).getOREMap().toString());
+        if (migrating) {
+            if (jsonld.containsKey(JsonLDTerm.schemaOrg("dateModified").getUrl())) {
+                String dateString = jsonld.getString(JsonLDTerm.schemaOrg("dateModified").getUrl());
+                LocalDateTime dateTime = getDateTimeFrom(dateString);
+                ds.setModificationTime(Timestamp.valueOf(dateTime));
             }
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
         return ds;
     }
@@ -185,13 +168,12 @@ public class JSONLDUtil {
                         dsf.setDatasetFieldType(dsft);
                     }
 
-                    // Todo - normalize object vs. array
                     JsonArray valArray = getValues(jsonld.get(key), dsft.isAllowMultiples(), dsft.getName());
 
                     addField(dsf, valArray, dsft, datasetFieldSvc, append);
 
                 } else {
-
+                    //When migrating, the publication date and version number can be set
                     if (key.equals(JsonLDTerm.schemaOrg("datePublished").getUrl())&& migrating && !append) {
                         dsv.setVersionState(VersionState.RELEASED);
                     } else if (key.equals(JsonLDTerm.schemaOrg("version").getUrl())&& migrating && !append) {
@@ -248,7 +230,6 @@ public class JSONLDUtil {
                     // ToDo: support Dataverse location metadata? e.g. move to new dataverse?
                     // re: JsonLDTerm.schemaOrg("includedInDataCatalog")
                 }
-
             }
         }
 
@@ -381,6 +362,8 @@ public class JSONLDUtil {
         logger.fine("Compound: " + dsft.isCompound());
         logger.fine("CV: " + dsft.isAllowControlledVocabulary());
 
+        Map<Long, JsonObject> cvocMap = datasetFieldSvc.getCVocConf(true);
+        
         if (dsft.isCompound()) {
             /*
              * List<DatasetFieldCompoundValue> vals = parseCompoundValue(type,
@@ -446,7 +429,7 @@ public class JSONLDUtil {
                 }
                 // Only add value to the list if it is not a duplicate
                 if (strValue.equals("Other")) {
-                    System.out.println("vals = " + vals + ", contains: " + vals.contains(cvv));
+                    logger.fine("vals = " + vals + ", contains: " + vals.contains(cvv));
                 }
                 if (!vals.contains(cvv)) {
                     if (vals.size() > 0) {
@@ -459,10 +442,21 @@ public class JSONLDUtil {
             dsf.setControlledVocabularyValues(vals);
 
         } else {
+
+            boolean extVocab=false;
+            if(cvocMap.containsKey(dsft.getId())) {
+                extVocab=true;
+            }
             List<DatasetFieldValue> vals = dsf.getDatasetFieldValues();
 
             for (JsonString strVal : valArray.getValuesAs(JsonString.class)) {
                 String strValue = strVal.getString();
+                if(extVocab) {
+                    if(!datasetFieldSvc.isValidCVocValue(dsft, strValue)) {
+                        throw new BadRequestException("Invalid values submitted for " + dsft.getName() + " which is limited to specific vocabularies.");
+                    }
+                    datasetFieldSvc.registerExternalTerm(cvocMap.get(dsft.getId()), strValue);
+                }
                 DatasetFieldValue datasetFieldValue = new DatasetFieldValue();
 
                 datasetFieldValue.setDisplayOrder(vals.size());

@@ -1,12 +1,15 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.logging.Level;
@@ -68,15 +71,36 @@ public class ImportDatasetCommand extends AbstractCreateDatasetCommand {
         try {
             int responseStatus = client.executeMethod(httpGet);
 
-            if ( responseStatus == 404 ) {
-                throw new CommandExecutionException("Provided PID does not exist. Status code for GET '" + pid + "' is 404." , this);
+            if (responseStatus == 404) {
+                /*
+                 * Using test DOIs from DataCite, we'll get a 404 when trying to resolve the DOI
+                 * to a landing page, but the DOI may already exist. An extra check here allows
+                 * use of DataCite test DOIs. It also changes import slightly in allowing PIDs
+                 * that exist (and accessible in the PID provider account configured in
+                 * Dataverse) but aren't findable to be used. That could be the case if, for
+                 * example, someone was importing a draft dataset from elsewhere.
+                 * 
+                 * Also note that just replacing the call above with the alreadyExists() call
+                 * here would break import cases where a DOI is public but not managable with
+                 * the currently configured PID provider credentials. If this is not a valid use
+                 * case, the GET above could be removed.
+                 */
+                GlobalIdServiceBean globalIdServiceBean = GlobalIdServiceBean.getBean(ds.getProtocol(), ctxt);
+                if (globalIdServiceBean != null) {
+                    if (globalIdServiceBean.alreadyExists(ds)) {
+                        return;
+                    }
+                }
+                throw new CommandExecutionException(
+                        "Provided PID does not exist. Status code for GET '" + pid + "' is 404.", this);
             }
 
-        } catch ( IOException ex ) {
-            logger.log(Level.WARNING, "Error while validating PID at '"+pid+"' for an imported dataset: "+ ex.getMessage(), ex);
-            throw new CommandExecutionException("Cannot validate PID due to a connection error: " + ex.getMessage() , this);
+        } catch (Exception ex) {
+            logger.log(Level.WARNING,
+                    "Error while validating PID at '" + pid + "' for an imported dataset: " + ex.getMessage(), ex);
+            throw new CommandExecutionException("Cannot validate PID due to an error: " + ex.getMessage(), this);
         }
-                
+
     }
     
     @Override

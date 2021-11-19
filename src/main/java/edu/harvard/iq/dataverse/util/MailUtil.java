@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.util;
 
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
@@ -44,6 +45,8 @@ public class MailUtil {
                 return BundleUtil.getStringFromBundle("notification.email.grant.file.access.subject", rootDvNameAsList);
             case REJECTFILEACCESS:
                 return BundleUtil.getStringFromBundle("notification.email.rejected.file.access.subject", rootDvNameAsList);
+            case DATASETCREATED:
+                return BundleUtil.getStringFromBundle("notification.email.dataset.created.subject", Arrays.asList(rootDvNameAsList.get(0), ((Dataset)objectOfNotification).getDisplayName()));
             case CREATEDS:
                 return BundleUtil.getStringFromBundle("notification.email.create.dataset.subject", rootDvNameAsList);
             case SUBMITTEDDS:
@@ -58,6 +61,8 @@ public class MailUtil {
                 return BundleUtil.getStringFromBundle("notification.email.workflow.success.subject", rootDvNameAsList);
             case WORKFLOW_FAILURE:
                 return BundleUtil.getStringFromBundle("notification.email.workflow.failure.subject", rootDvNameAsList);
+            case STATUSUPDATED:
+                return BundleUtil.getStringFromBundle("notification.email.status.change.subject", rootDvNameAsList);
             case CREATEACC:
                 return BundleUtil.getStringFromBundle("notification.email.create.account.subject", rootDvNameAsList);
             case CHECKSUMFAIL:
