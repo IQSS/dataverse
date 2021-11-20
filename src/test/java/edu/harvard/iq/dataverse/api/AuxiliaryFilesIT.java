@@ -285,7 +285,7 @@ public class AuxiliaryFilesIT {
                 .body("data[0].isPublic", equalTo(true))
                 .body("data[0].type", equalTo("someType"));
         
-        Response listAllAuxFiles = UtilIT.listAuxFilesByOrigin(fileId, origin1, apiToken);
+        Response listAllAuxFiles = UtilIT.listAllAuxFiles(fileId, apiToken);
         listAllAuxFiles.prettyPrint();
         listAllAuxFiles.then().assertThat()
                 .statusCode(OK.getStatusCode())

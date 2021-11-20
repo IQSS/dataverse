@@ -681,6 +681,14 @@ public class UtilIT {
         return response;
     }
 
+    static Response listAllAuxFiles(Long fileId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/access/datafile/" + fileId + "/auxiliary");
+        return response;
+    }
+
+    
     static Response deleteAuxFile(Long fileId, String formatTag, String formatVersion, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
