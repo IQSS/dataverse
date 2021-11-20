@@ -24,6 +24,7 @@ import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.Response;
 
 import org.apache.tika.Tika;
@@ -93,7 +94,7 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
             }
             DigestInputStream di = new DigestInputStream(fileInputStream, md);
 
-            storageIO.saveInputStreamAsAux(fileInputStream, auxExtension);
+            storageIO.saveInputStreamAsAux(di, auxExtension);
             auxFile.setChecksum(FileUtil.checksumDigestToString(di.getMessageDigest().digest()));
 
             Tika tika = new Tika();
@@ -109,7 +110,7 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
         } catch (IOException ioex) {
             logger.severe("IO Exception trying to save auxiliary file: " + ioex.getMessage());
             throw new InternalServerErrorException();
-        } catch (RuntimeException e) {
+        } catch (ServerErrorException e) {
             // If anything fails during database insert, remove file from storage
             try {
                 storageIO.deleteAuxObject(auxExtension);
