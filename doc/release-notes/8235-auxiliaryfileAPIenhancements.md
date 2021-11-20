@@ -5,6 +5,7 @@ This release includes updates to the Auxiliary File API:
 - Improved error reporting
 - The API will block attempts to create a duplicate auxiliary file
 - Delete and list-by-original calls have been added
+- Bug fix: correct checksum recorded for aux file
 
 Please note that the auxiliary files feature is experimental and is designed to support integration with tools from the [OpenDP Project](https://opendp.org). If the API endpoints are not needed they can be blocked.
 
