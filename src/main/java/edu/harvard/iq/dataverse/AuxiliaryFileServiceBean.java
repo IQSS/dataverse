@@ -68,9 +68,10 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
      * @param isPublic boolean - is this file available to any user?
      * @param type how to group the files such as "DP" for "Differentially
      * Private Statistics".
+     * @param filename name of the file
      * @return success boolean - returns whether the save was successful
      */
-    public AuxiliaryFile processAuxiliaryFile(InputStream fileInputStream, DataFile dataFile, String formatTag, String formatVersion, String origin, boolean isPublic, String type) {
+    public AuxiliaryFile processAuxiliaryFile(InputStream fileInputStream, DataFile dataFile, String formatTag, String formatVersion, String origin, boolean isPublic, String type, String filename) {
 
         StorageIO<DataFile> storageIO = null;
         AuxiliaryFile auxFile = new AuxiliaryFile();
@@ -106,6 +107,7 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
             auxFile.setType(type);
             auxFile.setDataFile(dataFile);
             auxFile.setFileSize(storageIO.getAuxObjectSize(auxExtension));
+            auxFile.setFilename(filename);
             auxFile = save(auxFile);
         } catch (IOException ioex) {
             logger.severe("IO Exception trying to save auxiliary file: " + ioex.getMessage());

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.AuxiliaryFile;
 import edu.harvard.iq.dataverse.dataaccess.Range;
 import java.util.List;
 import static org.junit.Assert.assertEquals;
@@ -143,6 +144,21 @@ public class DownloadInstanceWriterTest {
             expectedException = ex;
         }
         assertNotNull(expectedException);
+    }
+
+    @Test
+    public void testGetAuxFileExtension() {
+        AuxiliaryFile auxFile = null;
+        assertEquals("", diw.getFileExtension(auxFile));
+        auxFile = new AuxiliaryFile();
+        assertEquals("", diw.getFileExtension(auxFile));
+        auxFile.setContentType("text/plain");
+        assertEquals(".txt", diw.getFileExtension(auxFile));
+        auxFile.setFilename("foo.json");
+        assertEquals(".json", diw.getFileExtension(auxFile));
+        auxFile.setFilename("MANIFEST.TXT");
+        // .TXT becomes .txt due to FileUtil.getFileExtension doing toLowerCase
+        assertEquals(".txt", diw.getFileExtension(auxFile));
     }
 
 }

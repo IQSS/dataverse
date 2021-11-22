@@ -577,10 +577,17 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
         }
     }
     
-    private String getFileExtension(AuxiliaryFile auxFile) {
+    public String getFileExtension(AuxiliaryFile auxFile) {
         String fileExtension = "";
         if (auxFile == null) {
             return fileExtension;
+        }
+        String filename = auxFile.getFilename();
+        if (filename != null) {
+            String extension = FileUtil.getFileExtension(filename);
+            if (extension != null) {
+                return "." + extension;
+            }
         }
         String contentType = auxFile.getContentType();
         if (contentType != null) {

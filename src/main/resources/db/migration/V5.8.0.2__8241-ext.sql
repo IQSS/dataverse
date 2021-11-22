@@ -1,0 +1,1 @@
+ALTER TABLE auxiliaryfile ADD COLUMN IF NOT EXISTS filename VARCHAR(255);

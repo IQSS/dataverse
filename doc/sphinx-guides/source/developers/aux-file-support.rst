@@ -35,7 +35,9 @@ formatTag and formatVersion (if applicable) associated with the auxiliary file:
   export FORMAT_VERSION='v1'
   
   curl "$SERVER_URL/api/access/datafile/$FILE_ID/auxiliary/$FORMAT_TAG/$FORMAT_VERSION"
-  
+
+The file extension will be based on the file extension originally uploaded (but converted to lower case) or in the case of no file extension, a best guess will be made based on the content type (MIME type).
+
 Listing Auxiliary Files for a Datafile by Origin
 ------------------------------------------------
 To list auxiliary files, specify the primary key of the datafile (FILE_ID), and the origin associated with the auxiliary files to list (the application/entity that created them).

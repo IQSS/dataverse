@@ -4,6 +4,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.Serializable;
 import java.util.MissingResourceException;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -65,6 +66,12 @@ public class AuxiliaryFile implements Serializable {
     private Long fileSize; 
     
     private String checksum;
+
+    /**
+     * filename can be null because it was never required originally.
+     */
+    @Column(nullable = true)
+    private String filename;
 
     /**
      * A way of grouping similar auxiliary files together. The type could be
@@ -158,6 +165,14 @@ public class AuxiliaryFile implements Serializable {
         } catch (MissingResourceException ex) {
             return null;
         }
+    }
+
+    public String getFilename() {
+        return filename;
+    }
+
+    public void setFilename(String filename) {
+        this.filename = filename;
     }
 
 }
