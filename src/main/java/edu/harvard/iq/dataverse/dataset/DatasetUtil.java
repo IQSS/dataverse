@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
@@ -30,7 +31,12 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.IOUtils;
+import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.util.StringUtil;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import org.apache.commons.io.FileUtils;
 
 public class DatasetUtil {
 
@@ -482,5 +488,49 @@ public class DatasetUtil {
             }
         }
         return bytes;
+    }
+    
+    public static boolean validateDatasetMetadataExternally(Dataset ds, String executable, DataverseRequest request) {
+        String sourceAddressLabel = "0.0.0.0"; 
+        
+        if (request != null) {
+            IpAddress sourceAddress = request.getSourceAddress();
+            if (sourceAddress != null) {
+                sourceAddressLabel = sourceAddress.toString();
+            }
+        }
+        
+        String jsonMetadata; 
+        
+        try {
+            jsonMetadata = json(ds).add("datasetVersion", json(ds.getLatestVersion())).add("sourceAddress", sourceAddressLabel).build().toString();
+        } catch (Exception ex) {
+            logger.warning("Failed to export dataset metadata as json; "+ex.getMessage() == null ? "" : ex.getMessage());
+            return false; 
+        }
+        
+        if (StringUtil.isEmpty(jsonMetadata)) {
+            logger.warning("Failed to export dataset metadata as json.");
+            return false; 
+        }
+       
+        // save the metadata in a temp file: 
+        
+        try {
+            File tempFile = File.createTempFile("datasetMetadataCheck", ".tmp");
+            FileUtils.writeStringToFile(tempFile, jsonMetadata);
+                                    
+            // run the external executable: 
+            String[] params = { executable, tempFile.getAbsolutePath() };
+            Process p = Runtime.getRuntime().exec(params);
+            p.waitFor(); 
+            
+            return p.exitValue() == 0;
+ 
+        } catch (IOException | InterruptedException ex) {
+            logger.warning("Failed run the external executable.");
+            return false; 
+        }
+        
     }
 }
