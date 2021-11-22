@@ -5,11 +5,14 @@ import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
 import java.util.logging.Logger;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.mockito.Mockito;
+
+import edu.harvard.iq.dataverse.api.helpers.Tags;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
-import org.junit.Ignore;
 import com.jayway.restassured.path.json.JsonPath;
 
 import java.util.List;
@@ -23,7 +26,6 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
 
 import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -53,28 +55,25 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObjectBuilder;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
-import static javax.ws.rs.core.Response.Status.OK;
-import static org.junit.Assert.assertEquals;
-import org.hamcrest.CoreMatchers;
+
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.CoreMatchers.nullValue;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.matchers.JUnitMatchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
+@Tag(Tags.SLOW)
+@Tag(Tags.STD_API_SET)
+@Tag(Tags.EXT_API_SET)
 public class DatasetsIT {
 
     private static final Logger logger = Logger.getLogger(DatasetsIT.class.getCanonicalName());
     
-    
-
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
-        
-        
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
 
         Response removeIdentifierGenerationStyle = UtilIT.deleteSetting(SettingsServiceBean.Key.IdentifierGenerationStyle);
@@ -96,7 +95,7 @@ public class DatasetsIT {
          */
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() {
 
         Response removeIdentifierGenerationStyle = UtilIT.deleteSetting(SettingsServiceBean.Key.IdentifierGenerationStyle);
@@ -520,7 +519,7 @@ public class DatasetsIT {
      * This test requires the root dataverse to be published to pass.
      */
     @Test
-    @Ignore
+    @Disabled
     public void testExport() {
 
         Response createUser = UtilIT.createRandomUser();
@@ -1872,7 +1871,7 @@ public class DatasetsIT {
      * This test requires the root dataverse to be published to pass.
      */
     @Test
-    @Ignore
+    @Disabled
     public void testUpdatePIDMetadataAPI() {
 
         Response createUser = UtilIT.createRandomUser();
@@ -2132,7 +2131,11 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         String fileId = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
 
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", authorApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(),
+                               "Ingest",
+                                       authorApiToken,
+                                       UtilIT.MAXIMUM_INGEST_LOCK_DURATION),
+            "Failed test if Ingest Lock exceeds max duration " + pathToFile);
 
         Response restrictFile = UtilIT.restrictFile(fileId, true, authorApiToken);
         restrictFile.prettyPrint();
@@ -2153,7 +2156,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         // Here we are asserting that dataDscr is empty. TODO: Do this in REST Assured.
         String dataDscrForGuest = XmlPath.from(exportByGuest.asString()).getString("codeBook.dataDscr");
-        Assert.assertEquals("", dataDscrForGuest);
+        assertEquals("", dataDscrForGuest);
 
         // Author export (has access)
         Response exportByAuthor = UtilIT.exportDataset(datasetPid, "ddi", authorApiToken);
@@ -2164,7 +2167,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         // Here we are asserting that dataDscr is empty. TODO: Do this in REST Assured.
         String dataDscrForAuthor = XmlPath.from(exportByAuthor.asString()).getString("codeBook.dataDscr");
-        Assert.assertEquals("", dataDscrForAuthor);
+        assertEquals("", dataDscrForAuthor);
 
         // Now we are testing file-level retrieval.
         // The author has access to a restricted file and gets all the metadata.
@@ -2175,7 +2178,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("codeBook.fileDscr.fileTxt.fileName", equalTo("data.tab"))
                 //                .body("codeBook", containsString("dataDscr"))
                 // The names of all these variables (name, pounds, species) should be visible.
-                .body("codeBook.dataDscr", CoreMatchers.not(equalTo(null)))
+                .body("codeBook.dataDscr", not(equalTo(null)))
                 //                .body("codeBook.dataDscr", equalTo(null))
                 .body("codeBook.dataDscr.var[0].@name", equalTo("name"))
                 .body("codeBook.dataDscr.var[1].@name", equalTo("pounds"))
