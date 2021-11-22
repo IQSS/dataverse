@@ -36,12 +36,12 @@
         <apache.httpcomponents.client.version>4.5.13</apache.httpcomponents.client.version>
         <apache.httpcomponents.core.version>4.4.14</apache.httpcomponents.core.version>
         <google.cloud.version>0.157.0</google.cloud.version>
-        <junit.version>4.13.1</junit.version>
-        <junit.jupiter.version>5.7.0</junit.jupiter.version>
+        <junit.version>4.13.2</junit.version>
+        <junit.jupiter.version>5.8.1</junit.jupiter.version>
         <junit.vintage.version>${junit.jupiter.version}</junit.vintage.version>
         <testcontainers.version>1.15.0</testcontainers.version>
         <microbean-mpconfig.version>0.4.1</microbean-mpconfig.version>
-        <mockito.version>2.28.2</mockito.version>
+        <mockito.version>3.12.4</mockito.version>
         <flyway.version>5.2.4</flyway.version>
         <jhove.version>1.20.1</jhove.version>
         <jacoco.version>0.8.6</jacoco.version>
