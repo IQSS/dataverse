@@ -360,8 +360,8 @@
     <field name="samplingErrorEstimates" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="samplingProcedure" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="series" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="seriesInformation" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="seriesName" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <field name="seriesInformation" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="seriesName" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="socialScienceNotes" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="socialScienceNotesSubject" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="socialScienceNotesText" type="text_en" multiValued="false" stored="true" indexed="true"/>
