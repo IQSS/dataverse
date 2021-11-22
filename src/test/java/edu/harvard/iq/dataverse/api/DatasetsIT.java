@@ -6,6 +6,7 @@ import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
 import java.util.logging.Logger;
 
+import edu.harvard.iq.dataverse.api.helpers.DBSetting;
 import edu.harvard.iq.dataverse.api.helpers.Tags;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -760,6 +761,7 @@ public class DatasetsIT {
     }
 
     @Test
+    @DBSetting(name = SettingsServiceBean.Key.IdentifierGenerationStyle, value = "storedProcGenerated")
     public void testStoredProcGeneratedAsIdentifierGenerationStyle() {
         // Please note that this test only works if the stored procedure
         // named generateIdentifierFromStoredProcedure() has been created in the 
@@ -781,10 +783,6 @@ public class DatasetsIT {
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
-
-        Response setStoredProcGeneratedAsIdentifierGenerationStyle = UtilIT.setSetting(SettingsServiceBean.Key.IdentifierGenerationStyle, "storedProcGenerated");
-        setStoredProcGeneratedAsIdentifierGenerationStyle.then().assertThat()
-                .statusCode(OK.getStatusCode());
 
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.prettyPrint();
@@ -816,11 +814,6 @@ public class DatasetsIT {
         Response deleteUserResponse = UtilIT.deleteUser(username);
         deleteUserResponse.prettyPrint();
         assertEquals(200, deleteUserResponse.getStatusCode());
-
-        Response remove = UtilIT.deleteSetting(SettingsServiceBean.Key.IdentifierGenerationStyle);
-        remove.then().assertThat()
-                .statusCode(200);
-
     }
 
     /**
