@@ -366,13 +366,29 @@ function handle_dropdown_popup_scroll(){
 
 function enableSubMenus() {
     $('.dropdown-submenu>a').off('keydown').keydown(toggleSubMenu);
+    $('.dropdown-submenu>.dropdown-menu>li:last-of-type>a').off('keydown').keydown(closeOnTab);
+    $('.dropdown-submenu>.dropdown-menu>li:first-of-type>a').off('keydown').keydown(closeOnShiftTab);
     addMenuDelays();
 }
 
 function toggleSubMenu(event) {
-if ( event.which == 13 || event.which == 32 ) {
+if ( event.key == ' ' || event.key == 'Enter' ) {
       event.target.parentElement.classList.toggle('open');
     }
+}
+
+function closeOnTab(event) {
+        console.log(event.key);
+        if ( event.key == 'Tab') {
+        $(this).parent().parent().parent().removeClass('open');
+        }
+}
+
+function closeOnShiftTab(event) {
+        console.log(event.key);
+        if ( event.key == 'Tab' && event.shiftKey) {
+        $(this).parent().parent().parent().removeClass('open');
+        }
 }
 
 function addMenuDelays() {
