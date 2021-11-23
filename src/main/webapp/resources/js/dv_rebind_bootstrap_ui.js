@@ -365,22 +365,22 @@ function handle_dropdown_popup_scroll(){
 }
 
 function enableSubMenus() {
-    $('.dropdown-submenu>a').off('keydown').keydown(toggleSubMenu(event));
+    $('.dropdown-submenu>a').off('keydown').keydown(toggleSubMenu);
     addMenuDelays();
 }
 
-function toggleSubMenu(e) {
-if ( e.which == 13 || e.which == 32 ) {
-      e.target.parentElement.classList.toggle('open');
+function toggleSubMenu(event) {
+if ( event.which == 13 || event.which == 32 ) {
+      event.target.parentElement.classList.toggle('open');
     }
-    return false;
 }
 
-function addMenuDelay(e) {
+function addMenuDelays() {
     $('.dropdown-submenu>a').off('mouseover').mouseover(function() {
         $( this ).parent().addClass('open');
     });
     $('.dropdown-submenu>a').off('mouseout').mouseout(function() {
-        $( this ).parent().delay(1000).removeClass('open');
+            var obj =$( this ).parent();
+       setTimeout(function() {obj.removeClass('open');}, 1000);
     });
 }
