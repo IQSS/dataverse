@@ -203,8 +203,7 @@
     
     <!-- CITATION FILES DOWNLOAD OPTIONS -->
     <li class="dropdown-submenu pull-left" jsf:rendered="#{!anonymized}">
-        <script> function pressme(e) {e.target.parentElement.classList.toggle('open');return false;}</script>
-            <a tabindex="0" onkeypress="pressme(event)" >#{bundle['file.downloadBtn.format.citation']}</a>
+            <a tabindex="0">#{bundle['file.downloadBtn.format.citation']}</a>
         <ul class="dropdown-menu">
             <li>
                 <h:commandLink styleClass="btn-download" action="#{fileDownloadService.downloadDatafileCitationXML(fileMetadata)}">

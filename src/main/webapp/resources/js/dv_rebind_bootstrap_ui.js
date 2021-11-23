@@ -49,6 +49,9 @@ function bind_bsui_components(){
         var dialog_id = this.jq.attr('id').split(/[:]+/).pop();
         handleResizeDialog(dialog_id);
     }
+    
+    //Fly-out sub-menu accessibility
+    enableSubMenus();
 }
 
 function bind_tooltip_popover(){
@@ -358,5 +361,26 @@ function handle_dropdown_popup_scroll(){
                 of: $(".DropdownPopup")
             });
         }
+    });
+}
+
+function enableSubMenus() {
+    $('.dropdown-submenu>a').off('keydown').keydown(toggleSubMenu(event));
+    addMenuDelays();
+}
+
+function toggleSubMenu(e) {
+if ( e.which == 13 || e.which == 32 ) {
+      e.target.parentElement.classList.toggle('open');
+    }
+    return false;
+}
+
+function addMenuDelay(e) {
+    $('.dropdown-submenu>a').off('mouseover').mouseover(function() {
+        $( this ).parent().addClass('open');
+    });
+    $('.dropdown-submenu>a').off('mouseout').mouseout(function() {
+        $( this ).parent().delay(1000).removeClass('open');
     });
 }
