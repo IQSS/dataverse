@@ -239,7 +239,7 @@
                                                                                 and DatasetPage.showComputeButton()}">
                                                         <li class="dropdown-header">#{bundle['dataset.accessBtn.header.compute']} <span class="glyphicon glyphicon-flash"/></li>
                                                         <li>
-                                                            <a tabindex="-1" href="#" id="computeBatch" class="btn-compute">#{bundle['dataset.compute.computeBtn']}</a>
+                                                            <a tabindex="0" id="computeBatch" class="btn-compute">#{bundle['dataset.compute.computeBtn']}</a>
                                                             <ul class="dropdown-menu">
                                                                 <li>
                                                                     <!-- Compute dataset link -->
@@ -338,7 +338,7 @@
                                                     </li>
                                                     <ui:fragment rendered="#{(not empty DatasetPage.allowedExternalStatuses) and DatasetPage.canPublishDataset()}">
                                                         <li class="dropdown-submenu pull-left">
-                                                            <a tabindex="-1" href="#">#{bundle['dataset.changestatus']}</a>
+                                                            <a tabindex="0">#{bundle['dataset.changestatus']}</a>
                                                             <ul class="dropdown-menu">
                                                                 <ui:repeat value="#{DatasetPage.allowedExternalStatuses}" var="status">
                                                                     <li>
@@ -390,7 +390,7 @@
                                                     <ui:fragment rendered="#{permissionsWrapper.canManagePermissions(DatasetPage.dataset)}">
                                                         <li class="#{settingsWrapper.publicInstall ? '' : 'dropdown-submenu pull-left'}">
                                                             <ui:fragment rendered="#{!settingsWrapper.publicInstall}">
-                                                                <a tabindex="-1" href="#">#{bundle['dataset.editBtn.itemLabel.permissions']}</a>
+                                                                <a tabindex="0">#{bundle['dataset.editBtn.itemLabel.permissions']}</a>
                                                                 <ul class="dropdown-menu">
                                                                     <li>
                                                                         <h:link id="manageDatasetPermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
