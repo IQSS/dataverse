@@ -376,11 +376,22 @@ if ( event.which == 13 || event.which == 32 ) {
 }
 
 function addMenuDelays() {
-    $('.dropdown-submenu>a').off('mouseover').mouseover(function() {
-        $( this ).parent().addClass('open');
-    });
-    $('.dropdown-submenu>a').off('mouseout').mouseout(function() {
-            var obj =$( this ).parent();
-       setTimeout(function() {obj.removeClass('open');}, 1000);
+    $('.dropdown-submenu>a').each(function() {
+        var obj =$( this ).parent();
+        //First time - add open class upon mouseover
+        $(this).off('mouseover').mouseover(function() {
+            obj.addClass('open');
+        });
+        var closeMenuTimer;
+        //And add a mouseout function that will 
+        // a) remove that class after a delay, and 
+        // b) update the mouseover to remove the timer if it hasn't run yet (and re-add the open class if it has)
+        $(this).off('mouseout').mouseout(function() {
+            closeMenuTimer = setTimeout(function() {obj.removeClass('open');}, 1000);
+            $(this).off('mouseover').mouseover(function() {
+                obj.addClass('open');
+                clearTimeout(closeMenuTimer);
+            });
+        });
     });
 }
