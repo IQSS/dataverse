@@ -5,8 +5,14 @@
  */
 package edu.harvard.iq.dataverse;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.Serializable;
 import java.net.URI;
+import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;
+import javax.faces.validator.ValidatorException;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -279,6 +285,17 @@ public class TermsOfUseAndAccess implements Serializable {
         depositorRequirements = null;
         conditions = null;
         disclaimer = null;
+    }
+
+    public void validateTerms(FacesContext context, UIComponent component, Object value) throws ValidatorException {
+
+        if (license == null && StringUtils.isBlank((String) value)) {
+            FacesMessage msg = new FacesMessage("Empty or whitespace!");//BundleUtil.getStringFromBundle("theme.validateTagline"));
+            msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+
+            throw new ValidatorException(msg);
+        }
+
     }
     
     /**
