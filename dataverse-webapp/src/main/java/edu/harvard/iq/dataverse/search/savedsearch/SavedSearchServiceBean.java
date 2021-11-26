@@ -228,7 +228,8 @@ public class SavedSearchServiceBean {
                 sortBy.getField(),
                 sortBy.getOrder(),
                 paginationStart,
-                numResultsPerPage
+                numResultsPerPage,
+                false
         );
         return solrQueryResponse;
     }

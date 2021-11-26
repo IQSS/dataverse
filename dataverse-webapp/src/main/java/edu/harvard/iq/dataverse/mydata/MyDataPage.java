@@ -58,12 +58,6 @@ public class MyDataPage implements java.io.Serializable {
         System.out.println(s);
     }
 
-    private void msgt(String s) {
-        msg("-------------------------------");
-        msg(s);
-        msg("-------------------------------");
-    }
-
     public void setTotalUserDatasetCount(long cnt) {
         this.totalUserDatasetCount = cnt;
     }
@@ -110,14 +104,10 @@ public class MyDataPage implements java.io.Serializable {
 
     public boolean isSuperuser() {
         return session.getUser().isSuperuser();
-
     }
 
 
     public String init() {
-        //msgt("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
-
-        //msgt("----------- init() -------------");
 
         if (session.getUser().isAuthenticated()) {
             authUser = (AuthenticatedUser) session.getUser();
@@ -156,7 +146,7 @@ public class MyDataPage implements java.io.Serializable {
         }
         // Initialize the role checboxes
         //
-        List<DataverseRole> roleList = new ArrayList<>();
+        List<DataverseRole> roleList;
 
         // (1) For a superuser, show all the roles--in case they want to
         //    see another user's "My Data"

@@ -22,6 +22,7 @@ import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SearchServiceBean.SortOrder;
 import edu.harvard.iq.dataverse.search.query.SearchForTypes;
+import edu.harvard.iq.dataverse.search.query.SearchObjectType;
 import edu.harvard.iq.dataverse.search.response.DvObjectCounts;
 import edu.harvard.iq.dataverse.search.response.PublicationStatusCounts;
 import edu.harvard.iq.dataverse.search.response.SolrQueryResponse;
@@ -200,7 +201,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
             if (authUser == null) {
                 return this.getJSONErrorString("Requires authentication.  Please login.", "retrieveMyDataAsJsonString. User not found!  Shouldn't be using this anyway");
             } else {
-                // If person is a superuser, see if a userIdentifier has been specified 
+                // If person is a superuser, see if a userIdentifier has been specified
                 // and use that instead
                 if ((authUser.isSuperuser()) && (userIdentifier != null) && (!userIdentifier.isEmpty())) {
                     searchUser = getUserFromIdentifier(userIdentifier);
@@ -234,7 +235,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         }
 
         // ---------------------------------
-        // (1) Initialize filterParams and check for Errors 
+        // (1) Initialize filterParams and check for Errors
         // ---------------------------------
         DataverseRequest dataverseRequest = createDataverseRequest(authUser);
 
@@ -245,7 +246,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         }
 
         // ---------------------------------
-        // (2) Initialize MyDataFinder and check for Errors 
+        // (2) Initialize MyDataFinder and check for Errors
         // ---------------------------------
         myDataFinder = new MyDataFinder(rolePermissionHelper,
                                         roleAssigneeService,
@@ -275,7 +276,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         //msg("search with user: " + searchUser.getIdentifier());
 
         SearchForTypes typesToSearch = filterParams.getSolrFragmentForDvObjectType();
-        
+
         List<String> filterQueries = this.myDataFinder.getSolrFilterQueries();
         if (filterQueries == null) {
             logger.fine("No ids found for this search");
@@ -295,7 +296,8 @@ public class DataRetrieverAPI extends AbstractApiBean {
                     //SearchFields.NAME_SORT, SortBy.ASCENDING,
                     SearchFields.RELEASE_OR_CREATE_DATE, SortOrder.desc,
                     solrCardStart, //paginationStart,
-                    SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE //10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE
+                    SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE, //10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE
+                    false
             );
 
             //msgt("getResultsStart: " + this.solrQueryResponse.getResultsStart());
@@ -355,7 +357,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         //jsonData.add("total_dvobject_counts", getTotalCountsFromSolrAsJSON(searchUser, this.myDataFinder));
 
 
-        if (OTHER_USER == true) {
+        if (OTHER_USER) {
             jsonData.add("other_user", searchUser.getIdentifier());
         }
 
@@ -369,7 +371,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
             return null;
         }
         DvObjectCounts dvObjectCounts = solrResponse.getDvObjectCounts();
-        
+
         return Json.createObjectBuilder()
                 .add("dataverses_count", dvObjectCounts.getDataversesCount())
                 .add("datasets_count", dvObjectCounts.getDatasetsCount())
@@ -382,7 +384,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
             logger.severe("DataRetrieverAPI.getDvObjectTypeCounts: solrQueryResponse should not be null");
             return null;
         }
-        
+
         PublicationStatusCounts statusCounts = solrResponse.getPublicationStatusCounts();
         return Json.createObjectBuilder()
                 .add("in_review_count", statusCounts.getInReviewCount())
@@ -419,7 +421,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
             // -------------------------------------------
             myDataCardInfo = doc.getJsonForMyData();
 
-            if (!doc.getEntity().isInstanceofDataFile()) {
+            if (!SearchObjectType.FILES.equals(doc.getType())) {
                 String parentAlias = dataverseDao.getParentAliasString(doc);
                 myDataCardInfo.add("parent_alias", parentAlias);
             }
@@ -440,4 +442,4 @@ public class DataRetrieverAPI extends AbstractApiBean {
         return jsonSolrDocsArrayBuilder;
 
     }
-}        
+}

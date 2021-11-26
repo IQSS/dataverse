@@ -114,20 +114,14 @@ public class SearchServiceBean {
 
     // -------------------- LOGIC --------------------
 
-    public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query, SearchForTypes typesToSearch, List<String> filterQueries, String sortField, SortOrder sortOrder, int paginationStart, int numResultsPerPage) throws SearchException {
-        return search(dataverseRequest, dataverses, query, typesToSearch, filterQueries, sortField, sortOrder, paginationStart, numResultsPerPage, true, false);
-    }
-
     /**
-     * @param retrieveEntities look up dvobject entities with .find()
-     *                         (potentially expensive!)
      * @param countsOnly after executing solr query only found object counts
      *                   (ie. datasets, dataverses & files) would be filled in
      *                   returned object, so it is unsuitable for other uses.
      */
     public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query, SearchForTypes typesToSearch,
                                     List<String> filterQueries, String sortField, SortOrder sortOrder, int paginationStart,
-                                    int numResultsPerPage, boolean retrieveEntities, boolean countsOnly)
+                                    int numResultsPerPage, boolean countsOnly)
             throws SearchException {
         if (paginationStart < 0) {
             throw new IllegalArgumentException("paginationStart must be 0 or greater");
@@ -352,9 +346,6 @@ public class SearchServiceBean {
             }
             solrSearchResult.setId(id);
             solrSearchResult.setEntityId(entityid);
-            if (retrieveEntities) {
-                solrSearchResult.setEntity(dvObjectService.findDvObject(entityid));
-            }
             solrSearchResult.setIdentifier(identifier);
             solrSearchResult.setPersistentUrl(persistentUrl);
             solrSearchResult.setType(type);
@@ -502,7 +493,7 @@ public class SearchServiceBean {
             if (!shouldIncludeFacetInResults(facetField)) {
                 continue;
             }
-            
+
             FacetCategory facetCategory = new FacetCategory();
             facetCategory.setName(facetField.getName());
             facetCategory.setFriendlyName(getLocaleFacetCategoryName(facetField.getName(), fieldIndex));
@@ -550,7 +541,7 @@ public class SearchServiceBean {
             } else {
                 String key = parts[0];
                 String value = parts[1].replaceAll("^\"", "").replaceAll("\"$", "");
-                
+
                 solrQueryResponse.addFilterQuery(new FilterQuery(
                         filterQuery,
                         getLocaleFacetCategoryName(key, fieldIndex),
@@ -583,7 +574,7 @@ public class SearchServiceBean {
 
         if (index.containsKey(formattedFacetCategoryName)) {
             return getDatasetFieldFacetLabelName(facetLabelName, formattedFacetLabelName, index.get(formattedFacetCategoryName));
-            
+
         } else {
             return getNonDatasetFieldFacetLabelName(facetLabelName, formattedFacetCategoryName);
         }

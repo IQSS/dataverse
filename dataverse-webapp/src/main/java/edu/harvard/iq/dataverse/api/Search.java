@@ -71,7 +71,6 @@ public class Search extends AbstractApiBean {
             @QueryParam("fq") final List<String> filterQueries,
             @QueryParam("show_entity_ids") boolean showEntityIds,
             @QueryParam("show_api_urls") boolean showApiUrls,
-            @QueryParam("query_entities") boolean queryEntities,
             @Context HttpServletResponse response
     ) {
 
@@ -126,7 +125,6 @@ public class Search extends AbstractApiBean {
                                                          sortBy.getOrder(),
                                                          paginationStart,
                                                          numResultsPerPage,
-                                                         queryEntities,
                                                          false
                 );
             } catch (SearchException ex) {

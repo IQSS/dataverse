@@ -591,7 +591,7 @@ public class Index extends AbstractApiBean {
         dataverses.add(subtreeScope);
         try {
             solrQueryResponse = searchService.search(createDataverseRequest(user), dataverses, query, SearchForTypes.all(), filterQueries,
-                    sortField, SortOrder.asc, paginationStart, numResultsPerPage);
+                    sortField, SortOrder.asc, paginationStart, numResultsPerPage, false);
         } catch (SearchException ex) {
             return error(Response.Status.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage() + ": " + ex.getCause().getLocalizedMessage());
         }

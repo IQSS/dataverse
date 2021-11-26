@@ -35,7 +35,7 @@ import edu.harvard.iq.dataverse.search.response.FilterQuery;
 import edu.harvard.iq.dataverse.search.response.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.response.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.omnifaces.cdi.ViewScoped;
 
 import javax.ejb.EJB;
@@ -45,10 +45,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -120,7 +118,6 @@ public class MyDataSearchFragment implements java.io.Serializable {
     private String rf4;
     private String rf5;
     private Dataverse dataverse;
-    private String dataversePath = null;
     private String selectedTypesString;
     private SearchForTypes selectedTypes = SearchForTypes.all();
 
@@ -135,7 +132,7 @@ public class MyDataSearchFragment implements java.io.Serializable {
     private List<FilterQuery> selectedFilterQueries = new ArrayList<>();
     private List<String> filterQueriesDebug = new ArrayList<>();
 
-    private boolean rootDv = false;
+    private boolean rootDv = true;
     private boolean solrErrorEncountered = false;
     private AuthenticatedUser authUser = null;
     private RoleTagRetriever roleTagRetriever;
@@ -317,7 +314,6 @@ public class MyDataSearchFragment implements java.io.Serializable {
      * @return
      */
     public boolean wasSolrErrorEncountered() {
-
         if (this.solrErrorEncountered) {
             return true;
         }
@@ -336,7 +332,6 @@ public class MyDataSearchFragment implements java.io.Serializable {
         return solrIsDown;
     }
 
-
     public boolean isRootDv() {
         return rootDv;
     }
@@ -345,7 +340,6 @@ public class MyDataSearchFragment implements java.io.Serializable {
         return (debug && session.getUser().isSuperuser())
                 || settingsService.isTrue(":Debug");
     }
-
 
     /**
      * A bit of redundant effort for error checking in the .xhtml
@@ -361,7 +355,6 @@ public class MyDataSearchFragment implements java.io.Serializable {
      * @return
      */
     public boolean hasValidFilterQueries() {
-
         if (this.publicationStatusFilters.isEmpty()) {
             return true;        // empty is valid!
         }
@@ -378,17 +371,12 @@ public class MyDataSearchFragment implements java.io.Serializable {
         SearchForTypes newTypesSelected = selectedTypes.toggleType(typeClicked);
 
         return newTypesSelected.getTypes().stream()
-                .map(t -> t.getSolrValue())
+                .map(SearchObjectType::getSolrValue)
                 .collect(Collectors.joining(":"));
     }
 
     public boolean isTabular(DataFile datafile) {
-
-        if (datafile == null) {
-            return false;
-        }
-
-        return datafile.isTabularData();
+        return datafile != null && datafile.isTabularData();
     }
 
     public String tabularDataDisplayInfo(DataFile datafile) {
@@ -414,17 +402,11 @@ public class MyDataSearchFragment implements java.io.Serializable {
                 ret = ret.concat("UNF: " + unf);
             }
         }
-
         return ret;
     }
 
     public String dataFileSizeDisplay(DataFile datafile) {
-        if (datafile == null) {
-            return "";
-        }
-
-        return datafile.getFriendlySize();
-
+        return datafile == null ? "" : datafile.getFriendlySize();
     }
 
     public String dataFileChecksumDisplay(DataFile datafile) {
@@ -432,82 +414,25 @@ public class MyDataSearchFragment implements java.io.Serializable {
             return "";
         }
 
-        if (datafile.getChecksumValue() != null && !StringUtils.isEmpty(datafile.getChecksumValue())) {
+        if (StringUtils.isNotEmpty(datafile.getChecksumValue())) {
             if (datafile.getChecksumType() != null) {
                 return " " + datafile.getChecksumType() + ": " + datafile.getChecksumValue() + " ";
             }
         }
-
         return "";
     }
 
     public void setDisplayCardValues() {
-
-        Set<Long> harvestedDatasetIds = null;
         for (SolrSearchResult result : searchResultsList) {
             if (result.getType() == SearchObjectType.DATAVERSES) {
                 result.setImageUrl(thumbnailServiceWrapper.getDataverseCardImageAsBase64Url(result));
-            } else if (result.getType() == SearchObjectType.DATASETS) {
-                if (result.getEntity() != null) {
-                    result.setImageUrl(thumbnailServiceWrapper.getDatasetCardImageAsBase64Url(result));
-                }
-
-                if (result.isHarvested()) {
-                    if (harvestedDatasetIds == null) {
-                        harvestedDatasetIds = new HashSet<>();
-                    }
-                    harvestedDatasetIds.add(result.getEntityId());
-                }
+            } else if (result.getType() == SearchObjectType.DATASETS && result.getEntity() != null) {
+                result.setImageUrl(thumbnailServiceWrapper.getDatasetCardImageAsBase64Url(result));
             } else if (result.getType() == SearchObjectType.FILES) {
                 result.setImageUrl(thumbnailServiceWrapper.getFileCardImageAsBase64Url(result));
-                if (result.isHarvested()) {
-                    if (harvestedDatasetIds == null) {
-                        harvestedDatasetIds = new HashSet<>();
-                    }
-                    harvestedDatasetIds.add(result.getParentIdAsLong());
-                }
             }
         }
-
         thumbnailServiceWrapper.resetObjectMaps();
-
-        // determine which of the objects are linked:
-
-        if (!this.isRootDv()) {
-            // (nothing is "linked" if it's the root DV!)
-            Set<Long> dvObjectParentIds = new HashSet<>();
-            for (SolrSearchResult result : searchResultsList) {
-                if (dataverse.getId().equals(result.getParentIdAsLong())) {
-                    // definitely NOT linked:
-                    result.setIsInTree(true);
-                } else if (result.getParentIdAsLong().equals(dataverseDao.findRootDataverse().getId())) {
-                    // the object's parent is the root Dv; and the current
-                    // Dv is NOT root... definitely linked:
-                    result.setIsInTree(false);
-                } else {
-                    dvObjectParentIds.add(result.getParentIdAsLong());
-                }
-            }
-
-            if (dvObjectParentIds.size() > 0) {
-                Map<Long, String> treePathMap = dvObjectService.getObjectPathsByIds(dvObjectParentIds);
-                if (treePathMap != null) {
-                    for (SolrSearchResult result : searchResultsList) {
-                        Long objectId = result.getParentIdAsLong();
-                        if (treePathMap.containsKey(objectId)) {
-                            String objectPath = treePathMap.get(objectId);
-                            if (!objectPath.startsWith(dataversePath)) {
-                                result.setIsInTree(false);
-                            }
-                        }
-                    }
-                }
-                treePathMap = null;
-            }
-
-            dvObjectParentIds = null;
-        }
-
     }
 
     public String searchRedirect(String dataverseRedirectPage) {
@@ -517,25 +442,22 @@ public class MyDataSearchFragment implements java.io.Serializable {
         if (query != null) {
             qParam = "&q=" + query;
         }
-        if(searchUserId != null) {
+        if (searchUserId != null) {
             qParam += "&uId=" + searchUserId;
         }
 
         return widgetWrapper.wrapURL(dataverseRedirectPage + "?faces-redirect=true" + qParam);
-
     }
 
     public String getAuthUserIdentifier() {
-        if (this.authUser == null) {
-            return null;
-        }
-        return MyDataUtil.formatUserIdentifierForMyDataForm(this.authUser.getIdentifier());
+        return this.authUser == null
+                ? null : MyDataUtil.formatUserIdentifierForMyDataForm(this.authUser.getIdentifier());
     }
 
     public String retrieveMyData() {
         if ((session.getUser() != null) && (session.getUser().isAuthenticated())) {
             authUser = (AuthenticatedUser) session.getUser();
-            if(searchUserId == null || searchUserId.isEmpty()) {
+            if (StringUtils.isEmpty(searchUserId)) {
                 searchUserId = getAuthUserIdentifier();
             }
             // If person is a superuser, see if a userIdentifier has been specified
@@ -557,24 +479,20 @@ public class MyDataSearchFragment implements java.io.Serializable {
         }
 
         // wildcard/browse (*) unless user supplies a query
-        if (this.query == null) {
-            mode = browseModeString;
-        } else if (this.query.isEmpty()) {
-            mode = browseModeString;
-        } else {
-            mode = searchModeString;
-        }
-        String searchTerm = "*";
+        mode = StringUtils.isEmpty(query)
+                ? browseModeString : searchModeString;
+
+        String searchTerm;
         if (mode.equals(browseModeString)) {
             searchTerm = "*";
 
-            if (selectedTypesString == null || selectedTypesString.isEmpty()) {
+            if (StringUtils.isEmpty(selectedTypesString)) {
                 selectedTypesString = "dataverses:datasets";
             }
-        } else if (mode.equals(searchModeString)) {
+        } else {
             searchTerm = query;
 
-            if (selectedTypesString == null || selectedTypesString.isEmpty()) {
+            if (StringUtils.isEmpty(selectedTypesString)) {
                 selectedTypesString = "dataverses:datasets:files";
             }
         }
@@ -585,7 +503,6 @@ public class MyDataSearchFragment implements java.io.Serializable {
                 publicationStatusFilters.add(fq);
             }
         }
-
         roleFilters = new ArrayList<>();
         for (String rf : Arrays.asList(rf0, rf1, rf2, rf3, rf4, rf5)) {
             if (rf != null) {
@@ -593,18 +510,20 @@ public class MyDataSearchFragment implements java.io.Serializable {
             }
         }
 
+        if (dataverse == null) {
+            this.dataverse = dataverseDao.findRootDataverse();
+        }
 
         List<DataverseRole> roleList = dataverseRoleService.findAll();
         DataverseRolePermissionHelper rolePermissionHelper = new DataverseRolePermissionHelper(roleList);
 
         List<String> pub_states = new ArrayList<>();
-        for(String filter : publicationStatusFilters) {
+        for (String filter : publicationStatusFilters) {
             pub_states.add(filter.replace("\"",""));
         }
-        if(pub_states.isEmpty()) {
+        if (pub_states.isEmpty()) {
             pub_states = MyDataFilterParams.defaultPublishedStates;
         }
-
 
         // ---------------------------------
         // (1) Initialize filterParams and check for Errors
@@ -617,7 +536,8 @@ public class MyDataSearchFragment implements java.io.Serializable {
                     .map(SearchObjectType::fromSolrValue)
                     .collect(Collectors.toList()));
 
-        List<Long> roleIdsForFilters = roleFilters.isEmpty() ? rolePermissionHelper.getRoleIdList() : rolePermissionHelper.findRolesIdsByNames(roleFilters);
+        List<Long> roleIdsForFilters = roleFilters.isEmpty()
+                ? rolePermissionHelper.getRoleIdList() : rolePermissionHelper.findRolesIdsByNames(roleFilters);
         MyDataFilterParams filterParams = new MyDataFilterParams(requestWithSearchedUser, toMyDataFinderFormat(selectedTypes),
                 pub_states, roleIdsForFilters, searchTerm);
         if (filterParams.hasError()) {
@@ -627,10 +547,7 @@ public class MyDataSearchFragment implements java.io.Serializable {
         // ---------------------------------
         // (2) Initialize MyDataFinder and check for Errors
         // ---------------------------------
-        MyDataFinder myDataFinder = new MyDataFinder(rolePermissionHelper,
-                roleAssigneeService,
-                dvObjectServiceBean,
-                groupService);
+        MyDataFinder myDataFinder = new MyDataFinder(rolePermissionHelper, roleAssigneeService, dvObjectServiceBean, groupService);
         myDataFinder.runFindDataSteps(filterParams);
         if (myDataFinder.hasError()) {
             return myDataFinder.getErrorMessage() + myDataFinder.getErrorMessage();
@@ -640,13 +557,12 @@ public class MyDataSearchFragment implements java.io.Serializable {
             logger.fine("No ids found for this search");
             return DataRetrieverAPI.MSG_NO_RESULTS_FOUND;
         }
-        for(String filter : filterQueries) {
+        for (String filter : filterQueries) {
             if (filter.contains(SearchFields.PUBLICATION_STATUS) && pub_states.size() != MyDataFilterParams.defaultPublishedStates.size()) {
                 filterQueries.add(filter.replace("OR", "AND"));
                 filterQueries.remove(filter);
             }
         }
-
 
         // ---------------------------------
         // (3) Make Solr Query
@@ -664,8 +580,8 @@ public class MyDataSearchFragment implements java.io.Serializable {
                     SearchFields.RELEASE_OR_CREATE_DATE,
                     SortOrder.desc,
                     paginationStart,
-                    SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE
-            );
+                    SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE,
+                    false);
 
             if (solrQueryResponse.getNumResultsFound() == 0) {
                 this.solrIsDown = true;
@@ -693,31 +609,28 @@ public class MyDataSearchFragment implements java.io.Serializable {
                         SearchFields.RELEASE_OR_CREATE_DATE,
                         SortOrder.desc,
                         0,
-                        1000
-                );
+                        1000,
+                        false);
                 roleTagRetriever = new RoleTagRetriever(rolePermissionHelper, roleAssigneeService, this.dvObjectServiceBean);
                 roleTagRetriever.loadRoles(requestWithSearchedUser, fullSolrQueryResponse);
 
-                List<String> roles = new ArrayList<>();
-                for(SolrSearchResult dvObjId : fullSolrQueryResponse.getSolrSearchResults()) {
-                    roles.addAll(roleTagRetriever.getRolesForCard(dvObjId.getEntityId()));
-                }
-                myRoles = roles.stream().distinct().collect(Collectors.toList());
+                myRoles = fullSolrQueryResponse.getSolrSearchResults().stream()
+                        .flatMap(r -> roleTagRetriever.getRolesForCard(r.getEntityId()).stream())
+                        .distinct()
+                        .collect(Collectors.toList());
             } catch (SearchException ex) {
                 logger.severe("Solr SearchException: " + ex.getMessage());
             }
 
             roleTagRetriever.loadRoles(requestWithSearchedUser, solrQueryResponse);
-            for(FacetCategory facetCat : solrQueryResponse.getFacetCategoryList()) {
-                if(facetCat.getName().equals("publicationStatus")) {
+            for (FacetCategory facetCat : solrQueryResponse.getFacetCategoryList()) {
+                if (facetCat.getName().equals("publicationStatus")) {
                     publicationStatusFacetCategory = new FacetCategory();
                     publicationStatusFacetCategory.setName(facetCat.getName());
                     publicationStatusFacetCategory.setFriendlyName(facetCat.getFriendlyName());
-                    for (FacetLabel facetLabel: facetCat.getFacetLabels()) {
+                    for (FacetLabel facetLabel : facetCat.getFacetLabels()) {
                         FacetLabel convertedFacetLabel = new FacetLabel(
-                                facetLabel.getName(),
-                                facetLabel.getDisplayName(),
-                                facetLabel.getCount()); 
+                                facetLabel.getName(), facetLabel.getDisplayName(), facetLabel.getCount());
                         convertedFacetLabel.setFilterQuery(facetLabel.getName());
                         publicationStatusFacetCategory.addFacetLabel(convertedFacetLabel);
                     }
@@ -761,17 +674,17 @@ public class MyDataSearchFragment implements java.io.Serializable {
                     results.getOrDefault(SearchObjectType.DATASETS, Collections.emptyList()));
             solrSearchResultsService.populateDatafileSearchCard(
                     results.getOrDefault(SearchObjectType.FILES, Collections.emptyList()));
-            
+
             for (String publicationStatusFilter: publicationStatusFilters) {
                 String key = format(SearchServiceBean.FACETBUNDLE_MASK_VALUE, "publicationStatus");
                 String value = format(SearchServiceBean.FACETBUNDLE_MASK_GROUP_AND_VALUE, "publicationStatus", publicationStatusFilter.toLowerCase().replace(" ", "_"));
-                
+
                 selectedFilterQueries.add(
                         new FilterQuery(publicationStatusFilter,
                                 BundleUtil.getStringFromBundle(key), BundleUtil.getStringFromBundle(value)));
             }
         }
-
+        setDisplayCardValues();
         return StringUtils.EMPTY;
     }
 
@@ -800,11 +713,7 @@ public class MyDataSearchFragment implements java.io.Serializable {
     }
 
     private AuthenticatedUser getUserFromIdentifier(String userIdentifier) {
-
-        if ((userIdentifier == null) || (userIdentifier.isEmpty())) {
-            return null;
-        }
-        return authenticationService.getAuthenticatedUser(userIdentifier);
+        return StringUtils.isEmpty(userIdentifier) ? null : authenticationService.getAuthenticatedUser(userIdentifier);
     }
 
     // -------------------- SETTERS --------------------

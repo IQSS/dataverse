@@ -293,7 +293,7 @@ public class SearchIncludeFragment {
 
             solrQueryResponse = searchService.search(dataverseRequestService.getDataverseRequest(), Collections.singletonList(dataverse),
                     queryToPassToSolr, searchForTypes, filterQueriesFinal, sortField, sortOrder,
-                    paginationStart, RESULTS_PER_PAGE, false, false);
+                    paginationStart, RESULTS_PER_PAGE, false);
 
             // This 2nd search() is for populating the facets: -- L.A.
             // We only query for types that were not already queried in previous solr request
@@ -301,7 +301,7 @@ public class SearchIncludeFragment {
             SolrQueryResponse notSearchedForTypesResponse = !typesNotSearchedFor.equals(SearchForTypes.EMPTY)
                     ? searchService.search(dataverseRequestService.getDataverseRequest(), Collections.singletonList(dataverse),
                     queryToPassToSolr, typesNotSearchedFor, filterQueriesFinal, sortField, sortOrder,
-                    paginationStart, RESULTS_PER_PAGE, false, true)
+                    paginationStart, RESULTS_PER_PAGE, true)
                     : solrQueryResponse;
             DvObjectCounts countsFromSearch = solrQueryResponse.getDvObjectCounts();
             DvObjectCounts countOfNotSearchedForTypes = notSearchedForTypesResponse.getDvObjectCounts();
@@ -379,11 +379,11 @@ public class SearchIncludeFragment {
     public String searchWithSelectedTypesRedirect() {
         StringBuilder searchUrlBuilder = new StringBuilder()
                 .append("dataverse.xhtml?alias=").append(dataverseAlias)
-                .append("&q=" + ((query == null) ? "" : query))
-                .append("&types=" + selectedTypesMap.entrySet().stream()
-                                    .filter(entry -> entry.getValue())
-                                    .map(entry -> entry.getKey().getSolrValue())
-                                    .collect(Collectors.joining(":")));
+                .append("&q=").append((query == null) ? "" : query)
+                .append("&types=").append(selectedTypesMap.entrySet().stream()
+                        .filter(Map.Entry::getValue)
+                        .map(entry -> entry.getKey().getSolrValue())
+                        .collect(Collectors.joining(":")));
 
         for (int i=0; i< filterQueries.size(); i++) {
             searchUrlBuilder.append("&fq").append(i).append("=").append(filterQueries.get(i));
@@ -663,7 +663,6 @@ public class SearchIncludeFragment {
 
     private void setDisplayCardValues(String dataversePath) {
 
-        Set<Long> harvestedDatasetIds = null;
         for (SolrSearchResult result : searchResultsList) {
             //logger.info("checking DisplayImage for the search result " + i++);
             if (result.getType() == SearchObjectType.DATAVERSES) {
@@ -675,66 +674,48 @@ public class SearchIncludeFragment {
                  * https://github.com/IQSS/dataverse/issues/3616
                  */
                 result.setImageUrl(thumbnailServiceWrapper.getDataverseCardImageAsBase64Url(result));
-            } else if (result.getType() == SearchObjectType.DATASETS) {
-                if (result.getEntity() != null) {
-                    result.setImageUrl(thumbnailServiceWrapper.getDatasetCardImageAsBase64Url(result));
-                }
-
-                if (result.isHarvested()) {
-                    if (harvestedDatasetIds == null) {
-                        harvestedDatasetIds = new HashSet<>();
-                    }
-                    harvestedDatasetIds.add(result.getEntityId());
-                }
+            } else if (result.getType() == SearchObjectType.DATASETS && result.getEntity() != null) {
+                result.setImageUrl(thumbnailServiceWrapper.getDatasetCardImageAsBase64Url(result));
             } else if (result.getType() == SearchObjectType.FILES) {
                 result.setImageUrl(thumbnailServiceWrapper.getFileCardImageAsBase64Url(result));
-                if (result.isHarvested()) {
-                    if (harvestedDatasetIds == null) {
-                        harvestedDatasetIds = new HashSet<>();
-                    }
-                    harvestedDatasetIds.add(result.getParentIdAsLong());
-                }
             }
         }
 
         thumbnailServiceWrapper.resetObjectMaps();
 
         // determine which of the objects are linked:
-
-        if (!dataverse.isRoot()) {
+        if (dataverse.isRoot()) {
             // (nothing is "linked" if it's the root DV!)
-            Set<Long> dvObjectParentIds = new HashSet<>();
-            for (SolrSearchResult result : searchResultsList) {
-                if (dataverse.getId().equals(result.getParentIdAsLong())) {
-                    // definitely NOT linked:
-                    result.setIsInTree(true);
-                } else if (result.getParentIdAsLong().equals(dataverseDao.findRootDataverse().getId())) {
-                    // the object's parent is the root Dv; and the current
-                    // Dv is NOT root... definitely linked:
-                    result.setIsInTree(false);
-                } else {
-                    dvObjectParentIds.add(result.getParentIdAsLong());
-                }
+            return;
+        }
+        Set<Long> dvObjectParentIds = new HashSet<>();
+        for (SolrSearchResult result : searchResultsList) {
+            if (dataverse.getId().equals(result.getParentIdAsLong())) {
+                // definitely NOT linked:
+                result.setIsInTree(true);
+            } else if (result.getParentIdAsLong().equals(dataverseDao.findRootDataverse().getId())) {
+                // the object's parent is the root Dv; and the current
+                // Dv is NOT root... definitely linked:
+                result.setIsInTree(false);
+            } else {
+                dvObjectParentIds.add(result.getParentIdAsLong());
             }
+        }
 
-            if (dvObjectParentIds.size() > 0) {
-                Map<Long, String> treePathMap = dvObjectService.getObjectPathsByIds(dvObjectParentIds);
-                if (treePathMap != null) {
-                    for (SolrSearchResult result : searchResultsList) {
-                        Long objectId = result.getParentIdAsLong();
-                        if (treePathMap.containsKey(objectId)) {
-                            String objectPath = treePathMap.get(objectId);
-                            if (!StringUtils.startsWith(objectPath, dataversePath)) {
-                                result.setIsInTree(false);
-                            }
+        if (dvObjectParentIds.size() > 0) {
+            Map<Long, String> treePathMap = dvObjectService.getObjectPathsByIds(dvObjectParentIds);
+            if (treePathMap != null) {
+                for (SolrSearchResult result : searchResultsList) {
+                    Long objectId = result.getParentIdAsLong();
+                    if (treePathMap.containsKey(objectId)) {
+                        String objectPath = treePathMap.get(objectId);
+                        if (!StringUtils.startsWith(objectPath, dataversePath)) {
+                            result.setIsInTree(false);
                         }
                     }
                 }
             }
-
-            dvObjectParentIds = null;
         }
-
     }
 
     public boolean couldCreateDatasetOrDataverseIfWasAuthenticated() throws ClassNotFoundException {
