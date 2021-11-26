@@ -38,7 +38,7 @@ public class UserNotificationMapper {
     private FileMetadataRepository fileMetadataRepository;
     @EJB
     private PermissionServiceBean permissionService;
-    
+
     // -------------------- LOGIC --------------------
 
     public UserNotificationDTO toDTO(UserNotification userNotification) {
@@ -68,7 +68,7 @@ public class UserNotificationMapper {
             case REVOKEROLE:
                 // Can either be a dataverse, dataset or datafile, so search all
                 dataverseRepository.findById(objectId).ifPresent(notificationDTO::setTheDataverseObject);
-                
+
                 if (notificationDTO.getTheObject() == null) {
                     datasetRepository.findById(objectId).ifPresent(notificationDTO::setTheDatasetObject);
                 }
@@ -89,6 +89,8 @@ public class UserNotificationMapper {
             case GRANTFILEACCESS:
             case REJECTFILEACCESS:
             case CHECKSUMFAIL:
+            case GRANTFILEACCESSINFO:
+            case REJECTFILEACCESSINFO:
                 datasetRepository.findById(objectId).ifPresent(notificationDTO::setTheDatasetObject);
                 break;
 
@@ -109,7 +111,6 @@ public class UserNotificationMapper {
             case CREATEACC:
                 notificationDTO.setTheAuthenticatedUserObject(userNotification.getUser());
                 break;
-
             default:
                 if (!isBaseNotification(userNotification)) {
                     datasetRepository.findById(objectId)
@@ -118,7 +119,7 @@ public class UserNotificationMapper {
                 break;
             }
     }
-    
+
     private void assignRoles(UserNotificationDTO notificationDTO, UserNotification userNotification) {
         String notificationType = userNotification.getType();
 
@@ -127,20 +128,20 @@ public class UserNotificationMapper {
                     getRoleStringFromUser(userNotification.getUser(), (DvObject)notificationDTO.getTheObject()));
         }
     }
-    
+
     private String getRoleStringFromUser(AuthenticatedUser au, DvObject dvObj) {
         // Find user's role(s) for given dataverse/dataset
         Set<RoleAssignment> roles = permissionService.getRolesOfUser(au, dvObj);
-        
+
         if (roles.isEmpty()) {
             return "[Unknown]";
         }
-        
+
         return roles.stream()
                 .map(roleAssignment -> roleAssignment.getRole().getName())
                 .collect(joining("/"));
     }
-    
+
     /**
     Returns true if notification display is handled by main Dataverse repository.
     <p>
@@ -152,7 +153,7 @@ public class UserNotificationMapper {
    private boolean isBaseNotification(UserNotification userNotification) {
        return NotificationType.getTypes().contains(userNotification.getType());
    }
-   
+
    private String getRequestorName(UserNotification notification) {
        AuthenticatedUser requestor = notification.getRequestor();
        if (requestor == null || requestor.getFirstName() == null || requestor.getLastName() == null) {

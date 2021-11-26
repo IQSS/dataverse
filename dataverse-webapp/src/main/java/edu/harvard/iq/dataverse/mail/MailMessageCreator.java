@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.notification.NotificationObjectType;
 import edu.harvard.iq.dataverse.notification.dto.EmailNotificationDto;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
+import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
@@ -34,6 +35,7 @@ import javax.mail.internet.InternetAddress;
 
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
@@ -246,43 +248,47 @@ public class MailMessageCreator {
                         notificationsEmailLanguage);
 
                 messageText += MessageFormat.format(pattern,
-                                                    joinedRoleNames,
-                                                    objectType,
-                                                    dataset.getDisplayName(),
-                                                    getDatasetLink(dataset));
+                        joinedRoleNames, objectType, dataset.getDisplayName(), getDatasetLink(dataset));
 
                 if (joinedRoleNames.contains(BuiltInRole.FILE_DOWNLOADER.getAlias())) {
                     pattern = BundleUtil.getStringFromBundleWithLocale(
-                            "notification.access.granted.fileDownloader.additionalDataverse",
-                            notificationsEmailLanguage);
+                            "notification.access.granted.fileDownloader.additionalDataverse", notificationsEmailLanguage);
                     messageText += MessageFormat.format(pattern, " ");
                 }
-
                 return messageText;
             case REVOKEROLE:
                 messageText += MessageFormat.format(BundleUtil.getStringFromBundleWithLocale("notification.email.revokeRole",
-                        notificationsEmailLanguage),
-                        objectType,
-                        dataset.getDisplayName(),
-                        getDatasetLink(dataset));
+                        notificationsEmailLanguage), objectType, dataset.getDisplayName(), getDatasetLink(dataset));
                 return messageText;
             case GRANTFILEACCESS:
                 pattern = BundleUtil.getStringFromBundleWithLocale("notification.email.grantFileAccess",
                         notificationsEmailLanguage);
                 messageText += MessageFormat.format(pattern,
-                                                    dataset.getDisplayName(), getDatasetLink(dataset));
+                        dataset.getDisplayName(), getDatasetLink(dataset));
                 return messageText;
             case REJECTFILEACCESS:
                 pattern = BundleUtil.getStringFromBundleWithLocale("notification.email.rejectFileAccess",
                         notificationsEmailLanguage);
                 messageText += MessageFormat.format(pattern,
-                                                    dataset.getDisplayName(), getDatasetLink(dataset));
+                        dataset.getDisplayName(), getDatasetLink(dataset));
                 return messageText;
             case CHECKSUMFAIL:
                 String checksumFailMsg = BundleUtil.getStringFromBundleWithLocale("notification.checksumfail",
                         notificationsEmailLanguage, dataset.getGlobalIdString());
                 logger.fine("checksumFailMsg: " + checksumFailMsg);
                 return messageText + checksumFailMsg;
+            case GRANTFILEACCESSINFO:
+                pattern = BundleUtil.getStringFromBundleWithLocale("notification.email.grant.file.access.info.text", notificationsEmailLanguage);
+                messageText += MessageFormat.format(pattern,
+                        notificationDto.getCustomUserMessage(), dataset.getDisplayName(), getDatasetLink(dataset),
+                        getNumberOfUsersRequestingForFileAccess(dataset), getDatasetManageFilePermissionsLink(dataset));
+                return messageText;
+            case REJECTFILEACCESSINFO:
+                pattern = BundleUtil.getStringFromBundleWithLocale("notification.email.reject.file.access.info.text", notificationsEmailLanguage);
+                messageText += MessageFormat.format(pattern,
+                        notificationDto.getCustomUserMessage(), dataset.getDisplayName(), getDatasetLink(dataset),
+                        getNumberOfUsersRequestingForFileAccess(dataset), getDatasetManageFilePermissionsLink(dataset));
+                return messageText;
         }
 
         return StringUtils.EMPTY;
@@ -295,13 +301,14 @@ public class MailMessageCreator {
 
         switch (notificationDto.getNotificationType()) {
             case CREATEDS:
-                String datasetCreatedMessage = BundleUtil.getStringFromBundleWithLocale("notification.email.createDataset", notificationsEmailLanguage,
-                                                                                      version.getDataset().getDisplayName(),
-                                                                                      getDatasetLink(version.getDataset()),
-                                                                                      version.getDataset().getOwner().getDisplayName(),
-                                                                                      getDataverseLink(version.getDataset().getOwner()),
-                                                                                      systemConfig.getGuidesBaseUrl(notificationsEmailLanguage),
-                                                                                      systemConfig.getGuidesVersion());
+                String datasetCreatedMessage = BundleUtil.getStringFromBundleWithLocale("notification.email.createDataset",
+                        notificationsEmailLanguage,
+                        version.getDataset().getDisplayName(),
+                        getDatasetLink(version.getDataset()),
+                        version.getDataset().getOwner().getDisplayName(),
+                        getDataverseLink(version.getDataset().getOwner()),
+                        systemConfig.getGuidesBaseUrl(notificationsEmailLanguage),
+                        systemConfig.getGuidesVersion());
 
                 return greetingsText + datasetCreatedMessage;
             case MAPLAYERUPDATED:
@@ -363,12 +370,9 @@ public class MailMessageCreator {
 
     private String addUserCustomMessage(EmailNotificationDto notificationDto, String messagePrefix) {
         if(StringUtils.isNotEmpty(notificationDto.getCustomUserMessage())) {
-            return "\n\n"
-                    + messagePrefix
-                    + "\n\n"
-                    + notificationDto.getCustomUserMessage();
+            return String.format("\n\n%s\n\n%s", messagePrefix, notificationDto.getCustomUserMessage());
         }
-         return StringUtils.EMPTY;
+        return StringUtils.EMPTY;
     }
 
     private String dataFileMessage(EmailNotificationDto notificationDto, DataFile dataFile) {
@@ -382,12 +386,10 @@ public class MailMessageCreator {
                     notificationsEmailLanguage);
 
             String requestorName = requestor.getFirstName() + " " + requestor.getLastName();
-
             String requestorEmail = requestor.getEmail();
 
-            messageText += MessageFormat.format(pattern,
-                                                dataFile.getOwner().getDisplayName(), requestorName,
-                                                requestorEmail, getDatasetManageFileAccessLink(dataFile));
+            messageText += MessageFormat.format(pattern, dataFile.getOwner().getDisplayName(), requestorName,
+                    requestorEmail, getDatasetManageFileAccessLink(dataFile));
             return messageText;
         }
         return StringUtils.EMPTY;
@@ -404,8 +406,7 @@ public class MailMessageCreator {
             String pattern = BundleUtil.getStringFromBundleWithLocale("notification.email.maplayer.deletefailed.text",
                     notificationsEmailLanguage);
 
-            messageText += MessageFormat.format(pattern,
-                                                fileMetadata.getLabel(), getDatasetLink(version.getDataset()));
+            messageText += MessageFormat.format(pattern, fileMetadata.getLabel(), getDatasetLink(version.getDataset()));
             return messageText;
         }
         return StringUtils.EMPTY;
@@ -419,16 +420,11 @@ public class MailMessageCreator {
         if (notificationDto.getNotificationType().equals(CREATEACC)) {
 
             String accountCreatedMessage = BundleUtil.getStringFromBundleWithLocale("notification.email.welcome", notificationsEmailLanguage,
-                                                                                  rootDataverseName,
-                                                                                  systemConfig.getGuidesBaseUrl(notificationsEmailLanguage),
-                                                                                  systemConfig.getGuidesVersion(),
-                                                                                  BrandingUtil.getSupportTeamName(
-                                                                                          systemAddress,
-                                                                                          rootDataverseName,
-                                                                                          notificationsEmailLanguage),
-                                                                                  BrandingUtil.getSupportTeamEmailAddress(
-                                                                                          systemAddress)
-                                                                          );
+                    rootDataverseName,
+                    systemConfig.getGuidesBaseUrl(notificationsEmailLanguage),
+                    systemConfig.getGuidesVersion(),
+                    BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName, notificationsEmailLanguage),
+                    BrandingUtil.getSupportTeamEmailAddress(systemAddress));
             String optionalConfirmEmailAddon = confirmEmailService.optionalConfirmEmailAddonMsg(notificationDto.getNotificationReceiver());
             accountCreatedMessage += optionalConfirmEmailAddon;
             logger.fine("accountCreatedMessage: " + accountCreatedMessage);
@@ -444,68 +440,58 @@ public class MailMessageCreator {
         switch (notificationDto.getNotificationType()) {
             case ASSIGNROLE:
                 return BundleUtil.getStringFromBundleWithLocale("notification.email.assign.role.subject",
-                                                      notificationsEmailLanguage,
-                                                      rootDataverseName);
+                                                      notificationsEmailLanguage, rootDataverseName);
             case REVOKEROLE:
                 return BundleUtil.getStringFromBundleWithLocale("notification.email.revoke.role.subject",
-                                                      notificationsEmailLanguage,
-                                                      rootDataverseName);
+                                                      notificationsEmailLanguage, rootDataverseName);
             case CREATEDV:
                 return BundleUtil.getStringFromBundleWithLocale("notification.email.create.dataverse.subject",
-                                                      notificationsEmailLanguage,
-                                                      rootDataverseName);
+                                                      notificationsEmailLanguage, rootDataverseName);
             case REQUESTFILEACCESS:
                 return BundleUtil.getStringFromBundleWithLocale("notification.email.request.file.access.subject",
-                                                      notificationsEmailLanguage,
-                                                      rootDataverseName);
+                                                      notificationsEmailLanguage, rootDataverseName);
             case GRANTFILEACCESS:
                 return BundleUtil.getStringFromBundleWithLocale("notification.email.grant.file.access.subject",
-                                                      notificationsEmailLanguage,
-                                                      rootDataverseName);
+                                                      notificationsEmailLanguage, rootDataverseName);
             case REJECTFILEACCESS:
                 return BundleUtil.getStringFromBundleWithLocale("notification.email.rejected.file.access.subject",
-                                                      notificationsEmailLanguage,
-                                                      rootDataverseName);
+                                                      notificationsEmailLanguage, rootDataverseName);
             case MAPLAYERUPDATED:
                 return BundleUtil.getStringFromBundleWithLocale("notification.email.update.maplayer",
-                                                      notificationsEmailLanguage,
-                                                      rootDataverseName);
+                                                      notificationsEmailLanguage, rootDataverseName);
             case MAPLAYERDELETEFAILED:
                 return BundleUtil.getStringFromBundleWithLocale("notification.email.maplayer.deletefailed.subject",
-                                                      notificationsEmailLanguage,
-                                                      rootDataverseName);
+                                                      notificationsEmailLanguage, rootDataverseName);
             case CREATEDS:
                 return BundleUtil.getStringFromBundleWithLocale("notification.email.create.dataset.subject",
-                                                      notificationsEmailLanguage,
-                                                      rootDataverseName);
+                                                      notificationsEmailLanguage, rootDataverseName);
             case SUBMITTEDDS:
                 return BundleUtil.getStringFromBundleWithLocale("notification.email.submit.dataset.subject",
-                                                      notificationsEmailLanguage,
-                                                      rootDataverseName);
+                                                      notificationsEmailLanguage, rootDataverseName);
             case PUBLISHEDDS:
                 return BundleUtil.getStringFromBundleWithLocale("notification.email.publish.dataset.subject",
-                                                      notificationsEmailLanguage,
-                                                      rootDataverseName);
+                                                      notificationsEmailLanguage, rootDataverseName);
             case RETURNEDDS:
                 return BundleUtil.getStringFromBundleWithLocale("notification.email.returned.dataset.subject",
-                                                      notificationsEmailLanguage,
-                                                      rootDataverseName);
+                                                      notificationsEmailLanguage, rootDataverseName);
             case CREATEACC:
                 return BundleUtil.getStringFromBundleWithLocale("notification.email.create.account.subject",
-                                                      notificationsEmailLanguage,
-                                                      rootDataverseName);
+                                                      notificationsEmailLanguage, rootDataverseName);
             case CHECKSUMFAIL:
                 return BundleUtil.getStringFromBundleWithLocale("notification.email.checksumfail.subject",
-                                                      notificationsEmailLanguage,
-                                                      rootDataverseName);
+                                                      notificationsEmailLanguage, rootDataverseName);
             case CHECKSUMIMPORT:
                 return BundleUtil.getStringFromBundleWithLocale("notification.email.import.checksum.subject",
-                                                      notificationsEmailLanguage,
-                                                      rootDataverseName);
+                                                      notificationsEmailLanguage, rootDataverseName);
             case CONFIRMEMAIL:
                 return BundleUtil.getStringFromBundleWithLocale("notification.email.verifyEmail.subject",
-                                                      notificationsEmailLanguage,
-                                                      rootDataverseName);
+                                                      notificationsEmailLanguage, rootDataverseName);
+            case GRANTFILEACCESSINFO:
+                return BundleUtil.getStringFromBundleWithLocale("notification.email.grant.file.access.info.subject",
+                                                      notificationsEmailLanguage, rootDataverseName);
+            case REJECTFILEACCESSINFO:
+                return BundleUtil.getStringFromBundleWithLocale("notification.email.reject.file.access.info.subject",
+                                                      notificationsEmailLanguage, rootDataverseName);
         }
         return StringUtils.EMPTY;
     }
@@ -537,8 +523,22 @@ public class MailMessageCreator {
         return systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&version=DRAFT";
     }
 
+    private String getDatasetManageFilePermissionsLink(Dataset dataset) {
+        return systemConfig.getDataverseSiteUrl() + "/permissions-manage-files.xhtml?id=" + dataset.getId();
+    }
+
     private String getDataverseLink(Dataverse dataverse) {
         return systemConfig.getDataverseSiteUrl() + "/dataverse/" + dataverse.getAlias();
     }
 
+    private String getNumberOfUsersRequestingForFileAccess(Dataset dataset) {
+        long numberOfUsersRequestingForAccess = dataset.getFiles().stream()
+                .filter(f -> f.getFileMetadatas().stream()
+                        .anyMatch(m -> FileTermsOfUse.TermsOfUseType.RESTRICTED.equals(m.getTermsOfUse().getTermsOfUseType())))
+                .map(DataFile::getFileAccessRequesters)
+                .flatMap(Collection::stream)
+                .distinct()
+                .count();
+        return String.valueOf(numberOfUsersRequestingForAccess);
+    }
 }

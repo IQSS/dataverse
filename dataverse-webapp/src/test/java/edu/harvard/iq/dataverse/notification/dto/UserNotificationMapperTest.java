@@ -22,6 +22,8 @@ import edu.harvard.iq.dataverse.persistence.user.UserNotification;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -41,7 +43,7 @@ public class UserNotificationMapperTest {
     private final static Long DATASET_VERSION_ID = 31L;
     private final static Long DATAFILE_ID = 300L;
     private final static Long FILEMETADATA_ID = 301L;
-    
+
     @InjectMocks
     private UserNotificationMapper notificationMapper;
 
@@ -62,25 +64,25 @@ public class UserNotificationMapperTest {
     private Dataset dataset;
     private DatasetVersion datasetVersion;
     private DataFile dataFile;
-    
+
     private AuthenticatedUser user = MocksFactory.makeAuthenticatedUser("John", "Doe");
-    
+
     @BeforeEach
     void beforeEach() {
         dataverse = new Dataverse();
         dataverse.setId(DATAVERSE_ID);
-        
+
         dataset = new Dataset();
         dataset.setId(DATASET_ID);
         dataset.setOwner(dataverse);
-        
+
         datasetVersion = dataset.getLatestVersion();
         datasetVersion.setId(DATASET_VERSION_ID);
-        
+
         dataFile = new DataFile();
         dataFile.setId(DATAFILE_ID);
         dataFile.setOwner(dataset);
-        
+
         FileMetadata fileMetadata = new FileMetadata();
         fileMetadata.setId(FILEMETADATA_ID);
         fileMetadata.setDataFile(dataFile);
@@ -110,7 +112,7 @@ public class UserNotificationMapperTest {
                     1L, Timestamp.from(Instant.parse("2007-12-03T10:15:30.00Z")),
                     "additional message", true);
     }
-    
+
     @Test
     void toDTO_ASSIGNROLE_dataverse() {
         // given
@@ -155,7 +157,7 @@ public class UserNotificationMapperTest {
                     UserNotificationDTO::getType, UserNotificationDTO::getTheObject,
                     UserNotificationDTO::getTheObjectType, UserNotificationDTO::getRoleString)
             .containsExactly(NotificationType.ASSIGNROLE, dataset, NotificationObjectType.DATASET, "Dataset Creator/File Downloader");
-        
+
     }
 
     @Test
@@ -178,7 +180,7 @@ public class UserNotificationMapperTest {
                     UserNotificationDTO::getType, UserNotificationDTO::getTheObject,
                     UserNotificationDTO::getTheObjectType, UserNotificationDTO::getRoleString)
             .containsExactly(NotificationType.ASSIGNROLE, dataFile, NotificationObjectType.DATAFILE, "File Downloader");
-        
+
     }
 
     @Test
@@ -202,7 +204,7 @@ public class UserNotificationMapperTest {
                     UserNotificationDTO::getType, UserNotificationDTO::getTheObject,
                     UserNotificationDTO::getTheObjectType, UserNotificationDTO::getRoleString)
             .containsExactly(NotificationType.REVOKEROLE, dataset, NotificationObjectType.DATASET, "Dataset Creator/File Downloader");
-        
+
     }
 
     @Test
@@ -221,7 +223,7 @@ public class UserNotificationMapperTest {
                     UserNotificationDTO::getType, UserNotificationDTO::getTheObject,
                     UserNotificationDTO::getTheObjectType, UserNotificationDTO::getRoleString)
             .containsExactly(NotificationType.CREATEDV, dataverse, NotificationObjectType.DATAVERSE, null);
-        
+
     }
 
     @Test
@@ -320,6 +322,27 @@ public class UserNotificationMapperTest {
                     UserNotificationDTO::getTheObjectType)
             .containsExactly(
                     "CUSTOM", dataset, NotificationObjectType.DATASET);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"GRANTFILEACCESSINFO", "REJECTFILEACCESSINFO"})
+    void toDTO_FILEACCESSINFO(String type) {
+        // given
+        UserNotification notification = new UserNotification();
+        notification.setObjectId(DATASET_ID);
+        notification.setType(type);
+        notification.setUser(user);
+        notification.setAdditionalMessage("dataverseAdmin");
+        when(datasetRepository.findById(DATASET_ID)).thenReturn(Optional.of(dataset));
+
+        // when
+        UserNotificationDTO dto = notificationMapper.toDTO(notification);
+
+        // then
+        assertThat(dto).extracting(
+                UserNotificationDTO::getType, UserNotificationDTO::getTheObject,
+                UserNotificationDTO::getTheObjectType, UserNotificationDTO::getAdditionalMessage)
+                .containsExactly(type, dataset, NotificationObjectType.DATASET, "dataverseAdmin");
     }
 
     // -------------------- PRIVATE --------------------

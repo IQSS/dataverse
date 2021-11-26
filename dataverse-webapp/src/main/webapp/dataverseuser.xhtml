@@ -59,7 +59,7 @@
                         <f:viewParam name="page" value="#{MyDataSearchFragment.page}"/>
                         <f:viewParam name="debug" value="#{MyDataSearchFragment.debug}"/>
                         <f:viewAction action="#{MyDataSearchFragment.retrieveMyData()}" if="#{param.editMode ne 'CREATE'}"/>
-                    
+
                 </f:metadata>
                 <h:form id="dataverseUserForm">
                     <p:focus context="dataverseUserForm"/>
@@ -95,7 +95,7 @@
                                         </p:commandLink>
                                     </li>
                                     <li>
-                                        <p:commandLink id="changePassword" rendered="#{DataverseUserPage.passwordEditable}" 
+                                        <p:commandLink id="changePassword" rendered="#{DataverseUserPage.passwordEditable}"
                                                        actionListener="#{DataverseUserPage.changePassword}" update="@form" >
                                             <h:outputText value="#{bundle.passwd}" />
                                         </p:commandLink>
@@ -328,6 +328,28 @@
                                                     <h:outputFormat value="#{bundle['notification.import.checksum']}" escape="false">
                                                         <f:param value="#{item.theObject.getDataset().getGlobalId()}"/>
                                                         <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'GRANTFILEACCESSINFO'}">
+                                                    <h:outputFormat value="#{bundle['notification.access.grant.info']}" escape="false">
+                                                        <o:param value="#{item.additionalMessage}"/>
+                                                        <o:param>
+                                                            <a href="/dataset.xhtml?persistentId=#{item.theObject.getGlobalId()}" title="#{item.theObject.getDisplayName()}">#{item.theObject.getDisplayName()}</a>
+                                                        </o:param>
+                                                        <o:param>
+                                                            <a href="/permissions-manage-files.xhtml?id=#{item.theObject.getId()}">#{systemConfig.dataverseSiteUrl}/permissions-manage-files.xhtml?id=#{item.theObject.getId()}</a>
+                                                        </o:param>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'REJECTFILEACCESSINFO'}">
+                                                    <h:outputFormat value="#{bundle['notification.access.grant.info']}" escape="false">
+                                                        <o:param value="#{item.additionalMessage}"/>
+                                                        <o:param>
+                                                            <a href="/dataset.xhtml?persistentId=#{item.theObject.getGlobalId()}" title="#{item.theObject.getDisplayName()}">#{item.theObject.getDisplayName()}</a>
+                                                        </o:param>
+                                                        <o:param>
+                                                            <a href="/permissions-manage-files.xhtml?id=#{item.theObject.getId()}">#{systemConfig.dataverseSiteUrl}/permissions-manage-files.xhtml?id=#{item.theObject.getId()}</a>
+                                                        </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                             </ui:fragment>

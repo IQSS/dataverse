@@ -21,6 +21,8 @@ public class NotificationType {
     public static final String CHECKSUMIMPORT = "CHECKSUMIMPORT";
     public static final String CHECKSUMFAIL = "CHECKSUMFAIL";
     public static final String CONFIRMEMAIL = "CONFIRMEMAIL";
+    public static final String GRANTFILEACCESSINFO = "GRANTFILEACCESSINFO";
+    public static final String REJECTFILEACCESSINFO = "REJECTFILEACCESSINFO";
 
     // -------------------- LOGIC --------------------
 
@@ -44,6 +46,8 @@ public class NotificationType {
         notifications.add(CHECKSUMIMPORT);
         notifications.add(CHECKSUMFAIL);
         notifications.add(CONFIRMEMAIL);
+        notifications.add(GRANTFILEACCESSINFO);
+        notifications.add(REJECTFILEACCESSINFO);
 
         return notifications;
     }

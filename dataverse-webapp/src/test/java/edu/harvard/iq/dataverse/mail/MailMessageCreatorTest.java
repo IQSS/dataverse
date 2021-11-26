@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.common.RoleTranslationUtil;
 import edu.harvard.iq.dataverse.mail.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
 import edu.harvard.iq.dataverse.notification.dto.EmailNotificationDto;
+import edu.harvard.iq.dataverse.persistence.GlobalId;
 import edu.harvard.iq.dataverse.persistence.MocksFactory;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
@@ -20,20 +21,18 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
+import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
-import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.Tuple2;
 import org.apache.commons.lang.StringUtils;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -45,12 +44,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 public class MailMessageCreatorTest {
-
 
     @Mock private SystemConfig systemConfig;
     @Mock private PermissionServiceBean permissionService;
@@ -58,7 +58,6 @@ public class MailMessageCreatorTest {
     @Mock private ConfirmEmailServiceBean confirmEmailService;
     @Mock private GenericDao genericDao;
     @Mock private DataverseSession dataverseSession;
-//    @Mock private MailService mailService;
 
     @InjectMocks
     private MailMessageCreator mailMessageCreator;
@@ -70,6 +69,7 @@ public class MailMessageCreatorTest {
     private final static String SYSTEMEMAIL = "test@icm.pl";
 
     private Dataverse testDataverse = createTestDataverse();
+    private Dataset testDataset = createTestDataset();
     private DatasetVersion testDatasetVersion = createTestDatasetVersion();
 
     @BeforeEach
@@ -78,141 +78,170 @@ public class MailMessageCreatorTest {
 
         RoleAssignment roleAssignment = createRoleAssignment();
 
-        Mockito.when(permissionService.getRolesOfUser(any(), any(Dataverse.class)))
+        when(permissionService.getRolesOfUser(any(), any(Dataverse.class)))
                 .thenReturn(Sets.newHashSet(roleAssignment));
-        Mockito.when(dataverseDao.findRootDataverse()).thenReturn(rootDataverse);
-        Mockito.when(dataverseDao.find(createDataverseEmailNotificationDto().getDvObjectId())).thenReturn(testDataverse);
-        Mockito.when(genericDao.find(createReturnToAuthorNotificationDto().getDvObjectId(), DatasetVersion.class)).thenReturn(testDatasetVersion);
-        Mockito.when(systemConfig.getDataverseSiteUrl()).thenReturn(SITEURL);
-        Mockito.when(systemConfig.getGuidesBaseUrl(any(Locale.class))).thenReturn(GUIDESBASEURL);
-        Mockito.when(systemConfig.getGuidesVersion()).thenReturn(GUIDESVERSION);
-        Mockito.when(dataverseSession.getUser()).thenReturn(new AuthenticatedUser());
+        when(dataverseDao.findRootDataverse()).thenReturn(rootDataverse);
+        when(dataverseDao.find(createDataverseEmailNotificationDto().getDvObjectId())).thenReturn(testDataverse);
+        when(genericDao.find(createReturnToAuthorNotificationDto().getDvObjectId(), DatasetVersion.class)).thenReturn(testDatasetVersion);
+        when(genericDao.find(createGrantFileAccessInfoNotificationDto().getDvObjectId(), Dataset.class)).thenReturn(testDataset);        when(systemConfig.getDataverseSiteUrl()).thenReturn(SITEURL);
+        when(systemConfig.getGuidesBaseUrl(any(Locale.class))).thenReturn(GUIDESBASEURL);
+        when(systemConfig.getGuidesVersion()).thenReturn(GUIDESVERSION);
+        when(dataverseSession.getUser()).thenReturn(new AuthenticatedUser());
     }
 
     // -------------------- TESTS --------------------
 
     @Test
-    public void createMailFooterMessage() {
-        //given
+    void createMailFooterMessage() {
+        // given
         InternetAddress systemEmail = MailUtil.parseSystemAddress(SYSTEMEMAIL);
 
-        //when
+        // when
         String footerMessage = mailMessageCreator.createMailFooterMessage(Locale.ENGLISH, ROOTDVNAME, systemEmail);
 
-        //then
-        Assert.assertEquals(getFooterMessage(), footerMessage);
+        // then
+        assertThat(footerMessage).isEqualTo(getFooterMessage());
 
     }
 
     @Test
-    public void createRecipients() {
-        //given
+    void createRecipients() {
+        // given
         String emailRecipients = "mietek@icm.pl,janusz@icm.pl,zdzichu@icm.pl";
 
-        //when
+        // when
         List<Recipient> recipients = mailMessageCreator.createRecipients(emailRecipients, StringUtils.EMPTY);
 
         List<String> recipientsEmails = recipients.stream()
                 .map(Recipient::getAddress)
                 .collect(Collectors.toList());
 
-        //then
-        Assert.assertTrue(recipientsEmails.contains("mietek@icm.pl"));
-        Assert.assertTrue(recipientsEmails.contains("janusz@icm.pl"));
-        Assert.assertTrue(recipientsEmails.contains("zdzichu@icm.pl"));
-
+        // then
+        assertThat(recipientsEmails).containsExactlyInAnyOrder("mietek@icm.pl", "janusz@icm.pl", "zdzichu@icm.pl");
     }
 
     @Test
-    public void getMessageAndSubject_ForCreateDataverse() {
-        //given
+    void getMessageAndSubject_ForCreateDataverse() {
+        // given
         EmailNotificationDto testEmailNotificationDto = createDataverseEmailNotificationDto();
 
-        //when
+        // when
         Tuple2<String, String> messageAndSubject = mailMessageCreator.getMessageAndSubject(testEmailNotificationDto,
                                                                                            "test@icm.pl");
 
-        //then
-        Assert.assertEquals(getCreateDataverseMessage(), messageAndSubject._1);
-        Assert.assertEquals(getCreateDataverseSubject(), messageAndSubject._2);
+        // then
+        assertThat(messageAndSubject)
+                .extracting(Tuple2::_1, Tuple2::_2)
+                .containsExactly(getCreateDataverseMessage(), getCreateDataverseSubject());
     }
 
     @Test
-    public void getMessageAndSubject_ForCreateDataverse_WithDifferentLocale() {
-        //given
+    void getMessageAndSubject_ForCreateDataverse_WithDifferentLocale() {
+        // given
         AuthenticatedUser userFromDifferentCountry = new AuthenticatedUser();
         userFromDifferentCountry.setNotificationsLanguage(Locale.forLanguageTag("pl"));
 
         EmailNotificationDto testEmailNotificationDto = new EmailNotificationDto(1L,
-                                                                                 "useremail@test.com",
-                                                                                 NotificationType.CREATEDV,
-                                                                                 1L,
-                                                                                 NotificationObjectType.DATAVERSE,
-                                                                                 userFromDifferentCountry);
+                "useremail@test.com", NotificationType.CREATEDV, 1L,
+                NotificationObjectType.DATAVERSE, userFromDifferentCountry);
 
-        //when
+        // when
         Tuple2<String, String> messageAndSubject = mailMessageCreator.getMessageAndSubject(testEmailNotificationDto,
                                                                                            "test@icm.pl");
 
-        //then
-        Assert.assertEquals(getPolishCreateDataverseMessage(), messageAndSubject._1);
-        Assert.assertEquals(getPolishCreateDataverseSubject(), messageAndSubject._2);
+        // then
+        assertThat(messageAndSubject)
+                .extracting(Tuple2::_1, Tuple2::_2)
+                .containsExactly(getPolishCreateDataverseMessage(), getPolishCreateDataverseSubject());
     }
 
     @Test
-    public void getMessageAndSubject_ForCreateDataverse_WrongArgument() {
-        //given
+    void getMessageAndSubject_ForCreateDataverse_WrongArgument() {
+        // given
         EmailNotificationDto testEmailNotificationDto = createIncorrectNotificationDto();
 
-        //when
+        // when
         Tuple2<String, String> messageAndSubject = mailMessageCreator.getMessageAndSubject(testEmailNotificationDto,
                                                                                            "test@icm.pl");
 
-        //then
-        Assert.assertEquals(StringUtils.EMPTY, messageAndSubject._1);
-        Assert.assertEquals(getCreateDataverseSubject(), messageAndSubject._2);
+        // then
+        assertThat(messageAndSubject)
+                .extracting(Tuple2::_1, Tuple2::_2)
+                .containsExactly(StringUtils.EMPTY, getCreateDataverseSubject());
     }
 
     @Test
-    public void getMessageAndSubject_ForAssignRole() {
-        //given
+    void getMessageAndSubject_ForAssignRole() {
+        // given
         EmailNotificationDto testEmailNotificationDto = createAssignRoleEmailNotificationDto();
 
-        //when
+        // when
         Tuple2<String, String> messageAndSubject = mailMessageCreator.getMessageAndSubject(testEmailNotificationDto,
                                                                                            "test@icm.pl");
 
-        //then
-        Assert.assertEquals(getAssignRoleMessage(RoleTranslationUtil.getLocaleNameFromAlias("admin"), "dataverse"),
-                messageAndSubject._1);
-        Assert.assertEquals(getAssignRoleSubject(), messageAndSubject._2);
+        // then
+        assertThat(messageAndSubject)
+                .extracting(Tuple2::_1, Tuple2::_2)
+                .containsExactly(
+                        getAssignRoleMessage(RoleTranslationUtil.getLocaleNameFromAlias("admin"), "dataverse"),
+                        getAssignRoleSubject());
     }
 
     @Test
-    public void getMessageAndSubject_ForDatasetVersion_ReturnToAuthor() {
-        //given
+    void getMessageAndSubject_ForDatasetVersion_ReturnToAuthor() {
+        // given
         EmailNotificationDto testEmailNotificationDto = createReturnToAuthorNotificationDto();
 
-        //when
+        // when
         Tuple2<String, String> messageAndSubject = mailMessageCreator.getMessageAndSubject(testEmailNotificationDto,
                 "test@icm.pl");
 
-        //then
-        Assert.assertEquals(getReturnToAuthorMessage(), messageAndSubject._1);
-        Assert.assertEquals("Root: Your dataset has been returned", messageAndSubject._2);
+        // then
+        assertThat(messageAndSubject)
+                .extracting(Tuple2::_1, Tuple2::_2)
+                .containsExactly(getReturnToAuthorMessage(), "Root: Your dataset has been returned");
     }
 
     @Test
-    public void getMessageAndSubject_ForDatasetVersion_SubmitForReviewWithMessage() {
-        //given
+    void getMessageAndSubject_ForDatasetVersion_SubmitForReviewWithMessage() {
+        // given
         EmailNotificationDto testEmailNotificationDto = createSubmitForReviewNotificationDto();
 
-        //when
+        // when
         Tuple2<String, String> messageAndSubject = mailMessageCreator.getMessageAndSubject(testEmailNotificationDto, "system@email.com");
 
-        //then
-        Assert.assertEquals(getSubmitForReviewMessage(), messageAndSubject._1);
-        Assert.assertEquals("Root: Your dataset has been submitted for review", messageAndSubject._2);
+        // then
+        assertThat(messageAndSubject)
+                .extracting(Tuple2::_1, Tuple2::_2)
+                .containsExactly(getSubmitForReviewMessage(), "Root: Your dataset has been submitted for review");
+    }
+
+    @Test
+    void getMessageAndSubject_ForDataset_GrantFileAccessInfo() {
+        // given
+        EmailNotificationDto notificationDto = createGrantFileAccessInfoNotificationDto();
+
+        // when
+        Tuple2<String, String> messageAndSubject = mailMessageCreator.getMessageAndSubject(notificationDto, "system@email.com");
+
+        // then
+        assertThat(messageAndSubject)
+                .extracting(Tuple2::_1, Tuple2::_2)
+                .containsExactly(getGrantFileAccessInfoMessage(), "Root: Request for access to restricted files has been accepted");
+    }
+
+    @Test
+    void getMessageAndSubject_ForDataset_RejectFileAccessInfo() {
+        // given
+        EmailNotificationDto notificationDto = createRejectFileAccessInfoNotificationDto();
+
+        // when
+        Tuple2<String, String> messageAndSubject = mailMessageCreator.getMessageAndSubject(notificationDto, "system@email.com");
+
+        // then
+        assertThat(messageAndSubject)
+                .extracting(Tuple2::_1, Tuple2::_2)
+                .containsExactly(getRejectFileAccessInfoMessage(), "Root: Request for access to restricted files has been rejected");
     }
 
     // -------------------- PRIVATE --------------------
@@ -257,6 +286,22 @@ public class MailMessageCreatorTest {
                 + "rootDataverseName (view at http://localhost:8080/dataverse/nicedataverse). "
                 + "Don't forget to publish it or send it back to the contributor, Notifcation Requester (Notifcation.Requester@someU.edu)!\n\n"
                 + "Additional information:\n\nContributors message for curator";
+    }
+
+    private String getGrantFileAccessInfoMessage() {
+        return "Hello, \n\n"
+                + "dataverseAdmin accepted access request to files in dataset “testDataset” "
+                + "(view at http://localhost:8080/dataset.xhtml?persistentId=doi:10.5072/FK2/TEST11). "
+                + "Current number of users awaiting file access request resolution in this dataset: 0. "
+                + "You may manage access to files in this dataset at http://localhost:8080/permissions-manage-files.xhtml?id=2";
+    }
+
+    private String getRejectFileAccessInfoMessage() {
+        return "Hello, \n\n"
+                + "dataverseAdmin rejected access request to files in dataset “testDataset” "
+                + "(view at http://localhost:8080/dataset.xhtml?persistentId=doi:10.5072/FK2/TEST11). "
+                + "Current number of users awaiting file access request resolution in this dataset: 0. "
+                + "You may manage access to files in this dataset at http://localhost:8080/permissions-manage-files.xhtml?id=2";
     }
 
     private String getAssignRoleSubject() {
@@ -315,6 +360,28 @@ public class MailMessageCreatorTest {
                                         new AuthenticatedUser());
     }
 
+    private EmailNotificationDto createGrantFileAccessInfoNotificationDto() {
+        return new EmailNotificationDto(1L,
+                "usermail@test.com",
+                NotificationType.GRANTFILEACCESSINFO,
+                2L,
+                NotificationObjectType.DATASET,
+                new AuthenticatedUser(),
+                null,
+                "dataverseAdmin");
+    }
+
+    private EmailNotificationDto createRejectFileAccessInfoNotificationDto() {
+        return new EmailNotificationDto(1L,
+                "usermail@test.com",
+                NotificationType.REJECTFILEACCESSINFO,
+                2L,
+                NotificationObjectType.DATASET,
+                new AuthenticatedUser(),
+                null,
+                "dataverseAdmin");
+    }
+
     private EmailNotificationDto createReturnToAuthorNotificationDto() {
         return new EmailNotificationDto(1L,
                 "useremail@test.com",
@@ -349,6 +416,19 @@ public class MailMessageCreatorTest {
         dataverseRole.setAlias(BuiltInRole.ADMIN.getAlias());
         roleAssignment.setRole(dataverseRole);
         return roleAssignment;
+    }
+
+    private Dataset createTestDataset() {
+        Dataverse dataverse = createTestDataverse();
+        dataverse.setId(1L);
+
+        Dataset dataset = new Dataset() {
+            @Override public String getDisplayName() { return "testDataset"; }
+        };
+        dataset.setId(2L);
+        dataset.setOwner(dataverse);
+        dataset.setGlobalId(new GlobalId("doi:10.5072/FK2/TEST11"));
+        return dataset;
     }
 
     private DatasetVersion createTestDatasetVersion() {

@@ -45,13 +45,13 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 
     public DataverseRole save(DataverseRole aRole) {
         boolean shouldIndexPermissions = !aRole.isNew();
-        
+
         aRole = dataverseRoleRepository.save(aRole);
-        
+
         if (shouldIndexPermissions) {
             permissionReindexEvent.fire(new PermissionReindexEvent(aRole.getOwner()));
         }
-        
+
         return aRole;
     }
 
@@ -104,7 +104,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         permissionReindexEvent.fire(new PermissionReindexEvent(ra.getDefinitionPoint()));
     }
 
-    // "nuclear" remove-all roles for a user or group: 
+    // "nuclear" remove-all roles for a user or group:
     // (Note that all the "definition points" - i.e., the dvObjects
     // on which the roles were assigned - need to be reindexed for permissions
     // once the role assignments are removed!
@@ -145,7 +145,6 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      * @see #roleAssignments(edu.harvard.iq.dataverse.DataverseUser,
      * edu.harvard.iq.dataverse.persistence.dataverse.Dataverse)
      */
-    //public List<RoleAssignment> directRoleAssignments(@NotNull RoleAssignee roas, @NotNull DvObject dvo) {
     public List<RoleAssignment> directRoleAssignments(RoleAssignee roas, DvObject dvo) {
         List<RoleAssignment> unfiltered = roleAssignmentRepository.findByAssigneeIdentifier(roas.getIdentifier());
         return unfiltered.stream()
@@ -163,7 +162,6 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      * @see #roleAssignments(edu.harvard.iq.dataverse.DataverseUser,
      * edu.harvard.iq.dataverse.persistence.dataverse.Dataverse)
      */
-    //public List<RoleAssignment> directRoleAssignments(@NotNull Set<? extends RoleAssignee> roleAssignees, @NotNull Collection<DvObject> dvos) {
     public List<RoleAssignment> directRoleAssignmentsByAssigneesAndDvObjects(Set<? extends RoleAssignee> roleAssignees, Collection<DvObject> dvos) {
         if (dvos.isEmpty()) {
             return new ArrayList<>();
