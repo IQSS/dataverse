@@ -20,7 +20,9 @@ For example:
 
 cp scripts/database/querycount/*.pl  /var/lib/pgsql/9.3/data/pg_log/
 
-Then run the count script as follows: 
+Then run the count script as follows.
+
+1. The default, interactive mode:
 
 cd /var/lib/pgsql/9.3/data/pg_log/
 ./count.pl <NAME OF THE LOG FILE>
@@ -29,7 +31,7 @@ you will see something like this:
 
 # ./count.pl postgresql-Mon.log 
 Current size: 3090929 bytes.
-Press any key when ready.
+Execute the application task that you are testing/measuring (an API call, a page load, etc.), then press any key. The script will then attempt to parse the increment portion of the PostgresQL log.
 
 Now go to your Dataverse and do whatever it is that you are
 testing. Then press any key to tell the script that it's done. It will
@@ -78,6 +80,13 @@ the query above will appear as follows:
 
 If you want to keep any of the files above, save them somewhere before
 running the script again, otherwise they will be overwritten.
+
+2. Non-interactive mode:
+
+cd /var/lib/pgsql/9.3/data/pg_log/
+./count.pl --non-interactive <NAME OF THE LOG FILE>
+
+Same as above, but will not wait for the keystroke from the user, and will attempt to parse the entire log file. This can be useful when executed from other scripts. The output will be saved in the files tail.counted and tail.parsed, as above. But there will be no file named "tail", since the entire log file is the increment being measured.
 
 
 
