@@ -1091,7 +1091,46 @@ public class SystemConfig {
 		//As of 5.0 the 'doi.dataciterestapiurlstring' is the documented jvm option. Prior versions used 'doi.mdcbaseurlstring' or were hardcoded to api.datacite.org, so the defaults are for backward compatibility.
         return System.getProperty("doi.dataciterestapiurlstring", System.getProperty("doi.mdcbaseurlstring", "https://api.datacite.org"));
 	}
-
+        
+    public boolean isExternalDataverseValidationEnabled() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.DataverseMetadataValidatorScript) != null;
+        // alternatively, we can also check if the script specified exists, 
+        // and is executable. -- ?
+    }
+    
+    public boolean isExternalDatasetValidationEnabled() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.DatasetMetadataValidatorScript) != null;
+        // alternatively, we can also check if the script specified exists, 
+        // and is executable. -- ?
+    }
+    
+    public String getDataverseValidationExecutable() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.DataverseMetadataValidatorScript);
+    }
+    
+    public String getDatasetValidationExecutable() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.DatasetMetadataValidatorScript);
+    }
+    
+    public String getDataverseValidationFailureMsg() {
+        String defaultMessage = "This dataverse collection cannot be published because it has failed an external metadata validation test.";
+        return settingsService.getValueForKey(SettingsServiceBean.Key.DataverseMetadataPublishValidationFailureMsg, defaultMessage);
+    }
+    
+    public String getDataverseUpdateValidationFailureMsg() {
+        String defaultMessage = "This dataverse collection cannot be updated because it has failed an external metadata validation test.";
+        return settingsService.getValueForKey(SettingsServiceBean.Key.DataverseMetadataUpdateValidationFailureMsg, defaultMessage);
+    }
+    
+    public String getDatasetValidationFailureMsg() {
+        String defaultMessage = "This dataset cannot be published because it has failed an external metadata validation test.";
+        return settingsService.getValueForKey(SettingsServiceBean.Key.DatasetMetadataValidationFailureMsg, defaultMessage);
+    }
+    
+    public boolean isExternalValidationAdminOverrideEnabled() {
+        return "true".equalsIgnoreCase(settingsService.getValueForKey(SettingsServiceBean.Key.ExternalValidationAdminOverride));
+    }
+    
     public long getDatasetValidationSizeLimit() {
         String limitEntry = settingsService.getValueForKey(SettingsServiceBean.Key.DatasetChecksumValidationSizeLimit);
 

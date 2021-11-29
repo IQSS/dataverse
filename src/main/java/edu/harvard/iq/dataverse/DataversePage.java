@@ -692,15 +692,20 @@ public class DataversePage implements java.io.Serializable {
             return returnRedirect();            
             
 
-        } catch (CommandException ex) {
+        } /*catch (CommandException ex) {
             logger.log(Level.SEVERE, "Unexpected Exception calling dataverse command", ex);
             String errMsg = create ? BundleUtil.getStringFromBundle("dataverse.create.failure") : BundleUtil.getStringFromBundle("dataverse.update.failure");
             JH.addMessage(FacesMessage.SEVERITY_FATAL, errMsg);
             return null;
-        } catch (Exception e) {
+        }*/ catch (Exception e) {
             logger.log(Level.SEVERE, "Unexpected Exception calling dataverse command", e);
             String errMsg = create ? BundleUtil.getStringFromBundle("dataverse.create.failure") : BundleUtil.getStringFromBundle("dataverse.update.failure");
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, errMsg);
+            
+            String failureMessage = e.getMessage() == null 
+                        ? errMsg
+                        : e.getMessage();
+            JsfHelper.addErrorMessage(failureMessage);
+            
             return null;
         }
     }
@@ -897,7 +902,10 @@ public class DataversePage implements java.io.Serializable {
 
             } catch (Exception ex) {
                 logger.log(Level.SEVERE, "Unexpected Exception calling  publish dataverse command", ex);
-                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.publish.failure"));
+                String failureMessage = ex.getMessage() == null 
+                        ? BundleUtil.getStringFromBundle("dataverse.publish.failure")
+                        : ex.getMessage();
+                JsfHelper.addErrorMessage(failureMessage);
 
             }
         } else {
