@@ -29,7 +29,10 @@ import javax.persistence.NamedQuery;
     @NamedQuery(name = "AuxiliaryFile.findAuxiliaryFilesByType",
             query = "select object(o) from AuxiliaryFile as o where o.dataFile.id = :dataFileId and o.type = :type"),
     @NamedQuery(name = "AuxiliaryFile.findAuxiliaryFilesWithoutType",
-            query = "select object(o) from AuxiliaryFile as o where o.dataFile.id = :dataFileId and o.type is null"),})
+            query = "select object(o) from AuxiliaryFile as o where o.dataFile.id = :dataFileId and o.type is null"),
+    @NamedQuery(name = "AuxiliaryFile.findAuxiliaryFilesByOrigin",
+            query = "select object(o) from AuxiliaryFile as o where o.dataFile.id = :dataFileId and o.origin = :origin"),
+})
 @NamedNativeQueries({
     @NamedNativeQuery(name = "AuxiliaryFile.findAuxiliaryFileTypes",
             query = "select distinct type from auxiliaryfile where datafile_id = ?1")
