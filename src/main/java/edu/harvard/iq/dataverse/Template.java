@@ -326,6 +326,7 @@ public class Template implements Serializable {
         } else {
             terms = new TermsOfUseAndAccess();
             terms.setLicense(TermsOfUseAndAccess.defaultLicense);
+            terms.setFileAccessRequest(true);
         }
         newTemplate.setTermsOfUseAndAccess(terms);
         return newTemplate;

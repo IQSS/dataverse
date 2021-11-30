@@ -277,6 +277,28 @@
                        </div>
                    </ui:fragment>
                    <ui:fragment rendered="#{!empty editMode}">
+                       <div class="form-group" jsf:rendered="#{!settingsWrapper.publicInstall}">
+                           <p class="help-block">
+                               <h:outputFormat value=" #{bundle['dataset.access.description']}" escape="false">
+                                   <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                   <f:param value="#{systemConfig.guidesVersion}"/>
+                               </h:outputFormat>
+                           </p>
+                           <p class="help-block">
+                               #{bundle['dataset.access.description.line.2']}
+                           </p>
+                       </div>
+                        <div class="form-group" jsf:rendered="#{!settingsWrapper.publicInstall}">
+                           <label for="metadata_RequestAccess" class="col-sm-3 control-label">
+                               #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
+                               <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                     data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}"></span>
+                           </label>
+                           <div class="col-sm-9">
+                               <p:selectBooleanCheckbox id="requestAccess" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}" 
+                                                        value="#{termsOfUseAndAccess.fileAccessRequest}" disabled="#{!DatasetPage.isHasRestrictedFiles()}"/>
+                           </div>
+                       </div>
                        <div class="form-group">
                            <label for="metadata_TermsAccess" class="col-sm-3 control-label">
                                #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
@@ -284,18 +306,8 @@
                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}"></span>
                            </label>
                            <div class="col-sm-9">
-                               <p:inputTextarea value="#{termsOfUseAndAccess.termsOfAccess}" rows="5" styleClass="form-control" />
+                               <p:inputTextarea value="#{termsOfUseAndAccess.termsOfAccess}" rows="5" styleClass="form-control" disabled="#{!DatasetPage.isHasRestrictedFiles()}" />
                        </div>
-                       </div>
-                       <div class="form-group" jsf:rendered="#{!settingsWrapper.publicInstall}">
-                           <label for="metadata_RequestAccess" class="col-sm-3 control-label">
-                               #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
-                               <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                     data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}"></span>
-                           </label>
-                           <div class="col-sm-9">
-                               <p:selectBooleanCheckbox id="requestAccess" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}" value="#{termsOfUseAndAccess.fileAccessRequest}"/>
-                           </div>
                        </div>
                    </ui:fragment>
 
@@ -370,7 +382,7 @@
                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.dataAccessPlace.title']}"></span>
                             </label>
                             <div class="col-sm-9">
-                                <p:inputTextarea value="#{termsOfUseAndAccess.dataAccessPlace}" rows="5" cols="60" styleClass="form-control" />
+                                <p:inputTextarea value="#{termsOfUseAndAccess.dataAccessPlace}" rows="5" cols="60" styleClass="form-control" disabled="#{!DatasetPage.isHasRestrictedFiles()}" />
                             </div>
                         </div>
                         <div class="form-group">

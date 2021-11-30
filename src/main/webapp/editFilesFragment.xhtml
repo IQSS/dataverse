@@ -593,20 +593,15 @@
     <p:dialog id="editFileAccessPopup" header="#{bundle['dataset.access.accessHeader']}" widgetVar="editFileAccessPopup" modal="true">
         <p:focus context="editFileAccessPopup"/>
         <p class="help-block">
-            #{bundle['dataset.access.description']}
-        </p>        
-        <div class="form-horizontal">
-            <div class="form-group">
-                <label for="metadata_TermsAccess" class="col-sm-3 control-label">
-                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
-                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                          data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}"></span>
-                </label>
-                <div class="col-sm-9">
-                    <p:inputTextarea styleClass="form-control"
-                                     value="#{EditDatafilesPage.termsOfAccess}" autoResize="false" rows="5"/>
-                </div>
-            </div>
+            <h:outputFormat value=" #{bundle['dataset.access.description']}" escape="false">
+                            <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                            <f:param value="#{systemConfig.guidesVersion}"/>
+                        </h:outputFormat>
+        </p>
+        <p class="help-block">
+            #{bundle['dataset.access.description.line.2']}
+        </p>
+        <p class="help-block">
             <div class="form-group">
                 <label for="metadata_RequestAccess" class="col-sm-3 control-label">
                     #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
@@ -614,15 +609,33 @@
                           data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}"></span>
                 </label>
                 <div class="col-sm-9">
-                    <p:selectBooleanCheckbox id="editFileRequestAccess" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}" 
-                                             value="#{EditDatafilesPage.fileAccessRequest}"/>
+                    <p:selectBooleanCheckbox widgetVar="editFileRequestAccessBox" id="editFileRequestAccessBox" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}" 
+                                             value="#{EditDatafilesPage.fileAccessRequest}">
+                        <p:ajax event="change" update="saveTOAButton" /> 
+                    </p:selectBooleanCheckbox>
                 </div>
             </div>
-        </div>
+
+            <div class="form-group">
+                <label for="metadata_TermsAccess" class="col-sm-3 control-label">
+                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
+                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                          data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}"></span>
+                </label>
+                <div class="col-sm-9">
+                    <p:inputTextarea styleClass="form-control" id="inputTermsOfAccessText"
+                                     value="#{EditDatafilesPage.termsOfAccess}" autoResize="false" rows="5">
+                        <p:ajax event="keyup" update="saveTOAButton" />
+                    </p:inputTextarea>
+                </div>
+            </div>
+        </p>
         <div class="button-block">
-            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" 
+            <p:commandButton styleClass="btn btn-default" value="#{bundle.saveChanges}" 
                              onclick="PF('editFileAccessPopup').hide()" 
                              action="#{EditDatafilesPage.restrictFiles(true)}"
+                             id="saveTOAButton"
+                             disabled="#{empty EditDatafilesPage.termsOfAccess  and !EditDatafilesPage.fileAccessRequest}"
                              update="filesTable,:messagePanel"
                              oncomplete="javascript:bind_bsui_components();" />
             <button class="btn btn-link" onclick="PF('editFileAccessPopup').hide()" type="button">                              
@@ -940,7 +953,7 @@
                 #{bundle.close}
             </button>
         </div>
-    </p:dialog>       
+    </p:dialog> 
     <script src="/resources/js/dropins.js" id="dropboxjs" data-app-key="#{EditDatafilesPage.dropBoxKey}"/>
     <script>
         //<![CDATA[

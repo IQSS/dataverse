@@ -560,6 +560,13 @@ public class DatasetVersion implements Serializable {
         // The presence of any non-package file means that HTTP Upload was used (no mixing allowed) so we just check the first file.
         return !this.fileMetadatas.get(0).getDataFile().getContentType().equals(DataFileServiceBean.MIME_TYPE_PACKAGE_FILE);
     }
+    
+    public boolean isHasRestrictedFile(){
+        if (this.fileMetadatas.isEmpty()){;
+            return false;
+        }
+        return this.fileMetadatas.stream().anyMatch(fm -> (fm.isRestricted()));
+    }
 
     public void updateDefaultValuesFromTemplate(Template template) {
         if (!template.getDatasetFields().isEmpty()) {
@@ -636,6 +643,11 @@ public class DatasetVersion implements Serializable {
         TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
         terms.setDatasetVersion(this);
         terms.setLicense(TermsOfUseAndAccess.License.CC0);
+        /*
+        Added for https://github.com/IQSS/dataverse/issues/8191
+        set File Access Request to true
+        */
+        terms.setFileAccessRequest(true);
         this.setTermsOfUseAndAccess(terms);
 
     }
@@ -1665,7 +1677,23 @@ public class DatasetVersion implements Serializable {
                 }
             }
         }
+        
+        
+        TermsOfUseAndAccess toua = this.termsOfUseAndAccess;
+        //Only need to test Terms of Use and Access if there are restricted files  
+        if (toua != null && this.isHasRestrictedFile()) {
+            Set<ConstraintViolation<TermsOfUseAndAccess>> constraintViolations = validator.validate(toua);
+            if (constraintViolations.size() > 0) {
+                ConstraintViolation<TermsOfUseAndAccess> violation = constraintViolations.iterator().next();
+                String message = "Constraint violation found in Terms of Use and Access. "                      
+                       + "If Request Access to restricted files is disabled then Terms of Access must be provided.";
+                logger.info(message);
+                this.termsOfUseAndAccess.setValidationMessage(message);
+                returnSet.add(violation);
+            }
+        }
 
+        
         return returnSet;
     }
     

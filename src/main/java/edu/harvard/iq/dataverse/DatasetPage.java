@@ -394,6 +394,18 @@ public class DatasetPage implements java.io.Serializable {
     public String getRsyncScriptFilename() {
         return rsyncScriptFilename;
     }
+    
+    private Boolean hasRestrictedFiles = null;
+    
+    public Boolean isHasRestrictedFiles(){
+        //cache in page to limit processing
+        if (hasRestrictedFiles != null){
+            return hasRestrictedFiles;
+        } else {
+            hasRestrictedFiles = workingVersion.isHasRestrictedFile();
+            return hasRestrictedFiles;
+        }
+    }
 
     private String thumbnailString = null;
 
@@ -2054,7 +2066,8 @@ public class DatasetPage implements java.io.Serializable {
         previewTools = externalToolService.findFileToolsByType(ExternalTool.Type.PREVIEW);
         datasetExploreTools = externalToolService.findDatasetToolsByType(ExternalTool.Type.EXPLORE);
         rowsPerPage = 10;
-
+        hasRestrictedFiles = workingVersion.isHasRestrictedFile();
+        
         return null;
     }
 

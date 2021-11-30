@@ -14,6 +14,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
+import javax.persistence.Transient;
 
 /**
  *
@@ -21,6 +22,7 @@ import javax.persistence.OneToOne;
  * @author skraffmi
  */
 @Entity
+@ValidateTermsOfUseAndAccess
 public class TermsOfUseAndAccess implements Serializable {
 
     @Id
@@ -273,6 +275,17 @@ public class TermsOfUseAndAccess implements Serializable {
         
     public enum License {
         NONE, CC0
+    }
+    
+    @Transient
+    private String validationMessage;
+
+    public String getValidationMessage() {
+        return validationMessage;
+    }
+
+    public void setValidationMessage(String validationMessage) {
+        this.validationMessage = validationMessage;
     }
     
         /**
