@@ -5,7 +5,6 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
 import com.amazonaws.services.s3.AmazonS3;
-import edu.harvard.iq.dataverse.api.UtilIT;
 import edu.harvard.iq.dataverse.persistence.MocksFactory;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
@@ -18,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,12 +42,12 @@ public class S3AccessIOTest {
         dataSet = MocksFactory.makeDataset();
         dataSet.setStorageIdentifier("s3://dataset/storage/id");
         dataFile.setOwner(dataSet);
-        dataFileId = UtilIT.getRandomIdentifier();
+        dataFileId = UUID.randomUUID().toString().substring(0, 8);
         dataFile.setStorageIdentifier("s3://bucket:" + dataFileId);
         dataSetAccess = new S3AccessIO<>(dataSet, s3client, defaultBucketName);
         dataFileAccess = new S3AccessIO<>(dataFile, s3client, defaultBucketName);
     }
-    
+
     /*
     createTempFile
     getStorageLocation
@@ -56,7 +56,7 @@ public class S3AccessIOTest {
     getWriteChannel
     getOutputStream
     getDestinationKey
-    
+
     DONE
     ---------------------
     getMainFileKey
@@ -71,7 +71,7 @@ public class S3AccessIOTest {
         assertThatThrownBy(() -> new S3AccessIO<>(dataSet, s3client, defaultBucketName))
             .isInstanceOf(IllegalStateException.class);
     }
-    
+
     @Test
     void keyNull_getMainFileKey() throws IOException {
 
