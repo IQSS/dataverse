@@ -737,6 +737,10 @@
                         <p:commandButton id="saveTop" styleClass="btn btn-default" value="#{bundle.saveChanges}"
                                          onclick="PF('blockDatasetForm').show();"
                                          update=":datasetForm,:messagePanel"
+                                         disabled="#{DatasetPage.editMode == 'LICENSE' 
+                                                     and DatasetPage.workingVersion.hasRestrictedFile 
+                                                        and !DatasetPage.workingVersion.getTermsOfUseAndAccess().isFileAccessRequest()
+                                                        and empty DatasetPage.workingVersion.getTermsOfUseAndAccess().termsOfAccess }"
                                          oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
                                          action="#{DatasetPage.save}"/>
                         <p:commandButton id="cancelTop" styleClass="btn btn-link" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" oncomplete="javascript:bind_bsui_components();">
@@ -890,9 +894,14 @@
                     </div>
                     <!-- Create/Save Dataset Button Panel BTM editMode -->
                     <div class="button-block" jsf:rendered="#{!empty DatasetPage.editMode}">
-                        <p:commandButton id="save" styleClass="btn btn-default" value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}" 
+                        <p:commandButton id="saveBottom" styleClass="btn btn-default" 
+                                         value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}" 
                                          onclick="PF('blockDatasetForm').show();"
                                          update=":datasetForm,:messagePanel"
+                                         disabled="#{DatasetPage.editMode == 'LICENSE' 
+                                                     and DatasetPage.workingVersion.hasRestrictedFile 
+                                                        and !DatasetPage.workingVersion.getTermsOfUseAndAccess().isFileAccessRequest()
+                                                        and empty DatasetPage.workingVersion.getTermsOfUseAndAccess().termsOfAccess }"
                                          oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
                                          action="#{DatasetPage.save}"/>
                         <p:commandButton id="cancel" styleClass="btn btn-link" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" rendered="#{DatasetPage.editMode != 'CREATE'}" oncomplete="javascript:bind_bsui_components();">

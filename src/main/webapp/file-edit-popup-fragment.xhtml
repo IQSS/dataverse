@@ -29,19 +29,12 @@
     <p:dialog id="accessPopup" styleClass="smallPopUp" header="#{bundle['dataset.access.accessHeader']}" widgetVar="accessPopup" modal="true">
         <p:focus context="accessPopup"/>
         <p class="help-block">
-            #{bundle['dataset.access.description']}
+            <h:outputFormat value=" #{bundle['dataset.access.description']}" escape="false">
+                <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                <f:param value="#{systemConfig.guidesVersion}"/>
+            </h:outputFormat>
         </p>
         <div class="form-horizontal">
-            <div class="form-group">
-                <label for="termsAccessInput" class="col-sm-3 control-label">
-                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
-                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}"></span>
-                </label>
-                <div class="col-sm-9">
-                    <p:inputTextarea id="termsAccessInput" value="#{bean.termsOfAccess}" autoResize="false" rows="5" styleClass="form-control" widgetVar="inputtoa"/>
-                </div>
-            </div>
             <div class="form-group">
                 <label for="requestAccess" class="col-sm-3 control-label">
                   #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
@@ -50,7 +43,22 @@
                 </label>
                 <div class="col-sm-9">
                     <p:selectBooleanCheckbox id="requestAccess2" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}"
-                                             value="#{bean.fileAccessRequest}" widgetVar="inputfar"/>
+                                             value="#{bean.fileAccessRequest}" widgetVar="inputfar">
+                    <p:ajax event="change" update="restrictFileButton" />
+                    </p:selectBooleanCheckbox>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="termsAccessInput" class="col-sm-3 control-label">
+                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
+                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}"></span>
+                </label>
+                <div class="col-sm-9">
+                    <p:inputTextarea id="termsAccessInput" 
+                                     value="#{bean.termsOfAccess}" autoResize="false" rows="5" styleClass="form-control" widgetVar="inputtoa">
+                     <p:ajax event="keyup" update="restrictFileButton" />
+                    </p:inputTextarea> 
                 </div>
             </div>
         </div>
@@ -60,16 +68,12 @@
             </div>
         <div class="button-block">
             <p:commandLink id="restrictFileButton"  styleClass="btn btn-default" value="#{bundle.saveChanges}" 
-                             onclick="return false;" 
                              action="#{bean[restrictFileAction](true)}"
+                             disabled="#{empty bean.termsOfAccess  and !bean.fileAccessRequest}"
                              update=":messagePanel" />
             <button class="btn btn-link" onclick="PF('accessPopup').hide();" type="button">
                 #{bundle.cancel}
             </button> 
-            <p:commandLink id="restrictFileButtonREdux"  styleClass="btn btn-default" value="#{bundle.saveChanges}- belrgh" 
-                             onclick="if (!testFilesSelected()) return false;"  
-                             action="#{bean[restrictFileAction](true)}"
-                             update=":messagePanel" />
 
         </div>
     </p:dialog>  
