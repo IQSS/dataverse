@@ -1,0 +1,10 @@
+{
+  "dataverseAlias": "root",
+  "nickName": "client1",
+  "type": "oai",
+  "harvestUrl": "https://demo.dataverse.org/oai",
+  "archiveUrl": "https://demo.dataverse.org",
+  "archiveDescription": "Description of the archive.",
+  "metadataFormat": "oai_dc",
+  "set": "foobar"
+}

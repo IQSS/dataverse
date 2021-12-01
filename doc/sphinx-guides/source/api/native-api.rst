@@ -2925,6 +2925,90 @@ The fully expanded example above (without the environment variables) looks like 
 
 Only users with superuser permissions may delete harvesting sets.
 
+Managing Harvesting Clients
+---------------------------
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
+
+List Harvesting Clients
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl $SERVER_URL/api/harvest/clients
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/harvest/clients
+
+List a Harvesting Client
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export NICKNAME=client1
+
+  curl $SERVER_URL/api/harvest/clients/$NICKNAME
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/harvest/clients/client1
+
+Create a Harvesting Client
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Creating a harvesting client via API is not supported. Use the GUI instead.
+
+Editing a Harvesting Client
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To edit a harvesting client you must supply a JSON file with existing and new fields. It is best to start with JSON from the API (see "List Harvesting Clients") but :download:`harvest-client-edit.json <../_static/api/harvest-client-edit.json>` is used for illustrative purposes.
+
+.. literalinclude:: ../_static/api/harvest-client-edit.json
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export NICKNAME=client1
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X PUT $SERVER_URL/api/harvest/clients/$NICKNAME --upload-file harvest-client-edit.json
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X PUT https://demo.dataverse.org/api/harvest/clients/client1 --upload-file harvest-client-edit.json
+
+Delete a Harvesting Client
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Deleting a harvesting client via API is not supported. Use the GUI instead.
+
+Start a Run from a Harvesting Client
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export NICKNAME=client1
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST $SERVER_URL/api/harvest/clients/$NICKNAME/run
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST https://demo.dataverse.org/api/harvest/clients/client1/run
+
 PIDs
 ----
 
