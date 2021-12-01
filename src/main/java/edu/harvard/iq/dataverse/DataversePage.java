@@ -595,7 +595,7 @@ public class DataversePage implements java.io.Serializable {
 
 
     public String save() {
-        Set<DataverseFieldTypeInputLevel> setDFTIL = new HashSet<>();
+        List<DataverseFieldTypeInputLevel> listDFTIL = new ArrayList<>();
         if (editMode != null && ( editMode.equals(EditMode.INFO) || editMode.equals(EditMode.CREATE))) {
 
             List<MetadataBlock> selectedBlocks = new ArrayList<>();
@@ -611,6 +611,7 @@ public class DataversePage implements java.io.Serializable {
                         // so we skip looking at parents (which get set automatically with their children)
                         if (!dsft.isHasChildren() && dsft.isRequiredDV()) {
                             boolean addRequiredInputLevels = false;
+                            boolean parentAlreadyAdded = false;
                             
                             if (!dsft.isHasParent() && dsft.isInclude()) {
                                 addRequiredInputLevels = !dsft.isRequired();
@@ -620,17 +621,28 @@ public class DataversePage implements java.io.Serializable {
                             }
                             
                             if (addRequiredInputLevels) {
-                                setDFTIL.add(new DataverseFieldTypeInputLevel(dsft, dataverse,true, true));
+                                listDFTIL.add(new DataverseFieldTypeInputLevel(dsft, dataverse,true, true));
                             
-                                //also add the parent as required
+                                //also add the parent as required (if it hasn't been added already)
                                 if (dsft.isHasParent()) {
-                                    setDFTIL.add(new DataverseFieldTypeInputLevel(dsft.getParentDatasetFieldType(), dataverse,true, true));
+                                    DataverseFieldTypeInputLevel parentToAdd = new DataverseFieldTypeInputLevel(dsft.getParentDatasetFieldType(), dataverse, true, true);
+                                    for (DataverseFieldTypeInputLevel dataverseFieldTypeInputLevel : listDFTIL) {
+                                        if (dataverseFieldTypeInputLevel.getDatasetFieldType().getId() == parentToAdd.getDatasetFieldType().getId()) {
+                                            parentAlreadyAdded = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!parentAlreadyAdded) {
+                                        // Only add the parent once. There's a UNIQUE (dataverse_id, datasetfieldtype_id)
+                                        // constraint on the dataversefieldtypeinputlevel table we need to avoid.
+                                        listDFTIL.add(parentToAdd);
+                                    }
                                 }      
                             }
                         }
                         if ((!dsft.isHasParent() && !dsft.isInclude())
                                 || (dsft.isHasParent() && !dsft.getParentDatasetFieldType().isInclude())) {
-                            setDFTIL.add(new DataverseFieldTypeInputLevel(dsft, dataverse,false, false));
+                            listDFTIL.add(new DataverseFieldTypeInputLevel(dsft, dataverse,false, false));                        
                         }
                     }
                 }
@@ -645,9 +657,6 @@ public class DataversePage implements java.io.Serializable {
             }
 
         }
-
-        List<DataverseFieldTypeInputLevel> listDFTIL = new ArrayList<>();
-        listDFTIL.addAll(setDFTIL);
 
         Command<Dataverse> cmd = null;
         //TODO change to Create - for now the page is expecting INFO instead.
