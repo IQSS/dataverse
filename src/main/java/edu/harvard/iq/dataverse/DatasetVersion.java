@@ -562,7 +562,8 @@ public class DatasetVersion implements Serializable {
     }
     
     public boolean isHasRestrictedFile(){
-        if (this.fileMetadatas.isEmpty()){;
+        
+        if (this.fileMetadatas == null || this.fileMetadatas.isEmpty()){
             return false;
         }
         return this.fileMetadatas.stream().anyMatch(fm -> (fm.isRestricted()));

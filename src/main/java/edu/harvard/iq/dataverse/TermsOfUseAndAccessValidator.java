@@ -12,55 +12,40 @@ import javax.validation.ConstraintValidatorContext;
  *
  * @author skraffmi
  */
-public class TermsOfUseAndAccessValidator implements ConstraintValidator<ValidateTermsOfUseAndAccess, TermsOfUseAndAccess>  {
+public class TermsOfUseAndAccessValidator implements ConstraintValidator<ValidateTermsOfUseAndAccess, TermsOfUseAndAccess> {
 
     @Override
     public void initialize(ValidateTermsOfUseAndAccess constraintAnnotation) {
-        
+
     }
 
     @Override
     public boolean isValid(TermsOfUseAndAccess value, ConstraintValidatorContext context) {
-        //must allow access requests or have terms of access filled in.  
-        
-            boolean valid =  value.isFileAccessRequest() == true  || (value.getTermsOfAccess() != null && !value.getTermsOfAccess().isEmpty()) ;
-            if (!valid) {
-                try {
-                    
-                    
-                if ( context    != null) {
-                                        context.buildConstraintViolationWithTemplate( "If Request Access is false then Terms of Access must be provided.").addConstraintViolation();
-                }
+        //If there are no restricted files then terms are valid  
+        if (!value.getDatasetVersion().isHasRestrictedFile()) {
+            return true;
+        }
 
-                    String message = "Constraint violation found in Terms of Use and Access. "
-                        + " If Request Access to restricted files is set to false then Terms of Access must be provided.";
-
-                    value.setValidationMessage(message);
-                } catch (NullPointerException e) {
-                    return false;
-                }
-                return false;
-            }
-
-
-        return valid;
-    }
-    
-    public static boolean isTOUAValid(TermsOfUseAndAccess value, ConstraintValidatorContext context){
-     
+        /*If there are restricted files then the version
+        must allow access requests or have terms of access filled in.
+         */
         boolean valid = value.isFileAccessRequest() == true || (value.getTermsOfAccess() != null && !value.getTermsOfAccess().isEmpty());
         if (!valid) {
+            try {
+                if (context != null) {
+                    context.buildConstraintViolationWithTemplate("If Request Access is false then Terms of Access must be provided.").addConstraintViolation();
+                }
 
-            if (context != null) {
-                context.buildConstraintViolationWithTemplate("If Request Access is false then Terms of Access must be provided.").addConstraintViolation();
+                String message = "Constraint violation found in Terms of Use and Access. "
+                        + " If Request Access to restricted files is set to false then Terms of Access must be provided.";
+                value.setValidationMessage(message);
+            } catch (NullPointerException e) {
+                return false;
             }
-
-            String message = "Constraint violation found in Terms of Use and Access. "
-                    + " If Request Access to restricted files is set to false then Terms of Access must be provided.";
-
-            value.setValidationMessage(message);
+            return false;
         }
+
         return valid;
     }
-      
+
 }
