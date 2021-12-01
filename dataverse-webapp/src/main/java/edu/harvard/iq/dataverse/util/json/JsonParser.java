@@ -60,11 +60,6 @@ public class JsonParser {
     MetadataBlockDao blockService;
     SettingsServiceBean settingsService;
 
-    /**
-     * if lenient, we will accept alternate spellings for controlled vocabulary values
-     */
-    boolean lenient = false;
-
     public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockDao blockService, SettingsServiceBean settingsService) {
         this.datasetFieldSvc = datasetFieldSvc;
         this.blockService = blockService;
@@ -73,14 +68,6 @@ public class JsonParser {
 
     public JsonParser() {
         this(null, null, null);
-    }
-
-    public boolean isLenient() {
-        return lenient;
-    }
-
-    public void setLenient(boolean lenient) {
-        this.lenient = lenient;
     }
 
     /**
@@ -344,13 +331,7 @@ public class JsonParser {
                 List<DatasetField> c = parseField(fieldJson, testType);
                 fields.addAll(c);
             } catch (CompoundVocabularyException ex) {
-                DatasetFieldType fieldType = datasetFieldSvc.findByNameOpt(fieldJson.getString("typeName", ""));
-                if (lenient && (DatasetFieldConstant.geographicCoverage).equals(fieldType.getName())) {
-                    fields.addAll(remapGeographicCoverage(ex));
-                } else {
-                    // if not lenient mode, re-throw exception
-                    throw ex;
-                }
+                throw ex;
             }
 
         }
@@ -701,7 +682,7 @@ public class JsonParser {
                 List<ControlledVocabularyValue> vals = new LinkedList<>();
                 for (JsonString strVal : json.getJsonArray("value").getValuesAs(JsonString.class)) {
                     String strValue = strVal.getString();
-                    ControlledVocabularyValue cvv = datasetFieldSvc.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(cvvType, strValue, lenient);
+                    ControlledVocabularyValue cvv = datasetFieldSvc.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(cvvType, strValue, false);
                     if (cvv == null) {
                         throw new ControlledVocabularyException("Value '" + strValue + "' does not exist in type '" + cvvType.getName() + "'", cvvType, strValue);
                     }
@@ -722,7 +703,7 @@ public class JsonParser {
                     throw new JsonParseException("Invalid value submitted for " + cvvType.getName() + ". It should be a single value.");
                 }
                 String strValue = json.getString("value", "");
-                ControlledVocabularyValue cvv = datasetFieldSvc.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(cvvType, strValue, lenient);
+                ControlledVocabularyValue cvv = datasetFieldSvc.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(cvvType, strValue, false);
                 if (cvv == null) {
                     throw new ControlledVocabularyException("Value '" + strValue + "' does not exist in type '" + cvvType.getName() + "'", cvvType, strValue);
                 }

@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.harvest.client;
 
-import org.dspace.xoai.model.oaipmh.Header;
 import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
@@ -16,8 +15,8 @@ import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
 import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
-import edu.harvard.iq.dataverse.timer.DataverseTimerServiceBean;
 import org.apache.commons.lang.mutable.MutableBoolean;
+import org.dspace.xoai.model.oaipmh.Header;
 import org.xml.sax.SAXException;
 
 import javax.ejb.Asynchronous;
@@ -55,8 +54,6 @@ public class HarvesterServiceBean {
 
     @EJB
     DatasetDao datasetDao;
-    @EJB
-    DataverseTimerServiceBean dataverseTimerService;
     @EJB
     HarvestingClientDao harvestingClientService;
     @EJB

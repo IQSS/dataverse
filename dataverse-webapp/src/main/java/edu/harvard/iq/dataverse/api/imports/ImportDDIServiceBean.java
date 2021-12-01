@@ -7,7 +7,7 @@ import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.FileDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
-import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
+import edu.harvard.iq.dataverse.api.imports.ImportType;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType;
 import edu.harvard.iq.dataverse.persistence.datafile.license.License;
@@ -84,10 +84,6 @@ public class ImportDDIServiceBean {
 
     private boolean isHarvestImport(ImportType importType) {
         return importType.equals(ImportType.HARVEST);
-    }
-
-    private boolean isNewImport(ImportType importType) {
-        return importType.equals(ImportType.NEW);
     }
 
     private void mapDDI(ImportType importType, String xmlToParse, DatasetDTO datasetDTO) throws XMLStreamException, ImportException {
@@ -177,27 +173,14 @@ public class ImportDDIServiceBean {
                     processDocDscr(xmlr, datasetDTO);
                 } else if (xmlr.getLocalName().equals("stdyDscr")) {
                     processStdyDscr(importType, xmlr, datasetDTO, termsOfUseDataHolder);
-                } else if (xmlr.getLocalName().equals("otherMat") && (isNewImport(importType) || isHarvestImport(importType))) {
+                } else if (xmlr.getLocalName().equals("otherMat") && isHarvestImport(importType)) {
                     processOtherMat(xmlr, datasetDTO);
                 } else if (xmlr.getLocalName().equals("fileDscr") && isHarvestImport(importType)) {
                     // If this is a harvesting import, we'll attempt to extract some minimal
                     // file-level metadata information from the fileDscr sections as well.
                     // TODO: add more info here... -- 4.6
                     processFileDscrMinimal(xmlr, datasetDTO);
-                } // else if (xmlr.getLocalName().equals("fileDscr") && isNewImport(importType)) {
-                    // this is a "full" fileDscr section - Dataverses use it
-                    // to encode *tabular* files only. It will contain the information
-                    // about variables, observations, etc. It will be complemented
-                    // by a number of <var> entries in the dataDscr section.
-                    // Dataverses do not use this section for harvesting exports, since
-                    // we don't harvest tabular metadata. And all the "regular"
-                    // file-level metadata is encoded in otherMat sections.
-                    // The goal is to one day be able to import such tabular
-                    // metadata using the direct (non-harvesting) import API.
-                    // EMK TODO: add this back in for ImportType.NEW
-                    //processFileDscr(xmlr, datasetDTO, filesMap);
-                //}
-
+                }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("codeBook")) {
                     applyTermsOfUseToFiles(datasetDTO, termsOfUseDataHolder);
@@ -1249,11 +1232,6 @@ public class ImportDDIServiceBean {
                     }
                 }
             }
-
-        }
-        if (isNewImport(importType)) {
-            // If this is a new, Draft version, versionNumber and minor versionNumber are null.
-            dvDTO.setVersionState(VersionState.DRAFT);
         }
     }
 

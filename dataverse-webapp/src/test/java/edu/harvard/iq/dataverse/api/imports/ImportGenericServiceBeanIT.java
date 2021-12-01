@@ -65,7 +65,6 @@ public class ImportGenericServiceBeanIT extends WebappArquillianDeployment {
         JsonObject obj = jsonReader.readObject();
 
         JsonParser parser = new JsonParser(datasetFieldService, metadataBlockDao, settingsService);
-        parser.setLenient(true);
         return parser.parseDataset(obj);
     }
 }

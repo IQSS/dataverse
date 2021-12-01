@@ -93,7 +93,7 @@ public class DataverseTimerServiceBean implements Serializable {
             createMotherTimer();
             // And the export timer (there is only one)
             createExportTimer();
-            
+
             createIntegrityCheckTimer();
             createCitationCountUpdateTimer();
 
@@ -151,11 +151,11 @@ public class DataverseTimerServiceBean implements Serializable {
             try {
 
                 logger.log(Level.INFO, "running a harvesting client: id=" + info.getHarvestingClientId());
-                // Timer batch jobs are run by the main Admin user. 
+                // Timer batch jobs are run by the main Admin user.
                 // TODO: revisit how we retrieve the superuser here.
                 // Should it be configurable somewhere, which superuser
                 // runs these jobs? Should there be a central mechanism for obtaining
-                // the "major", builtin superuser for this Dataverse instance? 
+                // the "major", builtin superuser for this Dataverse instance?
                 // -- L.A. 4.5, Aug. 2016
                 AuthenticatedUser adminUser = authSvc.getAdminUser(); // getAuthenticatedUser("admin");
                 if (adminUser == null) {
@@ -167,12 +167,12 @@ public class DataverseTimerServiceBean implements Serializable {
                 harvesterService.doHarvest(dataverseRequest, info.getHarvestingClientId());
 
             } catch (Throwable e) {
-                // Harvester Service should be handling any error notifications, 
-                // if/when things go wrong. 
-                // (TODO: -- verify this logic; harvesterService may still be able 
-                // to throw an IOException, if it could not run the harvest at all, 
+                // Harvester Service should be handling any error notifications,
+                // if/when things go wrong.
+                // (TODO: -- verify this logic; harvesterService may still be able
+                // to throw an IOException, if it could not run the harvest at all,
                 // or could not for whatever reason modify the database record...
-                // in this case we should, probably, log the error and try to send 
+                // in this case we should, probably, log the error and try to send
                 // a mail notification. -- L.A. 4.4)
                 //dataverseService.setHarvestResult(info.getHarvestingDataverseId(), harvesterService.HARVEST_RESULT_FAILED);
                 //mailService.sendHarvestErrorNotification(dataverseService.find().getSystemEmail(), dataverseService.find().getName());
@@ -216,10 +216,10 @@ public class DataverseTimerServiceBean implements Serializable {
     }
 
     public void removeHarvestTimers() {
-        // Remove all the harvest timers, if exist: 
+        // Remove all the harvest timers, if exist:
         //
-        // (the logging messages below are set to level INFO; it's ok, 
-        // since this code is only called on startup of the application, 
+        // (the logging messages below are set to level INFO; it's ok,
+        // since this code is only called on startup of the application,
         // and it may be useful to know what existing timers were encountered).
 
         logger.log(Level.INFO, "Removing existing harvest timers..");
@@ -286,12 +286,6 @@ public class DataverseTimerServiceBean implements Serializable {
         }
     }
 
-    public void updateHarvestTimer(HarvestingClient harvestingClient) {
-        removeHarvestTimer(harvestingClient);
-        createHarvestTimer(harvestingClient);
-    }
-
-
     public void removeHarvestTimer(HarvestingClient harvestingClient) {
         // Clear dataverse timer, if one exists
         try {
@@ -331,7 +325,7 @@ public class DataverseTimerServiceBean implements Serializable {
 
     public void createIntegrityCheckTimer() {
         String cronExpression = settingsService.getValueForKey(Key.FilesIntegrityCheckTimerExpression);
-        
+
         if (StringUtils.isNotBlank(cronExpression)) {
             ScheduleExpression expression = cronToScheduleExpression(cronExpression);
 
@@ -344,7 +338,7 @@ public class DataverseTimerServiceBean implements Serializable {
 
     public void createCitationCountUpdateTimer() {
         String cronExpression = settingsService.getValueForKey(Key.CitationCountUpdateTimerExpression);
-        
+
         if (StringUtils.isNotBlank(cronExpression)) {
             ScheduleExpression expression = cronToScheduleExpression(cronExpression);
 
@@ -363,7 +357,7 @@ public class DataverseTimerServiceBean implements Serializable {
     private ScheduleExpression cronToScheduleExpression(String cronExpression) {
         final String[] parts = cronExpression.split(" ");
         Preconditions.checkArgument(parts.length == 5, "Invalid cron expression {} Expression should have 5 parts", cronExpression);
-        
+
         return new ScheduleExpression()
             .minute(parts[0])
             .hour(parts[1])
@@ -371,7 +365,7 @@ public class DataverseTimerServiceBean implements Serializable {
             .month(parts[3])
             .dayOfWeek(parts[4]);
     }
-    
+
     private void logException(Throwable e, Logger logger) {
 
         boolean cause = false;

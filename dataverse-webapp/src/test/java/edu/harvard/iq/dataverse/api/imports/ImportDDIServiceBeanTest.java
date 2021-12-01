@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FileDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
-import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType;
 import edu.harvard.iq.dataverse.persistence.datafile.license.License;
@@ -632,7 +631,7 @@ public class ImportDDIServiceBeanTest {
                                                                               .getResource("xml/imports/modernDdi.xml")), StandardCharsets.UTF_8);
 
         //when
-        DatasetDTO datasetDTO = importDdiService.doImport(ImportUtil.ImportType.HARVEST, ddiXml);
+        DatasetDTO datasetDTO = importDdiService.doImport(ImportType.HARVEST, ddiXml);
 
         //then
         assertThat(extractJsonValues(datasetDTO, DatasetFieldConstant.relatedMaterial, DatasetFieldConstant.relatedMaterialCitation))
@@ -663,7 +662,7 @@ public class ImportDDIServiceBeanTest {
                                                                               .getResource("xml/imports/legacyDdi.xml")), StandardCharsets.UTF_8);
 
         //when
-        DatasetDTO datasetDTO = importDdiService.doImport(ImportUtil.ImportType.HARVEST, ddiXml);
+        DatasetDTO datasetDTO = importDdiService.doImport(ImportType.HARVEST, ddiXml);
         final JsonArray relatedMaterials = datasetDTO
                 .getDatasetVersion()
                 .getMetadataBlocks()
