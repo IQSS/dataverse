@@ -832,7 +832,7 @@ public class FilePage implements java.io.Serializable {
             // Always allow preview for PrivateUrlUser
             return true;
         } else {
-            return FileUtil.isPreviewAllowed(fileMetadata);
+            return fileDownloadHelper.isPreviewAllowed(fileMetadata);
         }
     }
 
