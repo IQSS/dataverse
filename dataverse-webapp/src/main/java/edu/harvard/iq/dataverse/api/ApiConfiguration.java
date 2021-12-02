@@ -10,11 +10,6 @@ public class ApiConfiguration extends ResourceConfig {
 
     public ApiConfiguration() {
         packages("edu.harvard.iq.dataverse.api");
-        packages("edu.harvard.iq.dataverse.mydata");
         register(MultiPartFeature.class);
     }
 }
-/*
-public class ApiConfiguration extends ResourceConfi {
-}
-*/

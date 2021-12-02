@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.mydata;
 
-import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
@@ -11,9 +10,9 @@ import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.SolrSearchResultsService;
 import edu.harvard.iq.dataverse.ThumbnailServiceWrapper;
 import edu.harvard.iq.dataverse.WidgetWrapper;
+import edu.harvard.iq.dataverse.api.DataRetriever;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
-import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.persistence.DvObject;
@@ -62,10 +61,6 @@ public class MyDataSearchFragment implements java.io.Serializable {
     SearchServiceBean searchService;
     @EJB
     DataverseDao dataverseDao;
-    @EJB
-    DatasetDao datasetDao;
-    @EJB
-    DvObjectServiceBean dvObjectService;
     @Inject
     DataverseSession session;
     @Inject
@@ -78,8 +73,6 @@ public class MyDataSearchFragment implements java.io.Serializable {
     private DataverseRoleServiceBean dataverseRoleService;
     @EJB
     private DvObjectServiceBean dvObjectServiceBean;
-    @EJB
-    private GroupServiceBean groupService;
     @Inject
     private WidgetWrapper widgetWrapper;
     @Inject
@@ -140,6 +133,7 @@ public class MyDataSearchFragment implements java.io.Serializable {
     private List<String> myRoles;
 
     // -------------------- GETTERS --------------------
+
     public String getBrowseModeString() {
         return browseModeString;
     }
@@ -272,7 +266,6 @@ public class MyDataSearchFragment implements java.io.Serializable {
         return page;
     }
 
-    // helper method
     public int getTotalPages() {
         return ((searchResultsCount - 1) / paginationGuiRows) + 1;
     }
@@ -314,10 +307,10 @@ public class MyDataSearchFragment implements java.io.Serializable {
      * @return
      */
     public boolean wasSolrErrorEncountered() {
-        if (this.solrErrorEncountered) {
+        if (solrErrorEncountered) {
             return true;
         }
-        if (!this.hasValidFilterQueries()) {
+        if (!hasValidFilterQueries()) {
             setSolrErrorEncountered(true);
             return true;
         }
@@ -355,7 +348,7 @@ public class MyDataSearchFragment implements java.io.Serializable {
      * @return
      */
     public boolean hasValidFilterQueries() {
-        if (this.publicationStatusFilters.isEmpty()) {
+        if (publicationStatusFilters.isEmpty()) {
             return true;        // empty is valid!
         }
 
@@ -380,11 +373,11 @@ public class MyDataSearchFragment implements java.io.Serializable {
     }
 
     public String tabularDataDisplayInfo(DataFile datafile) {
-        String ret = "";
-
         if (datafile == null) {
             return null;
         }
+
+        StringBuilder ret = new StringBuilder();
 
         if (datafile.isTabularData() && datafile.getDataTable() != null) {
             DataTable datatable = datafile.getDataTable();
@@ -392,17 +385,17 @@ public class MyDataSearchFragment implements java.io.Serializable {
             Long varNumber = datatable.getVarQuantity();
             Long obsNumber = datatable.getCaseQuantity();
             if (varNumber != null && varNumber.intValue() != 0) {
-                ret = ret.concat(varNumber + " Variables");
+                ret.append(varNumber).append(" Variables");
                 if (obsNumber != null && obsNumber.intValue() != 0) {
-                    ret = ret.concat(", " + obsNumber + " Observations");
+                    ret.append(", ").append(obsNumber).append(" Observations");
                 }
-                ret = ret.concat(" - ");
+                ret.append(" - ");
             }
             if (unf != null && !unf.equals("")) {
-                ret = ret.concat("UNF: " + unf);
+                ret.append("UNF: ").append(unf);
             }
         }
-        return ret;
+        return ret.toString();
     }
 
     public String dataFileSizeDisplay(DataFile datafile) {
@@ -411,15 +404,13 @@ public class MyDataSearchFragment implements java.io.Serializable {
 
     public String dataFileChecksumDisplay(DataFile datafile) {
         if (datafile == null) {
-            return "";
+            return StringUtils.EMPTY;
         }
 
-        if (StringUtils.isNotEmpty(datafile.getChecksumValue())) {
-            if (datafile.getChecksumType() != null) {
-                return " " + datafile.getChecksumType() + ": " + datafile.getChecksumValue() + " ";
-            }
+        if (StringUtils.isNotEmpty(datafile.getChecksumValue()) && datafile.getChecksumType() != null) {
+            return String.format(" %s: %s ", datafile.getChecksumType(), datafile.getChecksumValue());
         }
-        return "";
+        return StringUtils.EMPTY;
     }
 
     public void setDisplayCardValues() {
@@ -450,8 +441,8 @@ public class MyDataSearchFragment implements java.io.Serializable {
     }
 
     public String getAuthUserIdentifier() {
-        return this.authUser == null
-                ? null : MyDataUtil.formatUserIdentifierForMyDataForm(this.authUser.getIdentifier());
+        return authUser != null
+                ? formatUserIdentifierForMyDataForm(authUser.getIdentifier()) : null;
     }
 
     public String retrieveMyData() {
@@ -474,8 +465,8 @@ public class MyDataSearchFragment implements java.io.Serializable {
                 }
             }
         } else {
-            return permissionsWrapper.notAuthorized();
             // redirect to login OR give some type ‘you must be logged in message'
+            return permissionsWrapper.notAuthorized();
         }
 
         // wildcard/browse (*) unless user supplies a query
@@ -511,7 +502,7 @@ public class MyDataSearchFragment implements java.io.Serializable {
         }
 
         if (dataverse == null) {
-            this.dataverse = dataverseDao.findRootDataverse();
+            dataverse = dataverseDao.findRootDataverse();
         }
 
         List<DataverseRole> roleList = dataverseRoleService.findAll();
@@ -547,7 +538,7 @@ public class MyDataSearchFragment implements java.io.Serializable {
         // ---------------------------------
         // (2) Initialize MyDataFinder and check for Errors
         // ---------------------------------
-        MyDataFinder myDataFinder = new MyDataFinder(rolePermissionHelper, roleAssigneeService, dvObjectServiceBean, groupService);
+        MyDataFinder myDataFinder = new MyDataFinder(rolePermissionHelper, roleAssigneeService, dvObjectServiceBean);
         myDataFinder.runFindDataSteps(filterParams);
         if (myDataFinder.hasError()) {
             return myDataFinder.getErrorMessage() + myDataFinder.getErrorMessage();
@@ -555,7 +546,7 @@ public class MyDataSearchFragment implements java.io.Serializable {
         List<String> filterQueries = myDataFinder.getSolrFilterQueries();
         if (filterQueries == null) {
             logger.fine("No ids found for this search");
-            return DataRetrieverAPI.MSG_NO_RESULTS_FOUND;
+            return DataRetriever.MSG_NO_RESULTS_FOUND;
         }
         for (String filter : filterQueries) {
             if (filter.contains(SearchFields.PUBLICATION_STATUS) && pub_states.size() != MyDataFilterParams.defaultPublishedStates.size()) {
@@ -584,8 +575,8 @@ public class MyDataSearchFragment implements java.io.Serializable {
                     false);
 
             if (solrQueryResponse.getNumResultsFound() == 0) {
-                this.solrIsDown = true;
-                return DataRetrieverAPI.MSG_NO_RESULTS_FOUND;
+                solrIsDown = true;
+                return DataRetriever.MSG_NO_RESULTS_FOUND;
             }
 
         } catch (SearchException ex) {
@@ -611,7 +602,7 @@ public class MyDataSearchFragment implements java.io.Serializable {
                         0,
                         1000,
                         false);
-                roleTagRetriever = new RoleTagRetriever(rolePermissionHelper, roleAssigneeService, this.dvObjectServiceBean);
+                roleTagRetriever = new RoleTagRetriever(rolePermissionHelper, roleAssigneeService, dvObjectServiceBean);
                 roleTagRetriever.loadRoles(requestWithSearchedUser, fullSolrQueryResponse);
 
                 myRoles = fullSolrQueryResponse.getSolrSearchResults().stream()
@@ -637,9 +628,9 @@ public class MyDataSearchFragment implements java.io.Serializable {
                     break;
                 }
             }
-            this.searchResultsList = solrQueryResponse.getSolrSearchResults();
-            this.searchResultsCount = solrQueryResponse.getNumResultsFound().intValue();
-            this.filterQueriesDebug = solrQueryResponse.getFilterQueriesActual();
+            searchResultsList = solrQueryResponse.getSolrSearchResults();
+            searchResultsCount = solrQueryResponse.getNumResultsFound().intValue();
+            filterQueriesDebug = solrQueryResponse.getFilterQueriesActual();
             paginationGuiStart = paginationStart + 1;
             paginationGuiEnd = Math.min(page * paginationGuiRows, searchResultsCount);
             List<SolrSearchResult> searchResults = solrQueryResponse.getSolrSearchResults();
@@ -714,6 +705,17 @@ public class MyDataSearchFragment implements java.io.Serializable {
 
     private AuthenticatedUser getUserFromIdentifier(String userIdentifier) {
         return StringUtils.isEmpty(userIdentifier) ? null : authenticationService.getAuthenticatedUser(userIdentifier);
+    }
+
+    public String formatUserIdentifierForMyDataForm(String userIdentifier) {
+        if (userIdentifier == null) {
+            return null;
+        }
+        return userIdentifier.startsWith("@")
+                ? userIdentifier.length() == 1
+                ? null
+                : userIdentifier.substring(1)
+                : userIdentifier;
     }
 
     // -------------------- SETTERS --------------------
