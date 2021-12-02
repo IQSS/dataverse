@@ -203,7 +203,7 @@
     
     <!-- CITATION FILES DOWNLOAD OPTIONS -->
     <li class="dropdown-submenu pull-left" jsf:rendered="#{!anonymized}">
-        <a tabindex="-1" href="javascript:void(0);">#{bundle['file.downloadBtn.format.citation']}</a>
+            <a tabindex="0">#{bundle['file.downloadBtn.format.citation']}</a>
         <ul class="dropdown-menu">
             <li>
                 <h:commandLink styleClass="btn-download" action="#{fileDownloadService.downloadDatafileCitationXML(fileMetadata)}">
@@ -234,7 +234,7 @@
         <!-- Aux Files in Bundle (DP, etc.)-->
         <ui:repeat var="auxFileType" value="#{auxiliaryFileServiceBean.findAuxiliaryFileTypes(fileMetadata.dataFile, true)}">
             <li class="dropdown-submenu pull-left">
-                <a tabindex="-1" href="javascript:void(0);">#{auxiliaryFileServiceBean.getFriendlyNameForType(auxFileType)}</a>
+                <a tabindex="0">#{auxiliaryFileServiceBean.getFriendlyNameForType(auxFileType)}</a>
                 <ul class="dropdown-menu">
                     <ui:repeat var="auxFile" value="#{auxiliaryFileServiceBean.findAuxiliaryFilesByType(fileMetadata.dataFile, auxFileType)}">
                         <li>
@@ -248,7 +248,7 @@
         </ui:repeat>
         <!--Other Aux Files (not in bundle)-->
         <li class="dropdown-submenu pull-left" jsf:rendered="#{not empty auxiliaryFileServiceBean.findOtherAuxiliaryFiles(fileMetadata.dataFile)}">
-            <a tabindex="-1" href="javascript:void(0);">#{bundle['file.auxfiles.unspecifiedTypes']}</a>
+            <a tabindex="0">#{bundle['file.auxfiles.unspecifiedTypes']}</a>
             <ul class="dropdown-menu">
                 <ui:repeat var="auxFile" value="#{auxiliaryFileServiceBean.findOtherAuxiliaryFiles(fileMetadata.dataFile)}">
                     <li>

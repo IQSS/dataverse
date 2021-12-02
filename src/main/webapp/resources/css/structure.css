@@ -147,6 +147,7 @@ a.tooltip-icon:hover, a.tool-tip:focus, a.tool-tip:active {text-decoration: none
     min-width: 100%;
 }
 
+/*Open/Close is now handled by javascript (provides a delay on close for accessibility) - leaving this to work when javascript is disabled*/
 .dropdown-submenu:hover>.dropdown-menu {
     display: block;
 }
