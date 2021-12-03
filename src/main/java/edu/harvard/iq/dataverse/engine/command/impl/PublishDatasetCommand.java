@@ -22,6 +22,8 @@ import java.util.Optional;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
 import static edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult.Status;
+import static edu.harvard.iq.dataverse.dataset.DatasetUtil.validateDatasetMetadataExternally;
+
 
 /**
  * Kick-off a dataset publication process. The process may complete immediately, 
@@ -88,6 +90,20 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
                 theDataset.getLatestVersion().setVersionNumber(new Long(theDataset.getVersionNumber() + 1));
                 theDataset.getLatestVersion().setMinorVersionNumber(new Long(0));
             }
+        
+        // Perform any optional validation steps, if defined:
+        if (ctxt.systemConfig().isExternalDatasetValidationEnabled()) {
+            // For admins, an override of the external validation step may be enabled: 
+            if (!(getUser().isSuperuser() && ctxt.systemConfig().isExternalValidationAdminOverrideEnabled())) {
+                String executable = ctxt.systemConfig().getDatasetValidationExecutable();
+                boolean result = validateDatasetMetadataExternally(theDataset, executable, getRequest());
+            
+                if (!result) {
+                    String rejectionMessage = ctxt.systemConfig().getDatasetValidationFailureMsg();
+                    throw new IllegalCommandException(rejectionMessage, this);
+                }
+            } 
+        }
         
         //ToDo - should this be in onSuccess()? May relate to todo above 
         Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.PrePublishDataset);

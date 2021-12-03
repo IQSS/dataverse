@@ -73,7 +73,7 @@
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
                                         </th>
-                                          <td jsf:rendered="#{!anonymized or !settingsWrapper.shouldBeAnonymized(dsf)}">
+                                        <td jsf:rendered="#{!anonymized or !settingsWrapper.shouldBeAnonymized(dsf)}">
                                             <!-- Primitive datasetFields -->
                                             <ui:fragment rendered="#{dsf.datasetFieldType.primitive}">
                                                 <h:outputText value="#{dsf.value}"
@@ -109,12 +109,21 @@
                                                         <h:outputText value="#{bundle['dataset.contact.tip']}"/>
                                                     </p>
                                                 </ui:fragment>
-                                                <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="compoundValue">
+                                                <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="compoundValue" varStatus="compoundValuesstatus">
                                                     <ui:repeat value="#{compoundValue.displayValueMap.entrySet().toArray()}" var="cvPart" varStatus="partStatus">
                                                         <h:outputText value="#{dsf.datasetFieldType.displayFormat} " rendered="${!partStatus.first and !cvocConf.containsKey(dsf.datasetFieldType.id)}"/>
-                                                        <h:outputText value="#{cvPart.value}"
-                                                                      escape="#{cvPart.key.datasetFieldType.isEscapeOutputText()}" 
-                                                                      rendered="${!cvocConf.containsKey(dsf.datasetFieldType.id)}"/>
+                                                        <ui:fragment rendered="#{!cvocConf.containsKey(dsf.datasetFieldType.id)}">
+                                                            <ui:fragment rendered="#{compoundValue.isLink(cvPart.key)}">
+                                                                <h:outputLink value="#{compoundValue.getLink()}" target="_blank">
+                                                                    <h:outputText value="#{cvPart.value}"
+                                                                                  escape="#{cvPart.key.datasetFieldType.isEscapeOutputText()}"/>
+                                                                </h:outputLink>
+                                                            </ui:fragment>
+                                                            <ui:fragment rendered="#{not compoundValue.isLink(cvPart.key)}">
+                                                                <h:outputText value="#{cvPart.value}"
+                                                                              escape="#{cvPart.key.datasetFieldType.isEscapeOutputText()}"/>
+                                                            </ui:fragment>
+                                                        </ui:fragment>
                                                         <h:outputText value="#{cvPart.key.value}"
                                                                       escape="#{cvPart.key.datasetFieldType.isEscapeOutputText()}" 
                                                                       rendered="${cvocConf.containsKey(dsf.datasetFieldType.id) and cvPart.key.datasetFieldType.name.equals(cvocConf.get(dsf.datasetFieldType.id).getString('term-uri-field'))}">
@@ -124,13 +133,15 @@
                                                                       <f:passThroughAttribute name="data-cvoc-managedfields" value="#{cvocConf.get(dsf.datasetFieldType.id).get('managedfields').toString()}" />
                                                         </h:outputText>
                                                     </ui:repeat>
-                                                    <br/>
+                                                    <ui:fragment rendered="#{not compoundValuesstatus.last}">
+                                                        <br/>
+                                                    </ui:fragment>
                                                 </ui:repeat>
                                             </ui:fragment>
-                                          </td>
-                                          <td jsf:rendered="#{anonymized and settingsWrapper.shouldBeAnonymized(dsf)}">
+                                        </td>
+                                        <td jsf:rendered="#{anonymized and settingsWrapper.shouldBeAnonymized(dsf)}">
                                             <h:outputText value="#{bundle['dataset.anonymized.withheld']}"/>
-                                          </td>
+                                        </td>
                                     </tr>
                                 </ui:repeat>
                             </tbody>

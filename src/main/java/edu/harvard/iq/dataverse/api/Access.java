@@ -89,7 +89,6 @@ import javax.inject.Inject;
 import javax.json.Json;
 import java.net.URI;
 import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
 import javax.persistence.TypedQuery;
 
 import javax.ws.rs.GET;
@@ -120,10 +119,12 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.net.URISyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.json.JsonObjectBuilder;
 import javax.ws.rs.RedirectionException;
 import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.MediaType;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 /*
@@ -512,39 +513,11 @@ public class Access extends AbstractApiBean {
 
         return retValue;
     }
-    
-    @Path("variable/{varId}/metadata/ddi")
-    @GET
-    @Produces({ "application/xml" })
-
-    public String dataVariableMetadataDDI(@PathParam("varId") Long varId, @QueryParam("fileMetadataId") Long fileMetadataId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
-        String retValue = "";
-        
-        ByteArrayOutputStream outStream = null;
-        try {
-            outStream = new ByteArrayOutputStream();
-
-            ddiExportService.exportDataVariable(
-                    varId,
-                    outStream,
-                    exclude,
-                    include,
-                    fileMetadataId);
-        } catch (Exception e) {
-            // For whatever reason we've failed to generate a partial 
-            // metadata record requested. We simply return an empty string.
-            return retValue;
-        }
-
-        retValue = outStream.toString();
-        
-        return retValue; 
-    }
-    
 
     /*
      * GET method for retrieving a list of auxiliary files associated with 
      * a tabular datafile.
+     * 
      */
     
     @Path("datafile/{fileId}/auxiliary")
@@ -1275,6 +1248,7 @@ public class Access extends AbstractApiBean {
      * @param contentDispositionHeader
      * @param formDataBodyPart
      * @return 
+     *
      */
     @Path("datafile/{fileId}/auxiliary/{formatTag}/{formatVersion}")
     @POST
@@ -1314,6 +1288,7 @@ public class Access extends AbstractApiBean {
         }
     }
   
+    
 
     /**
      * 
@@ -1491,21 +1466,20 @@ public class Access extends AbstractApiBean {
         }
 
         try {
-            dataverseRequest = createDataverseRequest(findUserOrDie());
+            dataverseRequest = createDataverseRequest(findAuthenticatedUserOrDie());
         } catch (WrappedResponse wr) {
             List<String> args = Arrays.asList(wr.getLocalizedMessage());
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
+            return error(UNAUTHORIZED, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
         }
-
-        if (!(dataverseRequest.getAuthenticatedUser().isSuperuser() || permissionService.requestOn(dataverseRequest, dataFile.getOwner()).has(Permission.ManageDatasetPermissions))) {
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions"));
+        if (!(dataverseRequest.getAuthenticatedUser().isSuperuser() || permissionService.requestOn(dataverseRequest, dataFile).has(Permission.ManageFilePermissions))) {
+            return error(FORBIDDEN, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions"));
         }
 
         List<AuthenticatedUser> requesters = dataFile.getFileAccessRequesters();
 
         if (requesters == null || requesters.isEmpty()) {
             List<String> args = Arrays.asList(dataFile.getDisplayName());
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestList.noRequestsFound"));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestList.noRequestsFound", args));
         }
 
         JsonArrayBuilder userArray = Json.createArrayBuilder();
@@ -1691,7 +1665,7 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
         }
         
-        if (!(dataverseRequest.getAuthenticatedUser().isSuperuser() || permissionService.requestOn(dataverseRequest, dataFile.getOwner()).has(Permission.ManageDatasetPermissions))) {
+        if (!(dataverseRequest.getAuthenticatedUser().isSuperuser() || permissionService.requestOn(dataverseRequest, dataFile).has(Permission.ManageFilePermissions))) {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions"));
         }
 
