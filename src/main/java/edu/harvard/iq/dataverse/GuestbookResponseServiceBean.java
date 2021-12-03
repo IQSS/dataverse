@@ -33,6 +33,7 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.StoredProcedureQuery;
 import javax.persistence.TypedQuery;
 
 /**
@@ -917,7 +918,34 @@ public class GuestbookResponseServiceBean {
     }    
 
     public Long getCountOfAllGuestbookResponses() {
-        // dataset id is null, will return 0        
+        // dataset id is null, will return 0  
+        
+        // "SELECT COUNT(*)" is notoriously expensive in PostgresQL for large 
+        // tables. This makes this call fairly expensive for any installation 
+        // with a lot of download/access activity. (This "total download" metrics
+        // is always displayed when the homepage is loaded). 
+        // It is safe to say that no real life user will need this number to be
+        // precise down to the last few digits, and/or withing a second, 
+        // especially once that number is in the millions. The 
+        // solution implemented below relies on estimating the number. It is 
+        // very efficient, but also very PostgresQL specific - hence it is 
+        // defined as a custom database function. 
+        // An alternative solution would be to get the exact number every 
+        // hour or so, and cache it centrally for the rest of the application 
+        // somehow. -- L.A. 5.6
+        
+        
+        try {        
+            StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("GuestbookResponse.estimateGuestBookResponseTableSize");
+            query.execute();
+            Long totalCount = (Long) query.getOutputParameterValue(1);
+        
+            if (totalCount != null) {
+                return totalCount;
+            }
+        } catch (IllegalArgumentException iae) {
+            // Don't do anything, we'll fall back to using "SELECT COUNT()"
+        }
         Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o;");
         return (Long) query.getSingleResult();
     }

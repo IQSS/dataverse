@@ -318,7 +318,7 @@ public class DataversePage implements java.io.Serializable {
                 dataverse = dataverseService.find(this.getId());
             } else {
                 try {
-                    dataverse = dataverseService.findRootDataverse();
+                    dataverse = settingsWrapper.getRootDataverse();
                 } catch (EJBException e) {
                     // @todo handle case with no root dataverse (a fresh installation) with message about using API to create the root 
                     dataverse = null;
@@ -330,6 +330,7 @@ public class DataversePage implements java.io.Serializable {
                 return permissionsWrapper.notFound();
             }
             if (!dataverse.isReleased() && !permissionService.on(dataverse).has(Permission.ViewUnpublishedDataverse)) {
+                // the permission lookup above should probably be moved into the permissionsWrapper -- L.A. 5.7
                 return permissionsWrapper.notAuthorized();
             }
 
@@ -340,6 +341,7 @@ public class DataversePage implements java.io.Serializable {
             if (dataverse.getOwner() == null) {
                 return  permissionsWrapper.notFound();
             } else if (!permissionService.on(dataverse.getOwner()).has(Permission.AddDataverse)) {
+                // the permission lookup above should probably be moved into the permissionsWrapper -- L.A. 5.7
                 return permissionsWrapper.notAuthorized();            
             }
 
@@ -681,7 +683,7 @@ public class DataversePage implements java.io.Serializable {
             if (editMode != null && editMode.equals(EditMode.FEATURED)) {
                 message = BundleUtil.getStringFromBundle("dataverse.feature.update");
             } else {
-                message = (create) ? BundleUtil.getStringFromBundle("dataverse.create.success", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), systemConfig.getGuidesVersion())) : BundleUtil.getStringFromBundle("dataverse.update.success");
+                message = (create) ? BundleUtil.getStringFromBundle("dataverse.create.success", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), settingsWrapper.getGuidesVersion())) : BundleUtil.getStringFromBundle("dataverse.update.success");
             }
             JsfHelper.addSuccessMessage(message);
             
@@ -715,7 +717,7 @@ public class DataversePage implements java.io.Serializable {
         return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
     }
 
-    public boolean isRootDataverse() {
+    public boolean isRootDataverse() {        
         return dataverse.getOwner() == null;
     }
 
@@ -1219,23 +1221,28 @@ public class DataversePage implements java.io.Serializable {
         return settingsWrapper.getMetadataLanguages(this.dataverse).entrySet();
     }
     
+    private Set<Entry<String, String>> curationLabelSetOptions = null; 
+    
     public Set<Entry<String, String>> getCurationLabelSetOptions() {
-        HashMap<String, String> setNames = new HashMap<String, String>();
-        Set<String> allowedSetNames = systemConfig.getCurationLabels().keySet();
-        if (allowedSetNames.size() > 0) {
-            // Add an entry for the default (inherited from an ancestor or the system
-            // default)
-            String inheritedLabelSet = getCurationLabelSetNameLabel();
-            if (!StringUtils.isBlank(inheritedLabelSet)) {
-                setNames.put(inheritedLabelSet,SystemConfig.DEFAULTCURATIONLABELSET);
+        if (curationLabelSetOptions == null) {
+            HashMap<String, String> setNames = new HashMap<String, String>();
+            Set<String> allowedSetNames = systemConfig.getCurationLabels().keySet();
+            if (allowedSetNames.size() > 0) {
+                // Add an entry for the default (inherited from an ancestor or the system
+                // default)
+                String inheritedLabelSet = getCurationLabelSetNameLabel();
+                if (!StringUtils.isBlank(inheritedLabelSet)) {
+                    setNames.put(inheritedLabelSet, SystemConfig.DEFAULTCURATIONLABELSET);
+                }
+                // Add an entry for disabled
+                setNames.put(BundleUtil.getStringFromBundle("dataverse.curationLabels.disabled"), SystemConfig.CURATIONLABELSDISABLED);
+                allowedSetNames.forEach(name -> {
+                    setNames.put(name, name);
+                });
             }
-            // Add an entry for disabled
-            setNames.put(BundleUtil.getStringFromBundle("dataverse.curationLabels.disabled"), SystemConfig.CURATIONLABELSDISABLED);
-            allowedSetNames.forEach(name -> {
-                setNames.put(name, name);
-            });
+            curationLabelSetOptions = setNames.entrySet();
         }
-        return setNames.entrySet();
+        return curationLabelSetOptions;
     }
 
     public String getCurationLabelSetNameLabel() {
