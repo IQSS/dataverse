@@ -78,6 +78,17 @@ Netbeans Connector Chrome Extension
 
 For faster iteration while working on JSF pages, it is highly recommended that you install the Netbeans Connector Chrome Extension listed in the :doc:`tools` section. When you save XHTML or CSS files, you will see the changes immediately. Hipsters call this "hot reloading". :)
 
+Thumbnails
+----------
+
+In order for thumnails to be generated for PDFs, you need to install ImageMagick and configure Dataverse to use the ``convert`` binary.
+
+Assuming you're using Homebrew:
+
+``brew install imagemagick``
+
+Then configure the JVM option mentioned in :ref:`install-imagemagick` to the path to ``convert`` which for Homebrew is usually ``/usr/local/bin/convert``.
+
 Database Schema Exploration
 ---------------------------
 

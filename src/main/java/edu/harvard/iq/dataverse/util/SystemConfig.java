@@ -123,6 +123,8 @@ public class SystemConfig {
     private static final String JVM_TIMER_SERVER_OPTION = "dataverse.timerServer";
     
     private static final long DEFAULT_GUESTBOOK_RESPONSES_DISPLAY_LIMIT = 5000L; 
+    private static final long DEFAULT_THUMBNAIL_SIZE_LIMIT_IMAGE = 3000000L; // 3 MB
+    private static final long DEFAULT_THUMBNAIL_SIZE_LIMIT_PDF = 1000000L; // 1 MB
     
     public final static String DEFAULTCURATIONLABELSET = "DEFAULT";
     public final static String CURATIONLABELSDISABLED = "DISABLED";
@@ -493,29 +495,28 @@ public class SystemConfig {
         return 500000;
     }
 
-    // TODO: (?)
-    // create sensible defaults for these things? -- 4.2.2
     public long getThumbnailSizeLimitImage() {
-        long limit = getThumbnailSizeLimit("Image");
-        return limit == 0 ? 500000 : limit;
-    } 
-    
-    public long getThumbnailSizeLimitPDF() {
-        long limit = getThumbnailSizeLimit("PDF");
-        return limit == 0 ? 500000 : limit;
+        return getThumbnailSizeLimit("Image");
     }
-    
-    public long getThumbnailSizeLimit(String type) {
+
+    public long getThumbnailSizeLimitPDF() {
+        return getThumbnailSizeLimit("PDF");
+    }
+
+    public static long getThumbnailSizeLimit(String type) {
         String option = null; 
         
         //get options via jvm options
         
         if ("Image".equals(type)) {
             option = System.getProperty("dataverse.dataAccess.thumbnail.image.limit");
+            return getLongLimitFromStringOrDefault(option, DEFAULT_THUMBNAIL_SIZE_LIMIT_IMAGE);
         } else if ("PDF".equals(type)) {
             option = System.getProperty("dataverse.dataAccess.thumbnail.pdf.limit");
+            return getLongLimitFromStringOrDefault(option, DEFAULT_THUMBNAIL_SIZE_LIMIT_PDF);
         }
 
+        // Zero (0) means no limit.
         return getLongLimitFromStringOrDefault(option, 0L);
     }
     
