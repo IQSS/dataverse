@@ -613,6 +613,7 @@ public class DataversePage implements java.io.Serializable {
                         // so we skip looking at parents (which get set automatically with their children)
                         if (!dsft.isHasChildren() && dsft.isRequiredDV()) {
                             boolean addRequiredInputLevels = false;
+                            boolean parentAlreadyAdded = false;
                             
                             if (!dsft.isHasParent() && dsft.isInclude()) {
                                 addRequiredInputLevels = !dsft.isRequired();
@@ -624,9 +625,21 @@ public class DataversePage implements java.io.Serializable {
                             if (addRequiredInputLevels) {
                                 listDFTIL.add(new DataverseFieldTypeInputLevel(dsft, dataverse,true, true));
                             
-                                //also add the parent as required
+                                //also add the parent as required (if it hasn't been added already)
+                                // todo: review needed .equals() methods, then change this to use a Set, in order to simplify code
                                 if (dsft.isHasParent()) {
-                                    listDFTIL.add(new DataverseFieldTypeInputLevel(dsft.getParentDatasetFieldType(), dataverse,true, true));
+                                    DataverseFieldTypeInputLevel parentToAdd = new DataverseFieldTypeInputLevel(dsft.getParentDatasetFieldType(), dataverse, true, true);
+                                    for (DataverseFieldTypeInputLevel dataverseFieldTypeInputLevel : listDFTIL) {
+                                        if (dataverseFieldTypeInputLevel.getDatasetFieldType().getId() == parentToAdd.getDatasetFieldType().getId()) {
+                                            parentAlreadyAdded = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!parentAlreadyAdded) {
+                                        // Only add the parent once. There's a UNIQUE (dataverse_id, datasetfieldtype_id)
+                                        // constraint on the dataversefieldtypeinputlevel table we need to avoid.
+                                        listDFTIL.add(parentToAdd);
+                                    }
                                 }      
                             }
                         }
