@@ -67,15 +67,15 @@ public class PermissionsWrapper implements java.io.Serializable {
             return false;
         }
 
-        if (checkDvoCacheForCommandAuthorization(dvo.getId(), CreateDataverseCommand.class, commandMap) == null) {
+        if (checkDvoCacheForCommandAuthorization(dvo.getId(), command, commandMap) == null) {
             boolean canIssueCommand = permissionService.requestOn(dvRequestService.getDataverseRequest(), dvo).canIssue(command);
             logger.fine("retrieved authorization for " + command.toString() + " on dvo " + dvo.getId());
 
-            addCommandAuthorizationToDvoCache(dvo.getId(), CreateDataverseCommand.class, commandMap, canIssueCommand);
+            addCommandAuthorizationToDvoCache(dvo.getId(), command, commandMap, canIssueCommand);
         } else {
             logger.fine("using cached authorization for " + command.toString() + " on dvo " + dvo.getId());
         }
-        return checkDvoCacheForCommandAuthorization(dvo.getId(), CreateDataverseCommand.class, commandMap);
+        return checkDvoCacheForCommandAuthorization(dvo.getId(), command, commandMap);
     }
 
     private Boolean checkDvoCacheForCommandAuthorization(Long id, Class<? extends Command<?>> command, Map<Long, Map<Class<? extends Command<?>>, Boolean>> dvoCommandMap) {
