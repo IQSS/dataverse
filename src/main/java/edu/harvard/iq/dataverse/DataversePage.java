@@ -624,6 +624,7 @@ public class DataversePage implements java.io.Serializable {
                                 listDFTIL.add(new DataverseFieldTypeInputLevel(dsft, dataverse,true, true));
                             
                                 //also add the parent as required (if it hasn't been added already)
+                                // todo: review needed .equals() methods, then change this to use a Set, in order to simplify code
                                 if (dsft.isHasParent()) {
                                     DataverseFieldTypeInputLevel parentToAdd = new DataverseFieldTypeInputLevel(dsft.getParentDatasetFieldType(), dataverse, true, true);
                                     for (DataverseFieldTypeInputLevel dataverseFieldTypeInputLevel : listDFTIL) {
