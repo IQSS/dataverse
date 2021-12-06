@@ -412,7 +412,7 @@
                                         <button type="button" id="selectTool" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
                                             <span class="glyphicon glyphicon-eye-open"/> #{bundle['file.previewTab.button.label']} <span class="caret"></span>
                                         </button>
-                                        <ul class="dropdown-menu  pull-right text-left">
+                                        <ul class="dropdown-menu">
                                             <ui:repeat value="#{FilePage.toolsWithPreviews}" var="tool">
                                                 <li class="#{FilePage.getSelectedTool().equals(tool) ? 'active':''}">
                                                     <h:commandLink action="#{FilePage.setSelectedTool(tool)}">
