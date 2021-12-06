@@ -586,7 +586,7 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 #datasetVersionBlock span.label {vertical-align:text-top; line-height:normal; margin-left: .5em;}
 #title-label-block span:first-of-type {margin-left:0 !important;}
 
-#title {font-size:36px !important;line-height:1.1;font-weight:bold;}
+#title {font-size:36px !important;line-height:1.1;font-weight:bold;margin-top:0px;margin-bottom:0px;}
 #author, #contact {display:block; margin-bottom:.5em;}
 
 /* RESPONSIVE ORDER HACK BOOTSTRAP 3 https://stackoverflow.com/a/24834574 */
