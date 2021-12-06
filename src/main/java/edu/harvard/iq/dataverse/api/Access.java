@@ -125,6 +125,7 @@ import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.MediaType;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 /*
@@ -1261,6 +1262,7 @@ public class Access extends AbstractApiBean {
             @FormDataParam("origin") String origin,
             @FormDataParam("isPublic") boolean isPublic,
             @FormDataParam("type") String type,
+            @FormDataParam("file") final FormDataBodyPart formDataBodyPart,
             @FormDataParam("file") InputStream fileInputStream
           
     ) {
@@ -1280,7 +1282,12 @@ public class Access extends AbstractApiBean {
             return error(FORBIDDEN, "User not authorized to edit the dataset.");
         }
 
-        AuxiliaryFile saved = auxiliaryFileService.processAuxiliaryFile(fileInputStream, dataFile, formatTag, formatVersion, origin, isPublic, type);
+        MediaType mediaType = null;
+        if (formDataBodyPart != null) {
+            mediaType = formDataBodyPart.getMediaType();
+        }
+
+        AuxiliaryFile saved = auxiliaryFileService.processAuxiliaryFile(fileInputStream, dataFile, formatTag, formatVersion, origin, isPublic, type, mediaType);
 
         if (saved!=null) {
             return ok(json(saved));

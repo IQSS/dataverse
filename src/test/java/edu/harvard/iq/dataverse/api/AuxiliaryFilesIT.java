@@ -82,8 +82,7 @@ public class AuxiliaryFilesIT {
         uploadAuxFileJson.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.type", equalTo("DP"))
-                // FIXME: application/json would be better
-                .body("data.contentType", equalTo("text/plain"));
+                .body("data.contentType", equalTo("application/json"));
         Response uploadAuxFileJsonAgain = UtilIT.uploadAuxFile(fileId, pathToAuxFileJson.toString(), formatTagJson, formatVersionJson, mimeTypeJson, true, dpType, apiToken);
         uploadAuxFileJsonAgain.prettyPrint();
         uploadAuxFileJsonAgain.then().assertThat()
@@ -101,8 +100,7 @@ public class AuxiliaryFilesIT {
         uploadAuxFileXml.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.type", equalTo("DP"))
-                // FIXME: application/xml would be better
-                .body("data.contentType", equalTo("text/plain"));
+                .body("data.contentType", equalTo("application/xml"));
 
         // PDF aux file
         Path pathToAuxFilePdf = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "data.pdf");
@@ -158,13 +156,13 @@ public class AuxiliaryFilesIT {
         java.nio.file.Files.write(pathToAuxFileMd, contentOfMd.getBytes());
         String formatTagMd = "README";
         String formatVersionMd = "0.1";
-        String mimeTypeMd = "application/xml";
+        String mimeTypeMd = "text/markdown";
         Response uploadAuxFileMd = UtilIT.uploadAuxFile(fileId, pathToAuxFileMd.toString(), formatTagMd, formatVersionMd, mimeTypeMd, true, null, apiToken);
         uploadAuxFileMd.prettyPrint();
         uploadAuxFileMd.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.type", equalTo(null))
-                .body("data.contentType", equalTo("text/plain"));
+                .body("data.contentType", equalTo("text/markdown"));
 
         // Unknown type
         Path pathToAuxFileTxt = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "nbt.txt");
@@ -229,14 +227,12 @@ public class AuxiliaryFilesIT {
         // Download JSON aux file.
         Response downloadAuxFileJson = UtilIT.downloadAuxFile(fileId, formatTagJson, formatVersionJson, apiToken);
         downloadAuxFileJson.then().assertThat().statusCode(OK.getStatusCode());
-        // FIXME: This should be ".json" instead of ".txt"
-        Assert.assertEquals("attachment; filename=\"data.tab.dpJson_0.1.txt\"", downloadAuxFileJson.header("Content-disposition"));
+        Assert.assertEquals("attachment; filename=\"data.tab.dpJson_0.1.json\"", downloadAuxFileJson.header("Content-disposition"));
 
         // Download XML aux file.
         Response downloadAuxFileXml = UtilIT.downloadAuxFile(fileId, formatTagXml, formatVersionXml, apiToken);
         downloadAuxFileXml.then().assertThat().statusCode(OK.getStatusCode());
-        // FIXME: This should be ".xml" instead of ".txt"
-        Assert.assertEquals("attachment; filename=\"data.tab.dpXml_0.1.txt\"", downloadAuxFileXml.header("Content-disposition"));
+        Assert.assertEquals("attachment; filename=\"data.tab.dpXml_0.1.xml\"", downloadAuxFileXml.header("Content-disposition"));
 
         // Download PDF aux file.
         Response downloadAuxFilePdf = UtilIT.downloadAuxFile(fileId, formatTagPdf, formatVersionPdf, apiToken);
@@ -246,7 +242,9 @@ public class AuxiliaryFilesIT {
         // Download Markdown aux file.
         Response downloadAuxFileMd = UtilIT.downloadAuxFile(fileId, formatTagMd, formatVersionMd, apiToken);
         downloadAuxFileMd.then().assertThat().statusCode(OK.getStatusCode());
-        Assert.assertEquals("attachment; filename=\"data.tab.README_0.1.txt\"", downloadAuxFileMd.header("Content-disposition"));
+        // No file extenstion here because Tika's getDefaultMimeTypes doesn't include "text/markdown".
+        // Note: browsers seem to add ".bin" ("myfile.bin") rather than no extension ("myfile").
+        Assert.assertEquals("attachment; filename=\"data.tab.README_0.1\"", downloadAuxFileMd.header("Content-disposition"));
 
         Response createUserNoPrivs = UtilIT.createRandomUser();
         createUserNoPrivs.then().assertThat().statusCode(OK.getStatusCode());
