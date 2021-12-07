@@ -49,12 +49,12 @@ body .ui-widget {font-size: inherit;}
 #status-alert {margin-top:0; margin-bottom:0;}
 #status-alert div.alert {border:0; box-shadow:none;}
 
-#footer {position:absolute; bottom:0; width:100%; height:60px; padding-bottom:100px; color:#808080;}
-#footer.widget-view {position:fixed; left:0; bottom:0; margin:0; padding:4px 0 0 0; min-height:44px; height:auto; background:#fff;}
-#footer .poweredbylogo {text-align:right;}
-#footer .poweredbylogo span {font-size:.85em;margin-right:.3em;}
-#footer .version {vertical-align:bottom;white-space:nowrap;}
-#footer.widget-view .widgetBrandMsg {line-height:42px;}
+#dvfooter {position:absolute; bottom:0; width:100%; height:60px; padding-bottom:100px; color:#808080;}
+#dvfooter.widget-view {position:fixed; left:0; bottom:0; margin:0; padding:4px 0 0 0; min-height:44px; height:auto; background:#fff;}
+#dvfooter .poweredbylogo {text-align:right;}
+#dvfooter .poweredbylogo span {font-size:.85em;margin-right:.3em;}
+#dvfooter .version {vertical-align:bottom;white-space:nowrap;}
+#dvfooter.widget-view .widgetBrandMsg {line-height:42px;}
 
 .form-group table.noBorders tr.ui-widget-content, .form-group table.noBorders td {border:0; padding-left:0;}
 
@@ -445,8 +445,8 @@ div.panelSearchForm .input-group {margin-right:1em;}
     margin-left: 10px;
   }
   
-  #footer .poweredbylogo {text-align:center;}
-  #footer.widget-view .poweredbylogo {text-align:right;}
+  #dvfooter .poweredbylogo {text-align:center;}
+  #dvfooter.widget-view .poweredbylogo {text-align:right;}
 }
 
 .searchTypeButton {display:block; border:1px solid #DDD; padding:4px 0; margin-bottom: .5em;}

@@ -15,9 +15,9 @@
     <ui:param name="showAddDatasetLink" value="#{permissionsWrapper.authUsersCanCreateDatasetsInDataverse(settingsWrapper.rootDataverse)}"/>
     <ui:param name="showAddDataGroup" value="#{showAddDataverseLink or showAddDatasetLink}"/>
 
-    <div id="dataverse-header-block">
+    <nav id="dataverse-header-block">
         <!-- Navbar Panel -->
-        <nav id="navbarFixed" class="navbar navbar-default navbar-fixed-top" jsf:rendered="#{!widgetWrapper.widgetView}">
+        <div id="navbarFixed" class="navbar navbar-default navbar-fixed-top" jsf:rendered="#{!widgetWrapper.widgetView}">
             <div class="container">
                 <div class="navbar-header">
                     <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar" aria-pressed="false">
@@ -184,7 +184,7 @@
                     </ul>
                 </div>
             </div>
-        </nav>
+        </div>
         <!-- Noscript Error -->
         <noscript>
             <div id="noscript-alert" class="bg-danger">
@@ -319,5 +319,5 @@
                 <iqbs:messages id="messages" collapsible="true" />
             </div>
         </p:fragment>
-    </div>
+    </nav>
 </ui:composition>
