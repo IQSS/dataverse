@@ -224,6 +224,21 @@ public class AuxiliaryFilesIT {
                 .body("data.type", equalTo("someType"))
                 .body("data.contentType", equalTo("text/plain"));
 
+        // file with no MIME type
+        Path pathToAuxFileNoMimeType1 = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "file1.md");
+        String contentOfNoMimeType1 = "This file has no MIME type (content type).";
+        java.nio.file.Files.write(pathToAuxFileNoMimeType1, contentOfNoMimeType1.getBytes());
+        String formatTagNoMimeType1 = "noMimeType1";
+        String formatVersionNoMimeType1 = "0.1";
+        String mimeTypeNoMimeType1 = null;
+        String typeNoMimeType1 = "someType";
+        Response uploadAuxFileNoMimeType1 = UtilIT.uploadAuxFile(fileId, pathToAuxFileNoMimeType1.toString(), formatTagNoMimeType1, formatVersionNoMimeType1, mimeTypeNoMimeType1, true, typeNoMimeType1, null, apiToken);
+        uploadAuxFileNoMimeType1.prettyPrint();
+        uploadAuxFileNoMimeType1.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.type", equalTo("someType"))
+                .body("data.contentType", equalTo("application/octet-stream"));
+
         // Download JSON aux file.
         Response downloadAuxFileJson = UtilIT.downloadAuxFile(fileId, formatTagJson, formatVersionJson, apiToken);
         downloadAuxFileJson.then().assertThat().statusCode(OK.getStatusCode());
@@ -245,6 +260,12 @@ public class AuxiliaryFilesIT {
         // No file extenstion here because Tika's getDefaultMimeTypes doesn't include "text/markdown".
         // Note: browsers seem to add ".bin" ("myfile.bin") rather than no extension ("myfile").
         Assert.assertEquals("attachment; filename=\"data.tab.README_0.1\"", downloadAuxFileMd.header("Content-disposition"));
+
+        // Download Markdown aux file with no MIME type given
+        Response downloadAuxFileNoMime1 = UtilIT.downloadAuxFile(fileId, formatTagNoMimeType1, formatVersionNoMimeType1, apiToken);
+        downloadAuxFileNoMime1.then().assertThat().statusCode(OK.getStatusCode());
+        // We didn't specify a MIME type and the formDataBodyPart.getMediaType object defaulted to "application/octet-stream" which becomes ".bin".
+        Assert.assertEquals("attachment; filename=\"data.tab.dpNoMimeType1_0.1.bin\"", downloadAuxFileNoMime1.header("Content-disposition"));
 
         Response createUserNoPrivs = UtilIT.createRandomUser();
         createUserNoPrivs.then().assertThat().statusCode(OK.getStatusCode());
@@ -287,7 +308,7 @@ public class AuxiliaryFilesIT {
         listAllAuxFiles.prettyPrint();
         listAllAuxFiles.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.size()", equalTo(8));
+                .body("data.size()", equalTo(9));
 
 
         Response deleteAuxFileOrigin1 = UtilIT.deleteAuxFile(fileId, formatTagOrigin1, formatVersionOrigin1, apiToken);
