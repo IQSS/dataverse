@@ -99,6 +99,8 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
             storageIO.saveInputStreamAsAux(di, auxExtension);
             auxFile.setChecksum(FileUtil.checksumDigestToString(di.getMessageDigest().digest()));
 
+            // The null check prevents an NPE but we expect mediaType to be non-null
+            // and to default to "application/octet-stream".
             if (mediaType != null) {
                 auxFile.setContentType(mediaType.toString());
             } else {
