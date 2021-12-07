@@ -98,6 +98,9 @@ public class LoginPage implements java.io.Serializable {
     @Inject
     DataverseRequestServiceBean dvRequestService;
     
+    @Inject
+    SettingsWrapper settingsWrapper;
+    
     private String credentialsAuthProviderId;
     
     private List<FilledCredential> filledCredentials;
@@ -218,7 +221,7 @@ public class LoginPage implements java.io.Serializable {
     }
     
     private String redirectToRoot(){
-        return "dataverse.xhtml?alias=" + dataverseService.findRootDataverse().getAlias();
+        return "dataverse.xhtml?alias=" + settingsWrapper.getRootDataverse().getAlias();
     }
 
     public String getCredentialsAuthProviderId() {
