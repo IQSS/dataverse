@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -49,9 +48,6 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     GroupServiceBean groupService;
 
     @EJB
-    PermissionServiceBean permissionService;
-
-    @EJB
     SystemConfig systemConfig;
     
     @EJB
@@ -77,7 +73,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     
     List<Breadcrumb> breadcrumbs = new ArrayList<>();
     
-    private List<BannerMessage> bannerMessages = new ArrayList<>();
+    private List<BannerMessage> bannerMessages = null; 
 
     private Long unreadNotificationCount = null;
     
@@ -163,7 +159,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
             this.unreadNotificationCount = userNotificationService.getUnreadNotificationCountByUser(userId);
         }catch (Exception e){
             logger.warning("Error trying to retrieve unread notification count for user." + e.getMessage());
-            this.unreadNotificationCount = new Long("0");
+            this.unreadNotificationCount = 0L; 
         }
         return this.unreadNotificationCount;
     }
@@ -276,28 +272,32 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     
     
     public List<BannerMessage> getBannerMessages() {
-        User user = dataverseSession.getUser();
-        AuthenticatedUser au = null;
-        if (user.isAuthenticated()) {
-            au = (AuthenticatedUser) user;
-        }           
+        if (bannerMessages == null) {
+            bannerMessages = new ArrayList<>();
+            
+            User user = dataverseSession.getUser();
+            AuthenticatedUser au = null;
+            if (user.isAuthenticated()) {
+                au = (AuthenticatedUser) user;
+            }           
         
-        if(au == null){
-            bannerMessages = bannerMessageService.findBannerMessages();
-        } else{
-            bannerMessages = bannerMessageService.findBannerMessages(au.getId());
-        } 
+            if  (au == null)    {
+                bannerMessages = bannerMessageService.findBannerMessages();
+            } else  {
+                bannerMessages = bannerMessageService.findBannerMessages(au.getId());
+            } 
         
-        if (!dataverseSession.getDismissedMessages().isEmpty()) {           
-            for (BannerMessage dismissed : dataverseSession.getDismissedMessages()) {
-                Iterator<BannerMessage> itr = bannerMessages.iterator();
-                while (itr.hasNext()) {
-                    BannerMessage test = itr.next();
-                    if (test.equals(dismissed)) {
-                        itr.remove();
+            if (!dataverseSession.getDismissedMessages().isEmpty()) {           
+                for (BannerMessage dismissed : dataverseSession.getDismissedMessages()) {
+                    Iterator<BannerMessage> itr = bannerMessages.iterator();
+                    while (itr.hasNext()) {
+                        BannerMessage test = itr.next();
+                        if (test.equals(dismissed)) {
+                            itr.remove();
+                        }
                     }
-                }
-            }            
+                }            
+            }
         }
         
         return bannerMessages;
