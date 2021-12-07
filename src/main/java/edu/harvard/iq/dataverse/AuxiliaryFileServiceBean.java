@@ -101,7 +101,7 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
 
             // The null check prevents an NPE but we expect mediaType to be non-null
             // and to default to "application/octet-stream".
-            if (mediaType != null) {
+            if (mediaType != null && (!mediaType.toString().equals("application/octet-stream"))) {
                 auxFile.setContentType(mediaType.toString());
             } else {
                 Tika tika = new Tika();

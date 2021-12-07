@@ -237,7 +237,8 @@ public class AuxiliaryFilesIT {
         uploadAuxFileNoMimeType1.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.type", equalTo("someType"))
-                .body("data.contentType", equalTo("application/octet-stream"));
+                // "text/plain" was detected by Tika
+                .body("data.contentType", equalTo("text/plain"));
 
         // Download JSON aux file.
         Response downloadAuxFileJson = UtilIT.downloadAuxFile(fileId, formatTagJson, formatVersionJson, apiToken);
@@ -264,8 +265,7 @@ public class AuxiliaryFilesIT {
         // Download Markdown aux file with no MIME type given
         Response downloadAuxFileNoMime1 = UtilIT.downloadAuxFile(fileId, formatTagNoMimeType1, formatVersionNoMimeType1, apiToken);
         downloadAuxFileNoMime1.then().assertThat().statusCode(OK.getStatusCode());
-        // We didn't specify a MIME type and the formDataBodyPart.getMediaType object defaulted to "application/octet-stream" which becomes ".bin".
-        Assert.assertEquals("attachment; filename=\"data.tab.dpNoMimeType1_0.1.bin\"", downloadAuxFileNoMime1.header("Content-disposition"));
+        Assert.assertEquals("attachment; filename=\"data.tab.noMimeType1_0.1.txt\"", downloadAuxFileNoMime1.header("Content-disposition"));
 
         Response createUserNoPrivs = UtilIT.createRandomUser();
         createUserNoPrivs.then().assertThat().statusCode(OK.getStatusCode());
