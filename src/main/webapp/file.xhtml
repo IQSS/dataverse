@@ -337,7 +337,7 @@
                                 </ui:include>
                             </p:tab>
                             <p:tab id="previewTab" title="#{bundle['file.previewTab.header']}" 
-                                   rendered="#{FilePage.toolsWithPreviews.size() > 0 and FilePage.previewAllowed}">
+                                   rendered="#{FilePage.toolsWithPreviews.size() > 0 and fileDownloadHelper.isPreviewAllowed(FilePage.fileMetadata)}}">
                                 <!-- PREVIEW TERMS/GUESTBOOK FORM -->
                                 <ui:fragment rendered="#{FilePage.downloadPopupRequired and !FilePage.termsMet}">
                                     <ui:include src="file-download-popup-fragment.xhtml">
