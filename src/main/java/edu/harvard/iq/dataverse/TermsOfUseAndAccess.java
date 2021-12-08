@@ -286,17 +286,6 @@ public class TermsOfUseAndAccess implements Serializable {
         conditions = null;
         disclaimer = null;
     }
-
-    public void validateTerms(FacesContext context, UIComponent component, Object value) throws ValidatorException {
-
-        if (license == null && StringUtils.isBlank((String) value)) {
-            FacesMessage msg = new FacesMessage("Empty or whitespace!");//BundleUtil.getStringFromBundle("theme.validateTagline"));
-            msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-
-            throw new ValidatorException(msg);
-        }
-
-    }
     
     /**
      * @todo What does the GUI use for a default license? What does the "native"

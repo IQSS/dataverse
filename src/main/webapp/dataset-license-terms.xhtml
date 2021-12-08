@@ -44,6 +44,7 @@
                                    <p:selectOneMenu id="licenses" value="#{DatasetPage.licenseId}" style="width: 40%">
                                        <f:selectItems value="#{DatasetPage.licenseSelectItems}" />
                                        <p:ajax update="touFragment" oncomplete="javascript:bind_bsui_components();" />
+                                       <p:ajax update="metadata_TermsUse"/>
                                    </p:selectOneMenu>
                                </ui:fragment>
                                <ui:fragment rendered="#{!empty termsOfUseAndAccess.license and empty DatasetPage.licenseId and empty editMode}">
@@ -154,13 +155,11 @@
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse.title']}"></span>
                                 </label>
                                 <div class="col-sm-9">
-                                    <p:inputTextarea id="metadata_TermsUse" value="#{termsOfUseAndAccess.termsOfUse}" rows="5" cols="60" styleClass="form-control" title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}"
-                                                     required="#{!empty editMode and DatasetPage.licenseId == null}"
-                                                     requiredMessage="#{'Terms must be entered with Custom license'}"
-                                                     validator="#{termsOfUseAndAccess.validateTerms}"
-                                                     validatorMessage="#{'Should be non-blank!'}">
-                                        <p:ajax process="#{updateElements}"
-                                                update="#{updateElements}"/>
+                                    <p:inputTextarea id="metadata_TermsUse" value="#{termsOfUseAndAccess.termsOfUse}" rows="5" cols="60" styleClass="form-control" title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}" 
+                                                    required="#{!empty editMode and DatasetPage.licenseId == null}"
+                                                    requiredMessage="Terms must be entered with Custom license" 
+                                                     validator="#{DatasetPage.validateTerms}"
+                                                     validatorMessage="Should be non-blank!">
                                     </p:inputTextarea>
                                 </div>
                             </div>

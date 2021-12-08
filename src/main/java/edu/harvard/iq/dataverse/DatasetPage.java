@@ -89,6 +89,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.json.JsonObject;
 
+import org.apache.commons.lang3.StringUtils;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
 
@@ -5897,5 +5898,16 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
         return true;
+    }
+
+    public void validateTerms(FacesContext context, UIComponent component, Object value) throws ValidatorException {
+        // NOTE, how do we get the current license selection?
+        if (StringUtils.isBlank((String) value)) {
+            FacesMessage msg = new FacesMessage("Empty or whitespace!");//BundleUtil.getStringFromBundle("theme.validateTagline"));
+            msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+
+            throw new ValidatorException(msg);
+        }
+
     }
 }
