@@ -128,6 +128,20 @@
                                              requiredMessage="#{bundle['requiredField']}">
                                 </p:inputText>
                                 <p:message id="cqMessages" for="customQuestionResponse" display="text"/>
+                                <p:inputTextarea id="customQuestionResponseShortText" rows="4" autoResize="true"
+                                             styleClass="form-control"
+                                             value="#{customQuestionResponse.response}"
+                                             required="#{param['DO_GB_VALIDATION'] and customQuestionResponse.customQuestion.required}"
+                                             rendered="#{customQuestionResponse.customQuestion.questionType=='short-text'}"
+                                             requiredMessage="#{bundle['requiredField']}"/>
+                                <p:message id="cqMessagesST" for="customQuestionResponseShortText" display="text"/>
+                                <p:inputTextarea id="customQuestionResponseLongText" rows="10" autoResize="true"
+                                             styleClass="form-control"
+                                             value="#{customQuestionResponse.response}"
+                                             required="#{param['DO_GB_VALIDATION'] and customQuestionResponse.customQuestion.required}"
+                                             rendered="#{customQuestionResponse.customQuestion.questionType=='long-text'}"
+                                             requiredMessage="#{bundle['requiredField']}"/>
+                                <p:message id="cqMessagesLT" for="customQuestionResponseLongText" display="text"/>
                                 <p:selectOneMenu id="customQuestionResponseSelect"
                                                  styleClass="form-control" value="#{customQuestionResponse.response}"
                                                  required="#{param[validateThisContext] and customQuestionResponse.customQuestion.required}"
