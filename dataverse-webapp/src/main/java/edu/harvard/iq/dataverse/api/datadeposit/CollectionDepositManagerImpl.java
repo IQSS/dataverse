@@ -35,6 +35,7 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -123,7 +124,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                     try {
                         importGenericService.importXML(deposit.getSwordEntry().toString(), foreignFormat, newDatasetVersion);
                     } catch (Exception ex) {
-                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "problem calling importXML: " + ex);
+                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "problem calling importXML: " + ex.getMessage());
                     }
 
                     swordService.addDatasetContact(newDatasetVersion, user);

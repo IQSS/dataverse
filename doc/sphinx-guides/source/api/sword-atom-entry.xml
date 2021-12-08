@@ -18,7 +18,7 @@
    <!-- production date -->
    <dcterms:date>2013-07-11</dcterms:date>
    <!-- kind of data -->
-   <dcterms:type>aggregate data</dcterms:type>
+   <dcterms:type>Other</dcterms:type>
    <!-- List of sources of the data collection-->
    <dcterms:source>Stumptown, Jane. 2011. Home Roasting. Coffeemill Press.</dcterms:source>
    <!-- related materials -->

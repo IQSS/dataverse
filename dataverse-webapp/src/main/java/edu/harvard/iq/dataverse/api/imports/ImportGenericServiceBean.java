@@ -82,7 +82,7 @@ public class ImportGenericServiceBean {
         }
     }
 
-    public void importXML(String xmlToParse, String foreignFormat, DatasetVersion datasetVersion) {
+    public void importXML(String xmlToParse, String foreignFormat, DatasetVersion datasetVersion) throws JsonParseException {
 
         StringReader reader;
         XMLStreamReader xmlr = null;
@@ -108,6 +108,7 @@ public class ImportGenericServiceBean {
             throw new EJBException("ERROR occurred while parsing XML fragment  (" + xmlToParse.substring(0, 64) + "...); ", ex);
         } catch (JsonParseException ex) {
             Logger.getLogger(ImportGenericServiceBean.class.getName()).log(Level.SEVERE, null, ex);
+            throw ex;
         } finally {
             try {
                 if (xmlr != null) {

@@ -42,6 +42,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 public class ContainerManagerImpl implements ContainerManager {
@@ -156,7 +157,7 @@ public class ContainerManagerImpl implements ContainerManager {
                     try {
                         importGenericService.importXML(deposit.getSwordEntry().toString(), foreignFormat, datasetVersion);
                     } catch (Exception ex) {
-                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "problem calling importXML: " + ex);
+                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "problem calling importXML: " + ex.getMessage());
                     }
                     swordService.addDatasetContact(datasetVersion, user);
                     swordService.addDatasetDepositor(datasetVersion, user);

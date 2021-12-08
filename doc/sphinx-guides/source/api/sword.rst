@@ -100,17 +100,17 @@ Dublin Core Terms (DC Terms) Qualified Mapping - Dataverse DB Element Crosswalk
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
 |dcterms:creator              |         authorName (LastName, FirstName)     |       Y      |  Author(s) for the Dataset.                                                                                                                                 |
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
-|dcterms:subject              |   subject (Controlled Vocabulary) OR keyword |       Y      |  Controlled Vocabulary list is in our User Guide > `Metadata References <http://guides.dataverse.org/en/latest/user/appendix.html#metadata-references>`_.   |                                                                                                                
+|dcterms:subject              |   subject (Controlled Vocabulary) OR keyword |       Y      |  Controlled Vocabulary list is in our User Guide > `Metadata References <http://guides.dataverse.org/en/latest/user/appendix.html#metadata-references>`_.   |
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
 |dcterms:description          |              dsDescriptionValue              |       Y      |  Describing the purpose, scope or nature of the Dataset. Can also use dcterms:abstract.                                                                     |
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
 |dcterms:publisher            |                 producerName                 |              |  Person or agency financially or administratively responsible for the Dataset                                                                               |
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
-|dcterms:contributor          |               datasetContactEmail            |       Y      |  Contact Email is required so will need to add an attribute type="Contact". Also used for Funder: add attribute type="Funder" which maps to contributorName.|                                                                                                                 
+|dcterms:contributor          |               datasetContactEmail            |       Y      |  Contact Email is required so will need to add an attribute type="Contact". Also used for Funder: add attribute type="Funder" which maps to contributorName.|
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
 |dcterms:date                 |productionDate (YYYY-MM-DD or YYYY-MM or YYYY)|              |  Production date of Dataset.                                                                                                                                |
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
-|dcterms:type                 |                  kindOfData                  |              |  Type of data included in the file: survey data, census/enumeration data, aggregate data, clinical.                                                         |
+|dcterms:type                 |                  kindOfData                  |              |  Type of data included in the file: Numeric, Text, StillImage, Geospatial, Audio, Video, Software, InteractiveResource, ThreeD, Other.                      |
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
 |dcterms:source               |                 dataSources                  |              |  List of books, articles, data files if any that served as the sources for the Dataset.                                                                     |
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -217,7 +217,7 @@ Known issues
 Bug fixes in v1.1
 -----------------
 
-- Fix Abdera ArrayIndexOutOfBoundsException with non-existent atom-entry-study.xml in SWORD jar (upstream ideally) https://github.com/IQSS/dataverse/issues/893 
+- Fix Abdera ArrayIndexOutOfBoundsException with non-existent atom-entry-study.xml in SWORD jar (upstream ideally) https://github.com/IQSS/dataverse/issues/893
 
 - Sword API: Can't create study when hidden characters are introduced in atom.xml https://github.com/IQSS/dataverse/issues/894
 
