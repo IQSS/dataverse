@@ -109,8 +109,7 @@
                                                             <h:selectOneMenu id="questionOptions" styleClass="form-control" value="#{cq.questionType}"
                                                                              onchange="#{GuestbookPage.toggleQuestionType(cq)}">
                                                                 <f:selectItem itemLabel="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionType.text']}" itemValue="text" />
-                                                                <f:selectItem itemLabel="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionType.short-text']}" itemValue="short-text" />
-                                                                <f:selectItem itemLabel="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionType.long-text']}" itemValue="long-text" />
+                                                                <f:selectItem itemLabel="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionType.textarea']}" itemValue="textarea" />
                                                                 <f:selectItem itemLabel="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionType.multiple']}" itemValue="options" />
                                                                 <p:ajax update=":guestbookForm:customQuestions" />
                                                                 <f:param name="SKIP_VALIDATION" value="true"/>
