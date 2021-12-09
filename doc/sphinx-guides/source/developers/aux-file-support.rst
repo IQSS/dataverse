@@ -35,7 +35,7 @@ formatTag and formatVersion (if applicable) associated with the auxiliary file:
   export FORMAT_TAG='dpJson'
   export FORMAT_VERSION='v1'
   
-  curl "$SERVER_URL/api/access/datafile/$FILE_ID/auxiliary/$FORMAT_TAG/$FORMAT_VERSION"
+  curl -H X-Dataverse-key:$API_TOKEN "$SERVER_URL/api/access/datafile/$FILE_ID/auxiliary/$FORMAT_TAG/$FORMAT_VERSION"
   
 Listing Auxiliary Files for a Datafile by Origin
 ------------------------------------------------
@@ -48,7 +48,7 @@ To list auxiliary files, specify the primary key of the datafile (FILE_ID), and 
   export SERVER_URL=https://demo.dataverse.org
   export ORIGIN='app1'
   
-  curl "$SERVER_URL/api/access/datafile/$FILE_ID/auxiliary/$ORIGIN"
+  curl -H X-Dataverse-key:$API_TOKEN "$SERVER_URL/api/access/datafile/$FILE_ID/auxiliary/$ORIGIN"
   
 You should expect a 200 ("OK") response and a JSON array with objects representing the auxiliary files found, or a 404/Not Found response if no auxiliary files exist with that origin.
   
@@ -65,6 +65,6 @@ formatTag and formatVersion (if applicable) associated with the auxiliary file:
   export FORMAT_TAG='dpJson'
   export FORMAT_VERSION='v1'
   
-  curl -X DELETE "$SERVER_URL/api/access/datafile/$FILE_ID/auxiliary/$FORMAT_TAG/$FORMAT_VERSION"
+  curl -H X-Dataverse-key:$API_TOKEN DELETE -X "$SERVER_URL/api/access/datafile/$FILE_ID/auxiliary/$FORMAT_TAG/$FORMAT_VERSION"
   
   
