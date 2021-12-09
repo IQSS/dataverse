@@ -1,3 +1,0 @@
-## New ManageFilePermissions Permission
-
-Dataverse can now support a use case in which a Admin or Curator would like to delegate the ability to grant access to restricted files to other users. This can be implemented by creating a custom role (e.g. DownloadApprover) that has the new ManageFilePermissions permission. This release introduces the new permission ( and adjusts the existing standard Admin and Curator roles so they continue to have the ability to grant file download requrests).
