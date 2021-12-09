@@ -150,7 +150,7 @@ From the home page of a Dataverse installation you can get a count of files by f
 
 .. _actionlogrecord-trimming:
 
-What's With this Table "ActionLogRecord" in Our Database, it Seems to be Growing Uncontrollably?
+What's with this Table "ActionLogRecord" in Our Database, It Seems to be Growing Uncontrollably?
 ------------------------------------------------------------------------------------------------
 
 An entry is created in ActionLogRecord table every time an application command is executed. This is very useful for investigating problems or usage patterns. However, please note that there is no builtin mechanism in the Application for trimming this table, so it will keep continue growing as your Dataverse installation is kept in operation. For example, ultiple entries in this table are created every time a guest user views the page of a published dataset. Many more are created when an author is actively working on a dataset, making edits, adding new files, etc. On a busy installation this table is likely to grow at a faster rate than the actual data holdings. For example, after five years of production use at Harvard IQSS, the raw size of ActionLogRecord appeared to exceed the combined size of the rest of the database (!). It's worth pointing out that the sheer size of this one table does not by itself result in performance issues in any linear way. But it may still be undesirable to keep that much extra data around; especially since for most installations these records are unlikely to have much value past a certain number of months or years. Some installation may be purchasing their database services from cloud computing providers (RDS, etc.) where extra data may result in higher costs.
