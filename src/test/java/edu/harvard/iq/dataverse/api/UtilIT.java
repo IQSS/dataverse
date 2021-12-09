@@ -658,6 +658,11 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .multiPart("file", new File(pathToFile), mimeType)
                 .multiPart("isPublic", isPublic);
+        if (mimeType != null) {
+            requestSpecification.multiPart("file", new File(pathToFile), mimeType);
+        } else {
+            requestSpecification.multiPart("file", new File(pathToFile));
+        }
         if (type != null) {
             requestSpecification.multiPart("type", type);
         }
