@@ -562,7 +562,6 @@ public class DatasetVersion implements Serializable {
     }
     
     public boolean isHasRestrictedFile(){
-        
         if (this.fileMetadatas == null || this.fileMetadatas.isEmpty()){
             return false;
         }
@@ -599,15 +598,12 @@ public class DatasetVersion implements Serializable {
                 dsv.setDatasetFields(dsv.copyDatasetFields(this.getDatasetFields()));
             }
             
-            if (this.getTermsOfUseAndAccess()!= null){
-                dsv.setTermsOfUseAndAccess(this.getTermsOfUseAndAccess().copyTermsOfUseAndAccess());
-            } else {
-                TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-                terms.setDatasetVersion(dsv);
-                terms.setLicense(TermsOfUseAndAccess.License.CC0);
-                dsv.setTermsOfUseAndAccess(terms);
-            }
-
+            /*
+            adding file metadatas here and updating terms
+            because the terms need to know about the files
+            in a pre-save validation SEK 12/6/2021
+            */
+            
             for (FileMetadata fm : this.getFileMetadatas()) {
                 FileMetadata newFm = new FileMetadata();
                 // TODO: 
@@ -627,9 +623,17 @@ public class DatasetVersion implements Serializable {
                 
                 dsv.getFileMetadatas().add(newFm);
             }
-
-
-
+            
+            if (this.getTermsOfUseAndAccess()!= null){
+                TermsOfUseAndAccess terms = this.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
+                terms.setDatasetVersion(dsv);
+                dsv.setTermsOfUseAndAccess(terms);
+            } else {
+                TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+                terms.setDatasetVersion(dsv);
+                terms.setLicense(TermsOfUseAndAccess.License.CC0);
+                dsv.setTermsOfUseAndAccess(terms);
+            }
 
         dsv.setDataset(this.getDataset());
         return dsv;

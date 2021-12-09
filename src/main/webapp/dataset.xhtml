@@ -22,6 +22,7 @@
             <ui:param name="locked" value="#{DatasetPage.locked}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:param name="showPublishLink" value="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion 
+                                                      and DatasetPage.hasValidTermsOfAccess
                                                       and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
                                                       and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"/>
 
@@ -109,6 +110,7 @@
                 </f:metadata>
                 <h:form id="datasetForm">
                     <h:inputHidden id="validateFilesOutcome" value="#{DatasetPage.validateFilesOutcome}" />
+                    <h:inputHidden id="validTermsofAccess" value="#{DatasetPage.hasValidTermsOfAccess}" />
                     <!-- View infoMode -->
                     <!-- Top Button/Citation Blocks -->
                     <p:fragment id="topDatasetBlockFragment">
@@ -913,7 +915,7 @@
                     <!-- END: Create/Save Dataset Button Panel BTM editMode -->
                     <p:blockUI block="datasetForm" widgetVar="blockDatasetForm"/>
                     <!-- POPUPS -->
-                    <ui:fragment rendered="#{empty DatasetPage.editMode}">
+                    <ui:fragment rendered="#{dataverseSession.user.authenticated and DatasetPage.editMode != 'CREATE' and DatasetPage.canUpdateDataset()}">
                         <ui:include src="file-edit-popup-fragment.xhtml">
                               <ui:param name="datasetVersion" value="#{DatasetPage.workingVersion}"/>   
                               <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>
@@ -1670,7 +1672,7 @@
                                 #{bundle.cancel}
                             </button>
                         </div>
-                    </p:dialog>                     
+                    </p:dialog>
                     <p:dialog id="mayNotRelease" header="#{bundle['dataset.publish.header']}" widgetVar="mayNotRelease" modal="true">
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-exclamation-sign"/>
@@ -1737,6 +1739,9 @@
                         </div>
                     </p:dialog>
                     <p:remoteCommand name="returnToAuthorCommand" action="#{DatasetPage.sendBackToContributor}"/>
+                    <p:remoteCommand name="linkEditTerms"   actionListener="#{DatasetPage.edit('LICENSE')}" update="@form,:datasetForm,:messagePanel"  oncomplete="javascript:bind_bsui_components();">
+                        <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                    </p:remoteCommand>
                     <!-- END: Publish/Submit for Review Dialogs -->
                 </h:form>
                 <script>
@@ -1764,6 +1769,9 @@
                     function openCompareTwo() {
                         PF('compareTwo').show();
                     }
+                    function editTerms(){                       
+                        linkEditTerms();
+                    }
                     function testCheckBoxes() {
                         var count = PF('versionsTable').getSelectedRowsCount();
                         if (count !== 2) {
@@ -1776,6 +1784,16 @@
                         var count = PF('filesTable').getSelectedRowsCount();
                         if (count == 0) {
                             PF('selectFiles').show();
+                        } else {
+                            return true;
+                        }
+                    }
+                    function testTermsOfAccess() {
+                        var valid = document.getElementById("datasetForm:validTermsofAccess").value;
+                        if (valid === false) {
+                            alert('its false, ok?');
+                            PF('accessPopup').show();
+                            return false;
                         } else {
                             return true;
                         }

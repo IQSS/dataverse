@@ -21,11 +21,17 @@ public class TermsOfUseAndAccessValidator implements ConstraintValidator<Validat
 
     @Override
     public boolean isValid(TermsOfUseAndAccess value, ConstraintValidatorContext context) {
-        //If there are no restricted files then terms are valid  
+        
+        return isTOUAValid(value, context);
+
+    }
+    
+    public static boolean isTOUAValid(TermsOfUseAndAccess value, ConstraintValidatorContext context){
+        //If there are no restricted files then terms are valid 
+        System.out.print("value.getDatasetVersion(): " + value.getDatasetVersion());
         if (!value.getDatasetVersion().isHasRestrictedFile()) {
             return true;
         }
-
         /*If there are restricted files then the version
         must allow access requests or have terms of access filled in.
          */
@@ -44,8 +50,6 @@ public class TermsOfUseAndAccessValidator implements ConstraintValidator<Validat
             }
             return false;
         }
-
         return valid;
     }
-
 }

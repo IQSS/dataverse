@@ -79,7 +79,7 @@
     </p:dialog>  
 
     <!-- Embargo Dialog-->
-    <p:dialog id="fileEmbargoPopup" styleClass="smallPopUp" resizable="false" header="#{bundle['file.editEmbargo']}" widgetVar="fileEmbargoPopup" modal="true">
+    <p:dialog id="fileEmbargoPopup" styleClass="smallPopUp" resizable="false" header="#{bundle['file.editEmbargo']}" widgetVar="fileEmbargoPopup" modal="true" rendered="#{bean != EditDatafilesPage}">
         <p:focus for="fileEmbargoDate"/>
         <p class="help-block" jsf:rendered="#{bean.validEmbargoSelection}">#{bundle['file.editEmbargoDialog.tip']}</p>
         <p class="text-warning embargo" jsf:rendered="#{bean.validEmbargoSelection and !bean.embargoForWholeSelection}"><span class="glyphicon glyphicon-warning-sign"/>#{bundle['file.editEmbargoDialog.some.tip']} #{bundle['file.editEmbargoDialog.partial.tip']}</p>
@@ -183,6 +183,6 @@
                 #{bundle.close}
             </button>
         </div>
-    </p:dialog>            
-        
+    </p:dialog> 
+       
 </ui:composition>

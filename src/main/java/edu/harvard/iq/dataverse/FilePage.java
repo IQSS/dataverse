@@ -241,6 +241,12 @@ public class FilePage implements java.io.Serializable {
 
             return permissionsWrapper.notFound();
         }
+        
+        hasRestrictedFiles = fileMetadata.getDatasetVersion().isHasRestrictedFile();
+        hasValidTermsOfUse = isHasValidTermsOfUse();
+        if(!hasValidTermsOfUse){
+            JsfHelper.addWarningMessage(BundleUtil.getStringFromBundle("dataset.message.editMetadata.invalid.TOUA.message"));
+        }
 
         return null;
     }
@@ -730,6 +736,35 @@ public class FilePage implements java.io.Serializable {
 
     public void setSelectedTabIndex(int selectedTabIndex) {
         this.selectedTabIndex = selectedTabIndex;
+    }
+    
+    private Boolean hasValidTermsOfUse = null;
+    
+    public Boolean isHasValidTermsOfUse(){
+        //cache in page to limit processing
+        if (hasValidTermsOfUse != null){
+            return hasValidTermsOfUse;
+        } else {
+            if (!isHasRestrictedFiles()){
+               hasValidTermsOfUse = true;
+               return hasValidTermsOfUse;
+            } else {
+                hasValidTermsOfUse = TermsOfUseAndAccessValidator.isTOUAValid(fileMetadata.getDatasetVersion().getTermsOfUseAndAccess(), null);
+                return hasValidTermsOfUse;
+            }
+        }    
+    }
+    
+    private Boolean hasRestrictedFiles = null;
+    
+    public Boolean isHasRestrictedFiles(){
+        //cache in page to limit processing
+        if (hasRestrictedFiles != null){
+            return hasRestrictedFiles;
+        } else {
+            hasRestrictedFiles = fileMetadata.getDatasetVersion().isHasRestrictedFile();
+            return hasRestrictedFiles;
+        }
     }
     
     public boolean isSwiftStorage () {
