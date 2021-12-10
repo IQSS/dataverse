@@ -290,7 +290,7 @@ public class FileDownloadHelper implements java.io.Serializable {
     
     public void handleCommandLinkClick(FileMetadata fmd){
         
-        if (FileUtil.isDownloadPopupRequired(fmd.getDatasetVersion())){
+        if (FileUtil.isRequestAccessPopupRequired(fmd.getDatasetVersion())){
             addFileForRequestAccess(fmd.getDataFile());
             PrimeFaces.current().executeScript("PF('requestAccessPopup').show()");
         } else {
@@ -315,7 +315,7 @@ public class FileDownloadHelper implements java.io.Serializable {
              }
          }
          if (notificationFile != null && succeeded) {
-             fileDownloadService.sendRequestFileAccessNotification(notificationFile.getOwner(), notificationFile.getId(), (AuthenticatedUser) session.getUser());
+             fileDownloadService.sendRequestFileAccessNotification(notificationFile, (AuthenticatedUser) session.getUser());
          }
      }
     
@@ -339,7 +339,7 @@ public class FileDownloadHelper implements java.io.Serializable {
              file.getFileAccessRequesters().add((AuthenticatedUser) session.getUser());
              // create notification if necessary
              if (sendNotification) {
-                 fileDownloadService.sendRequestFileAccessNotification(file.getOwner(), file.getId(), (AuthenticatedUser) session.getUser());
+                 fileDownloadService.sendRequestFileAccessNotification(file, (AuthenticatedUser) session.getUser());
              }
              return true;
          }

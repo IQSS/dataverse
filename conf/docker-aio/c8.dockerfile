@@ -30,7 +30,7 @@ RUN cd /opt ; unzip /tmp/dv/deps/payara-5.2021.6.zip ; ln -s /opt/payara5 /opt/g
 # this dies under Java 11, do we keep it?
 #COPY domain-restmonitor.xml /opt/payara5/glassfish/domains/domain1/config/domain.xml
 
-RUN sudo -u postgres /usr/pgsql-13/bin/initdb -D /var/lib/pgsql/13/data
+RUN sudo -u postgres /usr/pgsql-13/bin/initdb -D /var/lib/pgsql/13/data -E 'UTF-8'
 
 # copy configuration related files
 RUN cp /tmp/dv/pg_hba.conf /var/lib/pgsql/13/data/

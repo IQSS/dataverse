@@ -333,8 +333,6 @@ public class DatasetPage implements java.io.Serializable {
 
     private Boolean hasTabular = false;
     
-    //External Vocabulary support
-    Map<Long, JsonObject> cachedCvocMap=null;
 
     /**
      * If the dataset version has at least one tabular file. The "hasTabular"
@@ -5595,16 +5593,8 @@ public class DatasetPage implements java.io.Serializable {
         return displayName; 
     }
     
-    public Map<Long, JsonObject> getCVocConf() {
-        //Cache this in the view
-        if(cachedCvocMap==null) {
-        cachedCvocMap = fieldService.getCVocConf(false);
-        }
-        return cachedCvocMap;
-    }
-    
     public List<String> getVocabScripts() {
-        return fieldService.getVocabScripts(getCVocConf());
+        return fieldService.getVocabScripts(settingsWrapper.getCVocConf());
     }
 
     public String getFieldLanguage(String languages) {
