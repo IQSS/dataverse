@@ -519,7 +519,7 @@
                     </a>
                 </ui:fragment>
                     <a type="button" class="btn-access-file btn btn-link bootstrap-button-tooltip dropdown-toggle" 
-                       title="#{((not empty DatasetPage.getExploreToolsForDataFile(fileMetadata.dataFile.id)) or (isFilePg ? FilePage.showComputeButton() : DatasetPage.showComputeButton(fileMetadata))) ? bundle['file.accessBtn'] : bundle['file.downloadBtn']}"
+                       title="#{((not empty DatasetPage.getExploreToolsForDataFile(fileMetadata.dataFile.id)) or (DatasetPage.showComputeButton(fileMetadata))) ? bundle['file.accessBtn'] : bundle['file.downloadBtn']}"
                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" tabindex="0">
                        <span class="glyphicon glyphicon-download-alt"/><span class="sr-only">#{bundle['file.accessBtn']}</span><span class="caret"></span>
                     </a>
