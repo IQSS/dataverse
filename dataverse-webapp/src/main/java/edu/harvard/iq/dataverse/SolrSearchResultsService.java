@@ -81,14 +81,22 @@ public class SolrSearchResultsService {
      * IMPORTANT: ANY change to the values below REQUIRES changing
      * names and contents of appropriate named queries!
      */
-    private static final int MAX_SIZE = 10;
-    private static final String MAX_SIZE_SUFFIX = "10";
+    enum Size {
+        MAX(10, "10"),
+        MID(6, "6"),
+        MIN(2, "2");
 
-    private static final int MID_SIZE = 6;
-    private static final String MID_SIZE_SUFFIX = "6";
+        private int value;
+        private String querySuffix;
 
-    private static final int MIN_SIZE = 2;
-    private static final String MIN_SIZE_SUFFIX = "2";
+        Size(int value, String querySuffix) {
+            this.value = value;
+            this.querySuffix = querySuffix;
+        }
+
+        public int value() { return value; }
+        public String querySuffix() { return querySuffix; }
+    }
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -204,8 +212,8 @@ public class SolrSearchResultsService {
         if (ids == null || ids.isEmpty()) {
             return Collections.emptyList();
         }
-        return ids.size() > MAX_SIZE
-                ? ListUtils.partition(new ArrayList<>(ids), MAX_SIZE).stream()
+        return ids.size() > Size.MAX.value()
+                ? ListUtils.partition(new ArrayList<>(ids), Size.MAX.value()).stream()
                 .map(l -> callSingleBatchForIds(queryBaseName, l))
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList())
@@ -214,15 +222,11 @@ public class SolrSearchResultsService {
 
     private Collection<Object[]> callSingleBatchForIds(String queryBaseName, Collection <? extends Number> ids) {
         int size = ids.size();
-        int selectedSize = size > MID_SIZE
-                ? MAX_SIZE
-                : size > MIN_SIZE
-                    ? MID_SIZE : MIN_SIZE;
-        String selectedSuffix = selectedSize == MAX_SIZE
-                ? MAX_SIZE_SUFFIX
-                : selectedSize == MID_SIZE
-                    ? MID_SIZE_SUFFIX : MIN_SIZE_SUFFIX;
-        Query query = em.createNamedQuery(queryBaseName + selectedSuffix);
+        Size selectedSize = size > Size.MID.value()
+                ? Size.MAX
+                : size > Size.MIN.value()
+                    ? Size.MID : Size.MIN;
+        Query query = em.createNamedQuery(queryBaseName + selectedSize.querySuffix());
         int count = 1;
         Number currentId = 0; // ids cannot be empty (as long as it's called from callNamedNativeQueryWithIds),
                               // so the value will be overwritten
@@ -231,7 +235,7 @@ public class SolrSearchResultsService {
             query.setParameter(count, currentId);
             ++count;
         }
-        for (; count <= selectedSize; count++) {
+        for (; count <= selectedSize.value(); count++) {
             query.setParameter(count, currentId);
         }
         return (Collection<Object[]>) query.getResultList();
@@ -303,7 +307,9 @@ public class SolrSearchResultsService {
 
     private void fillTabularDataIfNeeded(DataFile dataFile, Object[] fileData,
                                          Map<Long, List<Integer>> datafileTags, List<String> tagLabels) {
-        if (dataFile.getContentType() == null || !TextMimeType.TSV.getMimeValue().equalsIgnoreCase(dataFile.getContentType())) {
+        if (dataFile.getContentType() == null
+                || (!TextMimeType.TSV.getMimeValue().equalsIgnoreCase(dataFile.getContentType())
+                && !TextMimeType.TSV_ALT.getMimeValue().equalsIgnoreCase(dataFile.getContentType()))) {
             return;
         }
         DataTable dataTable = new DataTable();

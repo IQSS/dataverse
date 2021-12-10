@@ -151,7 +151,7 @@ public class SearchIncludeFragment {
             if (sortOrder == null) {
                 sortOrder = SortOrder.desc;
             }
-            if (selectedTypesString == null || selectedTypesString.isEmpty()) {
+            if (StringUtils.isEmpty(selectedTypesString)) {
                 selectedTypesString = "dataverses:datasets";
             }
         } else {
@@ -161,7 +161,7 @@ public class SearchIncludeFragment {
             if (sortOrder == null) {
                 sortOrder = SortOrder.desc;
             }
-            if (selectedTypesString == null || selectedTypesString.isEmpty()) {
+            if (StringUtils.isEmpty(selectedTypesString)) {
                 selectedTypesString = "dataverses:datasets:files";
             }
         }
@@ -243,7 +243,6 @@ public class SearchIncludeFragment {
         }
 
         return widgetWrapper.wrapURL("dataverse.xhtml?faces-redirect=true&q=" + qParam + optionalDataverseScope);
-
     }
 
     public void search(Dataverse dataverse) {
@@ -253,7 +252,7 @@ public class SearchIncludeFragment {
         String queryToPassToSolr = StringUtils.isEmpty(query) ? "*" : query;
 
         this.dataverse = dataverse;
-        this.dataverseAlias = dataverse.getAlias();
+        dataverseAlias = dataverse.getAlias();
 
         List<String> filterQueriesFinal = new ArrayList<>();
         String dataversePath = null;
@@ -317,10 +316,10 @@ public class SearchIncludeFragment {
         } catch (SearchException ex) {
             String message = "Exception running search for [" + queryToPassToSolr + "] with filterQueries " + filterQueries + " and paginationStart [" + paginationStart + "]";
             logger.log(Level.INFO, message, ex);
-            this.solrIsDown = true;
-            this.searchException = ex;
-            this.solrErrorEncountered = true;
-            this.errorFromSolr = ex.getMessage();
+            solrIsDown = true;
+            searchException = ex;
+            solrErrorEncountered = true;
+            errorFromSolr = ex.getMessage();
             return;
         }
 
@@ -331,16 +330,16 @@ public class SearchIncludeFragment {
             }
             facetCategoryList.add(facetCategory);
         }
-        this.searchResultsList = solrQueryResponse.getSolrSearchResults();
-        this.searchResultsCount = solrQueryResponse.getNumResultsFound().intValue();
+        searchResultsList = solrQueryResponse.getSolrSearchResults();
+        searchResultsCount = solrQueryResponse.getNumResultsFound().intValue();
         if (filterDownToSubtree.isPresent()) {
-            this.responseFilterQueries = solrQueryResponse.getFilterQueries().stream()
+            responseFilterQueries = solrQueryResponse.getFilterQueries().stream()
                     .filter(filter -> !filterDownToSubtree.get().equals(filter.getQuery()))
                     .collect(toList());
         } else {
-            this.responseFilterQueries = solrQueryResponse.getFilterQueries();
+            responseFilterQueries = solrQueryResponse.getFilterQueries();
         }
-        this.filterQueriesDebug = solrQueryResponse.getFilterQueriesActual();
+        filterQueriesDebug = solrQueryResponse.getFilterQueriesActual();
 
         paginationGuiStart = paginationStart + 1;
         paginationGuiEnd = Math.min(page * RESULTS_PER_PAGE, searchResultsCount);
@@ -385,7 +384,7 @@ public class SearchIncludeFragment {
                         .map(entry -> entry.getKey().getSolrValue())
                         .collect(Collectors.joining(":")));
 
-        for (int i=0; i< filterQueries.size(); i++) {
+        for (int i = 0; i < filterQueries.size(); i++) {
             searchUrlBuilder.append("&fq").append(i).append("=").append(filterQueries.get(i));
         }
         searchUrlBuilder.append("&sort=").append(sortField)
@@ -403,10 +402,10 @@ public class SearchIncludeFragment {
      */
     public boolean wasSolrErrorEncountered() {
 
-        if (this.solrErrorEncountered) {
+        if (solrErrorEncountered) {
             return true;
         }
-        if (!this.hasValidFilterQueries()) {
+        if (!hasValidFilterQueries()) {
             solrErrorEncountered = true;
             return true;
         }
@@ -466,11 +465,7 @@ public class SearchIncludeFragment {
     }
 
     public String getSortOrder() {
-        if (sortOrder != null) {
-            return sortOrder.toString();
-        } else {
-            return null;
-        }
+        return sortOrder != null ? sortOrder.toString() : null;
     }
 
     /**
@@ -515,7 +510,6 @@ public class SearchIncludeFragment {
         return page;
     }
 
-    // helper method
     public int getTotalPages() {
         return ((searchResultsCount - 1) / RESULTS_PER_PAGE) + 1;
     }
@@ -559,8 +553,7 @@ public class SearchIncludeFragment {
      * @return
      */
     private boolean hasValidFilterQueries() {
-
-        if (this.filterQueries.isEmpty()) {
+        if (filterQueries.isEmpty()) {
             return true;        // empty is valid!
         }
 
@@ -599,12 +592,7 @@ public class SearchIncludeFragment {
     }
 
     public boolean isTabular(DataFile datafile) {
-
-        if (datafile == null) {
-            return false;
-        }
-
-        return datafile.isTabularData();
+        return datafile != null && datafile.isTabularData();
     }
 
     public SearchException getSearchException() {
@@ -634,31 +622,22 @@ public class SearchIncludeFragment {
                 ret = ret.concat("UNF: " + unf);
             }
         }
-
         return ret;
     }
 
     public String dataFileSizeDisplay(DataFile datafile) {
-        if (datafile == null) {
-            return "";
-        }
-
-        return datafile.getFriendlySize();
-
+        return datafile != null ? datafile.getFriendlySize() : "";
     }
 
     public String dataFileChecksumDisplay(DataFile datafile) {
         if (datafile == null) {
             return "";
         }
-
-        if (datafile.getChecksumValue() != null && !StringUtils.isEmpty(datafile.getChecksumValue())) {
-            if (datafile.getChecksumType() != null) {
-                return " " + datafile.getChecksumType() + ": " + datafile.getChecksumValue() + " ";
-            }
-        }
-
-        return "";
+        return datafile.getChecksumValue() != null
+                && datafile.getChecksumType() != null
+                && StringUtils.isNotEmpty(datafile.getChecksumValue())
+                    ? String.format(" %s: %s ", datafile.getChecksumType(), datafile.getChecksumValue())
+                    : "";
     }
 
     private void setDisplayCardValues(String dataversePath) {
