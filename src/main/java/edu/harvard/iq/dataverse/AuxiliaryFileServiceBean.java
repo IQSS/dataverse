@@ -25,6 +25,7 @@ import javax.persistence.TypedQuery;
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.ServerErrorException;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.tika.Tika;
@@ -67,10 +68,11 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
      * @param origin - name of the tool/system that created the file
      * @param isPublic boolean - is this file available to any user?
      * @param type how to group the files such as "DP" for "Differentially
+     * @param mediaType user supplied content type (MIME type)
      * Private Statistics".
      * @return success boolean - returns whether the save was successful
      */
-    public AuxiliaryFile processAuxiliaryFile(InputStream fileInputStream, DataFile dataFile, String formatTag, String formatVersion, String origin, boolean isPublic, String type) {
+    public AuxiliaryFile processAuxiliaryFile(InputStream fileInputStream, DataFile dataFile, String formatTag, String formatVersion, String origin, boolean isPublic, String type, MediaType mediaType) {
 
         StorageIO<DataFile> storageIO = null;
         AuxiliaryFile auxFile = new AuxiliaryFile();
@@ -97,8 +99,14 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
             storageIO.saveInputStreamAsAux(di, auxExtension);
             auxFile.setChecksum(FileUtil.checksumDigestToString(di.getMessageDigest().digest()));
 
-            Tika tika = new Tika();
-            auxFile.setContentType(tika.detect(storageIO.getAuxFileAsInputStream(auxExtension)));
+            // The null check prevents an NPE but we expect mediaType to be non-null
+            // and to default to "application/octet-stream".
+            if (mediaType != null && (!mediaType.toString().equals("application/octet-stream"))) {
+                auxFile.setContentType(mediaType.toString());
+            } else {
+                Tika tika = new Tika();
+                auxFile.setContentType(tika.detect(storageIO.getAuxFileAsInputStream(auxExtension)));
+            }
             auxFile.setFormatTag(formatTag);
             auxFile.setFormatVersion(formatVersion);
             auxFile.setOrigin(origin);

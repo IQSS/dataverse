@@ -10,14 +10,15 @@ To add an auxiliary file, specify the primary key of the datafile (FILE_ID), and
 .. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  export FILENAME='auxfile.txt'
+  export FILENAME='auxfile.json'
+  export FILETYPE='application/json'
   export FILE_ID='12345'
   export FORMAT_TAG='dpJson'
   export FORMAT_VERSION='v1'
   export TYPE='DP'
   export SERVER_URL=https://demo.dataverse.org
   
-  curl -H X-Dataverse-key:$API_TOKEN -X POST -F "file=@$FILENAME" -F 'origin=myApp' -F 'isPublic=true' -F "type=$TYPE" "$SERVER_URL/api/access/datafile/$FILE_ID/auxiliary/$FORMAT_TAG/$FORMAT_VERSION"
+  curl -H X-Dataverse-key:$API_TOKEN -X POST -F "file=@$FILENAME;type=$FILETYPE" -F 'origin=myApp' -F 'isPublic=true' -F "type=$TYPE" "$SERVER_URL/api/access/datafile/$FILE_ID/auxiliary/$FORMAT_TAG/$FORMAT_VERSION"
 
 You should expect a 200 ("OK") response and JSON with information about your newly uploaded auxiliary file.
 
