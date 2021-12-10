@@ -592,14 +592,14 @@
     </p:dialog>
     <p:dialog id="editFileAccessPopup" styleClass="smallPopUp" header="#{bundle['dataset.access.accessHeader']}" widgetVar="editFileAccessPopup" modal="true">
         <p:focus context="editFileAccessPopup"/>
-        <p class="help-block">
-            <h:outputFormat value=" #{bundle['dataset.access.description']}" escape="false">
-                            <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                            <f:param value="#{systemConfig.guidesVersion}"/>
-                        </h:outputFormat>
+        <p class="help-block">                               
+                               #{bundle['dataset.access.description']}
         </p>
         <p class="help-block">
-            #{bundle['dataset.access.description.line.2']}
+            <h:outputFormat value=" #{bundle['dataset.access.description.line.2']}" escape="false">
+                <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                <f:param value="#{systemConfig.guidesVersion}"/>
+            </h:outputFormat>
         </p>
         <p class="help-block">
             <div class="form-group">
