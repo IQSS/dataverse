@@ -395,7 +395,7 @@ public class DatasetPage implements java.io.Serializable {
     
     private Boolean hasValidTermsOfAccess = null;
     
-    public Boolean isHasValidTermsOfAccess(){
+    public Boolean isHasValidTermsOfAccess() {
         //cache in page to limit processing
         if (hasValidTermsOfAccess != null){
             return hasValidTermsOfAccess;
@@ -2093,7 +2093,11 @@ public class DatasetPage implements java.io.Serializable {
             hasRestrictedFiles = workingVersion.isHasRestrictedFile();
             hasValidTermsOfAccess = isHasValidTermsOfAccess();
             if (!hasValidTermsOfAccess) {
-                JsfHelper.addWarningMessage(BundleUtil.getStringFromBundle("dataset.message.editMetadata.invalid.TOUA.message"));
+                String message = BundleUtil.getStringFromBundle("dataset.message.editMetadata.invalid.TOUA.message");               
+                if(workingVersion.isDraft()){
+                    message = message + " (" + BundleUtil.getStringFromBundle("dataset.message.publish.invalid.TOUA.message") + ")";
+                }
+                JsfHelper.addWarningMessage(message);
             }            
         }
         return null;

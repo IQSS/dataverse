@@ -28,7 +28,6 @@ public class TermsOfUseAndAccessValidator implements ConstraintValidator<Validat
     
     public static boolean isTOUAValid(TermsOfUseAndAccess value, ConstraintValidatorContext context){
         //If there are no restricted files then terms are valid 
-        System.out.print("value.getDatasetVersion(): " + value.getDatasetVersion());
         if (!value.getDatasetVersion().isHasRestrictedFile()) {
             return true;
         }

@@ -26,7 +26,9 @@
         </div>
     </p:dialog>     
 
-    <p:dialog id="accessPopup" styleClass="smallPopUp" header="#{bundle['dataset.access.accessHeader']}" widgetVar="accessPopup" modal="true">
+    <p:dialog id="accessPopup" styleClass="smallPopUp" 
+              header="#{bean.hasValidTermsOfAccess ? bundle['dataset.access.accessHeader'] : bundle['dataset.access.accessHeader.invalid.state'] }" 
+              widgetVar="accessPopup" modal="true">
         <p:focus context="accessPopup"/>
         <p class="help-block">
             <h:outputFormat value=" #{bundle['dataset.access.description']}" escape="false">

@@ -294,7 +294,6 @@ public class Dataset extends DvObjectContainer {
 
     private DatasetVersion createNewDatasetVersion(Template template, FileMetadata fmVarMet) {
         
-        System.out.print("creating new dataset version");
         DatasetVersion dsv = new DatasetVersion();
         dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
         dsv.setFileMetadatas(new ArrayList<>());
