@@ -6,7 +6,6 @@ wdir=`pwd`
 
 if [ ! -e dv/deps/payara-5.2021.5.zip ]; then
 	echo "payara dependency prep"
-	# no more fiddly patching :)
 	wget https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2021.5/payara-5.2021.5.zip  -O dv/deps/payara-5.2021.5.zip
 fi
 
