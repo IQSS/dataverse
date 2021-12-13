@@ -23,6 +23,7 @@ package edu.harvard.iq.dataverse.ingest;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -99,7 +100,7 @@ public class IngestMessageBean implements MessageListener {
                         sbIngestedFiles.append(String.format("<li>%s</li>", datafile.getCurrentName()));
                     } else {
                         logger.warning("Error occurred during ingest job for file id " + datafile_id + "!");
-                        sbIngestedFiles.append(String.format("<li>%s (Error)</li>", datafile.getCurrentName()));
+                        sbIngestedFiles.append(String.format("<li>%s (" + BundleUtil.getStringFromBundle("messages.error") + ")</li>", datafile.getCurrentName()));
                         ingestWithErrors = true;
                     }
 
@@ -118,7 +119,7 @@ public class IngestMessageBean implements MessageListener {
 
                             ingestWithErrors = true;
 
-                            sbIngestedFiles.append(String.format("<li>%s (Error)</li>", datafile.getCurrentName()));
+                            sbIngestedFiles.append(String.format("<li>%s (" + BundleUtil.getStringFromBundle("messages.error") + ")</li>", datafile.getCurrentName()));
 
                             datafile.SetIngestProblem();
                             IngestReport errorReport = new IngestReport();
