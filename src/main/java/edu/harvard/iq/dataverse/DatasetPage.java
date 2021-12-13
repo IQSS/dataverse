@@ -2095,7 +2095,7 @@ public class DatasetPage implements java.io.Serializable {
             if (!hasValidTermsOfAccess) {
                 String message = BundleUtil.getStringFromBundle("dataset.message.editMetadata.invalid.TOUA.message");               
                 if(workingVersion.isDraft()){
-                    message = message + " (" + BundleUtil.getStringFromBundle("dataset.message.publish.invalid.TOUA.message") + ")";
+                    message = message + " " + BundleUtil.getStringFromBundle("dataset.message.publish.invalid.TOUA.message");
                 }
                 JsfHelper.addWarningMessage(message);
             }            
