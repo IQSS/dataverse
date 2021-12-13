@@ -28,7 +28,7 @@
                     </button>
                     <a href="/">
                         <ui:fragment rendered="#{empty settingsWrapper.get(':LogoCustomizationFile')}">
-                            <span class="navbar-brand" tabindex="1"><span id="icon-dataverse" class="icon-dataverse"></span> #{bundle.dataverse}</span>
+                            <span class="navbar-brand"><span id="icon-dataverse" class="icon-dataverse"></span> #{bundle.dataverse}</span>
                         </ui:fragment>
                         <h:graphicImage rendered="#{!empty settingsWrapper.get(':LogoCustomizationFile')}"
                             url="#{settingsWrapper.get(':LogoCustomizationFile')}" styleClass="navbar-brand custom-logo" alt="#{of:format1(bundle['alt.homepage'], settingsWrapper.rootDataverse.name)}"/>
