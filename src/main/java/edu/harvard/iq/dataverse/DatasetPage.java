@@ -2465,7 +2465,7 @@ public class DatasetPage implements java.io.Serializable {
         clone = workingVersion.cloneDatasetVersion();
         if (editMode == EditMode.INFO) {
             // ?
-        } else if (editMode == EditMode.FILE) {;
+        } else if (editMode == EditMode.FILE) {
             if(!hasValidTermsOfAccess){ 
                 this.editMode = EditMode.LICENSE;
                 PrimeFaces.current().executeScript("PF('blockDatasetForm').show()");
