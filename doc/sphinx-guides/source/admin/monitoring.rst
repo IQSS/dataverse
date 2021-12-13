@@ -106,7 +106,7 @@ There is a database table called ``actionlogrecord`` that captures events that m
 An Important Note about ActionLogRecord Table:
 ++++++++++++++++++++++++++++++++++++++++++++++
 
-Please note that in a busy production installation this table will be growing constantly. See the note on :ref:`How to Keep ActionLogRecord in Trim <actionlogrecord-trimming> in the Troubleshooting section of the guide.
+Please note that in a busy production installation this table will be growing constantly. See the note on :ref:`How to Keep ActionLogRecord in Trim <actionlogrecord-trimming>` in the Troubleshooting section of the guide.
 
 .. _edit-draft-versions-logging:
 
