@@ -265,6 +265,8 @@ or you may install it manually::
         # chmod +x jq
         # jq --version
 
+.. _install-imagemagick:
+
 ImageMagick
 -----------
 
@@ -279,8 +281,6 @@ On a Red Hat or derivative Linux distribution, you can install ImageMagick with 
 
 (most RedHat systems will have it pre-installed).
 When installed using standard ``yum`` mechanism, above, the executable for the ImageMagick convert utility will be located at ``/usr/bin/convert``. No further configuration steps will then be required.
-
-On MacOS you can compile ImageMagick from sources, or use one of the popular installation frameworks, such as brew.
 
 If the installed location of the convert executable is different from ``/usr/bin/convert``, you will also need to specify it in your Payara configuration using the JVM option, below. For example::
 
