@@ -4,6 +4,8 @@
 
 Beginning in this release, Restricted Files must have either Terms of Access or Request Access enabled. This change is to ensure that for each file in a Dataverse installation there is a clear path to get to the data, either through requesting access to the data or to provide context about why requesting access is not enabled.
 
+In the "Notes for Dataverse Installation Administrators" section, we have provided a query to help proactively identify datasets that need to be updated.
+
 ## Notes for Dataverse Installation Administrators
 
 ### Identifying Datasets Requiring Terms of Access or Request Access Changes
