@@ -212,12 +212,6 @@ public class SettingsServiceBean {
         /* the number of files the GUI user is allowed to upload in one batch, 
             via drag-and-drop, or through the file select dialog */
         MultipleUploadFilesLimit,
-        /* Size limits for generating thumbnails on the fly */
-        /* (i.e., we'll attempt to generate a thumbnail on the fly if the 
-         * size of the file is less than this)
-        */
-        ThumbnailSizeLimitImage,
-        ThumbnailSizeLimitPDF,
         /* return email address for system emails such as notifications */
         SystemEmail, 
         /* size limit for Tabular data file ingests */
@@ -431,8 +425,7 @@ public class SettingsServiceBean {
         /**
          * Sort Date Facets Chronologically instead or presenting them in order of # of hits as other facets are. Default is true
          */
-        ChronologicalDateFacets,
-        
+        ChronologicalDateFacets, 
         /**
          * Used where BrandingUtil.getInstallationBrandName is called, overides the default use of the root Dataverse collection name
          */
@@ -443,6 +436,17 @@ public class SettingsServiceBean {
          * when the Distributor field (citation metadatablock) is set (true)
          */
         ExportInstallationAsDistributorOnlyWhenNotSet,
+        /**
+         * Optional external executables to run on the metadata for dataverses 
+         * and datasets being published; as an extra validation step, to 
+         * check for spam, etc. 
+         */
+        DataverseMetadataValidatorScript,
+        DatasetMetadataValidatorScript,
+        DataverseMetadataPublishValidationFailureMsg,
+        DataverseMetadataUpdateValidationFailureMsg,
+        DatasetMetadataValidationFailureMsg,
+        ExternalValidationAdminOverride,
         /**
          * A comma-separated list of field type names that should be 'withheld' when
          * dataset access occurs via a Private Url with Anonymized Access (e.g. to

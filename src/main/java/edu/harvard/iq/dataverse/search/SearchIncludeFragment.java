@@ -23,8 +23,6 @@ import edu.harvard.iq.dataverse.ThumbnailServiceWrapper;
 import edu.harvard.iq.dataverse.WidgetWrapper;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.SystemConfig;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -78,8 +76,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
     WidgetWrapper widgetWrapper;  
     @Inject
     DataversePage dataversePage;
-    @EJB
-    SystemConfig systemConfig;
     @EJB
     DatasetFieldServiceBean datasetFieldService;
 
@@ -292,7 +288,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             dataversePath = dataverseService.determineDataversePath(this.dataverse);
             String filterDownToSubtree = SearchFields.SUBTREE + ":\"" + dataversePath + "\"";
             //logger.info("SUBTREE parameter: " + dataversePath);
-            if (!this.dataverse.equals(dataverseService.findRootDataverse())) {
+            if (!(this.dataverse.getOwner() == null)) { 
                 /**
                  * @todo centralize this into SearchServiceBean
                  */
@@ -305,7 +301,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 this.setRootDv(true);
             }
         } else {
-            this.dataverse = dataverseService.findRootDataverse();
+            this.dataverse = settingsWrapper.getRootDataverse();
 //            this.dataverseSubtreeContext = "all";
             this.setRootDv(true);
         }
@@ -1348,7 +1344,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 if (dataverse.getId().equals(result.getParentIdAsLong())) {
                     // definitely NOT linked:
                     result.setIsInTree(true);
-                } else if (result.getParentIdAsLong() == dataverseService.findRootDataverse().getId()) {
+                } else if (result.getParentIdAsLong().equals(settingsWrapper.getRootDataverse().getId())) {
                     // the object's parent is the root Dv; and the current 
                     // Dv is NOT root... definitely linked:
                     result.setIsInTree(false);
