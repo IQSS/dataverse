@@ -30,6 +30,7 @@ import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -170,6 +171,9 @@ public class EditDatafilesPage implements java.io.Serializable {
     private final Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
 
     private Long maxFileUploadSizeInBytes = null;
+    private Long maxIngestSizeInBytes = null;
+    // CSV: 4.8 MB, DTA: 976.6 KB, XLSX: 5.7 MB, etc.
+    private String humanPerFormatTabularLimits = null;
     private Integer multipleUploadFilesLimit = null; 
     
     //MutableBoolean so it can be passed from DatasetPage, supporting DatasetPage.cancelCreate()
@@ -324,7 +328,35 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         return this.maxFileUploadSizeInBytes == null;
     }
-    
+
+    public Long getMaxIngestSizeInBytes() {
+        return maxIngestSizeInBytes;
+    }
+
+    public String getHumanMaxIngestSizeInBytes() {
+        return FileSizeChecker.bytesToHumanReadable(this.maxIngestSizeInBytes);
+    }
+
+    public String getHumanPerFormatTabularLimits() {
+        return humanPerFormatTabularLimits;
+    }
+
+    public String populateHumanPerFormatTabularLimits() {
+        String keyPrefix = ":TabularIngestSizeLimit:";
+        List<String> formatLimits = new ArrayList<>();
+        for (Setting setting : settingsService.listAll()) {
+            String name = setting.getName();
+            if (!name.startsWith(keyPrefix)) {
+                continue;
+            }
+            String tabularName = setting.getName().substring(keyPrefix.length());
+            String bytes = setting.getContent();
+            String humanReadableSize = FileSizeChecker.bytesToHumanReadable(Long.valueOf(bytes));
+            formatLimits.add(tabularName + ": " + humanReadableSize);
+        }
+        return String.join(", ", formatLimits);
+    }
+
     /*
         The number of files the GUI user is allowed to upload in one batch, 
         via drag-and-drop, or through the file select dialog. Now configurable 
@@ -463,6 +495,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         selectedFiles = selectedFileMetadatasList;
         
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
+        this.maxIngestSizeInBytes = systemConfig.getTabularIngestSizeLimit();
+        this.humanPerFormatTabularLimits = populateHumanPerFormatTabularLimits();
         this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
         
         logger.fine("done");
@@ -513,6 +547,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         clone = workingVersion.cloneDatasetVersion();   
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
+        this.maxIngestSizeInBytes = systemConfig.getTabularIngestSizeLimit();
+        this.humanPerFormatTabularLimits = populateHumanPerFormatTabularLimits();
         this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();        
 
         // -------------------------------------------
