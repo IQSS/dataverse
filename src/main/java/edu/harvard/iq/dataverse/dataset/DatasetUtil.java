@@ -540,13 +540,13 @@ public class DatasetUtil {
 
     public static String getLicenseName(DatasetVersion dsv) {
         License license = dsv.getTermsOfUseAndAccess().getLicense();
-        return license != null ? dsv.getTermsOfUseAndAccess().getLicense().getName()
+        return license != null ? license.getName()
                 : BundleUtil.getStringFromBundle("license.custom");
     }
 
     public static String getLicenseURI(DatasetVersion dsv) {
         License license = dsv.getTermsOfUseAndAccess().getLicense();
-        return license != null ? dsv.getTermsOfUseAndAccess().getLicense().getUri().toString()
+        return license != null ? license.getUri().toString()
                 : (dsv.getVersionState().name().equals("DRAFT")
                         ? dsv.getDataverseSiteUrl()
                                 + "/api/datasets/:persistentId/versions/:draft/customlicense?persistentId="
@@ -554,5 +554,15 @@ public class DatasetUtil {
                         : dsv.getDataverseSiteUrl() + "/api/datasets/:persistentId/versions/" + dsv.getVersionNumber()
                                 + "." + dsv.getMinorVersionNumber() + "/customlicense?persistentId="
                                 + dsv.getDataset().getGlobalId().asString());
+    }
+
+    public static String getLicenseIcon(DatasetVersion dsv) {
+        License license = dsv.getTermsOfUseAndAccess().getLicense();
+        return license != null ? license.getIconUrl().toString() : null;
+    }
+
+    public static String getLicenseDescription(DatasetVersion dsv) {
+        License license = dsv.getTermsOfUseAndAccess().getLicense();
+        return license != null ? license.getShortDescription() : BundleUtil.getStringFromBundle("license.custom.description");
     }
 }

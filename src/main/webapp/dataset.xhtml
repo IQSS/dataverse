@@ -633,15 +633,10 @@
                                                         #{bundle['file.dataFilesTab.terms.list.license']}
                                                     </th>
                                                     <td>
-                                                        <ui:fragment rendered="#{!empty DatasetPage.workingVersion.termsOfUseAndAccess.license}">
-                                                            <p>
-                                                                <img src="#{DatasetPage.workingVersion.termsOfUseAndAccess.license.iconUrl}" title="#{DatasetPage.workingVersion.termsOfUseAndAccess.license.shortDescription}" style="display:none"  onload="this.style.display='inline'" />
-                                                                <a href="#{DatasetPage.workingVersion.termsOfUseAndAccess.license.uri}" title="#{DatasetPage.workingVersion.termsOfUseAndAccess.license.shortDescription}" target="_blank">#{DatasetPage.workingVersion.termsOfUseAndAccess.license.name}</a>
-                                                            </p>
-                                                        </ui:fragment>
-                                                        <ui:fragment rendered="#{empty DatasetPage.workingVersion.termsOfUseAndAccess.license}">
-                                                            <p>#{bundle['license.custom']}</p>
-                                                        </ui:fragment>
+                                                        <p>
+                                                            <img src="#{DatasetUtil.getLicenseIcon(DatasetPage.workingVersion)}" title="#{DatasetUtil.getLicenseDescription(DatasetPage.workingVersion)}" style="display:none"  onload="this.style.display='inline'" />
+                                                            <a href="#{DatasetUtil.getLicenseURI(DatasetPage.workingVersion)}" title="#{DatasetUtil.getLicenseDescription(DatasetPage.workingVersion)}" target="_blank">#{DatasetUtil.getLicenseName(DatasetPage.workingVersion)}</a>
+                                                        </p>
                                                     </td>
                                                 </tr>
                                             </tbody>
