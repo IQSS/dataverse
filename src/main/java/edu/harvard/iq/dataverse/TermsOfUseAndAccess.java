@@ -5,14 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.io.Serializable;
-import java.net.URI;
-import javax.faces.application.FacesMessage;
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.faces.validator.ValidatorException;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
