@@ -520,7 +520,7 @@ public class AccessIT {
 
         listAccessRequestResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiTokenRando);
         listAccessRequestResponse.prettyPrint();
-        assertEquals(400, listAccessRequestResponse.getStatusCode());
+        assertEquals(403, listAccessRequestResponse.getStatusCode());
 
         Response rejectFileAccessResponse = UtilIT.rejectFileAccessRequest(tabFile3IdRestrictedNew.toString(), "@" + apiIdentifierRando, apiToken);
         assertEquals(200, rejectFileAccessResponse.getStatusCode());
