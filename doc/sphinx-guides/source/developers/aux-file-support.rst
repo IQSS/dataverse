@@ -24,8 +24,7 @@ You should expect a 200 ("OK") response and JSON with information about your new
 
 Downloading an Auxiliary File that Belongs to a Datafile
 --------------------------------------------------------
-To download an auxiliary file, use the primary key of the datafile, and the
-formatTag and formatVersion (if applicable) associated with the auxiliary file:
+To download an auxiliary file, use the primary key of the datafile, and the formatTag and formatVersion (if applicable) associated with the auxiliary file. An API token is shown in the example below but it is not necessary if the auxiliary file was uploaded with isPublic=true and the dataset has been published.
 
 .. code-block:: bash
 
