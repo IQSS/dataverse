@@ -340,7 +340,7 @@ public class JsonParser {
             terms.setLicense(parseLicense(obj.getString("license", null)));
             terms.setFileAccessRequest(obj.getBoolean("fileAccessRequest", false));
             dsv.setTermsOfUseAndAccess(terms);
-            
+            terms.setDatasetVersion(dsv);
             dsv.setDatasetFields(parseMetadataBlocks(obj.getJsonObject("metadataBlocks")));
 
             JsonArray filesJson = obj.getJsonArray("files");

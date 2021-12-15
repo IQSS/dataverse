@@ -162,6 +162,8 @@ public class SwordServiceBean {
                 }
                 terms.setLicense(existingLicense);
                 terms.setLicense(unspecifiedLicense);
+                terms.setFileAccessRequest(datasetVersionToMutate.getTermsOfUseAndAccess().isFileAccessRequest());
+                terms.setDatasetVersion(datasetVersionToMutate);
                 setTermsOfUse(datasetVersionToMutate, dcterms, unspecifiedLicense);
             }
             return;

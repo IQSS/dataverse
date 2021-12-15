@@ -1,6 +1,8 @@
 -- this query will identify datasets where at least one file does not have either terms of access or request access enabled, and will include owner information for those datasets
 
-select au.email, concat('$SERVERNAME/dataset.xhtml?persistentId=doi:' , dvo.authority , '/' ,  dvo.identifier)
+select au.email, 
+concat(au.firstname, ' ', au.lastname),
+concat('$SERVERNAME/dataset.xhtml?persistentId=doi:' , dvo.authority , '/' ,  dvo.identifier)
 from roleassignment ra, dataverserole dvr,
 authenticateduser au, dvobject dvo
 where
