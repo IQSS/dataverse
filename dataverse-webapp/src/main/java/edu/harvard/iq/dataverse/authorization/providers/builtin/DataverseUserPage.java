@@ -121,6 +121,8 @@ public class DataverseUserPage implements java.io.Serializable {
     private List<String> passwordErrors;
     private List<ConsentDto> consents = new ArrayList<>();
 
+    private Boolean notificationLanguageSelectionEnabled;
+
     // -------------------- GETTERS --------------------
 
     public int getActiveIndex() {
@@ -171,11 +173,16 @@ public class DataverseUserPage implements java.io.Serializable {
         return username;
     }
 
+    public Boolean getNotificationLanguageSelectionEnabled() {
+        return notificationLanguageSelectionEnabled;
+    }
+
     // -------------------- LOGIC --------------------
 
     public String init() {
         // prevent creating a user if signup not allowed.
         boolean signupAllowed = systemConfig.isSignupAllowed();
+        notificationLanguageSelectionEnabled = settingsWrapper.isLocalesConfigured();
 
         if (editMode == EditMode.CREATE && !signupAllowed) {
             return "/403.xhtml";
@@ -189,6 +196,9 @@ public class DataverseUserPage implements java.io.Serializable {
                 // in create mode for new user
                 userDisplayInfo = new AuthenticatedUserDisplayInfo();
                 consents = consentService.prepareConsentsForView(session.getLocale());
+                if (!notificationLanguageSelectionEnabled) {
+                    preferredNotificationsLanguage = Locale.forLanguageTag(getSupportedLanguages().get(0));
+                }
                 return "";
             }
         }

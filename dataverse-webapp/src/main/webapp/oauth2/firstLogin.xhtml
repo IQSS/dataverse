@@ -131,10 +131,11 @@
                                     <p:inputText id="position" styleClass="form-control" value="#{OAuth2FirstLoginPage.newUser.displayInfo.position}"/>
                                 </div>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group" jsf:rendered="#{OAuth2FirstLoginPage.notificationLanguageSelectionEnabled}">
                                 <!-- E-mail notifications language -->
                                 <label for="position" class="col-sm-3 control-label">
                                     #{bundle['user.notificationsLanguage']}
+                                    <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.notificationsLanguage.tip']}"></span>
                                 </label>
@@ -143,9 +144,7 @@
                                                      styleClass="facet-category-default"
                                                      disabled="#{false}"
                                                      validator="#{OAuth2FirstLoginPage.validatePreferredNotificationsLanguage}"
-                                                     value="#{OAuth2FirstLoginPage.preferredNotificationsLanguage}"
-                                                     required="#{true}"
-                                    >
+                                                     value="#{OAuth2FirstLoginPage.preferredNotificationsLanguage}">
                                         <f:selectItem
                                                 itemLabel="#{bundle['user.notificationsLanguage.selectItem']}"
                                                 noSelectionOption="true"

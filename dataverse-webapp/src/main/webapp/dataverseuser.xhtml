@@ -490,7 +490,7 @@
                                     </div>
                                 </div>
                                 <!-- Notifications Language -->
-                                <div class="form-group">
+                                <div class="form-group" jsf:rendered="#{DataverseUserPage.notificationLanguageSelectionEnabled}">
                                     <label for="notificationsLanguage" class="col-sm-3 control-label">
                                         #{bundle['user.notificationsLanguage']}
                                     </label>
@@ -685,7 +685,7 @@
                                         <p:message for="position" display="text" />
                                     </div>
                                 </div>
-                                <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
+                                <div class="form-group" jsf:rendered="#{(DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT') and DataverseUserPage.notificationLanguageSelectionEnabled}">
                                     <!-- E-mail notifications language -->
                                     <label for="position" class="col-sm-3 control-label">
                                         #{bundle['user.notificationsLanguage']}

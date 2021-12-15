@@ -117,6 +117,8 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
 
     private Locale preferredNotificationsLanguage;
 
+    private Boolean notificationLanguageSelectionEnabled;
+
     // -------------------- GETTERS --------------------
 
     public AuthenticationProvider getAuthProvider() {
@@ -147,6 +149,10 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         return authenticationFailed;
     }
 
+    public Boolean getNotificationLanguageSelectionEnabled() {
+        return notificationLanguageSelectionEnabled;
+    }
+
     // -------------------- LOGIC --------------------
 
     /**
@@ -157,11 +163,10 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
      *                     happen* <p> <p> <p> * Famous last sentences etc.
      */
     public String init() throws IOException {
-
+        notificationLanguageSelectionEnabled = settingsWrapper.isLocalesConfigured();
         if (systemConfig.isReadonlyMode()) {
             return "/403.xhtml";
         }
-
         DevOAuthAccountType devMode = systemConfig.getDevOAuthAccountType();
         logger.log(Level.FINEST, () -> "devMode: " + devMode);
 
@@ -188,7 +193,10 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
                     .orElse(null);
 
         setSelectedEmail(emailToSuggest);
-        preferredNotificationsLanguage = session.getLocale();
+
+        if (!notificationLanguageSelectionEnabled) {
+            preferredNotificationsLanguage = Locale.forLanguageTag(getSupportedLanguages().get(0));
+        }
         authProvider = authenticationSvc.getAuthenticationProvider(newUser.getServiceId());
         installationName = installationConfigService.getNameOfInstallation();
         consents = consentService.prepareConsentsForView(session.getLocale());
