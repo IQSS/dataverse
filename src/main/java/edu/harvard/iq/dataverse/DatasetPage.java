@@ -130,7 +130,7 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.io.IOUtils;
-
+import org.primefaces.component.selectonemenu.SelectOneMenu;
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.CloseEvent;
 import org.primefaces.event.TabChangeEvent;
@@ -361,6 +361,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void setLicenseId(Long licenseId) {
+        logger.fine("Setting license id to: " + licenseId);
         this.licenseId = licenseId;
     }
 
@@ -5891,13 +5892,17 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void validateTerms(FacesContext context, UIComponent component, Object value) throws ValidatorException {
-        // NOTE, how do we get the current license selection?
-        if (StringUtils.isBlank((String) value)) {
-            FacesMessage msg = new FacesMessage("Empty or whitespace!");//BundleUtil.getStringFromBundle("theme.validateTagline"));
-            msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+        logger.fine("licenseId is : " + licenseId);
+        UIComponent lic = component.findComponent("licenses");
+        SelectOneMenu som = (SelectOneMenu) lic;
+        logger.fine("license in form is " + som.getValue());
+        if (som.getValue() == null) {
+            if (StringUtils.isBlank((String) value)) {
+                FacesMessage msg = new FacesMessage("Empty or whitespace!");// BundleUtil.getStringFromBundle("theme.validateTagline"));
+                msg.setSeverity(FacesMessage.SEVERITY_ERROR);
 
-            throw new ValidatorException(msg);
+                throw new ValidatorException(msg);
+            }
         }
-
     }
 }
