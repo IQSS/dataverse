@@ -5898,7 +5898,7 @@ public class DatasetPage implements java.io.Serializable {
         logger.fine("license in form is " + som.getValue());
         if (som.getValue() == null) {
             if (StringUtils.isBlank((String) value)) {
-                FacesMessage msg = new FacesMessage("Empty or whitespace!");// BundleUtil.getStringFromBundle("theme.validateTagline"));
+                FacesMessage msg = new FacesMessage(BundleUtil.getStringFromBundle("dataset.license.custom.blankterms"));
                 msg.setSeverity(FacesMessage.SEVERITY_ERROR);
 
                 throw new ValidatorException(msg);
