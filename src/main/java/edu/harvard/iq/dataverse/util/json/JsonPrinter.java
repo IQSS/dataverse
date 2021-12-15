@@ -35,6 +35,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
@@ -357,10 +358,8 @@ public class JsonPrinter {
                 .add("releaseTime", format(dsv.getReleaseTime()))
                 .add("createTime", format(dsv.getCreateTime()))
                 .add("license", jsonObjectBuilder()
-                        .add("label", dsv.getTermsOfUseAndAccess().getLicense() != null ? dsv.getTermsOfUseAndAccess().getLicense().getName() : "CUSTOM")
-                        .add("uri", dsv.getTermsOfUseAndAccess().getLicense() != null ? dsv.getTermsOfUseAndAccess().getLicense().getUri().toString() :
-                                (dsv.getVersionState().name().equals("DRAFT") ? dsv.getDataverseSiteUrl() + "/api/datasets/:persistentId/versions/:draft/customlicense?persistentId=" + dsv.getDataset().getGlobalId().asString() :
-                                        dsv.getDataverseSiteUrl() + "/api/datasets/:persistentId/versions/" + dsv.getVersionNumber() + "." + dsv.getMinorVersionNumber() + "/customlicense?persistentId=" + dsv.getDataset().getGlobalId().asString())))
+                        .add("label", DatasetUtil.getLicenseName(dsv))
+                        .add("uri", DatasetUtil.getLicenseURI(dsv)))
                 .add("confidentialityDeclaration", dsv.getTermsOfUseAndAccess().getConfidentialityDeclaration() != null ? dsv.getTermsOfUseAndAccess().getConfidentialityDeclaration() : null)
                 .add("availabilityStatus", dsv.getTermsOfUseAndAccess().getAvailabilityStatus() != null ? dsv.getTermsOfUseAndAccess().getAvailabilityStatus() : null)
                 .add("specialPermissions", dsv.getTermsOfUseAndAccess().getSpecialPermissions() != null ? dsv.getTermsOfUseAndAccess().getSpecialPermissions() : null)
