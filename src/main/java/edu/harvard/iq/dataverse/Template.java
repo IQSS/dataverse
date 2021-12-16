@@ -313,7 +313,7 @@ public class Template implements Serializable {
         return dsf;
     }
 
-    public Template cloneNewTemplate(Template source, License license) {
+    public Template cloneNewTemplate(Template source) {
         Template newTemplate = new Template();
         Template latestVersion = source;
         //if the latest version has values get them copied over
