@@ -96,7 +96,7 @@ Install PostgreSQL
 
 The Dataverse Software has been tested with PostgreSQL versions up to 13. PostgreSQL version 10+ is required. 
 
-On Mac, go to https://www.postgresql.org/download/macosx/ and choose "Interactive installer by EDB" option. Note that version 13.5 is used in the command line examples below, but the process should similar for other versions. When prompted to set a password for the "database superuser (postgres)" just enter "password".
+On Mac, go to https://www.postgresql.org/download/macosx/ and choose "Interactive installer by EDB" option. Note that version 13.5 is used in the command line examples below, but the process should be similar for other versions. When prompted to set a password for the "database superuser (postgres)" just enter "password".
 
 After installation is complete, make a backup of the ``pg_hba.conf`` file like this:
 
