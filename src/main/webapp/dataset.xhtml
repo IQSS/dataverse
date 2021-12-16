@@ -634,8 +634,9 @@
                                                     </th>
                                                     <td>
                                                         <p>
-                                                            <img src="#{DatasetUtil.getLicenseIcon(DatasetPage.workingVersion)}" title="#{DatasetUtil.getLicenseDescription(DatasetPage.workingVersion)}" style="display:none"  onload="this.style.display='inline'" />
-                                                            <a href="#{DatasetUtil.getLicenseURI(DatasetPage.workingVersion)}" title="#{DatasetUtil.getLicenseDescription(DatasetPage.workingVersion)}" target="_blank">#{DatasetUtil.getLicenseName(DatasetPage.workingVersion)}</a>
+                                                            <o:importFunctions type="edu.harvard.iq.dataverse.dataset.DatasetUtil" />
+                                                            <img src="#{DatasetUtil:getLicenseIcon(DatasetPage.workingVersion)}" title="#{DatasetUtil:getLicenseDescription(DatasetPage.workingVersion)}" style="display:none"  onload="this.style.display='inline'" />
+                                                            <a href="#{DatasetUtil:getLicenseURI(DatasetPage.workingVersion)}" title="#{DatasetUtil:getLicenseDescription(DatasetPage.workingVersion)}" target="_blank">#{DatasetUtil:getLicenseName(DatasetPage.workingVersion)}</a>
                                                         </p>
                                                     </td>
                                                 </tr>
