@@ -285,10 +285,6 @@ public class TermsOfUseAndAccess implements Serializable {
         disclaimer = null;
     }
     
-    public Long getLicenseId() {
-        return license == null ? null : license.getId();
-    }
-    
     /**
      * @todo What does the GUI use for a default license? What does the "native"
      * API use? See also https://github.com/IQSS/dataverse/issues/1385
