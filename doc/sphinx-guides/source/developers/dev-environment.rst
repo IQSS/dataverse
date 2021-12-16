@@ -96,21 +96,21 @@ Install PostgreSQL
 
 The Dataverse Software has been tested with PostgreSQL versions up to 13. PostgreSQL version 10+ is required. 
 
-On Mac, go to https://www.postgresql.org/download/macosx/ and choose "Interactive installer by EDB" option. Note that version 13.1 is used in the command line examples below, but the process will be identical for any version up to 13. When prompted to set a password for the "database superuser (postgres)" just enter "password".
+On Mac, go to https://www.postgresql.org/download/macosx/ and choose "Interactive installer by EDB" option. Note that version 13.5 is used in the command line examples below, but the process should similar for other versions. When prompted to set a password for the "database superuser (postgres)" just enter "password".
 
 After installation is complete, make a backup of the ``pg_hba.conf`` file like this:
 
-``sudo cp /Library/PostgreSQL/13.1/data/pg_hba.conf /Library/PostgreSQL/13.1/data/pg_hba.conf.orig``
+``sudo cp /Library/PostgreSQL/13/data/pg_hba.conf /Library/PostgreSQL/13/data/pg_hba.conf.orig``
 
 Then edit ``pg_hba.conf`` with an editor such as vi:
 
-``sudo vi /Library/PostgreSQL/13.1/data/pg_hba.conf``
+``sudo vi /Library/PostgreSQL/13/data/pg_hba.conf``
 
-In the "METHOD" column, change all instances of "md5" to "trust". This will make it so PostgreSQL doesn't require a password.
+In the "METHOD" column, change all instances of "scram-sha-256" (or whatever is in that column) to "trust". This will make it so PostgreSQL doesn't require a password.
 
-In the Finder, click "Applications" then "PostgreSQL 13.1" and launch the "Reload Configuration" app. Click "OK" after you see "server signaled".
+In the Finder, click "Applications" then "PostgreSQL 13" and launch the "Reload Configuration" app. Click "OK" after you see "server signaled".
 
-Next, to confirm the edit worked, launch the "pgAdmin" application from the same folder. Under "Browser", expand "Servers" and double click "PostgreSQL 13.1". When you are prompted for a password, leave it blank and click "OK". If you have successfully edited "pg_hba.conf", you can get in without a password.
+Next, to confirm the edit worked, launch the "pgAdmin" application from the same folder. Under "Browser", expand "Servers" and double click "PostgreSQL 13". When you are prompted for a password, leave it blank and click "OK". If you have successfully edited "pg_hba.conf", you can get in without a password.
 
 On Linux, you should just install PostgreSQL using your favorite package manager, such as ``yum``. (Consult the PostgreSQL section of :doc:`/installation/prerequisites` in the main Installation guide for more info and command line examples). Find ``pg_hba.conf`` and set the authentication method to "trust" and restart PostgreSQL.
 
