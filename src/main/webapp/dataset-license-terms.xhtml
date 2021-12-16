@@ -16,6 +16,7 @@
            <span class="glyphicon glyphicon-briefcase"/> #{bundle['file.dataFilesTab.terms.editTermsBtn']}
        </p:commandLink>
     </div>
+    <div class="panel-group">
        <div class="panel panel-default">
            <div data-toggle="collapse" data-target="#panelCollapseTOU" class="panel-heading text-info">
                #{bundle['file.dataFilesTab.terms.list.termsOfUse.header']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
@@ -41,7 +42,9 @@
                                <ui:fragment rendered="#{!empty editMode}">
                                    <p class="help-block"><h:outputText value="#{bundle['file.dataFilesTab.terms.list.license.edit.description']}" escape="false"/></p>
                                    <p:selectOneMenu id="licenses" value="#{termsOfUseAndAccess.license}" style="width: 40%" converter="licenseConverter">
-                                       <f:selectItems value="#{DatasetPage.licenseSelectItems}" />
+                                       <f:selectItems value="#{licenseServiceBean.listAllActive()}"
+                                                   var="license" itemLabel="#{license.name}" itemValue="#{license}"/>
+                                       <f:selectItem itemLabel="#{bundle['license.custom']}" itemValue="#{null}" rendered="#{settingsWrapper.customLicenseAllowed}"/>
                                        <p:ajax update="touFragment" oncomplete="javascript:bind_bsui_components();" />
                                    </p:selectOneMenu>
                                </ui:fragment>
