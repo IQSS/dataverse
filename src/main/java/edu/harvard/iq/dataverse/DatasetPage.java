@@ -354,23 +354,23 @@ public class DatasetPage implements java.io.Serializable {
         this.showIngestSuccess = showIngestSuccess;
     }
 
-    private Long licenseId;
+    private License license;
 
-    public Long getLicenseId() {
-        return licenseId;
+    public License getLicense() {
+        return license;
     }
 
-    public void setLicenseId(Long licenseId) {
-        logger.fine("Setting license id to: " + licenseId);
-        this.licenseId = licenseId;
+    public void setLicense(License license) {
+        logger.fine("Setting license id to: " + (license==null?"None":license.getName()));
+        this.license = license;
     }
 
     public License getSelectedLicenseById(){
-        License license = licenseServiceBean.getById(licenseId);
-            if (license != null) {
-                return license;
+        License license2 = licenseServiceBean.getById(license.getId());
+            if (license2 != null) {
+                return license2;
             } else {
-                logger.log(Level.WARNING, "License with ID {0} doesn't exist.", licenseId);
+                logger.log(Level.WARNING, "License with ID {0} doesn't exist.", license.getId());
                 return null;
             }
     }
@@ -2108,7 +2108,7 @@ public class DatasetPage implements java.io.Serializable {
         datasetExploreTools = externalToolService.findDatasetToolsByType(ExternalTool.Type.EXPLORE);
         rowsPerPage = 10;
         licenseSelectItems = licenseServiceBean.listAllActive().stream()
-                                                             .map(license -> new SelectItem(license.getId().toString(), license.getName()))
+                                                             .map(license -> new SelectItem(license, license.getName()))
                                                              .collect(Collectors.toList());
         if (systemConfig.isAllowCustomTerms()) {
             licenseSelectItems.add(new SelectItem(null, BundleUtil.getStringFromBundle("license.custom")));
@@ -2488,9 +2488,9 @@ public class DatasetPage implements java.io.Serializable {
             JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.editMetadata.label"), BundleUtil.getStringFromBundle("dataset.message.editMetadata.message"));
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset Metadata", " - Add more metadata about your dataset to help others easily find it."));
         } else if (editMode.equals(EditMode.LICENSE)){
-            License license = dataset.getEditVersion().getTermsOfUseAndAccess().getLicense();
-            if (license != null) {
-                licenseId = license.getId();
+            License dsvlicense = dataset.getEditVersion().getTermsOfUseAndAccess().getLicense();
+            if (dsvlicense != null) {
+                license = dsvlicense;
             }
             JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.editTerms.label"), BundleUtil.getStringFromBundle("dataset.message.editTerms.message"));
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset License and Terms", " - Update your dataset's license and terms of use."));
@@ -3707,12 +3707,12 @@ public class DatasetPage implements java.io.Serializable {
      */
     private void setLicense(DatasetVersion editVersion){
         TermsOfUseAndAccess terms = editVersion.getTermsOfUseAndAccess();
-        if (licenseId == null) {
+        if (license == null) {
             terms.setLicense(null);
         } else {
-            License license = licenseServiceBean.getById(licenseId);
-            if (license == null) license = licenseServiceBean.getDefault();
-            terms.setLicense(license);
+            License newlicense = licenseServiceBean.getById(license.getId());
+            if (newlicense == null) newlicense = licenseServiceBean.getDefault();
+            terms.setLicense(newlicense);
             terms.clearCustomTermsVariables();
         }
     }
@@ -5892,7 +5892,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void validateTerms(FacesContext context, UIComponent component, Object value) throws ValidatorException {
-        logger.fine("licenseId is : " + licenseId);
+        logger.fine("licenseId is : " + (license == null? 0 : license.getId()));
         UIComponent lic = component.findComponent("licenses");
         SelectOneMenu som = (SelectOneMenu) lic;
         logger.fine("license in form is " + som.getValue());
