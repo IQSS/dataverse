@@ -65,7 +65,7 @@
                             </div>
                         </div>
                         <p:dataTable id="allTemplates" styleClass="manageTable" var="template" value="#{manageTemplatesPage.templates}" widgetVar="allTemplates"
-                                     rendered="#{!empty manageTemplatesPage.templates}">
+                                     rendered="#{!empty manageTemplatesPage.templates}" >
                             <p:column width="30%" sortBy="#{template.name}" headerText="#{bundle['dataset.manageTemplates.tab.header.templte']}">
                                 <h:outputText value="#{template.name}" />
                             </p:column>
@@ -75,7 +75,7 @@
                             <p:column width="13%" class="text-center" sortBy="#{template.usageCount}" headerText="#{bundle['dataset.manageTemplates.tab.header.usage']}">
                                 <h:outputText value="#{template.usageCount}" />
                             </p:column>
-                            <p:column width="40%" class="col-manage-action text-center" headerText="#{bundle['dataset.manageTemplates.tab.header.action']}">
+                            <p:column width="40%" class="col-manage-action text-center" headerText="#{bundle['dataset.manageTemplates.tab.header.action']}" style="overflow:visible">
                                 <div jsf:rendered="#{manageTemplatesPage.dataverse.id != template.dataverse.id}">
                                     <em class="text-muted">
                                         <h:outputFormat value="#{bundle['dataset.manageTemplates.tab.action.noedit.createdin']}" escape="false">
@@ -113,7 +113,7 @@
                                         <span class="glyphicon glyphicon-duplicate"></span>
                                     </p:commandLink>
                                     <div class="btn-group" jsf:rendered="#{manageTemplatesPage.dataverse.id eq template.dataverse.id}">
-                                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <button type="button" class="btn btn-default bootstrap-button-tooltip dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" >
                                             <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.manageTemplates.tab.action.btn.edit']} <span class="caret"></span>
                                         </button>
                                         <ul class="dropdown-menu">
@@ -194,6 +194,25 @@
                         </div>
                     </p:dialog>
                 </h:form>
+        <script>
+        //<![CDATA[                   
+            $('.dropdown-menu').parent().on('shown.bs.dropdown', function () {
+                var $menu = $("ul", this);
+                offset = $menu.offset();
+                position = $menu.position();
+                $('body').append($menu);
+                $menu.show();
+                $menu.css('position', 'absolute');
+                $menu.css('top', (offset.top) + 'px');
+                $menu.css('left', (offset.left) + 'px');
+                $(this).data("myDropdownMenu", $menu);
+            });
+            $('.dropdown-menu').parent().on('hide.bs.dropdown', function () {
+                $(this).append($(this).data("myDropdownMenu"));
+                $(this).data("myDropdownMenu").removeAttr('style');
+            });
+        //]]>
+        </script>
             </ui:define>
         </ui:composition>
     </h:body>
