@@ -3565,7 +3565,7 @@ public class DatasetPage implements java.io.Serializable {
                 if (!filesToBeDeleted.isEmpty()) {
                     deleteStorageLocations = datafileService.getPhysicalFilesToDelete(filesToBeDeleted);
                 }
-                if (editMode == EditMode.LICENSE) setLicense(dataset.getEditVersion());
+//                if (editMode == EditMode.LICENSE) setLicense(dataset.getEditVersion());
                 cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted, clone );
                 ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);
             }

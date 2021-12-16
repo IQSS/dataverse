@@ -16,7 +16,6 @@
            <span class="glyphicon glyphicon-briefcase"/> #{bundle['file.dataFilesTab.terms.editTermsBtn']}
        </p:commandLink>
     </div>
-    <div class="panel-group">
        <div class="panel panel-default">
            <div data-toggle="collapse" data-target="#panelCollapseTOU" class="panel-heading text-info">
                #{bundle['file.dataFilesTab.terms.list.termsOfUse.header']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
@@ -41,22 +40,22 @@
                                </ui:fragment>
                                <ui:fragment rendered="#{!empty editMode}">
                                    <p class="help-block"><h:outputText value="#{bundle['file.dataFilesTab.terms.list.license.edit.description']}" escape="false"/></p>
-                                   <p:selectOneMenu id="licenses" value="#{DatasetPage.license}" style="width: 40%" converter="licenseConverter">
+                                   <p:selectOneMenu id="licenses" value="#{termsOfUseAndAccess.license}" style="width: 40%" converter="licenseConverter">
                                        <f:selectItems value="#{DatasetPage.licenseSelectItems}" />
                                        <p:ajax update="touFragment" oncomplete="javascript:bind_bsui_components();" />
                                    </p:selectOneMenu>
                                </ui:fragment>
-                               <ui:fragment rendered="#{!empty termsOfUseAndAccess.license and empty DatasetPage.license and empty editMode}">
+                               <ui:fragment rendered="#{!empty termsOfUseAndAccess.license and empty termsOfUseAndAccess.license and empty editMode}">
                                        <p>
-                                           <img src="#{DatasetPage.workingVersion.termsOfUseAndAccess.license.iconUrl}" title="#{DatasetPage.workingVersion.termsOfUseAndAccess.license.shortDescription}" style="display:none"  onload="this.style.display='inline'" />
+                                           <img src="#{termsOfUseAndAccess.license.iconUrl}" title="#{termsOfUseAndAccess.license.shortDescription}" style="display:none"  onload="this.style.display='inline'" />
                                            <a href="#{termsOfUseAndAccess.license.uri}" title="#{termsOfUseAndAccess.license.shortDescription}" target="_blank">#{termsOfUseAndAccess.license.name}</a>
                                        </p>
 
                                </ui:fragment>
-                               <ui:fragment rendered="#{!empty DatasetPage.license}">
+                               <ui:fragment rendered="#{!empty termsOfUseAndAccess.license}">
                                    <p>
-                                       <img src="#{DatasetPage.getSelectedLicenseById().iconUrl}" title="#{DatasetPage.getSelectedLicenseById().shortDescription}"  style="display:none"  onload="this.style.display='inline'" />
-                                       <a href="#{DatasetPage.getSelectedLicenseById().uri}" title="#{DatasetPage.getSelectedLicenseById().shortDescription}" target="_blank">#{DatasetPage.getSelectedLicenseById().name}</a>
+                                       <img src="#{termsOfUseAndAccess.license.iconUrl}" title="#{termsOfUseAndAccess.license.shortDescription}"  style="display:none"  onload="this.style.display='inline'" />
+                                       <a href="#{termsOfUseAndAccess.license.uri}" title="#{termsOfUseAndAccess.license.shortDescription}" target="_blank">#{termsOfUseAndAccess.license.name}</a>
                                    </p>
                                </ui:fragment>
                            </div>
@@ -145,7 +144,7 @@
                                 </div>
                             </div>
                         </ui:fragment>
-                        <ui:fragment rendered="#{!empty editMode and DatasetPage.license == null}">
+                        <ui:fragment rendered="#{!empty editMode and termsOfUseAndAccess.license == null}">
                             <div class="form-group">
                                 <label for="metadata_TermsUse" class="col-sm-3 control-label">
                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
