@@ -386,6 +386,9 @@ of two methods described below:
 1. Manually through creation of the credentials and config files or
 2. Automatically via the AWS console commands.
 
+Some usage scenarios might be eased without generating these files. You may also provide :ref:`static credentials via
+MicroProfile Config <s3-mpconfig>`, see below.
+
 Preparation When Using Amazon's S3 Service
 ##########################################
 
@@ -542,12 +545,39 @@ dataverse.files.<id>.min-part-size           <?>                 Multipart direc
 dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.          (none)
 dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                             ``dataverse``
 dataverse.files.<id>.profile                 <?>                 Allows the use of AWS profiles for storage spanning multiple AWS accounts.  (none)
+dataverse.files.<id>.access-key              <?>                 :ref:`Provide static access key ID. Read before use! <s3-mpconfig>`         ``""``
+dataverse.files.<id>.secret-key              <?>                 :ref:`Provide static secret access key. Read before use! <s3-mpconfig>`     ``""``
 dataverse.files.<id>.proxy-url               <?>                 URL of a proxy protecting the S3 store. Optional.                           (none)
 dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.                     ``false``
 dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                            ``false``
 dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                          ``true``
 dataverse.files.<id>.connection-pool-size    <?>                 The maximum number of open connections to the S3 server                     ``256``
 ===========================================  ==================  ==========================================================================  =============
+
+.. _s3-mpconfig:
+
+Credentials via MicroProfile Config
+###################################
+
+Optionally, you may provide static credentials for each S3 storage using MicroProfile Config options:
+
+- ``dataverse.files.<id>.access-key`` for this storages "access key ID"
+- ``dataverse.files.<id>.secret-key`` for this storages "secret access key"
+
+You may provide the values for these via any of the
+`supported config sources <https://docs.payara.fish/community/docs/documentation/microprofile/config/README.html>`_.
+
+**WARNING:**
+
+*For security, do not use the sources "environment variable" or "system property" (JVM option) in a production context!*
+*Rely on password alias, secrets directory or cloud based sources instead!*
+
+**NOTE:**
+
+1. Providing both AWS CLI profile files (as setup in first step) and static keys, credentials from ``~/.aws``
+   will win over configured keys when valid!
+2. A non-empty ``dataverse.files.<id>.profile`` will be ignored when no credentials can be found for this profile name.
+   Current codebase does not make use of "named profiles" as seen for AWS CLI besides credentials.
 
 Reported Working S3-Compatible Storage
 ######################################
