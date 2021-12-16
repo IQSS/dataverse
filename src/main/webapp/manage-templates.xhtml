@@ -65,7 +65,7 @@
                             </div>
                         </div>
                         <p:dataTable id="allTemplates" styleClass="manageTable" var="template" value="#{manageTemplatesPage.templates}" widgetVar="allTemplates"
-                                     rendered="#{!empty manageTemplatesPage.templates}" >
+                                     rendered="#{!empty manageTemplatesPage.templates}">
                             <p:column width="30%" sortBy="#{template.name}" headerText="#{bundle['dataset.manageTemplates.tab.header.templte']}">
                                 <h:outputText value="#{template.name}" />
                             </p:column>
