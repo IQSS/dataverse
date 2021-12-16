@@ -240,7 +240,7 @@ As for the "Remote only" authentication mode, it means that:
 - ``:DefaultAuthProvider`` has been set to use the desired authentication provider
 - The "builtin" authentication provider has been disabled (:ref:`api-toggle-auth-provider`). Note that disabling the "builtin" authentication provider means that the API endpoint for converting an account from a remote auth provider will not work. Converting directly from one remote authentication provider to another (i.e. from GitHub to Google) is not supported. Conversion from remote is always to "builtin". Then the user initiates a conversion from "builtin" to remote. Note that longer term, the plan is to permit multiple login options to the same Dataverse installation account per https://github.com/IQSS/dataverse/issues/3487 (so all this talk of conversion will be moot) but for now users can only use a single login option, as explained in the :doc:`/user/account` section of the User Guide. In short, "remote only" might work for you if you only plan to use a single remote authentication provider such that no conversion between remote authentication providers will be necessary.
 
-File Storage: Using a Local Filesystem and/or Swift and/or S3 object stores
+File Storage: Using a Local Filesystem and/or Swift and/or object stores
 ---------------------------------------------------------------------------
 
 By default, a Dataverse installation stores all data files (files uploaded by end users) on the filesystem at ``/usr/local/payara5/glassfish/domains/domain1/files``. This path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.\<id\>.directory`` JVM option described below.
@@ -556,6 +556,11 @@ Reported Working S3-Compatible Storage
   Set ``dataverse.files.<id>.path-style-access=true``, as Minio works path-based. Works pretty smooth, easy to setup.
   **Can be used for quick testing, too:** just use the example values above. Uses the public (read: unsecure and
   possibly slow) https://play.minio.io:9000 service.
+
+'StorJ Integration'
+Per the general Dataverse Installation to use S3 Storage noted above, you’ll first set up the StorJ S3 store, by defining the id, type, and label. After Following the general installation set the following configurations to use a StorJ object store - dataverse.files.<id>.payload-signing=true This optional setting will enable payload signing for the S3 bucket. Set dataverse.files.<id>.chunked-encoding=false. This optional setting will disable chunked encoding.
+
+Note that for direct uploads and downloads, Dataverse redirects to the proxy-url but presigns the urls based on the dataverse.files.<id>.custom-endpoint-url. Also, consider that if you choose to enable dataverse.files.<id>.download-redirect note that the S3 URLs expire after 60 minutes by default. You can change that minute value to reflect a timeout value that’s more appropriate by using .dataverse.files.<id>.url-expiration-minutes.
 
 `Surf Object Store v2019-10-30 <https://www.surf.nl/en>`_
   Set ``dataverse.files.<id>.payload-signing=true`` and ``dataverse.files.<id>.chunked-encoding=false`` to use Surf Object
