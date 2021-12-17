@@ -18,7 +18,56 @@ BEGIN
   BEGIN
       UPDATE termsofuseandaccess
         SET license_id = (SELECT license.id FROM license WHERE license.name = 'CC0')
-        WHERE termsofuseandaccess.license = 'CC0' AND termsofuseandaccess.license_id IS NULL;
+        WHERE license = 'CC0' 
+          AND license_id IS NULL 
+          AND termsofuse IS null 
+          AND confidentialitydeclaration IS null 
+          AND specialpermissions IS null 
+          AND restrictions IS null 
+          AND citationrequirements IS null 
+          AND depositorrequirements IS null 
+          AND conditions IS null 
+          AND disclaimer IS null;
+          
+      UPDATE termsofuseandaccess
+        SET termsofuse=CONCAT('This dataset is made available under a Creative Commons CC0 license with the following additional/modified terms and conditions: ', termsofuse) 
+        WHERE license = 'CC0' 
+          AND license_id IS NULL 
+          AND NOT (termsofuse IS null
+          AND confidentialitydeclaration IS null 
+          AND specialpermissions IS null 
+          AND restrictions IS null 
+          AND citationrequirements IS null 
+          AND depositorrequirements IS null 
+          AND conditions IS null 
+          AND disclaimer IS null);
+          
+      UPDATE termsofuseandaccess
+        SET termsofuse='This dataset is made available with limited information on how it can be used. You may wish to communicate with the Contact(s) specified before use.' 
+        WHERE license = 'NONE' 
+          AND license_id IS NULL 
+          AND termsofuse IS null
+          AND NOT (confidentialitydeclaration IS null 
+          AND specialpermissions IS null 
+          AND restrictions IS null 
+          AND citationrequirements IS null 
+          AND depositorrequirements IS null 
+          AND conditions IS null 
+          AND disclaimer IS null);
+          
+      UPDATE termsofuseandaccess
+        SET termsofuse='This dataset is made available without information on how it can be used. You should communicate with the Contact(s) specified before use.' 
+        WHERE license = 'NONE' 
+          AND license_id IS NULL 
+          AND termsofuse IS null
+          AND confidentialitydeclaration IS null 
+          AND specialpermissions IS null 
+          AND restrictions IS null 
+          AND citationrequirements IS null 
+          AND depositorrequirements IS null 
+          AND conditions IS null 
+          AND disclaimer IS null;
+          
   EXCEPTION
     WHEN undefined_column THEN RAISE NOTICE 'license is not in table - new instance';
   END;
