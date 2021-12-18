@@ -17,8 +17,12 @@ import org.jsoup.select.Elements;
 
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +46,8 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     DataFileServiceBean datafileService;
     @EJB
     SystemConfig systemConfig;
+
+    // -------------------- LOGIC --------------------
 
     @Override
     public String getIdentifierForLookup(String protocol, String authority, String identifier) {
@@ -84,17 +90,6 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         metadata.put("datacite.title", dvObjectIn.getDisplayName());
         metadata.put("datacite.publisher", producerString);
         metadata.put("datacite.publicationyear", generateYear(dvObjectIn));
-        return metadata;
-    }
-
-    protected Map<String, String> getDOIMetadataForDestroyedDataset() {
-        Map<String, String> metadata = new HashMap<>();
-        String titleString = "This item has been removed from publication";
-
-        metadata.put("datacite.creator", UNAVAILABLE);
-        metadata.put("datacite.title", titleString);
-        metadata.put("datacite.publisher", UNAVAILABLE);
-        metadata.put("datacite.publicationyear", "9999");
         return metadata;
     }
 
@@ -144,26 +139,53 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         return dvObject;
     }
 
-    class GlobalIdMetadataTemplate {
+    public String getMetadataFromDvObject(String identifier, Map<String, String> metadata, DvObject dvObject) {
 
+        Dataset dataset = (Dataset) (dvObject instanceof Dataset ? dvObject : dvObject.getOwner());
+
+        GlobalIdMetadataTemplate metadataTemplate = new GlobalIdMetadataTemplate();
+        metadataTemplate.setIdentifier(identifier.substring(identifier.indexOf(':') + 1));
+        metadataTemplate.setCreators(getListFromStr(metadata.get("datacite.creator")));
+        metadataTemplate.setAuthors(dataset.getLatestVersion().getDatasetAuthors());
+        if (dvObject.isInstanceofDataset()) {
+            metadataTemplate.setDescription(dataset.getLatestVersion().getDescriptionPlainText());
+        }
+        if (dvObject.isInstanceofDataFile()) {
+            DataFile df = (DataFile) dvObject;
+            String fileDescription = df.getDescription();
+            metadataTemplate.setDescription(fileDescription == null ? "" : fileDescription);
+        }
+
+        metadataTemplate.setContacts(dataset.getLatestVersion().getDatasetContacts());
+        metadataTemplate.setProducers(dataset.getLatestVersion().getDatasetProducers());
+        metadataTemplate.setTitle(dvObject.getDisplayName());
+        String producerString = dataverseDao.findRootDataverse().getName();
+        if (producerString.isEmpty()) {
+            producerString = UNAVAILABLE;
+        }
+        metadataTemplate.setPublisher(producerString);
+        metadataTemplate.setPublisherYear(metadata.get("datacite.publicationyear"));
+
+        String xmlMetadata = metadataTemplate.generateXML(dvObject);
+        logger.log(Level.FINE, "XML to send to DataCite: {0}", xmlMetadata);
+        return xmlMetadata;
+    }
+
+    private List<String> getListFromStr(String str) {
+        return str != null
+                ? Arrays.asList(str.split("; "))
+                : Collections.emptyList();
+    }
+
+    // -------------------- INNER CLASSES --------------------
+
+    // TODO should be refactored to use ResourceDTOCreator
+    static class GlobalIdMetadataTemplate {
 
         private String template;
 
-        public GlobalIdMetadataTemplate() {
-            try (InputStream in = GlobalIdMetadataTemplate.class.getResourceAsStream("datacite_metadata_template.xml")) {
-                template = Util.readAndClose(in, "utf-8");
-            } catch (Exception e) {
-                logger.log(Level.SEVERE, "datacite metadata template load error");
-                logger.log(Level.SEVERE, "String " + e.toString());
-                logger.log(Level.SEVERE, "localized message " + e.getLocalizedMessage());
-                logger.log(Level.SEVERE, "cause " + e.getCause());
-                logger.log(Level.SEVERE, "message " + e.getMessage());
-            }
-        }
-
         private String xmlMetadata;
         private String identifier;
-        private String datasetIdentifier;
         private List<String> datafileIdentifiers;
         private List<String> creators;
         private String title;
@@ -174,46 +196,91 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         private List<String[]> contacts;
         private List<String[]> producers;
 
-        public List<String[]> getProducers() {
-            return producers;
+        // -------------------- CONSTRUCTORS --------------------
+
+        public GlobalIdMetadataTemplate() {
+            try (InputStream in = GlobalIdMetadataTemplate.class.getResourceAsStream("datacite_metadata_template.xml")) {
+                template = readAndClose(in);
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "datacite metadata template load error");
+                logger.log(Level.SEVERE, "String " + e.toString());
+                logger.log(Level.SEVERE, "localized message " + e.getLocalizedMessage());
+                logger.log(Level.SEVERE, "cause " + e.getCause());
+                logger.log(Level.SEVERE, "message " + e.getMessage());
+            }
         }
 
-        public void setProducers(List<String[]> producers) {
-            this.producers = producers;
+        // -------------------- GETTERS --------------------
+
+        public String getTemplate() {
+            return template;
+        }
+
+        public void setTemplate(String templateIn) {
+            template = templateIn;
+        }
+
+        public String getIdentifier() {
+            return identifier;
+        }
+
+        public void setIdentifier(String identifier) {
+            this.identifier = identifier;
+        }
+
+        public List<String> getCreators() {
+            return creators;
+        }
+
+        public void setCreators(List<String> creators) {
+            this.creators = creators;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
+        }
+
+        public String getPublisher() {
+            return publisher;
+        }
+
+        public void setPublisher(String publisher) {
+            this.publisher = publisher;
+        }
+
+        public String getPublisherYear() {
+            return publisherYear;
+        }
+
+        public void setPublisherYear(String publisherYear) {
+            this.publisherYear = publisherYear;
+        }
+
+        public List<String[]> getProducers() {
+            return producers;
         }
 
         public List<String[]> getContacts() {
             return contacts;
         }
 
-        public void setContacts(List<String[]> contacts) {
-            this.contacts = contacts;
-        }
-
         public String getDescription() {
             return description;
-        }
-
-        public void setDescription(String description) {
-            this.description = description;
         }
 
         public List<DatasetAuthor> getAuthors() {
             return authors;
         }
 
-        public void setAuthors(List<DatasetAuthor> authors) {
-            this.authors = authors;
-        }
-
-
         public List<String> getDatafileIdentifiers() {
             return datafileIdentifiers;
         }
 
-        public void setDatafileIdentifiers(List<String> datafileIdentifiers) {
-            this.datafileIdentifiers = datafileIdentifiers;
-        }
+        // -------------------- LOGIC --------------------
 
         public GlobalIdMetadataTemplate(String xmlMetaData) {
             this.xmlMetadata = xmlMetaData;
@@ -256,24 +323,32 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
                     .replace("${description}", this.description);
             StringBuilder creatorsElement = new StringBuilder();
             for (DatasetAuthor author : authors) {
-                creatorsElement.append("<creator><creatorName>");
-                creatorsElement.append(author.getName().getDisplayValue());
-                creatorsElement.append("</creatorName>");
+                creatorsElement.append("<creator><creatorName>")
+                        .append(author.getName().getDisplayValue())
+                        .append("</creatorName>");
 
                 if (author.getIdType() != null && author.getIdValue() != null && !author.getIdType().isEmpty() && !author.getIdValue().isEmpty() && author.getAffiliation() != null && !author.getAffiliation().getDisplayValue().isEmpty()) {
 
                     if (author.getIdType().equals("ORCID")) {
-                        creatorsElement.append("<nameIdentifier schemeURI=\"https://orcid.org/\" nameIdentifierScheme=\"ORCID\">" + author.getIdValue() + "</nameIdentifier>");
+                        creatorsElement.append("<nameIdentifier schemeURI=\"https://orcid.org/\" nameIdentifierScheme=\"ORCID\">")
+                                .append(author.getIdValue())
+                                .append("</nameIdentifier>");
                     }
                     if (author.getIdType().equals("ISNI")) {
-                        creatorsElement.append("<nameIdentifier schemeURI=\"http://isni.org/isni/\" nameIdentifierScheme=\"ISNI\">" + author.getIdValue() + "</nameIdentifier>");
+                        creatorsElement.append("<nameIdentifier schemeURI=\"http://isni.org/isni/\" nameIdentifierScheme=\"ISNI\">")
+                                .append(author.getIdValue())
+                                .append("</nameIdentifier>");
                     }
                     if (author.getIdType().equals("LCNA")) {
-                        creatorsElement.append("<nameIdentifier schemeURI=\"http://id.loc.gov/authorities/names/\" nameIdentifierScheme=\"LCNA\">" + author.getIdValue() + "</nameIdentifier>");
+                        creatorsElement.append("<nameIdentifier schemeURI=\"http://id.loc.gov/authorities/names/\" nameIdentifierScheme=\"LCNA\">")
+                                .append(author.getIdValue())
+                                .append("</nameIdentifier>");
                     }
                 }
                 if (author.getAffiliation() != null && !author.getAffiliation().getValue().isEmpty()) {
-                    creatorsElement.append("<affiliation>" + author.getAffiliation().getValue() + "</affiliation>");
+                    creatorsElement.append("<affiliation>")
+                            .append(author.getAffiliation().getValue())
+                            .append("</affiliation>");
                 }
                 creatorsElement.append("</creator>");
             }
@@ -282,17 +357,25 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
             StringBuilder contributorsElement = new StringBuilder();
             for (String[] contact : this.getContacts()) {
                 if (!contact[0].isEmpty()) {
-                    contributorsElement.append("<contributor contributorType=\"ContactPerson\"><contributorName>" + contact[0] + "</contributorName>");
+                    contributorsElement.append("<contributor contributorType=\"ContactPerson\"><contributorName>")
+                            .append(contact[0])
+                            .append("</contributorName>");
                     if (!contact[1].isEmpty()) {
-                        contributorsElement.append("<affiliation>" + contact[1] + "</affiliation>");
+                        contributorsElement.append("<affiliation>")
+                                .append(contact[1])
+                                .append("</affiliation>");
                     }
                     contributorsElement.append("</contributor>");
                 }
             }
             for (String[] producer : this.getProducers()) {
-                contributorsElement.append("<contributor contributorType=\"Producer\"><contributorName>" + producer[0] + "</contributorName>");
+                contributorsElement.append("<contributor contributorType=\"Producer\"><contributorName>")
+                        .append(producer[0])
+                        .append("</contributorName>");
                 if (!producer[1].isEmpty()) {
-                    contributorsElement.append("<affiliation>" + producer[1] + "</affiliation>");
+                    contributorsElement.append("<affiliation>")
+                            .append(producer[1])
+                            .append("</affiliation>");
                 }
                 contributorsElement.append("</contributor>");
             }
@@ -318,7 +401,9 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
                             if (sb.toString().isEmpty()) {
                                 sb.append("<relatedIdentifiers>");
                             }
-                            sb.append("<relatedIdentifier relatedIdentifierType=\"DOI\" relationType=\"HasPart\">" + dataFile.getGlobalId() + "</relatedIdentifier>");
+                            sb.append("<relatedIdentifier relatedIdentifierType=\"DOI\" relationType=\"HasPart\">")
+                                    .append(dataFile.getGlobalId())
+                                    .append("</relatedIdentifier>");
                         }
                     }
 
@@ -328,130 +413,50 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
                 }
             } else if (dvObject.isInstanceofDataFile()) {
                 DataFile df = (DataFile) dvObject;
-                sb.append("<relatedIdentifiers>");
-                sb.append("<relatedIdentifier relatedIdentifierType=\"DOI\" relationType=\"IsPartOf\""
-                                  + ">" + df.getOwner().getGlobalId() + "</relatedIdentifier>");
-                sb.append("</relatedIdentifiers>");
+                sb.append("<relatedIdentifiers>")
+                        .append("<relatedIdentifier relatedIdentifierType=\"DOI\" relationType=\"IsPartOf\"" + ">")
+                        .append(df.getOwner().getGlobalId())
+                        .append("</relatedIdentifier>")
+                        .append("</relatedIdentifiers>");
             }
             return sb.toString();
         }
 
-        public void generateFileIdentifiers(DvObject dvObject) {
+        // -------------------- PRIVATE --------------------
 
-            if (dvObject.isInstanceofDataset()) {
-                Dataset dataset = (Dataset) dvObject;
-
-                if (!dataset.getFiles().isEmpty() && !(dataset.getFiles().get(0).getIdentifier() == null)) {
-
-                    datafileIdentifiers = new ArrayList<>();
-                    for (DataFile dataFile : dataset.getFiles()) {
-                        datafileIdentifiers.add(dataFile.getIdentifier());
-                        int x = xmlMetadata.indexOf("</relatedIdentifiers>") - 1;
-                        xmlMetadata = xmlMetadata.replace("{relatedIdentifier}", dataFile.getIdentifier());
-                        xmlMetadata = xmlMetadata.substring(0, x) + "<relatedIdentifier relatedIdentifierType=\"hasPart\" "
-                                + "relationType=\"doi\">${relatedIdentifier}</relatedIdentifier>" + template.substring(x, template.length() - 1);
-
-                    }
-
-                } else {
-                    xmlMetadata = xmlMetadata.replace("<relatedIdentifier relatedIdentifierType=\"hasPart\" relationType=\"doi\">${relatedIdentifier}</relatedIdentifier>", "");
+        private String readAndClose(InputStream inStream) {
+            try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
+                byte[] buf = new byte[128];
+                int cnt;
+                while ((cnt = inStream.read(buf)) >= 0) {
+                    outStream.write(buf, 0, cnt);
                 }
+                return outStream.toString("utf-8");
+            } catch (IOException ioe) {
+                throw new RuntimeException("IOException");
             }
         }
 
-        public String getTemplate() {
-            return template;
+        // -------------------- SETTERS --------------------
+
+        public void setProducers(List<String[]> producers) {
+            this.producers = producers;
         }
 
-        public void setTemplate(String templateIn) {
-            template = templateIn;
+        public void setContacts(List<String[]> contacts) {
+            this.contacts = contacts;
         }
 
-        public String getIdentifier() {
-            return identifier;
+        public void setDescription(String description) {
+            this.description = description;
         }
 
-        public void setIdentifier(String identifier) {
-            this.identifier = identifier;
+        public void setAuthors(List<DatasetAuthor> authors) {
+            this.authors = authors;
         }
 
-        public void setDatasetIdentifier(String datasetIdentifier) {
-            this.datasetIdentifier = datasetIdentifier;
-        }
-
-        public List<String> getCreators() {
-            return creators;
-        }
-
-        public void setCreators(List<String> creators) {
-            this.creators = creators;
-        }
-
-        public String getTitle() {
-            return title;
-        }
-
-        public void setTitle(String title) {
-            this.title = title;
-        }
-
-        public String getPublisher() {
-            return publisher;
-        }
-
-        public void setPublisher(String publisher) {
-            this.publisher = publisher;
-        }
-
-        public String getPublisherYear() {
-            return publisherYear;
-        }
-
-        public void setPublisherYear(String publisherYear) {
-            this.publisherYear = publisherYear;
+        public void setDatafileIdentifiers(List<String> datafileIdentifiers) {
+            this.datafileIdentifiers = datafileIdentifiers;
         }
     }
-
-    public String getMetadataFromDvObject(String identifier, Map<String, String> metadata, DvObject dvObject) {
-
-        Dataset dataset = null;
-
-        if (dvObject instanceof Dataset) {
-            dataset = (Dataset) dvObject;
-        } else {
-            dataset = (Dataset) dvObject.getOwner();
-        }
-
-        GlobalIdMetadataTemplate metadataTemplate = new GlobalIdMetadataTemplate();
-        metadataTemplate.setIdentifier(identifier.substring(identifier.indexOf(':') + 1));
-        metadataTemplate.setCreators(Util.getListFromStr(metadata.get("datacite.creator")));
-        metadataTemplate.setAuthors(dataset.getLatestVersion().getDatasetAuthors());
-        if (dvObject.isInstanceofDataset()) {
-            metadataTemplate.setDescription(dataset.getLatestVersion().getDescriptionPlainText());
-        }
-        if (dvObject.isInstanceofDataFile()) {
-            DataFile df = (DataFile) dvObject;
-            String fileDescription = df.getDescription();
-            metadataTemplate.setDescription(fileDescription == null ? "" : fileDescription);
-            String datasetPid = df.getOwner().getGlobalId().asString();
-            metadataTemplate.setDatasetIdentifier(datasetPid);
-        } else {
-            metadataTemplate.setDatasetIdentifier("");
-        }
-
-        metadataTemplate.setContacts(dataset.getLatestVersion().getDatasetContacts());
-        metadataTemplate.setProducers(dataset.getLatestVersion().getDatasetProducers());
-        metadataTemplate.setTitle(dvObject.getDisplayName());
-        String producerString = dataverseDao.findRootDataverse().getName();
-        if (producerString.isEmpty()) {
-            producerString = UNAVAILABLE;
-        }
-        metadataTemplate.setPublisher(producerString);
-        metadataTemplate.setPublisherYear(metadata.get("datacite.publicationyear"));
-
-        String xmlMetadata = metadataTemplate.generateXML(dvObject);
-        logger.log(Level.FINE, "XML to send to DataCite: {0}", xmlMetadata);
-        return xmlMetadata;
-    }
-
 }

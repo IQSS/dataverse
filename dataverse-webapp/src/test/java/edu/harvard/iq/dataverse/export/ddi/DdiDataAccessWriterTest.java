@@ -68,7 +68,7 @@ public class DdiDataAccessWriterTest {
         xmlw.flush();
 
         //then
-        assertThat(writer.toString()).isEqualTo("<dataAccs />");
+        assertThat(writer.toString()).isEqualTo("<dataAccs/>");
     }
 
     @Test

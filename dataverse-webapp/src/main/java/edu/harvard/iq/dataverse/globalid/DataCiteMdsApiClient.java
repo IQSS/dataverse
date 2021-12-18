@@ -28,7 +28,7 @@ import java.util.logging.Logger;
 
 /**
  * Http client for communicating with datacite via mds api
- * 
+ *
  *
  * @author luopc
  * @see https://support.datacite.org/docs/mds-api-guide
@@ -230,38 +230,4 @@ public class DataCiteMdsApiClient implements Closeable {
             throw new RuntimeException("IOException when inactive dataset", ioe);
         }
     }
-
-    public static void main(String[] args) throws Exception {
-        String doi = "10.5072/DVN/274533";
-        DataCiteMdsApiClient client = new DataCiteMdsApiClient("https://mds.test.datacite.org", "DATACITE.HARVARD", "DVNapitest");
-//		System.out.println(client.getUrl(doi));
-//		System.out.println(client.getMetadata(doi));
-//        System.out.println(client.postMetadata(readAndClose("C:/Users/luopc/Desktop/datacite.xml", "utf-8")));
-//        System.out.println(client.postUrl("10.5072/000000001", "http://opendata.pku.edu.cn/dvn/dv/DAIM/faces/study/StudyPage.xhtml?globalId=hdl:TEST/10027&studyListingIndex=1_1acc4e9f23fa10b3cc0500d9eb5e"));
-//        client.close();
-//		String doi2 = "10.1/1.0003";
-//		SimpleRESTfullClient client2 = new SimpleRESTfullClient("https://162.105.140.119:8443/mds", "PKULIB.IR", "luopengcheng","localhost.keystore");
-//		System.out.println(client2.getUrl("10.1/1.0002"));
-//		System.out.println(client2.getUrl("10.1/1.0002"));
-//		System.out.println(client2.getMetadata(doi2));
-//		client2.postUrl("10.1/1.0003", "http://ir.pku.edu.cn");
-//		System.out.println(client2.postUrl("10.1/1.0008", "http://ir.pku.edu.cn"));
-//		System.out.println(client2.postMetadata(FileUtil.loadAsString(new File("C:/Users/luopc/Desktop/test/datacite-example-ResourceTypeGeneral_Collection-v3.0.xml"), "utf-8")));
-//		System.out.println(client2.getMetadata("10.1/1.0007"));
-//		System.out.println(client2.inactiveDataSet("10.1/1.0007"));
-//		client2.close();
-    }
-
-
-//    private static String readAndClose(String file, String encoding) throws IOException{
-//        BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file),encoding));
-//        StringBuilder str = new StringBuilder();
-//        String line;
-//        while((line = in.readLine()) != null){
-//            str.append(line);
-//        }
-//        in.close();
-//        return str.toString();
-//    }
-
 }

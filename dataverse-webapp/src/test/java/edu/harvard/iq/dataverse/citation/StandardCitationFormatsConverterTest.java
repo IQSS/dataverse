@@ -398,8 +398,8 @@ class StandardCitationFormatsConverterTest {
                         "<records>" +
                         "<record>" +
                         "<ref-type name=\"Dataset\">59</ref-type>" +
-                        "<contributors />" +
-                        "<titles />" +
+                        "<contributors/>" +
+                        "<titles/>" +
                         "<section>1955-11-05</section>" +
                         "<dates><year>1955</year></dates>" +
                         "<edition>V1</edition>" +
@@ -428,8 +428,8 @@ class StandardCitationFormatsConverterTest {
                 "<records>" +
                 "<record>" +
                 "<ref-type name=\"Dataset\">59</ref-type>" +
-                "<contributors />" +
-                "<titles />" +
+                "<contributors/>" +
+                "<titles/>" +
                 "<dates><year>" + Year.now() +"</year></dates>" +
                 "<urls><related-urls><url>https://doi.org/10.5072/FK2/LK0D1H</url></related-urls></urls>" +
                 "<electronic-resource-num>doi/10.5072/FK2/LK0D1H</electronic-resource-num>" +

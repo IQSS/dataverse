@@ -85,10 +85,10 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
     }
 
     @Override
-    public HashMap getIdentifierMetadata(DvObject dvObject) {
+    public Map getIdentifierMetadata(DvObject dvObject) {
         logger.log(Level.FINE, "getIdentifierMetadata");
         String identifier = getIdentifier(dvObject);
-        HashMap<String, String> metadata = new HashMap<>();
+        Map<String, String> metadata = new HashMap<>();
         try {
             metadata = doiDataCiteRegisterService.getMetadata(identifier);
         } catch (Exception e) {
@@ -96,7 +96,6 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
         }
         return metadata;
     }
-
 
     /**
      * Looks up the metadata for a Global Identifier
@@ -108,10 +107,10 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
      * the identifier does not exist.
      */
     @Override
-    public HashMap<String, String> lookupMetadataFromIdentifier(String protocol, String authority, String identifier) {
+    public Map<String, String> lookupMetadataFromIdentifier(String protocol, String authority, String identifier) {
         logger.log(Level.FINE, "lookupMetadataFromIdentifier");
         String identifierOut = getIdentifierForLookup(protocol, authority, identifier);
-        HashMap<String, String> metadata = new HashMap<>();
+        Map<String, String> metadata = new HashMap<>();
         try {
             metadata = doiDataCiteRegisterService.getMetadata(identifierOut);
         } catch (Exception e) {
@@ -120,7 +119,6 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
         }
         return metadata;
     }
-
 
     /**
      * Modifies the DOI metadata for a Dataset
@@ -134,7 +132,7 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
         logger.log(Level.FINE, "modifyIdentifier");
         String identifier = getIdentifier(dvObject);
         try {
-            HashMap<String, String> metadata = doiDataCiteRegisterService.getMetadata(identifier);
+            Map<String, String> metadata = doiDataCiteRegisterService.getMetadata(identifier);
             doiDataCiteRegisterService.modifyIdentifier(identifier, metadata, dvObject);
         } catch (Exception e) {
             logger.log(Level.WARNING, "modifyMetadata failed", e);
@@ -147,7 +145,7 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
     public void deleteIdentifier(DvObject dvObject) throws Exception {
         logger.log(Level.FINE, "deleteIdentifier");
         String identifier = getIdentifier(dvObject);
-        HashMap<String, String> doiMetadata = new HashMap<>();
+        Map<String, String> doiMetadata = new HashMap<>();
         try {
             doiMetadata = doiDataCiteRegisterService.getMetadata(identifier);
         } catch (Exception e) {
@@ -166,29 +164,10 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
                         logger.log(Level.WARNING, "delete failed: " + e.getMessage(), e);
                     }
                     break;
-
                 case "public":
-                    Map<String, String> metadata = getDOIMetadataForDestroyedDataset();
-                    metadata.put("_status", "registered");
-                    metadata.put("_target", getTargetUrl(dvObject));
-                    doiDataCiteRegisterService.deactivateIdentifier(identifier, metadata, dvObject);
+                    doiDataCiteRegisterService.deactivateIdentifier(identifier);
                     break;
             }
-        }
-    }
-
-    private boolean updateIdentifierStatus(DvObject dvObject, String statusIn) {
-        logger.log(Level.FINE, "updateIdentifierStatus");
-        String identifier = getIdentifier(dvObject);
-        Map<String, String> metadata = getUpdateMetadata(dvObject);
-        metadata.put("_status", statusIn);
-        metadata.put("_target", getTargetUrl(dvObject));
-        try {
-            doiDataCiteRegisterService.registerIdentifier(identifier, metadata, dvObject);
-            return true;
-        } catch (Exception e) {
-            logger.log(Level.WARNING, "modifyMetadata failed: " + e.getMessage(), e);
-            return false;
         }
     }
 
@@ -212,7 +191,6 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
         }
     }
 
-
     @Override
     public List<String> getProviderInformation() {
         ArrayList<String> providerInfo = new ArrayList<>();
@@ -222,6 +200,4 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
         providerInfo.add(providerLink);
         return providerInfo;
     }
-
-
 }

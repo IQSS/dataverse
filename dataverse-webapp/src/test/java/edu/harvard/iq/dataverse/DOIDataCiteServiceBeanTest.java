@@ -12,7 +12,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 @ExtendWith(MockitoExtension.class)
 class DOIDataCiteServiceBeanTest {
@@ -37,12 +39,10 @@ class DOIDataCiteServiceBeanTest {
 
         //when
         Mockito.when(doiDataCiteRegisterService.getMetadata(identifier)).thenReturn(metadata);
-
         doiDataCiteServiceBean.deleteIdentifier(dataset);
 
         //then
         Mockito.verify(doiDataCiteRegisterService, Mockito.times(1)).deleteIdentifier(identifier);
-
     }
 
     @Test
@@ -51,18 +51,14 @@ class DOIDataCiteServiceBeanTest {
         final Dataset dataset = new Dataset();
         final String identifier = "doi:10.5072/FK2/BYM3IW";
         dataset.setGlobalId(new GlobalId(identifier));
-        final HashMap<String, String> metadata = new HashMap<>();
-        metadata.put("_status", "public");
+        final Map<String, String> metadata = Collections.singletonMap("_status", "public");
 
         //when
         Mockito.when(doiDataCiteRegisterService.getMetadata(identifier)).thenReturn(metadata);
-        Mockito.when(systemConfig.getDataverseSiteUrl()).thenReturn("url");
-
         doiDataCiteServiceBean.deleteIdentifier(dataset);
 
         //then
         Mockito.verify(doiDataCiteRegisterService, Mockito.times(1))
-               .deactivateIdentifier(Mockito.eq(identifier), Mockito.any(), Mockito.eq(dataset));
-
+               .deactivateIdentifier(Mockito.eq(identifier));
     }
 }

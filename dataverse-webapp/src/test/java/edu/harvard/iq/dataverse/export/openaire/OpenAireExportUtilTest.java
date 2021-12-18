@@ -599,7 +599,7 @@ public class OpenAireExportUtilTest {
             writer.xml.writeEndElement();
         }
         writer.close();
-        Assert.assertEquals("<root />",
+        Assert.assertEquals("<root/>",
                             writer.toString());
     }
 
@@ -653,7 +653,7 @@ public class OpenAireExportUtilTest {
         }
 
         writer.close();
-        Assert.assertEquals("<root />",
+        Assert.assertEquals("<root/>",
                             writer.toString());
     }
 
@@ -750,7 +750,7 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto);
         writer.close();
         Assert.assertEquals("<rightsList>"
-                                    + "<rights rightsURI=\"info:eu-repo/semantics/openAccess\" />"
+                                    + "<rights rightsURI=\"info:eu-repo/semantics/openAccess\"/>"
                                     + "<rights rightsURI=\"https://creativecommons.org/publicdomain/zero/1.0/legalcode\">"
                                     + "CC0 Creative Commons Zero 1.0 Waiver</rights></rightsList>",
                             writer.toString());
@@ -911,7 +911,7 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto);
         writer.close();
         Assert.assertEquals("<rightsList>"
-                                    + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\" />"
+                                    + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\"/>"
                                     + "<rights rightsURI=\"https://creativecommons.org/publicdomain/zero/1.0/legalcode\">"
                                     + "CC0 Creative Commons Zero 1.0 Waiver</rights></rightsList>",
                             writer.toString());
@@ -926,7 +926,7 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto);
         writer.close();
         Assert.assertEquals("<rightsList>"
-                                    + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\" />"
+                                    + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\"/>"
                                     + "<rights>Different licenses and/or terms apply to individual files in the dataset. Access to some files in the dataset is restricted.</rights></rightsList>",
                             writer.toString());
     }
@@ -940,7 +940,7 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto);
         writer.close();
         Assert.assertEquals("<rightsList>"
-                                    + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\" />"
+                                    + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\"/>"
                                     + "<rights>Access to all files in the dataset is restricted.</rights></rightsList>",
                             writer.toString());
     }
@@ -955,7 +955,7 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto);
         writer.close();
         Assert.assertEquals("<rightsList>"
-                                    + "<rights rightsURI=\"info:eu-repo/semantics/openAccess\" />"
+                                    + "<rights rightsURI=\"info:eu-repo/semantics/openAccess\"/>"
                                     + "<rights>All rights reserved.</rights></rightsList>",
                             writer.toString());
     }
@@ -972,7 +972,7 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto);
         writer.close();
         Assert.assertEquals("<rightsList>"
-                                    + "<rights rightsURI=\"info:eu-repo/semantics/openAccess\" />"
+                                    + "<rights rightsURI=\"info:eu-repo/semantics/openAccess\"/>"
                                     + "<rights>Different licenses and/or terms apply to individual files in the dataset.</rights></rightsList>",
                             writer.toString());
     }
@@ -990,7 +990,7 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto);
         writer.close();
         Assert.assertEquals("<rightsList>"
-                                    + "<rights rightsURI=\"info:eu-repo/semantics/openAccess\" />"
+                                    + "<rights rightsURI=\"info:eu-repo/semantics/openAccess\"/>"
                                     + "<rights>Different licenses and/or terms apply to individual files in the dataset.</rights></rightsList>",
                             writer.toString());
     }
@@ -1008,7 +1008,7 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto);
         writer.close();
         Assert.assertEquals("<rightsList>"
-                                    + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\" />"
+                                    + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\"/>"
                                     + "<rights>Different licenses and/or terms apply to individual files in the dataset. Access to some files in the dataset is restricted.</rights></rightsList>",
                             writer.toString());
     }
@@ -1027,7 +1027,7 @@ public class OpenAireExportUtilTest {
 
         // then
         Assert.assertEquals("<rightsList>" +
-                                    "<rights rightsURI=\"info:eu-repo/semantics/embargoedAccess\" />" +
+                                    "<rights rightsURI=\"info:eu-repo/semantics/embargoedAccess\"/>" +
                                     "</rightsList>",
                             writer.toString());
     }

@@ -18,7 +18,7 @@
         <m2eclipse.wtp.contextRoot>/</m2eclipse.wtp.contextRoot>
     </properties>
     <!-- Declare any DIRECT dependencies here.
-         In case the depency is both transitive and direct (e. g. some common lib for logging),
+         In case the dependency is both transitive and direct (e. g. some common lib for logging),
          manage the version in <manageDependencies> and add the direct dependency here WITHOUT version tag, too.
     -->
     <!-- TODO: Housekeeping is utterly needed. -->
@@ -27,14 +27,6 @@
             <groupId>edu.harvard.iq</groupId>
             <artifactId>dataverse-persistence</artifactId>
             <version>${project.version}</version>
-        </dependency>
-
-        <!-- Must be defined before dataverse-test-common -->
-        <!-- this ensures that xml writing will use this implementation -->
-        <!-- in tests instead of the one provided in embedeed glassfish -->
-        <dependency>
-            <groupId>org.codehaus.woodstox</groupId>
-            <artifactId>wstx-asl</artifactId>
         </dependency>
         <dependency>
             <groupId>org.dom4j</groupId>
@@ -108,6 +100,10 @@
                 <exclusion>
                     <groupId>org.apache.geronimo.specs</groupId>
                     <artifactId>geronimo-stax-api_1.0_spec</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.woodstox</groupId>
+                    <artifactId>wstx-asl</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -538,6 +534,10 @@
                     <groupId>stax</groupId>
                     <artifactId>stax-api</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.woodstox</groupId>
+                    <artifactId>wstx-asl</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -560,6 +560,10 @@
                     <groupId>log4j</groupId>
                     <artifactId>log4j</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.woodstox</groupId>
+                    <artifactId>wstx-asl</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -571,6 +575,12 @@
             <groupId>com.twelvemonkeys.servlet</groupId>
             <artifactId>servlet</artifactId>
             <version>${imageIo.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
 
         <!-- Test dependencies -->

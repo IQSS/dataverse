@@ -758,7 +758,8 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
                     if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliationIdentifier)) {
                         datasetAuthor.setAffiliationIdentifier(subField);
                     }
-                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdType)) {
+                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdType)
+                            && !subField.getControlledVocabularyValues().isEmpty()) {
                         datasetAuthor.setIdType(subField.getControlledVocabularyValues().get(0).getStrValue());
                     }
                     if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdValue)) {
@@ -814,29 +815,31 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
     public List<DatasetFundingReference> getFundingReferences() {
         List<DatasetFundingReference> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
-            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.grantNumber)) {
-                DatasetFundingReference fundingReference = new DatasetFundingReference(dsf.getDisplayOrder());
-                for (DatasetField subField : dsf.getDatasetFieldsChildren()) {
-                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.grantNumberAgency)) {
-                        fundingReference.setAgency(subField);
-                    }
-                    // fallback for missing grantNumberAgency
-                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.grantNumberAgencyShortName) &&
-                            fundingReference.getAgency() == null) {
-                        fundingReference.setAgency(subField);
-                    }
-                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.grantNumberAgencyIdentifier)) {
-                        fundingReference.setAgencyIdentifier(subField);
-                    }
-                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.grantNumberProgram)) {
-                        fundingReference.setProgramName(subField);
-                    }
-                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.grantNumberValue)) {
-                        fundingReference.setProgramIdentifier(subField);
-                    }
-                }
-                retList.add(fundingReference);
+            if (!DatasetFieldConstant.grantNumber.equals(dsf.getDatasetFieldType().getName())) {
+                continue;
             }
+            DatasetFundingReference fundingReference = new DatasetFundingReference(dsf.getDisplayOrder());
+            for (DatasetField subField : dsf.getDatasetFieldsChildren()) {
+                String subfieldName = subField.getDatasetFieldType().getName();
+                if (DatasetFieldConstant.grantNumberAgency.equals(subfieldName)) {
+                    fundingReference.setAgency(subField);
+                }
+                // fallback for missing grantNumberAgency
+                if (DatasetFieldConstant.grantNumberAgencyShortName.equals(subfieldName)
+                        && fundingReference.getAgency() == null) {
+                    fundingReference.setAgency(subField);
+                }
+                if (DatasetFieldConstant.grantNumberAgencyIdentifier.equals(subfieldName)) {
+                    fundingReference.setAgencyIdentifier(subField);
+                }
+                if (DatasetFieldConstant.grantNumberProgram.equals(subfieldName)) {
+                    fundingReference.setProgramName(subField);
+                }
+                if (DatasetFieldConstant.grantNumberValue.equals(subfieldName)) {
+                    fundingReference.setProgramIdentifier(subField);
+                }
+            }
+            retList.add(fundingReference);
         }
         retList.sort(DatasetFundingReference.DisplayOrder);
         return retList;

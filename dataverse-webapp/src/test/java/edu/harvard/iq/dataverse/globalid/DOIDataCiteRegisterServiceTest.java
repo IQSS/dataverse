@@ -58,7 +58,7 @@ class DOIDataCiteRegisterServiceTest {
     void getMetadataFromDvObject() {
 
         // given & when
-        String xml = DOIDataCiteRegisterService.getMetadataFromDvObject(
+        String xml = doiDataCiteRegisterService.getMetadataFromDvObject(
                 "doi:test", Collections.emptyMap(), createDataset());
 
         // then
@@ -78,8 +78,7 @@ class DOIDataCiteRegisterServiceTest {
         when(version.getParsedTitle()).thenReturn("");
 
         // when
-        String xml = DOIDataCiteRegisterService.getMetadataFromDvObject(
-                "doi:test", Collections.emptyMap(), dataset);
+        String xml = doiDataCiteRegisterService.getMetadataFromDvObject("doi:test", Collections.emptyMap(), dataset);
 
         // then
         assertThat(xml).contains(
@@ -103,33 +102,30 @@ class DOIDataCiteRegisterServiceTest {
         metadata.put("datacite.publicationyear", "2002");
 
         //when
-        String metadataFromDvObj = DOIDataCiteRegisterService
-                .getMetadataFromDvObject(identifier, metadata, dataset);
+        String metadataFromDvObj = doiDataCiteRegisterService.getMetadataFromDvObject(identifier, metadata, dataset);
 
         //then
         assertThat(metadataFromDvObj).isEqualTo("<resource xsi:schemaLocation=\"http://datacite.org/schema/kernel-4 " +
-                "http://schema.datacite.org/meta/kernel-4/metadata.xsd\"\n" +
-                "          xmlns=\"http://datacite.org/schema/kernel-4\"\n" +
-                "          xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n" +
-                "    <identifier identifierType=\"DOI\">Testid</identifier>\n" +
-                "    <creators><creator><creatorName>authorName</creatorName><affiliation " +
+                "http://schema.datacite.org/meta/kernel-4/metadata.xsd\"" +
+                " xmlns=\"http://datacite.org/schema/kernel-4\"" +
+                " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">" +
+                "<identifier identifierType=\"DOI\">Testid</identifier>" +
+                "<creators><creator><creatorName>authorName</creatorName><affiliation " +
                 "affiliationIdentifier=\"authorAffiliationIdentifier\" affiliationIdentifierScheme=\"ROR\">" +
-                "authorAffiliation</affiliation></creator></creators>\n" +
-                "    <titles>\n" +
-                "        <title>title</title>\n" +
-                "    </titles>\n" +
-                "    <publisher>:unav</publisher>\n" +
-                "    <publicationYear>2002</publicationYear>\n" +
-                "    <resourceType resourceTypeGeneral=\"Dataset\"/>\n" +
-                "    \n" +
-                "    <descriptions>\n" +
-                "        <description descriptionType=\"Abstract\">dsDescriptionValue</description>\n" +
-                "    </descriptions>\n" +
-                "    <contributors></contributors>\n" +
-                "    <fundingReferences><fundingReference><funderName>grantNumberAgency</funderName><funderIdentifier " +
+                "authorAffiliation</affiliation></creator></creators>" +
+                "<titles>" +
+                "<title>title</title>" +
+                "</titles>" +
+                "<publisher>:unav</publisher>" +
+                "<publicationYear>2002</publicationYear>" +
+                "<resourceType resourceTypeGeneral=\"Dataset\"/>" +
+                "<descriptions>" +
+                "<description descriptionType=\"Abstract\">dsDescriptionValue</description>" +
+                "</descriptions>" +
+                "<fundingReferences><fundingReference><funderName>grantNumberAgency</funderName><funderIdentifier " +
                 "funderIdentifierType=\"ROR\">grantNumberAgencyIdentifier</funderIdentifier><awardNumber>grantNumberValue" +
-                "</awardNumber></fundingReference></fundingReferences>\n" +
-                "</resource>\n");
+                "</awardNumber></fundingReference></fundingReferences>" +
+                "</resource>");
 
     }
 
@@ -153,29 +149,24 @@ class DOIDataCiteRegisterServiceTest {
         metadata.put("datacite.publicationyear", "2002");
 
         //when
-        String metadataFromDvObj = DOIDataCiteRegisterService
-                .getMetadataFromDvObject(identifier, metadata, dataset);
+        String metadataFromDvObj = doiDataCiteRegisterService.getMetadataFromDvObject(identifier, metadata, dataset);
 
         //then
         assertThat(metadataFromDvObj).isEqualTo("<resource xsi:schemaLocation=\"http://datacite.org/schema/kernel-4 " +
-                "http://schema.datacite.org/meta/kernel-4/metadata.xsd\"\n" +
-                "          xmlns=\"http://datacite.org/schema/kernel-4\"\n" +
-                "          xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n" +
-                "    <identifier identifierType=\"DOI\">Testid</identifier>\n" +
-                "    <creators></creators>\n" +
-                "    <titles>\n" +
-                "        <title></title>\n" +
-                "    </titles>\n" +
-                "    <publisher>:unav</publisher>\n" +
-                "    <publicationYear>2002</publicationYear>\n" +
-                "    <resourceType resourceTypeGeneral=\"Dataset\"/>\n" +
-                "    \n" +
-                "    <descriptions>\n" +
-                "        <description descriptionType=\"Abstract\"></description>\n" +
-                "    </descriptions>\n" +
-                "    <contributors></contributors>\n" +
-                "    \n" +
-                "</resource>\n");
+                "http://schema.datacite.org/meta/kernel-4/metadata.xsd\"" +
+                " xmlns=\"http://datacite.org/schema/kernel-4\"" +
+                " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">" +
+                "<identifier identifierType=\"DOI\">Testid</identifier>" +
+                "<titles>" +
+                "<title></title>" +
+                "</titles>" +
+                "<publisher>:unav</publisher>" +
+                "<publicationYear>2002</publicationYear>" +
+                "<resourceType resourceTypeGeneral=\"Dataset\"/>" +
+                "<descriptions>" +
+                "<description descriptionType=\"Abstract\"/>" +
+                "</descriptions>" +
+                "</resource>");
 
     }
 
@@ -196,30 +187,24 @@ class DOIDataCiteRegisterServiceTest {
                .thenReturn(Lists.newArrayList());
 
         Mockito.when(dataCiteRESTfulClient.postMetadata(Mockito.any())).thenReturn(
-                DOIDataCiteRegisterService.getMetadataFromDvObject(identifier, new HashMap<>(), dataset));
+                doiDataCiteRegisterService.getMetadataFromDvObject(identifier, new HashMap<>(), dataset));
 
         String uploadedXml = doiDataCiteRegisterService.reserveIdentifier(identifier, new HashMap<>(), dataset);
 
         //then
         Mockito.verify(em, times(1)).merge(Mockito.any(DOIDataCiteRegisterCache.class));
-        assertThat(uploadedXml).isEqualTo("<resource xsi:schemaLocation=\"http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd\"\n" +
-                                                  "          xmlns=\"http://datacite.org/schema/kernel-4\"\n" +
-                                                  "          xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n" +
-                                                  "    <identifier identifierType=\"DOI\">Testid</identifier>\n" +
-                                                  "    <creators></creators>\n" +
-                                                  "    <titles>\n" +
-                                                  "        <title></title>\n" +
-                                                  "    </titles>\n" +
-                                                  "    <publisher>:unav</publisher>\n" +
-                                                  "    <publicationYear>9999</publicationYear>\n" +
-                                                  "    <resourceType resourceTypeGeneral=\"Dataset\"/>\n" +
-                                                  "    \n" +
-                                                  "    <descriptions>\n" +
-                                                  "        <description descriptionType=\"Abstract\"></description>\n" +
-                                                  "    </descriptions>\n" +
-                                                  "    <contributors></contributors>\n" +
-                                                  "    \n" +
-                                                  "</resource>\n");
+        assertThat(uploadedXml).isEqualTo("<resource xsi:schemaLocation=\"http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd\"" +
+                                                  " xmlns=\"http://datacite.org/schema/kernel-4\"" +
+                                                  " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">" +
+                                                  "<identifier identifierType=\"DOI\">Testid</identifier>" +
+                                                  "<titles><title></title></titles>" +
+                                                  "<publisher>:unav</publisher>" +
+                                                  "<publicationYear>9999</publicationYear>" +
+                                                  "<resourceType resourceTypeGeneral=\"Dataset\"/>" +
+                                                  "<descriptions>" +
+                                                  "<description descriptionType=\"Abstract\"/>" +
+                                                  "</descriptions>" +
+                                                  "</resource>");
 
     }
 
@@ -230,33 +215,25 @@ class DOIDataCiteRegisterServiceTest {
         Dataset dataset = createDataset();
         dataset.setIdentifier(identifier);
 
-        final HashMap<String, String> metadata = new HashMap<>();
-        metadata.put("datacite.title", "testTitle");
-        metadata.put("datacite.publicationyear", "2002");
-
         //when
-        String metadataForDeactivateIdentifier = DOIDataCiteRegisterService
-                .getMetadataForDeactivateIdentifier(identifier, metadata, dataset);
+        String metadataForDeactivateIdentifier = doiDataCiteRegisterService.getMetadataForDeactivateId(identifier);
 
         //then
-        assertThat(metadataForDeactivateIdentifier).isEqualTo("<resource xsi:schemaLocation=\"http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd\"\n" +
-                                                                      "          xmlns=\"http://datacite.org/schema/kernel-4\"\n" +
-                                                                      "          xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n" +
-                                                                      "    <identifier identifierType=\"DOI\">Testid</identifier>\n" +
-                                                                      "    <creators></creators>\n" +
-                                                                      "    <titles>\n" +
-                                                                      "        <title>testTitle</title>\n" +
-                                                                      "    </titles>\n" +
-                                                                      "    <publisher>:unav</publisher>\n" +
-                                                                      "    <publicationYear>2002</publicationYear>\n" +
-                                                                      "    <resourceType resourceTypeGeneral=\"Dataset\"/>\n" +
-                                                                      "    \n" +
-                                                                      "    <descriptions>\n" +
-                                                                      "        <description descriptionType=\"Abstract\">:unav</description>\n" +
-                                                                      "    </descriptions>\n" +
-                                                                      "    <contributors></contributors>\n" +
-                                                                      "    \n" +
-                                                                      "</resource>\n");
+        assertThat(metadataForDeactivateIdentifier).isEqualTo(
+                "<resource xsi:schemaLocation=\"http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd\"" +
+                  " xmlns=\"http://datacite.org/schema/kernel-4\"" +
+                  " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">" +
+                  "<identifier identifierType=\"DOI\">Testid</identifier>" +
+                  "<titles>" +
+                  "<title>This item has been removed from publication</title>" +
+                  "</titles>" +
+                  "<publisher>:unav</publisher>" +
+                  "<publicationYear>9999</publicationYear>" +
+                  "<resourceType resourceTypeGeneral=\"Dataset\"/>" +
+                  "<descriptions>" +
+                  "<description descriptionType=\"Abstract\">:unav</description>" +
+                  "</descriptions>" +
+                  "</resource>");
 
     }
 

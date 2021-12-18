@@ -52,6 +52,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -108,151 +109,155 @@ public class ExportServiceTest {
         exportService.loadAllExporters();
     }
 
+    // -------------------- TESTS --------------------
+
     @Test
     @DisplayName("export DatasetVersion as string for datacite")
     public void exportDatasetVersionAsString_forDataCite() throws IOException, JsonParseException, URISyntaxException {
-        //given
+        // given
         DatasetVersion datasetVersion = parseDatasetVersionFromClasspath("json/testDataset.json");
         prepareDataForExport(datasetVersion);
 
-        //when
+        // when
         Either<DataverseError, String> exportedDataset =
                 exportService.exportDatasetVersionAsString(datasetVersion, ExporterType.DATACITE);
 
-        //then
-        Assert.assertEquals(UnitTestUtils.readFileToString("exportdata/testDatacite.xml"), exportedDataset.get());
+        // then
+        assertThat(exportedDataset.get())
+                .isEqualToIgnoringWhitespace(UnitTestUtils.readFileToString("exportdata/testDatacite.xml"));
     }
 
     @Test
     @DisplayName("export DatasetVersion as string for DCTerms")
     public void exportDatasetVersionAsString_forDCTerms() throws IOException, JsonParseException, URISyntaxException {
-        //given
+        // given
         DatasetVersion datasetVersion = parseDatasetVersionFromClasspath("json/testDataset.json");
         prepareDataForExport(datasetVersion);
 
-        //when
+        // when
         Either<DataverseError, String> exportedDataset =
                 exportService.exportDatasetVersionAsString(datasetVersion, ExporterType.DCTERMS);
 
-        //then
-        Assert.assertEquals(UnitTestUtils.readFileToString("exportdata/dcterms.xml"), exportedDataset.get());
+        // then
+        assertThat(exportedDataset.get())
+                .isEqualTo(UnitTestUtils.readFileToString("exportdata/dcterms.xml"));
     }
 
     @Test
     @DisplayName("export DatasetVersion as string for json")
     public void exportDatasetVersionAsString_forJson() throws IOException, JsonParseException, URISyntaxException {
-        //given
+        // given
         DatasetVersion datasetVersion = parseDatasetVersionFromClasspath("json/testDataset.json");
         prepareDataForExport(datasetVersion);
 
-        //when
+        // when
         Either<DataverseError, String> exportedDataset =
                 exportService.exportDatasetVersionAsString(datasetVersion, ExporterType.JSON);
 
-        //then
-        Assert.assertEquals(UnitTestUtils.readFileToString("exportdata/datasetInJson.json"), exportedDataset.get());
+        // then
+        assertThat(exportedDataset.get())
+                .isEqualTo(UnitTestUtils.readFileToString("exportdata/datasetInJson.json"));
     }
 
     @Test
     @DisplayName("export DatasetVersion as string for Oai Ore")
     public void exportDatasetVersionAsString_forOaiOre() throws IOException, JsonParseException, URISyntaxException {
-        //given
+        // given
         DatasetVersion datasetVersion = parseDatasetVersionFromClasspath("json/testDatasetMultipleAuthors.json");
         prepareDataForExport(datasetVersion);
 
-        //when
+        // when
         Either<DataverseError, String> exportedDataset =
                 exportService.exportDatasetVersionAsString(datasetVersion, ExporterType.OAIORE);
 
-        //then
-        Assert.assertEquals(UnitTestUtils.readFileToString("exportdata/oai_ore_authors.json"), exportedDataset.get());
+        // then
+        assertThat(exportedDataset.get())
+                .isEqualTo(UnitTestUtils.readFileToString("exportdata/oai_ore_authors.json"));
     }
 
     @Test
     @DisplayName("export DatasetVersion as string for Schema Org")
     public void exportDatasetVersionAsString_forSchemaOrg() throws IOException, JsonParseException, URISyntaxException {
-        //given
+        // given
         DatasetVersion datasetVersion = parseDatasetVersionFromClasspath("json/testDataset.json");
         prepareDataForExport(datasetVersion);
 
-        //when
+        // when
         Either<DataverseError, String> exportedDataset =
                 exportService.exportDatasetVersionAsString(datasetVersion, ExporterType.SCHEMADOTORG);
 
-        //then
-        Assert.assertEquals(UnitTestUtils.readFileToString("exportdata/schemaorg.json"), exportedDataset.get());
+        // then
+        assertThat(exportedDataset.get())
+                .isEqualTo(UnitTestUtils.readFileToString("exportdata/schemaorg.json"));
     }
 
     @Test
     @DisplayName("export DatasetVersion as string for OpenAire")
     public void exportDatasetVersionAsString_forOpenAire() throws IOException, JsonParseException, URISyntaxException {
-        //given
+        // given
         DatasetVersion datasetVersion = parseDatasetVersionFromClasspath("json/testDataset.json");
         prepareDataForExport(datasetVersion);
 
-        //when
+        // when
         Either<DataverseError, String> exportedDataset =
                 exportService.exportDatasetVersionAsString(datasetVersion, ExporterType.OPENAIRE);
 
-        //then
-        Assert.assertEquals(UnitTestUtils.readFileToString("exportdata/openaire.xml"), exportedDataset.get());
+        // then
+        assertThat(exportedDataset.get())
+                .isEqualTo(UnitTestUtils.readFileToString("exportdata/openaire.xml"));
     }
 
     @Test
     @DisplayName("export DatasetVersion as string for DublinCore")
     public void exportDatasetVersionAsString_forDublinCore() throws IOException, JsonParseException {
-        //given
+        // given
         DatasetVersion datasetVersion = parseDatasetVersionFromClasspath("json/testDataset.json");
         prepareDataForExport(datasetVersion);
 
-        //when
+        // when
         Either<DataverseError, String> exportedDataset =
                 exportService.exportDatasetVersionAsString(datasetVersion, ExporterType.DUBLINCORE);
 
-        //then
-        Assert.assertEquals(UnitTestUtils.readFileToString("exportdata/dublincore.xml"), exportedDataset.get());
+        // then
+        assertThat(exportedDataset.get())
+                .isEqualTo(UnitTestUtils.readFileToString("exportdata/dublincore.xml"));
     }
 
     @Test
     @DisplayName("Get all exporters")
     public void getAllExporters() {
-        //when
+        // when
         Map<ExporterType, Exporter> allExporters = exportService.getAllExporters();
 
-        //then
-        Assert.assertTrue(allExporters.containsKey(ExporterType.JSON));
-        Assert.assertTrue(allExporters.containsKey(ExporterType.DATACITE));
-        Assert.assertTrue(allExporters.containsKey(ExporterType.SCHEMADOTORG));
-        Assert.assertTrue(allExporters.containsKey(ExporterType.DCTERMS));
-        Assert.assertTrue(allExporters.containsKey(ExporterType.OPENAIRE));
+        // then
+        assertThat(allExporters).containsKeys(ExporterType.JSON, ExporterType.DATACITE, ExporterType.SCHEMADOTORG,
+                ExporterType.DCTERMS, ExporterType.OPENAIRE);
     }
 
     @Test
     @DisplayName("Get mediaType for dataCite exporter")
     public void getMediaType_forDataCite() {
-        //when
+        // when
         String mediaType = exportService.getMediaType(ExporterType.DATACITE);
 
-        //then
-        Assert.assertEquals(MediaType.APPLICATION_XML, mediaType);
+        // then
+        assertThat(mediaType).isEqualTo(MediaType.APPLICATION_XML);
     }
 
     @Test
     @DisplayName("Get mediaType for json exporter")
     public void getMediaType_forJsonExporter() {
-        //when
+        // when
         String mediaType = exportService.getMediaType(ExporterType.JSON);
 
-        //then
-        Assert.assertEquals(MediaType.APPLICATION_JSON, mediaType);
+        // then
+        assertThat(mediaType).isEqualTo(MediaType.APPLICATION_JSON);
     }
 
     // -------------------- PRIVATE --------------------
 
     private DatasetVersion parseDatasetVersionFromClasspath(String classpath) throws IOException, JsonParseException {
-
         try (ByteArrayInputStream is = new ByteArrayInputStream(IOUtils.resourceToByteArray(classpath, getClass().getClassLoader()))) {
-
             JsonObject jsonObject = Json.createReader(is).readObject();
             JsonParser jsonParser = new JsonParser(datasetFieldService, null, null);
 
