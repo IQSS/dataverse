@@ -10,8 +10,6 @@ import edu.harvard.iq.dataverse.search.query.SearchObjectType;
 import edu.harvard.iq.dataverse.search.response.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.response.SolrSearchResult;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -113,15 +111,13 @@ public class RoleTagRetriever {
         return hasRolesForCard(dvObjectId) ? finalIdToRolesHash.get(dvObjectId) : null;
     }
 
-    public JsonArrayBuilder getRolesForCardAsJSON(Long dvObjectId) {
-        if (!hasRolesForCard(dvObjectId)) {
-            return null;
-        }
-        JsonArrayBuilder jsonArray = Json.createArrayBuilder();
-        finalIdToRolesHash.get(dvObjectId).forEach(jsonArray::add);
-        return jsonArray;
+    public Map<Long, List<String>> getRolesForCard(List<Long> dvObjectIds) {
+        return dvObjectIds.stream()
+                .collect(Collectors.toMap(
+                        id -> id,
+                        id -> finalIdToRolesHash.getOrDefault(id, Collections.emptyList()),
+                    (next, prev) -> next));
     }
-
 
     /**
      * For the cards, make a dict of { dv object id : [role name, role name, etc ]}

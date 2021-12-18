@@ -10,7 +10,7 @@ import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.SolrSearchResultsService;
 import edu.harvard.iq.dataverse.ThumbnailServiceWrapper;
 import edu.harvard.iq.dataverse.WidgetWrapper;
-import edu.harvard.iq.dataverse.api.DataRetriever;
+import edu.harvard.iq.dataverse.api.MyData;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
@@ -546,7 +546,7 @@ public class MyDataSearchFragment implements java.io.Serializable {
         List<String> filterQueries = myDataFinder.getSolrFilterQueries();
         if (filterQueries == null) {
             logger.fine("No ids found for this search");
-            return DataRetriever.MSG_NO_RESULTS_FOUND;
+            return MyData.MSG_NO_RESULTS_FOUND;
         }
         for (String filter : filterQueries) {
             if (filter.contains(SearchFields.PUBLICATION_STATUS) && pub_states.size() != MyDataFilterParams.defaultPublishedStates.size()) {
@@ -576,7 +576,7 @@ public class MyDataSearchFragment implements java.io.Serializable {
 
             if (solrQueryResponse.getNumResultsFound() == 0) {
                 solrIsDown = true;
-                return DataRetriever.MSG_NO_RESULTS_FOUND;
+                return MyData.MSG_NO_RESULTS_FOUND;
             }
 
         } catch (SearchException ex) {

@@ -410,7 +410,7 @@ public class SearchServiceBean {
                     logger.fine("No title indexed. Setting to empty string to prevent NPE. Dataset id " + entityid + " and version id " + datasetVersionId);
                     solrSearchResult.setTitle("");
                 }
-                List<String> authors = (List) solrDocument.getFieldValues(DatasetFieldConstant.authorName);
+                List<String> authors = (List) solrDocument.getFieldValues("dsf_txt_" + DatasetFieldConstant.authorName);
                 if (authors != null) {
                     solrSearchResult.setDatasetAuthors(authors);
                 }

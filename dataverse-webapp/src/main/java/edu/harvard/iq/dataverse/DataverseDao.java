@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -20,7 +15,6 @@ import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
-import edu.harvard.iq.dataverse.search.response.SolrSearchResult;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -158,9 +152,6 @@ public class DataverseDao implements java.io.Serializable {
      * A lookup of a dataverse alias should be case insensitive. If "cfa"
      * belongs to the Center for Astrophysics, we don't want to allow Code for
      * America to start using "CFA". Force all queries to be lower case.
-     *
-     * @param anAlias
-     * @return
      */
     public Dataverse findByAlias(String anAlias) {
         try {
@@ -310,18 +301,18 @@ public class DataverseDao implements java.io.Serializable {
                 .setParameter("name", "%" + query.toLowerCase() + "%")
                 .getResultList();
 
-        List<Object> alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id   FROM datasetlinkingdataverse WHERE dataset_id = " + dataset.getId()).getResultList();
-        List<Dataverse> remove = new ArrayList<>();
+        List<Object> alreadyLinkeddv_ids = em.createNativeQuery(
+                "SELECT linkingdataverse_id   FROM datasetlinkingdataverse WHERE dataset_id = " + dataset.getId())
+                .getResultList();
+        List<Dataverse> toRemove = new ArrayList<>();
 
         if (alreadyLinkeddv_ids != null && !alreadyLinkeddv_ids.isEmpty()) {
-            alreadyLinkeddv_ids.stream().map((testDVId) -> this.find(testDVId)).forEachOrdered((removeIt) -> {
-                remove.add(removeIt);
-            });
+            alreadyLinkeddv_ids.stream().map(this::find).forEachOrdered(toRemove::add);
         }
 
         for (Dataverse res : results) {
-            if (!remove.contains(res)) {
-                if (this.permissionService.requestOn(req, res).has(Permission.PublishDataset)) {
+            if (!toRemove.contains(res)) {
+                if (permissionService.requestOn(req, res).has(Permission.PublishDataset)) {
                     dataverseList.add(res);
                 }
             }
@@ -335,31 +326,11 @@ public class DataverseDao implements java.io.Serializable {
         return countQuery.getSingleResult();
     }
 
-    public String getParentAliasString(SolrSearchResult solrSearchResult) {
-        Long dvId = solrSearchResult.getEntityId();
-        String retVal = "";
-
-        if (dvId == null) {
-            return retVal;
-        }
-
-        String searchResult;
-        try {
-            searchResult = (String) em.createNativeQuery("select  t0.ALIAS FROM DATAVERSE t0, DVOBJECT t1,  DVOBJECT t2 WHERE (t0.ID = t1.ID) AND (t2.OWNER_ID = t1.ID)  AND (t2.ID =" + dvId + ")").getSingleResult();
-
-        } catch (Exception ex) {
-            return retVal;
-        }
-
-        if (searchResult == null) {
-            return retVal;
-        }
-
-        if (searchResult != null) {
-            return searchResult;
-        }
-
-        return retVal;
+    public List<Object[]> getParentAliasesForIds(List<Long> ids) {
+        return em.createQuery("SELECT o.id, dv.alias FROM Dataverse dv, DvObject o " +
+                "WHERE dv.id = o.owner.id AND o.id IN :ids", Object[].class)
+                .setParameter("ids", ids)
+                .getResultList();
     }
 
     /**
@@ -425,11 +396,10 @@ public class DataverseDao implements java.io.Serializable {
         JsonArrayBuilder dataverseAliases = Json.createArrayBuilder();
         // Get the Dataverses for the returned ids
 
-        List<Dataverse> children = new ArrayList<Dataverse>();
+        List<Dataverse> children = new ArrayList<>();
 
-        for (int i = 0; i < childIds.size(); i++) {
-            Integer childId = childIds.get(i);
-            Dataverse child = find(new Long(childId.longValue()));
+        for (Integer childId : childIds) {
+            Dataverse child = find(childId.longValue());
             if (child != null) {
                 // Add to the list of Dataverses
                 children.add(child);
@@ -443,7 +413,7 @@ public class DataverseDao implements java.io.Serializable {
 
         // Create a list of just the inheritable role assignments on the original
         // dataverse
-        List<RoleAssignment> inheritableRAsOnOwner = new ArrayList<RoleAssignment>();
+        List<RoleAssignment> inheritableRAsOnOwner = new ArrayList<>();
         for (RoleAssignment role : allRAsOnOwner) {
             if (inheritAllRoles || rolesToInherit.contains(role.getRole().getAlias())) {
                 //Only supporting built-in/non-dataverse-specific custom roles. Custom roles all have an owner.
@@ -455,10 +425,10 @@ public class DataverseDao implements java.io.Serializable {
 
         String privateUrlToken = null;
         // Create lists of the existing inheritable roles for each child Dataverse
-        Map<Long, List<RoleAssignment>> existingRAs = new HashMap<Long, List<RoleAssignment>>();
+        Map<Long, List<RoleAssignment>> existingRAs = new HashMap<>();
         for (Dataverse childDv : children) {
             List<RoleAssignment> allRAsOnChild = rolesService.directRoleAssignments(childDv);
-            List<RoleAssignment> inheritableRoles = new ArrayList<RoleAssignment>();
+            List<RoleAssignment> inheritableRoles = new ArrayList<>();
             for (RoleAssignment role : allRAsOnChild) {
                 if (inheritAllRoles || rolesToInherit.contains(role.getRole().getAlias())) {
                     inheritableRoles.add(role);

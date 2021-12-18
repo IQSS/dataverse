@@ -9,10 +9,10 @@ import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MetadataBlockDao;
 import edu.harvard.iq.dataverse.UserServiceBean;
+import edu.harvard.iq.dataverse.api.dto.ApiErrorResponseDTO;
 import edu.harvard.iq.dataverse.api.dto.ApiResponseDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.common.BundleUtil;
-import edu.harvard.iq.dataverse.common.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.common.Util;
 import edu.harvard.iq.dataverse.dataverse.DataverseLinkingService;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -615,7 +615,9 @@ public abstract class AbstractApiBean {
     }
 
     protected Response badApiKey(String apiKey) {
-        return error(Status.UNAUTHORIZED, (apiKey != null) ? "Bad api key " : "Please provide a key query parameter (?key=XXX) or via the HTTP header " + DATAVERSE_KEY_HEADER_NAME);
+        return error(Status.UNAUTHORIZED, apiKey != null
+                ? "Bad api key "
+                : "Please provide a key query parameter (?key=XXX) or via the HTTP header " + DATAVERSE_KEY_HEADER_NAME);
     }
 
     protected Response permissionError(PermissionException pe) {
@@ -630,12 +632,11 @@ public abstract class AbstractApiBean {
         return error(Status.UNAUTHORIZED, message);
     }
 
-    protected static Response error(Status sts, String msg) {
-        return Response.status(sts)
-                .entity(NullSafeJsonBuilder.jsonObjectBuilder()
-                                .add("status", STATUS_ERROR)
-                                .add("message", msg).build()
-                ).type(MediaType.APPLICATION_JSON_TYPE).build();
+    protected static Response error(Status status, String message) {
+                return Response.status(status)
+                        .entity(ApiErrorResponseDTO.errorResponse(status.getStatusCode(), message))
+                        .type(MediaType.APPLICATION_JSON_TYPE)
+                        .build();
     }
 
     protected Response allowCors(Response r) {

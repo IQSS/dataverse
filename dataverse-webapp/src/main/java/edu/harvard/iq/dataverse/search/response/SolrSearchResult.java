@@ -14,12 +14,9 @@ import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -149,49 +146,38 @@ public class SolrSearchResult {
     public void setPublicationStatuses(List<SearchPublicationStatus> statuses) {
 
         if (statuses == null) {
-            this.publicationStatuses = new ArrayList<>();
+            publicationStatuses = new ArrayList<>();
             return;
         }
-        this.publicationStatuses = statuses;
+        publicationStatuses = statuses;
 
         // set booleans for individual statuses
         //
-        for (SearchPublicationStatus status : this.publicationStatuses) {
+        for (SearchPublicationStatus status : publicationStatuses) {
 
             if (status == SearchPublicationStatus.UNPUBLISHED) {
-                this.setUnpublishedState(true);
+                setUnpublishedState(true);
 
             } else if (status == SearchPublicationStatus.PUBLISHED) {
-                this.setPublishedState(true);
+                setPublishedState(true);
 
             } else if (status == SearchPublicationStatus.DRAFT) {
-                this.setDraftState(true);
+                setDraftState(true);
 
             } else if (status == SearchPublicationStatus.IN_REVIEW) {
-                this.setInReviewState(true);
+                setInReviewState(true);
 
             } else if (status == SearchPublicationStatus.DEACCESSIONED) {
-                this.setDeaccessionedState(true);
+                setDeaccessionedState(true);
             }
         }
-    } // setPublicationStatuses
+    }
 
     /**
      * Never return null, return an empty list instead
-     *
-     * @return
      */
     public List<SearchPublicationStatus> getPublicationStatuses() {
-        return this.publicationStatuses;
-    }
-
-    public JsonArrayBuilder getPublicationStatusesAsJSON() {
-
-        JsonArrayBuilder statuses = Json.createArrayBuilder();
-        for (SearchPublicationStatus status : this.getPublicationStatuses()) {
-            statuses.add(status.getSolrValue());
-        }
-        return statuses;
+        return publicationStatuses;
     }
 
     public boolean isDraftState() {
@@ -224,31 +210,35 @@ public class SolrSearchResult {
         this.highlightsAsMap = highlightsAsMap;
     }
 
+    public String getFilePersistentId() {
+        return filePersistentId;
+    }
+
+    public String getIdentifierOfDataverse() {
+        return identifierOfDataverse;
+    }
+
+    public String getNameOfDataverse() {
+        return nameOfDataverse;
+    }
+
+    public Map<SolrField, Highlight> getHighlightsMap() {
+        return highlightsMap;
+    }
+
     public String getNameHighlightSnippet() {
         Highlight highlight = highlightsAsMap.get(SearchFields.NAME);
-        if (highlight != null) {
-            String firstSnippet = highlight.getSnippets().get(0);
-            return firstSnippet;
-        }
-        return null;
+        return highlight != null ? highlight.getSnippets().get(0) : null;
     }
 
     public String getDataverseAffiliationHighlightSnippet() {
         Highlight highlight = highlightsAsMap.get(SearchFields.AFFILIATION);
-        if (highlight != null) {
-            String firstSnippet = highlight.getSnippets().get(0);
-            return firstSnippet;
-        }
-        return null;
+        return highlight != null ? highlight.getSnippets().get(0) : null;
     }
 
     public String getFileTypeHighlightSnippet() {
         Highlight highlight = highlightsAsMap.get(SearchFields.FILE_TYPE_FRIENDLY);
-        if (highlight != null) {
-            String firstSnippet = highlight.getSnippets().get(0);
-            return firstSnippet;
-        }
-        return null;
+        return highlight != null ? highlight.getSnippets().get(0) : null;
     }
 
     public String getTitleHighlightSnippet() {
@@ -258,29 +248,15 @@ public class SolrSearchResult {
          * https://redmine.hmdc.harvard.edu/issues/3798#note-2
          */
         Highlight highlight = highlightsAsMap.get("title");
-        if (highlight != null) {
-            String firstSnippet = highlight.getSnippets().get(0);
-            return firstSnippet;
-        }
-        return null;
+        return highlight != null ? highlight.getSnippets().get(0) : null;
     }
 
     public List<String> getDescriptionSnippets() {
-        for (Map.Entry<SolrField, Highlight> entry : highlightsMap.entrySet()) {
-            SolrField solrField = entry.getKey();
-            Highlight highlight = entry.getValue();
-            logger.fine("SolrSearchResult class: " + solrField.getNameSearchable() + ":" + highlight.getSnippets());
-        }
-
         Highlight highlight = highlightsAsMap.get(SearchFields.DESCRIPTION);
         if (type == SearchObjectType.DATASETS) {
             highlight = highlightsAsMap.get(SearchFields.DATASET_DESCRIPTION);
         }
-        if (highlight != null) {
-            return highlight.getSnippets();
-        } else {
-            return new ArrayList<>();
-        }
+        return highlight != null ? highlight.getSnippets() : new ArrayList<>();
     }
 
     public void setHighlightsMap(Map<SolrField, Highlight> highlightsMap) {
@@ -297,11 +273,7 @@ public class SolrSearchResult {
 
     @Override
     public String toString() {
-        if (this.name != null) {
-            return this.id + ":" + this.name + ":" + this.entityId;
-        } else {
-            return this.id + ":" + this.title + ":" + this.entityId;
-        }
+        return String.format("%s:%s:%d", id, name != null ? name : title, entityId);
     }
 
     public JsonArrayBuilder getRelevance() {
@@ -347,50 +319,9 @@ public class SolrSearchResult {
         return json(showRelevance, showEntityIds, showApiUrls).build();
     }
 
-    /**
-     * Add additional fields for the MyData page
-     *
-     * @return
-     */
-    public JsonObjectBuilder getJsonForMyData() {
-
-        JsonObjectBuilder myDataJson = json(true, true, true);//boolean showRelevance, boolean showEntityIds, boolean showApiUrls)
-
-        DateFormat inputFormat = new SimpleDateFormat("MMM d, yyyy", Locale.US);
-
-        myDataJson.add("publication_statuses", this.getPublicationStatusesAsJSON())
-                .add("is_draft_state", this.isDraftState())
-                .add("is_in_review_state", this.isInReviewState())
-                .add("is_unpublished_state", this.isUnpublishedState())
-                .add("is_published", this.isPublishedState())
-                .add("is_deaccesioned", this.isDeaccessionedState())
-                .add("date_to_display_on_card", inputFormat.format(this.releaseOrCreateDate));
-
-        // Add is_deaccessioned attribute, even though MyData currently screens any deaccessioned info out
-        //
-        if ((this.isDeaccessionedState()) && (this.getPublicationStatuses().size() == 1)) {
-            myDataJson.add("deaccesioned_is_only_pubstatus", true);
-        }
-
-        if ((this.getParent() != null) && (!this.getParent().isInfoMissing())) {
-            //System.out.println("keys:" + parent.keySet().toString());
-            if (this.type == SearchObjectType.FILES) {
-                myDataJson.add("parentIdentifier", this.getParent().getParentIdentifier())
-                        .add("parentName", this.getParent().getName());
-
-            } else {
-                // for Dataverse and Dataset, get parent which is a Dataverse
-                myDataJson.add("parentId", this.getParent().getId())
-                        .add("parentName", this.getParent().getName());
-            }
-        }
-
-        return myDataJson;
-    } //getJsonForMydata
-
     public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls) {
 
-        if (this.type == null) {
+        if (type == null) {
             return jsonObjectBuilder();
         }
 
@@ -403,19 +334,19 @@ public class SolrSearchResult {
         String datasetPersistentId = null;
         String preferredUrl = null;
 
-        if (this.type == SearchObjectType.DATAVERSES) {
-            displayName = this.name;
+        if (type == SearchObjectType.DATAVERSES) {
+            displayName = name;
             identifierLabel = "identifier";
             preferredUrl = getHtmlUrl();
-        } else if (this.type == SearchObjectType.DATASETS) {
-            displayName = this.title;
+        } else if (type == SearchObjectType.DATASETS) {
+            displayName = title;
             identifierLabel = "global_id";
             preferredUrl = getPersistentUrl();
             /**
              * @todo Should we show the name of the parent dataverse?
              */
-        } else if (this.type == SearchObjectType.FILES) {
-            displayName = this.name;
+        } else if (type == SearchObjectType.FILES) {
+            displayName = name;
             identifierLabel = "file_id";
             preferredUrl = getDownloadUrl();
             /**
@@ -432,16 +363,16 @@ public class SolrSearchResult {
         // because we are using NullSafeJsonBuilder key/value pairs will be dropped if the value is null
         NullSafeJsonBuilder nullSafeJsonBuilder = jsonObjectBuilder()
                 .add("name", displayName)
-                .add("type", getDisplayType(getType()))
+                .add("type", getDisplayType())
                 .add("url", preferredUrl)
                 .add("image_url", getImageUrl())
-                //                .add("persistent_url", this.persistentUrl)
-                //                .add("download_url", this.downloadUrl)
+                //                .add("persistent_url", persistentUrl)
+                //                .add("download_url", downloadUrl)
                 /**
                  * @todo How much value is there in exposing the identifier for
                  * dataverses? For
                  */
-                .add(identifierLabel, this.identifier)
+                .add(identifierLabel, identifier)
                 /**
                  * @todo Get dataset description from dsDescriptionValue. Also,
                  * is descriptionNoSnippet the right field to use generally?
@@ -454,7 +385,7 @@ public class SolrSearchResult {
                  * @todo Why aren't file descriptions ever null? They always
                  * have an empty string at least.
                  */
-                .add("description", this.descriptionNoSnippet)
+                .add("description", descriptionNoSnippet)
                 /**
                  * @todo In the future we'd like to support non-public datasets
                  * per https://github.com/IQSS/dataverse/issues/1299 but for now
@@ -465,8 +396,8 @@ public class SolrSearchResult {
                  * @todo Expose MIME Type:
                  * https://github.com/IQSS/dataverse/issues/1595
                  */
-                .add("file_type", this.filetype)
-                .add("file_content_type", this.fileContentType)
+                .add("file_type", filetype)
+                .add("file_content_type", fileContentType)
                 .add("size_in_bytes", getFileSizeInBytes())
                 /**
                  * "md5" was the only possible value so it's hard-coded here but
@@ -476,25 +407,23 @@ public class SolrSearchResult {
                 .add("md5", getFileMd5())
                 .add("checksum", getChecksumTypeAndValue(getFileChecksumType(), getFileChecksumValue()))
                 .add("unf", getUnf())
-                .add("file_persistent_id", this.filePersistentId)
+                .add("file_persistent_id", filePersistentId)
                 .add("dataset_name", datasetName)
                 .add("dataset_id", datasetId)
                 .add("dataset_persistent_id", datasetPersistentId)
                 .add("dataset_citation", datasetCitation)
-                .add("deaccession_reason", this.deaccessionReason)
-                .add("citationHtml", this.citationHtml)
-                .add("identifier_of_dataverse", this.identifierOfDataverse)
-                .add("name_of_dataverse", this.nameOfDataverse)
-                .add("citation", this.citation);
+                .add("deaccession_reason", deaccessionReason)
+                .add("citationHtml", citationHtml)
+                .add("identifier_of_dataverse", identifierOfDataverse)
+                .add("name_of_dataverse", nameOfDataverse)
+                .add("citation", citation);
         // Now that nullSafeJsonBuilder has been instatiated, check for null before adding to it!
         if (showRelevance) {
             nullSafeJsonBuilder.add("matches", getRelevance());
             nullSafeJsonBuilder.add("score", getScore());
         }
         if (showEntityIds) {
-            if (this.entityId != null) {
-                nullSafeJsonBuilder.add("entity_id", this.entityId);
-            }
+            nullSafeJsonBuilder.add("entity_id", entityId);
         }
 
         if (showApiUrls) {
@@ -506,9 +435,7 @@ public class SolrSearchResult {
              * an API token. Discuss at
              * https://docs.google.com/document/d/1d8sT2GLSavgiAuMTVX8KzTCX0lROEET1edhvHHRDZOs/edit?usp=sharing";
              */
-            if (getApiUrl() != null) {
-                nullSafeJsonBuilder.add("api_url", getApiUrl());
-            }
+            nullSafeJsonBuilder.add("api_url", getApiUrl());
         }
         // NullSafeJsonBuilder is awesome but can't build null safe arrays. :(
         if (!datasetAuthors.isEmpty()) {
@@ -519,14 +446,6 @@ public class SolrSearchResult {
             nullSafeJsonBuilder.add("authors", authors);
         }
         return nullSafeJsonBuilder;
-    }
-
-    private String getDateTimePublished() {
-        String datePublished = null;
-        if (!draftState) {
-            datePublished = releaseOrCreateDate == null ? null : Util.getDateTimeFormat().format(releaseOrCreateDate);
-        }
-        return datePublished;
     }
 
     public String getId() {
@@ -694,10 +613,7 @@ public class SolrSearchResult {
 
     public Long getParentIdAsLong() {
 
-        if (this.getParent() == null) {
-            return null;
-        }
-        if (this.getParent().getId() == null) {
+        if (getParent() == null || getParent().getId() == null) {
             return null;
         }
 
@@ -771,11 +687,7 @@ public class SolrSearchResult {
     }
 
     public String getFileMd5() {
-        if (DataFile.ChecksumType.MD5.equals(getFileChecksumType())) {
-            return fileMd5;
-        } else {
-            return null;
-        }
+        return DataFile.ChecksumType.MD5.equals(getFileChecksumType()) ? fileMd5 : null;
     }
 
     public void setFileMd5(String fileMd5) {
@@ -910,18 +822,6 @@ public class SolrSearchResult {
         this.score = score;
     }
 
-    private String getDisplayType(SearchObjectType type) {
-        if (type == SearchObjectType.DATAVERSES) {
-            return SearchConstants.DATAVERSE;
-        } else if (type == SearchObjectType.DATASETS) {
-            return SearchConstants.DATASET;
-        } else if (type == SearchObjectType.FILES) {
-            return SearchConstants.FILE;
-        } else {
-            return null;
-        }
-    }
-
     public void setIdentifierOfDataverse(String id) {
         this.identifierOfDataverse = id;
     }
@@ -939,12 +839,35 @@ public class SolrSearchResult {
     }
 
     private JsonObjectBuilder getChecksumTypeAndValue(DataFile.ChecksumType checksumType, String checksumValue) {
-        if (checksumType != null) {
-            return Json.createObjectBuilder()
-                    .add("type", checksumType.toString())
-                    .add("value", checksumValue);
-        } else {
-            return null;
+        return checksumType != null
+                ? Json.createObjectBuilder()
+                        .add("type", checksumType.toString())
+                        .add("value", checksumValue)
+                : null;
+    }
+
+    // TODO: These methods should be moved to SolrSearchResultDTO as soon
+    //  as we get rid of JSON builders in dependent API endpoints
+    // -------------------- TO BE MOVED --------------------
+
+    public String getDisplayType() {
+        switch (type) {
+            case DATAVERSES:
+                return SearchConstants.DATAVERSE;
+            case DATASETS:
+                return SearchConstants.DATASET;
+            case FILES:
+                return SearchConstants.FILE;
+            default:
+                return null;
         }
+    }
+
+    public String getDateTimePublished() {
+        String datePublished = null;
+        if (!draftState) {
+            datePublished = releaseOrCreateDate == null ? null : Util.getDateTimeFormat().format(releaseOrCreateDate);
+        }
+        return datePublished;
     }
 }

@@ -69,6 +69,10 @@ public class Pager {
         return nextPageNumber;
     }
 
+    public int getNumberNextResults() {
+        return numberNextResults;
+    }
+
     public int getNumResults() {
         return numResults;
     }
@@ -113,15 +117,6 @@ public class Pager {
 
     public String addCommasToNumber(int count) {
         return NumberFormat.getInstance().format(count);
-    }
-
-    /**
-     * Originally used for mydata.
-     * Variables are named using the idea of cards--as in Dataverse cards,
-     * Dataset cards, etc. on the homepage
-     */
-    public JsonObjectBuilder asJsonObjectBuilderUsingCardTerms() {
-        return asJsonObjectBuilderCore(true);
     }
 
     public JsonObjectBuilder asJsonObjectBuilder() {

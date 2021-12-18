@@ -2,15 +2,12 @@ package edu.harvard.iq.dataverse.mydata;
 
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
-import edu.harvard.iq.dataverse.api.DataRetriever;
+import edu.harvard.iq.dataverse.api.MyData;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import org.apache.commons.lang.StringUtils;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -121,7 +118,7 @@ public class MyDataFinder {
         // -----------------------------------------------------------------
         String dvObjectFQ = getSolrDvObjectFilterQuery();
         if (dvObjectFQ == null) {
-            addErrorMessage(DataRetriever.MSG_NO_RESULTS_FOUND);
+            addErrorMessage(MyData.MSG_NO_RESULTS_FOUND);
             return null;
         }
         filterQueries.add(dvObjectFQ);
@@ -160,7 +157,7 @@ public class MyDataFinder {
         Set<Long> distinctParentIds = new HashSet<>(parentIds);
 
         if ((distinctEntityIds.isEmpty()) && (distinctParentIds.isEmpty())) {
-            addErrorMessage(DataRetriever.MSG_NO_RESULTS_FOUND);
+            addErrorMessage(MyData.MSG_NO_RESULTS_FOUND);
             return null;
         }
 
@@ -195,21 +192,6 @@ public class MyDataFinder {
         } else {
             return entityIdClause != null ? entityIdClause : parentIdClause;
         }
-    }
-
-    public JsonObjectBuilder getSelectedFilterParamsAsJSON() {
-        JsonObjectBuilder jsonData = Json.createObjectBuilder();
-        jsonData.add("publication_statuses", filterParams.getListofSelectedPublicationStatuses())
-                .add("role_names", getListofSelectedRoles());
-        return jsonData;
-    }
-
-    public JsonArrayBuilder getListofSelectedRoles() {
-        JsonArrayBuilder jsonArray = Json.createArrayBuilder();
-        filterParams.getRoleIds().stream()
-                .map(rolePermissionHelper::getRoleName)
-                .forEach(jsonArray::add);
-        return jsonArray;
     }
 
     // -------------------- PRIVATE --------------------

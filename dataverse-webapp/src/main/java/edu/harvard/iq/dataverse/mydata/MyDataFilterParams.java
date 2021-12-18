@@ -10,8 +10,6 @@ import edu.harvard.iq.dataverse.search.query.SearchObjectType;
 import edu.harvard.iq.dataverse.search.query.SearchPublicationStatus;
 import org.apache.commons.lang.StringUtils;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -97,6 +95,10 @@ public class MyDataFilterParams {
 
     public String getUserIdentifier() {
         return userIdentifier;
+    }
+
+    public List<String> getPublicationStatuses() {
+        return publicationStatuses;
     }
 
     // -------------------- LOGIC --------------------
@@ -188,12 +190,6 @@ public class MyDataFilterParams {
         }
 
         return String.format("(%s:%s)", SearchFields.PUBLICATION_STATUS, valStr);
-    }
-
-    public JsonArrayBuilder getListofSelectedPublicationStatuses() {
-        JsonArrayBuilder jsonArray = Json.createArrayBuilder();
-        publicationStatuses.forEach(jsonArray::add);
-        return jsonArray;
     }
 
     // -------------------- INNER CLASSES --------------------
