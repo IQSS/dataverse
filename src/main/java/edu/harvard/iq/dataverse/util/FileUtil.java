@@ -1587,24 +1587,6 @@ public class FileUtil implements java.io.Serializable  {
     }
 
     /**
-     * Show preview in many cases, but not when restricted.
-     *
-     * Originally, preview was limited to isPubliclyDownloadable().
-     */
-    public static boolean isPreviewAllowed(FileMetadata fileMetadata) {
-        if (fileMetadata == null) {
-            return false;
-        }
-        if (fileMetadata.isRestricted()) {
-            return false;
-        }
-        if (isActivelyEmbargoed(fileMetadata)) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
      * This is what the UI displays for "Download URL" on the file landing page
      * (DOIs rather than file IDs.
      */
