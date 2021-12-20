@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -12,22 +13,52 @@ import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
-import java.util.Date;
+import java.sql.Timestamp;
+import java.time.Clock;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @RequiredPermissions(Permission.PublishDataset)
 public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<DatasetVersion> {
 
     private final DatasetVersion version;
-    private final Map<String, String> requestedSettings = new HashMap<String, String>();
+    private final Map<String, String> requestedSettings = new HashMap<>();
     private static final Logger logger = Logger.getLogger(AbstractSubmitToArchiveCommand.class.getName());
 
-    public AbstractSubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
+    private final AuthenticationServiceBean authenticationService;
+    private final Clock clock;
+
+    public AbstractSubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version,
+                                          AuthenticationServiceBean authenticationService, Clock clock) {
         super(aRequest, version.getDataset());
         this.version = version;
+        this.authenticationService = authenticationService;
+        this.clock = clock;
+    }
+
+    protected ApiToken getOrGenerateToken(AuthenticatedUser user) {
+        if (user == null) {
+            return null;
+        }
+        Boolean INACTIVE_KEY = Boolean.TRUE;
+        Boolean ACTIVE_KEY = Boolean.FALSE;
+
+        Timestamp now = Timestamp.from(clock.instant());
+        List<ApiToken> tokens = authenticationService.findAllApiTokensByUser(user);
+        Map<Boolean, List<ApiToken>> inactiveAndActiveTokens = tokens.stream()
+                .collect(Collectors.groupingBy(t -> t.getExpireTime().before(now)));
+        List<Long> idsToDelete = inactiveAndActiveTokens.getOrDefault(INACTIVE_KEY, Collections.emptyList()).stream()
+                .map(ApiToken::getId)
+                .collect(Collectors.toList());
+        if (!idsToDelete.isEmpty()) {
+            authenticationService.deleteApiTokensByIds(idsToDelete);
+        }
+        List<ApiToken> active = inactiveAndActiveTokens.getOrDefault(ACTIVE_KEY, Collections.emptyList());
+        return active.isEmpty() ? authenticationService.generateApiTokenForUser(user) : active.get(0);
     }
 
     @Override
@@ -45,13 +76,7 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
 
         requestedSettings.put(SettingsServiceBean.Key.SiteUrl.toString(), ctxt.systemConfig().getDataverseSiteUrl());
 
-
-        AuthenticatedUser user = getRequest().getAuthenticatedUser();
-        ApiToken token = ctxt.authentication().findApiTokenByUser(user);
-        if ((token == null) || (token.getExpireTime().before(new Date()))) {
-            token = ctxt.authentication().generateApiTokenForUser(user);
-        }
-        performArchiveSubmission(version, token, requestedSettings, ctxt.citationFactory());
+        performArchiveSubmission(version, requestedSettings, ctxt.citationFactory());
         return ctxt.em().merge(version);
     }
 
@@ -63,17 +88,14 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
      * constructor and could be dropped from the parameter list.)
      *
      * @param version           - the DatasetVersion to archive
-     * @param token             - an API Token for the user performing this action
      * @param requestedSettings - a map of the names/values for settings required by this archiver (sent because this class is not part of the EJB context (by design) and has no direct access to service beans).
      */
-    abstract public WorkflowStepResult performArchiveSubmission(DatasetVersion version, ApiToken token,
-                                                                Map<String, String> requestedSettings,
-                                                                CitationFactory citationFactory);
+    abstract public WorkflowStepResult performArchiveSubmission(
+            DatasetVersion version, Map<String, String> requestedSettings, CitationFactory citationFactory);
 
     @Override
     public String describe() {
         return super.describe() + "DatasetVersion: [" + version.getId() + " (v"
                 + version.getFriendlyVersionNumber() + ")]";
     }
-
 }

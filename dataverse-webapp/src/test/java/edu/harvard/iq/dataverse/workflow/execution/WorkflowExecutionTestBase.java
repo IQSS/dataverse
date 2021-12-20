@@ -36,10 +36,9 @@ public abstract class WorkflowExecutionTestBase implements WithTestClock {
     protected WorkflowExecutionRepository executions = persistence.stub(WorkflowExecutionRepository.class);
     protected WorkflowExecutionStepRepository stepExecutions = persistence.stub(WorkflowExecutionStepRepository.class);
     protected RoleAssigneeServiceBean roleAssignees = new MockRoleAssigneeServiceBean() {{ add(new MockAuthenticatedUser()); }};
-    protected AuthenticationServiceBean authentication = new MockAuthenticationServiceBean(clock);
 
     protected WorkflowExecutionContextFactory contextFactory = new WorkflowExecutionContextFactory(
-            settings, datasetVersions, workflows, executions, roleAssignees, authentication, clock);
+            settings, datasetVersions, workflows, executions, roleAssignees, clock);
 
     protected DatasetVersionServiceBean versionsService = new DatasetVersionServiceBean(datasetVersions);
 

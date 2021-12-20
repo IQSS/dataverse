@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.workflow.execution;
 
-import edu.harvard.iq.dataverse.persistence.user.ApiToken;
 import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecution;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionRepository;
@@ -23,22 +22,20 @@ public class WorkflowExecutionContext extends WorkflowContext {
 
     protected final Workflow workflow;
     protected final WorkflowExecution execution;
-    protected final ApiToken apiToken;
     protected final Map<String, Object> settings;
     protected final Clock clock;
 
     // -------------------- CONSTRUCTORS --------------------
 
     WorkflowExecutionContext(WorkflowExecutionContext other) {
-        this(other.workflow, other, other.execution, other.apiToken, other.settings, other.clock);
+        this(other.workflow, other, other.execution, other.settings, other.clock);
     }
 
     WorkflowExecutionContext(Workflow workflow, WorkflowContext context, WorkflowExecution execution,
-                             ApiToken apiToken, Map<String, Object> settings, Clock clock) {
+                             Map<String, Object> settings, Clock clock) {
         super(context);
         this.workflow = workflow;
         this.execution = execution;
-        this.apiToken = apiToken;
         this.settings = settings;
         this.clock = clock;
     }
@@ -51,10 +48,6 @@ public class WorkflowExecutionContext extends WorkflowContext {
 
     public WorkflowExecution getExecution() {
         return execution;
-    }
-
-    public ApiToken getApiToken() {
-        return apiToken;
     }
 
     public Map<String, Object> getSettings() {

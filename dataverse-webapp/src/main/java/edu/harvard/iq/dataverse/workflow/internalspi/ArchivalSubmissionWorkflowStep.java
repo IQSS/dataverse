@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.workflow.internalspi;
 
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -11,6 +12,7 @@ import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.Clock;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -31,34 +33,35 @@ public class ArchivalSubmissionWorkflowStep implements WorkflowStep {
 
     private final DatasetVersionServiceBean versionsService;
     private final CitationFactory citationFactory;
+    private final AuthenticationServiceBean authenticationService;
+    private final Clock clock;
 
-    public ArchivalSubmissionWorkflowStep(DatasetVersionServiceBean versionsService, CitationFactory citationFactory) {
+    public ArchivalSubmissionWorkflowStep(DatasetVersionServiceBean versionsService, CitationFactory citationFactory,
+                                          AuthenticationServiceBean authenticationService, Clock clock) {
         this.versionsService = versionsService;
         this.citationFactory = citationFactory;
+        this.authenticationService = authenticationService;
+        this.clock = clock;
     }
 
     @Override
     public WorkflowStepResult run(WorkflowExecutionContext context) {
-        Map<String, String> requestedSettings = new HashMap<String, String>();
+        Map<String, String> requestedSettings = new HashMap<>();
         Map<String, Object> typedSettings = context.getSettings();
         for (String setting : (typedSettings.keySet())) {
             Object val = typedSettings.get(setting);
-            if (val instanceof String) {
-                requestedSettings.put(setting, (String) val);
-            } else if (val instanceof Boolean) {
-                requestedSettings.put(setting, ((Boolean) val).booleanValue() ? "true" : "false");
-            } else if (val instanceof Long) {
-                requestedSettings.put(setting, val.toString());
-            }
+            String stringValue = val != null ? val.toString() : null;
+            requestedSettings.put(setting, stringValue);
         }
 
         return versionsService.withDatasetVersion(context,
                 datasetVersion -> {
                     DataverseRequest dvr = new DataverseRequest(context.getRequest().getAuthenticatedUser(), (HttpServletRequest) null);
                     String className = requestedSettings.get(SettingsServiceBean.Key.ArchiverClassName.toString());
-                    AbstractSubmitToArchiveCommand archiveCommand = createSubmitToArchiveCommand(className, dvr, datasetVersion);
+                    AbstractSubmitToArchiveCommand archiveCommand
+                            = createSubmitToArchiveCommand(className, dvr, datasetVersion, authenticationService, clock);
                     if (archiveCommand != null) {
-                        return archiveCommand.performArchiveSubmission(datasetVersion, context.getApiToken(), requestedSettings, citationFactory);
+                        return archiveCommand.performArchiveSubmission(datasetVersion, requestedSettings, citationFactory);
                     } else {
                         logger.severe("No Archiver instance could be created for name: " + className);
                         return new Failure("No Archiver", "Could not create instance of class: " + className);
@@ -76,9 +79,9 @@ public class ArchivalSubmissionWorkflowStep implements WorkflowStep {
         logger.log(Level.INFO, "rolling back workflow invocation {0}", context.getInvocationId());
         versionsService.withDatasetVersion(context,
                 datasetVersion -> {
-                    logger.warning("Manual cleanup of Archive for: " +
-                            datasetVersion.getDataset().getGlobalId().asString() +
-                            ", version: " + datasetVersion + " may be required");
+                    logger.warning(
+                            () -> String.format("Manual cleanup of Archive for: %s, version: %s may be required",
+                                    datasetVersion.getDataset().getGlobalId().asString(), datasetVersion));
                     return datasetVersion;
                 });
     }

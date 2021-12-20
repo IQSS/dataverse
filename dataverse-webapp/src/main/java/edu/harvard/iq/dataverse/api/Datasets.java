@@ -135,6 +135,7 @@ import java.security.InvalidParameterException;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -1063,10 +1064,8 @@ public class Datasets extends AbstractApiBean {
                     // If configured, update archive copy as well
                     String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
                     DatasetVersion updateVersion = ds.getLatestVersion();
-                    AbstractSubmitToArchiveCommand archiveCommand = ArchiverUtil.createSubmitToArchiveCommand(className,
-                                                                                                              createDataverseRequest(
-                                                                                                                      user),
-                                                                                                              updateVersion);
+                    AbstractSubmitToArchiveCommand archiveCommand = ArchiverUtil.createSubmitToArchiveCommand(
+                            className, createDataverseRequest(user), updateVersion, authenticationServiceBean, Clock.systemUTC());
                     if (archiveCommand != null) {
                         // Delete the record of any existing copy since it is now out of date/incorrect
                         updateVersion.setArchivalCopyLocation(null);

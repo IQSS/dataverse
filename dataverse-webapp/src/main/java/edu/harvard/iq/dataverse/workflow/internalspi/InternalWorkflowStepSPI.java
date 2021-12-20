@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.workflow.internalspi;
 
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.workflow.WorkflowStepRegistry;
@@ -12,6 +13,7 @@ import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.inject.Inject;
+import java.time.Clock;
 
 /**
  * Provider for steps that are available internally.
@@ -27,15 +29,24 @@ public class InternalWorkflowStepSPI implements WorkflowStepSPI {
     private final WorkflowStepRegistry stepRegistry;
     private final DatasetVersionServiceBean datasetVersions;
     private final CitationFactory citationFactory;
+    private final AuthenticationServiceBean authenticationService;
+    private Clock clock;
 
     // -------------------- CONSTRUCTORS --------------------
 
     @Inject
     public InternalWorkflowStepSPI(WorkflowStepRegistry stepRegistry, DatasetVersionServiceBean datasetVersions,
-                                   CitationFactory citationFactory) {
+                                   CitationFactory citationFactory, AuthenticationServiceBean authenticationService) {
         this.stepRegistry = stepRegistry;
         this.datasetVersions = datasetVersions;
         this.citationFactory = citationFactory;
+        this.authenticationService = authenticationService;
+    }
+
+    public InternalWorkflowStepSPI(WorkflowStepRegistry stepRegistry, DatasetVersionServiceBean datasetVersions,
+                                   CitationFactory citationFactory, AuthenticationServiceBean authenticationService, Clock clock) {
+        this(stepRegistry, datasetVersions, citationFactory, authenticationService);
+        this.clock = clock;
     }
 
     @PostConstruct
@@ -55,7 +66,8 @@ public class InternalWorkflowStepSPI implements WorkflowStepSPI {
             case "http/sr":
                 return new HttpSendReceiveClientStep(stepParameters, datasetVersions, citationFactory);
             case "archiver":
-                return new ArchivalSubmissionWorkflowStep(datasetVersions, citationFactory);
+                return new ArchivalSubmissionWorkflowStep(datasetVersions, citationFactory, authenticationService,
+                        clock != null ? clock : Clock.systemUTC());
             case SystemProcessStep.STEP_ID:
                 return new SystemProcessStep(stepParameters);
             case ClearWorkingDirWorkflowStep.STEP_ID:

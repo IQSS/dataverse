@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserIdentifier;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationProviderFactoryNotFoundException;
@@ -98,6 +99,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.time.Clock;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -180,6 +182,9 @@ public class Admin extends AbstractApiBean {
 
     @Inject
     private DvObjectDao dvObjectDao;
+
+    @Inject
+    private AuthenticationServiceBean authenticationService;
 
     public static final String listUsersPartialAPIPath = "list-users";
     public static final String listUsersFullAPIPath = "/api/admin/" + listUsersPartialAPIPath;
@@ -1405,7 +1410,8 @@ public class Admin extends AbstractApiBean {
             DatasetVersion dv = datasetversionService.findByFriendlyVersionNumber(ds.getId(), versionNumber);
             if (dv.getArchivalCopyLocation() == null) {
                 String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
-                AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), dv);
+                AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(
+                        className, dvRequestService.getDataverseRequest(), dv, authenticationService, Clock.systemUTC());
                 if (cmd != null) {
                     new Thread(new Runnable() {
                         public void run() {

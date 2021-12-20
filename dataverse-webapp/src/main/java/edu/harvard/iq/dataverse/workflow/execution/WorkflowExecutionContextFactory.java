@@ -47,8 +47,6 @@ public class WorkflowExecutionContextFactory {
 
     private final RoleAssigneeServiceBean roleAssignees;
 
-    private final AuthenticationServiceBean authentication;
-
     private final Clock clock;
 
     // -------------------- CONSTRUCTORS --------------------
@@ -57,26 +55,24 @@ public class WorkflowExecutionContextFactory {
      * @deprecated for use by EJB proxy only.
      */
     public WorkflowExecutionContextFactory() {
-        this(null, null, null, null, null, null, null);
+        this(null, null, null, null, null, null);
     }
 
     @Inject
     public WorkflowExecutionContextFactory(SettingsServiceBean settings, DatasetVersionRepository datasetVersions,
                                            WorkflowRepository workflows, WorkflowExecutionRepository executions,
-                                           RoleAssigneeServiceBean roleAssignees, AuthenticationServiceBean authentication) {
-        this(settings, datasetVersions, workflows, executions, roleAssignees, authentication, Clock.systemUTC());
+                                           RoleAssigneeServiceBean roleAssignees) {
+        this(settings, datasetVersions, workflows, executions, roleAssignees, Clock.systemUTC());
     }
 
     public WorkflowExecutionContextFactory(SettingsServiceBean settings, DatasetVersionRepository datasetVersions,
                                            WorkflowRepository workflows, WorkflowExecutionRepository executions,
-                                           RoleAssigneeServiceBean roleAssignees, AuthenticationServiceBean authentication,
-                                           Clock clock) {
+                                           RoleAssigneeServiceBean roleAssignees, Clock clock) {
         this.settings = settings;
         this.datasetVersions = datasetVersions;
         this.workflows = workflows;
         this.executions = executions;
         this.roleAssignees = roleAssignees;
-        this.authentication = authentication;
         this.clock = clock;
     }
 
@@ -116,9 +112,8 @@ public class WorkflowExecutionContextFactory {
     // -------------------- PRIVATE --------------------
 
     private WorkflowExecutionContext create(WorkflowContext context, Workflow workflow, WorkflowExecution execution) {
-        ApiToken apiToken = getCurrentApiToken(context.getRequest().getAuthenticatedUser());
         Map<String, Object> settings = retrieveRequestedSettings(workflow.getRequiredSettings());
-        return new WorkflowExecutionContext(workflow, context, execution, apiToken, settings, clock);
+        return new WorkflowExecutionContext(workflow, context, execution, settings, clock);
     }
 
     private WorkflowContext reCreateContext(WorkflowContextSource source) {
@@ -127,7 +122,7 @@ public class WorkflowExecutionContextFactory {
                 .pollDelay(Duration.ofMillis(100))
                 .pollInterval(Duration.ofSeconds(3))
                 .atMost(Duration.ofSeconds(20))
-                .until(() -> datasetVersions.findByDatasetIdAndVersionNumber(source), version -> version.isPresent());
+                .until(() -> datasetVersions.findByDatasetIdAndVersionNumber(source), Optional::isPresent);
         DataverseRequest request = new DataverseRequest(
                 (User) roleAssignees.getRoleAssignee(source.getUserId()),
                 IpAddress.valueOf(source.getIpAddress()));
@@ -137,19 +132,8 @@ public class WorkflowExecutionContextFactory {
                 request, source.isDatasetExternallyReleased());
     }
 
-    private ApiToken getCurrentApiToken(AuthenticatedUser au) {
-        if (au != null) {
-            ApiToken token = authentication.findApiTokenByUser(au);
-            if ((token == null) || (token.getExpireTime().before(Timestamp.from(clock.instant())))) {
-                token = authentication.generateApiTokenForUser(au);
-            }
-            return token;
-        }
-        return null;
-    }
-
     private Map<String, Object> retrieveRequestedSettings(Map<String, String> requiredSettings) {
-        Map<String, Object> retrievedSettings = new HashMap<String, Object>();
+        Map<String, Object> retrievedSettings = new HashMap<>();
         for (String setting : requiredSettings.keySet()) {
             String settingType = requiredSettings.get(setting);
             switch (settingType) {

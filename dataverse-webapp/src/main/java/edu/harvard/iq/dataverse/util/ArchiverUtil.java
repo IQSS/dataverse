@@ -1,11 +1,13 @@
 package edu.harvard.iq.dataverse.util;
 
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Constructor;
+import java.time.Clock;
 import java.util.logging.Logger;
 
 /**
@@ -13,25 +15,28 @@ import java.util.logging.Logger;
  * archiving.
  */
 public class ArchiverUtil {
-
     private static final Logger logger = Logger.getLogger(ArchiverUtil.class.getName());
 
-    public ArchiverUtil() {
-    }
+    // -------------------- CONSTRUCTORS --------------------
 
-    public static AbstractSubmitToArchiveCommand createSubmitToArchiveCommand(String className, DataverseRequest dvr, DatasetVersion version) {
-        if (StringUtils.isNotEmpty(className)) {
-            try {
-                Class<?> clazz = Class.forName(className);
-                if (AbstractSubmitToArchiveCommand.class.isAssignableFrom(clazz)) {
-                    Constructor<?> ctor;
-                    ctor = clazz.getConstructor(DataverseRequest.class, DatasetVersion.class);
-                    return (AbstractSubmitToArchiveCommand) ctor.newInstance(new Object[]{dvr, version});
-                }
-            } catch (Exception e) {
-                logger.warning("Unable to instantiate an Archiver of class: " + className);
-                e.printStackTrace();
+    public ArchiverUtil() { }
+
+    // -------------------- LOGIC --------------------
+
+    public static AbstractSubmitToArchiveCommand createSubmitToArchiveCommand(
+            String className, DataverseRequest dvr, DatasetVersion version, AuthenticationServiceBean authenticationService, Clock clock) {
+        if (StringUtils.isEmpty(className)) {
+            return null;
+        }
+        try {
+            Class<?> cls = Class.forName(className);
+            if (AbstractSubmitToArchiveCommand.class.isAssignableFrom(cls)) {
+                Constructor<?> ctor
+                        = cls.getConstructor(DataverseRequest.class, DatasetVersion.class, AuthenticationServiceBean.class, Clock.class);
+                return (AbstractSubmitToArchiveCommand) ctor.newInstance(new Object[] { dvr, version, authenticationService, clock });
             }
+        } catch (Exception e) {
+            logger.warning("Unable to instantiate an Archiver of class: " + className);
         }
         return null;
     }

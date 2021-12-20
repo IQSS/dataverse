@@ -57,6 +57,7 @@ import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -451,6 +452,20 @@ public class AuthenticationServiceBean {
         }
     }
 
+    public List<ApiToken> findAllApiTokensByUser(AuthenticatedUser user) {
+        if (user == null) {
+            return Collections.emptyList();
+        }
+        return em.createNamedQuery("ApiToken.findByUser", ApiToken.class)
+                .setParameter("user", user)
+                .getResultList();
+    }
+
+    public void deleteApiTokensByIds(List<Long> ids) {
+        em.createNamedQuery("ApiToken.deleteByIds")
+                .setParameter("ids", ids)
+                .executeUpdate();
+    }
 
     // A method for generating a new API token;
     // TODO: this is a simple, one-size-fits-all solution; we'll need

@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.workflow.execution;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.mocks.MockAuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.group.IpAddress;
-import edu.harvard.iq.dataverse.persistence.user.ApiToken;
 import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecution;
 import edu.harvard.iq.dataverse.test.WithTestClock;
@@ -28,6 +27,6 @@ public class WorkflowContextMother implements WithTestClock {
 
     public static WorkflowExecutionContext givenWorkflowExecutionContext(Workflow workflow, WorkflowExecution execution) {
         WorkflowContext context = givenWorkflowContext(execution.getDatasetId());
-        return new WorkflowExecutionContext(workflow, context, execution, new ApiToken(), emptyMap(), clock);
+        return new WorkflowExecutionContext(workflow, context, execution, emptyMap(), clock);
     }
 }

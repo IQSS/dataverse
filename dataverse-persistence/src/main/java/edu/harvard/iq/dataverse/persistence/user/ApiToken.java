@@ -18,7 +18,8 @@ import java.sql.Timestamp;
 @Entity
 @NamedQueries({
         @NamedQuery(name = "ApiToken.findByTokenString", query = "SELECT t FROM ApiToken t WHERE t.tokenString = :tokenString"),
-        @NamedQuery(name = "ApiToken.findByUser", query = "SELECT t FROM ApiToken t WHERE t.authenticatedUser = :user")
+        @NamedQuery(name = "ApiToken.findByUser", query = "SELECT t FROM ApiToken t WHERE t.authenticatedUser = :user"),
+        @NamedQuery(name = "ApiToken.deleteByIds", query = "DELETE FROM ApiToken WHERE t.id IN :ids")
 })
 @Table(indexes = {@Index(columnList = "authenticateduser_id")})
 public class ApiToken implements Serializable {
@@ -45,20 +46,14 @@ public class ApiToken implements Serializable {
     @Column(nullable = false)
     private Timestamp expireTime;
 
+    // -------------------- GETTERS --------------------
+
     public Long getId() {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public String getTokenString() {
         return tokenString;
-    }
-
-    public void setTokenString(String aToken) {
-        this.tokenString = aToken;
     }
 
     public AuthenticatedUser getAuthenticatedUser() {
@@ -77,6 +72,16 @@ public class ApiToken implements Serializable {
         return expireTime;
     }
 
+    // -------------------- SETTERS --------------------
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setTokenString(String aToken) {
+        this.tokenString = aToken;
+    }
+
     public void setAuthenticatedUser(AuthenticatedUser authenticatedUser) {
         this.authenticatedUser = authenticatedUser;
     }
@@ -92,5 +97,4 @@ public class ApiToken implements Serializable {
     public void setExpireTime(Timestamp expireTime) {
         this.expireTime = expireTime;
     }
-
 }

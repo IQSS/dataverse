@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import com.google.common.collect.Lists;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.dataset.DatasetService;
@@ -75,6 +76,7 @@ import javax.inject.Named;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
@@ -139,6 +141,8 @@ public class DatasetPage implements java.io.Serializable {
     private GuestbookResponseServiceBean guestbookResponseService;
     @Inject
     private ConfirmEmailServiceBean confirmEmailService;
+    @Inject
+    private AuthenticationServiceBean authenticationService;
 
     private Dataset dataset = new Dataset();
 
@@ -705,7 +709,8 @@ public class DatasetPage implements java.io.Serializable {
             DatasetVersion updateVersion = dataset.getLatestVersion();
             if (updateVersion.getArchivalCopyLocation() != null) {
                 String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
-                AbstractSubmitToArchiveCommand archiveCommand = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), updateVersion);
+                AbstractSubmitToArchiveCommand archiveCommand = ArchiverUtil.createSubmitToArchiveCommand(
+                        className, dvRequestService.getDataverseRequest(), updateVersion, authenticationService, Clock.systemUTC());
                 if (archiveCommand != null) {
                     // Delete the record of any existing copy since it is now out of date/incorrect
                     updateVersion.setArchivalCopyLocation(null);
