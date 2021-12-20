@@ -2402,6 +2402,7 @@ Each set of labels is identified by a curationLabelSet name and a JSON Array of 
 ++++++++++++++++++++++
 
 By default, custom terms of data use and access can be specified after selecting "Custom Terms" from the License/DUA dropdown on the Terms tab. When ``:AllowCustomTerms`` is  set to ``false`` the "Custom Terms" item is not made available to the depositor.
+
 .. _:MaxEmbargoDurationInMonths:
 
 :MaxEmbargoDurationInMonths
