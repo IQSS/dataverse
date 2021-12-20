@@ -117,7 +117,7 @@
                                         <div class="notification-item-cell">
                                             <i class="icon-dataverse text-icon-inline text-muted" jsf:rendered="#{item.theObjectType eq 'DATAVERSE' or item.theObjectType eq 'AUTHENTICATED_USER'}"></i>
                                             <i class="icon-dataset text-icon-inline text-muted" jsf:rendered="#{item.theObjectType eq 'DATASET' or item.theObjectType eq 'DATASET_VERSION'}"></i>
-                                            <h:outputText value="(#{bundle['notification.new']})" styleClass="text-muted" rendered="#{not item.displayAsRead}" />
+                                            <h:outputText value="(#{bundle['notification.new']}) " styleClass="text-muted" rendered="#{not item.displayAsRead}" />
 
                                             <ui:include src="pluggable/notifications.xhtml">
                                                 <ui:param name="item" value="#{item}" />
