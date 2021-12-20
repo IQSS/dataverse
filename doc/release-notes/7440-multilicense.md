@@ -1,6 +1,6 @@
 ### Multiple License Support
 
-Users can now select from a set of configured licenses in addition to or instead of the current Creative Commons CC0 choice or provide custom terms of use (if configured) for their datasets. Administrators can configure their Dataverse instance via API to allow any desired license as a choice and can enable/disable the option to allow custom terms. Administrators can also mark licenses as 'inactive' to disallow future use while keeping that license for existing datasets. By default, only the CC0 license will be preinstalled. Examples in the Guides show how to add additional licenses and specific examples are give for several Creative Commons licenses. **Note: Datasets in existing installations will automatically be updated to conform to new requirements that custom terms cannot be used with a standard license and that custom terms cannot be empty. Administrators may wish to manually update datasets with these conditions if they do not like the automated migration choices. See the Notes for Dataverse Installation Administrators and Additional Release Steps sections for further information.**
+Users can now select from a set of configured licenses in addition to or instead of the current Creative Commons CC0 choice or provide custom terms of use (if configured) for their datasets. Administrators can configure their Dataverse instance via API to allow any desired license as a choice and can enable/disable the option to allow custom terms. Administrators can also mark licenses as 'inactive' to disallow future use while keeping that license for existing datasets. By default, only the CC0 license will be preinstalled. Examples in the Guides show how to add additional licenses and specific examples are given for several Creative Commons licenses. **Note: Datasets in existing installations will automatically be updated to conform to new requirements that custom terms cannot be used with a standard license and that custom terms cannot be empty. Administrators may wish to manually update datasets with these conditions if they do not like the automated migration choices. See the Notes for Dataverse Installation Administrators and Additional Release Steps sections for further information.**
 
 
 ## Major Use Cases and Infrastructure Enhancements
@@ -12,7 +12,7 @@ Users can now select from a set of configured licenses in addition to or instead
 
 ### Updating for multiple license support
 
-As part of installing/upgrading an existing installation, administrators may wish to add additional license choices and/or configure Dataverse to allow custom terms. Adding additional licenses is managed via API. Licenses are described via a JSON structure providing a name, URL, short description, and optional icon URL. Additionally licenses may be marked as active (selectable for new/updated datasets) or inactive (only allowed on existing datasets) and one license can be marked as the default. Custom Terms are allowed by default (backward compatible with the current option to select 'No' to using CC0) and can be disabled by setting :AllowCustomTermsOfUse to false.
+As part of installing/upgrading an existing installation, administrators may wish to add additional license choices and/or configure Dataverse to allow custom terms. Adding additional licenses is managed via API. Licenses are described via a JSON structure providing a name, URL, short description, and optional icon URL. Additionally licenses may be marked as active (selectable for new/updated datasets) or inactive (only allowed on existing datasets) and one license can be marked as the default. Custom Terms are allowed by default (backward compatible with the current option to select 'No' to using CC0) and can be disabled by setting `:AllowCustomTermsOfUse` to false.
 
 Further administrators should review the following automated migration of existing licenses and terms into the new license framework and, if desired, should manually find and update any datasets for which the automated update is problematic. 
 To understand the migration process, it is useful to understand how the multiple license feature works in this release:
@@ -46,13 +46,13 @@ Administrators who have datasets where CC0 has been selected along with addition
 
 ## New JVM Options and DB Settings
 
-- :AllowCustomTermsOfUse (default: true) allow users to provide Custom Terms instead of choosing one of the configured standard licenses.
+- `:AllowCustomTermsOfUse` (default: true) allow users to provide Custom Terms instead of choosing one of the configured standard licenses.
 
 See the [Database Settings](https://guides.dataverse.org/en/5.9/installation/config.html) section of the Guides for more information.
 
 ## Additional Release Steps
 
-In most Dataverse installations, one would expect the vast majority of Datasets to either use the CC0 Waiver or have non-empty Terms of Use. As noted above, these will be migrated without any issue. Administrators may however wish to find and manaully update datasets that specified a CC0 license but also had terms (no longer allowed) or had no license and no terms of use (also no longer allowed) rather than accept the default migrations for these datasets listed above.
+In most Dataverse installations, one would expect the vast majority of Datasets to either use the CC0 Waiver or have non-empty Terms of Use. As noted above, these will be migrated without any issue. Administrators may however wish to find and manually update datasets that specified a CC0 license but also had terms (no longer allowed) or had no license and no terms of use (also no longer allowed) rather than accept the default migrations for these datasets listed above.
 
 ### To find Datasets with a CC0 license and non-empty terms:
 
@@ -64,6 +64,7 @@ There are two choices to migrate such datasets:
 
  - Set all terms fields to null:
 
+
     update termsofuseandaccess set termsofuse=null, confidentialitydeclaration=null, t.specialpermissions=null, t.restrictions=null, citationrequirements=null, depositorrequirements=null, conditions=null, disclaimer=null where id=<id>;
 
 or to change several at once:
@@ -71,6 +72,7 @@ or to change several at once:
     update termsofuseandaccess set termsofuse=null, confidentialitydeclaration=null, t.specialpermissions=null, t.restrictions=null, citationrequirements=null, depositorrequirements=null, conditions=null, disclaimer=null where id in (<comma separated list of termsanduseofaccess_ids>);
 
  - Alternately, change the Dataset version(s) to not use the CCO waiver and modify the Terms of Use (and/or other fields) as you wish to indicate that the CC0 waiver was previously selected:
+
 
     update termsofuseandaccess set license='NONE', termsofuse=concat('New text. ', termsofuse) where id=<id>;
     
@@ -80,7 +82,7 @@ or
 
 ### To find datasets without CC0 and having an empty Terms of Use field:
 
-select CONCAT('doi:', dvo.authority, '/', dvo.identifier), v.alias as dataverse_alias, case when versionstate='RELEASED' then concat(dv.versionnumber, '.', dv.minorversionnumber) else versionstate END  as version, dv.id as datasetversion_id, t.id as termsofuseandaccess_id, t.termsofuse, t.confidentialitydeclaration, t.specialpermissions, t.restrictions, t.citationrequirements, t.depositorrequirements, t.conditions, t.disclaimer from dvobject dvo, termsofuseandaccess t, datasetversion dv, dataverse v where dv.dataset_id=dvo.id and dv.termsofuseandaccess_id=t.id and dvo.owner_id=v.id and t.license='NONE' and t.termsofuse is null;
+      select CONCAT('doi:', dvo.authority, '/', dvo.identifier), v.alias as dataverse_alias, case when versionstate='RELEASED' then concat(dv.versionnumber, '.', dv.minorversionnumber) else versionstate END  as version, dv.id as datasetversion_id, t.id as termsofuseandaccess_id, t.termsofuse, t.confidentialitydeclaration, t.specialpermissions, t.restrictions, t.citationrequirements, t.depositorrequirements, t.conditions, t.disclaimer from dvobject dvo, termsofuseandaccess t, datasetversion dv, dataverse v where dv.dataset_id=dvo.id and dv.termsofuseandaccess_id=t.id and dvo.owner_id=v.id and t.license='NONE' and t.termsofuse is null;
 
 These datasets could be updated to use CC0:
 
@@ -90,7 +92,7 @@ or Terms of Use could be added:
 
     update termsofuseandaccess set termsofuse='New text. ' where id=<id>;
 
-In both cases, the same where id in (<comma separated list of termsanduseofaccess_ids>); ending could be used to change multiple datasets/versions at once.
+In both cases, the same where id in (`<comma separated list of termsanduseofaccess_ids>`); ending could be used to change multiple datasets/versions at once.
 
 ### Standardizing Custom Licenses:
 
@@ -106,7 +108,7 @@ The benefits of this approach are:
 - efficiency: custom terms are stored per dataset whereas licenses are registered once and all uses of it refer to the same object and external URL
 - security: with the license terms maintained external to Dataverse, users cannot edit specific terms and curators do not need to check for edits
 
-Once a standardized version of you CUstom Terms are registered as a license, an SQL update like the following can be used to have datasets use it:
+Once a standardized version of you Custom Terms are registered as a license, an SQL update like the following can be used to have datasets use it:
 
     UPDATE termsofuseandaccess
         SET license_id = (SELECT license.id FROM license WHERE license.name = '<Your License Name>'), termsofuse=null, confidentialitydeclaration=null, t.specialpermissions=null, t.restrictions=null, citationrequirements=null, depositorrequirements=null, conditions=null, disclaimer=null 
@@ -114,6 +116,4 @@ Once a standardized version of you CUstom Terms are registered as a license, an 
 
 
 
-dvndb=# select CONCAT('doi:', dvo.authority, '/', dvo.identifier), v.alias as dataverse_alias, case when versionstate='RELEASED' then concat(dv.versionnumber, '.', dv.minorversionnumber) else versionstate END  as version, dv.id as datasetversion_id, t.id as termsofuseandaccess_id, t.termsofuse, t.confidentialitydeclaration, t.specialpermissions, t.restrictions, t.citationrequirements, t.depositorrequirements, t.conditions, t.disclaimer from dvobject dvo, termsofuseandaccess t, datasetversion dv, dataverse v where dv.dataset_id=dvo.i
-d and dv.termsofuseandaccess_id=t.id and dvo.owner_id=v.id and t.license_id=1 and not (t.termsofuse is null and t.confidentialitydeclaration is null and t.specialpermissions is null and t.restrictions is null and citationrequirements is null and t.depositorrequirements is null and t.conditions is null and t.disclaimer is null);
-
+    select CONCAT('doi:', dvo.authority, '/', dvo.identifier), v.alias as dataverse_alias, case when versionstate='RELEASED' then concat(dv.versionnumber, '.', dv.minorversionnumber) else versionstate END  as version, dv.id as datasetversion_id, t.id as termsofuseandaccess_id, t.termsofuse, t.confidentialitydeclaration, t.specialpermissions, t.restrictions, t.citationrequirements, t.depositorrequirements, t.conditions, t.disclaimer from dvobject dvo, termsofuseandaccess t, datasetversion dv, dataverse v where dv.dataset_id=dvo.id and dv.termsofuseandaccess_id=t.id and dvo.owner_id=v.id and t.license_id=1 and not (t.termsofuse is null and t.confidentialitydeclaration is null and t.specialpermissions is null and t.restrictions is null and citationrequirements is null and t.depositorrequirements is null and t.conditions is null and t.disclaimer is null);
