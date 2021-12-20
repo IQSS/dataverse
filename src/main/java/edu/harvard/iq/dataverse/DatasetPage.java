@@ -89,6 +89,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.json.JsonObject;
 
+import org.apache.commons.lang3.StringUtils;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
 
@@ -129,7 +130,7 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.io.IOUtils;
-
+import org.primefaces.component.selectonemenu.SelectOneMenu;
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.CloseEvent;
 import org.primefaces.event.TabChangeEvent;
@@ -302,7 +303,6 @@ public class DatasetPage implements java.io.Serializable {
     private List<SelectItem> linkingDVSelectItems;
     private Dataverse linkingDataverse;
     private Dataverse selectedHostDataverse;
-    private List<SelectItem> licenseSelectItems;
 
     public Dataverse getSelectedHostDataverse() {
         return selectedHostDataverse;
@@ -351,26 +351,6 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setShowIngestSuccess(boolean showIngestSuccess) {
         this.showIngestSuccess = showIngestSuccess;
-    }
-
-    private Long licenseId;
-
-    public Long getLicenseId() {
-        return licenseId;
-    }
-
-    public void setLicenseId(Long licenseId) {
-        this.licenseId = licenseId;
-    }
-
-    public License getSelectedLicenseById(){
-        License license = licenseServiceBean.getById(licenseId);
-            if (license != null) {
-                return license;
-            } else {
-                logger.log(Level.WARNING, "License with ID {0} doesn't exist.", licenseId);
-                return null;
-            }
     }
 
     // TODO: Consider renaming "configureTools" to "fileConfigureTools".
@@ -1237,16 +1217,6 @@ public class DatasetPage implements java.io.Serializable {
         this.linkingDataverseId = linkingDataverseId;
     }
 
-    public List<SelectItem> getLicenseSelectItems() {
-        return licenseSelectItems;
-    }
-
-    public void setLicenseSelectItems(List<SelectItem> licenseSelectItems) {
-        this.licenseSelectItems = licenseSelectItems;
-    }
-
-
-
     public void updateReleasedVersions(){
 
         setReleasedVersionTabList(resetReleasedVersionTabList());
@@ -2105,12 +2075,6 @@ public class DatasetPage implements java.io.Serializable {
         previewTools = externalToolService.findFileToolsByType(ExternalTool.Type.PREVIEW);
         datasetExploreTools = externalToolService.findDatasetToolsByType(ExternalTool.Type.EXPLORE);
         rowsPerPage = 10;
-        licenseSelectItems = licenseServiceBean.listAllActive().stream()
-                                                             .map(license -> new SelectItem(license.getId().toString(), license.getName()))
-                                                             .collect(Collectors.toList());
-        if (systemConfig.isAllowCustomTerms()) {
-            licenseSelectItems.add(new SelectItem(null, BundleUtil.getStringFromBundle("license.custom")));
-        }
 
         return null;
     }
@@ -2486,10 +2450,6 @@ public class DatasetPage implements java.io.Serializable {
             JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.editMetadata.label"), BundleUtil.getStringFromBundle("dataset.message.editMetadata.message"));
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset Metadata", " - Add more metadata about your dataset to help others easily find it."));
         } else if (editMode.equals(EditMode.LICENSE)){
-            License license = dataset.getEditVersion().getTermsOfUseAndAccess().getLicense();
-            if (license != null) {
-                licenseId = license.getId();
-            }
             JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.editTerms.label"), BundleUtil.getStringFromBundle("dataset.message.editTerms.message"));
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset License and Terms", " - Update your dataset's license and terms of use."));
         }
@@ -3563,7 +3523,6 @@ public class DatasetPage implements java.io.Serializable {
                 if (!filesToBeDeleted.isEmpty()) {
                     deleteStorageLocations = datafileService.getPhysicalFilesToDelete(filesToBeDeleted);
                 }
-                if (editMode == EditMode.LICENSE) setLicense(dataset.getEditVersion());
                 cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted, clone );
                 ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);
             }
@@ -3696,23 +3655,6 @@ public class DatasetPage implements java.io.Serializable {
         logger.fine("Redirecting to the Dataset page.");
 
         return returnToDraftVersion();
-    }
-
-    /**
-     * Sets the license to null if id is null, otherwise sets it to a license.
-     *
-     * @param editVersion
-     */
-    private void setLicense(DatasetVersion editVersion){
-        TermsOfUseAndAccess terms = editVersion.getTermsOfUseAndAccess();
-        if (licenseId == null) {
-            terms.setLicense(null);
-        } else {
-            License license = licenseServiceBean.getById(licenseId);
-            if (license == null) license = licenseServiceBean.getDefault();
-            terms.setLicense(license);
-            terms.clearCustomTermsVariables();
-        }
     }
 
     private void populateDatasetUpdateFailureMessage(){
@@ -5887,5 +5829,19 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
         return true;
+    }
+
+    public void validateTerms(FacesContext context, UIComponent component, Object value) throws ValidatorException {
+        UIComponent lic = component.findComponent("licenses");
+        SelectOneMenu som = (SelectOneMenu) lic;
+        logger.fine("license in form is " + som.getValue());
+        if (som.getValue() == null) {
+            if (StringUtils.isBlank((String) value)) {
+                FacesMessage msg = new FacesMessage(BundleUtil.getStringFromBundle("dataset.license.custom.blankterms"));
+                msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+
+                throw new ValidatorException(msg);
+            }
+        }
     }
 }

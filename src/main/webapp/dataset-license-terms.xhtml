@@ -28,35 +28,37 @@
                    <div class="panel-body">
                        <div class="form-group">
                            <label for="metadata_Terms" class="col-sm-3 control-label">
-                               #{bundle['file.dataFilesTab.terms.list.termsOfUse.waiver']}
+                               #{bundle['file.dataFilesTab.terms.list.license']}
                            </label>
                            <div class="col-sm-9">
                                <ui:fragment rendered="#{empty editMode}">
                                    <p class="help-block">
-                                       <h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.waiver.txt.description']}" escape="false"/>
+                                       <h:outputText value="#{bundle['file.dataFilesTab.terms.list.license.view.description']}" escape="false"/>
                                    </p>
                                </ui:fragment>
                                <ui:fragment rendered="#{empty editMode and empty termsOfUseAndAccess.license}">
-                                   <p><h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.no.waiver.txt']}" escape="false"/></p>
+                                   <p><h:outputText value="#{bundle['file.dataFilesTab.terms.list.license.customterms.txt']}" escape="false"/></p>
                                </ui:fragment>
                                <ui:fragment rendered="#{!empty editMode}">
-                                   <p class="help-block"><h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.waiver.description']}" escape="false"/></p>
-                                   <p:selectOneMenu id="licenses" value="#{DatasetPage.licenseId}" style="width: 40%">
-                                       <f:selectItems value="#{DatasetPage.licenseSelectItems}" />
+                                   <p class="help-block"><h:outputText value="#{bundle['file.dataFilesTab.terms.list.license.edit.description']}" escape="false"/></p>
+                                   <p:selectOneMenu id="licenses" value="#{termsOfUseAndAccess.license}" style="width: 40%" converter="licenseConverter">
+                                       <f:selectItems value="#{licenseServiceBean.listAllActive()}"
+                                                   var="license" itemLabel="#{license.name}" itemValue="#{license}"/>
+                                       <f:selectItem itemLabel="#{bundle['license.custom']}" itemValue="#{null}" rendered="#{settingsWrapper.customLicenseAllowed}"/>
                                        <p:ajax update="touFragment" oncomplete="javascript:bind_bsui_components();" />
                                    </p:selectOneMenu>
                                </ui:fragment>
-                               <ui:fragment rendered="#{!empty termsOfUseAndAccess.license and empty DatasetPage.licenseId and empty editMode}">
+                               <ui:fragment rendered="#{!empty termsOfUseAndAccess.license and empty termsOfUseAndAccess.license and empty editMode}">
                                        <p>
-                                           <img src="#{DatasetPage.workingVersion.termsOfUseAndAccess.license.iconUrl}" title="#{DatasetPage.workingVersion.termsOfUseAndAccess.license.shortDescription}" style="display:none"  onload="this.style.display='inline'" />
+                                           <img src="#{termsOfUseAndAccess.license.iconUrl}" title="#{termsOfUseAndAccess.license.shortDescription}" style="display:none"  onload="this.style.display='inline'" />
                                            <a href="#{termsOfUseAndAccess.license.uri}" title="#{termsOfUseAndAccess.license.shortDescription}" target="_blank">#{termsOfUseAndAccess.license.name}</a>
                                        </p>
 
                                </ui:fragment>
-                               <ui:fragment rendered="#{!empty DatasetPage.licenseId}">
+                               <ui:fragment rendered="#{!empty termsOfUseAndAccess.license}">
                                    <p>
-                                       <img src="#{DatasetPage.getSelectedLicenseById().iconUrl}" title="#{DatasetPage.getSelectedLicenseById().shortDescription}"  style="display:none"  onload="this.style.display='inline'" />
-                                       <a href="#{DatasetPage.getSelectedLicenseById().uri}" title="#{DatasetPage.getSelectedLicenseById().shortDescription}" target="_blank">#{DatasetPage.getSelectedLicenseById().name}</a>
+                                       <img src="#{termsOfUseAndAccess.license.iconUrl}" title="#{termsOfUseAndAccess.license.shortDescription}"  style="display:none"  onload="this.style.display='inline'" />
+                                       <a href="#{termsOfUseAndAccess.license.uri}" title="#{termsOfUseAndAccess.license.shortDescription}" target="_blank">#{termsOfUseAndAccess.license.name}</a>
                                    </p>
                                </ui:fragment>
                            </div>
@@ -145,15 +147,19 @@
                                 </div>
                             </div>
                         </ui:fragment>
-                        <ui:fragment rendered="#{!empty editMode and DatasetPage.licenseId == null}">
+                        <ui:fragment rendered="#{!empty editMode and termsOfUseAndAccess.license == null}">
                             <div class="form-group">
                                 <label for="metadata_TermsUse" class="col-sm-3 control-label">
                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
+                                    <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse.title']}"></span>
                                 </label>
                                 <div class="col-sm-9">
-                                    <p:inputTextarea id="metadata_TermsUse" value="#{termsOfUseAndAccess.termsOfUse}" rows="5" cols="60" styleClass="form-control" title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}"/>
+                                    <p:inputTextarea id="metadata_TermsUse" value="#{termsOfUseAndAccess.termsOfUse}" rows="5" cols="60" styleClass="form-control" title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}" 
+                                                     validator="#{DatasetPage.validateTerms}">
+                                    </p:inputTextarea>
+                                    <h:message for="metadata_TermsUse" styleClass="bg-danger text-danger"/>
                                 </div>
                             </div>
                             <div class="form-group">

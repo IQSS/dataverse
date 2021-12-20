@@ -6,7 +6,6 @@
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
-import java.net.URI;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -123,6 +122,9 @@ public class TermsOfUseAndAccess implements Serializable {
 
     public void setLicense(License license) {
         this.license = license;
+        if(license!=null) {
+            clearCustomTermsVariables();
+        }
     }
 
     public String getTermsOfUse() {
@@ -250,27 +252,29 @@ public class TermsOfUseAndAccess implements Serializable {
 
         TermsOfUseAndAccess retVal = new TermsOfUseAndAccess();
         retVal.setAvailabilityStatus(this.getAvailabilityStatus());
-        retVal.setCitationRequirements(this.getCitationRequirements());
-        retVal.setConditions(this.getConditions());
-        retVal.setConfidentialityDeclaration(this.getConfidentialityDeclaration());
         retVal.setContactForAccess(this.getContactForAccess());
         retVal.setDataAccessPlace(this.getDataAccessPlace());
-        retVal.setDepositorRequirements(this.getDepositorRequirements());
-        retVal.setDisclaimer(this.getDisclaimer());
-        retVal.setLicense(this.getLicense());
         retVal.setOriginalArchive(this.getOriginalArchive());
-        retVal.setRestrictions(this.getRestrictions());
         retVal.setSizeOfCollection(this.getSizeOfCollection());
-        retVal.setSpecialPermissions(this.getSpecialPermissions());
         retVal.setStudyCompletion(this.getStudyCompletion());
         retVal.setTermsOfAccess(this.getTermsOfAccess());
-        retVal.setTermsOfUse(this.getTermsOfUse());
         retVal.setFileAccessRequest(this.isFileAccessRequest());
+        retVal.setLicense(this.getLicense());
+        if (license == null) {
+            retVal.setTermsOfUse(this.getTermsOfUse());
+            retVal.setConfidentialityDeclaration(this.getConfidentialityDeclaration());
+            retVal.setSpecialPermissions(this.getSpecialPermissions());
+            retVal.setRestrictions(this.getRestrictions());
+            retVal.setCitationRequirements(this.getCitationRequirements());
+            retVal.setDepositorRequirements(this.getDepositorRequirements());
+            retVal.setConditions(this.getConditions());
+            retVal.setDisclaimer(this.getDisclaimer());
+        }
 
         return retVal;
     }
 
-    public void clearCustomTermsVariables(){
+    private void clearCustomTermsVariables(){
         termsOfUse = null;
         confidentialityDeclaration = null;
         specialPermissions = null;

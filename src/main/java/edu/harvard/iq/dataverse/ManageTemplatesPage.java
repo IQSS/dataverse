@@ -112,7 +112,7 @@ public class ManageTemplatesPage implements java.io.Serializable {
     }
 
     public String cloneTemplate(Template templateIn) {
-        Template newOne = templateIn.cloneNewTemplate(templateIn, licenseServiceBean.getDefault());
+        Template newOne = templateIn.cloneNewTemplate(templateIn);
         String name = BundleUtil.getStringFromBundle("page.copy") +" " + templateIn.getName();
         newOne.setName(name);
         newOne.setUsageCount(new Long(0));

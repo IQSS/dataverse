@@ -5,11 +5,13 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.License;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -36,6 +38,8 @@ import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+
 import org.apache.commons.io.FileUtils;
 
 public class DatasetUtil {
@@ -532,5 +536,33 @@ public class DatasetUtil {
             return false; 
         }
         
+    }
+
+    public static String getLicenseName(DatasetVersion dsv) {
+        License license = dsv.getTermsOfUseAndAccess().getLicense();
+        return license != null ? license.getName()
+                : BundleUtil.getStringFromBundle("license.custom");
+    }
+
+    public static String getLicenseURI(DatasetVersion dsv) {
+        License license = dsv.getTermsOfUseAndAccess().getLicense();
+        return license != null ? license.getUri().toString()
+                : (dsv.getVersionState().name().equals("DRAFT")
+                        ? dsv.getDataverseSiteUrl()
+                                + "/api/datasets/:persistentId/versions/:draft/customlicense?persistentId="
+                                + dsv.getDataset().getGlobalId().asString()
+                        : dsv.getDataverseSiteUrl() + "/api/datasets/:persistentId/versions/" + dsv.getVersionNumber()
+                                + "." + dsv.getMinorVersionNumber() + "/customlicense?persistentId="
+                                + dsv.getDataset().getGlobalId().asString());
+    }
+
+    public static String getLicenseIcon(DatasetVersion dsv) {
+        License license = dsv.getTermsOfUseAndAccess().getLicense();
+        return license != null ? license.getIconUrl().toString() : null;
+    }
+
+    public static String getLicenseDescription(DatasetVersion dsv) {
+        License license = dsv.getTermsOfUseAndAccess().getLicense();
+        return license != null ? license.getShortDescription() : BundleUtil.getStringFromBundle("license.custom.description");
     }
 }
