@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.validation.datasetfield.validators;
 
+import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.validation.datasetfield.ValidationResult;
 import org.apache.commons.lang3.StringUtils;
@@ -29,17 +30,17 @@ public class RorValidator extends FieldValidatorBase {
     @Override
     public ValidationResult isValid(DatasetField field, Map<String, String> params, Map<String, List<DatasetField>> fieldIndex) {
         String fullRor = field.getValue();
+        String fieldName = field.getDatasetFieldType().getDisplayName();
         if (StringUtils.isBlank(fullRor)
             || !fullRor.matches("https://ror\\.org/0[a-hjkmnp-tv-z0-9]{6}[0-9]{2}")) {
-            return ValidationResult.invalid(field, "The submitted ROR is wrongly formed or contains invalid characters");
+            return ValidationResult.invalid(field, BundleUtil.getStringFromBundle("ror.invalid.format", fieldName));
         }
         String value = fullRor.substring(fullRor.lastIndexOf("/") + 1);
         String encoded = value.substring(0, 7);
         long checksum = Long.parseLong(value.substring(7));
-
         return checksum == computeChecksum(encoded)
                 ? ValidationResult.ok()
-                : ValidationResult.invalid(field, "The submitted ROR is not correct");
+                : ValidationResult.invalid(field, BundleUtil.getStringFromBundle("ror.invalid.checksum", fieldName));
     }
 
     // -------------------- PRIVATE --------------------
