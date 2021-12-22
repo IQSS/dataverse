@@ -313,7 +313,8 @@
                                      selection="#{EditDatafilesPage.selectedFiles}" 
                                      var="fileMetadata" 
                                      widgetVar="filesTable"
-                                     emptyMessage="#{datasetPage || EditDatafilesPage.showFileUploadFragment() ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}">
+                                     emptyMessage="#{datasetPage || EditDatafilesPage.showFileUploadFragment() ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}"
+                                     ariaRowLabel="#{bundle['file.select.action']} #{fileMetadata.label}">
                             <f:facet name="header">
                                 <div jsf:id="filesHeaderBlock" class="row">
                                     <div id="filesHeaderCount" class="col-xs-6 text-left">
@@ -324,9 +325,12 @@
                                     </div>
                                 </div>
                             </f:facet>
-                            <p:column selectionMode="multiple" class="col-select-width text-center" style="width:40px !important;"/>
+                            <p:column selectionMode="multiple" class="col-select-width text-center" style="width:40px !important;" ariaHeaderText="#{bundle['file.select.tooltip']}/>
                             <p:column class="col-file-metadata">
-                                <div id="fileInfoInclude-filesTable" class="col-sm-12 row">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="sr-only" value="#{bundle['file.tableheader.info']}"/>
+                                </f:facet>
+                                <div id="fileInfoInclude-filesTable-#{fileMetadata.label}" class="col-sm-12 row">
                                     <div class="pull-left col-file-thumb">
                                         <div class="thumbnail-block text-center">
                                             <!-- Thumbnail Preview -->
@@ -354,20 +358,20 @@
                                         </div>
                                     </div>
                                     <div class="col-md-10 file-metadata-block">
-                                        <label class="control-label" for="fileName" style="margin-right:1em;margin-bottom:.5em;">
+                                        <label class="control-label" for="datasetForm:filesTable:#{rowNum}:fileName" style="margin-right:1em;margin-bottom:.5em;">
                                             #{bundle['file.fileName']}
                                         </label>
                                         <p:inputText id="fileName" value="#{fileMetadata.label}" style="width:60%; margin-bottom:.5em;" disabled="#{fileMetadata.dataFile.filePackage}"/>
-                                        <p:message for="fileName"/>
+                                        <p:message for="datasetForm:filesTable:#{rowNum}:fileName"/>
 
-                                        <label class="control-label" for="fileDirectoryLabel" style="margin-right:1em;margin-bottom:.5em;">
+                                        <label class="control-label" for="datasetForm:filesTable:#{rowNum}:fileDirectoryName" style="margin-right:1em;margin-bottom:.5em;">
                                             #{bundle['file.metadataTab.fileMetadata.hierarchy.label']}    
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.metadataTab.fileMetadata.hierarchy.tip']}"></span>
                                         </label>
                                         <p:inputText id="fileDirectoryName" value="#{fileMetadata.directoryLabel}"                                            
                                                      style="width:60%; margin-bottom:.5em;" disabled="#{fileMetadata.dataFile.filePackage}" widgetVar="fileDirectoryName"/>                        
-                                        <p:message for="fileDirectoryName"/>
+                                        <p:message for="datasetForm:filesTable:#{rowNum}:fileDirectoryName"/>
 
                                         <div class="text-muted small">
                                             <!-- TYPE + SIZE + DATE + CHECKSUM -->
