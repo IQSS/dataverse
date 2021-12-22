@@ -350,7 +350,6 @@
 
         <p:column class="col-file-metadata">
             <f:facet name="header">
-                <f:passThroughAttribute name="aria-label" value="#{bundle['file.count.label']}"/>
                 <div jsf:id="filesHeaderCount">
                     <!-- Files Count -->
                     <h:outputFormat value="#{DatasetPage.fileMetadatasSearch.size() == 1 ? bundle['file.count.one'] : bundle['file.count']}" styleClass="highlightBold" rendered="#{DatasetPage.fileMetadatasSearch.size() gt 0}">
