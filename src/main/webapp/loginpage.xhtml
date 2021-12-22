@@ -40,7 +40,7 @@
 
                     <div class="col-md-12">
                         <div class="col-md-6 col-md-offset-3">
-                            <h2><span class="glyphicon glyphicon-log-in" /> #{bundle.login}</h2>
+                            <h1><span class="glyphicon glyphicon-log-in" /> #{bundle.login}</h1>
 
                             <div id="builtinProvider" jsf:rendered="#{LoginPage.authProvider.id == 'builtin'}">
                                 <h:form id="loginForm" styleClass="form-horizontal">
@@ -61,9 +61,9 @@
                                             </div>
                                         </ui:fragment>
                                     </ui:remove>
-                                    <ui:repeat id="credentialsContainer" value="#{LoginPage.filledCredentials}" var="fc">
+                                    <ui:repeat id="credentialsContainer" value="#{LoginPage.filledCredentials}" var="fc" varStatus="fcCount">
                                         <div class="form-group text-left">
-                                            <label class="col-sm-4 control-label" for="loginForm:credentialsContainer:0:credValue">
+                                            <label class="col-sm-4 control-label" for="loginForm:credentialsContainer:#{fcCount.index}:#{fc.credential.secret ? 'sC':'c'}redValue">
                                                 #{bundle[fc.credential.key]}
                                             </label>
                                             <div class="col-sm-8">
