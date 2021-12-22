@@ -335,7 +335,8 @@
                                      selection="#{EditDatafilesPage.selectedFiles}" 
                                      var="fileMetadata" 
                                      widgetVar="filesTable"
-                                     emptyMessage="#{datasetPage || EditDatafilesPage.showFileUploadFragment() ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}">
+                                     emptyMessage="#{datasetPage || EditDatafilesPage.showFileUploadFragment() ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}"
+                                     ariaRowLabel="#{bundle['file.select.action']} #{fileMetadata.label}">
                             <f:facet name="header">
                                 <div jsf:id="filesHeaderBlock" class="row">
                                     <div id="filesHeaderCount" class="col-xs-6 text-left">
@@ -346,9 +347,12 @@
                                     </div>
                                 </div>
                             </f:facet>
-                            <p:column selectionMode="multiple" class="col-select-width text-center" style="width:40px !important;"/>
+                            <p:column selectionMode="multiple" class="col-select-width text-center" style="width:40px !important;" ariaHeaderText="#{bundle['file.select.tooltip']}"/>
                             <p:column class="col-file-metadata">
-                                <div id="fileInfoInclude-filesTable" class="col-sm-12 row">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="sr-only" value="#{bundle['file.tableheader.info']}"/>
+                                </f:facet>
+                                <div id="fileInfoInclude-filesTable-#{fileMetadata.label}" class="col-sm-12 row">
                                     <div class="pull-left col-file-thumb">
                                         <div class="thumbnail-block text-center">
                                             <!-- Thumbnail Preview -->

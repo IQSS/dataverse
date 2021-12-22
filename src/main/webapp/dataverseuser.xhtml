@@ -44,6 +44,7 @@
                     <f:viewAction action="#{DataverseUserPage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse(), (DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn'] : bundle.account))}"/>
                 </f:metadata>
+                <h1>#{pageTitle}</h1>
                 <h:form id="dataverseUserForm">
 
                     <p:focus context="dataverseUserForm"/>

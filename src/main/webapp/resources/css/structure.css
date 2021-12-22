@@ -1458,3 +1458,6 @@ span.label-default { background-color: #757575 }
 .dropdown-header {color:#666;}
 .help-block {color:#666;}
 .alert-success {color:#376D38}
+
+.login-container h1 { font-size:30px; }
+#embargoInputs label { font-weight: normal; }
