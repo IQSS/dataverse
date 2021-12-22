@@ -83,11 +83,11 @@
                     </div>
                     <div class="col-lg-9">
                         <div>
-                            <p class="help-block">
+                            <label class="help-block" for="datasetForm:fileEmbargoDate_input">
                                 #{bundle['file.editEmbargoDialog.newDate']} <span
                                     class="glyphicon glyphicon-asterisk text-danger"
                                     jsf:rendered="#{!bean.removeEmbargo}" />
-                            </p>
+                            </label>
                             <p:datePicker id="fileEmbargoDate"
                                 value="#{bean.selectionEmbargo.dateAvailable}"
                                 locale="#{dataverseSession.localeCode}"
