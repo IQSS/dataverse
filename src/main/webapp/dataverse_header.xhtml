@@ -54,17 +54,19 @@
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">#{bundle.search} <b class="caret"></b></a>
                             <ul class="dropdown-menu navbar-search">
-                                <form class="form-inline" role="search">
-                                    <label id="searchNavLabel" class="sr-only" for="navbarsearch">#{bundle.search}</label>
-                                    <div class="input-group">
-                                        <input id="navbarsearch" type="text" class="form-control" size="28" value="" placeholder="#{bundle['header.search.title']}" aria-labelledby="searchNavLabel"/>
-                                        <span class="input-group-btn">
-                                            <button type="submit" title="#{bundle.find}" class="btn btn-default bootstrap-button-tooltip" onclick="window.location='/dataverse/#{settingsWrapper.rootDataverse.alias}&#63;q=' + document.getElementById('navbarsearch').value;return false;">
-                                                <span class="glyphicon glyphicon-search no-text"/>
-                                            </button>
-                                        </span>
-                                    </div>
-                                </form>
+                                <li>
+                                    <form class="form-inline" role="search">
+                                        <label id="searchNavLabel" class="sr-only" for="navbarsearch">#{bundle.search}</label>
+                                        <div class="input-group">
+                                            <input id="navbarsearch" type="text" class="form-control" size="28" value="" placeholder="#{bundle['header.search.title']}" />
+                                            <span class="input-group-btn">
+                                                <button type="submit" title="#{bundle.find}" class="btn btn-default bootstrap-button-tooltip" aria-labelledby="searchNavLabel" onclick="window.location='/dataverse/#{settingsWrapper.rootDataverse.alias}&#63;q=' + document.getElementById('navbarsearch').value;return false;">
+                                                    <span class="glyphicon glyphicon-search no-text"/>
+                                                </button>
+                                            </span>
+                                        </div>
+                                    </form>
+                                </li>
                             </ul>
                         </li>
                         <li jsf:rendered="#{!empty settingsWrapper.get(':NavbarAboutUrl')}">
