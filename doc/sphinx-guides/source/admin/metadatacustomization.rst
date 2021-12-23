@@ -644,7 +644,7 @@ the Solr schema configuration, including any enabled metadata schemas:
 
 ``curl "http://localhost:8080/api/admin/index/solr/schema"``
 
-You can use :download:`update-fields.sh <../../../../conf/solr/8.11.1/update-fields.sh>` to easily add these to the
+You can use :download:`update-fields.sh <../../../../conf/solr/schema/update-fields.sh>` to easily add these to the
 Solr schema you installed for your Dataverse installation.
 
 The script needs a target XML file containing your Solr schema. (See the :doc:`/installation/prerequisites/` section of
