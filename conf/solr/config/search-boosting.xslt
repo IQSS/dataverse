@@ -14,7 +14,8 @@
     <xsl:template match="/config/requestHandler[@name='/select'][@class='solr.SearchHandler']/lst[@name='defaults']">
         <xsl:copy>
             <xsl:copy-of select="@*"/>
-            <xsl:copy-of select="node()"/>
+            <!-- Copy all nodes but skip nodes we add below (idempotency!) -->
+            <xsl:copy-of select="node()[not(contains('defType|tie|qf|pf|bq',@name))]"/>
             <!--
                  This boosting configuration has been
                  first introduced in 2015, see https://github.com/IQSS/dataverse/issues/1928#issuecomment-91651853,
@@ -24,7 +25,7 @@
                  
                  Since then, this has not been touched again (2021-12-21).
                  
-                 You can test this XSLT via http://xsltransform.net/gWmuPtv - remember to copy a current base solrconfig.xml into it.
+                 You can test this XSLT via http://xsltransform.net/gWmuPtv/1 - remember to copy a current base solrconfig.xml into it.
             -->
             <str name="defType">edismax</str>
             <float name="tie">0.075</float>
