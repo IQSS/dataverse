@@ -1253,6 +1253,11 @@ ul > li {
   font-weight: bold;
 }
 
+#metadata_author img {
+        vertical-align: text-top;
+        margin-right:1px;
+}
+
 #metadata_dsDescription ul > li {
         font-weight: normal;
         font-size: 18px;
