@@ -18,6 +18,9 @@ from datetime import datetime
 sys.path.insert(0, os.path.abspath('../../'))
 import sphinx_bootstrap_theme
 
+import xml.etree.ElementTree as et
+pom = et.parse("../../../pom.xml")
+ns = {"mvn": "http://maven.apache.org/POM/4.0.0"}
 
 # Activate the theme.
 # html_theme = 'bootstrap'
@@ -433,4 +436,5 @@ suppress_warnings = ['epub.unknown_project_files']
 rst_prolog = """
 .. |toctitle| replace:: Contents:
 .. |anotherSub| replace:: Yes, there can be multiple.
-"""
+.. |solr_version| replace:: {solr_version}
+""".format(solr_version=pom.find("./mvn:properties/mvn:solr.version", ns).text)
