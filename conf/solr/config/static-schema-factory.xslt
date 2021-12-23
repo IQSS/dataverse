@@ -11,9 +11,11 @@
     </xsl:template>
     
     <!-- Add <schemaFactory> using the static schema.xml right before the first <updateProcessor> -->
-    <!-- Test this XSLT via http://xsltransform.net/jyH9Xwx -->
+    <!-- Test this XSLT via http://xsltransform.net/jyH9Xwx/1 -->
     <xsl:template match="/config/updateProcessor[1]">
-        <schemaFactory class="ClassicIndexSchemaFactory"/>
+        <xsl:if test="not(preceding-sibling::schemaFactory)">
+            <schemaFactory class="ClassicIndexSchemaFactory"/>
+        </xsl:if>
         <xsl:copy>
             <xsl:apply-templates select="node()|@*"/>
         </xsl:copy>
