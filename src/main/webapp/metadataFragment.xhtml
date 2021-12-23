@@ -115,6 +115,7 @@
                                                         <ui:fragment rendered="#{!cvocConf.containsKey(dsf.datasetFieldType.id)}">
                                                             <ui:fragment rendered="#{compoundValue.isLink(cvPart.key)}">
                                                                 <h:outputLink value="#{compoundValue.getLink()}" target="_blank">
+                                                                    <img alt="ORCID logo" src="https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png" width="16" height="16" jsf:rendered="#{compoundValue.getLink().startsWith('https://orcid.org')}"/>
                                                                     <h:outputText value="#{cvPart.value}"
                                                                                   escape="#{cvPart.key.datasetFieldType.isEscapeOutputText()}"/>
                                                                 </h:outputLink>
