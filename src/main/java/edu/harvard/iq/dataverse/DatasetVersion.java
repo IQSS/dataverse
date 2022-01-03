@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -1690,8 +1691,7 @@ public class DatasetVersion implements Serializable {
             Set<ConstraintViolation<TermsOfUseAndAccess>> constraintViolations = validator.validate(toua);
             if (constraintViolations.size() > 0) {
                 ConstraintViolation<TermsOfUseAndAccess> violation = constraintViolations.iterator().next();
-                String message = "Constraint violation found in Terms of Use and Access. "                      
-                       + "If Request Access to restricted files is disabled then Terms of Access must be provided.";
+                String message = BundleUtil.getStringFromBundle("toua.invalid");
                 logger.info(message);
                 this.termsOfUseAndAccess.setValidationMessage(message);
                 returnSet.add(violation);

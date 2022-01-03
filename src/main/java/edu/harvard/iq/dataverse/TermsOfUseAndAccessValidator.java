@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
@@ -41,9 +42,7 @@ public class TermsOfUseAndAccessValidator implements ConstraintValidator<Validat
                     context.buildConstraintViolationWithTemplate("If Request Access is false then Terms of Access must be provided.").addConstraintViolation();
                 }
 
-                String message = "Constraint violation found in Terms of Use and Access. "
-                        + " If Request Access to restricted files is set to false then Terms of Access must be provided.";
-                value.setValidationMessage(message);
+               value.setValidationMessage(BundleUtil.getStringFromBundle("toua.invalid"));
             } catch (NullPointerException e) {
                 return false;
             }
