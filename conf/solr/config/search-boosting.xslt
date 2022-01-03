@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output omit-xml-declaration="yes" indent="yes" encoding="UTF-8"/>
-    <xsl:strip-space elements="*"/>
+    <xsl:output method="xml" indent="yes" encoding="UTF-8"/>
     
     <!-- First copy all existing XML over -->
     <xsl:template match="node()|@*">
@@ -13,20 +12,16 @@
     <!-- Add boosting config XML inside of selected element -->
     <xsl:template match="/config/requestHandler[@name='/select'][@class='solr.SearchHandler']/lst[@name='defaults']">
         <xsl:copy>
-            <xsl:copy-of select="@*"/>
-            <!-- Copy all nodes but skip nodes we add below (idempotency!) -->
-            <xsl:copy-of select="node()[not(contains('defType|tie|qf|pf|bq',@name))]"/>
-            <!--
-                 This boosting configuration has been
-                 first introduced in 2015, see https://github.com/IQSS/dataverse/issues/1928#issuecomment-91651853,
-                 been re-introduced in 2018 for Solr 7.2.1 update, see https://github.com/IQSS/dataverse/issues/4158,
-                 and finally evolved to the current state later in 2018 https://github.com/IQSS/dataverse/issues/4938
-                 (merged with https://github.com/IQSS/dataverse/commit/3843e5366845d55c327cdb252dd9b4e4125b9b88)
-                 
-                 Since then, this has not been touched again (2021-12-21).
-                 
-                 You can test this XSLT via http://xsltransform.net/gWmuPtv/1 - remember to copy a current base solrconfig.xml into it.
-            -->
+            <xsl:copy-of select="@*|node()[not(contains('defType|tie|qf|pf|bq',@name))]|comment()|text()"/>
+            <xsl:comment>
+                This boosting configuration has been
+                first introduced in 2015, see https://github.com/IQSS/dataverse/issues/1928#issuecomment-91651853,
+                been re-introduced in 2018 for Solr 7.2.1 update, see https://github.com/IQSS/dataverse/issues/4158,
+                and finally evolved to the current state later in 2018 https://github.com/IQSS/dataverse/issues/4938
+                (merged with https://github.com/IQSS/dataverse/commit/3843e5366845d55c327cdb252dd9b4e4125b9b88)
+                
+                Since then, this has not been touched again (2021-12-21).
+            </xsl:comment>
             <str name="defType">edismax</str>
             <float name="tie">0.075</float>
             <str name="qf">
@@ -64,7 +59,7 @@
                 publicationCitation^75
                 producerName^75
             </str>
-            <!-- Even though this number is huge it only seems to apply a boost of ~1.5x to final result -MAD 4.9.3-->
+            <xsl:comment> Even though this number is huge it only seems to apply a boost of ~1.5x to final result -MAD 4.9.3 </xsl:comment>
             <str name="bq">
                 isHarvested:false^25000
             </str>
