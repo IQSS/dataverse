@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
+import edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -64,20 +65,20 @@ public class LicenseServiceBean {
         }
     }
 
-    public int setDefault(Long id){
+    public int setDefault(Long id) throws WrappedResponse{
         License candidate = getById(id);
         if (candidate == null) return 0;
         if (candidate.isActive()) {
                 em.createNamedQuery("License.clearDefault").executeUpdate();
                return em.createNamedQuery("License.setDefault").setParameter("id", id).executeUpdate();
         } else {
-            throw new IllegalArgumentException("Cannot set an inactive license as default");
+            throw new WrappedResponse(new IllegalArgumentException("Cannot set an inactive license as default"), null);
         }
     }
 
-    public License save(License license) {
+    public License save(License license) throws WrappedResponse {
         if (license.getId() != null) {
-            throw new IllegalArgumentException("There shouldn't be an ID in the request body");
+            throw new WrappedResponse(new IllegalArgumentException("There shouldn't be an ID in the request body"), null);
         }
         try {
             em.persist(license);
@@ -85,7 +86,7 @@ public class LicenseServiceBean {
         }
         catch (PersistenceException p) {
             if (p.getMessage().contains("duplicate key")) {
-                throw new IllegalStateException("A license with the same URI or name is already present.", p);
+                throw new WrappedResponse(new IllegalStateException("A license with the same URI or name is already present.", p), null);
             }
             else {
                 throw p;
@@ -94,14 +95,14 @@ public class LicenseServiceBean {
         return license;
     }
 
-    public int deleteById(long id) {
+    public int deleteById(long id) throws WrappedResponse {
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Admin, "delete")
                             .setInfo(Long.toString(id)));
         try {
             return em.createNamedQuery("License.deleteById").setParameter("id", id).executeUpdate();
         } catch (PersistenceException p) {
             if (p.getMessage().contains("violates foreign key constraint")) {
-                throw new IllegalStateException("License with id " + id + " is referenced and cannot be deleted.", p);
+                throw new WrappedResponse(new IllegalStateException("License with id " + id + " is referenced and cannot be deleted.", p), null);
             } else {
                 throw p;
             }
