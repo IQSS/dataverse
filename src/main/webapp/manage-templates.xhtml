@@ -194,25 +194,7 @@
                         </div>
                     </p:dialog>
                 </h:form>
-        <script>
-        //<![CDATA[                   
-            $('.dropdown-menu').parent().on('shown.bs.dropdown', function () {
-                var $menu = $("ul", this);
-                offset = $menu.offset();
-                position = $menu.position();
-                $('body').append($menu);
-                $menu.show();
-                $menu.css('position', 'absolute');
-                $menu.css('top', (offset.top) + 'px');
-                $menu.css('left', (offset.left) + 'px');
-                $(this).data("myDropdownMenu", $menu);
-            });
-            $('.dropdown-menu').parent().on('hide.bs.dropdown', function () {
-                $(this).append($(this).data("myDropdownMenu"));
-                $(this).data("myDropdownMenu").removeAttr('style');
-            });
-        //]]>
-        </script>
+
             </ui:define>
         </ui:composition>
     </h:body>
