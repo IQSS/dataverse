@@ -633,15 +633,6 @@ public class EditDatafilesPage implements java.io.Serializable {
             setUpRsync();
         }
 
-        if (mode == FileEditMode.UPLOAD) {
-            if (settingsWrapper.getUploadMethodsCount() == 1){               
-                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.uploadFiles.label"), BundleUtil.getStringFromBundle("dataset.message.uploadFilesSingle.message", Arrays.asList(systemConfig.getGuidesBaseUrl(), systemConfig.getGuidesVersion())));
-            } else if (settingsWrapper.getUploadMethodsCount() > 1) {
-                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.uploadFiles.label"), BundleUtil.getStringFromBundle("dataset.message.uploadFilesMultiple.message", Arrays.asList(systemConfig.getGuidesBaseUrl(), systemConfig.getGuidesVersion())));
-            }
-            
-        }
-        
         if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)){
             JH.addMessage(FacesMessage.SEVERITY_WARN, getBundleString("dataset.message.publicInstall"));
         }   

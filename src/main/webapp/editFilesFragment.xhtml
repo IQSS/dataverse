@@ -24,7 +24,7 @@
         <div class="ui-tabs-panels">
             <div aria-hidden="false" role="tabpanel" class="ui-tabs-panel ui-widget-content ui-corner-bottom" id="datasetForm:tabView:dataFilesTab">
                 <!-- Create dataset workflow info msg + user guide link -->
-                <ui:fragment rendered="#{createDataset}">
+                <ui:fragment>
                     <p class="help-block">
                         <h:outputFormat value="#{bundle['dataset.message.uploadFilesSingle.message']}" escape="false"
                                         rendered="#{settingsWrapper.uploadMethodsCount == 1}">

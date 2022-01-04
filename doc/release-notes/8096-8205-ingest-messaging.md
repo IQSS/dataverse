@@ -6,6 +6,7 @@ On the pages for adding files on create or edit
 - Show max files per upload #7227
 - Show global tabular ingest limit
 - Show per format tabular ingest limits
+- Move messaging from blue info block to regular text.
 
 Failed ingest messaging
 
