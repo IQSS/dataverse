@@ -24,7 +24,7 @@
         <div class="ui-tabs-panels">
             <div aria-hidden="false" role="tabpanel" class="ui-tabs-panel ui-widget-content ui-corner-bottom" id="datasetForm:tabView:dataFilesTab">
                 <!-- Create dataset workflow info msg + user guide link -->
-                <ui:fragment rendered="#{createDataset}">
+                <ui:fragment>
                     <p class="help-block">
                         <h:outputFormat value="#{bundle['dataset.message.uploadFilesSingle.message']}" escape="false"
                                         rendered="#{settingsWrapper.uploadMethodsCount == 1}">
@@ -72,9 +72,23 @@
                                         <f:param value="#{systemConfig.guidesBaseUrl}"/>
                                         <f:param value="#{systemConfig.guidesVersion}"/>
                                     </h:outputFormat>
+                                    <h:outputFormat value=" #{bundle['file.selectToAdd.tipMaxNumFiles']}" escape="false"
+                                                    rendered="#{EditDatafilesPage.maxNumberOfFiles > 0}">
+                                        <f:param value="#{EditDatafilesPage.maxNumberOfFiles}"/>
+                                    </h:outputFormat>
                                     <h:outputFormat value=" #{bundle['file.selectToAdd.tipLimit']}" escape="false" 
                                                     rendered="#{!EditDatafilesPage.isUnlimitedUploadFileSize()}">
                                         <f:param value="#{EditDatafilesPage.getHumanMaxFileUploadSizeInBytes()}"/>
+                                    </h:outputFormat>
+                                    <h:outputFormat value=" #{bundle['file.selectToAdd.tipTabularLimit']}" escape="false"
+                                                    rendered="#{EditDatafilesPage.maxIngestSizeInBytes != -1}">
+                                        <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                        <f:param value="#{systemConfig.guidesVersion}"/>
+                                        <f:param value="#{EditDatafilesPage.humanMaxIngestSizeInBytes}"/>
+                                    </h:outputFormat>
+                                    <h:outputFormat value=" #{bundle['file.selectToAdd.tipPerFileTabularLimit']}"
+                                                    rendered="#{not empty EditDatafilesPage.humanPerFormatTabularLimits}">
+                                        <f:param value="#{EditDatafilesPage.humanPerFormatTabularLimits}"/>
                                     </h:outputFormat>
                                 </p>
                     
