@@ -557,8 +557,8 @@ Reported Working S3-Compatible Storage
   **Can be used for quick testing, too:** just use the example values above. Uses the public (read: unsecure and
   possibly slow) https://play.minio.io:9000 service.
 
-'StorJ Integration'
-Per the general Dataverse Installation to use S3 Storage noted above, you’ll first set up the StorJ S3 store, by defining the id, type, and label. After Following the general installation set the following configurations to use a StorJ object store - dataverse.files.<id>.payload-signing=true This optional setting will enable payload signing for the S3 bucket. Set dataverse.files.<id>.chunked-encoding=false. This optional setting will disable chunked encoding.
+`StorJ Object Store <https://www.storj.io>`_
+ StorJ is a distributed object store that can be configured with an S3 gateway. Per the general Dataverse Installation to use S3 Storage noted above, you’ll first set up the StorJ S3 store, by defining the id, type, and label. After Following the general installation set the following configurations to use a StorJ object store - dataverse.files.<id>.payload-signing=true This optional setting will enable payload signing for the S3 bucket. Set dataverse.files.<id>.chunked-encoding=false. This optional setting will disable chunked encoding.
 
 Note that for direct uploads and downloads, Dataverse redirects to the proxy-url but presigns the urls based on the dataverse.files.<id>.custom-endpoint-url. Also, consider that if you choose to enable dataverse.files.<id>.download-redirect note that the S3 URLs expire after 60 minutes by default. You can change that minute value to reflect a timeout value that’s more appropriate by using .dataverse.files.<id>.url-expiration-minutes.
 
