@@ -130,6 +130,9 @@ a.tooltip-icon:hover, a.tool-tip:focus, a.tool-tip:active {text-decoration: none
 .dropdown-submenu {
     position: relative;
 }
+#manageTemplatesForm\:allTemplates .ui-datatable-tablewrapper {
+    overflow: visible;
+}
 .dropdown-submenu.pull-left {
     width: 100%;
 }
