@@ -2,7 +2,7 @@
 
 ### PostgreSQL Version 10+ Required
 
-If you are still using PostgreSQL 9.X, now is the time to upgrade. PostgreSQL is now EOL (no longer supported, as of January 2022), and the PostgreSQL driver in the next release of the Dataverse Software will no longer work with versions prior to 10. 
+If you are still using PostgreSQL 9.X, now is the time to upgrade. PostgreSQL is now EOL (no longer supported, as of January 2022), and the Flyway library in the next release of the Dataverse Software will no longer work with versions prior to 10. 
 
 The Dataverse Software has been tested with PostgreSQL versions up to 13. The current stable version 13.5 is recommended. If that's not an option for reasons specific to your installation (for example, if PostgreSQL 13.5 is not available for the OS distribution you are using), any 10+ version should work.
 
