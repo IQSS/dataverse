@@ -98,7 +98,7 @@ PostgreSQL
 Installing PostgreSQL
 =======================
 
-The application has been tested with PostgreSQL versions up to 13. We recommend installing the latest version that is available for your OS distribution. *For example*, to install PostgreSQL 13 under RHEL7/derivative::
+The application has been tested with PostgreSQL versions up to 13 and version 10+ is required. We recommend installing the latest version that is available for your OS distribution. *For example*, to install PostgreSQL 13 under RHEL7/derivative::
 
 	# yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 	# yum makecache fast

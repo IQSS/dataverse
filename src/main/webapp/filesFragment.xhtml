@@ -466,11 +466,14 @@
                 <span class="glyphicon glyphicon-info-sign"/> #{bundle['file.ingestInProgress']}
             </div>
 
-            <div class="bg-warning text-warning text-center margin-bottom-half" jsf:rendered="#{fileMetadata.dataFile.ingestProblem and DatasetPage.canUpdateDataset()}">
+            <div class="bg-info text-info text-center margin-bottom-half" jsf:rendered="#{fileMetadata.dataFile.ingestProblem and DatasetPage.canUpdateDataset()}">
                 <!-- Ingest failed -->
-                <span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.ingestFailed.header']}&#160;
-                <span data-toggle="tooltip" data-trigger="hover" data-placement="top" data-title="#{bundle['file.ingestFailed.message']} #{fileMetadata.dataFile.ingestReportMessage}">
-                    <span class="glyphicon glyphicon-question-sign"/>
+                <span class="glyphicon glyphicon-info-sign"/>
+                <span> #{bundle['file.ingestFailed.header']}&#160;</span>
+                <span>
+                    <a tabindex="0" role="button" class="glyphicon glyphicon-question-sign tooltip-icon"
+                       data-toggle="popover" data-placement="auto top" data-trigger="focus" data-html="true"
+                       data-content="#{DatasetPage.ingestMessage} #{fileMetadata.dataFile.ingestReportMessage}"/>
                 </span>
             </div>
             <!-- END: FILE LEVEL MSGs -->
