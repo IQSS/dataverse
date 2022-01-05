@@ -75,7 +75,7 @@
                             <p:column width="13%" class="text-center" sortBy="#{template.usageCount}" headerText="#{bundle['dataset.manageTemplates.tab.header.usage']}">
                                 <h:outputText value="#{template.usageCount}" />
                             </p:column>
-                            <p:column width="40%" class="col-manage-action text-center" headerText="#{bundle['dataset.manageTemplates.tab.header.action']}" style="overflow:visible">
+                            <p:column width="40%" class="col-manage-action text-center" headerText="#{bundle['dataset.manageTemplates.tab.header.action']}">
                                 <div jsf:rendered="#{manageTemplatesPage.dataverse.id != template.dataverse.id}">
                                     <em class="text-muted">
                                         <h:outputFormat value="#{bundle['dataset.manageTemplates.tab.action.noedit.createdin']}" escape="false">
@@ -113,7 +113,7 @@
                                         <span class="glyphicon glyphicon-duplicate"></span>
                                     </p:commandLink>
                                     <div class="btn-group" jsf:rendered="#{manageTemplatesPage.dataverse.id eq template.dataverse.id}">
-                                        <button type="button" class="btn btn-default bootstrap-button-tooltip dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" >
+                                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" >
                                             <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.manageTemplates.tab.action.btn.edit']} <span class="caret"></span>
                                         </button>
                                         <ul class="dropdown-menu">

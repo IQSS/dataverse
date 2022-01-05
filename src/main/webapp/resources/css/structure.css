@@ -129,7 +129,6 @@ a.tooltip-icon:hover, a.tool-tip:focus, a.tool-tip:active {text-decoration: none
 /* Dropdown submenu */
 .dropdown-submenu {
     position: relative;
-    z-index: 1000 !important;
 }
 #manageTemplatesForm\:allTemplates .ui-datatable-tablewrapper {
     overflow: visible;
