@@ -200,7 +200,12 @@ public class FileDownloadHelper implements java.io.Serializable {
        
         if ((fileMetadata.getId() == null) || (fileMetadata.getDataFile().getId() == null)){
             return false;
-        } 
+        }
+        
+        if (session.getUser() instanceof PrivateUrlUser) {
+             // Always allow download for PrivateUrlUser
+             return true;
+         }
         
         Long fid = fileMetadata.getId();
         //logger.info("calling candownloadfile on filemetadata "+fid);
@@ -245,19 +250,6 @@ public class FileDownloadHelper implements java.io.Serializable {
         return fileMetadata.isRestricted() || FileUtil.isActivelyEmbargoed(fileMetadata);
     }
 
-     /**
-      * In Dataverse 4.19 and below file preview was determined by
-      * canDownloadFile. Now we always allow a PrivateUrlUser to preview files.
-      */
-     public boolean isPreviewAllowed(FileMetadata fileMetadata) {
-         if (session.getUser() instanceof PrivateUrlUser) {
-             // Always allow preview for PrivateUrlUser
-             return true;
-         } else {
-             return canDownloadFile(fileMetadata);
-         }
-     }
-
     public boolean doesSessionUserHavePermission(Permission permissionToCheck, FileMetadata fileMetadata){
         if (permissionToCheck == null){
             return false;
@@ -290,7 +282,7 @@ public class FileDownloadHelper implements java.io.Serializable {
     
     public void handleCommandLinkClick(FileMetadata fmd){
         
-        if (FileUtil.isDownloadPopupRequired(fmd.getDatasetVersion())){
+        if (FileUtil.isRequestAccessPopupRequired(fmd.getDatasetVersion())){
             addFileForRequestAccess(fmd.getDataFile());
             PrimeFaces.current().executeScript("PF('requestAccessPopup').show()");
         } else {
@@ -315,7 +307,7 @@ public class FileDownloadHelper implements java.io.Serializable {
              }
          }
          if (notificationFile != null && succeeded) {
-             fileDownloadService.sendRequestFileAccessNotification(notificationFile.getOwner(), notificationFile.getId(), (AuthenticatedUser) session.getUser());
+             fileDownloadService.sendRequestFileAccessNotification(notificationFile, (AuthenticatedUser) session.getUser());
          }
      }
     
@@ -339,7 +331,7 @@ public class FileDownloadHelper implements java.io.Serializable {
              file.getFileAccessRequesters().add((AuthenticatedUser) session.getUser());
              // create notification if necessary
              if (sendNotification) {
-                 fileDownloadService.sendRequestFileAccessNotification(file.getOwner(), file.getId(), (AuthenticatedUser) session.getUser());
+                 fileDownloadService.sendRequestFileAccessNotification(file, (AuthenticatedUser) session.getUser());
              }
              return true;
          }

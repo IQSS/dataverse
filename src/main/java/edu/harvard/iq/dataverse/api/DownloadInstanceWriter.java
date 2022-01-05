@@ -577,6 +577,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
         }
     }
     
+    // TODO: Return ".md" for "text/markdown" as well as other extensions in MimeTypeDetectionByFileExtension.properties
     private String getFileExtension(AuxiliaryFile auxFile) {
         String fileExtension = "";
         if (auxFile == null) {

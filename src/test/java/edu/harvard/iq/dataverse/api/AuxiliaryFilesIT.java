@@ -7,8 +7,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.Assert;
@@ -80,8 +82,11 @@ public class AuxiliaryFilesIT {
         uploadAuxFileJson.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.type", equalTo("DP"))
-                // FIXME: application/json would be better
-                .body("data.contentType", equalTo("text/plain"));
+                .body("data.contentType", equalTo("application/json"));
+        Response uploadAuxFileJsonAgain = UtilIT.uploadAuxFile(fileId, pathToAuxFileJson.toString(), formatTagJson, formatVersionJson, mimeTypeJson, true, dpType, apiToken);
+        uploadAuxFileJsonAgain.prettyPrint();
+        uploadAuxFileJsonAgain.then().assertThat()
+                .statusCode(CONFLICT.getStatusCode());
 
         // XML aux file
         Path pathToAuxFileXml = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "data.xml");
@@ -95,8 +100,7 @@ public class AuxiliaryFilesIT {
         uploadAuxFileXml.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.type", equalTo("DP"))
-                // FIXME: application/xml would be better
-                .body("data.contentType", equalTo("text/plain"));
+                .body("data.contentType", equalTo("application/xml"));
 
         // PDF aux file
         Path pathToAuxFilePdf = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "data.pdf");
@@ -152,13 +156,13 @@ public class AuxiliaryFilesIT {
         java.nio.file.Files.write(pathToAuxFileMd, contentOfMd.getBytes());
         String formatTagMd = "README";
         String formatVersionMd = "0.1";
-        String mimeTypeMd = "application/xml";
+        String mimeTypeMd = "text/markdown";
         Response uploadAuxFileMd = UtilIT.uploadAuxFile(fileId, pathToAuxFileMd.toString(), formatTagMd, formatVersionMd, mimeTypeMd, true, null, apiToken);
         uploadAuxFileMd.prettyPrint();
         uploadAuxFileMd.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.type", equalTo(null))
-                .body("data.contentType", equalTo("text/plain"));
+                .body("data.contentType", equalTo("text/markdown"));
 
         // Unknown type
         Path pathToAuxFileTxt = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "nbt.txt");
@@ -204,17 +208,47 @@ public class AuxiliaryFilesIT {
                 .body("data.type", equalTo(null))
                 .body("data.contentType", equalTo("text/plain"));
 
+        // file with an origin
+        Path pathToAuxFileOrigin1 = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "file1.txt");
+        String contentOfOrigin1 = "This file has an origin.";
+        java.nio.file.Files.write(pathToAuxFileOrigin1, contentOfOrigin1.getBytes());
+        String formatTagOrigin1 = "origin1";
+        String formatVersionOrigin1 = "0.1";
+        String mimeTypeOrigin1 = "text/plain";
+        String typeOrigin1 = "someType";
+        String origin1 = "myApp";
+        Response uploadAuxFileOrigin1 = UtilIT.uploadAuxFile(fileId, pathToAuxFileOrigin1.toString(), formatTagOrigin1, formatVersionOrigin1, mimeTypeOrigin1, true, typeOrigin1, origin1, apiToken);
+        uploadAuxFileOrigin1.prettyPrint();
+        uploadAuxFileOrigin1.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.type", equalTo("someType"))
+                .body("data.contentType", equalTo("text/plain"));
+
+        // file with no MIME type
+        Path pathToAuxFileNoMimeType1 = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "file1.md");
+        String contentOfNoMimeType1 = "This file has no MIME type (content type).";
+        java.nio.file.Files.write(pathToAuxFileNoMimeType1, contentOfNoMimeType1.getBytes());
+        String formatTagNoMimeType1 = "noMimeType1";
+        String formatVersionNoMimeType1 = "0.1";
+        String mimeTypeNoMimeType1 = null;
+        String typeNoMimeType1 = "someType";
+        Response uploadAuxFileNoMimeType1 = UtilIT.uploadAuxFile(fileId, pathToAuxFileNoMimeType1.toString(), formatTagNoMimeType1, formatVersionNoMimeType1, mimeTypeNoMimeType1, true, typeNoMimeType1, null, apiToken);
+        uploadAuxFileNoMimeType1.prettyPrint();
+        uploadAuxFileNoMimeType1.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.type", equalTo("someType"))
+                // "text/plain" was detected by Tika
+                .body("data.contentType", equalTo("text/plain"));
+
         // Download JSON aux file.
         Response downloadAuxFileJson = UtilIT.downloadAuxFile(fileId, formatTagJson, formatVersionJson, apiToken);
         downloadAuxFileJson.then().assertThat().statusCode(OK.getStatusCode());
-        // FIXME: This should be ".json" instead of ".txt"
-        Assert.assertEquals("attachment; filename=\"data.tab.dpJson_0.1.txt\"", downloadAuxFileJson.header("Content-disposition"));
+        Assert.assertEquals("attachment; filename=\"data.tab.dpJson_0.1.json\"", downloadAuxFileJson.header("Content-disposition"));
 
         // Download XML aux file.
         Response downloadAuxFileXml = UtilIT.downloadAuxFile(fileId, formatTagXml, formatVersionXml, apiToken);
         downloadAuxFileXml.then().assertThat().statusCode(OK.getStatusCode());
-        // FIXME: This should be ".xml" instead of ".txt"
-        Assert.assertEquals("attachment; filename=\"data.tab.dpXml_0.1.txt\"", downloadAuxFileXml.header("Content-disposition"));
+        Assert.assertEquals("attachment; filename=\"data.tab.dpXml_0.1.xml\"", downloadAuxFileXml.header("Content-disposition"));
 
         // Download PDF aux file.
         Response downloadAuxFilePdf = UtilIT.downloadAuxFile(fileId, formatTagPdf, formatVersionPdf, apiToken);
@@ -224,7 +258,14 @@ public class AuxiliaryFilesIT {
         // Download Markdown aux file.
         Response downloadAuxFileMd = UtilIT.downloadAuxFile(fileId, formatTagMd, formatVersionMd, apiToken);
         downloadAuxFileMd.then().assertThat().statusCode(OK.getStatusCode());
-        Assert.assertEquals("attachment; filename=\"data.tab.README_0.1.txt\"", downloadAuxFileMd.header("Content-disposition"));
+        // No file extenstion here because Tika's getDefaultMimeTypes doesn't include "text/markdown".
+        // Note: browsers seem to add ".bin" ("myfile.bin") rather than no extension ("myfile").
+        Assert.assertEquals("attachment; filename=\"data.tab.README_0.1\"", downloadAuxFileMd.header("Content-disposition"));
+
+        // Download Markdown aux file with no MIME type given
+        Response downloadAuxFileNoMime1 = UtilIT.downloadAuxFile(fileId, formatTagNoMimeType1, formatVersionNoMimeType1, apiToken);
+        downloadAuxFileNoMime1.then().assertThat().statusCode(OK.getStatusCode());
+        Assert.assertEquals("attachment; filename=\"data.tab.noMimeType1_0.1.txt\"", downloadAuxFileNoMime1.header("Content-disposition"));
 
         Response createUserNoPrivs = UtilIT.createRandomUser();
         createUserNoPrivs.then().assertThat().statusCode(OK.getStatusCode());
@@ -251,6 +292,32 @@ public class AuxiliaryFilesIT {
         // This succeeds now that the dataset has been published.
         Response failToDownloadAuxFileJsonPostPublish = UtilIT.downloadAuxFile(fileId, formatTagJson, formatVersionJson, apiTokenNoPrivs);
         failToDownloadAuxFileJsonPostPublish.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response listAuxFilesOrigin1 = UtilIT.listAuxFilesByOrigin(fileId, origin1, apiToken);
+        listAuxFilesOrigin1.prettyPrint();
+        listAuxFilesOrigin1.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].formatTag", equalTo("origin1"))
+                .body("data[0].formatVersion", equalTo("0.1"))
+                .body("data[0].fileSize", equalTo(24))
+                .body("data[0].contentType", equalTo("text/plain"))
+                .body("data[0].isPublic", equalTo(true))
+                .body("data[0].type", equalTo("someType"));
+        
+        Response listAllAuxFiles = UtilIT.listAllAuxFiles(fileId, apiToken);
+        listAllAuxFiles.prettyPrint();
+        listAllAuxFiles.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(9));
+
+
+        Response deleteAuxFileOrigin1 = UtilIT.deleteAuxFile(fileId, formatTagOrigin1, formatVersionOrigin1, apiToken);
+        deleteAuxFileOrigin1.prettyPrint();
+        deleteAuxFileOrigin1.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response listAuxFilesOrigin1NowGone = UtilIT.listAuxFilesByOrigin(fileId, origin1, apiToken);
+        listAuxFilesOrigin1NowGone.prettyPrint();
+        listAuxFilesOrigin1NowGone.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
 
     }
 }

@@ -4,10 +4,13 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -15,9 +18,16 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+import javax.ws.rs.ClientErrorException;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.ServerErrorException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import org.apache.tika.Tika;
 
 /**
@@ -58,12 +68,13 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
      * @param origin - name of the tool/system that created the file
      * @param isPublic boolean - is this file available to any user?
      * @param type how to group the files such as "DP" for "Differentially
+     * @param mediaType user supplied content type (MIME type)
      * Private Statistics".
      * @return success boolean - returns whether the save was successful
      */
-    public AuxiliaryFile processAuxiliaryFile(InputStream fileInputStream, DataFile dataFile, String formatTag, String formatVersion, String origin, boolean isPublic, String type) {
-    
-        StorageIO<DataFile> storageIO =null;
+    public AuxiliaryFile processAuxiliaryFile(InputStream fileInputStream, DataFile dataFile, String formatTag, String formatVersion, String origin, boolean isPublic, String type, MediaType mediaType) {
+
+        StorageIO<DataFile> storageIO = null;
         AuxiliaryFile auxFile = new AuxiliaryFile();
         String auxExtension = formatTag + "_" + formatVersion;
         try {
@@ -73,34 +84,48 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
             // If the db fails for any reason, then rollback
             // by removing the auxfile from storage.
             storageIO = dataFile.getStorageIO();
-            MessageDigest md = MessageDigest.getInstance(systemConfig.getFileFixityChecksumAlgorithm().toString());
-            DigestInputStream di 
-                = new DigestInputStream(fileInputStream, md); 
-  
-            storageIO.saveInputStreamAsAux(fileInputStream, auxExtension);          
-            auxFile.setChecksum(FileUtil.checksumDigestToString(di.getMessageDigest().digest())    );
+            if (storageIO.isAuxObjectCached(auxExtension)) {
+                throw new ClientErrorException("Auxiliary file already exists", Response.Status.CONFLICT);
+            }
+            MessageDigest md;
+            try {
+                md = MessageDigest.getInstance(systemConfig.getFileFixityChecksumAlgorithm().toString());
+            } catch (NoSuchAlgorithmException e) {
+                logger.severe("NoSuchAlgorithmException for system fixity algorithm: " + systemConfig.getFileFixityChecksumAlgorithm().toString());
+                throw new InternalServerErrorException();
+            }
+            DigestInputStream di = new DigestInputStream(fileInputStream, md);
 
-            Tika tika = new Tika();
-            auxFile.setContentType(tika.detect(storageIO.getAuxFileAsInputStream(auxExtension)));
+            storageIO.saveInputStreamAsAux(di, auxExtension);
+            auxFile.setChecksum(FileUtil.checksumDigestToString(di.getMessageDigest().digest()));
+
+            // The null check prevents an NPE but we expect mediaType to be non-null
+            // and to default to "application/octet-stream".
+            if (mediaType != null && (!mediaType.toString().equals("application/octet-stream"))) {
+                auxFile.setContentType(mediaType.toString());
+            } else {
+                Tika tika = new Tika();
+                auxFile.setContentType(tika.detect(storageIO.getAuxFileAsInputStream(auxExtension)));
+            }
             auxFile.setFormatTag(formatTag);
             auxFile.setFormatVersion(formatVersion);
             auxFile.setOrigin(origin);
             auxFile.setIsPublic(isPublic);
             auxFile.setType(type);
-            auxFile.setDataFile(dataFile);         
+            auxFile.setDataFile(dataFile);
             auxFile.setFileSize(storageIO.getAuxObjectSize(auxExtension));
             auxFile = save(auxFile);
         } catch (IOException ioex) {
-            logger.info("IO Exception trying to save auxiliary file: " + ioex.getMessage());
-            return null;
-        } catch (Exception e) {
+            logger.severe("IO Exception trying to save auxiliary file: " + ioex.getMessage());
+            throw new InternalServerErrorException();
+        } catch (ServerErrorException e) {
             // If anything fails during database insert, remove file from storage
             try {
                 storageIO.deleteAuxObject(auxExtension);
-            } catch(IOException ioex) {
-                    logger.info("IO Exception trying remove auxiliary file in exception handler: " + ioex.getMessage());
-            return null;
+            } catch (IOException ioex) {
+                logger.warning("IO Exception trying remove auxiliary file in exception handler: " + ioex.getMessage());
             }
+            throw e;
         }
         return auxFile;
     }
@@ -115,13 +140,43 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
         try {
             AuxiliaryFile retVal = (AuxiliaryFile)query.getSingleResult();
             return retVal;
-        } catch(Exception ex) {
+        } catch(NoResultException nr) {
             return null;
+        }
+    }
+    
+
+    public List<AuxiliaryFile> findAuxiliaryFiles(DataFile dataFile, String origin) {
+        
+        TypedQuery<AuxiliaryFile> query;
+        if (origin == null) {
+            query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFiles", AuxiliaryFile.class);
+        } else {
+            query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFilesByOrigin", AuxiliaryFile.class);
+            query.setParameter("origin", origin);
+        }
+        query.setParameter("dataFileId", dataFile.getId());
+        
+        List<AuxiliaryFile> retVal = query.getResultList();
+        return retVal;
+    }
+
+    public void deleteAuxiliaryFile(DataFile dataFile, String formatTag, String formatVersion) throws IOException {
+        AuxiliaryFile af = lookupAuxiliaryFile(dataFile, formatTag, formatVersion);
+        if (af == null) {
+            throw new FileNotFoundException();
+        }
+        em.remove(af);
+        StorageIO<?> storageIO;
+        storageIO = dataFile.getStorageIO();
+        String auxExtension = formatTag + "_" + formatVersion;
+        if (storageIO.isAuxObjectCached(auxExtension)) {
+            storageIO.deleteAuxObject(auxExtension);
         }
     }
 
     public List<AuxiliaryFile> findAuxiliaryFiles(DataFile dataFile) {
-        TypedQuery query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFiles", AuxiliaryFile.class);
+        TypedQuery<AuxiliaryFile> query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFiles", AuxiliaryFile.class);
         query.setParameter("dataFileId", dataFile.getId());
         return query.getResultList();
     }
@@ -151,13 +206,13 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
     }
 
     public List<String> findAuxiliaryFileTypes(DataFile dataFile) {
-        Query query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFileTypes");
+        TypedQuery<String> query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFileTypes", String.class);
         query.setParameter(1, dataFile.getId());
         return query.getResultList();
     }
 
     public List<AuxiliaryFile> findAuxiliaryFilesByType(DataFile dataFile, String typeString) {
-        TypedQuery query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFilesByType", AuxiliaryFile.class);
+        TypedQuery<AuxiliaryFile> query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFilesByType", AuxiliaryFile.class);
         query.setParameter("dataFileId", dataFile.getId());
         query.setParameter("type", typeString);
         return query.getResultList();
@@ -167,7 +222,7 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
         List<AuxiliaryFile> otherAuxFiles = new ArrayList<>();
         List<String> otherTypes = findAuxiliaryFileTypes(dataFile, false);
         for (String typeString : otherTypes) {
-            TypedQuery query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFilesByType", AuxiliaryFile.class);
+            TypedQuery<AuxiliaryFile> query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFilesByType", AuxiliaryFile.class);
             query.setParameter("dataFileId", dataFile.getId());
             query.setParameter("type", typeString);
             List<AuxiliaryFile> auxFiles = query.getResultList();
@@ -178,7 +233,7 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
     }
 
     public List<AuxiliaryFile> findAuxiliaryFilesWithoutType(DataFile dataFile) {
-        Query query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFilesWithoutType", AuxiliaryFile.class);
+        TypedQuery<AuxiliaryFile> query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFilesWithoutType", AuxiliaryFile.class);
         query.setParameter("dataFileId", dataFile.getId());
         return query.getResultList();
     }
