@@ -2736,29 +2736,6 @@ public class UtilIT {
         return getLicenseResponse;
     }
 
-    static Response updateLicenseById(String pathToJsonFile, Long id) {
-        String jsonIn = getDatasetJson(pathToJsonFile);
-
-        Response updateLicenseResponse = given()
-                .request()
-                .body(jsonIn)
-                .contentType("application/json")
-                .put("/api/admin/licenses/{id}", id);
-        return updateLicenseResponse;
-
-
-    }
-
-    static Response updateLicenseByName(String pathToJsonFile, String name) {
-        String jsonIn = getDatasetJson(pathToJsonFile);
-
-        Response updateLicenseResponse = given()
-                .body(jsonIn)
-                .contentType("application/json")
-                .put("/api/admin/licenses/name/"+name);
-        return updateLicenseResponse;
-    }
-
     static Response deleteLicenseById(Long id) {
 
         Response deleteLicenseResponse = given()

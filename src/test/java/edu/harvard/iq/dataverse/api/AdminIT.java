@@ -878,19 +878,6 @@ public class AdminIT {
         status = JsonPath.from(body).getString("status");
         assertEquals("ERROR", status);
         
-        pathToJsonFile = "src/test/resources/json/licenseUpdate.json";
-        Response updateLicenseByIdResponse = UtilIT.updateLicenseById(pathToJsonFile, licenseId);
-        updateLicenseByIdResponse.prettyPrint();
-        body = updateLicenseByIdResponse.getBody().asString();
-        status = JsonPath.from(body).getString("status");
-        assertEquals("OK", status);
-        
-        Response updateLicenseErrorResponse = UtilIT.updateLicenseById(pathToJsonFile, licenseId + 1L);
-        updateLicenseErrorResponse.prettyPrint();
-        body = updateLicenseErrorResponse.getBody().asString();
-        status = JsonPath.from(body).getString("status");
-        assertEquals("ERROR", status);
-        
         Response deleteLicenseByIdResponse = UtilIT.deleteLicenseById(licenseId);
         deleteLicenseByIdResponse.prettyPrint();
         body = deleteLicenseByIdResponse.getBody().asString();
