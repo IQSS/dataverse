@@ -558,9 +558,9 @@ Reported Working S3-Compatible Storage
   possibly slow) https://play.minio.io:9000 service.
 
 `StorJ Object Store <https://www.storj.io>`_
- StorJ is a distributed object store that can be configured with an S3 gateway. Per the general Dataverse Installation to use S3 Storage noted above, you’ll first set up the StorJ S3 store, by defining the id, type, and label. After Following the general installation set the following configurations to use a StorJ object store - dataverse.files.<id>.payload-signing=true This optional setting will enable payload signing for the S3 bucket. Set dataverse.files.<id>.chunked-encoding=false. This optional setting will disable chunked encoding.
+ StorJ is a distributed object store that can be configured with an S3 gateway. Per the S3 Storage instructions above, you'll first set up the StorJ S3 store by defining the id, type, and label. After following the general installation, set the following configurations to use a StorJ object store: ``dataverse.files.<id>.payload-signing=true`` and ``dataverse.files.<id>.chunked-encoding=false``.
 
-Note that for direct uploads and downloads, Dataverse redirects to the proxy-url but presigns the urls based on the dataverse.files.<id>.custom-endpoint-url. Also, consider that if you choose to enable dataverse.files.<id>.download-redirect note that the S3 URLs expire after 60 minutes by default. You can change that minute value to reflect a timeout value that’s more appropriate by using .dataverse.files.<id>.url-expiration-minutes.
+ Note that for direct uploads and downloads, Dataverse redirects to the proxy-url but presigns the urls based on the ``dataverse.files.<id>.custom-endpoint-url``. Also, note that if you choose to enable ``dataverse.files.<id>.download-redirect`` the S3 URLs expire after 60 minutes by default. You can change that minute value to reflect a timeout value that’s more appropriate by using ``dataverse.files.<id>.url-expiration-minutes``.
 
 `Surf Object Store v2019-10-30 <https://www.surf.nl/en>`_
   Set ``dataverse.files.<id>.payload-signing=true`` and ``dataverse.files.<id>.chunked-encoding=false`` to use Surf Object
