@@ -269,7 +269,7 @@ public class GuestbookResponseServiceBean {
       This method is used to produce an array of guestbook responses for displaying 
       on the guestbook-responses page. 
     */
-    public List<Object[]> findArrayByGuestbookIdAndDataverseId (Long guestbookId, Long dataverseId, Long limit){
+    public List<Object[]> findArrayByGuestbookIdAndDataverseId(Long guestbookId, Long dataverseId, Long limit){
 
         Guestbook gbIn = em.find(Guestbook.class, guestbookId);
         boolean hasCustomQuestions = gbIn.getCustomQuestions() != null;
@@ -413,6 +413,9 @@ public class GuestbookResponseServiceBean {
                     
                     if (!ret.containsKey(responseId)) {
                         ret.put(responseId, new ArrayList<>());
+                    }
+                    if(response[1] != null){
+                         response[1]=((String)response[1]).replaceAll("(\r\n|\n)", "<br />");
                     }
                     ((List) ret.get(responseId)).add(response);
                 }
