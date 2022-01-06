@@ -5831,6 +5831,10 @@ public class DatasetPage implements java.io.Serializable {
         return true;
     }
 
+    public String getIngestMessage() {
+        return BundleUtil.getStringFromBundle("file.ingestFailed.message", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), settingsWrapper.getGuidesVersion()));
+    }
+
     public void validateTerms(FacesContext context, UIComponent component, Object value) throws ValidatorException {
         UIComponent lic = component.findComponent("licenses");
         SelectOneMenu som = (SelectOneMenu) lic;
