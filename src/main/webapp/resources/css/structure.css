@@ -130,6 +130,9 @@ a.tooltip-icon:hover, a.tool-tip:focus, a.tool-tip:active {text-decoration: none
 .dropdown-submenu {
     position: relative;
 }
+#manageTemplatesForm\:allTemplates .ui-datatable-tablewrapper {
+    overflow: visible;
+}
 .dropdown-submenu.pull-left {
     width: 100%;
 }
@@ -147,6 +150,7 @@ a.tooltip-icon:hover, a.tool-tip:focus, a.tool-tip:active {text-decoration: none
     min-width: 100%;
 }
 
+/*Open/Close is now handled by javascript (provides a delay on close for accessibility) - leaving this to work when javascript is disabled*/
 .dropdown-submenu:hover>.dropdown-menu {
     display: block;
 }
@@ -1032,4 +1036,41 @@ padding-right:0px;
 }
 .cvoc-term {
 padding-right:0px;
+}
+
+/*EMBARGO*/
+.ui-datepicker {
+  z-index: 100001!important;
+}
+.embargoright {
+  margin-left:10px;
+}
+.embargocheckbox {
+  margin-top: 20px;
+  padding-bottom: 30px;
+}
+.embargomsg {
+  display:block;
+}
+.embargo {
+        display:flex;
+        flex-direction:column;
+}
+.embargo.text-warning, .embargo.text-danger {
+        flex-direction:row;
+}
+.embargo span {
+        margin-right: 10px;
+}
+.embargo span.glyphicon-asterisk {
+            font-size: .5em;
+                vertical-align: top;
+}
+
+.embargo .col-lg-3 {
+    padding-left:0px;
+}
+
+.embargolabel {
+    font-weight: 700;
 }
