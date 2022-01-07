@@ -48,7 +48,7 @@ Administrators who have datasets where CC0 has been selected along with addition
 
 - `:AllowCustomTermsOfUse` (default: true) allow users to provide Custom Terms instead of choosing one of the configured standard licenses.
 
-See the [Database Settings](https://guides.dataverse.org/en/5.9/installation/config.html) section of the Guides for more information.
+See the [Database Settings](https://guides.dataverse.org/en/5.10/installation/config.html) section of the Guides for more information.
 
 ## Additional Release Steps
 
