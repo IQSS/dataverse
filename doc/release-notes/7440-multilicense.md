@@ -27,7 +27,7 @@ To understand the migration process, it is useful to understand how the multiple
 - Conditions 
 - Disclaimer
 
-'Custom Terms' require,at a minimum, a non-blank entry in the "Terms of Use" field. Entries in other fields are optional.
+'Custom Terms' require, at a minimum, a non-blank entry in the "Terms of Use" field. Entries in other fields are optional.
 
 Since these fields are intended for terms/conditions that would potentially conflict with or modify the terms in a standard license, they are no longer shown when a standard license is selected.
 
