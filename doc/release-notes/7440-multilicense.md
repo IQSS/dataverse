@@ -14,7 +14,7 @@ Users can now select from a set of configured licenses in addition to or instead
 
 As part of installing/upgrading an existing installation, administrators may wish to add additional license choices and/or configure Dataverse to allow custom terms. Adding additional licenses is managed via API. Licenses are described via a JSON structure providing a name, URL, short description, and optional icon URL. Additionally licenses may be marked as active (selectable for new/updated datasets) or inactive (only allowed on existing datasets) and one license can be marked as the default. Custom Terms are allowed by default (backward compatible with the current option to select 'No' to using CC0) and can be disabled by setting `:AllowCustomTermsOfUse` to false.
 
-Further administrators should review the following automated migration of existing licenses and terms into the new license framework and, if desired, should manually find and update any datasets for which the automated update is problematic. 
+Further, administrators should review the following automated migration of existing licenses and terms into the new license framework and, if desired, should manually find and update any datasets for which the automated update is problematic.
 To understand the migration process, it is useful to understand how the multiple license feature works in this release:
 
 'Custom Terms', aka a custom license, are defined through entries in the following fields of the dataset "Terms" tab:
