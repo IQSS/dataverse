@@ -32,10 +32,6 @@ public class IndexIT {
         makeSureTokenlessSearchIsEnabled.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response remove = UtilIT.deleteSetting(SettingsServiceBean.Key.ThumbnailSizeLimitImage);
-        remove.then().assertThat()
-                .statusCode(200);
-
     }
 
   

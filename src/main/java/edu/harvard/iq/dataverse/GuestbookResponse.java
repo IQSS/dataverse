@@ -20,6 +20,13 @@ import javax.validation.constraints.Size;
  *
  * @author skraffmiller
  */
+@NamedStoredProcedureQuery(
+        name = "GuestbookResponse.estimateGuestBookResponseTableSize",
+        procedureName = "estimateGuestBookResponseTableSize",
+        parameters = {
+            @StoredProcedureParameter(mode = ParameterMode.OUT, type = Long.class)
+        }
+)
 @Entity
 @Table(indexes = {
         @Index(columnList = "guestbook_id"),

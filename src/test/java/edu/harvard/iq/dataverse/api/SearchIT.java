@@ -50,10 +50,6 @@ public class SearchIT {
         makeSureTokenlessSearchIsEnabled.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response remove = UtilIT.deleteSetting(SettingsServiceBean.Key.ThumbnailSizeLimitImage);
-        remove.then().assertThat()
-                .statusCode(200);
-
     }
 
     @Test

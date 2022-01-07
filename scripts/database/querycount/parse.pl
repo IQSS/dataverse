@@ -1,35 +1,53 @@
 #!/usr/bin/perl 
+$count = 0;  # total count of queries encountered
+$parsed = 0; # count of queries parsed
 
 while (<>) 
 {
-    chop; 
-    if ( /execute <unnamed>: (select .*)$/i || /execute <unnamed>: (insert .*)$/i || /execute <unnamed>: (update .*)$/i)
-    {
-	$select_q = $1; 
+    chop;
 
-	if ($select_q =~/\$1/)
+    # a freaky multi-line notation for "SELECT EXISTS" (very rare; something administrative?)
+    if ( /execute [^:]*: (select exists.*)$/i )
+    {
+	$query_multiline = $1;
+	$count++;
+    }
+    elsif ( /execute [^:]*: (select .*)$/i || /execute [^:]*: (insert .*)$/i || /execute [^:]*: (update .*)$/i || /execute [^:]*: (delete .*)$/i )
+    {
+	$query = $1; 
+	$count++; 
+
+	if ($query =~/\$1/)
 	{
 	    # saving the query, will substitute parameters
-	    #print STDERR "saving query: " . $select_q . "\n";
+	    #print STDERR "saving query: " . $query . "\n";
 
 	}
 	else 
 	{
-	    print $select_q . "\n";
-	    $select_q = "";
+	    print $query . "\n";
+	    $parsed++;
+	    $query = "";
 	}
     }
-    elsif (/^.*[A-Z][A-Z][A-Z] >DETAIL:  parameters: (.*)$/i)
+    elsif (/^.*[A-Z][A-Z][A-Z]\s.*DETAIL:  parameters: (.*)$/i)
     {
-#	print STDERR "EDT detail line encountered.\n";
-	unless ($select_q)
+	#print STDERR "detail line encountered.\n";
+
+	if ( $query_multiline )
 	{
-	    die "EDT DETAIL encountered (" . $_ . ", no select_q\n";
+	    $query = $query_multiline;
+	    $query_multiline = "";
+	}
+	
+	unless ($query)
+	{
+	    die "DETAIL statement encountered (" . $_ . ", no query\n";
 	}
 
 	$params = $1; 
 
-	@params_ = split (",", $params); 
+	@params_ = split (', \$', $params); 
 
 	for $p (@params_)
 	{
@@ -40,17 +58,22 @@ while (<>)
 
 #	    print STDERR $p . "\n";
 
-	    ($name,$value) = split ("=", $p); 
+	    ($name, $value) = split ("=", $p, 2); 
 
 	    $name =~s/^\$//g; 
+	    $value=~s/[()]+//g; 
 
-#	    print STDERR "name: $name, value: $value\n";
-
-
-	    $select_q =~s/\$$name/$value/ge;
+	    $query =~s/\$$name/$value/ge;
 	}
 
-	print $select_q . "\n"; 
-	$select_q = "";
+	print $query . "\n"; 
+	$parsed++; 
+	$query = "";
+    }
+    elsif ( $query_multiline )
+    {
+	$query_multiline .= $_; 
     }
 }
+print STDERR "total queries encountered: $count\n";
+print STDERR "total queries parsed: $parsed\n";

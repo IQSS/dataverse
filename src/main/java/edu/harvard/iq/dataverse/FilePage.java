@@ -822,20 +822,6 @@ public class FilePage implements java.io.Serializable {
         return FileUtil.isPubliclyDownloadable(fileMetadata);
     }
 
-    /**
-     * In Dataverse 4.19 and below file preview was determined by
-     * isPubliclyDownloadable. Now we always allow a PrivateUrlUser to preview
-     * files.
-     */
-    public boolean isPreviewAllowed() {
-        if (session.getUser() instanceof PrivateUrlUser) {
-            // Always allow preview for PrivateUrlUser
-            return true;
-        } else {
-            return FileUtil.isPreviewAllowed(fileMetadata);
-        }
-    }
-
     private Boolean lockedFromEditsVar;
     private Boolean lockedFromDownloadVar; 
     
@@ -1114,4 +1100,9 @@ public class FilePage implements java.io.Serializable {
             return BundleUtil.getStringFromBundle("embargoed.willbeuntil");
         }
     }
+
+    public String getIngestMessage() {
+        return BundleUtil.getStringFromBundle("file.ingestFailed.message", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), settingsWrapper.getGuidesVersion()));
+    }
+
 }
