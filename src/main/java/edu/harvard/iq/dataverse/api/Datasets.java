@@ -56,7 +56,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailComman
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
@@ -218,9 +217,6 @@ public class Datasets extends AbstractApiBean {
     
     @Inject
     DataverseRoleServiceBean dataverseRoleService;
-
-    @Inject
-    LicenseServiceBean licenseServiceBean;
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -688,7 +684,7 @@ public class Datasets extends AbstractApiBean {
             DataverseRequest req = createDataverseRequest(findUserOrDie());
             DatasetVersion dsv = ds.getEditVersion();
             boolean updateDraft = ds.getLatestVersion().isDraft();
-            dsv = JSONLDUtil.updateDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, datasetFieldSvc, !replaceTerms, false, licenseServiceBean);
+            dsv = JSONLDUtil.updateDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, datasetFieldSvc, !replaceTerms, false, licenseSvc);
 
             DatasetVersion managedVersion;
             if (updateDraft) {
@@ -2399,7 +2395,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                                                 permissionSvc,
                                                 commandEngine,
                                                 systemConfig,
-                                                licenseServiceBean);
+                                                licenseSvc);
 
 
         //-------------------
@@ -3141,7 +3137,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                 this.permissionSvc,
                 this.commandEngine,
                 this.systemConfig,
-                this.licenseServiceBean
+                this.licenseSvc
         );
 
         return addFileHelper.addFiles(jsonData, dataset, authUser);

@@ -32,7 +32,6 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
-import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -93,8 +92,6 @@ public class Files extends AbstractApiBean {
     SettingsServiceBean settingsService;
     @Inject
     MakeDataCountLoggingServiceBean mdcLogService;
-    @Inject
-    LicenseServiceBean licenseServiceBean; 
     
     private static final Logger logger = Logger.getLogger(Files.class.getName());
     
@@ -253,7 +250,7 @@ public class Files extends AbstractApiBean {
                                                 this.permissionSvc,
                                                 this.commandEngine,
                                                 this.systemConfig,
-                                                this.licenseServiceBean);
+                                                this.licenseSvc);
 
         // (5) Run "runReplaceFileByDatasetId"
         long fileToReplaceId = 0;

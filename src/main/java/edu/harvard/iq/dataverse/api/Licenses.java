@@ -12,13 +12,11 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ws.rs.core.Response.Status;
 
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.license.License;
-import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 
@@ -33,14 +31,11 @@ public class Licenses extends AbstractApiBean {
 
 	private static final Logger logger = Logger.getLogger(Licenses.class.getName());
 
-        @EJB
-        LicenseServiceBean licenseService;
-
     @GET
     @Path("/")
     public Response getLicenses() {
         JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
-        for(License license : licenseService.listAll()) {
+        for(License license : licenseSvc.listAll()) {
             arrayBuilder.add(JsonPrinter.json(license));
         }
         return ok(arrayBuilder);
@@ -49,7 +44,7 @@ public class Licenses extends AbstractApiBean {
     @GET
     @Path("/{id}")
     public Response getLicenseById(@PathParam("id") long id) {
-        License license = licenseService.getById(id);
+        License license = licenseSvc.getById(id);
         if (license == null)
             return error(Response.Status.NOT_FOUND, "License with ID " + id + " not found");
         return ok(json(license));
@@ -68,7 +63,7 @@ public class Licenses extends AbstractApiBean {
             return error(Status.UNAUTHORIZED, "api key required");
         }
         try {
-            License l = licenseService.save(license);
+            License l = licenseSvc.save(license);
             actionLogSvc
             .log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "licenseAdded")
                     .setInfo("License " + l.getName() + "(" + l.getUri() + ") as id: " + l.getId() + ".")
@@ -88,7 +83,7 @@ public class Licenses extends AbstractApiBean {
     @GET
     @Path("/default")
     public Response getDefault() {
-        return ok("Default license ID is " + licenseService.getDefault().getId());
+        return ok("Default license ID is " + licenseSvc.getDefault().getId());
     }
 
     @PUT
@@ -104,9 +99,9 @@ public class Licenses extends AbstractApiBean {
             return error(Status.UNAUTHORIZED, "api key required");
         }
         try {
-            if (licenseService.setDefault(id) == 0)
+            if (licenseSvc.setDefault(id) == 0)
                 return error(Response.Status.NOT_FOUND, "License with ID " + id + " not found");
-            License license = licenseService.getById(id); 
+            License license = licenseSvc.getById(id); 
             actionLogSvc
             .log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "defaultLicenseChanged")
                     .setInfo("License " + license.getName() + "(" + license.getUri() + ") as id: " + id + "is now the default license.")
@@ -133,9 +128,9 @@ public class Licenses extends AbstractApiBean {
             return error(Status.UNAUTHORIZED, "api key required");
         }
         try {
-            if (licenseService.setActive(id, active) == 0)
+            if (licenseSvc.setActive(id, active) == 0)
                 return error(Response.Status.NOT_FOUND, "License with ID " + id + " not found");
-            License license = licenseService.getById(id);
+            License license = licenseSvc.getById(id);
             actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "licenseStateChanged")
                     .setInfo("License " + license.getName() + "(" + license.getUri() + ") as id: " + id
                             + "has been made " + (active ? "active" : "inactive"))
@@ -162,13 +157,13 @@ public class Licenses extends AbstractApiBean {
             return error(Status.UNAUTHORIZED, "api key required");
         }
         try {
-            License license = licenseService.getById(id);
+            License license = licenseSvc.getById(id);
             if (license == null) {
                 return error(Status.NOT_FOUND, "License with ID " + id + " not found");
             } else if (license.isDefault()) {
                 return error(Status.CONFLICT, "Please make sure the license is not the default before deleting it. ");
             } else {
-                if (licenseService.deleteById(id) == 1) {
+                if (licenseSvc.deleteById(id) == 1) {
                     actionLogSvc
                     .log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "licenseDeleted")
                             .setInfo("License " + license.getName() + "(" + license.getUri() + ") as id: " + id + "nas been deleted.")
