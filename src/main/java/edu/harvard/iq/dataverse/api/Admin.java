@@ -16,8 +16,6 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.EMailValidator;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.License;
-import edu.harvard.iq.dataverse.LicenseServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;

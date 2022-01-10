@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -616,7 +617,7 @@ public class DatasetVersion implements Serializable {
         return dsv;
     }
 
-    public void initDefaultValues(edu.harvard.iq.dataverse.License license) {
+    public void initDefaultValues(License license) {
         //first clear then initialize - in case values were present 
         // from template or user entry
         this.setDatasetFields(new ArrayList<>());

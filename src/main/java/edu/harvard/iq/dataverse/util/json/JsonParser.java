@@ -16,8 +16,6 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.DataverseTheme;
 import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.License;
-import edu.harvard.iq.dataverse.LicenseServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.api.Util;
@@ -28,6 +26,8 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress
 import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
+import edu.harvard.iq.dataverse.license.License;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
@@ -387,7 +387,7 @@ public class JsonParser {
         }
     }
     
-    private edu.harvard.iq.dataverse.License parseLicense(String licenseNameOrUri) throws JsonParseException {
+    private edu.harvard.iq.dataverse.license.License parseLicense(String licenseNameOrUri) throws JsonParseException {
         if (licenseNameOrUri == null){
             boolean safeDefaultIfKeyNotFound = true;
             if (settingsService.isTrueForKey(SettingsServiceBean.Key.AllowCustomTermsOfUse, safeDefaultIfKeyNotFound)){

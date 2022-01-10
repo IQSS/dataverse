@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.license;
 
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;

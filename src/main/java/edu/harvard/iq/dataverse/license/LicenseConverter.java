@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.license;
 
 import javax.enterprise.inject.spi.CDI;
 import javax.faces.component.UIComponent;

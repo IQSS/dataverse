@@ -2,31 +2,6 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
-import edu.harvard.iq.dataverse.ControlledVocabularyValue;
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
-import edu.harvard.iq.dataverse.DatasetLock;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
-import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DataverseSession;
-import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.LicenseServiceBean;
-import edu.harvard.iq.dataverse.MetadataBlock;
-import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
-import edu.harvard.iq.dataverse.PermissionServiceBean;
-import edu.harvard.iq.dataverse.RoleAssignment;
-import edu.harvard.iq.dataverse.UserNotification;
-import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -81,6 +56,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailComman
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
@@ -174,7 +150,6 @@ import com.amazonaws.services.s3.model.PartETag;
 import com.beust.jcommander.Strings;
 
 import java.util.Map.Entry;
-import edu.harvard.iq.dataverse.FileMetadata;
 
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
@@ -713,7 +688,7 @@ public class Datasets extends AbstractApiBean {
             DataverseRequest req = createDataverseRequest(findUserOrDie());
             DatasetVersion dsv = ds.getEditVersion();
             boolean updateDraft = ds.getLatestVersion().isDraft();
-            dsv = JSONLDUtil.updateDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, datasetFieldSvc, !replaceTerms, false, licenseSvc);
+            dsv = JSONLDUtil.updateDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, datasetFieldSvc, !replaceTerms, false, licenseServiceBean);
 
             DatasetVersion managedVersion;
             if (updateDraft) {

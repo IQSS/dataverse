@@ -15,7 +15,6 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseTheme.Alignment;
 import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.LicenseServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
@@ -24,6 +23,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainG
 import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroupTest;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.junit.AfterClass;

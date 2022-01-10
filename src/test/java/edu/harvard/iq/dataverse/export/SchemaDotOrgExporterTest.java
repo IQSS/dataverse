@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.export;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.branding.BrandingUtilTest;
+import edu.harvard.iq.dataverse.license.License;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
 
 import static edu.harvard.iq.dataverse.util.SystemConfig.SITE_URL;

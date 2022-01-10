@@ -1,7 +1,5 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.License;
-import edu.harvard.iq.dataverse.LicenseServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 
 import javax.json.Json;
@@ -19,6 +17,8 @@ import javax.ejb.Stateless;
 import javax.ws.rs.core.Response.Status;
 
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.license.License;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 
