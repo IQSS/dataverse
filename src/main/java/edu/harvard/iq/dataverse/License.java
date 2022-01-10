@@ -37,6 +37,8 @@ import java.util.Objects;
             query = "UPDATE License l SET l.isDefault='true' WHERE l.id=:id"),
     @NamedQuery( name="License.clearDefault",
                 query = "UPDATE License l SET l.isDefault='false'"),
+    @NamedQuery( name="License.setActiveState",
+    query = "UPDATE License l SET l.active=:state WHERE l.id=:id"),
 
 })
 @Entity

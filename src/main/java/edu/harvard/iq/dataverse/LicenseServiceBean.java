@@ -76,6 +76,24 @@ public class LicenseServiceBean {
         }
     }
 
+    public int setActive(Long id, boolean state) throws WrappedResponse {
+        License candidate = getById(id);
+        if (candidate == null)
+            return 0;
+        
+        if (candidate.isActive() != state) {
+            if(candidate.isDefault() && state==false) {
+                throw new WrappedResponse(
+                        new IllegalArgumentException("Cannot inactivate the default license"), null);
+            }
+            return em.createNamedQuery("License.setActiveState").setParameter("id", id).setParameter("state", state)
+                    .executeUpdate();
+        } else {
+            throw new WrappedResponse(
+                    new IllegalArgumentException("License already " + (state ? "active" : "inactive")), null);
+        }
+    }
+    
     public License save(License license) throws WrappedResponse {
         if (license.getId() != null) {
             throw new WrappedResponse(new IllegalArgumentException("There shouldn't be an ID in the request body"), null);
