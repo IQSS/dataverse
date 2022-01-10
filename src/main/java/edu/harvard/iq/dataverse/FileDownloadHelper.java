@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -322,7 +323,6 @@ public class FileDownloadHelper implements java.io.Serializable {
     
     
      private boolean processRequestAccess(DataFile file, Boolean sendNotification) {
-
          if (fileDownloadService.requestAccess(file.getId())) {
              // update the local file object so that the page properly updates
              if(file.getFileAccessRequesters() == null){
@@ -333,8 +333,12 @@ public class FileDownloadHelper implements java.io.Serializable {
              if (sendNotification) {
                  fileDownloadService.sendRequestFileAccessNotification(file, (AuthenticatedUser) session.getUser());
              }
+             //file.accessRequested.success            
+             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("file.accessRequested.success"));
              return true;
          }
+         logger.info("Access already requested for file id " + file.getId() + ". Exception: " );
+         JsfHelper.addWarningMessage("Access already requested for file: " + file.getDisplayName());
          return false;
      } 
 
