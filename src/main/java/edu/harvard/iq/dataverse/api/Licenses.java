@@ -29,13 +29,13 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 @Path("licenses")
 public class Licenses extends AbstractApiBean {
 
-	private static final Logger logger = Logger.getLogger(Licenses.class.getName());
+    private static final Logger logger = Logger.getLogger(Licenses.class.getName());
 
     @GET
     @Path("/")
     public Response getLicenses() {
         JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
-        for(License license : licenseSvc.listAll()) {
+        for (License license : licenseSvc.listAll()) {
             arrayBuilder.add(JsonPrinter.json(license));
         }
         return ok(arrayBuilder);
@@ -64,8 +64,7 @@ public class Licenses extends AbstractApiBean {
         }
         try {
             License l = licenseSvc.save(license);
-            actionLogSvc
-            .log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "licenseAdded")
+            actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "licenseAdded")
                     .setInfo("License " + l.getName() + "(" + l.getUri() + ") as id: " + l.getId() + ".")
                     .setUserIdentifier(authenticatedUser.getIdentifier()));
             return created("/api/licenses/" + l.getId(), Json.createObjectBuilder().add("message", "License created"));
@@ -102,14 +101,15 @@ public class Licenses extends AbstractApiBean {
             if (licenseSvc.setDefault(id) == 0) {
                 return error(Response.Status.NOT_FOUND, "License with ID " + id + " not found");
             }
-            License license = licenseSvc.getById(id); 
+            License license = licenseSvc.getById(id);
             actionLogSvc
-            .log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "defaultLicenseChanged")
-                    .setInfo("License " + license.getName() + "(" + license.getUri() + ") as id: " + id + "is now the default license.")
-                    .setUserIdentifier(authenticatedUser.getIdentifier()));
+                    .log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "defaultLicenseChanged")
+                            .setInfo("License " + license.getName() + "(" + license.getUri() + ") as id: " + id
+                                    + "is now the default license.")
+                            .setUserIdentifier(authenticatedUser.getIdentifier()));
             return ok("Default license ID set to " + id);
         } catch (WrappedResponse e) {
-            if(e.getCause() instanceof IllegalArgumentException) {
+            if (e.getCause() instanceof IllegalArgumentException) {
                 return badRequest(e.getCause().getMessage());
             }
             return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
@@ -167,9 +167,10 @@ public class Licenses extends AbstractApiBean {
             } else {
                 if (licenseSvc.deleteById(id) == 1) {
                     actionLogSvc
-                    .log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "licenseDeleted")
-                            .setInfo("License " + license.getName() + "(" + license.getUri() + ") as id: " + id + " has been deleted.")
-                            .setUserIdentifier(authenticatedUser.getIdentifier()));
+                            .log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "licenseDeleted")
+                                    .setInfo("License " + license.getName() + "(" + license.getUri() + ") as id: " + id
+                                            + " has been deleted.")
+                                    .setUserIdentifier(authenticatedUser.getIdentifier()));
                     return ok("OK. License with ID " + id + " was deleted.");
                 } else {
                     return error(Status.CONFLICT, "Couldn't delete license with ID: " + id);
