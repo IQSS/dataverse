@@ -1583,19 +1583,24 @@ public class Datasets extends AbstractApiBean {
 
     @GET
     @Path("{id}/versions/{versionId}/customlicense")
-    public Response getCustomTermsTab(@PathParam("id") String id, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers){
+    public Response getCustomTermsTab(@PathParam("id") String id, @PathParam("versionId") String versionId,
+            @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         User user = session.getUser();
         String persistentId;
         try {
-            if (getDatasetVersionOrDie(createDataverseRequest(user), versionId, findDatasetOrDie(id), uriInfo, headers).getTermsOfUseAndAccess().getLicense() != null){
+            if (getDatasetVersionOrDie(createDataverseRequest(user), versionId, findDatasetOrDie(id), uriInfo, headers)
+                    .getTermsOfUseAndAccess().getLicense() != null) {
                 return error(Status.NOT_FOUND, "This Dataset has no custom license");
             }
             persistentId = getRequestParameter(":persistentId".substring(1));
-            if (versionId.equals(":draft")) versionId = "DRAFT";
+            if (versionId.equals(":draft")) {
+                versionId = "DRAFT";
+            }
         } catch (WrappedResponse wrappedResponse) {
-           return wrappedResponse.getResponse();
+            return wrappedResponse.getResponse();
         }
-        return Response.seeOther(URI.create(systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + persistentId + "&version=" + versionId + "&selectTab=termsTab")).build();
+        return Response.seeOther(URI.create(systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId="
+                + persistentId + "&version=" + versionId + "&selectTab=termsTab")).build();
     }
 
 
