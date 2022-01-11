@@ -448,7 +448,7 @@
                 <p:commandLink rendered="#{DatasetPage.fileAccessRequestMultiButtonRequired}"
                                styleClass="btn btn-default btn-request"                                   
                                action="#{DatasetPage.requestAccessMultipleFiles()}"
-                               update="@form" oncomplete="bind_bsui_components();"
+                               update="@form, @([id$=messagePanel])" oncomplete="bind_bsui_components();"
                                disabled="#{DatasetPage.locked}">
                     <span class="glyphicon glyphicon-bullhorn"/> #{bundle['file.requestAccess']}
                 </p:commandLink>
