@@ -114,3 +114,12 @@ Once a standardized version of you Custom Terms are registered as a license, an 
         SET license_id = (SELECT license.id FROM license WHERE license.name = '<Your License Name>'), termsofuse=null, confidentialitydeclaration=null, t.specialpermissions=null, t.restrictions=null, citationrequirements=null, depositorrequirements=null, conditions=null, disclaimer=null 
         WHERE termsofuseandaccess.termsofuse LIKE '%<Unique phrase in your Terms of Use>%';
 
+## Backward Incompatibilities
+
+With the change to support multiple licenses, which can include cases where CC0 is not an option, and the decision to prohibit two previously possible cases (no license and no entry in the Terms of Use field, a standard license and entries in Terms of Use, Special Permissions and related fields), this release contains changes to the display, API payloads, and export metadata that are not backward compatible. These include:
+- Use of "CC0 1.0", the short name specified by Creative Commons, for what Dataverse has called the "CC0 Waiver" by default - in the display, API payloads, and export formats including a license name (note that installation admins can alter the license name in the database to maintain the original "CC0 Waiver" text)
+- Schema.org metadata in page headers and the Schema.org json-ld metadata export now reference the license via URL (which should avoid the current warning from Google about an invalid license object in the page metadata)
+- Metadata exports and import methods (including Sword) use either the license name (e.g. in the JSON export) or URL (e.g. in the OAI_ORE export) rather than a hardcoded value of "CC0" or "CC0 Waiver" currently (if the CC0 license is available, it's default name would be "CC0 1.0")
+- API calls (e.g. for import, migrate) that specify both a license and custom terms will be considered an error, as would having no license and an empty/blank value for Terms of Use
+
+Also note that, since CC0 Waiver is no longer a hardcoded option, text strings reference it have been edited or removed from Bundle.properties. This means that the ability to provide translations of the CC0 license name/description has been removed. The initial release of multiple license functionality doesn't include an alternative mechanism to provide translations of license names/descriptions, so this is a regression in capability. (The instructions and help information about license and terms remains internationalizable, it is only the name/description of the licenses themselves that cannot yet be translated).
