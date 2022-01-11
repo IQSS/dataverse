@@ -3718,27 +3718,48 @@ Recursively applies the role assignments of the specified Dataverse collection, 
   
 Note: setting ``:InheritParentRoleAssignments`` will automatically trigger inheritance of the parent Dataverse collection's role assignments for a newly created Dataverse collection. Hence this API call is intended as a way to update existing child Dataverse collections or to update children after a change in role assignments has been made on a parent Dataverse collection.
 
+.. _license-management-api:
 
 Manage Available Standard License Terms
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 View the list of standard license terms that can be selected for a dataset::
+    
+.. code-block:: bash
 
-    curl http://$SERVER/api/admin/licenses
+  export SERVER_URL=https://demo.dataverse.org
+  curl $SERVER_URL/api/licenses
 
 View the details of the standard license with the database ID specified in ``$ID``::
 
-    export ID=1
-    curl http://$SERVER/api/admin/licenses/$ID
+.. code-block:: bash
 
-Add a new license by posting a JSON file adapted from this example :download:`add-license.json <../_static/api/add-license.json>`. The ``name`` and ``uri`` of the new license must be unique. ::
+  export ID=1
+  curl $SERVER_URL/api/licenses/$ID
 
-    curl -X POST -H 'Content-Type: application/json' --data-binary @add-license.json http://$SERVER/api/admin/licenses
 
-Overwrite the license with the database specified in ``$ID``::
+Superusers can add a new license by posting a JSON file adapted from this example :download:`add-license.json <../_static/api/add-license.json>`. The ``name`` and ``uri`` of the new license must be unique. ::
 
-    curl -X PUT -H 'Content-Type: application/json' --data-binary @edit-license.json http://$SERVER/api/admin/licenses/$ID
+.. code-block:: bash
 
-Delete the license with with the database specified in ``$ID``::
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  curl -X POST -H 'Content-Type: application/json' -H X-Dataverse-key:$API_TOKEN --data-binary @add-license.json $SERVER_URL/api/licenses
 
-    curl -X DELETE http://$SERVER/api/admin/licenses/$ID
+Superusers can change whether an existing license is active (usable for new dataset versions) or inactive (only allowed on already-published versions) specified by the license ``$ID``::
+
+.. code-block:: bash
+
+  export STATE=true
+  curl -X PUT -H 'Content-Type: application/json' --data-binary @edit-license.json $SERVER_URL/api/licenses/$ID/:active/$STATE
+
+Superusers can set which license is the default specified by the license ``$ID``::
+
+.. code-block:: bash
+
+  curl -X PUT -H 'Content-Type: application/json' --data-binary @edit-license.json $SERVER_URL/api/licenses/default/$ID
+
+Superusers can delete a license that is not in useby the license ``$ID``::
+
+.. code-block:: bash
+
+  curl -X DELETE http://$SERVER/api/licenses/$ID
