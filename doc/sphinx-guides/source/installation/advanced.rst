@@ -40,7 +40,7 @@ Licensing
 ---------
 
 Dataverse allows superusers to specify the list of allowed licenses, to define which license is the default, to decide whether users can instead define custom terms, and to mar obsolete licenses as 'inactive' to stop further use of them.
-These can be accomplished using the :ref:`:native API <.. license-management-api>` and the :ref:`:AllowCustomTermsOfUse <:AllowCustomTermsOfUse>` setting.
+These can be accomplished using the :ref:`:native API <license-management-api>` and the :ref:`:AllowCustomTermsOfUse <:AllowCustomTermsOfUse>` setting.
 
 ### Standardizing Custom Licenses:
 
