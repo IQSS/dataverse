@@ -2,9 +2,9 @@
 
 Users can now select from a set of configured licenses in addition to or instead of the current Creative Commons CC0 choice or provide custom terms of use (if configured) for their datasets. Administrators can configure their Dataverse instance via API to allow any desired license as a choice and can enable/disable the option to allow custom terms. Administrators can also mark licenses as 'inactive' to disallow future use while keeping that license for existing datasets. By default, only the CC0 license will be preinstalled. Examples in the Guides show how to add additional licenses and specific examples are given for several Creative Commons licenses. **Note: Datasets in existing installations will automatically be updated to conform to new requirements that custom terms cannot be used with a standard license and that custom terms cannot be empty. Administrators may wish to manually update datasets with these conditions if they do not like the automated migration choices. See the Notes for Dataverse Installation Administrators and Additional Release Steps sections for further information.**
 
+This release also makes the license selection and/or custom terms more prominent when publishing and viewing a dataset and when downloading files.
 
 ## Major Use Cases and Infrastructure Enhancements
-
 
 - When creating/updating datasets, users can select from a set of standard licenses configured by the administrator or provide custom terms (if the installation is configured to allow them).
 
