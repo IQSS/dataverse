@@ -99,8 +99,9 @@ public class Licenses extends AbstractApiBean {
             return error(Status.UNAUTHORIZED, "api key required");
         }
         try {
-            if (licenseSvc.setDefault(id) == 0)
+            if (licenseSvc.setDefault(id) == 0) {
                 return error(Response.Status.NOT_FOUND, "License with ID " + id + " not found");
+            }
             License license = licenseSvc.getById(id); 
             actionLogSvc
             .log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "defaultLicenseChanged")
@@ -128,8 +129,9 @@ public class Licenses extends AbstractApiBean {
             return error(Status.UNAUTHORIZED, "api key required");
         }
         try {
-            if (licenseSvc.setActive(id, active) == 0)
+            if (licenseSvc.setActive(id, active) == 0) {
                 return error(Response.Status.NOT_FOUND, "License with ID " + id + " not found");
+            }
             License license = licenseSvc.getById(id);
             actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "licenseStateChanged")
                     .setInfo("License " + license.getName() + "(" + license.getUri() + ") as id: " + id
@@ -159,14 +161,14 @@ public class Licenses extends AbstractApiBean {
         try {
             License license = licenseSvc.getById(id);
             if (license == null) {
-                return error(Status.NOT_FOUND, "License with ID " + id + " not found");
+                return error(Status.NOT_FOUND, "License with ID " + id + " not found.");
             } else if (license.isDefault()) {
-                return error(Status.CONFLICT, "Please make sure the license is not the default before deleting it. ");
+                return error(Status.CONFLICT, "Please make sure the license is not the default before deleting it.");
             } else {
                 if (licenseSvc.deleteById(id) == 1) {
                     actionLogSvc
                     .log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "licenseDeleted")
-                            .setInfo("License " + license.getName() + "(" + license.getUri() + ") as id: " + id + "nas been deleted.")
+                            .setInfo("License " + license.getName() + "(" + license.getUri() + ") as id: " + id + " has been deleted.")
                             .setUserIdentifier(authenticatedUser.getIdentifier()));
                     return ok("OK. License with ID " + id + " was deleted.");
                 } else {
