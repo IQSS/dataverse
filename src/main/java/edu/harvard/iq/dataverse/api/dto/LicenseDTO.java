@@ -5,15 +5,15 @@ package edu.harvard.iq.dataverse.api.dto;
  * @author mderuijter
  */
 public class LicenseDTO {
-    String label;
+    String name;
     String uri;
 
-    public String getLabel() {
-        return label;
+    public String getName() {
+        return name;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getUri() {
