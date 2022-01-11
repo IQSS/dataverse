@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -332,13 +333,11 @@ public class FileDownloadHelper implements java.io.Serializable {
              // create notification if necessary
              if (sendNotification) {
                  fileDownloadService.sendRequestFileAccessNotification(file, (AuthenticatedUser) session.getUser());
-             }
-             //file.accessRequested.success            
+             }           
              JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("file.accessRequested.success"));
              return true;
          }
-         logger.info("Access already requested for file id " + file.getId() + ". Exception: " );
-         JsfHelper.addWarningMessage("Access already requested for file: " + file.getDisplayName());
+         JsfHelper.addWarningMessage(BundleUtil.getStringFromBundle("file.accessRequested.alreadyRequested", Arrays.asList(file.getDisplayName())));
          return false;
      } 
 
