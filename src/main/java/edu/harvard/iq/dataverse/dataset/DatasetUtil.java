@@ -546,7 +546,10 @@ public class DatasetUtil {
 
     public static String getLicenseURI(DatasetVersion dsv) {
         License license = dsv.getTermsOfUseAndAccess().getLicense();
-        return license != null ? license.getUri().toString()
+        // Return the URI
+        // For standard licenses, just return the stored URI
+        return (license != null) ? license.getUri().toString()
+                // For custom terms, construct a URI with :draft or the version number in the URI
                 : (dsv.getVersionState().name().equals("DRAFT")
                         ? dsv.getDataverseSiteUrl()
                                 + "/api/datasets/:persistentId/versions/:draft/customlicense?persistentId="
