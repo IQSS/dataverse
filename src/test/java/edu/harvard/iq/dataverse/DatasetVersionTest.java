@@ -92,7 +92,7 @@ public class DatasetVersionTest {
     @Test
     public void testGetJsonLd() throws ParseException {
         Dataset dataset = new Dataset();
-        License license = new License("CC0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("https://creativecommons.org/publicdomain/zero/1.0/"), URI.create("/resources/images/cc0.png"), true);
+        License license = new License("CC0 1.0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("https://creativecommons.org/publicdomain/zero/1.0/"), URI.create("/resources/images/cc0.png"), true);
         license.setDefault(true);
         dataset.setProtocol("doi");
         dataset.setAuthority("10.5072/FK2");
@@ -124,9 +124,7 @@ public class DatasetVersionTest {
         assertEquals("https://doi.org/10.5072/FK2/LK0D1H", obj.getString("@id"));
         assertEquals("https://doi.org/10.5072/FK2/LK0D1H", obj.getString("identifier"));
         assertEquals(null, obj.getString("schemaVersion", null));
-        assertEquals("Dataset", obj.getJsonObject("license").getString("@type"));
-        assertEquals("CC0", obj.getJsonObject("license").getString("name"));
-        assertEquals("https://creativecommons.org/publicdomain/zero/1.0/", obj.getJsonObject("license").getString("url"));
+        assertEquals("https://creativecommons.org/publicdomain/zero/1.0/", obj.getString("license"));
         assertEquals("1955-11-05", obj.getString("dateModified"));
         assertEquals("1955-11-05", obj.getString("datePublished"));
         assertEquals("1", obj.getString("version"));
@@ -159,6 +157,7 @@ public class DatasetVersionTest {
         assertEquals("", datasetVersion.getJsonLd());
         datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
         datasetVersion.setVersionNumber(1L);
+        datasetVersion.setMinorVersionNumber(0L);
         SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
         Date publicationDate = dateFmt.parse("19551105");
         datasetVersion.setReleaseTime(publicationDate);
@@ -181,8 +180,7 @@ public class DatasetVersionTest {
         assertEquals("https://doi.org/10.5072/FK2/LK0D1H", obj.getString("@id"));
         assertEquals("https://doi.org/10.5072/FK2/LK0D1H", obj.getString("identifier"));
         assertEquals(null, obj.getString("schemaVersion", null));
-        assertEquals("Dataset", obj.getJsonObject("license").getString("@type"));
-        assertEquals("Call me maybe", obj.getJsonObject("license").getString("text"));
+        assertTrue(obj.getString("license").contains("/api/datasets/:persistentId/versions/1.0/customlicense?persistentId=doi:10.5072/FK2/LK0D1H"));
         assertEquals("1955-11-05", obj.getString("dateModified"));
         assertEquals("1955-11-05", obj.getString("datePublished"));
         assertEquals("1", obj.getString("version"));
