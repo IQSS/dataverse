@@ -796,7 +796,8 @@ public class JsonPrinter {
             .add("shortDescription", license.getShortDescription())
             .add("uri", license.getUri().toString())
             .add("iconUrl", license.getIconUrl().toString())
-            .add("active", license.isActive());
+            .add("active", license.isActive())
+            .add("isDefault", license.isDefault());
     }
 
     public static Collector<String, JsonArrayBuilder, JsonArrayBuilder> stringsToJsonArray() {
