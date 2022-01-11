@@ -1132,16 +1132,9 @@ public class OpenAireExportUtil {
         xmlw.writeEndElement(); // </rights>
 
         writeRightsHeader(xmlw, language);
-        //Either license or TermsOfUse should be non-null, but not both
         if (datasetVersionDTO.getLicense() != null) {
             xmlw.writeAttribute("rightsURI", datasetVersionDTO.getLicense().getUri());
             xmlw.writeCharacters(datasetVersionDTO.getLicense().getName());
-        } else if (StringUtils.isNotBlank(datasetVersionDTO.getTermsOfUse())) {
-            if (StringUtils.startsWithIgnoreCase(datasetVersionDTO.getTermsOfUse().trim(), "http")) {
-                xmlw.writeAttribute("rightsURI", datasetVersionDTO.getTermsOfUse());
-            } else {
-                xmlw.writeCharacters(datasetVersionDTO.getTermsOfUse());
-            }
         }
         xmlw.writeEndElement(); // </rights>
         xmlw.writeEndElement(); // </rightsList>
