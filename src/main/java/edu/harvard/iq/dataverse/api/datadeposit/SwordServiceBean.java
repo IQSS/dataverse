@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -180,7 +181,7 @@ public class SwordServiceBean {
         if (StringUtils.isBlank(licenseProvided)) {
             throw new SwordError("License provided was blank.");
         }
-        if (StringUtils.equalsIgnoreCase(licenseProvided, "Custom License")){
+        if (StringUtils.equalsIgnoreCase(licenseProvided, BundleUtil.getStringFromBundle("license.custom"))){
             terms.setLicense(null);
             setTermsOfUse(datasetVersionToMutate, dcterms, null);
         } else {
