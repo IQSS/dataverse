@@ -114,6 +114,3 @@ Once a standardized version of you Custom Terms are registered as a license, an 
         SET license_id = (SELECT license.id FROM license WHERE license.name = '<Your License Name>'), termsofuse=null, confidentialitydeclaration=null, t.specialpermissions=null, t.restrictions=null, citationrequirements=null, depositorrequirements=null, conditions=null, disclaimer=null 
         WHERE termsofuseandaccess.termsofuse LIKE '%<Unique phrase in your Terms of Use>%';
 
-
-
-    select CONCAT('doi:', dvo.authority, '/', dvo.identifier), v.alias as dataverse_alias, case when versionstate='RELEASED' then concat(dv.versionnumber, '.', dv.minorversionnumber) else versionstate END  as version, dv.id as datasetversion_id, t.id as termsofuseandaccess_id, t.termsofuse, t.confidentialitydeclaration, t.specialpermissions, t.restrictions, t.citationrequirements, t.depositorrequirements, t.conditions, t.disclaimer from dvobject dvo, termsofuseandaccess t, datasetversion dv, dataverse v where dv.dataset_id=dvo.id and dv.termsofuseandaccess_id=t.id and dvo.owner_id=v.id and t.license_id=1 and not (t.termsofuse is null and t.confidentialitydeclaration is null and t.specialpermissions is null and t.restrictions is null and citationrequirements is null and t.depositorrequirements is null and t.conditions is null and t.disclaimer is null);
