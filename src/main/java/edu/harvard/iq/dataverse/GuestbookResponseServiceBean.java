@@ -228,7 +228,7 @@ public class GuestbookResponseServiceBean {
             sb.append(SEPARATOR);
             
             // email: 
-            sb.append(result[8] == null ? "" : result[8]);
+            sb.append(result[8] == null ? "" : ((String)result[8]).replace(',', ' '));
             sb.append(SEPARATOR);
             
             // institution:
