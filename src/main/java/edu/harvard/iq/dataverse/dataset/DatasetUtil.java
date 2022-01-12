@@ -5,7 +5,6 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.License;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
@@ -36,6 +35,7 @@ import org.apache.commons.io.IOUtils;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
@@ -546,7 +546,10 @@ public class DatasetUtil {
 
     public static String getLicenseURI(DatasetVersion dsv) {
         License license = dsv.getTermsOfUseAndAccess().getLicense();
-        return license != null ? license.getUri().toString()
+        // Return the URI
+        // For standard licenses, just return the stored URI
+        return (license != null) ? license.getUri().toString()
+                // For custom terms, construct a URI with :draft or the version number in the URI
                 : (dsv.getVersionState().name().equals("DRAFT")
                         ? dsv.getDataverseSiteUrl()
                                 + "/api/datasets/:persistentId/versions/:draft/customlicense?persistentId="

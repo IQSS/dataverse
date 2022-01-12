@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -616,7 +618,7 @@ public class DatasetVersion implements Serializable {
         return dsv;
     }
 
-    public void initDefaultValues(edu.harvard.iq.dataverse.License license) {
+    public void initDefaultValues(License license) {
         //first clear then initialize - in case values were present 
         // from template or user entry
         this.setDatasetFields(new ArrayList<>());
@@ -1859,19 +1861,7 @@ public class DatasetVersion implements Serializable {
          */
         TermsOfUseAndAccess terms = this.getTermsOfUseAndAccess();
         if (terms != null) {
-            JsonObjectBuilder license = Json.createObjectBuilder().add("@type", "Dataset");
-
-            if (terms.getLicense() != null) {
-                license.add("name", terms.getLicense().getName()).add("url", terms.getLicense().getUri().toString());
-            } else {
-                String termsOfUse = terms.getTermsOfUse();
-                // Terms of use can be null if you create the dataset with JSON.
-                if (termsOfUse != null) {
-                    license.add("text", termsOfUse);
-                }
-            }
-            
-            job.add("license",license);
+            job.add("license",DatasetUtil.getLicenseURI(this));
         }
         
         job.add("includedInDataCatalog", Json.createObjectBuilder()

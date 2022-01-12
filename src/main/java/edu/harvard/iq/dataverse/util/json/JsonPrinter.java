@@ -1,24 +1,6 @@
 package edu.harvard.iq.dataverse.util.json;
 
 import edu.harvard.iq.dataverse.*;
-import edu.harvard.iq.dataverse.AuxiliaryFile;
-import edu.harvard.iq.dataverse.ControlledVocabularyValue;
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileTag;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetDistributor;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
-import edu.harvard.iq.dataverse.DatasetLock;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseContact;
-import edu.harvard.iq.dataverse.DataverseFacet;
-import edu.harvard.iq.dataverse.DataverseTheme;
-import edu.harvard.iq.dataverse.License;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
@@ -36,6 +18,7 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
@@ -340,41 +323,38 @@ public class JsonPrinter {
 
     public static JsonObjectBuilder json(DatasetVersion dsv) {
         JsonObjectBuilder bld = jsonObjectBuilder()
-                .add("id", dsv.getId())
-                .add("datasetId", dsv.getDataset().getId())
+                .add("id", dsv.getId()).add("datasetId", dsv.getDataset().getId())
                 .add("datasetPersistentId", dsv.getDataset().getGlobalId().asString())
                 .add("storageIdentifier", dsv.getDataset().getStorageIdentifier())
-                .add("versionNumber", dsv.getVersionNumber())
-                .add("versionMinorNumber", dsv.getMinorVersionNumber())
-                .add("versionState", dsv.getVersionState().name())
-                .add("versionNote", dsv.getVersionNote())
-                .add("archiveNote", dsv.getArchiveNote())
-                .add("deaccessionLink", dsv.getDeaccessionLink())
-                .add("distributionDate", dsv.getDistributionDate())
-                .add("productionDate", dsv.getProductionDate())
-                .add("UNF", dsv.getUNF())
-                .add("archiveTime", format(dsv.getArchiveTime()))
-                .add("lastUpdateTime", format(dsv.getLastUpdateTime()))
-                .add("releaseTime", format(dsv.getReleaseTime()))
-                .add("createTime", format(dsv.getCreateTime()))
-                .add("license", jsonObjectBuilder()
-                        .add("label", DatasetUtil.getLicenseName(dsv))
-                        .add("uri", DatasetUtil.getLicenseURI(dsv)))
-                .add("confidentialityDeclaration", dsv.getTermsOfUseAndAccess().getConfidentialityDeclaration() != null ? dsv.getTermsOfUseAndAccess().getConfidentialityDeclaration() : null)
-                .add("availabilityStatus", dsv.getTermsOfUseAndAccess().getAvailabilityStatus() != null ? dsv.getTermsOfUseAndAccess().getAvailabilityStatus() : null)
-                .add("specialPermissions", dsv.getTermsOfUseAndAccess().getSpecialPermissions() != null ? dsv.getTermsOfUseAndAccess().getSpecialPermissions() : null)
-                .add("restrictions", dsv.getTermsOfUseAndAccess().getRestrictions() != null ? dsv.getTermsOfUseAndAccess().getRestrictions() : null)
-                .add("citationRequirements", dsv.getTermsOfUseAndAccess().getCitationRequirements() != null ? dsv.getTermsOfUseAndAccess().getCitationRequirements() : null)
-                .add("depositorRequirements", dsv.getTermsOfUseAndAccess().getDepositorRequirements() != null ? dsv.getTermsOfUseAndAccess().getDepositorRequirements() : null)
-                .add("conditions", dsv.getTermsOfUseAndAccess().getConditions() != null ? dsv.getTermsOfUseAndAccess().getConditions() : null)
-                .add("disclaimer", dsv.getTermsOfUseAndAccess().getDisclaimer() != null ? dsv.getTermsOfUseAndAccess().getDisclaimer() : null)
-                .add("termsOfAccess", dsv.getTermsOfUseAndAccess().getTermsOfAccess() != null ? dsv.getTermsOfUseAndAccess().getTermsOfAccess() : null)
-                .add("dataAccessPlace", dsv.getTermsOfUseAndAccess().getDataAccessPlace() != null ? dsv.getTermsOfUseAndAccess().getDataAccessPlace() : null)
-                .add("originalArchive", dsv.getTermsOfUseAndAccess().getOriginalArchive() != null ? dsv.getTermsOfUseAndAccess().getOriginalArchive() : null)
-                .add("availabilityStatus", dsv.getTermsOfUseAndAccess().getAvailabilityStatus() != null ? dsv.getTermsOfUseAndAccess().getAvailabilityStatus() : null)
-                .add("contactForAccess", dsv.getTermsOfUseAndAccess().getContactForAccess() != null ? dsv.getTermsOfUseAndAccess().getContactForAccess() : null)
-                .add("sizeOfCollection", dsv.getTermsOfUseAndAccess().getSizeOfCollection() != null ? dsv.getTermsOfUseAndAccess().getSizeOfCollection() : null)
-                .add("studyCompletion", dsv.getTermsOfUseAndAccess().getStudyCompletion() != null ? dsv.getTermsOfUseAndAccess().getStudyCompletion() : null)
+                .add("versionNumber", dsv.getVersionNumber()).add("versionMinorNumber", dsv.getMinorVersionNumber())
+                .add("versionState", dsv.getVersionState().name()).add("versionNote", dsv.getVersionNote())
+                .add("archiveNote", dsv.getArchiveNote()).add("deaccessionLink", dsv.getDeaccessionLink())
+                .add("distributionDate", dsv.getDistributionDate()).add("productionDate", dsv.getProductionDate())
+                .add("UNF", dsv.getUNF()).add("archiveTime", format(dsv.getArchiveTime()))
+                .add("lastUpdateTime", format(dsv.getLastUpdateTime())).add("releaseTime", format(dsv.getReleaseTime()))
+                .add("createTime", format(dsv.getCreateTime()));
+        License license = dsv.getTermsOfUseAndAccess().getLicense();
+        if (license != null) {
+            // Standard license
+            bld.add("license", DatasetUtil.getLicenseName(dsv));
+        } else {
+            // Custom terms
+            bld.add("termsofuse", dsv.getTermsOfUseAndAccess().getTermsOfUse())
+                    .add("confidentialityDeclaration", dsv.getTermsOfUseAndAccess().getConfidentialityDeclaration())
+                    .add("specialPermissions", dsv.getTermsOfUseAndAccess().getSpecialPermissions())
+                    .add("restrictions", dsv.getTermsOfUseAndAccess().getRestrictions())
+                    .add("citationRequirements", dsv.getTermsOfUseAndAccess().getCitationRequirements())
+                    .add("depositorRequirements", dsv.getTermsOfUseAndAccess().getDepositorRequirements())
+                    .add("conditions", dsv.getTermsOfUseAndAccess().getConditions())
+                    .add("disclaimer", dsv.getTermsOfUseAndAccess().getDisclaimer());
+        }
+        bld.add("termsOfAccess", dsv.getTermsOfUseAndAccess().getTermsOfAccess())
+                .add("dataAccessPlace", dsv.getTermsOfUseAndAccess().getDataAccessPlace())
+                .add("originalArchive", dsv.getTermsOfUseAndAccess().getOriginalArchive())
+                .add("availabilityStatus", dsv.getTermsOfUseAndAccess().getAvailabilityStatus())
+                .add("contactForAccess", dsv.getTermsOfUseAndAccess().getContactForAccess())
+                .add("sizeOfCollection", dsv.getTermsOfUseAndAccess().getSizeOfCollection())
+                .add("studyCompletion", dsv.getTermsOfUseAndAccess().getStudyCompletion())
                 .add("fileAccessRequest", dsv.getTermsOfUseAndAccess().isFileAccessRequest());
 
         bld.add("metadataBlocks", jsonByBlocks(dsv.getDatasetFields()));
@@ -816,7 +796,8 @@ public class JsonPrinter {
             .add("shortDescription", license.getShortDescription())
             .add("uri", license.getUri().toString())
             .add("iconUrl", license.getIconUrl().toString())
-            .add("active", license.isActive());
+            .add("active", license.isActive())
+            .add("isDefault", license.isDefault());
     }
 
     public static Collector<String, JsonArrayBuilder, JsonArrayBuilder> stringsToJsonArray() {

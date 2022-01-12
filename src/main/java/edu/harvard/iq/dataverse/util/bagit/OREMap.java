@@ -190,15 +190,14 @@ public class OREMap {
                     terms.getLicense().getUri().toString());
         } else {
             addIfNotNull(aggBuilder, JsonLDTerm.termsOfUse, terms.getTermsOfUse());
+            addIfNotNull(aggBuilder, JsonLDTerm.confidentialityDeclaration, terms.getConfidentialityDeclaration());
+            addIfNotNull(aggBuilder, JsonLDTerm.specialPermissions, terms.getSpecialPermissions());
+            addIfNotNull(aggBuilder, JsonLDTerm.restrictions, terms.getRestrictions());
+            addIfNotNull(aggBuilder, JsonLDTerm.citationRequirements, terms.getCitationRequirements());
+            addIfNotNull(aggBuilder, JsonLDTerm.depositorRequirements, terms.getDepositorRequirements());
+            addIfNotNull(aggBuilder, JsonLDTerm.conditions, terms.getConditions());
+            addIfNotNull(aggBuilder, JsonLDTerm.disclaimer, terms.getDisclaimer());
         }
-        addIfNotNull(aggBuilder, JsonLDTerm.confidentialityDeclaration, terms.getConfidentialityDeclaration());
-        addIfNotNull(aggBuilder, JsonLDTerm.specialPermissions, terms.getSpecialPermissions());
-        addIfNotNull(aggBuilder, JsonLDTerm.restrictions, terms.getRestrictions());
-        addIfNotNull(aggBuilder, JsonLDTerm.citationRequirements, terms.getCitationRequirements());
-        addIfNotNull(aggBuilder, JsonLDTerm.depositorRequirements, terms.getDepositorRequirements());
-        addIfNotNull(aggBuilder, JsonLDTerm.conditions, terms.getConditions());
-        addIfNotNull(aggBuilder, JsonLDTerm.disclaimer, terms.getDisclaimer());
-
         // Add fileTermsofAccess as an object since it is compound
         JsonObjectBuilder fAccess = Json.createObjectBuilder();
         addIfNotNull(fAccess, JsonLDTerm.termsOfAccess, terms.getTermsOfAccess());

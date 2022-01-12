@@ -2,31 +2,6 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
-import edu.harvard.iq.dataverse.ControlledVocabularyValue;
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
-import edu.harvard.iq.dataverse.DatasetLock;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
-import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DataverseSession;
-import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.LicenseServiceBean;
-import edu.harvard.iq.dataverse.MetadataBlock;
-import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
-import edu.harvard.iq.dataverse.PermissionServiceBean;
-import edu.harvard.iq.dataverse.RoleAssignment;
-import edu.harvard.iq.dataverse.UserNotification;
-import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -174,7 +149,6 @@ import com.amazonaws.services.s3.model.PartETag;
 import com.beust.jcommander.Strings;
 
 import java.util.Map.Entry;
-import edu.harvard.iq.dataverse.FileMetadata;
 
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
@@ -243,9 +217,6 @@ public class Datasets extends AbstractApiBean {
     
     @Inject
     DataverseRoleServiceBean dataverseRoleService;
-
-    @Inject
-    LicenseServiceBean licenseServiceBean;
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -1612,19 +1583,24 @@ public class Datasets extends AbstractApiBean {
 
     @GET
     @Path("{id}/versions/{versionId}/customlicense")
-    public Response getCustomTermsTab(@PathParam("id") String id, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers){
+    public Response getCustomTermsTab(@PathParam("id") String id, @PathParam("versionId") String versionId,
+            @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         User user = session.getUser();
         String persistentId;
         try {
-            if (getDatasetVersionOrDie(createDataverseRequest(user), versionId, findDatasetOrDie(id), uriInfo, headers).getTermsOfUseAndAccess().getLicense() != null){
+            if (getDatasetVersionOrDie(createDataverseRequest(user), versionId, findDatasetOrDie(id), uriInfo, headers)
+                    .getTermsOfUseAndAccess().getLicense() != null) {
                 return error(Status.NOT_FOUND, "This Dataset has no custom license");
             }
             persistentId = getRequestParameter(":persistentId".substring(1));
-            if (versionId.equals(":draft")) versionId = "DRAFT";
+            if (versionId.equals(":draft")) {
+                versionId = "DRAFT";
+            }
         } catch (WrappedResponse wrappedResponse) {
-           return wrappedResponse.getResponse();
+            return wrappedResponse.getResponse();
         }
-        return Response.seeOther(URI.create(systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + persistentId + "&version=" + versionId + "&selectTab=termsTab")).build();
+        return Response.seeOther(URI.create(systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId="
+                + persistentId + "&version=" + versionId + "&selectTab=termsTab")).build();
     }
 
 
@@ -2424,7 +2400,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                                                 permissionSvc,
                                                 commandEngine,
                                                 systemConfig,
-                                                licenseServiceBean);
+                                                licenseSvc);
 
 
         //-------------------
@@ -3166,7 +3142,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                 this.permissionSvc,
                 this.commandEngine,
                 this.systemConfig,
-                this.licenseServiceBean
+                this.licenseSvc
         );
 
         return addFileHelper.addFiles(jsonData, dataset, authUser);

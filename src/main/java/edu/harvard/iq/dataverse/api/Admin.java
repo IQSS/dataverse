@@ -16,8 +16,6 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.EMailValidator;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.License;
-import edu.harvard.iq.dataverse.LicenseServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
@@ -158,8 +156,6 @@ public class Admin extends AbstractApiBean {
         ExplicitGroupServiceBean explicitGroupService;
         @EJB
         BannerMessageServiceBean bannerMessageService;
-        @EJB
-        LicenseServiceBean licenseService;
 
 	// Make the session available
 	@Inject
@@ -2064,86 +2060,5 @@ public class Admin extends AbstractApiBean {
                 .map(m -> jsonObjectBuilder().add("id", m.getId()).add("displayValue", m.getDisplayValue()))
                 .collect(toJsonArray()));
 
-    }
-    
-    @GET
-    @Path("/licenses")
-    public Response getLicenses() {
-        JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
-        for(License license : licenseService.listAll()) {
-            arrayBuilder.add(JsonPrinter.json(license));
-        }
-        return ok(arrayBuilder);
-    }
-
-    @GET
-    @Path("/licenses/{id}")
-    public Response getLicenseById(@PathParam("id") long id) {
-        License license = licenseService.getById(id);
-        if (license == null)
-            return error(Response.Status.NOT_FOUND, "License with ID " + id + " not found");
-        return ok(json(license));
-    }
-
-    @POST
-    @Path("/licenses")
-    public Response addLicense(License license) {
-        try {
-            licenseService.save(license);
-            return created("/api/admin/licenses", Json.createObjectBuilder().add("message", "License created"));
-        } catch (WrappedResponse e) {
-            Throwable cause = e.getCause();
-            if (cause instanceof IllegalArgumentException) {
-                return error(Response.Status.BAD_REQUEST, cause.getMessage());
-            } else if (cause instanceof IllegalStateException) {
-                return error(Response.Status.CONFLICT, cause.getMessage());
-            }
-            return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
-        }
-    }
-
-    @GET
-    @Path("/licenses/default")
-    public Response getDefault() {
-        return ok("Default license ID is " + licenseService.getDefault().getId());
-    }
-
-    @PUT
-    @Path("/licenses/default/{id}")
-    public Response setDefault(@PathParam("id") long id) {
-        try {
-            if (licenseService.setDefault(id) == 0)
-                return error(Response.Status.NOT_FOUND, "License with ID " + id + " not found");
-            return ok("Default license ID set to " + id);
-        } catch (WrappedResponse e) {
-            if(e.getCause() instanceof IllegalArgumentException) {
-                return badRequest(e.getCause().getMessage());
-            }
-            return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
-        }
-    }
-
-    @DELETE
-    @Path("/licenses/{id}")
-    public Response deleteLicenseById(@PathParam("id") long id) {
-        try {
-            License license = licenseService.getById(id);
-            if (license == null) {
-                return error(Status.NOT_FOUND, "License with ID " + id + " not found");
-            } else if (license.isDefault()) {
-                return error(Status.CONFLICT, "Please make sure the license is not the default before deleting it. ");
-            } else {
-                if (licenseService.deleteById(id) == 1) {
-                    return ok("OK. License with ID " + id + " was deleted.");
-                } else {
-                    return error(Status.CONFLICT, "Couldn't delete license with ID: " + id);
-                }
-            }
-        } catch (WrappedResponse e) {
-            if (e.getCause() instanceof IllegalStateException) {
-                return error(Response.Status.CONFLICT, e.getMessage());
-            }
-            return error(Status.INTERNAL_SERVER_ERROR, e.getMessage());
-        }
     }
 }

@@ -2705,50 +2705,54 @@ public class UtilIT {
                 .get("/api/datasets/" + datasetId + "/metadata");
         return response;
     }
-    static Response addLicense(String pathToJsonFile) {
+    
+    static Response addLicense(String pathToJsonFile, String apiToken) {
         String jsonIn = getDatasetJson(pathToJsonFile);
 
         Response addLicenseResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonIn)
                 .contentType("application/json")
-                .post("/api/admin/licenses");
+                .post("/api/licenses");
         return addLicenseResponse;
     }
 
     static Response getLicenses() {
 
         Response getLicensesResponse = given()
-                .get("/api/admin/licenses");
+                .get("/api/licenses");
         return getLicensesResponse;
     }
 
     static Response getLicenseById(Long id) {
 
         Response getLicenseResponse = given()
-                .get("/api/admin/licenses/"+id.toString());
+                .get("/api/licenses/"+id.toString());
         return getLicenseResponse;
     }
 
-    static Response getLicenseByName(String name) {
-
-        Response getLicenseResponse = given()
-                .get("/api/admin/licenses/name/"+name);
-        return getLicenseResponse;
-    }
-
-    static Response deleteLicenseById(Long id) {
+    static Response deleteLicenseById(Long id, String apiToken) {
 
         Response deleteLicenseResponse = given()
-                .delete("/api/admin/licenses/"+id.toString());
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/licenses/"+id.toString());
         return deleteLicenseResponse;
     }
 
-    static Response deleteLicenseByName(String name) {
-
-        Response deleteLicenseResponse = given()
-                .delete("/api/admin/licenses/name/"+name);
-        return deleteLicenseResponse;
+    static Response setDefaultLicenseById(Long id, String apiToken) {
+        Response defaultLicenseResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .put("/api/licenses/default/"+id.toString());
+        return defaultLicenseResponse;
     }
+    
+    static Response setLicenseActiveById(Long id, boolean state, String apiToken) {
+        Response activateLicenseResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .put("/api/licenses/"+id.toString() + "/:active/" + state);
+        return activateLicenseResponse;
+    }
+
 
     static Response updateDatasetJsonLDMetadata(Integer datasetId, String apiToken, String jsonLDBody, boolean replace) {
         Response response = given()

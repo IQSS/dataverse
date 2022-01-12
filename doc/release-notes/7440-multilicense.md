@@ -2,9 +2,9 @@
 
 Users can now select from a set of configured licenses in addition to or instead of the current Creative Commons CC0 choice or provide custom terms of use (if configured) for their datasets. Administrators can configure their Dataverse instance via API to allow any desired license as a choice and can enable/disable the option to allow custom terms. Administrators can also mark licenses as 'inactive' to disallow future use while keeping that license for existing datasets. By default, only the CC0 license will be preinstalled. Examples in the Guides show how to add additional licenses and specific examples are given for several Creative Commons licenses. **Note: Datasets in existing installations will automatically be updated to conform to new requirements that custom terms cannot be used with a standard license and that custom terms cannot be empty. Administrators may wish to manually update datasets with these conditions if they do not like the automated migration choices. See the Notes for Dataverse Installation Administrators and Additional Release Steps sections for further information.**
 
+This release also makes the license selection and/or custom terms more prominent when publishing and viewing a dataset and when downloading files.
 
 ## Major Use Cases and Infrastructure Enhancements
-
 
 - When creating/updating datasets, users can select from a set of standard licenses configured by the administrator or provide custom terms (if the installation is configured to allow them).
 
@@ -114,6 +114,12 @@ Once a standardized version of you Custom Terms are registered as a license, an 
         SET license_id = (SELECT license.id FROM license WHERE license.name = '<Your License Name>'), termsofuse=null, confidentialitydeclaration=null, t.specialpermissions=null, t.restrictions=null, citationrequirements=null, depositorrequirements=null, conditions=null, disclaimer=null 
         WHERE termsofuseandaccess.termsofuse LIKE '%<Unique phrase in your Terms of Use>%';
 
+## Backward Incompatibilities
 
+With the change to support multiple licenses, which can include cases where CC0 is not an option, and the decision to prohibit two previously possible cases (no license and no entry in the Terms of Use field, a standard license and entries in Terms of Use, Special Permissions and related fields), this release contains changes to the display, API payloads, and export metadata that are not backward compatible. These include:
+- Use of "CC0 1.0", the short name specified by Creative Commons, for what Dataverse has called the "CC0 Waiver" by default - in the display, API payloads, and export formats including a license name (note that installation admins can alter the license name in the database to maintain the original "CC0 Waiver" text)
+- Schema.org metadata in page headers and the Schema.org json-ld metadata export now reference the license via URL (which should avoid the current warning from Google about an invalid license object in the page metadata)
+- Metadata exports and import methods (including Sword) use either the license name (e.g. in the JSON export) or URL (e.g. in the OAI_ORE export) rather than a hardcoded value of "CC0" or "CC0 Waiver" currently (if the CC0 license is available, it's default name would be "CC0 1.0")
+- API calls (e.g. for import, migrate) that specify both a license and custom terms will be considered an error, as would having no license and an empty/blank value for Terms of Use
 
-    select CONCAT('doi:', dvo.authority, '/', dvo.identifier), v.alias as dataverse_alias, case when versionstate='RELEASED' then concat(dv.versionnumber, '.', dv.minorversionnumber) else versionstate END  as version, dv.id as datasetversion_id, t.id as termsofuseandaccess_id, t.termsofuse, t.confidentialitydeclaration, t.specialpermissions, t.restrictions, t.citationrequirements, t.depositorrequirements, t.conditions, t.disclaimer from dvobject dvo, termsofuseandaccess t, datasetversion dv, dataverse v where dv.dataset_id=dvo.id and dv.termsofuseandaccess_id=t.id and dvo.owner_id=v.id and t.license_id=1 and not (t.termsofuse is null and t.confidentialitydeclaration is null and t.specialpermissions is null and t.restrictions is null and citationrequirements is null and t.depositorrequirements is null and t.conditions is null and t.disclaimer is null);
+Also note that, since CC0 Waiver is no longer a hardcoded option, text strings reference it have been edited or removed from Bundle.properties. This means that the ability to provide translations of the CC0 license name/description has been removed. The initial release of multiple license functionality doesn't include an alternative mechanism to provide translations of license names/descriptions, so this is a regression in capability. (The instructions and help information about license and terms remains internationalizable, it is only the name/description of the licenses themselves that cannot yet be translated).

@@ -36,6 +36,32 @@ You would repeat the steps above for all of your app servers. If users seem to b
 
 Please note that :ref:`network-ports` under the Configuration section has more information on fronting your app server with Apache. The :doc:`shibboleth` section talks about the use of ``ProxyPassMatch``.
 
+Licensing
+---------
+
+Dataverse allows superusers to specify the list of allowed licenses, to define which license is the default, to decide whether users can instead define custom terms, and to mar obsolete licenses as 'inactive' to stop further use of them.
+These can be accomplished using the :ref:`:native API <license-management-api>` and the :ref:`:AllowCustomTermsOfUse <:AllowCustomTermsOfUse>` setting.
+
+### Standardizing Custom Licenses:
+
+In addition, if many datasets use the same set of Custom Terms, it may make sense to create and register a standard license including those terms. Doing this would include:
+- Creating and posting an external document that includes the custom terms, i.e. an HTML document with sections corresponding to the terms fields that are used.
+- Defining a name, short description, URL (where it is posted), and optionally an icon URL for this license
+- Using the Dataverse API to register the new license as one of the options available in your installation
+- Using the API to make sure the license is active and deciding whether the license should also be the default
+- Once the license is registered with Dataverse, making an SQL update to change datasets/versions using that license to reference it instead of having their own copy of those custom terms.
+
+The benefits of this approach are:
+- usability: the license can be selected for new datasets without allowing custom terms and without users having to cut/paste terms or collection administrators having to configure templates with those terms
+- efficiency: custom terms are stored per dataset whereas licenses are registered once and all uses of it refer to the same object and external URL
+- security: with the license terms maintained external to Dataverse, users cannot edit specific terms and curators do not need to check for edits
+
+Once a standardized version of you Custom Terms are registered as a license, an SQL update like the following can be used to have datasets use it:
+
+    UPDATE termsofuseandaccess
+        SET license_id = (SELECT license.id FROM license WHERE license.name = '<Your License Name>'), termsofuse=null, confidentialitydeclaration=null, t.specialpermissions=null, t.restrictions=null, citationrequirements=null, depositorrequirements=null, conditions=null, disclaimer=null 
+        WHERE termsofuseandaccess.termsofuse LIKE '%<Unique phrase in your Terms of Use>%';
+
 Optional Components
 -------------------
 

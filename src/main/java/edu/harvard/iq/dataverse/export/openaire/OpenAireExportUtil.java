@@ -1134,7 +1134,7 @@ public class OpenAireExportUtil {
         writeRightsHeader(xmlw, language);
         if (datasetVersionDTO.getLicense() != null) {
             xmlw.writeAttribute("rightsURI", datasetVersionDTO.getLicense().getUri());
-            xmlw.writeCharacters(datasetVersionDTO.getLicense().getLabel());
+            xmlw.writeCharacters(datasetVersionDTO.getLicense().getName());
         }
         xmlw.writeEndElement(); // </rights>
         xmlw.writeEndElement(); // </rightsList>
