@@ -72,7 +72,7 @@
         <c:if test="#{dsfvIndex!=0}">
             <f:passThroughAttribute name="aria-label" value="#{bundle['dataset.additionalEntry']}" />
         </c:if>
-        </p:inputArea>
+        </p:inputTextarea>
     <p:watermark for="description" value="#{dsfv.datasetField.datasetFieldType.localeWatermark}"></p:watermark>
 
     <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{dsfvIndex eq 0 and !empty dsfv.datasetField.validationMessage}">
