@@ -261,7 +261,7 @@ body.widget-view #dataverse-header-block {padding-top:0px;}
 #breadcrumbNavBlock a[id^='breadcrumbLnkTree'] span.glyphicon-chevron-down {vertical-align:middle;padding-bottom:2px;}
 #breadcrumbNavBlock > .ui-panel-content {overflow:hidden;}
 #breadcrumbNavBlock.panelLayoutBlock > .ui-widget-content {border-bottom: 0;}
-#breadcrumbNavBlock .breadcrumbCarrot {float:left; margin:0 .4em; color:#B3B3B3;}
+#breadcrumbNavBlock .breadcrumbCarrot {float:left; margin:0 .4em; color:#757575;}
 #breadcrumbNavBlock div.dropdown-menu {padding-right:.5em; min-width:280px;}
 #breadcrumbNavBlock .ui-tree {width: auto;}
 #breadcrumbNavBlock div.ui-tree.ui-widget-content {border:0;}
