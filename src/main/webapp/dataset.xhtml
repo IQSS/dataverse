@@ -1576,6 +1576,7 @@
                                 <h:outputText value="#{computeCartDatasetList.value}"/>
                             </h:column>
                             <h:column>
+                                <f:facet name="header">#{bundle['dataset.compute.computeBatchChange']}</f:facet>
                                 <p:commandButton value="#{bundle['dataset.compute.computeBatchRemove']}" action="#{DatasetPage.removeCartItem(computeCartDatasetList.key, computeCartDatasetList.value)}" update=":datasetForm,:messagePanel"/>
                             </h:column>
                         </h:dataTable>
@@ -1794,7 +1795,7 @@
                             </button>
                         </div>
                     </p:dialog>
-                    <p:dialog id="maynotPublishParent" header="#{bundle['dataset.publish.header']}" widgetVar="maynotPublishParent" modal="true">
+                    <p:dialog id="maynotPublishParent" header="#{bundle['dataset.publish.header']}" widgetVar="maynotPublishParent" modal="true"  rendered="#{DatasetPage.dataset.owner.owner != null}">
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-exclamation-sign"/>
                             <h:outputFormat value="#{bundle['dataset.mayNotPublish.twoGenerations']}" escape="false">
