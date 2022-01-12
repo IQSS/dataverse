@@ -1450,17 +1450,6 @@
                         </div>
                     </p:dialog>
                     <!-- END: Request Access Sign Up/Log In Button -->
-                    <p:dialog id="mapDataDialog" header="#{bundle['file.mapData.unpublished.header']}" widgetVar="mapDataDialog" modal="true">
-                        <p class="help-block">
-                            <span class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['file.mapData.unpublished.message']}</span>
-                        </p>
-                        <div class="button-block">
-                            <button type="button" class="btn btn-default" onclick="PF('mapDataDialog').hide();
-                                    PF('blockDatasetForm').hide();">
-                                #{bundle.close}
-                            </button>
-                        </div>
-                    </p:dialog>
                     <p:dialog id="downloadPopup" styleClass="largePopUp" header="#{bundle['file.downloadDialog.header']}" widgetVar="downloadPopup" modal="true">
                         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                         <ui:include src="file-download-popup-fragment.xhtml">
