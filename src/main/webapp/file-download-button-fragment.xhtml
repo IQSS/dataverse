@@ -28,7 +28,7 @@
                        rendered="#{fileDownloadHelper.session.user.authenticated}">
             <p:commandLink styleClass="btn-request #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? 'italic'  : ''}"
                         actionListener="#{fileDownloadHelper.handleCommandLinkClick(fileMetadata)}"
-                        update="@([id$=requestAccessConsolidated]), @([id$=requestPanel])"
+                        update="@([id$=requestAccessConsolidated]), @([id$=requestPanel]),  @([id$=filesTable]), @([id$=messagePanel])"
                         id="requestAccessConsolidated"
                         disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
                 #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
