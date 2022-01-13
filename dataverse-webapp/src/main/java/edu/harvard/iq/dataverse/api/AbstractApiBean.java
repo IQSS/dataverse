@@ -598,8 +598,9 @@ public abstract class AbstractApiBean {
     protected Response accepted() {
         return Response.accepted()
                 .entity(Json.createObjectBuilder()
-                                .add("status", STATUS_WF_IN_PROGRESS).build()
-                ).build();
+                        .add("status", STATUS_WF_IN_PROGRESS)
+                        .build())
+                .build();
     }
 
     protected Response notFound(String msg) {
@@ -630,6 +631,10 @@ public abstract class AbstractApiBean {
 
     protected Response unauthorized(String message) {
         return error(Status.UNAUTHORIZED, message);
+    }
+
+    protected Response internalServerError(String message) {
+        return error(Status.INTERNAL_SERVER_ERROR, message);
     }
 
     protected static Response error(Status status, String message) {

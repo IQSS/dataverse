@@ -116,7 +116,7 @@ public class MyData extends AbstractApiBean {
         MyDataFinder myDataFinder = new MyDataFinder(rolePermissionHelper, roleAssigneeService, dvObjectServiceBean);
         myDataFinder.runFindDataSteps(filterParams);
         if (myDataFinder.hasError()) {
-            return error(Response.Status.INTERNAL_SERVER_ERROR, myDataFinder.getErrorMessage());
+            return internalServerError(myDataFinder.getErrorMessage());
         }
 
         // ---------------------------------
@@ -156,7 +156,7 @@ public class MyData extends AbstractApiBean {
             }
         } catch (SearchException ex) {
             logger.severe("Solr SearchException: " + ex.getMessage());
-            return error(Response.Status.INTERNAL_SERVER_ERROR, "Sorry! There was an error with the search service.");
+            return internalServerError("Sorry! There was an error with the search service.");
         }
 
         // ---------------------------------

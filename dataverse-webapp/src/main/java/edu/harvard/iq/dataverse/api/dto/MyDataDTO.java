@@ -271,7 +271,7 @@ public class MyDataDTO {
         public MyDataDTO create(SolrQueryResponse response, Pager pager, MyDataFilterParams filterParams) {
             MyDataDTO created = new MyDataDTO();
             created.setPagination(new PagerDTO.Converter().convert(pager));
-            created.setItems(new SolrSearchResultDTO.Creator(dataverseDao, roleTagRetriever).createResults(response));
+            created.setItems(new SolrSearchResultDTO.Creator(dataverseDao, roleTagRetriever).createResultsForMyData(response));
             created.setTotalCount(response.getNumResultsFound());
             created.setStart(response.getResultsStart());
             created.setSearchTerm(filterParams.getSearchTerm());

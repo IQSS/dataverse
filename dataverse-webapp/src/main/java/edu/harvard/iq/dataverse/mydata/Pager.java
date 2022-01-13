@@ -2,11 +2,7 @@ package edu.harvard.iq.dataverse.mydata;
 
 import edu.harvard.iq.dataverse.search.SearchConstants;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
 import java.text.NumberFormat;
-import java.util.Arrays;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -119,10 +115,6 @@ public class Pager {
         return NumberFormat.getInstance().format(count);
     }
 
-    public JsonObjectBuilder asJsonObjectBuilder() {
-        return asJsonObjectBuilderCore(false);
-    }
-
     // -------------------- PRIVATE --------------------
 
     private void makePageStats() {
@@ -161,46 +153,6 @@ public class Pager {
         if (remainingCards > 0) {
             numberNextResults = Math.min(remainingCards, docsPerPage);
         }
-    }
-
-    private JsonObjectBuilder asJsonObjectBuilderCore(boolean useCardTerms) {
-        JsonObjectBuilder jsonPageInfo = Json.createObjectBuilder();
-
-        jsonPageInfo.add("isNecessary", isPagerNecessary())
-                .add("numResults", numResults)
-                .add("numResultsString", addCommasToNumber(numResults))
-                .add("docsPerPage", docsPerPage)
-                .add("selectedPageNumber", selectedPageNumber)
-                .add("pageCount", pageCount)
-                .add("hasPreviousPageNumber", hasPreviousPageNumber())
-                .add("previousPageNumber", previousPageNumber)
-                .add("hasNextPageNumber", hasNextPageNumber())
-                .add("nextPageNumber", nextPageNumber);
-
-        if (useCardTerms) {
-            jsonPageInfo.add("startCardNumber", startCardNumber)
-                    .add("endCardNumber", endCardNumber)
-                    .add("startCardNumberString", addCommasToNumber(startCardNumber))
-                    .add("endCardNumberString", addCommasToNumber(endCardNumber))
-                    .add("remainingCards", remainingCards);
-        } else {
-            jsonPageInfo.add("startResultNumber", startCardNumber)
-                    .add("endResultNumber", endCardNumber)
-                    .add("startResultNumberString", addCommasToNumber(startCardNumber))
-                    .add("endResultNumberString", addCommasToNumber(endCardNumber))
-                    .add("remainingResults", remainingCards);
-        }
-
-        jsonPageInfo.add("numberNextResults", numberNextResults);
-
-        JsonArrayBuilder jsonPageNumberArrayBuilder = Json.createArrayBuilder();
-        if (pageNumberList != null) {
-            Arrays.stream(pageNumberList)
-                    .forEach(jsonPageNumberArrayBuilder::add);
-            jsonPageInfo.add("pageNumberList", jsonPageNumberArrayBuilder);
-        }
-
-        return jsonPageInfo;
     }
 
     private void makePageNumberList() {

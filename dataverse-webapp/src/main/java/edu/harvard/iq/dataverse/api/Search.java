@@ -1,43 +1,35 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataverseDao;
-import edu.harvard.iq.dataverse.DvObjectServiceBean;
+import edu.harvard.iq.dataverse.api.dto.SearchDTO;
+import edu.harvard.iq.dataverse.api.dto.SolrSearchResultDTO;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
 import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.search.SearchConstants;
-import edu.harvard.iq.dataverse.search.query.SearchForTypes;
-import edu.harvard.iq.dataverse.search.query.SearchObjectType;
-import edu.harvard.iq.dataverse.search.query.SortBy;
-import edu.harvard.iq.dataverse.search.response.FacetCategory;
-import edu.harvard.iq.dataverse.search.response.FacetLabel;
-import edu.harvard.iq.dataverse.search.response.SolrQueryResponse;
-import edu.harvard.iq.dataverse.search.response.SolrSearchResult;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SearchUtil;
-import edu.harvard.iq.dataverse.search.index.SolrIndexServiceBean;
+import edu.harvard.iq.dataverse.search.query.SearchForTypes;
+import edu.harvard.iq.dataverse.search.query.SearchObjectType;
+import edu.harvard.iq.dataverse.search.query.SortBy;
+import edu.harvard.iq.dataverse.search.response.SolrQueryResponse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.ejb.EJB;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * User-facing documentation:
@@ -52,10 +44,8 @@ public class Search extends AbstractApiBean {
     SearchServiceBean searchService;
     @EJB
     DataverseDao dataverseDao;
-    @EJB
-    DvObjectServiceBean dvObjectService;
-    @EJB
-    SolrIndexServiceBean SolrIndexService;
+
+    // -------------------- LOGIC --------------------
 
     @GET
     public Response search(
@@ -70,125 +60,91 @@ public class Search extends AbstractApiBean {
             @QueryParam("show_facets") boolean showFacets,
             @QueryParam("fq") final List<String> filterQueries,
             @QueryParam("show_entity_ids") boolean showEntityIds,
-            @QueryParam("show_api_urls") boolean showApiUrls,
-            @Context HttpServletResponse response
-    ) {
-
-        User user;
-        try {
-            user = getUser();
-        } catch (WrappedResponse ex) {
-            return ex.getResponse();
+            @QueryParam("show_api_urls") boolean showApiUrls)
+            throws WrappedResponse {
+        if (query == null) {
+            return allowCors(badRequest("q parameter is missing"));
         }
 
-        if (query != null) {
+        User user = getUser();
+        SearchForTypes typesToSearch = types.isEmpty() ? SearchForTypes.all() : getSearchForFromTypes(types);
 
-            // sanity checking on user-supplied arguments
-            SortBy sortBy;
-            int numResultsPerPage;
-            List<Dataverse> dataverseSubtrees = new ArrayList<>();
-            SearchForTypes typesToSearch = SearchForTypes.all();
+        SortBy sortBy;
+        try {
+            sortBy = SearchUtil.getSortBy(sortField, sortOrder);
+        } catch (Exception e) {
+            return badRequest(e.getMessage());
+        }
 
-            try {
-                if (!types.isEmpty()) {
-                    typesToSearch = getSearchForFromTypes(types);
-                }
-                sortBy = SearchUtil.getSortBy(sortField, sortOrder);
-                numResultsPerPage = getNumberOfResultsPerPage(numResultsPerPageRequested);
+        int numResultsPerPage = getNumberOfResultsPerPage(numResultsPerPageRequested);
 
-                // we have to add "" (root) otherwise there is no permissions check
-                if (subtrees.isEmpty()) {
-                    dataverseSubtrees.add(getSubtree(""));
-                } else {
-                    for (String subtree : subtrees) {
-                        dataverseSubtrees.add(getSubtree(subtree));
-                    }
-                }
-                filterQueries.add(getFilterQueryFromSubtrees(dataverseSubtrees));
-
-                if (filterQueries.isEmpty()) { //Extra sanity check just in case someone else touches this
-                    throw new IOException("Filter is empty, which should never happen, as this allows unfettered searching of our index");
-                }
-
-            } catch (Exception ex) {
-                return error(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
-            }
-
-            SolrQueryResponse solrQueryResponse;
-            try {
-                solrQueryResponse = searchService.search(createDataverseRequest(user),
-                                                         dataverseSubtrees,
-                                                         query,
-                                                         typesToSearch,
-                                                         filterQueries,
-                                                         sortBy.getField(),
-                                                         sortBy.getOrder(),
-                                                         paginationStart,
-                                                         numResultsPerPage,
-                                                         false
-                );
-            } catch (SearchException ex) {
-                Throwable cause = ex;
-                StringBuilder sb = new StringBuilder();
-                sb.append(cause + " ");
-                while (cause.getCause() != null) {
-                    cause = cause.getCause();
-                    sb.append(cause.getClass().getCanonicalName() + " ");
-                    sb.append(cause + " ");
-                    // if you search for a colon you see RemoteSolrException: org.apache.solr.search.SyntaxError: Cannot parse ':'
-                }
-                String message = "Exception running search for [" + query + "] with filterQueries " + filterQueries + " and paginationStart [" + paginationStart + "]: " + sb.toString();
-                logger.info(message);
-                return error(Response.Status.INTERNAL_SERVER_ERROR, message);
-            }
-
-            JsonArrayBuilder itemsArrayBuilder = Json.createArrayBuilder();
-            List<SolrSearchResult> solrSearchResults = solrQueryResponse.getSolrSearchResults();
-            for (SolrSearchResult solrSearchResult : solrSearchResults) {
-                itemsArrayBuilder.add(solrSearchResult.toJsonObject(showRelevance, showEntityIds, showApiUrls));
-            }
-
-            JsonObjectBuilder spelling_alternatives = Json.createObjectBuilder();
-            for (Map.Entry<String, List<String>> entry : solrQueryResponse.getSpellingSuggestionsByToken().entrySet()) {
-                spelling_alternatives.add(entry.getKey(), entry.getValue().toString());
-            }
-
-            JsonArrayBuilder facets = Json.createArrayBuilder();
-            JsonObjectBuilder facetCategoryBuilder = Json.createObjectBuilder();
-            for (FacetCategory facetCategory : solrQueryResponse.getFacetCategoryList()) {
-                JsonObjectBuilder facetCategoryBuilderFriendlyPlusData = Json.createObjectBuilder();
-                JsonArrayBuilder facetLabelBuilderData = Json.createArrayBuilder();
-                for (FacetLabel facetLabel : facetCategory.getFacetLabels()) {
-                    JsonObjectBuilder countBuilder = Json.createObjectBuilder();
-                    countBuilder.add(facetLabel.getName(), facetLabel.getCount());
-                    facetLabelBuilderData.add(countBuilder);
-                }
-                facetCategoryBuilderFriendlyPlusData.add("friendly", facetCategory.getFriendlyName());
-                facetCategoryBuilderFriendlyPlusData.add("labels", facetLabelBuilderData);
-                facetCategoryBuilder.add(facetCategory.getName(), facetCategoryBuilderFriendlyPlusData);
-            }
-            facets.add(facetCategoryBuilder);
-
-            JsonObjectBuilder value = Json.createObjectBuilder()
-                    .add("q", query)
-                    .add("total_count", solrQueryResponse.getNumResultsFound())
-                    .add("start", solrQueryResponse.getResultsStart())
-                    .add("spelling_alternatives", spelling_alternatives)
-                    .add("items", itemsArrayBuilder.build());
-            if (showFacets) {
-                value.add("facets", facets);
-            }
-            value.add("count_in_response", solrSearchResults.size());
-            /**
-             * @todo Returning the fq might be useful as a troubleshooting aid
-             * but we don't want to expose the raw dataverse database ids in
-             * "subtree_ss" path like "/2/3".
-             */
-//            value.add("fq_provided", filterQueries.toString());
-            response.setHeader("Access-Control-Allow-Origin", "*");
-            return allowCors(ok(value));
+        List<Dataverse> dataverseSubtrees = new ArrayList<>();
+        // we have to add "" (root) otherwise there is no permissions check
+        if (subtrees.isEmpty()) {
+            dataverseSubtrees.add(getSubtree(""));
         } else {
-            return allowCors(error(Response.Status.BAD_REQUEST, "q parameter is missing"));
+            for (String subtree : subtrees) {
+                dataverseSubtrees.add(getSubtree(subtree));
+            }
+        }
+        filterQueries.add(getFilterQueryFromSubtrees(dataverseSubtrees));
+
+        if (filterQueries.isEmpty()) {
+            return internalServerError("Filter is empty, which should never happen, as this allows unfettered searching of our index");
+        }
+
+        SolrQueryResponse solrQueryResponse;
+        try {
+            solrQueryResponse = searchService.search(createDataverseRequest(user),
+                                                     dataverseSubtrees,
+                                                     query,
+                                                     typesToSearch,
+                                                     filterQueries,
+                                                     sortBy.getField(),
+                                                     sortBy.getOrder(),
+                                                     paginationStart,
+                                                     numResultsPerPage,
+                                                     false);
+        } catch (SearchException se) {
+            Throwable cause = se;
+            StringBuilder sb = new StringBuilder().append(cause).append(" ");
+            while (cause.getCause() != null) {
+                cause = cause.getCause();
+                sb.append(cause.getClass().getCanonicalName()).append(" ")
+                        .append(cause).append(" ");
+            }
+            String message = String.format("Exception running search for [%s] with filterQueries %s and paginationStart [%d]: %s",
+                    query, filterQueries, paginationStart, sb.toString());
+            logger.info(message);
+            return internalServerError(message);
+        }
+
+        SearchDTO dto = new SearchDTO.Creator().create(solrQueryResponse);
+        removeUnnecessaryDataFromJson(dto, showRelevance, showEntityIds, showApiUrls, showFacets);
+        return allowCors(ok(dto));
+    }
+
+    // -------------------- PRIVATE --------------------
+
+    private void removeUnnecessaryDataFromJson(SearchDTO result,
+                   boolean showRelevance, boolean showEntityIds, boolean showApiUrls, boolean showFacets) {
+        if (!showFacets) {
+            result.getFacets().clear();
+        }
+        if (showRelevance && showApiUrls && showEntityIds) {
+            return;
+        }
+        for (SolrSearchResultDTO solrResult : result.getItems()) {
+            if (!showRelevance) {
+                solrResult.setMatches(Collections.emptyList());
+                solrResult.setScore(null);
+            }
+            if (!showEntityIds) {
+                solrResult.setEntityId(null);
+            }
+            if (!showApiUrls) {
+                solrResult.setApiUrl(null);
+            }
         }
     }
 
@@ -213,67 +169,33 @@ public class Search extends AbstractApiBean {
                 throw ex;
             }
         }
-        if (nonPublicSearchAllowed()) {
-            return userToExecuteSearchAs;
-        } else {
-            return GuestUser.get();
-        }
+        return nonPublicSearchAllowed() ? userToExecuteSearchAs : GuestUser.get();
     }
 
-    public boolean nonPublicSearchAllowed() {
+    private boolean nonPublicSearchAllowed() {
         return settingsSvc.isTrueForKey(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
     }
 
-    public boolean tokenLessSearchAllowed() {
+    private boolean tokenLessSearchAllowed() {
         boolean tokenLessSearchAllowed = !settingsSvc.isTrueForKey(SettingsServiceBean.Key.SearchApiRequiresToken);
         logger.fine("tokenLessSearchAllowed: " + tokenLessSearchAllowed);
         return tokenLessSearchAllowed;
     }
 
-    private boolean getDataRelatedToMe() {
-        /**
-         * @todo support Data Related To Me:
-         * https://github.com/IQSS/dataverse/issues/1299
-         */
-        boolean dataRelatedToMe = false;
-        return dataRelatedToMe;
-    }
-
     private int getNumberOfResultsPerPage(int numResultsPerPage) {
-        /**
-         * @todo should maxLimit be configurable?
-         */
         int maxLimit = 1000;
         if (numResultsPerPage == 0) {
-            /**
-             * @todo should defaultLimit be configurable?
-             */
-            int defaultLimit = 10;
-            return defaultLimit;
+            return 10; // default limit
         } else if (numResultsPerPage < 0) {
             throw new IllegalArgumentException(numResultsPerPage + " results per page requested but can not be less than zero.");
         } else if (numResultsPerPage > maxLimit) {
-            /**
-             * @todo numbers higher than 2147483647 emit HTML rather than the
-             * expected JSON response below.
-             *
-             * It also returns a 404 but
-             * http://docs.oracle.com/javaee/7/tutorial/jaxrs002.htm says 'an
-             * HTTP 400 ("Client Error") response is returned' if an int "cannot
-             * be parsed as a 32-bit signed integer".
-             *
-             * Is this perhaps due a change to web.xml and all the prettyfaces
-             * stuff in https://github.com/IQSS/dataverse/issues/958 ?
-             *
-             */
             throw new IllegalArgumentException(numResultsPerPage + " results per page requested but max limit is " + maxLimit + ".");
         } else {
-            // ok, fine, you get what you asked for
             return numResultsPerPage;
         }
     }
 
-    private SearchForTypes getSearchForFromTypes(List<String> types) throws Exception {
+    private SearchForTypes getSearchForFromTypes(List<String> types) throws WrappedResponse {
         List<SearchObjectType> typeRequested = new ArrayList<>();
         List<String> validTypes = Arrays.asList(SearchConstants.DATAVERSE, SearchConstants.DATASET, SearchConstants.FILE);
         for (String type : types) {
@@ -286,55 +208,35 @@ public class Search extends AbstractApiBean {
                     typeRequested.add(SearchObjectType.FILES);
                 }
             } else {
-                throw new Exception("Invalid type '" + type + "'. Must be one of " + validTypes);
+                throw new WrappedResponse(badRequest(String.format("Invalid type '%s'. Must be one of %s", type, validTypes)));
             }
         }
         return SearchForTypes.byTypes(typeRequested.toArray(new SearchObjectType[0]));
     }
 
-    //Only called when there is content
+    private String getFilterQueryFromSubtrees(List<Dataverse> subtrees) {
+        String subtreesFilter = subtrees.stream()
+                .filter(s -> !s.equals(dataverseDao.findRootDataverse()))
+                .map(s -> "\"" + dataverseDao.determineDataversePath(s) + "\"")
+                .collect(Collectors.joining(" OR "));
 
-    /**
-     * @todo (old) Should filterDownToSubtree logic be centralized in
-     * SearchServiceBean?
-     */
-    private String getFilterQueryFromSubtrees(List<Dataverse> subtrees) throws Exception {
-        String subtreesFilter = "";
-
-        for (Dataverse dv : subtrees) {
-            if (!dv.equals(dataverseDao.findRootDataverse())) {
-                String dataversePath = dataverseDao.determineDataversePath(dv);
-
-                subtreesFilter += "\"" + dataversePath + "\" OR ";
-
-            }
-        }
-        try {
-            subtreesFilter = subtreesFilter.substring(0, subtreesFilter.lastIndexOf("OR"));
-        } catch (StringIndexOutOfBoundsException ex) {
-            //This case should only happen the root subtree is searched
-            //and there are no ORs in the string
-            subtreesFilter = "";
-        }
-
-        if (!subtreesFilter.equals("")) {
+        if (StringUtils.isNotEmpty(subtreesFilter)) {
             subtreesFilter = SearchFields.SUBTREE + ":(" + subtreesFilter + ")";
         }
 
         return subtreesFilter;
     }
 
-    private Dataverse getSubtree(String alias) throws Exception {
+    private Dataverse getSubtree(String alias) throws WrappedResponse {
         if (StringUtils.isBlank(alias)) {
             return dataverseDao.findRootDataverse();
+        }
+
+        Dataverse subtree = dataverseDao.findByAlias(alias);
+        if (subtree != null) {
+            return subtree;
         } else {
-            Dataverse subtree = dataverseDao.findByAlias(alias);
-            if (subtree != null) {
-                return subtree;
-            } else {
-                throw new Exception("Could not find dataverse with alias " + alias);
-            }
+            throw new WrappedResponse(notFound("Could not find dataverse with alias " + alias));
         }
     }
-
 }

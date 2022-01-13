@@ -39,22 +39,22 @@ public class SolrSearchResultDTOCreatorTest {
     @BeforeEach
     void setUp() {
         creator = new SolrSearchResultDTO.Creator(dataverseDao, roleTagRetriever);
-        Mockito.when(dataverseDao.getParentAliasesForIds(Mockito.anyList()))
-                .thenAnswer(this::getParentAliasesForIds);
-        Mockito.when(roleTagRetriever.getRolesForCard(Mockito.anyList()))
-                .thenAnswer(this::getRolesForCard);
     }
 
     // -------------------- TESTS --------------------
 
     @Test
-    void create() {
+    void createResultsForMyData() {
         // given
+        Mockito.when(dataverseDao.getParentAliasesForIds(Mockito.anyList()))
+                .thenAnswer(this::getParentAliasesForIds);
+        Mockito.when(roleTagRetriever.getRolesForCard(Mockito.anyList()))
+                .thenAnswer(this::getRolesForCard);
         SolrQueryResponse response = new SolrQueryResponse(new SolrQuery());
         response.setSolrSearchResults(createSolrResults());
 
         // when
-        List<SolrSearchResultDTO> results = creator.createResults(response);
+        List<SolrSearchResultDTO> results = creator.createResultsForMyData(response);
 
         // then
         assertThat(results).extracting(
@@ -68,6 +68,27 @@ public class SolrSearchResultDTOCreatorTest {
                     tuple(2L, "Name", "file", "Parent1", "Role1 Role2 Role3"),
                     tuple(3L, "Name", "dataverse", "Parent2", "Role1"),
                     tuple(4L, "Title", "dataset", "Parent1", "Role1 Role2"));
+    }
+
+    @Test
+    void createResultsForSearch() {
+        // given
+        SolrQueryResponse response = new SolrQueryResponse(new SolrQuery());
+        response.setSolrSearchResults(createSolrResults());
+
+        // when
+        List<SolrSearchResultDTO> results = SolrSearchResultDTO.Creator.createResultsForSearch(response);
+
+        // then
+        assertThat(results).extracting(
+                SolrSearchResultDTO::getEntityId,
+                SolrSearchResultDTO::getName,
+                SolrSearchResultDTO::getType)
+                .containsExactly(
+                        tuple(1L, "Title", "dataset"),
+                        tuple(2L, "Name", "file"),
+                        tuple(3L, "Name", "dataverse"),
+                        tuple(4L, "Title", "dataset"));
     }
 
     // -------------------- LOGIC --------------------
@@ -105,6 +126,6 @@ public class SolrSearchResultDTOCreatorTest {
                         i -> LongStream.rangeClosed(1, i % 3 + 1)
                                 .mapToObj(id -> "Role" + id)
                                 .collect(Collectors.toList()),
-                        (next, prev) -> next));
+                        (prev, next) -> next));
     }
 }

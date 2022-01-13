@@ -116,7 +116,7 @@ public class RoleTagRetriever {
                 .collect(Collectors.toMap(
                         id -> id,
                         id -> finalIdToRolesHash.getOrDefault(id, Collections.emptyList()),
-                    (next, prev) -> next));
+                    (prev, next) -> next));
     }
 
     /**

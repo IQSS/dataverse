@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.harvard.iq.dataverse.DataverseDao;
+import edu.harvard.iq.dataverse.common.Util;
 import edu.harvard.iq.dataverse.mydata.RoleTagRetriever;
+import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SolrField;
 import edu.harvard.iq.dataverse.search.query.SearchObjectType;
 import edu.harvard.iq.dataverse.search.query.SearchPublicationStatus;
@@ -75,7 +77,6 @@ public class SolrSearchResultDTO {
     @JsonProperty("deaccession_reason")
     private String deaccessionReason;
 
-    @JsonProperty("citation_html")
     private String citationHtml;
 
     @JsonProperty("identifier_of_dataverse")
@@ -519,16 +520,16 @@ public class SolrSearchResultDTO {
 
         // -------------------- LOGIC --------------------
 
-        public List<SolrSearchResultDTO> createResults(SolrQueryResponse response) {
+        public List<SolrSearchResultDTO> createResultsForMyData(SolrQueryResponse response) {
             List<SolrSearchResultDTO> results = response.getSolrSearchResults().stream()
-                    .map(this::createResult)
+                    .map(r -> fillAdditionalFieldsForMyData(createBasicResultDTO(r), r))
                     .collect(Collectors.toList());
             List<Long> nonFileIds = results.stream()
                     .filter(r -> !SearchObjectType.FILES.getSolrValue().equals(r.getType()))
                     .map(SolrSearchResultDTO::getEntityId)
                     .collect(Collectors.toList());
             Map<Long, String> nonFileIdToParentAlias = dataverseDao.getParentAliasesForIds(nonFileIds).stream()
-                    .collect(Collectors.toMap(i -> (Long) i[0], i -> (String) i[1], (next, prev) -> next));
+                    .collect(Collectors.toMap(i -> (Long) i[0], i -> (String) i[1], (prev, next) -> next));
             List<Long> allIds = results.stream()
                     .map(SolrSearchResultDTO::getEntityId)
                     .collect(Collectors.toList());
@@ -541,76 +542,112 @@ public class SolrSearchResultDTO {
             return results;
         }
 
+        public static List<SolrSearchResultDTO> createResultsForSearch(SolrQueryResponse response) {
+            Creator creator = new Creator(null, null);
+            return response.getSolrSearchResults().stream()
+                    .map(creator::createBasicResultDTO)
+                    .collect(Collectors.toList());
+        }
+
         // -------------------- PRIVATE --------------------
 
-        private SolrSearchResultDTO createResult(SolrSearchResult result) {
-            SolrSearchResultDTO created = new SolrSearchResultDTO();
+        private SolrSearchResultDTO createBasicResultDTO(SolrSearchResult result) {
+            SolrSearchResultDTO dto = new SolrSearchResultDTO();
             SearchParentInfo parent = result.getParent();
             switch (result.getType()) {
                 case DATAVERSES:
-                    created.setName(result.getName());
-                    created.setUrl(result.getHtmlUrl());
-                    created.setIdentifier(result.getIdentifier());
+                    dto.setName(result.getName());
+                    dto.setUrl(result.getHtmlUrl());
+                    dto.setIdentifier(result.getIdentifier());
                     break;
                 case DATASETS:
-                    created.setName(result.getTitle());
-                    created.setUrl(result.getPersistentUrl());
-                    created.setGlobalId(result.getIdentifier());
+                    dto.setName(result.getTitle());
+                    dto.setUrl(result.getPersistentUrl());
+                    dto.setGlobalId(result.getIdentifier());
                     break;
                 case FILES:
-                    created.setName(result.getName());
-                    created.setUrl(result.getDownloadUrl());
-                    created.setFileId(result.getIdentifier());
-                    created.setDatasetName(parent.getName());
-                    created.setDatasetId(parent.getId());
-                    created.setDatasetPersistentId(parent.getParentIdentifier());
-                    created.setDatasetCitation(parent.getCitation());
+                    dto.setName(result.getName());
+                    dto.setUrl(result.getDownloadUrl());
+                    dto.setFileId(result.getIdentifier());
+                    dto.setDatasetName(parent.getName());
+                    dto.setDatasetId(parent.getId());
+                    dto.setDatasetPersistentId(parent.getParentIdentifier());
+                    dto.setDatasetCitation(parent.getCitation());
                     break;
             }
-            created.setType(result.getDisplayType());
-            created.setImageUrl(result.getImageUrl());
-            created.setDescription(result.getDescriptionNoSnippet());
-            created.setPublishedAt(result.getDateTimePublished());
-            created.setFileType(result.getFiletype());
-            created.setFileContentType(result.getFileContentType());
-            created.setSizeInBytes(result.getFileSizeInBytes());
-            created.setMd5(result.getFileMd5());
-            created.setChecksum(createChecksum(result));
-            created.setUnf(result.getUnf());
-            created.setFilePersistentId(result.getFilePersistentId());
-            created.setDeaccessionReason(result.getDeaccessionReason());
-            created.setCitationHtml(result.getCitationHtml());
-            created.setIdentifierOfDataverse(result.getIdentifierOfDataverse());
-            created.setNameOfDataverse(result.getNameOfDataverse());
-            created.setCitation(result.getCitation());
-            created.setMatches(createMatches(result));
-            created.setScore(result.getScore());
-            created.setEntityId(result.getEntityId());
-            created.setApiUrl(result.getApiUrl());
-            created.setAuthors(result.getDatasetAuthors());
+            dto.setType(extractDisplayType(result.getType()));
+            dto.setImageUrl(result.getImageUrl());
+            dto.setDescription(result.getDescriptionNoSnippet());
+            dto.setPublishedAt(formatDateTimePublished(result));
+            dto.setFileType(result.getFiletype());
+            dto.setFileContentType(result.getFileContentType());
+            dto.setSizeInBytes(result.getFileSizeInBytes());
+            dto.setMd5(result.getFileMd5());
+            dto.setChecksum(createChecksum(result));
+            dto.setUnf(result.getUnf());
+            dto.setFilePersistentId(result.getFilePersistentId());
+            dto.setDeaccessionReason(result.getDeaccessionReason());
+            dto.setCitationHtml(result.getCitationHtml());
+            dto.setIdentifierOfDataverse(result.getIdentifierOfDataverse());
+            dto.setNameOfDataverse(result.getNameOfDataverse());
+            dto.setCitation(result.getCitation());
+            dto.setMatches(createMatches(result));
+            dto.setScore(result.getScore());
+            dto.setEntityId(result.getEntityId());
+            dto.setApiUrl(result.getApiUrl());
+            dto.setAuthors(result.getDatasetAuthors());
 
-            created.setPublicationStatuses(result.getPublicationStatuses().stream()
+            return dto;
+        }
+
+        private SolrSearchResultDTO fillAdditionalFieldsForMyData(SolrSearchResultDTO dto, SolrSearchResult result) {
+            SearchParentInfo parent = result.getParent();
+
+            dto.setPublicationStatuses(result.getPublicationStatuses().stream()
                     .map(SearchPublicationStatus::getSolrValue)
                     .collect(Collectors.toList()));
-            created.setDraftState(result.isDraftState());
-            created.setInReviewState(result.isInReviewState());
-            created.setUnpublishedState(result.isUnpublishedState());
-            created.setPublished(result.isPublishedState());
-            created.setDeaccessioned(result.isDeaccessionedState());
-            created.setDateToDisplayOnCard(new SimpleDateFormat("MMM d, yyyy", Locale.US)
+            dto.setDraftState(result.isDraftState());
+            dto.setInReviewState(result.isInReviewState());
+            dto.setUnpublishedState(result.isUnpublishedState());
+            dto.setPublished(result.isPublishedState());
+            dto.setDeaccessioned(result.isDeaccessionedState());
+            dto.setDateToDisplayOnCard(new SimpleDateFormat("MMM d, yyyy", Locale.US)
                     .format(result.getReleaseOrCreateDate()));
             if (result.isDeaccessionedState() && result.getPublicationStatuses().size() == 1) {
-                created.setDeaccesionedIsOnlyPubstatus(true);
+                dto.setDeaccesionedIsOnlyPubstatus(true);
             }
             if (parent != null && !parent.isInfoMissing()) {
                 if (result.getType() == SearchObjectType.FILES) {
-                    created.setParentIdentifier(parent.getParentIdentifier());
+                    dto.setParentIdentifier(parent.getParentIdentifier());
                 } else {
-                    created.setParentId(parent.getId());
+                    dto.setParentId(parent.getId());
                 }
-                created.setParentName(parent.getName());
+                dto.setParentName(parent.getName());
             }
-            return created;
+            return dto;
+        }
+
+        public String extractDisplayType(SearchObjectType type) {
+            switch (type) {
+                case DATAVERSES:
+                    return SearchConstants.DATAVERSE;
+                case DATASETS:
+                    return SearchConstants.DATASET;
+                case FILES:
+                    return SearchConstants.FILE;
+                default:
+                    return null;
+            }
+        }
+
+        public String formatDateTimePublished(SolrSearchResult result) {
+            String datePublished = null;
+            if (!result.isDraftState()) {
+                datePublished = result.getReleaseOrCreateDate() == null
+                        ? null
+                        : Util.getDateTimeFormat().format(result.getReleaseOrCreateDate());
+            }
+            return datePublished;
         }
 
         private List<Map<String, Object>> createMatches(SolrSearchResult result) {
