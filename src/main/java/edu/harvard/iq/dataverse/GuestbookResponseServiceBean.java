@@ -185,14 +185,14 @@ public class GuestbookResponseServiceBean {
             // string fields, or the structure of the file will be broken. -- L.A.
             
             // Guestbook name: 
-            sb.append(((String)result[1]).replace(',', ' '));
+            sb.append("\"" + (String)result[1] + "\"");
             sb.append(SEPARATOR);
 
             
             // Dataset name: 
             Integer datasetId = (Integer) result[2];
             String datasetTitle = datasetTitles.get(datasetId);
-            sb.append(datasetTitle == null ? "" : datasetTitle.replace(',', ' '));
+            sb.append(datasetTitle == null ? "" : "\"" +  datasetTitle + "\"");
             sb.append(SEPARATOR);
             
             // Dataset persistent identifier: 
@@ -211,7 +211,7 @@ public class GuestbookResponseServiceBean {
             sb.append(SEPARATOR);
 
             // file name: 
-            sb.append(((String)result[5]).replace(',', ' '));
+            sb.append("\"" + (String)result[5] + "\"" );
             sb.append(SEPARATOR);
 
             // file id (numeric):
@@ -224,19 +224,19 @@ public class GuestbookResponseServiceBean {
             sb.append(SEPARATOR);
             
             // name supplied in the guestbook response: 
-            sb.append(result[7] == null ? "" : ((String)result[7]).replace(',', ' '));
+            sb.append(result[7] == null ? "" : "\"" + (String)result[7] + "\"");
             sb.append(SEPARATOR);
             
             // email: 
-            sb.append(result[8] == null ? "" : ((String)result[8]).replace(',', ' '));
+            sb.append(result[8] == null ? "" : "\"" + (String)result[8] + "\"");           
             sb.append(SEPARATOR);
             
             // institution:
-            sb.append(result[9] == null ? "" : ((String)result[9]).replace(',', ' '));
+            sb.append(result[9] == null ? "" : "\"" + (String)result[9] + "\"");
             sb.append(SEPARATOR);
             
             // position: 
-            sb.append(result[10] == null ? "" : ((String)result[10]).replace(',', ' '));
+            sb.append(result[10] == null ? "" : "\"" + (String)result[10] + "\"");
             
             // Finally, custom questions and answers, if present:
             
@@ -401,7 +401,7 @@ public class GuestbookResponseServiceBean {
                 if (asString) {
                     // as combined strings of comma-separated question and answer values
                     
-                    String qa = SEPARATOR + ((String)response[0]).replace(',', ' ') + SEPARATOR + (response[1] == null ? "" : ((String)response[1]).replace(',', ' '));
+                    String qa = SEPARATOR + ("\"" + (String)response[0] + "\"") + SEPARATOR + (response[1] == null ? "" : "\"" + (String)response[1] + "\"");
 
                     if (ret.containsKey(responseId)) {
                         ret.put(responseId, ret.get(responseId) + qa);
