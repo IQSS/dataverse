@@ -25,8 +25,7 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
     @EJB
     DOIDataCiteRegisterService doiDataCiteRegisterService;
 
-    public DOIDataCiteServiceBean() {
-    }
+    public DOIDataCiteServiceBean() { }
 
     @Override
     public boolean registerWhenPublished() {

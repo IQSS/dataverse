@@ -16,13 +16,14 @@ import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetAuthor;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFundingReference;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.apache.commons.lang3.StringEscapeUtils.unescapeHtml4;
 
 public class DataCiteResourceCreator {
 
@@ -110,7 +111,7 @@ public class DataCiteResourceCreator {
         if (dvObject.isInstanceofDataset()) {
             Dataset dataset = (Dataset) dvObject;
             if (!dataset.hasActiveEmbargo() && !dataset.getFiles().isEmpty()
-                    && !(dataset.getFiles().get(0).getIdentifier() == null)) {
+                    && dataset.getFiles().get(0).getIdentifier() != null) {
                 return dataset.getFiles().stream()
                         .filter(f -> StringUtils.isNotEmpty(f.getGlobalId().asString()))
                         .map(f -> new RelatedIdentifier(f.getGlobalId().asString(),  "HasPart"))
@@ -127,10 +128,10 @@ public class DataCiteResourceCreator {
     private List<Description> extractDescription(DvObject dvObject) {
         if (dvObject.isInstanceofDataset()) {
             Dataset dataset = getDataset(dvObject);
-            String description = StringEscapeUtils.unescapeHtml4(dataset.getLatestVersion().getDescriptionPlainText());
+            String description = unescapeHtml4(dataset.getLatestVersion().getDescriptionPlainText());
             return Collections.singletonList(new Description(description));
         } else if (dvObject.isInstanceofDataFile()) {
-            String fileDescription = ((DataFile) dvObject).getDescription();
+            String fileDescription = unescapeHtml4(((DataFile) dvObject).getDescription());
             return Collections.singletonList(new Description(fileDescription != null ? fileDescription : ""));
         }
         return Collections.emptyList();
@@ -148,10 +149,8 @@ public class DataCiteResourceCreator {
                 .map(p -> new Contributor(ContributorType.Producer, p[0],
                         StringUtils.isNotEmpty(p[1]) ? new Affiliation(p[1]) : null))
                 .collect(Collectors.toList());
-        if (!contacts.isEmpty() || !producers.isEmpty()) {
-            contributors.addAll(contacts);
-            contributors.addAll(producers);
-        }
+        contributors.addAll(contacts);
+        contributors.addAll(producers);
         return contributors;
     }
 

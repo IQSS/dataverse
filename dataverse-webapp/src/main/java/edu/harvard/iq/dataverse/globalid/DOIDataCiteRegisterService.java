@@ -10,6 +10,10 @@ import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.cache.DOIDataCiteRegisterCache;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.apache.commons.lang3.StringUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -26,6 +30,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static edu.harvard.iq.dataverse.export.datacite.DataCiteResource.Description;
 
@@ -193,11 +198,11 @@ public class DOIDataCiteRegisterService {
         try {
             DataCiteMdsApiClient client = getClient();
             String xmlMetadata = client.getMetadata(identifier.substring(identifier.indexOf(":") + 1));
-            DOIDataCiteServiceBean.GlobalIdMetadataTemplate template = new AbstractGlobalIdServiceBean.GlobalIdMetadataTemplate(xmlMetadata);
-            metadata.put("datacite.creator", String.join("; ", template.getCreators()));
-            metadata.put("datacite.title", template.getTitle());
-            metadata.put("datacite.publisher", template.getPublisher());
-            metadata.put("datacite.publicationyear", template.getPublisherYear());
+            Document document = Jsoup.parseBodyFragment(xmlMetadata);
+            metadata.put("datacite.creator", extractAll(document, "creatorName"));
+            metadata.put("datacite.title", extractFirst(document, "title"));
+            metadata.put("datacite.publisher", extractFirst(document, "publisher"));
+            metadata.put("datacite.publicationyear", extractFirst(document, "publicationYear"));
             DOIDataCiteRegisterCache rc = findByDOI(identifier);
             if (rc != null) {
                 metadata.put("_status", rc.getStatus());
@@ -206,6 +211,17 @@ public class DOIDataCiteRegisterService {
             logger.log(Level.INFO, identifier, e);
         }
         return metadata;
+    }
+
+    private String extractFirst(Document document, String element) {
+        Elements elements = document.select(element);
+        return elements.isEmpty() ? null : elements.get(0).html();
+    }
+
+    private String extractAll(Document document, String element) {
+        return document.select(element).stream()
+                .map(Element::html)
+                .collect(Collectors.joining("; "));
     }
 
     public DOIDataCiteRegisterCache findByDOI(String doi) {
