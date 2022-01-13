@@ -336,10 +336,12 @@ public class JsonPrinter {
         License license = dsv.getTermsOfUseAndAccess().getLicense();
         if (license != null) {
             // Standard license
-            bld.add("license", DatasetUtil.getLicenseName(dsv));
+            bld.add("license", jsonObjectBuilder()
+                    .add("name", DatasetUtil.getLicenseName(dsv))
+                    .add("uri", DatasetUtil.getLicenseURI(dsv)));
         } else {
             // Custom terms
-            bld.add("termsofuse", dsv.getTermsOfUseAndAccess().getTermsOfUse())
+            bld.add("termsOfUse", dsv.getTermsOfUseAndAccess().getTermsOfUse())
                     .add("confidentialityDeclaration", dsv.getTermsOfUseAndAccess().getConfidentialityDeclaration())
                     .add("specialPermissions", dsv.getTermsOfUseAndAccess().getSpecialPermissions())
                     .add("restrictions", dsv.getTermsOfUseAndAccess().getRestrictions())
