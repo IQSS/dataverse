@@ -44,7 +44,7 @@
                                    <p:selectOneMenu id="licenses" value="#{termsOfUseAndAccess.license}" style="width: 40%" converter="licenseConverter">
                                        <f:selectItems value="#{licenseServiceBean.listAllActive()}"
                                                    var="license" itemLabel="#{license.name}" itemValue="#{license}"/>
-                                       <c:if test="#{SettingsWrapper.customLicenseAllowed}">
+                                       <c:if test="#{settingsWrapper.customLicenseAllowed}">
                                            <f:selectItem itemLabel="#{bundle['license.custom']}" itemValue="#{null}"/>
                                        </c:if>
                                        <p:ajax update="touFragment" oncomplete="javascript:bind_bsui_components();" />
