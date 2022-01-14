@@ -139,9 +139,9 @@ function sharrre(){
         },
         template: '<div id="sharrre-block" class="clearfix">\n\
                     <input type="hidden" id="sharrre-total" name="sharrre-total" value="{total}"/> \n\
-                    <a href="#" class="sharrre-facebook"><span class="socicon socicon-facebook"/></a> \n\
-                    <a href="#" class="sharrre-twitter"><span class="socicon socicon-twitter"/></a> \n\
-                    <a href="#" class="sharrre-linkedin"><span class="socicon socicon-linkedin"/></a>\n\
+                    <a href="#" class="sharrre-facebook" title="FaceBook"><span class="socicon socicon-facebook"/></a> \n\
+                    <a href="#" class="sharrre-twitter" title="Twitter"><span class="socicon socicon-twitter"/></a> \n\
+                    <a href="#" class="sharrre-linkedin" title="LinkedIn"><span class="socicon socicon-linkedin"/></a>\n\
                     </div>',
         enableHover: false,
         enableTracking: true,
