@@ -5845,4 +5845,13 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
     }
+    
+    public boolean downloadingRestrictedFiles() {
+        for (FileMetadata fmd : this.selectedFiles) {
+            if (fmd.isRestricted()) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

@@ -153,7 +153,18 @@
                     escape="false" />
             </div>
         </ui:fragment>
-        
+        <div class="form-group"
+            jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.termsOfAccess and hasRestrictedFile}">
+            <label jsf:for="fdTermsOfAccess" class="col-sm-3 control-label">
+                #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
+                <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                data-toggle="tooltip" data-placement="auto right"
+                data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}"></span>
+            </label>
+            <h:outputText id="fdTermsOfAccess" class="col-sm-6"
+                value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.termsOfAccess)}"
+                escape="false" />
+        </div>
         <p:fragment rendered="#{workingVersion.dataset.guestbook != null and workingVersion.dataset.guestbook.enabled and downloadPopupRequired}" id="guestbookUIFragment">
                 <!--
                 Only validate the active context. For example, the user might be filling out
