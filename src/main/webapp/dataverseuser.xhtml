@@ -317,6 +317,8 @@
                                                     <h:outputFormat value="#{bundle['notification.ingestCompleted']}" escape="false">
                                                         <f:param value="#{item.theObject.getGlobalId()}"/>
                                                         <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                        <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
+                                                        <f:param value="#{settingsWrapper.guidesVersion}"/>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'INGESTCOMPLETEDWITHERRORS'}">
@@ -324,6 +326,8 @@
                                                     <h:outputFormat value="#{bundle['notification.ingestCompletedWithErrors']}" escape="false">
                                                         <f:param value="#{item.theObject.getGlobalId()}"/>
                                                         <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                        <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
+                                                        <f:param value="#{settingsWrapper.guidesVersion}"/>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'WORKFLOW_FAILURE'}">
