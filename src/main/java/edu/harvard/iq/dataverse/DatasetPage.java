@@ -5847,6 +5847,9 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public boolean downloadingRestrictedFiles() {
+        if (fileMetadataForAction != null) {
+            return fileMetadataForAction.isRestricted();
+        }
         for (FileMetadata fmd : this.selectedFiles) {
             if (fmd.isRestricted()) {
                 return true;
