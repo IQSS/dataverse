@@ -50,13 +50,6 @@
                                        <p:ajax update="touFragment" oncomplete="javascript:bind_bsui_components();" />
                                    </p:selectOneMenu>
                                </ui:fragment>
-                               <ui:fragment rendered="#{!empty termsOfUseAndAccess.license and empty termsOfUseAndAccess.license and empty editMode}">
-                                       <p>
-                                           <img src="#{termsOfUseAndAccess.license.iconUrl}" title="#{termsOfUseAndAccess.license.shortDescription}" style="display:none"  onload="this.style.display='inline'" />
-                                           <a href="#{termsOfUseAndAccess.license.uri}" title="#{termsOfUseAndAccess.license.shortDescription}" target="_blank">#{termsOfUseAndAccess.license.name}</a>
-                                       </p>
-
-                               </ui:fragment>
                                <ui:fragment rendered="#{!empty termsOfUseAndAccess.license}">
                                    <p>
                                        <img src="#{termsOfUseAndAccess.license.iconUrl}" title="#{termsOfUseAndAccess.license.shortDescription}"  style="display:none"  onload="this.style.display='inline'" />
