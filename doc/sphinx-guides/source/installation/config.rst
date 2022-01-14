@@ -386,6 +386,9 @@ of two methods described below:
 1. Manually through creation of the credentials and config files or
 2. Automatically via the AWS console commands.
 
+Some usage scenarios might be eased without generating these files. You may also provide :ref:`static credentials via
+MicroProfile Config <s3-mpconfig>`, see below.
+
 Preparation When Using Amazon's S3 Service
 ##########################################
 
@@ -526,28 +529,69 @@ been tested already and what other options have been set for a successful integr
 
 Lastly, go ahead and restart your Payara server. With Dataverse deployed and the site online, you should be able to upload datasets and data files and see the corresponding files in your S3 bucket. Within a bucket, the folder structure emulates that found in local file storage.
 
-S3 Storage Options
-##################
+List of S3 Storage Options
+##########################
 
-===========================================  ==================  ==========================================================================  =============
-JVM Option                                   Value               Description                                                                 Default value
-===========================================  ==================  ==========================================================================  =============
-dataverse.files.storage-driver-id            <id>                Enable <id> as the default storage driver.                                  ``file``
-dataverse.files.<id>.bucket-name             <?>                 The bucket name. See above.                                                 (none)
-dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                          ``false``
-dataverse.files.<id>.upload-redirect         ``true``/``false``  Enable direct upload of files added to a dataset  to the S3 store.          ``false``
-dataverse.files.<id>.ingestsizelimit         <size in bytes>     Maximum size of directupload files that should be ingested                  (none)
-dataverse.files.<id>.url-expiration-minutes  <?>                 If direct uploads/downloads: time until links expire. Optional.             60
-dataverse.files.<id>.min-part-size           <?>                 Multipart direct uploads will occur for files larger than this. Optional.   ``1024**3``
-dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.          (none)
-dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                             ``dataverse``
-dataverse.files.<id>.profile                 <?>                 Allows the use of AWS profiles for storage spanning multiple AWS accounts.  (none)
-dataverse.files.<id>.proxy-url               <?>                 URL of a proxy protecting the S3 store. Optional.                           (none)
-dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.                     ``false``
-dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                            ``false``
-dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                          ``true``
-dataverse.files.<id>.connection-pool-size    <?>                 The maximum number of open connections to the S3 server                     ``256``
-===========================================  ==================  ==========================================================================  =============
+.. table::
+    :align: left
+
+    ===========================================  ==================  ==========================================================================  =============
+    JVM Option                                   Value               Description                                                                 Default value
+    ===========================================  ==================  ==========================================================================  =============
+    dataverse.files.storage-driver-id            <id>                Enable <id> as the default storage driver.                                  ``file``
+    dataverse.files.<id>.type                    ``s3``              **Required** to mark this storage as S3 based.                              (none)
+    dataverse.files.<id>.label                   <?>                 **Required** label to be shown in the UI for this storage                   (none)
+    dataverse.files.<id>.bucket-name             <?>                 The bucket name. See above.                                                 (none)
+    dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                          ``false``
+    dataverse.files.<id>.upload-redirect         ``true``/``false``  Enable direct upload of files added to a dataset  to the S3 store.          ``false``
+    dataverse.files.<id>.ingestsizelimit         <size in bytes>     Maximum size of directupload files that should be ingested                  (none)
+    dataverse.files.<id>.url-expiration-minutes  <?>                 If direct uploads/downloads: time until links expire. Optional.             60
+    dataverse.files.<id>.min-part-size           <?>                 Multipart direct uploads will occur for files larger than this. Optional.   ``1024**3``
+    dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.          (none)
+    dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                             ``dataverse``
+    dataverse.files.<id>.profile                 <?>                 Allows the use of AWS profiles for storage spanning multiple AWS accounts.  (none)
+    dataverse.files.<id>.proxy-url               <?>                 URL of a proxy protecting the S3 store. Optional.                           (none)
+    dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.                     ``false``
+    dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                            ``false``
+    dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                          ``true``
+    dataverse.files.<id>.connection-pool-size    <?>                 The maximum number of open connections to the S3 server                     ``256``
+    ===========================================  ==================  ==========================================================================  =============
+
+.. table::
+    :align: left
+
+    ===========================================  ==================  ==========================================================================  =============
+    MicroProfile Config Option                   Value               Description                                                                 Default value
+    ===========================================  ==================  ==========================================================================  =============
+    dataverse.files.<id>.access-key              <?>                 :ref:`Provide static access key ID. Read before use! <s3-mpconfig>`         ``""``
+    dataverse.files.<id>.secret-key              <?>                 :ref:`Provide static secret access key. Read before use! <s3-mpconfig>`     ``""``
+    ===========================================  ==================  ==========================================================================  =============
+
+
+.. _s3-mpconfig:
+
+Credentials via MicroProfile Config
+###################################
+
+Optionally, you may provide static credentials for each S3 storage using MicroProfile Config options:
+
+- ``dataverse.files.<id>.access-key`` for this storages "access key ID"
+- ``dataverse.files.<id>.secret-key`` for this storages "secret access key"
+
+You may provide the values for these via any of the
+`supported config sources <https://docs.payara.fish/community/docs/documentation/microprofile/config/README.html>`_.
+
+**WARNING:**
+
+*For security, do not use the sources "environment variable" or "system property" (JVM option) in a production context!*
+*Rely on password alias, secrets directory or cloud based sources instead!*
+
+**NOTE:**
+
+1. Providing both AWS CLI profile files (as setup in first step) and static keys, credentials from ``~/.aws``
+   will win over configured keys when valid!
+2. A non-empty ``dataverse.files.<id>.profile`` will be ignored when no credentials can be found for this profile name.
+   Current codebase does not make use of "named profiles" as seen for AWS CLI besides credentials.
 
 Reported Working S3-Compatible Storage
 ######################################
@@ -2372,8 +2416,7 @@ Also refer to the "Datafile Integrity" API  :ref:`datafile-integrity`
 :SendNotificationOnDatasetCreation
 ++++++++++++++++++++++++++++++++++
 
-A boolean setting that, if true will send an email and notification to users when a Dataset is created. Messages go to those, other than the dataset creator,
- who have the ability/permission necessary to publish the dataset. The intent of this functionality is to simplify tracking activity and planning to follow-up contact.
+A boolean setting that, if true, will send an email and notification to users when a Dataset is created. Messages go to those, other than the dataset creator, who have the ability/permission necessary to publish the dataset. The intent of this functionality is to simplify tracking activity and planning to follow-up contact.
   
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:SendNotificationOnDatasetCreation``
 
