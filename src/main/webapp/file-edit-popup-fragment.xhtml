@@ -38,8 +38,8 @@
         </p>
         <div class="form-horizontal">
             <div class="form-group">
-                <label for="requestAccess" class="col-sm-3 control-label">
-                  #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
+                <label for="datasetForm:termsAccessInput" class="col-sm-3 control-label">
+                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}"></span>
                 </label>
@@ -98,11 +98,11 @@
                     </div>
                     <div class="col-lg-9">
                         <div>
-                            <p class="help-block">
+                            <label class="help-block" for="datasetForm:fileEmbargoDate_input">
                                 #{bundle['file.editEmbargoDialog.newDate']} <span
                                     class="glyphicon glyphicon-asterisk text-danger"
                                     jsf:rendered="#{!bean.removeEmbargo}" />
-                            </p>
+                            </label>
                             <p:datePicker id="fileEmbargoDate"
                                 value="#{bean.selectionEmbargo.dateAvailable}"
                                 locale="#{dataverseSession.localeCode}"
