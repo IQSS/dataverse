@@ -226,7 +226,7 @@ body.widget-view #dataverse-header-block {padding-top:0px;}
 #dataverseHeader .dataverseHeaderName .dataverseHeaderDataverseName h1 {
     font-weight: inherit;
     margin-top: 5px;
-    font-size: 35px;
+    font-size: 1.3em;
     margin-bottom: 10px;
 }
 /* -------- FOOTER -------- */
