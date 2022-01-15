@@ -54,7 +54,8 @@
                  rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                  rowSelectMode="checkbox" selection="#{DatasetPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
                  rendered="#{DatasetPage.fileDisplayTable and (DatasetPage.workingVersion != null)}"
-                 emptyMessage="#{DatasetPage.workingVersion.fileMetadatas.size() == 0 ? bundle['file.notFound.tip'] : bundle['file.notFound.search']}">
+                 emptyMessage="#{DatasetPage.workingVersion.fileMetadatas.size() == 0 ? bundle['file.notFound.tip'] : bundle['file.notFound.search']}"
+                 ariaRowLabel="#{bundle['file.select.action']} #{fileMetadata.label}">
         <p:ajax event="page" listener="#{DatasetPage.fileListingPaginatorListener}" update="filesTable" process="@this"  oncomplete="refreshPaginator(),rebindCommand()"  immediate="true"/>
         <p:ajax event="toggleSelect" listener="#{DatasetPage.toggleAllSelected()}" update="@form:validateFilesOutcome, filesTable"  process="@this" oncomplete="rebindCommand()"  /> 
         <p:ajax event="rowUnselectCheckbox" listener="#{DatasetPage.setSelectAllFiles(false)}" update="@form:validateFilesOutcome, filesTable" process="@this" oncomplete="rebindCommand()"  />
@@ -349,7 +350,6 @@
 
         <p:column class="col-file-metadata">
             <f:facet name="header">
-                <f:passThroughAttribute name="aria-label" value="#{bundle['file.count.label']}"/>
                 <div jsf:id="filesHeaderCount">
                     <!-- Files Count -->
                     <h:outputFormat value="#{DatasetPage.fileMetadatasSearch.size() == 1 ? bundle['file.count.one'] : bundle['file.count']}" styleClass="highlightBold" rendered="#{DatasetPage.fileMetadatasSearch.size() gt 0}">
@@ -384,7 +384,7 @@
                             disabled="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
                         <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFiles']} <span class="caret"></span>
                     </button>
-                    <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
+                    <ul class="dropdown-menu multi-level pull-right text-left">
                         <ui:include src="file-edit-button-fragment.xhtml">
                             <ui:param name="datasetVersion" value="#{DatasetPage.workingVersion}"/>
                             <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>
@@ -413,6 +413,7 @@
                                    onclick="if (!testFilesSelected()) return false;" 
                                    action="#{DatasetPage.startDownloadSelectedOriginal()}"
                                    update="@form" oncomplete="bind_bsui_components();showPopup();">
+                        <f:setPropertyActionListener target="#{DatasetPage.fileMetadataForAction}" value="#{null}"/>
                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
                     </p:commandLink>
                 </div>
@@ -423,13 +424,14 @@
                     <button type="button" class="btn btn-default btn-download dropdown-toggle" data-toggle="dropdown">  
                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"></span>
                     </button>
-                    <ul jsf:id="downloadDropdownOptions" class="dropdown-menu multi-level pull-right text-left" role="menu">
+                    <ul jsf:id="downloadDropdownOptions" class="dropdown-menu multi-level pull-right text-left">
                         <li >
                             <p:commandLink
                                            disabled="#{false and DatasetPage.lockedFromDownload}"
                                            update="@form" oncomplete="bind_bsui_components();showPopup();"
                                            onclick="if (!testFilesSelected()) return false;" 
                                            actionListener="#{DatasetPage.startDownloadSelectedOriginal()}">
+                                <f:setPropertyActionListener target="#{DatasetPage.fileMetadataForAction}" value="#{null}"/>
                                 #{bundle.downloadOriginal}
                             </p:commandLink>
                         </li>
@@ -439,6 +441,7 @@
                                            update="@form" oncomplete="bind_bsui_components();showPopup();"
                                            onclick="if (!testFilesSelected()) return false;" 
                                            actionListener="#{DatasetPage.startDownloadSelectedArchival()}">
+                            <f:setPropertyActionListener target="#{DatasetPage.fileMetadataForAction}" value="#{null}"/>
                                 #{bundle.downloadArchival}
                             </p:commandLink>
                         </li>
@@ -485,9 +488,9 @@
                     <!-- TO-DO FIX RSYNC LOGIC !fileMetadata.dataFile.filePackage or
                                                     fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload -->
                     <ui:fragment rendered="#{DatasetPage.isShowPreviewButton(fileMetadata.dataFile.id) and fileDownloadHelper.canDownloadFile(fileMetadata)}">
-                        <a class="btn-preview btn btn-link bootstrap-button-tooltip" title="#{bundle.preview}"
+                        <a class="btn-preview btn btn-link bootstrap-button-tooltip" title="#{DatasetPage.getPreviewToolsForDataFile(fileMetadata.dataFile.id).get(0).getDisplayNameLang()}"
                             href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty fileMetadata.dataFile.globalIdString ? 'persistentId=' : 'fileId=').concat(!empty fileMetadata.dataFile.globalIdString ? fileMetadata.dataFile.globalIdString : fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
-                            <span class="glyphicon glyphicon-eye-open"/><span class="sr-only">#{bundle.preview}</span>
+                            <span class="glyphicon glyphicon-eye-open"/><span class="sr-only">#{bundle.preview} "#{empty(fileMetadata.directoryLabel) ? "":fileMetadata.directoryLabel.concat("/")}#{fileMetadata.label}"</span>
                         </a>
                     </ui:fragment>
                     <a type="button" style="padding:6px 8px;" class="btn-access-file btn btn-link bootstrap-button-tooltip dropdown-toggle" 
@@ -499,6 +502,7 @@
                         <ui:include src="file-download-button-fragment.xhtml">
                             <ui:param name="fileMetadata" value="#{fileMetadata}"/>
                             <ui:param name="downloadPopupRequired" value="#{DatasetPage.downloadPopupRequired}"/>
+                            <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>
                             <ui:param name="requestAccessPopupRequired" value="#{DatasetPage.requestAccessPopupRequired}"/>
                             <ui:param name="guestbookResponse" value="#{DatasetPage.guestbookResponse}"/>
                             <ui:param name="guestbookResponseService" value="#{DatasetPage.guestbookResponseService}"/>

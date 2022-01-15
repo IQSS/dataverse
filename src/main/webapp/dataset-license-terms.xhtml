@@ -27,7 +27,7 @@
                    <o:importFunctions type="org.apache.commons.text.StringEscapeUtils" />
                    <div class="panel-body">
                        <div class="form-group">
-                           <label for="metadata_Terms" class="col-sm-3 control-label">
+                           <label for="datasetForm:tabView:metadata_Terms" class="col-sm-3 control-label">
                                #{bundle['file.dataFilesTab.terms.list.license']}
                            </label>
                            <div class="col-sm-9">
@@ -44,16 +44,11 @@
                                    <p:selectOneMenu id="licenses" value="#{termsOfUseAndAccess.license}" style="width: 40%" converter="licenseConverter">
                                        <f:selectItems value="#{licenseServiceBean.listAllActive()}"
                                                    var="license" itemLabel="#{license.name}" itemValue="#{license}"/>
-                                       <f:selectItem itemLabel="#{bundle['license.custom']}" itemValue="#{null}" rendered="#{settingsWrapper.customLicenseAllowed}"/>
+                                       <c:if test="#{settingsWrapper.customLicenseAllowed}">
+                                           <f:selectItem itemLabel="#{bundle['license.custom']}" itemValue="#{null}"/>
+                                       </c:if>
                                        <p:ajax update="touFragment" oncomplete="javascript:bind_bsui_components();" />
                                    </p:selectOneMenu>
-                               </ui:fragment>
-                               <ui:fragment rendered="#{!empty termsOfUseAndAccess.license and empty termsOfUseAndAccess.license and empty editMode}">
-                                       <p>
-                                           <img src="#{termsOfUseAndAccess.license.iconUrl}" title="#{termsOfUseAndAccess.license.shortDescription}" style="display:none"  onload="this.style.display='inline'" />
-                                           <a href="#{termsOfUseAndAccess.license.uri}" title="#{termsOfUseAndAccess.license.shortDescription}" target="_blank">#{termsOfUseAndAccess.license.name}</a>
-                                       </p>
-
                                </ui:fragment>
                                <ui:fragment rendered="#{!empty termsOfUseAndAccess.license}">
                                    <p>
@@ -67,7 +62,7 @@
                        <!-- Additional Information -->
                         <ui:fragment rendered="#{empty editMode and empty termsOfUseAndAccess.license}">
                             <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.termsOfUse}">
-                                <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                <label for="datasetForm:tabView:metadata_TermsUse" class="col-sm-3 control-label">
                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse.title']}"></span>
@@ -77,93 +72,93 @@
                                </div>
                             </div>
                             <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.confidentialityDeclaration}">
-                                <label for="confidentialityDeclaration" class="col-sm-3 control-label">
+                                <label for="datasetForm:tabView:confidentialityDeclarationText" class="col-sm-3 control-label">
                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration']}
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration.title']}"></span>
                                 </label>
                                 <div class="col-sm-9">
-                                    <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.confidentialityDeclaration)}" escape="false"/>
+                                    <h:outputText id="confidentialityDeclarationText" value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.confidentialityDeclaration)}" escape="false"/>
                                 </div>
                             </div>
                             <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.specialPermissions}">
-                                <label for="specialPermissions" class="col-sm-3 control-label">
+                                <label for="datasetForm:tabView:specialPermissionsText" class="col-sm-3 control-label">
                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.permissions']}
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.permissions.title']}"></span>
                                 </label>
                                 <div class="col-sm-9">
-                                    <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.specialPermissions)}" escape="false"/>
+                                    <h:outputText id="specialPermissionsText" value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.specialPermissions)}" escape="false"/>
                                 </div>
                             </div>
                             <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.restrictions}">
-                                <label for="restrictions" class="col-sm-3 control-label">
+                                <label for="datasetForm:tabView:restrictionsText" class="col-sm-3 control-label">
                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.restrictions']}
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.restrictions.title']}"></span>
                                 </label>
                                 <div class="col-sm-9">
-                                    <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.restrictions)}" escape="false"/>
+                                    <h:outputText id="restrictionsText" value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.restrictions)}" escape="false"/>
                                 </div>
                             </div>
                             <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.citationRequirements}">
-                                <label for="citationRequirements" class="col-sm-3 control-label">
+                                <label for="datasetForm:tabView:citationRequirementsText" class="col-sm-3 control-label">
                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.citationRequirements']}
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.citationRequirements.title']}"></span>
                                 </label>
                                 <div class="col-sm-9">
-                                    <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.citationRequirements)}" escape="false"/>
+                                    <h:outputText id="citationRequirementsText" value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.citationRequirements)}" escape="false"/>
                                 </div>
                             </div>
                             <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.depositorRequirements}">
-                                <label for="depositorRequirements" class="col-sm-3 control-label">
+                                <label for="datasetForm:tabView:depositorRequirementsText" class="col-sm-3 control-label">
                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.depositorRequirements']}
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.depositorRequirements.title']}"></span>
                                 </label>
                                 <div class="col-sm-9">
-                                    <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.depositorRequirements)}" escape="false"/>
+                                    <h:outputText id="depositorRequirementsText" value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.depositorRequirements)}" escape="false"/>
                                 </div>
                             </div>
                             <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.conditions}">
-                                <label for="conditions" class="col-sm-3 control-label">
+                                <label for="datasetForm:tabView:conditionsText" class="col-sm-3 control-label">
                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.conditions']}
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.conditions.title']}"></span>
                                 </label>
                                 <div class="col-sm-9">
-                                    <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.conditions)}" escape="false"/>
+                                    <h:outputText id="conditionsText" value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.conditions)}" escape="false"/>
                                 </div>
                             </div>
                             <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.disclaimer}">
-                                <label for="disclaimer" class="col-sm-3 control-label">
+                                <label for="datasetForm:tabView:disclaimerText" class="col-sm-3 control-label">
                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer']}
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer.title']}"></span>
                                 </label>
                                 <div class="col-sm-9">
-                                    <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.disclaimer)}" escape="false"/>
+                                    <h:outputText id="disclaimerText" value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.disclaimer)}" escape="false"/>
                                 </div>
                             </div>
                         </ui:fragment>
                         <ui:fragment rendered="#{!empty editMode and termsOfUseAndAccess.license == null}">
                             <div class="form-group">
-                                <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                <label jsf:for="dlTermsdOfUse" class="col-sm-3 control-label">
                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
                                     <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse.title']}"></span>
                                 </label>
                                 <div class="col-sm-9">
-                                    <p:inputTextarea id="metadata_TermsUse" value="#{termsOfUseAndAccess.termsOfUse}" rows="5" cols="60" styleClass="form-control" title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}" 
+                                    <p:inputTextarea id="dlTermsdOfUse" value="#{termsOfUseAndAccess.termsOfUse}" rows="5" cols="60" styleClass="form-control" title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}" 
                                                      validator="#{DatasetPage.validateTerms}">
                                     </p:inputTextarea>
                                     <h:message for="metadata_TermsUse" styleClass="bg-danger text-danger"/>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="confidentialityDeclaration" class="col-sm-3 control-label">
+                                <label for="datasetForm:tabView:confidentialityDeclaration" class="col-sm-3 control-label">
                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration']}
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration.title']}"></span>
@@ -173,7 +168,7 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="specialPermissions" class="col-sm-3 control-label">
+                                <label for="datasetForm:tabView:specialPermissions" class="col-sm-3 control-label">
                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.permissions']}
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.permissions.title']}"></span>
@@ -183,7 +178,7 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="restrictions" class="col-sm-3 control-label">
+                                <label for="datasetForm:tabView:restrictions" class="col-sm-3 control-label">
                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.restrictions']}
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.restrictions.title']}"></span>
@@ -193,7 +188,7 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="citationRequirements" class="col-sm-3 control-label">
+                                <label for="datasetForm:tabView:citationRequirements" class="col-sm-3 control-label">
                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.citationRequirements']}
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.citationRequirements.title']}"></span>
@@ -203,7 +198,7 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="depositorRequirements" class="col-sm-3 control-label">
+                                <label for="datasetForm:tabView:depositorRequirements" class="col-sm-3 control-label">
                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.depositorRequirements']}
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.depositorRequirements.title']}"></span>
@@ -213,7 +208,7 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="conditions" class="col-sm-3 control-label">
+                                <label for="datasetForm:tabView:conditions" class="col-sm-3 control-label">
                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.conditions']}
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.conditions.title']}"></span>
@@ -223,7 +218,7 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="disclaimer" class="col-sm-3 control-label">
+                                <label for="datasetForm:tabView:disclaimer" class="col-sm-3 control-label">
                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer']}
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer.title']}"></span>
@@ -252,7 +247,7 @@
                <div class="panel-body">
                    <ui:fragment rendered="#{empty editMode}">
                        <div class="form-group" jsf:rendered="#{!settingsWrapper.publicInstall}">
-                           <label for="metadata_RestrictedFiles" class="col-sm-3 control-label">
+                           <label for="datasetForm:tabView:metadata_RestrictedFiles" class="col-sm-3 control-label">
                                #{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles']}
                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles.title']}"></span>
@@ -260,7 +255,7 @@
                            <ui:fragment rendered="#{datasetPage == true}">
                                <div class="col-sm-9">
                                    <p>
-                                       <h:outputFormat value="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles.txt']}">
+                                       <h:outputFormat id="metadata_RestrictedFiles" value="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles.txt']}">
                                            <f:param value="#{DatasetPage.restrictedFileCount}"/>
                                        </h:outputFormat>
                                    </p>
@@ -268,22 +263,22 @@
                            </ui:fragment>
                        </div>
                        <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.termsOfAccess}">
-                           <label for="metadata_TermsAccess" class="col-sm-3 control-label">
+                           <label for="datasetForm:tabView:metadata_TermsAccessText" class="col-sm-3 control-label">
                                #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}"></span>
                            </label>
                            <div class="col-sm-9">
-                               <p><h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.termsOfAccess)}" escape="false"/></p>
+                               <p><h:outputText id="metadata_TermsAccessText" value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.termsOfAccess)}" escape="false"/></p>
                            </div>
                        </div>
                        <div class="form-group" jsf:rendered="#{!settingsWrapper.publicInstall and ( datasetPage == true and DatasetPage.restrictedFileCount > 0)}">
-                           <label for="metadata_RequestAccess" class="col-sm-3 control-label">
+                           <label for="datasetForm:tabView:metadata_RequestAccessSelected" class="col-sm-3 control-label">
                                #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}"></span>
                            </label>
-                           <div class="col-sm-9">
+                           <div id="metadata_RequestAccessSelected" class="col-sm-9">
                                <p jsf:rendered="#{!DatasetPage.workingVersion.draft}">
                                    <h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.request']}" rendered="#{DatasetPage.dataset.fileAccessRequest}"/>
                                    <h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.notRequest']}" rendered="#{!DatasetPage.dataset.fileAccessRequest}"/>
@@ -297,17 +292,17 @@
                    </ui:fragment>
                    <ui:fragment rendered="#{!empty editMode}">
                        <div class="form-group">
-                           <label for="metadata_TermsAccess" class="col-sm-3 control-label">
+                           <label for="datasetForm:tabView:metadata_TermsAccess" class="col-sm-3 control-label">
                                #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}"></span>
                            </label>
                            <div class="col-sm-9">
-                               <p:inputTextarea value="#{termsOfUseAndAccess.termsOfAccess}" rows="5" styleClass="form-control" />
+                               <p:inputTextarea id="metadata_TermsAccess" value="#{termsOfUseAndAccess.termsOfAccess}" rows="5" styleClass="form-control" />
                        </div>
                        </div>
                        <div class="form-group" jsf:rendered="#{!settingsWrapper.publicInstall}">
-                           <label for="metadata_RequestAccess" class="col-sm-3 control-label">
+                           <label for="datasetForm:tabView:requestAccess" class="col-sm-3 control-label">
                                #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}"></span>
@@ -321,125 +316,125 @@
                    <!-- Additional Information -->
                     <ui:fragment rendered="#{empty editMode}">
                         <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.dataAccessPlace}">
-                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                            <label for="datasetForm:tabView:dataAccessPlaceText" class="col-sm-3 control-label">
                                 #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.dataAccessPlace']}
                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.dataAccessPlace.title']}"></span>
                             </label>
                             <div class="col-sm-9">
-                                <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.dataAccessPlace)}" escape="false"/>
+                                <h:outputText id="dataAccessPlaceText" value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.dataAccessPlace)}" escape="false"/>
                             </div>
                         </div>
                         <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.originalArchive}">
-                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                            <label for="datasetForm:tabView:originalArchiveText" class="col-sm-3 control-label">
                                 #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.originalArchive']}
                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.originalArchive.title']}"></span>
                             </label>
                             <div class="col-sm-9">
-                                <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.originalArchive)}" escape="false"/>
+                                <h:outputText id="originalArchiveText" value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.originalArchive)}" escape="false"/>
                             </div>
                         </div>
                         <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.availabilityStatus}">
-                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                            <label for="datasetForm:tabView:availabilityStatusText" class="col-sm-3 control-label">
                                 #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.availabilityStatus']}
                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.availabilityStatus.title']}"></span>
                             </label>
                             <div class="col-sm-9">
-                                <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.availabilityStatus)}" escape="false"/>
+                                <h:outputText id="availabilityStatusText" value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.availabilityStatus)}" escape="false"/>
                             </div>
                         </div>
                         <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.contactForAccess}">
-                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                            <label for="datasetForm:tabView:contactForAccessText" class="col-sm-3 control-label">
                                 #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.contactForAccess']}
                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.contactForAccess.title']}"></span>
                             </label>
                             <div class="col-sm-9">
-                                <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.contactForAccess)}" escape="false"/>
+                                <h:outputText id="contactForAccessText" value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.contactForAccess)}" escape="false"/>
                             </div>
                         </div>
                         <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.sizeOfCollection}">
-                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                            <label for="datasetForm:tabView:collectionSizeText" class="col-sm-3 control-label">
                                 #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.sizeOfCollection']}
                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.sizeOfCollection.tip']}"></span>
                             </label>
                             <div class="col-sm-9">
-                                <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.sizeOfCollection)}" escape="false"/>
+                                <h:outputText id="collectionSizeText" value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.sizeOfCollection)}" escape="false"/>
                             </div>
                         </div>
                         <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.studyCompletion}">
-                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                            <label for="datasetForm:tabView:studyCompletionText" class="col-sm-3 control-label">
                                 #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.studyCompletion']}
                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.studyCompletion.title']}"></span>
                             </label>
                             <div class="col-sm-9">
-                                <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.studyCompletion)}" escape="false"/>
+                                <h:outputText id="studyCompletionText" value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.studyCompletion)}" escape="false"/>
                             </div>
                         </div>
                     </ui:fragment>
                     <ui:fragment rendered="#{!empty editMode}">
                         <div class="form-group">
-                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                            <label for="datasetForm:tabView:dataAccessPlace" class="col-sm-3 control-label">
                                 #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.dataAccessPlace']}
                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.dataAccessPlace.title']}"></span>
                             </label>
                             <div class="col-sm-9">
-                                <p:inputTextarea value="#{termsOfUseAndAccess.dataAccessPlace}" rows="5" cols="60" styleClass="form-control" />
+                                <p:inputTextarea id="dataAccessPlace" value="#{termsOfUseAndAccess.dataAccessPlace}" rows="5" cols="60" styleClass="form-control" />
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                            <label for="datasetForm:tabView:originalArchive" class="col-sm-3 control-label">
                                 #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.originalArchive']}
                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.originalArchive.title']}"></span>
                             </label>
                             <div class="col-sm-9">
-                                <p:inputTextarea value="#{termsOfUseAndAccess.originalArchive}" rows="5" cols="60" styleClass="form-control" />
+                                <p:inputTextarea id="originalArchive" value="#{termsOfUseAndAccess.originalArchive}" rows="5" cols="60" styleClass="form-control" />
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                            <label for="datasetForm:tabView:availabilityStatus" class="col-sm-3 control-label">
                                 #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.availabilityStatus']}
                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.availabilityStatus.title']}"></span>
                             </label>
                             <div class="col-sm-9">
-                                <p:inputTextarea value="#{termsOfUseAndAccess.availabilityStatus}" rows="5" cols="60" styleClass="form-control" />
+                                <p:inputTextarea id="availabilityStatus" value="#{termsOfUseAndAccess.availabilityStatus}" rows="5" cols="60" styleClass="form-control" />
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                            <label for="datasetForm:tabView:contactForAccess" class="col-sm-3 control-label">
                                 #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.contactForAccess']}
                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.contactForAccess.title']}"></span>
                             </label>
                             <div class="col-sm-9">
-                                <p:inputTextarea value="#{termsOfUseAndAccess.contactForAccess}" rows="5" cols="60" styleClass="form-control" />
+                                <p:inputTextarea id="contactForAccess" value="#{termsOfUseAndAccess.contactForAccess}" rows="5" cols="60" styleClass="form-control" />
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                            <label for="datasetForm:tabView:sizeOfCollection" class="col-sm-3 control-label">
                                 #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.sizeOfCollection']}
                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.sizeOfCollection.tip']}"></span>
                             </label>
                             <div class="col-sm-9">
-                                <p:inputTextarea value="#{termsOfUseAndAccess.sizeOfCollection}" rows="5" cols="60" styleClass="form-control" />
+                                <p:inputTextarea id="sizeOfCollection" value="#{termsOfUseAndAccess.sizeOfCollection}" rows="5" cols="60" styleClass="form-control" />
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                            <label for="datasetForm:tabView:studyCompletion" class="col-sm-3 control-label">
                                 #{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.studyCompletion']}
                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.addInfo.studyCompletion.title']}"></span>
                             </label>
                             <div class="col-sm-9">
-                                <p:inputTextarea value="#{termsOfUseAndAccess.studyCompletion}" rows="5" cols="60" styleClass="form-control" />
+                                <p:inputTextarea id="studyCompletion" value="#{termsOfUseAndAccess.studyCompletion}" rows="5" cols="60" styleClass="form-control" />
                             </div>
                         </div>
                     </ui:fragment>
@@ -455,12 +450,12 @@
            <div id="panelCollapseGuestbook" class="collapse in">
                <div class="panel-body">
                    <div class="form-group">
-                       <label for="metadata_Guestbook" class="col-sm-3 control-label">
+                       <label for="datasetForm:tabView:metadata_Guestbook" class="col-sm-3 control-label">
                            #{bundle['file.dataFilesTab.terms.list.guestbook']}
                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.guestbook.title']}"></span>
                        </label>
-                       <div class="col-sm-9">
+                       <div id="metadata_Guestbook" class="col-sm-9">
                            <ui:fragment rendered="#{empty editMode}">
                                <ui:fragment rendered="#{ datasetPage and empty DatasetPage.dataset.guestbook 
                                                         and ((!dataverseSession.user.authenticated or !permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset))

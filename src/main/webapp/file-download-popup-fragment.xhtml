@@ -20,31 +20,152 @@
         </p:fragment>
         
         <div class="form-horizontal">
-            <div class="form-group" jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.license and workingVersion.termsOfUseAndAccess.license.name != 'CC0' and !empty workingVersion.termsOfUseAndAccess.termsOfUse}">
-                <label class="col-sm-3 control-label">
-                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
+        
+        <div class="form-group">
+            <label jsf:for="fdLicense" class="col-sm-3 control-label">
+                #{bundle['file.dataFilesTab.terms.list.license']} </label>
+            <div class="col-sm-9">
+                <p class="help-block">
+                    <h:outputText
+                        value="#{bundle['file.dataFilesTab.terms.list.license.view.description']}"
+                        escape="false" />
+                </p>
+                <ui:fragment
+                    rendered="#{!empty workingVersion.termsOfUseAndAccess.license}">
+                    <p>
+                        <img src="#{workingVersion.termsOfUseAndAccess.license.iconUrl}"
+                            title="#{workingVersion.termsOfUseAndAccess.license.shortDescription}"
+                            style="display: none" onload="this.style.display='inline'" /> <a
+                            href="#{workingVersion.termsOfUseAndAccess.license.uri}"
+                            title="#{workingVersion.termsOfUseAndAccess.license.shortDescription}"
+                            target="_blank">#{workingVersion.termsOfUseAndAccess.license.name}</a>
+                    </p>
+                </ui:fragment>
+                <ui:fragment
+                    rendered="#{empty workingVersion.termsOfUseAndAccess.license}">
+                    <p>
+                        <h:outputText
+                            value="#{bundle['file.dataFilesTab.terms.list.license.customterms.txt']}"
+                            escape="false" />
+                    </p>
+                </ui:fragment>
+            </div>
+        </div>
+
+        <ui:fragment rendered="#{empty workingVersion.termsOfUseAndAccess.license}">
+            <div class="form-group"
+                jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.termsOfUse}">
+                <label jsf:for="fdTermsOfuse" class="col-sm-3 control-label">
+                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']} <span
+                    class="glyphicon glyphicon-question-sign tooltip-icon"
+                    data-toggle="tooltip" data-placement="auto right"
+                    data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse.title']}"></span>
                 </label>
-                <div class="col-sm-6">
-                    <div class="panel panel-default">
-                        <div class="panel-body read-terms">
-                            <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.termsOfUse)}" escape="false" />
-                        </div>
-                    </div>
-                </div>
+                <h:outputText id="fdTermsOfUse" class="col-sm-6"
+                    value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.termsOfUse)}"
+                    escape="false" />
             </div>
-            <div class="form-group" jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.termsOfAccess}">
-                <div class="col-sm-3 control-label">
-                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
-                </div>
-                <div class="col-sm-6">
-                    <div class="panel panel-default">
-                        <div class="panel-body read-terms">
-                            <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.termsOfAccess)}" escape="false" />
-                        </div>
-                    </div>
-                </div>
+            <div class="form-group"
+                jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.confidentialityDeclaration}">
+                <label jsf:for="fdConfidentialityDeclaration"
+                    class="col-sm-3 control-label">
+                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration']}
+                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                    data-toggle="tooltip" data-placement="auto right"
+                    data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration.title']}"></span>
+                </label>
+                <h:outputText id="fdConfidentialityDeclaration" class="col-sm-6"
+                    value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.confidentialityDeclaration)}"
+                    escape="false" />
             </div>
-            <p:fragment rendered="#{workingVersion.dataset.guestbook != null and workingVersion.dataset.guestbook.enabled and downloadPopupRequired}" id="guestbookUIFragment">
+            <div class="form-group"
+                jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.specialPermissions}">
+                <label jsf:for="fdSpecialPermissions" class="col-sm-3 control-label">
+                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.permissions']}
+                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                    data-toggle="tooltip" data-placement="auto right"
+                    data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.permissions.title']}"></span>
+                </label>
+                <h:outputText id="fdSpecialPermissions" class="col-sm-6"
+                    value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.specialPermissions)}"
+                    escape="false" />
+            </div>
+            <div class="form-group"
+                jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.restrictions}">
+                <label jsf:for="fdRestrictions" class="col-sm-3 control-label">
+                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.restrictions']}
+                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                    data-toggle="tooltip" data-placement="auto right"
+                    data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.restrictions.title']}"></span>
+                </label>
+                <h:outputText id="fdRestrictions" class="col-sm-6"
+                    value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.restrictions)}"
+                    escape="false" />
+            </div>
+            <div class="form-group"
+                jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.citationRequirements}">
+                <label jsf:for="fdCitationRequirements"
+                    class="col-sm-3 control-label">
+                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.citationRequirements']}
+                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                    data-toggle="tooltip" data-placement="auto right"
+                    data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.citationRequirements.title']}"></span>
+                </label>
+                <h:outputText id="fdCitationRequirements" class="col-sm-6"
+                    value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.citationRequirements)}"
+                    escape="false" />
+            </div>
+            <div class="form-group"
+                jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.depositorRequirements}">
+                <label jsf:for="fdDepositorRequirements"
+                    class="col-sm-3 control-label">
+                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.depositorRequirements']}
+                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                    data-toggle="tooltip" data-placement="auto right"
+                    data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.depositorRequirements.title']}"></span>
+                </label>
+                <h:outputText id="fdDepositorRequirements" class="col-sm-6"
+                    value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.depositorRequirements)}"
+                    escape="false" />
+            </div>
+            <div class="form-group"
+                jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.conditions}">
+                <label jsf:for="fdConditions" class="col-sm-3 control-label">
+                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.conditions']}
+                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                    data-toggle="tooltip" data-placement="auto right"
+                    data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.conditions.title']}"></span>
+                </label>
+                <h:outputText id="fdConditions" class="col-sm-6"
+                    value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.conditions)}"
+                    escape="false" />
+            </div>
+            <div class="form-group"
+                jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.disclaimer}">
+                <label jsf:for="fdDisclaimer" class="col-sm-3 control-label">
+                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer']}
+                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                    data-toggle="tooltip" data-placement="auto right"
+                    data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer.title']}"></span>
+                </label>
+                <h:outputText id="fdDisclaimer" class="col-sm-6"
+                    value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.disclaimer)}"
+                    escape="false" />
+            </div>
+        </ui:fragment>
+        <div class="form-group"
+            jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.termsOfAccess and hasRestrictedFile}">
+            <label jsf:for="fdTermsOfAccess" class="col-sm-3 control-label">
+                #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
+                <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                data-toggle="tooltip" data-placement="auto right"
+                data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}"></span>
+            </label>
+            <h:outputText id="fdTermsOfAccess" class="col-sm-6"
+                value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.termsOfAccess)}"
+                escape="false" />
+        </div>
+        <p:fragment rendered="#{workingVersion.dataset.guestbook != null and workingVersion.dataset.guestbook.enabled and downloadPopupRequired}" id="guestbookUIFragment">
                 <!--
                 Only validate the active context. For example, the user might be filling out
                 the guestbook on the Preview tab rather than after clicking the "download file"

@@ -11,7 +11,7 @@
         <!-- input text start UPDATE: UI:REMOVE applied due to duplicate ID errors, left code as reference incase test scripts complain -->
         <span id="pre-input-#{dsf.datasetFieldType.name}" class="pre-input-tag"/></ui:remove>
     <ui:fragment rendered="#{cvoc==null}">
-        <p:inputText value="#{dsfv.valueForEdit}" id="inputText" pt:aria-required="#{dsf.required}"
+        <p:inputText value="#{dsfv.valueForEdit}" id="inputText" pt:aria-required="#{dsf.required}"  pt:aria-label="#{dsfvIndex!=0 ? bundle['dataset.additionalEntry']:''}"
                  styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"
                  rendered="#{!dsfv.datasetField.datasetFieldType.controlledVocabulary
                              and (dsfv.datasetField.datasetFieldType.fieldType == 'TEXT'
@@ -24,7 +24,7 @@
         <p:watermark for="inputText" value="#{dsfv.datasetField.datasetFieldType.localeWatermark}"></p:watermark>
     </ui:fragment>
     <ui:fragment rendered="#{cvoc!=null and cvoc.getString('term-uri-field').equals(dsfv.datasetField.datasetFieldType.name)}">
-        <p:inputText value="#{dsfv.valueForEdit}" id="cvocInputText" pt:aria-required="#{dsf.required}"
+        <p:inputText value="#{dsfv.valueForEdit}" id="cvocInputText" pt:aria-required="#{dsf.required}" pt:aria-label="#{dsfvIndex!=0 ? bundle['dataset.additionalEntry']:''}"
                  styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"
                  rendered="#{!dsfv.datasetField.datasetFieldType.controlledVocabulary
                              and (dsfv.datasetField.datasetFieldType.fieldType == 'TEXT'
@@ -44,7 +44,7 @@
         </p:inputText>
     </ui:fragment>
     <ui:fragment rendered="#{cvoc!=null and !cvoc.getString('term-uri-field').equals(dsfv.datasetField.datasetFieldType.name)}">
-        <p:inputText value="#{dsfv.valueForEdit}" id="cvocInputText2" pt:aria-required="#{dsf.required}"
+        <p:inputText value="#{dsfv.valueForEdit}" id="cvocInputText2" pt:aria-required="#{dsf.required}" pt:aria-label="#{dsfvIndex!=0 ? bundle['dataset.additionalEntry']:''}"
                  styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"
                  rendered="#{!dsfv.datasetField.datasetFieldType.controlledVocabulary
                              and (dsfv.datasetField.datasetFieldType.fieldType == 'TEXT'
@@ -57,7 +57,7 @@
         </p:inputText>
     </ui:fragment>
     
-    <p:inputTextarea value="#{dsfv.valueForEdit}" id="description" pt:aria-required="#{dsf.required}"
+    <p:inputTextarea value="#{dsfv.valueForEdit}" id="description" pt:aria-required="#{dsf.required}" pt:aria-label="#{dsfvIndex!=0 ? bundle['dataset.additionalEntry']:''}"
                      rows="5" cols="60" styleClass="form-control"
                      rendered="#{dsfv.datasetField.datasetFieldType.fieldType == 'TEXTBOX'}"/>
     <p:watermark for="description" value="#{dsfv.datasetField.datasetFieldType.localeWatermark}"></p:watermark>
