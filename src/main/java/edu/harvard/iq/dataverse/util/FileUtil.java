@@ -1485,7 +1485,7 @@ public class FileUtil implements java.io.Serializable  {
         // 1. License and Terms of Use:
         if (datasetVersion.getTermsOfUseAndAccess() != null) {
             License license = datasetVersion.getTermsOfUseAndAccess().getLicense();
-            if ((license == null && !datasetVersion.getTermsOfUseAndAccess().getTermsOfUse().isBlank())
+            if ((license == null && StringUtils.isNotBlank(datasetVersion.getTermsOfUseAndAccess().getTermsOfUse()))
                     || (license != null && !license.isDefault())) {
                 logger.fine("Download popup required because of license or terms of use.");
                 return true;
