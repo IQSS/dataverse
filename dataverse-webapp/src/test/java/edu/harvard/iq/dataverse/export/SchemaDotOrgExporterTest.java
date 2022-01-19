@@ -57,10 +57,10 @@ public class SchemaDotOrgExporterTest {
 
     @InjectMocks
     private SchemaDotOrgExporter schemaDotOrgExporter;
-    
+
     @Mock
     private SettingsServiceBean settingsService;
-    
+
     @Mock
     private SystemConfig systemConfig;
 
@@ -68,7 +68,7 @@ public class SchemaDotOrgExporterTest {
     DataFileServiceBean dataFileService;
 
     private JsonLdBuilder jsonLdBuilder;
-    
+
     MockDatasetFieldSvc datasetFieldTypeSvc = null;
 
 
@@ -306,10 +306,6 @@ public class SchemaDotOrgExporterTest {
         assertEquals("Birds Inc.", json2.getJsonArray("creator").getJsonObject(0).getString("affiliation"));
         assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("creator").getJsonObject(0).getString("@id"));
         assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("creator").getJsonObject(0).getString("identifier"));
-        assertEquals("Finch, Fiona", json2.getJsonArray("author").getJsonObject(0).getString("name"));
-        assertEquals("Birds Inc.", json2.getJsonArray("author").getJsonObject(0).getString("affiliation"));
-        assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("author").getJsonObject(0).getString("@id"));
-        assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("author").getJsonObject(0).getString("identifier"));
         assertEquals("1955-11-05", json2.getString("datePublished"));
         assertEquals("1955-11-05", json2.getString("dateModified"));
         assertEquals("1", json2.getString("version"));
@@ -402,20 +398,6 @@ public class SchemaDotOrgExporterTest {
 
         assertEquals("Gallup Foundation", json2.getJsonArray("creator").getJsonObject(3).getString("name"));
         assertEquals("Organization", json2.getJsonArray("creator").getJsonObject(3).getString("@type"));
-
-
-        assertEquals("Finch, Fiona", json2.getJsonArray("author").getJsonObject(0).getString("name"));
-        assertEquals("Person", json2.getJsonArray("author").getJsonObject(0).getString("@type"));
-
-        assertEquals("Admin, Dataverse", json2.getJsonArray("author").getJsonObject(1).getString("name"));
-        assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("author").getJsonObject(1).getString("@id"));
-        assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("author").getJsonObject(1).getString("identifier"));
-
-        assertEquals("Jan Kowalski", json2.getJsonArray("author").getJsonObject(2).getString("name"));
-        assertEquals("Person", json2.getJsonArray("author").getJsonObject(2).getString("@type"));
-
-        assertEquals("Gallup Foundation", json2.getJsonArray("author").getJsonObject(3).getString("name"));
-        assertEquals("Organization", json2.getJsonArray("author").getJsonObject(3).getString("@type"));
     }
 
     @Test
@@ -761,7 +743,7 @@ public class SchemaDotOrgExporterTest {
 
         Assert.assertTrue(result.isEmpty());
     }
-    
+
 
     @TestBean
     static class MockDatasetFieldSvc extends DatasetFieldServiceBean {

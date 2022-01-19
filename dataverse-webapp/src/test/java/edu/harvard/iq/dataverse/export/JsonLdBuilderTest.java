@@ -101,7 +101,6 @@ public class JsonLdBuilderTest {
         // TODO: If it ever becomes easier to mock authors, test them.
         JsonArray emptyArray = Json.createArrayBuilder().build();
         assertEquals(emptyArray, obj.getJsonArray("creator"));
-        assertEquals(emptyArray, obj.getJsonArray("author"));
         // TODO: If it ever becomes easier to mock subjects, test them.
         assertEquals(emptyArray, obj.getJsonArray("keywords"));
         assertEquals("Organization", obj.getJsonObject("publisher").getString("@type"));
@@ -152,7 +151,6 @@ public class JsonLdBuilderTest {
         // TODO: If it ever becomes easier to mock authors, test them.
         JsonArray emptyArray = Json.createArrayBuilder().build();
         assertEquals(emptyArray, obj.getJsonArray("creator"));
-        assertEquals(emptyArray, obj.getJsonArray("author"));
         // TODO: If it ever becomes easier to mock subjects, test them.
         assertEquals(emptyArray, obj.getJsonArray("keywords"));
         assertEquals("Organization", obj.getJsonObject("publisher").getString("@type"));
@@ -161,5 +159,5 @@ public class JsonLdBuilderTest {
         assertEquals("LibraScholar", obj.getJsonObject("provider").getString("name"));
         assertEquals("LibraScholar", obj.getJsonObject("includedInDataCatalog").getString("name"));
     }
-    
+
 }

@@ -28,9 +28,9 @@ import java.util.List;
 public class JsonLdBuilder {
     // TODO: Consider moving this comment into the Exporter code.
     // The export subsystem assumes there is only
-    // one metadata export in a given format per dataset (it uses the current 
-    // released (published) version. This JSON fragment is generated for a 
-    // specific released version - and we can have multiple released versions. 
+    // one metadata export in a given format per dataset (it uses the current
+    // released (published) version. This JSON fragment is generated for a
+    // specific released version - and we can have multiple released versions.
     // So something will need to be modified to accommodate this. -- L.A.
 
     private DataFileServiceBean dataFileService;
@@ -57,7 +57,7 @@ public class JsonLdBuilder {
         if (!datasetVersion.isReleased()) {
             return "";
         }
-        
+
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add("@context", "http://schema.org");
         job.add("@type", "Dataset");
@@ -99,12 +99,6 @@ public class JsonLdBuilder {
          */
         job.add("creator", authorsArray);
         /**
-         * "author" is still here for backward compatibility. Depending on how
-         * the "creator" experiment above goes, we may deprecate it in the
-         * future.
-         */
-        job.add("author", authorsArray);
-        /**
          * We are aware that there is a "datePublished" field but it means "Date
          * of first broadcast/publication." This only makes sense for a 1.0
          * version.
@@ -138,7 +132,7 @@ public class JsonLdBuilder {
 
         /**
          * "keywords" - contains subject(s), datasetkeyword(s) and topicclassification(s)
-         * metadata fields for the version. -- L.A. 
+         * metadata fields for the version. -- L.A.
          * (see #2243 for details/discussion/feedback from Google)
          */
         JsonArrayBuilder keywords = Json.createArrayBuilder();
@@ -302,7 +296,7 @@ public class JsonLdBuilder {
                 job.add("distribution", fileArray);
             }
         }
-        
+
         return job.build().toString();
     }
 
