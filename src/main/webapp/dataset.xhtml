@@ -374,7 +374,7 @@
                                                             </h:outputLink>
                                                         </li>
                                                         <li>
-                                                            <p:commandLink id="editMetadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:datasetForm,:messagePanel" oncomplete="javascript:bind_bsui_components();">
+                                                            <p:commandLink id="editMetadata" onclick="editMetadata()"  >
                                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                                 <h:outputText value="#{bundle['dataset.editBtn.itemLabel.metadata']}" />
                                                             </p:commandLink>
@@ -1741,6 +1741,9 @@
                     <p:remoteCommand name="linkEditTerms"   actionListener="#{DatasetPage.edit('LICENSE')}" update="@form,:datasetForm,:messagePanel"  oncomplete="javascript:bind_bsui_components();">
                         <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                     </p:remoteCommand>
+                    <p:remoteCommand name="editMedatdataCommand"   actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:datasetForm,:messagePanel"  oncomplete="javascript:bind_bsui_components();">
+                        <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                    </p:remoteCommand>
                     <!-- END: Publish/Submit for Review Dialogs -->
                 </h:form>
                 <script>
@@ -1768,8 +1771,16 @@
                     function openCompareTwo() {
                         PF('compareTwo').show();
                     }
-                    function editTerms(){                       
+                    function editTerms(){  
                         linkEditTerms();
+                    }
+                    function editMetadata(){  
+                        var validTOA = document.getElementById("datasetForm:validTermsofAccess").value;
+                        if (validTOA === false){
+                            PF('blockDatasetForm').show();
+                            PF('accessPopup').show();
+                        }                       
+                        editMedatdataCommand();
                     }
                     function testCheckBoxes() {
                         var count = PF('versionsTable').getSelectedRowsCount();

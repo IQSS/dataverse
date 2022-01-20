@@ -781,6 +781,14 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
         }
     }
+    
+    public boolean getHasValidTermsOfAccess(){
+        return isHasValidTermsOfAccess(); //HasValidTermsOfAccess
+    }
+    
+    public void setHasValidTermsOfAccess(boolean value){
+        //dummy for ui
+    }
 
     private Boolean hasRestrictedFiles = null;
 

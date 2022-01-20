@@ -2463,30 +2463,9 @@ public class DatasetPage implements java.io.Serializable {
         }
         workingVersion = dataset.getEditVersion();
         clone = workingVersion.cloneDatasetVersion();
-        if (editMode == EditMode.INFO) {
-            // ?
-        } else if (editMode == EditMode.FILE) {
-            if(!hasValidTermsOfAccess){ 
-                this.editMode = EditMode.LICENSE;
-                PrimeFaces.current().executeScript("PF('blockDatasetForm').show()");
-                PrimeFaces.current().executeScript("PF('accessPopup').show()");
-                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.editTerms.label"), BundleUtil.getStringFromBundle("dataset.message.editTerms.message"));
-                this.readOnly = false;
-                return;
-            }
-            // JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.editFiles"));
-            // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Upload + Edit Dataset Files", " - You can drag and drop your files from your desktop, directly into the upload widget."));
-        } else if (editMode.equals(EditMode.METADATA)) {
+        if (editMode.equals(EditMode.METADATA)) {
             datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion, true);
             updateDatasetFieldInputLevels();
-            if(!hasValidTermsOfAccess){
-                this.editMode = EditMode.LICENSE;
-                PrimeFaces.current().executeScript("PF('blockDatasetForm').show()");
-                PrimeFaces.current().executeScript("PF('accessPopup').show()");
-                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.editTerms.label"), BundleUtil.getStringFromBundle("dataset.message.editTerms.message"));
-                this.readOnly = false;
-                return;
-            }
             JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.editMetadata.label"), BundleUtil.getStringFromBundle("dataset.message.editMetadata.message"));
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset Metadata", " - Add more metadata about your dataset to help others easily find it."));
         } else if (editMode.equals(EditMode.LICENSE)){
