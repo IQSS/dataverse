@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,6 +24,8 @@ import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -540,32 +543,61 @@ class DataCiteMetadataTemplate {
     private String generateRelatedIdentifiers(DvObject dvObject) {
 
         StringBuilder sb = new StringBuilder();
+        List<String> relatedIdentifiers = new ArrayList<>();
         if (dvObject.isInstanceofDataset()) {
             Dataset dataset = (Dataset) dvObject;
+            for (DatasetField field : dataset.getLatestVersion().getDatasetFields()) {
+                if (field.getDatasetFieldType().getName().equals("publication")) {
+                    for (DatasetFieldCompoundValue compoundValue : field.getDatasetFieldCompoundValues()) {
+                        String publicationCitation = null;
+                        String publicationIDType = null;
+                        String publicationIDNumber = null;
+                        String publicationURL = null;
+                        for (DatasetField child : compoundValue.getChildDatasetFields()) {
+                            switch (child.getDatasetFieldType().getName()) {
+                                case "publicationCitation": publicationCitation = child.getValue(); break;
+                                case "publicationIDType": publicationIDType = child.getValue(); break;
+                                case "publicationIDNumber": publicationIDNumber = child.getValue(); break;
+                                case "publicationURL": publicationURL = child.getValue(); break;
+                                default: break;
+                            }
+                        }
+                        if (StringUtils.isNotBlank(publicationIDType) && StringUtils.isNotBlank(publicationIDNumber)) {
+                            relatedIdentifiers.add(serializeIdenifier(publicationIDType, "Cites", publicationIDNumber));
+                        }
+                    }
+                }
+            }
             if (!dataset.getFiles().isEmpty() && !(dataset.getFiles().get(0).getIdentifier() == null)) {
 
                 datafileIdentifiers = new ArrayList<>();
                 for (DataFile dataFile : dataset.getFiles()) {
                     if (!dataFile.getGlobalId().asString().isEmpty()) {
-                        if (sb.toString().isEmpty()) {
-                            sb.append("<relatedIdentifiers>");
-                        }
-                        sb.append("<relatedIdentifier relatedIdentifierType=\"DOI\" relationType=\"HasPart\">" + dataFile.getGlobalId() + "</relatedIdentifier>");
+                        relatedIdentifiers.add(serializeIdenifier("DOI", "HasPart", dataFile.getGlobalId().toString()));
                     }
                 }
 
-                if (!sb.toString().isEmpty()) {
-                    sb.append("</relatedIdentifiers>");
-                }
             }
         } else if (dvObject.isInstanceofDataFile()) {
             DataFile df = (DataFile) dvObject;
+            relatedIdentifiers.add(serializeIdenifier("DOI", "IsPartOf", df.getOwner().getGlobalId().toString()));
+        }
+
+        if (!relatedIdentifiers.isEmpty()) {
             sb.append("<relatedIdentifiers>");
-            sb.append("<relatedIdentifier relatedIdentifierType=\"DOI\" relationType=\"IsPartOf\""
-                    + ">" + df.getOwner().getGlobalId() + "</relatedIdentifier>");
+            sb.append(StringUtils.join(relatedIdentifiers, "\n"));
             sb.append("</relatedIdentifiers>");
         }
         return sb.toString();
+    }
+
+    private String serializeIdenifier(String schema, String relation, String identifier) {
+        if (!schema.toUpperCase().equals("DOI"))
+            identifier = schema.toLowerCase() + ":" + identifier;
+        return String.format(
+            "<relatedIdentifier relatedIdentifierType=\"%s\" relationType=\"%s\">%s</relatedIdentifier>",
+            schema.toUpperCase(), relation, identifier
+        );
     }
 
     public void generateFileIdentifiers(DvObject dvObject) {
