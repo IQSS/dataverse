@@ -16,7 +16,7 @@
         <f:facet name="first">
             <o:resourceInclude path="/CustomizationFilesServlet?customFileType=analytics" />
             <title><h:outputText value="#{pageTitle}"/></title>
-            
+
             <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
             <ui:remove><!-- We might want dc_meta_header or jsonld_header at the file level some day.--></ui:remove>
             <ui:insert name="dc_meta_header"></ui:insert>
@@ -39,14 +39,8 @@
         <link type="text/css" rel="stylesheet" href="#{resource['vecler/theme.css']}?version=#{systemConfig.getVersionWithBuild()}" />
 
         <link type="text/css" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700&amp;display=swap" />
-        <link type="text/css" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,700&amp;display=swap" /> 
-        
-        <ui:fragment rendered="#{!widgetWrapper.widgetView}">
-            <script>
-                // Break out of iframe
-                if (window !== top) top.location = window.location;
-            </script>
-        </ui:fragment>
+        <link type="text/css" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,700&amp;display=swap" />
+
         <ui:fragment rendered="#{!empty settingsWrapper.getSettingValue(':StyleCustomizationFile')}">
             <style>
                 /* Custom CSS */
