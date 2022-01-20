@@ -44,6 +44,7 @@
                     <f:viewAction action="#{DataverseUserPage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse(), (DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn'] : bundle.account))}"/>
                 </f:metadata>
+                <h1>#{pageTitle}</h1>
                 <h:form id="dataverseUserForm">
 
                     <p:focus context="dataverseUserForm"/>
@@ -389,7 +390,7 @@
                                         </ui:fragment>
                                         <span class="caret"></span>
                                     </button>
-                                    <ul class="dropdown-menu pull-right text-left" role="menu">
+                                    <ul class="dropdown-menu pull-right text-left">
                                         <ui:fragment rendered="#{DataverseUserPage.passwordEditable or DataverseUserPage.accountDetailsEditable}">
                                             <li>
                                                 <p:commandLink id="editAccount" rendered="#{DataverseUserPage.accountDetailsEditable}"

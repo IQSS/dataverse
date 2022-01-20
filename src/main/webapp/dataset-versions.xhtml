@@ -59,11 +59,11 @@
             <ui:fragment rendered="#{versionTab.released 
                                      or ((versionTab.deaccessioned or versionTab.draft) and permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset'))}">
                 <ui:fragment rendered="#{!(versionTab.released or versionTab.deaccessioned)}">
-                    <a id="versionLink" href="/dataset.xhtml?persistentId=#{versionTab.dataset.globalIdString}&#38;version=#{versionTab.versionState}" class="ui-commandlink ui-widget">
+                    <a href="/dataset.xhtml?persistentId=#{versionTab.dataset.globalIdString}&#38;version=#{versionTab.versionState}" class="ui-commandlink ui-widget">
                         <h:outputText rendered="#{!(versionTab.released or versionTab.deaccessioned)}" value="#{versionTab.versionState}" /></a>
                 </ui:fragment>
                 <ui:fragment rendered="#{(versionTab.released or versionTab.deaccessioned)}">
-                    <a id="versionLink" href="/dataset.xhtml?persistentId=#{versionTab.dataset.globalIdString}&#38;version=#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" class="ui-commandlink ui-widget">
+                    <a href="/dataset.xhtml?persistentId=#{versionTab.dataset.globalIdString}&#38;version=#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" class="ui-commandlink ui-widget">
                         <h:outputText rendered="#{versionTab.released or versionTab.deaccessioned}" value="#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" /></a>
                 </ui:fragment>
             </ui:fragment>
