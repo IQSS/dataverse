@@ -35,7 +35,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.StoredProcedureQuery;
 import javax.persistence.TypedQuery;
-
+import org.apache.commons.text.StringEscapeUtils;
 /**
  *
  * @author skraffmiller
@@ -269,7 +269,7 @@ public class GuestbookResponseServiceBean {
       This method is used to produce an array of guestbook responses for displaying 
       on the guestbook-responses page. 
     */
-    public List<Object[]> findArrayByGuestbookIdAndDataverseId (Long guestbookId, Long dataverseId, Long limit){
+    public List<Object[]> findArrayByGuestbookIdAndDataverseId(Long guestbookId, Long dataverseId, Long limit){
 
         Guestbook gbIn = em.find(Guestbook.class, guestbookId);
         boolean hasCustomQuestions = gbIn.getCustomQuestions() != null;
@@ -400,9 +400,9 @@ public class GuestbookResponseServiceBean {
 
                 if (asString) {
                     // as combined strings of comma-separated question and answer values
+                    //assuming the strings are only being created for writing out to csv which seems to be the case
+                    String qa = SEPARATOR + StringEscapeUtils.escapeCsv((String)response[0]) + SEPARATOR + (response[1] == null ? "" : StringEscapeUtils.escapeCsv((String)response[1]));
                     
-                    String qa = SEPARATOR + ((String)response[0]).replace(',', ' ') + SEPARATOR + (response[1] == null ? "" : ((String)response[1]).replace(',', ' '));
-
                     if (ret.containsKey(responseId)) {
                         ret.put(responseId, ret.get(responseId) + qa);
                     } else {
@@ -413,6 +413,9 @@ public class GuestbookResponseServiceBean {
                     
                     if (!ret.containsKey(responseId)) {
                         ret.put(responseId, new ArrayList<>());
+                    }
+                    if(response[1] != null){
+                         response[1]=((String)response[1]).replaceAll("(\r\n|\n)", "<br />");
                     }
                     ((List) ret.get(responseId)).add(response);
                 }
