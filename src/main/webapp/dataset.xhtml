@@ -1689,6 +1689,12 @@
                                             title="#{DatasetUtil:getLicenseDescription(DatasetPage.workingVersion)}"
                                             target="_blank">#{DatasetUtil:getLicenseName(DatasetPage.workingVersion)}
                                         </a>
+                                        <ui:fragment
+                                            rendered="#{empty workingVersion.termsOfUseAndAccess.license}">
+                                            <h:outputText
+                                                value="#{bundle['file.dataFilesTab.terms.list.license.customterms.txt']}"
+                                                escape="false" />
+                                        </ui:fragment>
                                     </p>
                                 </div>
                             </div>
@@ -1760,10 +1766,10 @@
                                         value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfUseAndAccess.disclaimer)}" escape="false"/>
                                 </div>
                                 <div class="form-group" jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.termsOfAccess and DatasetPage.hasRestrictedFile()}">
-                                    <label jsf:for="fdTermsOfAccess" class="col-sm-3 control-label">
+                                    <label jsf:for="termsOfAccess" class="col-sm-3 control-label">
                                         #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
                                     </label>
-                                    <h:outputText id="fdTermsOfAccess" class="col-sm-6"
+                                    <h:outputText id="termsOfAccess" class="col-sm-6"
                                         value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.termsOfAccess)}" escape="false"/>
                                 </div>
                             </ui:fragment>

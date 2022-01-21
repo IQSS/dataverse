@@ -42,6 +42,12 @@
                         title="#{DatasetUtil:getLicenseDescription(workingVersion)}"
                         target="_blank">#{DatasetUtil:getLicenseName(workingVersion)}
                     </a>
+                    <ui:fragment
+                        rendered="#{empty workingVersion.termsOfUseAndAccess.license}">
+                        <h:outputText
+                            value="#{bundle['file.dataFilesTab.terms.list.license.customterms.txt']}"
+                            escape="false" />
+                    </ui:fragment>
                 </p>
             </div>
         </div>
