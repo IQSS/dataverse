@@ -249,6 +249,13 @@
                                              requiredMessage="#{bundle['requiredField']}">
                                 </p:inputText>
                                 <p:message id="cqMessages" for="customQuestionResponse" display="text"/>
+                                <p:inputTextarea id="customQuestionResponseTextArea" rows="8" autoResize="true"
+                                             styleClass="form-control"
+                                             value="#{customQuestionResponse.response}"
+                                             required="#{param['DO_GB_VALIDATION'] and customQuestionResponse.customQuestion.required}"
+                                             rendered="#{customQuestionResponse.customQuestion.questionType=='textarea'}"
+                                             requiredMessage="#{bundle['requiredField']}"/>
+                                <p:message id="cqMessagesTA" for="customQuestionResponseTextArea" display="text"/>
                                 <p:selectOneMenu id="customQuestionResponseSelect"
                                                  styleClass="form-control" value="#{customQuestionResponse.response}"
                                                  required="#{param[validateThisContext] and customQuestionResponse.customQuestion.required}"

@@ -556,30 +556,36 @@ public class Dataset extends DvObjectContainer {
     }
     
     public String getProtocolForFileStorage(){
-         String retVal = getProtocol();            
+        String retVal = getProtocol();            
         if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
-            for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
-                retVal = api.getProtocol();
+            for (AlternativePersistentIdentifier altpid : this.getAlternativePersistentIndentifiers()) {
+                if (altpid.isStorageLocationDesignator()) {
+                    retVal = altpid.getProtocol();
+                }
             }
         }
         return retVal;         
     }
     
     public String getAuthorityForFileStorage(){
-         String retVal = getAuthority();            
+        String retVal = getAuthority();            
         if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
-            for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
-                retVal = api.getAuthority();
+            for (AlternativePersistentIdentifier altpid : this.getAlternativePersistentIndentifiers()) {
+                if (altpid.isStorageLocationDesignator()) {
+                    retVal = altpid.getAuthority();
+                }
             }
         }
         return retVal;         
     }
     
     public String getIdentifierForFileStorage(){
-         String retVal = getIdentifier();            
+        String retVal = getIdentifier();            
         if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
-            for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
-                retVal = api.getIdentifier();
+            for (AlternativePersistentIdentifier altpid : this.getAlternativePersistentIndentifiers()) {
+                if (altpid.isStorageLocationDesignator()) {
+                    retVal = altpid.getIdentifier();
+                }
             }
         }
         return retVal;         
