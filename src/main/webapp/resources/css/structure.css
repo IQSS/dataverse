@@ -847,13 +847,13 @@ div[id$="filesTable"] .ui-paginator .ui-paginator-pages .ui-state-active {
 /* FILES TREE */
 div[id$="filesTree"] span.ui-treenode-label span[class^='icon'] {margin-left: -2px;}
 
-/* DOWNLOAD POPUP */
+/* PUBLISH, REQUEST ACCESS, AND DOWNLOAD POPUPS */
 div.panel-body.read-terms{max-height:220px; overflow-y:scroll; width:100%; background-color:#eeeeee;}
-#datasetForm\:downloadPopup_content .form-group label {
+.terms .form-group label {
     padding-top:3px;
     padding-bottom: 3px;
 }
-#datasetForm\:downloadPopup_content .form-horizontal .form-group span.col-sm-6 {
+.terms .form-group span.col-sm-6 {
     padding-top: 3px;
     padding-bottom: 3px;
     overflow-y: auto;
