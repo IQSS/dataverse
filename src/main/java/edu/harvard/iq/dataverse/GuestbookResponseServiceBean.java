@@ -189,7 +189,6 @@ public class GuestbookResponseServiceBean {
             Integer datasetId = (Integer) result[2];
             String datasetTitle = datasetTitles.get(datasetId);
             sb.append(datasetTitle == null ? "" : StringEscapeUtils.escapeCsv(datasetTitle));
-            System.out.print(StringEscapeUtils.escapeCsv(datasetTitle));
             sb.append(SEPARATOR);
             
             // Dataset persistent identifier: 
