@@ -380,14 +380,7 @@ public class AuthenticationServiceBean {
         }
         if (tokens.size() == 1) {
             // Normal case - one token that may or may not have expired
-            ApiToken token = tokens.get(0);
-            if (token.getExpireTime().before(latest)) {
-                // Don't return an expired token which is unusable, delete it instead
-                em.remove(token);
-                return null;
-            } else {
-                return tokens.get(0);
-            }
+            return tokens.get(0);
         } else {
             // We have more than one due to https://github.com/IQSS/dataverse/issues/6389 or
             // similar, so we should delete all but one token.
