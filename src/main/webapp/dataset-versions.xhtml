@@ -143,8 +143,8 @@
 
         <!-- date column -->
         <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.published']}" class="col-sm-2">
-            <ui:fragment><!-- rendered="#{ !empty(versionTab) and !empty(versionTab.versionDate) }"-->
-                <h:outputText id="versionDate" value="#{versionTab.versionDate}" />
+            <ui:fragment><!-- rendered="#{ !empty(versionTab) and !empty(versionTab.releaseDate) }"-->
+                <h:outputText id="versionDate" value="#{versionTab.publicationDateAsString}" />
             </ui:fragment>
         </p:column><!-- end: date column -->
         <p:column headerText="Archived" class="col-sm-1"  rendered="#{DatasetPage.isSuperUser() and !versionTab.isDraft()}">
