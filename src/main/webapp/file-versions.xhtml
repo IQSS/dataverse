@@ -136,7 +136,7 @@
         <!-- end: contributor column -->
         <!-- date column -->
         <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.published']}" class="col-sm-2">
-            <h:outputText id="versionDate" value="#{versionTab.datasetVersion.versionDate}" />
+            <h:outputText id="versionDate" value="#{versionTab.datasetVersion.publicationDateAsString}" />
         </p:column>
         <!-- end: date column -->
     </p:dataTable>
