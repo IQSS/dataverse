@@ -1671,21 +1671,31 @@
                             </p>
                         </ui:fragment>
                         <!-- START license info -->
-                        <div class="form-group">
+                        <div class="form-group terms">
                             <div class="form-group">
                                 <label for="metadata_Terms" class="col-sm-3 control-label">
                                     #{bundle['file.dataFilesTab.terms.list.license']}
                                 </label>
                                 <div class="col-sm-9">
-                                    <ui:fragment rendered="#{empty DatasetPage.workingVersion.termsOfUseAndAccess.license}">
-                                        <p>#{bundle['license.custom']}</p>
-                                    </ui:fragment>
-                                    <ui:fragment rendered="#{!empty DatasetPage.workingVersion.termsOfUseAndAccess.license}">
-                                        <p>
-                                            <img src="#{DatasetPage.workingVersion.termsOfUseAndAccess.license.iconUrl}" title="#{DatasetPage.workingVersion.termsOfUseAndAccess.license.shortDescription}" style="display:none"  onload="this.style.display='inline'" />
-                                            <a href="#{DatasetPage.workingVersion.termsOfUseAndAccess.license.uri}" target="_blank">#{DatasetPage.workingVersion.termsOfUseAndAccess.license.name}</a>
-                                        </p>
-                                    </ui:fragment>
+                                    <p>
+                                        <o:importFunctions
+                                            type="edu.harvard.iq.dataverse.dataset.DatasetUtil" />
+                                        <img
+                                            src="#{DatasetUtil:getLicenseIcon(DatasetPage.workingVersion)}"
+                                            title="#{DatasetUtil:getLicenseDescription(DatasetPage.workingVersion)}"
+                                            style="display: none" onload="this.style.display='inline'" />
+                                        <a
+                                            href="#{DatasetUtil:getLicenseURI(DatasetPage.workingVersion)}"
+                                            title="#{DatasetUtil:getLicenseDescription(DatasetPage.workingVersion)}"
+                                            target="_blank">#{DatasetUtil:getLicenseName(DatasetPage.workingVersion)}
+                                        </a>
+                                        <ui:fragment
+                                            rendered="#{empty workingVersion.termsOfUseAndAccess.license}">
+                                            <h:outputText
+                                                value="#{bundle['file.dataFilesTab.terms.list.license.customterms.txt']}"
+                                                escape="false" />
+                                        </ui:fragment>
+                                    </p>
                                 </div>
                             </div>
                             <ui:fragment rendered="#{!empty DatasetPage.workingVersion.termsOfUseAndAccess.license}">
@@ -1700,68 +1710,67 @@
                             </ui:fragment>
                             <ui:fragment rendered="#{empty DatasetPage.workingVersion.termsOfUseAndAccess.license}">
                                 <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfUseAndAccess.termsOfUse}">
-                                    <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                    <label for="termsOfUse" class="col-sm-3 control-label">
                                         #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
                                     </label>
-                                    <div class="col-sm-9">
-                                        <p:inputTextarea value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfUseAndAccess.termsOfUse)}" readonly="true" rows="3" styleClass="form-control" style="border:none"/>
-                                   </div>
+                                    <h:outputText id="termsOfUse" class="col-sm-9"
+                                        value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfUseAndAccess.termsOfUse)}" escape="false"/>
                                 </div>
                                 <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfUseAndAccess.confidentialityDeclaration}">
                                     <label for="confidentialityDeclaration" class="col-sm-3 control-label">
                                         #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration']}
                                     </label>
-                                    <div class="col-sm-9">
-                                        <p:inputTextarea value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfUseAndAccess.confidentialityDeclaration)}" readonly="true" rows="3" styleClass="form-control" style="border:none"/>
-                                    </div>
+                                    <h:outputText id="confidentialityDeclaration" class="col-sm-9"
+                                        value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfUseAndAccess.confidentialityDeclaration)}" escape="false"/>
                                 </div>
                                 <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfUseAndAccess.specialPermissions}">
                                     <label for="specialPermissions" class="col-sm-3 control-label">
                                         #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.permissions']}
                                     </label>
-                                    <div class="col-sm-9">
-                                        <p:inputTextarea value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfUseAndAccess.specialPermissions)}" readonly="true" rows="3" styleClass="form-control" style="border:none"/>
-                                    </div>
+                                    <h:outputText id="specialPermissions" class="col-sm-9"
+                                        value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfUseAndAccess.specialPermissions)}" escape="false"/>
                                 </div>
                                 <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfUseAndAccess.restrictions}">
                                     <label for="restrictions" class="col-sm-3 control-label">
                                         #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.restrictions']}
                                     </label>
-                                    <div class="col-sm-9">
-                                        <p:inputTextarea value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfUseAndAccess.restrictions)}" readonly="true" rows="3" styleClass="form-control" style="border:none"/>
-                                    </div>
+                                    <h:outputText id="restrictions" class="col-sm-9"
+                                        value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfUseAndAccess.restrictions)}" escape="false"/>
                                 </div>
                                 <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfUseAndAccess.citationRequirements}">
                                     <label for="citationRequirements" class="col-sm-3 control-label">
                                         #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.citationRequirements']}
                                     </label>
-                                    <div class="col-sm-9">
-                                        <p:inputTextarea value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfUseAndAccess.citationRequirements)}" readonly="true" rows="3" styleClass="form-control" style="border:none"/>
-                                    </div>
+                                    <h:outputText id="citationRequirements" class="col-sm-9"
+                                        value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfUseAndAccess.citationRequirements)}" escape="false"/>
                                 </div>
                                 <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfUseAndAccess.depositorRequirements}">
                                     <label for="depositorRequirements" class="col-sm-3 control-label">
                                         #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.depositorRequirements']}
                                     </label>
-                                    <div class="col-sm-9">
-                                        <p:inputTextarea value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfUseAndAccess.depositorRequirements)}" readonly="true" rows="3" styleClass="form-control" style="border:none"/>
-                                    </div>
+                                    <h:outputText id="depositorRequirements" class="col-sm-9"
+                                        value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfUseAndAccess.depositorRequirements)}" escape="false"/>
                                 </div>
                                 <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfUseAndAccess.conditions}">
                                     <label for="conditions" class="col-sm-3 control-label">
                                         #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.conditions']}
                                     </label>
-                                    <div class="col-sm-9">
-                                        <p:inputTextarea value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfUseAndAccess.conditions)}" readonly="true" rows="3" styleClass="form-control" style="border:none"/>
-                                    </div>
+                                    <h:outputText id="conditions" class="col-sm-9"
+                                        value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfUseAndAccess.conditions)}" escape="false"/>
                                 </div>
                                 <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfUseAndAccess.disclaimer}">
                                     <label for="disclaimer" class="col-sm-3 control-label">
                                         #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer']}
                                     </label>
-                                    <div class="col-sm-9">
-                                        <p:inputTextarea value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfUseAndAccess.disclaimer)}" readonly="true" rows="3" styleClass="form-control" style="border:none"/>
-                                    </div>
+                                    <h:outputText id="disclaimer" class="col-sm-9"
+                                        value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfUseAndAccess.disclaimer)}" escape="false"/>
+                                </div>
+                                <div class="form-group" jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.termsOfAccess and DatasetPage.hasRestrictedFile()}">
+                                    <label jsf:for="termsOfAccess" class="col-sm-3 control-label">
+                                        #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
+                                    </label>
+                                    <h:outputText id="termsOfAccess" class="col-sm-6"
+                                        value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.termsOfAccess)}" escape="false"/>
                                 </div>
                             </ui:fragment>
                         </div>

@@ -3272,6 +3272,18 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
 
+    public boolean hasRestrictedFile() {
+        if (workingVersion == null) {
+            return false;
+        }
+        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+            if (fmd.isRestricted()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public int getRestrictedFileCount() {
         if (workingVersion == null){
             return 0;
