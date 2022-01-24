@@ -14,12 +14,13 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                os: [ ubuntu-latest ]
                 jdk: [ '11' ]
-                #include:
-                #    -   os: ubuntu-latest
-                #        jdk: '16'
-        runs-on: ${{ matrix.os }}
+                experimental: [false]
+                include:
+                    - jdk: '17'
+                      experimental: true
+        continue-on-error: ${{ matrix.experimental }}
+        runs-on: ubuntu-latest
         steps:
           - uses: actions/checkout@v2
           - name: Set up JDK ${{ matrix.jdk }}
