@@ -373,7 +373,6 @@ public class AuthenticationServiceBean {
         TypedQuery<ApiToken> typedQuery = em.createNamedQuery("ApiToken.findByUser", ApiToken.class);
         typedQuery.setParameter("user", au);
         List<ApiToken> tokens = typedQuery.getResultList();
-        Timestamp latest = new Timestamp(java.time.Instant.now().getEpochSecond()*1000);
         if (tokens.isEmpty()) {
             // Normal case - no token exists
             return null;
@@ -383,25 +382,23 @@ public class AuthenticationServiceBean {
             return tokens.get(0);
         } else {
             // We have more than one due to https://github.com/IQSS/dataverse/issues/6389 or
-            // similar, so we should delete all but one token.
-            // Since having an expired token also makes no sense, if we only have an expired
-            // token, remove that as well
-            ApiToken goodToken = null;
+            // similar, so we should delete all but one token - pick the latest.
+            ApiToken newestToken = null;
             for (ApiToken token : tokens) {
-                Timestamp time = token.getExpireTime();
-                if (time.before(latest)) {
-                    em.remove(token);
+                if (newestToken == null) {
+                    newestToken = token;
                 } else {
-                    if(goodToken != null) {
-                      em.remove(goodToken);
-                      goodToken = null;
+                    Timestamp time = token.getExpireTime();
+                    if (time.before(newestToken.getExpireTime())) {
+                        em.remove(token);
+                    } else {
+                        em.remove(newestToken);
+                        newestToken = token;
                     }
-                    latest = time;
-                    goodToken = token;
                 }
             }
-            // Null if there are no un-expired ones
-            return goodToken;
+            // Null if there are no tokens
+            return newestToken;
         }
     }
     
