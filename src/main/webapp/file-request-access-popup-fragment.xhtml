@@ -44,7 +44,7 @@
         <div class="button-block">
             <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}" 
                            action="#{fileDownloadHelper.requestAccessIndirect()}"    
-                           update="@([id$=requestAccessConsolidated]), @([id$=requestPanel])" oncomplete="PF('requestAccessPopup').hide();">
+                           update="@([id$=requestAccessConsolidated]), @([id$=requestPanel]), @([id$=messagePanel]) @([id$=filesTable])" oncomplete="PF('requestAccessPopup').hide();">
             </p:commandButton>
             <button class="btn btn-link" onclick="PF('requestAccessPopup').hide();PF('blockDatasetForm').hide();" type="button">
                 #{bundle.cancel}

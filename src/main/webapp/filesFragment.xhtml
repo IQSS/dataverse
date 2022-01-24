@@ -448,7 +448,7 @@
                 <p:commandLink rendered="#{DatasetPage.fileAccessRequestMultiButtonRequired}"
                                styleClass="btn btn-default btn-request"                                   
                                action="#{DatasetPage.requestAccessMultipleFiles()}"
-                               update="@form" oncomplete="bind_bsui_components();"
+                               update="@form, @([id$=messagePanel])" oncomplete="bind_bsui_components();"
                                disabled="#{DatasetPage.locked}">
                     <span class="glyphicon glyphicon-bullhorn"/> #{bundle['file.requestAccess']}
                 </p:commandLink>
@@ -476,12 +476,18 @@
                        data-content="#{DatasetPage.ingestMessage} #{fileMetadata.dataFile.ingestReportMessage}"/>
                 </span>
             </div>
+            <div class="bg-info text-info text-center margin-bottom-half" jsf:rendered="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
+                <!-- Access Requested -->
+                <span class="glyphicon glyphicon-info-sign"/>
+                <span> #{bundle['file.accessRequested']}&#160;</span>
+            </div>
+
             <!-- END: FILE LEVEL MSGs -->
                        
             <div class="btn-group" role="group" aria-label="#{bundle['file.actionsBlock']}" jsf:rendered="#{showAccessFileButtonGroup}">
                 <!-- Access File - Download, Explore, Compute -->
                 <div class="btn-group" jsf:rendered="#{showAccessFileButtonGroup}">
-
+                    
                     <!-- TO-DO FIX RSYNC LOGIC !fileMetadata.dataFile.filePackage or
                                                     fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload -->
                     <ui:fragment rendered="#{DatasetPage.isShowPreviewButton(fileMetadata.dataFile.id) and fileDownloadHelper.canDownloadFile(fileMetadata)}">
