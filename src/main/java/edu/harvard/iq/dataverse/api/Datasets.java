@@ -2356,7 +2356,23 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 			}
 		} else {
 			newFilename = contentDispositionHeader.getFileName();
-			newFileContentType = formDataBodyPart.getMediaType().toString();
+                        // Let's see if the form data part has the mime (content) type specified. 
+                        // Note that we don't want to rely on formDataBodyPart.getMediaType() - 
+                        // because that defaults to "text/plain" when no "Content-Type:" header is 
+                        // present. Instead we'll go through the headers, and see if "Content-Type:" 
+                        // is there. If not, we'll default to "application/octet-stream" - the generic
+                        // unknown type. This will prompt the application to run type detection and 
+                        // potentially find something more accurate.
+                        //newFileContentType = formDataBodyPart.getMediaType().toString();
+
+                        for (String header : formDataBodyPart.getHeaders().keySet()) {
+                            if (header.equalsIgnoreCase("Content-Type")) {
+                                newFileContentType = formDataBodyPart.getHeaders().get(header).get(0);
+                            }
+                        }
+                        if (newFileContentType == null) {
+                            newFileContentType = FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT;
+                        }
 		}
 
         
