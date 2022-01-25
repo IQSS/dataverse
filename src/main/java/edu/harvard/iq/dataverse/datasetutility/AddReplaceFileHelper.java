@@ -633,6 +633,12 @@ public class AddReplaceFileHelper{
                 fileToReplace.setGlobalId(null);
             }
         }
+        
+        if(fileToReplace != null && fileToReplace.getEmbargo() != null) {
+            DataFile df = finalFileList.get(0); // step_055 uses a loop and assumes only one file
+            df.setEmbargo(fileToReplace.getEmbargo());
+        }
+      
 
         return true;
     }

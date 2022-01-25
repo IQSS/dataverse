@@ -126,6 +126,7 @@ public class FileMetadata implements Serializable {
         fmd.setDescription( getDescription() );
         fmd.setLabel( getLabel() );
         fmd.setRestricted( isRestricted() );
+        fmd.setDirectoryLabel(getDirectoryLabel());
         
         return fmd;
     }
@@ -531,7 +532,7 @@ public class FileMetadata implements Serializable {
     
     public boolean compareContent(FileMetadata other){
          FileVersionDifference diffObj = new FileVersionDifference(this, other, false);
-         return diffObj.compareMetadata(this, other);
+         return diffObj.isSame();
     }
     
     @Override

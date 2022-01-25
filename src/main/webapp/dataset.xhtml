@@ -45,38 +45,47 @@
             <ui:param name="releaseDraft" value="#{DatasetPage.releaseDraftPopup()}"/>
             <ui:param name="releaseBoth" value="#{DatasetPage.publishBothPopup()}"/>
             <ui:define name="meta_header">
-                <meta name="description" content="#{DatasetPage.description}"/>
+                <ui:fragment rendered="#{!DatasetPage.anonymizedAccess}">
+                    <meta name="description" content="#{DatasetPage.description}"/>
+                </ui:fragment>
             </ui:define>
             <ui:define name="dc_meta_header">
-                <meta name="DC.identifier" content="#{DatasetPage.persistentId}"/>
-                <meta name="DC.type" content="Dataset"/>
-                <meta name="DC.title" content="#{DatasetPage.title}"/>
-                <meta name="DC.date" content="#{DatasetPage.workingVersion.publicationDateAsString}"/>
-                <meta name="DC.publisher" content="#{DatasetPage.publisher}" />
-                <meta name="DC.description" content="#{DatasetPage.description}" />
-                <ui:repeat var="author" value="#{DatasetPage.datasetAuthors}">
-                    <meta name="DC.creator" content="#{author}"/>
-                </ui:repeat>
-                <ui:repeat var="subject" value="#{DatasetPage.workingVersion.datasetSubjects}">
-                    <meta name="DC.subject" content="#{subject}"/>
-                </ui:repeat>
+                <ui:fragment rendered="#{!DatasetPage.anonymizedAccess}">
+                    <meta name="DC.identifier" content="#{DatasetPage.persistentId}"/>
+                    <meta name="DC.type" content="Dataset"/>
+                    <meta name="DC.title" content="#{DatasetPage.title}"/>
+                    <meta name="DC.date" content="#{DatasetPage.workingVersion.publicationDateAsString}"/>
+                    <meta name="DC.publisher" content="#{DatasetPage.publisher}" />
+                    <meta name="DC.description" content="#{DatasetPage.description}" />
+                    <ui:repeat var="author" value="#{DatasetPage.datasetAuthors}">
+                        <meta name="DC.creator" content="#{author}"/>
+                    </ui:repeat>
+                    <ui:repeat var="subject" value="#{DatasetPage.workingVersion.datasetSubjects}">
+                        <meta name="DC.subject" content="#{subject}"/>
+                    </ui:repeat>
+                </ui:fragment>
             </ui:define>
+                
             <ui:define name="jsonld_header">
-                <script type="application/ld+json">
-                    <h:outputText value="#{DatasetPage.jsonLd}"/>
-                </script>
+                <ui:fragment rendered="#{!DatasetPage.anonymizedAccess}">
+                    <script type="application/ld+json">
+                        <h:outputText value="#{DatasetPage.jsonLd}"/>
+                    </script>
+                </ui:fragment>
             </ui:define>
             <ui:define name="og_header">
-                <meta property="og:title" content="#{DatasetPage.title}" />
-                <meta property="og:type" content="article" />
-                <meta property="og:url" content="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" />
-                <meta property="og:image" content="#{DatasetPage.dataverseSiteUrl.concat(resource['images/dataverse-icon-1200.png'])}" />
-                <meta property="og:site_name" content="#{DatasetPage.publisher}" />
-                <meta property="og:description" content="#{(DatasetPage.description.length()>150 ? DatasetPage.description.substring(0,147).concat('...') : DatasetPage.description)}" />
-                <ui:repeat var="author" value="#{DatasetPage.datasetAuthors}">
-                    <meta property="article:author" content="#{author}" />
-                </ui:repeat>
-                <meta property="article:published_time" content="#{DatasetPage.workingVersion.publicationDateAsString}" />
+                <ui:fragment rendered="#{!DatasetPage.anonymizedAccess}">
+                    <meta property="og:title" content="#{DatasetPage.title}" />
+                    <meta property="og:type" content="article" />
+                    <meta property="og:url" content="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" />
+                    <meta property="og:image" content="#{DatasetPage.dataverseSiteUrl.concat(resource['images/dataverse-icon-1200.png'])}" />
+                    <meta property="og:site_name" content="#{DatasetPage.publisher}" />
+                    <meta property="og:description" content="#{(DatasetPage.description.length()>150 ? DatasetPage.description.substring(0,147).concat('...') : DatasetPage.description)}" />
+                    <ui:repeat var="author" value="#{DatasetPage.datasetAuthors}">
+                        <meta property="article:author" content="#{author}" />
+                    </ui:repeat>
+                    <meta property="article:published_time" content="#{DatasetPage.workingVersion.publicationDateAsString}" />
+                </ui:fragment>
             </ui:define>
             <ui:define name="body">
                 <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
@@ -107,10 +116,11 @@
                             <div class="col-xs-12">
                                 <div id="datasetVersionBlock" class="row">
                                     <div id="title-block" class="col-xs-12 margin-bottom-half" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
-                                        <span id="title">#{DatasetPage.datasetVersionUI.title.value}</span>
+                                        <h1 id="title">#{DatasetPage.datasetVersionUI.title.value}</h1>
                                         <div id="title-label-block" class="margin-top-half">
                                             <!-- DATASET Publication Status -->
                                             <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{DatasetPage.workingVersion.draft}"/>
+                                            <h:outputText value="#{bundle['embargoed']}" styleClass="label label-primary" rendered="#{DatasetPage.isActivelyEmbargoed(DatasetPage.workingVersion.fileMetadatas)}"/>
                                             <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{DatasetPage.workingVersion.inReview}"/>
                                             <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!DatasetPage.dataset.released}"/>
                                             <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
@@ -226,7 +236,7 @@
                                                                                  and DatasetPage.showComputeButton()}">
                                                             <li class="dropdown-header">#{bundle['dataset.accessBtn.header.compute']} <span class="glyphicon glyphicon-flash"/></li>
                                                             <li>
-                                                                <a tabindex="-1" href="#" id="computeBatch" class="btn-compute">#{bundle['dataset.compute.computeBtn']}</a>
+                                                                <a tabindex="0" id="computeBatch" class="btn-compute">#{bundle['dataset.compute.computeBtn']}</a>
                                                                 <ul class="dropdown-menu">
                                                                     <li>
                                                                         <!-- Compute dataset link -->
@@ -325,7 +335,7 @@
                                                         </li>
                                                         <ui:fragment rendered="#{(not empty DatasetPage.allowedExternalStatuses) and DatasetPage.canPublishDataset()}">
                                                             <li class="dropdown-submenu pull-left">
-                                                                <a tabindex="-1" href="#">#{bundle['dataset.changestatus']}</a>
+                                                            <a tabindex="0">#{bundle['dataset.changestatus']}</a>
                                                                 <ul class="dropdown-menu">
                                                                     <ui:repeat value="#{DatasetPage.allowedExternalStatuses}" var="status">
                                                                         <li>
@@ -374,18 +384,18 @@
                                                                 <h:outputText value="#{bundle['dataset.editBtn.itemLabel.terms']}" />
                                                             </p:commandLink>
                                                         </li>
-                                                        <ui:fragment rendered="#{permissionsWrapper.canManagePermissions(DatasetPage.dataset)}">
+                                                        <ui:fragment rendered="#{permissionsWrapper.canManagePermissions(DatasetPage.dataset) || permissionsWrapper.canManageFilesOnDataset(DatasetPage.dataset)}">
                                                             <li class="#{settingsWrapper.publicInstall ? '' : 'dropdown-submenu pull-left'}">
                                                                 <ui:fragment rendered="#{!settingsWrapper.publicInstall}">
-                                                                    <a tabindex="-1" href="#">#{bundle['dataset.editBtn.itemLabel.permissions']}</a>
+                                                                <a tabindex="0">#{bundle['dataset.editBtn.itemLabel.permissions']}</a>
                                                                     <ul class="dropdown-menu">
-                                                                        <li>
+                                                                        <li jsf:rendered="#{permissionsWrapper.canManagePermissions(DatasetPage.dataset)}">
                                                                             <h:link id="manageDatasetPermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
                                                                                 <h:outputText value="#{bundle['dataset']}" />
                                                                                 <f:param name="id" value="#{DatasetPage.dataset.id}" />
                                                                             </h:link>
                                                                         </li>
-                                                                        <li>
+                                                                        <li jsf:rendered="#{permissionsWrapper.canManageFilesOnDataset(DatasetPage.dataset)}">
                                                                             <h:link id="manageFilePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage-files">
                                                                                 <h:outputText value="#{bundle['file']}" />
                                                                                 <f:param name="id" value="#{DatasetPage.dataset.id}" />
@@ -716,7 +726,7 @@
                             <ui:param name="datasetPage" value="true"/>
                             <ui:param name="editMode" value="#{!empty DatasetPage.editMode ? DatasetPage.editMode : ''}"/>
                             <ui:param name="metadataBlocks" value="#{!empty DatasetPage.editMode ? DatasetPage.datasetVersionUI.metadataBlocksForEdit.entrySet().toArray(): DatasetPage.datasetVersionUI.metadataBlocksForView.entrySet().toArray()}"/>
-                            <ui:param name="publicationDate" value="#{DatasetPage.dataset.publicationDateFormattedYYYYMMDD}"/>
+                            <!-- ui:param name="publicationDate" value="#{DatasetPage.dataset.publicationDateFormattedYYYYMMDD}"/-->
                             <ui:param name="globalId" value="#{DatasetPage.dataset.globalIdString}"/>
                             <ui:param name="mdLang" value="#{DatasetPage.getLocaleDisplayName(DatasetPage.effectiveMetadataLanguage)}"/>
                             <ui:param name="mdLangCode" value="#{DatasetPage.effectiveMetadataLanguage}"/>
@@ -848,6 +858,7 @@
                                     <ui:param name="editMode" value="#{!empty DatasetPage.editMode ? DatasetPage.editMode : ''}"/>
                                     <ui:param name="metadataBlocks" value="#{!empty DatasetPage.editMode ? DatasetPage.datasetVersionUI.metadataBlocksForEdit.entrySet().toArray(): DatasetPage.datasetVersionUI.metadataBlocksForView.entrySet().toArray()}"/>
                                     <ui:param name="publicationDate" value="#{DatasetPage.dataset.publicationDate != null ? DatasetPage.dataset.publicationDateFormattedYYYYMMDD : ''}"/>
+                                    <ui:param name="citationDate" value="#{DatasetPage.dataset.citationDate != null ? DatasetPage.dataset.citationDateFormattedYYYYMMDD : ''}"/>
                                     <ui:param name="globalId" value="#{DatasetPage.dataset.globalIdString}"/>
                                     <ui:param name="altPID" value="#{DatasetPage.dataset.alternativePersistentIdentifier}"/>
                                     <ui:param name="mdLang" value="#{DatasetPage.getLocaleDisplayName(DatasetPage.effectiveMetadataLanguage)}"/>
@@ -893,14 +904,16 @@
                     <!-- END: Create/Save Dataset Button Panel BTM editMode -->
                     <p:blockUI block="datasetForm" widgetVar="blockDatasetForm"/>
                     <!-- POPUPS -->
-                    <ui:fragment rendered="#{empty DatasetPage.editMode}">                    
+                    <ui:fragment rendered="#{empty DatasetPage.editMode}">
                         <ui:include src="file-edit-popup-fragment.xhtml">
                               <ui:param name="datasetVersion" value="#{DatasetPage.workingVersion}"/>   
-                              <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>                        
-                              <ui:param name="bean" value="#{DatasetPage}"/>                        
+                              <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>
+                              <ui:param name="bean" value="#{DatasetPage}"/>
                               <ui:param name="restrictFileAction" value="restrictFiles"/>
-                              <ui:param name="deleteFileAction" value="deleteFiles"/> 
-                        </ui:include>                  
+                              <ui:param name="deleteFileAction" value="deleteFiles"/>
+                              <ui:param name="saveEmbargoAction" value="saveEmbargo"/> 
+                              <ui:param name="updateElements" value=":datasetForm:embargoInputs"/>
+                        </ui:include>
                     </ui:fragment>
                     <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true" rendered="#{!DatasetPage.workingVersion.deaccessioned}">
                         <p class="help-block">#{bundle['dataset.share.datasetShare.tip']}</p>
@@ -936,10 +949,10 @@
                             </button>
                         </div>
                     </p:dialog>
-                    <p:dialog id="downloadInvalid" styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadInvalid" modal="true">
+                    <p:dialog id="downloadInvalid" styleClass="smallPopUp" header="#{DatasetPage.cantDownloadDueToEmbargo ? bundle['dataset.inValidSelectedFilesForDownloadWithEmbargo'] : bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadInvalid" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noValidSelectedFilesForDownload']}</p>
                         <ui:fragment rendered="#{DatasetPage.dataset.fileAccessRequest}">
-                            <p class="help-block">#{bundle['dataset.requestAccessToRestrictedFiles']}</p>
+                            <p class="help-block">#{DatasetPage.cantDownloadDueToEmbargo ? bundle['dataset.requestAccessToRestrictedFilesWithEmbargo'] : bundle['dataset.requestAccessToRestrictedFiles']}</p>
                         </ui:fragment>
                         <div class="button-block">
                             <button class="btn btn-default" onclick="PF('downloadInvalid').hide();" type="button">
@@ -968,8 +981,8 @@
                             </button>
                         </div>
                     </p:dialog>
-                    <p:dialog id="downloadMixed" styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadMixed" modal="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.mixedSelectedFilesForDownload']}</p>
+                    <p:dialog id="downloadMixed" styleClass="smallPopUp" header="#{DatasetPage.cantDownloadDueToEmbargo ? bundle['dataset.inValidSelectedFilesForDownloadWithEmbargo'] : bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadMixed" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{DatasetPage.cantDownloadDueToEmbargo ? bundle['dataset.mixedSelectedFilesForDownloadWithEmbargo'] : bundle['dataset.mixedSelectedFilesForDownload']}</p>
                         <table>
                             <ui:repeat var="resFile" value="#{DatasetPage.selectedNonDownloadableFiles}" >
                                 <tr>
@@ -1312,6 +1325,15 @@
                             </button>
                         </div>
                     </p:dialog>
+                    <p:dialog id="selectEmbargoedFilesForRequestAccess" styleClass="smallPopUp"
+                              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectEmbargoedFilesForRequestAccess" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.embargoedSelectedFilesForRequestAccess']}</p>
+                        <div class="button-block">
+                            <button class="btn btn-default" onclick="PF('selectEmbargoedFilesForRequestAccess').hide();PF('blockDatasetForm').hide();" type="button">
+                                #{bundle.close}
+                            </button>
+                        </div>
+                    </p:dialog>
                     <p:dialog id="fileTagsPopup" styleClass="smallPopUp" header="#{bundle['file.editTags']}" widgetVar="fileTagsPopup" modal="true">
                         <p:focus for="fileTagsMenuDS"/>
                         <p class="help-block">#{bundle['file.editTagsDialog.tip']}</p>
@@ -1399,6 +1421,7 @@
                                     PF('blockDatasetForm').hide();" actionListener="#{DatasetPage.clearFileMetadataSelectedForTagsPopup()}"/>
                         </div>
                     </p:dialog>
+                    
                     <!-- Request Access Sign Up/Log In Button -->
                     <p:dialog id="accessSignUpLogIn" header="#{bundle['file.requestAccess']}" widgetVar="accessSignUpLogIn_popup" modal="true">
                         <p class="help-block">
@@ -1471,6 +1494,7 @@
                         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                         <ui:include src="file-request-access-popup-fragment.xhtml">
                             <ui:param name="workingVersion" value="#{DatasetPage.workingVersion}"/>
+                            <ui:param name="someActivelyEmbargoedFiles" value="#{DatasetPage.cantRequestDueToEmbargo}"/>
                             <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                         </ui:include>
                     </p:dialog>

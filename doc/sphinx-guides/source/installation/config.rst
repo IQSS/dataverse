@@ -386,6 +386,9 @@ of two methods described below:
 1. Manually through creation of the credentials and config files or
 2. Automatically via the AWS console commands.
 
+Some usage scenarios might be eased without generating these files. You may also provide :ref:`static credentials via
+MicroProfile Config <s3-mpconfig>`, see below.
+
 Preparation When Using Amazon's S3 Service
 ##########################################
 
@@ -526,28 +529,69 @@ been tested already and what other options have been set for a successful integr
 
 Lastly, go ahead and restart your Payara server. With Dataverse deployed and the site online, you should be able to upload datasets and data files and see the corresponding files in your S3 bucket. Within a bucket, the folder structure emulates that found in local file storage.
 
-S3 Storage Options
-##################
+List of S3 Storage Options
+##########################
 
-===========================================  ==================  ==========================================================================  =============
-JVM Option                                   Value               Description                                                                 Default value
-===========================================  ==================  ==========================================================================  =============
-dataverse.files.storage-driver-id            <id>                Enable <id> as the default storage driver.                                  ``file``
-dataverse.files.<id>.bucket-name             <?>                 The bucket name. See above.                                                 (none)
-dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                          ``false``
-dataverse.files.<id>.upload-redirect         ``true``/``false``  Enable direct upload of files added to a dataset  to the S3 store.          ``false``
-dataverse.files.<id>.ingestsizelimit         <size in bytes>     Maximum size of directupload files that should be ingested                  (none)
-dataverse.files.<id>.url-expiration-minutes  <?>                 If direct uploads/downloads: time until links expire. Optional.             60
-dataverse.files.<id>.min-part-size           <?>                 Multipart direct uploads will occur for files larger than this. Optional.   ``1024**3``
-dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.          (none)
-dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                             ``dataverse``
-dataverse.files.<id>.profile                 <?>                 Allows the use of AWS profiles for storage spanning multiple AWS accounts.  (none)
-dataverse.files.<id>.proxy-url               <?>                 URL of a proxy protecting the S3 store. Optional.                           (none)
-dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.                     ``false``
-dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                            ``false``
-dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                          ``true``
-dataverse.files.<id>.connection-pool-size    <?>                 The maximum number of open connections to the S3 server                     ``256``
-===========================================  ==================  ==========================================================================  =============
+.. table::
+    :align: left
+
+    ===========================================  ==================  ==========================================================================  =============
+    JVM Option                                   Value               Description                                                                 Default value
+    ===========================================  ==================  ==========================================================================  =============
+    dataverse.files.storage-driver-id            <id>                Enable <id> as the default storage driver.                                  ``file``
+    dataverse.files.<id>.type                    ``s3``              **Required** to mark this storage as S3 based.                              (none)
+    dataverse.files.<id>.label                   <?>                 **Required** label to be shown in the UI for this storage                   (none)
+    dataverse.files.<id>.bucket-name             <?>                 The bucket name. See above.                                                 (none)
+    dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                          ``false``
+    dataverse.files.<id>.upload-redirect         ``true``/``false``  Enable direct upload of files added to a dataset  to the S3 store.          ``false``
+    dataverse.files.<id>.ingestsizelimit         <size in bytes>     Maximum size of directupload files that should be ingested                  (none)
+    dataverse.files.<id>.url-expiration-minutes  <?>                 If direct uploads/downloads: time until links expire. Optional.             60
+    dataverse.files.<id>.min-part-size           <?>                 Multipart direct uploads will occur for files larger than this. Optional.   ``1024**3``
+    dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.          (none)
+    dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                             ``dataverse``
+    dataverse.files.<id>.profile                 <?>                 Allows the use of AWS profiles for storage spanning multiple AWS accounts.  (none)
+    dataverse.files.<id>.proxy-url               <?>                 URL of a proxy protecting the S3 store. Optional.                           (none)
+    dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.                     ``false``
+    dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                            ``false``
+    dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                          ``true``
+    dataverse.files.<id>.connection-pool-size    <?>                 The maximum number of open connections to the S3 server                     ``256``
+    ===========================================  ==================  ==========================================================================  =============
+
+.. table::
+    :align: left
+
+    ===========================================  ==================  ==========================================================================  =============
+    MicroProfile Config Option                   Value               Description                                                                 Default value
+    ===========================================  ==================  ==========================================================================  =============
+    dataverse.files.<id>.access-key              <?>                 :ref:`Provide static access key ID. Read before use! <s3-mpconfig>`         ``""``
+    dataverse.files.<id>.secret-key              <?>                 :ref:`Provide static secret access key. Read before use! <s3-mpconfig>`     ``""``
+    ===========================================  ==================  ==========================================================================  =============
+
+
+.. _s3-mpconfig:
+
+Credentials via MicroProfile Config
+###################################
+
+Optionally, you may provide static credentials for each S3 storage using MicroProfile Config options:
+
+- ``dataverse.files.<id>.access-key`` for this storages "access key ID"
+- ``dataverse.files.<id>.secret-key`` for this storages "secret access key"
+
+You may provide the values for these via any of the
+`supported config sources <https://docs.payara.fish/community/docs/documentation/microprofile/config/README.html>`_.
+
+**WARNING:**
+
+*For security, do not use the sources "environment variable" or "system property" (JVM option) in a production context!*
+*Rely on password alias, secrets directory or cloud based sources instead!*
+
+**NOTE:**
+
+1. Providing both AWS CLI profile files (as setup in first step) and static keys, credentials from ``~/.aws``
+   will win over configured keys when valid!
+2. A non-empty ``dataverse.files.<id>.profile`` will be ignored when no credentials can be found for this profile name.
+   Current codebase does not make use of "named profiles" as seen for AWS CLI besides credentials.
 
 Reported Working S3-Compatible Storage
 ######################################
@@ -1146,12 +1190,12 @@ For overriding the default path to the ``convert`` binary from ImageMagick (``/u
 dataverse.dataAccess.thumbnail.image.limit
 ++++++++++++++++++++++++++++++++++++++++++
 
-For limiting the size (in bytes) of thumbnail images generated from files.
+For limiting the size (in bytes) of thumbnail images generated from files. The default is 3000000 bytes (3 MB).
 
 dataverse.dataAccess.thumbnail.pdf.limit
 ++++++++++++++++++++++++++++++++++++++++
 
-For limiting the size (in bytes) of thumbnail images generated from files.
+For limiting the size (in bytes) of thumbnail images generated from files. The default is 1000000 bytes (1 MB).
 
 .. _doi.baseurlstring:
 
@@ -1747,7 +1791,12 @@ Notes:
 
 - For larger file upload sizes, you may need to configure your reverse proxy timeout. If using apache2 (httpd) with Shibboleth, add a timeout to the ProxyPass defined in etc/httpd/conf.d/ssl.conf (which is described in the :doc:`/installation/shibboleth` setup).
 
+:MultipleUploadFilesLimit
++++++++++++++++++++++++++
 
+This setting controls the number of files that can be uploaded through the UI at once. The default is 1000. It should be set to 1 or higher since 0 has no effect. To limit the number of files in a zip file, see ``:ZipUploadFilesLimit``.
+
+``curl -X PUT -d 500 http://localhost:8080/api/admin/settings/:MultipleUploadFilesLimit``
 
 :ZipDownloadLimit
 +++++++++++++++++
@@ -2367,8 +2416,7 @@ Also refer to the "Datafile Integrity" API  :ref:`datafile-integrity`
 :SendNotificationOnDatasetCreation
 ++++++++++++++++++++++++++++++++++
 
-A boolean setting that, if true will send an email and notification to users when a Dataset is created. Messages go to those, other than the dataset creator,
- who have the ability/permission necessary to publish the dataset. The intent of this functionality is to simplify tracking activity and planning to follow-up contact.
+A boolean setting that, if true, will send an email and notification to users when a Dataset is created. Messages go to those, other than the dataset creator, who have the ability/permission necessary to publish the dataset. The intent of this functionality is to simplify tracking activity and planning to follow-up contact.
   
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:SendNotificationOnDatasetCreation``
 
@@ -2399,3 +2447,64 @@ Each set of labels is identified by a curationLabelSet name and a JSON Array of 
 
 ``curl -X PUT -d '{"Standard Process":["Author contacted", "Privacy Review", "Awaiting paper publication", "Final Approval"], "Alternate Process":["State 1","State 2","State 3"]}' http://localhost:8080/api/admin/settings/:AllowedCurationLabels``
 
+.. _:MaxEmbargoDurationInMonths:
+
+:MaxEmbargoDurationInMonths
++++++++++++++++++++++++++++
+
+This setting controls whether embargoes are allowed in a Dataverse instance and can limit the maximum duration users are allowed to specify. A value of 0 months or non-existent 
+setting indicates embargoes are not supported. A value of -1 allows embargoes of any length. Any other value indicates the maximum number of months (from the current date) a user 
+can enter for an embargo end date. This limit will be enforced in the popup dialog in which users enter the embargo date. For example, to set a two year maximum:
+
+``curl -X PUT -d 24 http://localhost:8080/api/admin/settings/:MaxEmbargoDurationInMonths``
+
+:DataverseMetadataValidatorScript
++++++++++++++++++++++++++++++++++
+
+An optional external script that validates Dataverse collection metadata as it's being updated or published. The script provided should be an executable that takes a single command line argument, the name of the file containing the metadata exported in the native json format. I.e., Dataverse application will be exporting the collection metadata in json format, saving it in a temp file, and passing the name of the temp file to the validation script as the command line argument. The script should exit with a non-zero error code if the validation fails. If that happens, a failure message (customizable in the next two settings below, `:DataverseMetadataPublishValidationFailureMsg` and `:DataverseMetadataUpdateValidationFailureMsg`) will be shown to the user.
+
+For example, once the following setting is created:
+
+``curl -X PUT -d /usr/local/bin/dv_validator.sh http://localhost:8080/api/admin/settings/:DataverseMetadataValidatorScript``
+
+:DataverseMetadataPublishValidationFailureMsg
++++++++++++++++++++++++++++++++++++++++++++++
+
+Specifies a custom error message shown to the user when a Dataverse collection fails an external metadata validation (as specified in the setting above) during an attempt to publish. If not specified, the default message "This dataverse collection cannot be published because it has failed an external metadata validation test" will be used.
+
+For example: 
+
+``curl -X PUT -d "This content needs to go through an additional review by the Curation Team before it can be published." http://localhost:8080/api/admin/settings/:DataverseMetadataPublishValidationFailureMsg``
+
+
+:DataverseMetadataUpdateValidationFailureMsg
+++++++++++++++++++++++++++++++++++++++++++++
+
+Same as above, but specifies a custom error message shown to the user when an external metadata validation check fails during an attempt to modify a Dataverse collection. If not specified, the default message "This dataverse collection cannot be updated because it has failed an external metadata validation test" will be used.
+
+
+:DatasetMetadataValidatorScript
++++++++++++++++++++++++++++++++
+
+An optional external script that validates dataset metadata during publishing. The script provided should be an executable that takes a single command line argument, the name of the file containing the metadata exported in the native json format. I.e., Dataverse application will be exporting the dataset metadata in json format, saving it in a temp file, and passing the name of the file to the validation script as the command line argument. The script should exit with a non-zero error code if the validation fails. If that happens, the dataset is left unpublished, and a failure message (customizable in the next setting below, `:DatasetMetadataValidationFailureMsg`) will be shown to the user.
+
+For example:
+
+``curl -X PUT -d /usr/local/bin/ds_validator.sh http://localhost:8080/api/admin/settings/:DatasetMetadataValidatorScript``
+
+In some ways this duplicates a workflow mechanism, since it is possible to define a workflow with additonal validation steps. But please note that the important difference is that this external validation happens *synchronously*, while the user is wating; while a workflow is performed asynchronously with a lock placed on the dataset. This can be useful to some installations, in some situations. But it also means that the script provided should be expected to always work reasonably fast - ideally, in seconds, rather than minutes, etc. 
+
+:DatasetMetadataValidationFailureMsg
+++++++++++++++++++++++++++++++++++++
+
+Specifies a custom error message shown to the user when a dataset fails an external metadata validation (as specified in the setting above) during an attempt to publish. If not specified, the default message "This dataset cannot be published because it has failed an external metadata validation test" will be used.
+
+For example: 
+
+``curl -X PUT -d "This content needs to go through an additional review by the Curation Team before it can be published." http://localhost:8080/api/admin/settings/:DatasetMetadataValidationFailureMsg``
+
+	
+:ExternalValidationAdminOverride
+++++++++++++++++++++++++++++++++
+
+When set to ``true``, this setting allows a superuser to publish and/or update Dataverse collections and datasets bypassing the external validation checks (specified by the settings above). In an event where an external script is reporting validation failures that appear to be in error, this option gives an admin with superuser privileges a quick way to publish the dataset or update a collection for the user. 

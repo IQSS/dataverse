@@ -1,12 +1,15 @@
 package edu.harvard.iq.dataverse.search;
 
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -200,7 +203,7 @@ public class IndexBatchServiceBean {
 
         int datasetIndexCount = 0;
         int datasetFailureCount = 0;
-        List<Long> datasetIds = datasetService.findAllOrSubset(numPartitions, partitionId, skipIndexed);
+        List<Long> datasetIds = datasetService.findAllOrSubsetOrderByFilesOwned(skipIndexed);
         for (Long id : datasetIds) {
             try {
                 datasetIndexCount++;

@@ -500,9 +500,9 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         return false;
     }    
     
-    public void sendRequestFileAccessNotification(Dataset dataset, Long fileId, AuthenticatedUser requestor) {
-        permissionService.getUsersWithPermissionOn(Permission.ManageDatasetPermissions, dataset).stream().forEach((au) -> {
-            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, fileId, null, requestor, false);
+    public void sendRequestFileAccessNotification(DataFile datafile, AuthenticatedUser requestor) {
+        permissionService.getUsersWithPermissionOn(Permission.ManageFilePermissions, datafile).stream().forEach((au) -> {
+            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, datafile.getId(), null, requestor, false);
         });
 
     } 

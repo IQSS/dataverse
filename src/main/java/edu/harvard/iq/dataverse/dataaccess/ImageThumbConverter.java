@@ -36,6 +36,7 @@ import javax.imageio.stream.ImageOutputStream;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -176,7 +177,7 @@ public class ImageThumbConverter {
 
     private static boolean generatePDFThumbnail(StorageIO<DataFile> storageIO, int size) {
         if (isPdfFileOverSizeLimit(storageIO.getDataFile().getFilesize())) {
-            logger.fine("Image file too large (" + storageIO.getDataFile().getFilesize() + " bytes) - skipping");
+            logger.fine("PDF file too large (" + storageIO.getDataFile().getFilesize() + " bytes) - skipping");
             return false;
         }
 
@@ -925,27 +926,7 @@ public class ImageThumbConverter {
     }
 
     private static long getThumbnailSizeLimit(String type) {
-        String option = null;
-        if ("Image".equals(type)) {
-            option = System.getProperty("dataverse.dataAccess.thumbnail.image.limit");
-        } else if ("PDF".equals(type)) {
-            option = System.getProperty("dataverse.dataAccess.thumbnail.pdf.limit");
-        }
-        Long limit = null;
-
-        if (option != null && !option.equals("")) {
-            try {
-                limit = new Long(option);
-            } catch (NumberFormatException nfe) {
-                limit = null;
-            }
-        }
-
-        if (limit != null) {
-            return limit.longValue();
-        }
-
-        return 0;
+        return SystemConfig.getThumbnailSizeLimit(type);
     }
 
     private static boolean isImageMagickInstalled() {
