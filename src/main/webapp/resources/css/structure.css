@@ -1291,7 +1291,7 @@ th {background: none !important;}
   background: #0039f5 !important;
   color: #FFF !important; /* TODO: Find ui-widget CSS rules and take out their color so important is not needed here */
   border-radius: 2px;
-  text-shadow: none;
+  text-shadow: none !important;
   font-family: inherit !important;
   position: relative;
 }
