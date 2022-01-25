@@ -563,7 +563,7 @@ class DataCiteMetadataTemplate {
                             }
                         }
                         if (StringUtils.isNotBlank(publicationIDType) && StringUtils.isNotBlank(publicationIDNumber)) {
-                            relatedIdentifiers.add(serializeIdenifier(publicationIDType, "Cites", publicationIDNumber));
+                            relatedIdentifiers.add(serializeIdenifier(publicationIDType, "IsCitedBy", publicationIDNumber));
                         }
                     }
                 }
