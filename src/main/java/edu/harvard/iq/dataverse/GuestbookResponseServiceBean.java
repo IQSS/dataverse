@@ -8,7 +8,6 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -25,9 +24,6 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.faces.application.FacesMessage;
-import javax.faces.component.UIInput;
-import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
@@ -185,14 +181,14 @@ public class GuestbookResponseServiceBean {
             // string fields, or the structure of the file will be broken. -- L.A.
             
             // Guestbook name: 
-            sb.append(((String)result[1]).replace(',', ' '));
+            sb.append(StringEscapeUtils.escapeCsv((String)result[1]));
             sb.append(SEPARATOR);
 
             
             // Dataset name: 
             Integer datasetId = (Integer) result[2];
             String datasetTitle = datasetTitles.get(datasetId);
-            sb.append(datasetTitle == null ? "" : datasetTitle.replace(',', ' '));
+            sb.append(datasetTitle == null ? "" : StringEscapeUtils.escapeCsv(datasetTitle));
             sb.append(SEPARATOR);
             
             // Dataset persistent identifier: 
@@ -211,7 +207,7 @@ public class GuestbookResponseServiceBean {
             sb.append(SEPARATOR);
 
             // file name: 
-            sb.append(((String)result[5]).replace(',', ' '));
+            sb.append(StringEscapeUtils.escapeCsv((String)result[5]));
             sb.append(SEPARATOR);
 
             // file id (numeric):
@@ -224,19 +220,19 @@ public class GuestbookResponseServiceBean {
             sb.append(SEPARATOR);
             
             // name supplied in the guestbook response: 
-            sb.append(result[7] == null ? "" : ((String)result[7]).replace(',', ' '));
+            sb.append(result[7] == null ? "" : StringEscapeUtils.escapeCsv((String)result[7]));
             sb.append(SEPARATOR);
             
             // email: 
-            sb.append(result[8] == null ? "" : result[8]);
+            sb.append(result[8] == null ? "" : StringEscapeUtils.escapeCsv((String)result[8]));           
             sb.append(SEPARATOR);
             
             // institution:
-            sb.append(result[9] == null ? "" : ((String)result[9]).replace(',', ' '));
+            sb.append(result[9] == null ? "" : StringEscapeUtils.escapeCsv((String)result[9]));
             sb.append(SEPARATOR);
             
             // position: 
-            sb.append(result[10] == null ? "" : ((String)result[10]).replace(',', ' '));
+            sb.append(result[10] == null ? "" : StringEscapeUtils.escapeCsv((String)result[10]));
             
             // Finally, custom questions and answers, if present:
             
@@ -401,8 +397,7 @@ public class GuestbookResponseServiceBean {
                 if (asString) {
                     // as combined strings of comma-separated question and answer values
                     //assuming the strings are only being created for writing out to csv which seems to be the case
-                    String qa = SEPARATOR + StringEscapeUtils.escapeCsv((String)response[0]) + SEPARATOR + (response[1] == null ? "" : StringEscapeUtils.escapeCsv((String)response[1]));
-                    
+                    String qa = SEPARATOR + StringEscapeUtils.escapeCsv((String)response[0]) + SEPARATOR + (response[1] == null ? "" : StringEscapeUtils.escapeCsv((String)response[1]));                   
                     if (ret.containsKey(responseId)) {
                         ret.put(responseId, ret.get(responseId) + qa);
                     } else {
