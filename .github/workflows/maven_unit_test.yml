@@ -37,7 +37,7 @@ jobs:
                 key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
                 restore-keys: ${{ runner.os }}-m2
           - name: Build with Maven
-            run: mvn -DcompilerArgument=-Xlint:unchecked -P all-unit-tests clean test
+            run: mvn -DcompilerArgument=-Xlint:unchecked -Dtarget.java.version=${{ matrix.jdk }} -P all-unit-tests clean test
           - name: Maven Code Coverage
             env:
                 CI_NAME: github
