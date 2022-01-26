@@ -25,6 +25,7 @@
         <argLine>-Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
         <skipUnitTests>false</skipUnitTests>
     
+        <target.java.version>11</target.java.version>
         <jakartaee-api.version>8.0.0</jakartaee-api.version>
         <payara.version>5.2021.5</payara.version>
         <postgresql.version>42.2.19</postgresql.version>
@@ -826,6 +827,16 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <release>${target.java.version}</release>
+                    <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
+                    <compilerArgument>${compilerArgument}</compilerArgument>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>2.3</version>
                 <configuration>
@@ -947,26 +958,6 @@
             <id>all-unit-tests</id>
         </profile>
         <!-- TODO: Add a profile to run API tests (integration tests that end in IT.java. See conf/docker-aio/run-test-suite.sh -->
-      <profile>
-        <id>Java9Plus</id>
-        <activation>
-          <jdk>[1.9</jdk>
-        </activation>
-        <build>
-          <plugins>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-compiler-plugin</artifactId>
-              <version>3.8.0</version>
-              <configuration>
-                <release>11</release>
-                <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
-                <compilerArgument>${compilerArgument}</compilerArgument>
-              </configuration>
-            </plugin>
-          </plugins>
-        </build>
-      </profile>
         <profile>
             <id>tc</id>
             <properties>
