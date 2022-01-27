@@ -35,7 +35,7 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.log4j.lf5.LogLevel;
+//import org.apache.log4j.lf5.LogLevel;
 
 public class OREMap {
 
