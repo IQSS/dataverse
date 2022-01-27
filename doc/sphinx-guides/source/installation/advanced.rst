@@ -39,10 +39,11 @@ Please note that :ref:`network-ports` under the Configuration section has more i
 Licensing
 ---------
 
-Dataverse allows superusers to specify the list of allowed licenses, to define which license is the default, to decide whether users can instead define custom terms, and to mar obsolete licenses as 'inactive' to stop further use of them.
+Dataverse allows superusers to specify the list of allowed licenses, to define which license is the default, to decide whether users can instead define custom terms, and to mark obsolete licenses as 'inactive' to stop further use of them.
 These can be accomplished using the :ref:`:native API <license-management-api>` and the :ref:`:AllowCustomTermsOfUse <:AllowCustomTermsOfUse>` setting.
 
-### Standardizing Custom Licenses:
+Standardizing Custom Licenses
++++++++++++++++++++++++++++++
 
 In addition, if many datasets use the same set of Custom Terms, it may make sense to create and register a standard license including those terms. Doing this would include:
 - Creating and posting an external document that includes the custom terms, i.e. an HTML document with sections corresponding to the terms fields that are used.
@@ -57,6 +58,8 @@ The benefits of this approach are:
 - security: with the license terms maintained external to Dataverse, users cannot edit specific terms and curators do not need to check for edits
 
 Once a standardized version of you Custom Terms are registered as a license, an SQL update like the following can be used to have datasets use it:
+
+::
 
     UPDATE termsofuseandaccess
         SET license_id = (SELECT license.id FROM license WHERE license.name = '<Your License Name>'), termsofuse=null, confidentialitydeclaration=null, t.specialpermissions=null, t.restrictions=null, citationrequirements=null, depositorrequirements=null, conditions=null, disclaimer=null 
