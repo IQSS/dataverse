@@ -58,7 +58,7 @@ At or near release time:
 - The "tag version" and "title" should be the number of the milestone with a "v" in front (i.e. v4.16).
 - Copy in the content from the .md file
 - For the description, follow post-4.16 examples at https://github.com/IQSS/dataverse/releases
-
+- Delete the .md file in the source code. This is to ensure that only one copy of the notes lives on in the future, as a single source of truth.
 
 Make Artifacts Available for Download
 -------------------------------------
