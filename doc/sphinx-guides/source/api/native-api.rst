@@ -3750,16 +3750,16 @@ Superusers can change whether an existing license is active (usable for new data
 .. code-block:: bash
 
   export STATE=true
-  curl -X PUT -H 'Content-Type: application/json' --data-binary @edit-license.json $SERVER_URL/api/licenses/$ID/:active/$STATE
+  curl -X PUT -H 'Content-Type: application/json' -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/licenses/$ID/:active/$STATE
 
 Superusers can set which license is the default specified by the license ``$ID``:
 
 .. code-block:: bash
 
-  curl -X PUT -H 'Content-Type: application/json' --data-binary @edit-license.json $SERVER_URL/api/licenses/default/$ID
+  curl -X PUT -H 'Content-Type: application/json' -H X-Dataverse-key:$API_TOKEN --data-binary @edit-license.json $SERVER_URL/api/licenses/default/$ID
 
 Superusers can delete a license that is not in useby the license ``$ID``:
 
 .. code-block:: bash
 
-  curl -X DELETE http://$SERVER/api/licenses/$ID
+  curl -X DELETE -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/licenses/$ID
