@@ -675,7 +675,7 @@ don't care about) to create a complete list of fields. (This might change in the
 Reloading a Metadata Block
 --------------------------
 
-As mentioned above, changes to metadata blocks that ship with the Dataverse Software will be made over time to improve them and release notes will sometimes instruct you to reload an existing metadata block. The syntax for reloading is the same as reloading. Here's an example with the "citation" metadata block:
+As mentioned above, changes to metadata blocks that ship with the Dataverse Software will be made over time to improve them and release notes will sometimes instruct you to reload an existing metadata block. The syntax for reloading is the same as loading. Here's an example with the "citation" metadata block:
 
 ``curl http://localhost:8080/api/admin/datasetfield/load -H "Content-type: text/tab-separated-values" -X POST --upload-file citation.tsv``
 
