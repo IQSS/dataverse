@@ -299,7 +299,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         User user = session.getUser();
         DatasetVersion version = fmd.getDatasetVersion();
         if (version.isDraft() || (fmd.getDataFile().isRestricted()) || (FileUtil.isActivelyEmbargoed(fmd))) {
-            apiToken = getApiToken(user, true);
+            apiToken = getApiToken(user);
         }
         DataFile dataFile = null;
         if (fmd != null) {
@@ -328,12 +328,12 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
     }
 
-    public ApiToken getApiToken(User user, boolean createIfNeeded) {
+    public ApiToken getApiToken(User user) {
         ApiToken apiToken = null;
         if (user instanceof AuthenticatedUser) {
             AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
             apiToken = authService.findApiTokenByUser(authenticatedUser);
-            if ((apiToken == null || apiToken.isExpired()) && createIfNeeded) {
+            if (apiToken == null || apiToken.isExpired()) {
                 //No un-expired token
                 apiToken = authService.generateApiTokenForUser(authenticatedUser);
             }
