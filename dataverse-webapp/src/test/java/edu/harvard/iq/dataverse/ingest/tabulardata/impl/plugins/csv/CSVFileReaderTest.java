@@ -153,10 +153,10 @@ public class CSVFileReaderTest {
             if (!generatedDataTable.getDataVariables().get(i).isIntervalContinuous()) {
                 fail("Column " + i + " was not properly processed as \"continuous\"");
             }
-            FileInputStream generatedTabInputStream = new FileInputStream(generatedTabFile);
+            String[][] table = TabularSubsetGenerator.readFileIntoTable(generatedDataTable, generatedTabFile);
 
             Double[] columnVector =
-                    TabularSubsetGenerator.subsetDoubleVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
+                    TabularSubsetGenerator.subsetDoubleVector(table, i, generatedDataTable.getCaseQuantity().intValue());
 
             assertThat(columnVector).isEqualTo(floatVectors[vectorCount++]);
         }
@@ -183,10 +183,9 @@ public class CSVFileReaderTest {
                     || !generatedDataTable.getDataVariables().get(i).isTypeNumeric()) {
                 fail("Column " + i + " was not properly processed as \"discrete numeric\"");
             }
-            FileInputStream generatedTabInputStream = new FileInputStream(generatedTabFile);
-
+            String[][] table = TabularSubsetGenerator.readFileIntoTable(generatedDataTable, generatedTabFile);
             Long[] columnVector =
-                    TabularSubsetGenerator.subsetLongVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
+                    TabularSubsetGenerator.subsetLongVector(table, i, generatedDataTable.getCaseQuantity().intValue());
 
             assertThat(columnVector).isEqualTo(longVectors[vectorCount++]);
         }
@@ -206,10 +205,9 @@ public class CSVFileReaderTest {
             if (!generatedDataTable.getDataVariables().get(i).isTypeCharacter()) {
                 fail("Column " + i + " was not properly processed as a character vector");
             }
-            FileInputStream generatedTabInputStream = new FileInputStream(generatedTabFile);
-
+            String[][] table = TabularSubsetGenerator.readFileIntoTable(generatedDataTable, generatedTabFile);
             String[] columnVector =
-                    TabularSubsetGenerator.subsetStringVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
+                    TabularSubsetGenerator.subsetStringVector(table, i, generatedDataTable.getCaseQuantity().intValue());
 
             assertThat(columnVector).isEqualTo(stringVectors[vectorCount++]);
         }
@@ -223,8 +221,8 @@ public class CSVFileReaderTest {
      */
     @Test
     void testVariableUNFs() throws IOException, UnfException, URISyntaxException {
-        Long expectedNumberOfVariables = 13L;
-        Long expectedNumberOfCases = 24L; // aka the number of lines in the TAB file produced by the ingest plugin
+        long expectedNumberOfVariables = 13L;
+        long expectedNumberOfCases = 24L; // aka the number of lines in the TAB file produced by the ingest plugin
 
         String[] expectedUNFs = {
                 "UNF:6:wb7OATtNC/leh1sOP5IGDQ==",
@@ -261,32 +259,31 @@ public class CSVFileReaderTest {
         assertThat(generatedDataTable.getVarQuantity()).isEqualTo((long) generatedDataTable.getDataVariables().size());
         assertThat(generatedDataTable.getVarQuantity()).isEqualTo(expectedNumberOfVariables);
         assertThat(generatedDataTable.getCaseQuantity()).isEqualTo(expectedNumberOfCases);
-
+        String[][] table = TabularSubsetGenerator.readFileIntoTable(generatedDataTable, generatedTabFile);
         for (int i = 0; i < expectedNumberOfVariables; i++) {
             String unf = null;
 
-            FileInputStream generatedTabInputStream = new FileInputStream(generatedTabFile);
             if (generatedDataTable.getDataVariables().get(i).isIntervalContinuous()) {
                 Double[] columnVector =
-                        TabularSubsetGenerator.subsetDoubleVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
+                        TabularSubsetGenerator.subsetDoubleVector(table, i, generatedDataTable.getCaseQuantity().intValue());
                 unf = UNFUtil.calculateUNF(columnVector);
             }
             if (generatedDataTable.getDataVariables().get(i).isIntervalDiscrete()
                     && generatedDataTable.getDataVariables().get(i).isTypeNumeric()) {
                 Long[] columnVector =
-                        TabularSubsetGenerator.subsetLongVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
+                        TabularSubsetGenerator.subsetLongVector(table, i, generatedDataTable.getCaseQuantity().intValue());
                 unf = UNFUtil.calculateUNF(columnVector);
             }
             if (generatedDataTable.getDataVariables().get(i).isTypeCharacter()) {
                 String[] columnVector =
-                        TabularSubsetGenerator.subsetStringVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
+                        TabularSubsetGenerator.subsetStringVector(table, i, generatedDataTable.getCaseQuantity().intValue());
                 String[] dateFormats = null;
 
                 // Special handling for Character strings that encode dates and times:
                 if ("time".equals(generatedDataTable.getDataVariables().get(i).getFormatCategory())
                         || "date".equals(generatedDataTable.getDataVariables().get(i).getFormatCategory())) {
 
-                    dateFormats = new String[expectedNumberOfCases.intValue()];
+                    dateFormats = new String[(int) expectedNumberOfCases];
                     for (int j = 0; j < expectedNumberOfCases; j++) {
                         dateFormats[j] = generatedDataTable.getDataVariables().get(i).getFormat();
                     }

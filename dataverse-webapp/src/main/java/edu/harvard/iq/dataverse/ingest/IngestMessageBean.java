@@ -38,6 +38,7 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 import java.util.Iterator;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -52,48 +53,49 @@ import java.util.logging.Logger;
 })
 public class IngestMessageBean implements MessageListener {
     private static final Logger logger = Logger.getLogger(IngestMessageBean.class.getCanonicalName());
-    @EJB
-    DatasetDao datasetDao;
-    @EJB
-    DataFileServiceBean datafileService;
-    @EJB
-    IngestServiceBean ingestService;
 
+    @EJB
+    private DatasetDao datasetDao;
+    @EJB
+    private DataFileServiceBean datafileService;
+    @EJB
+    private IngestServiceBean ingestService;
 
-    public IngestMessageBean() {
-    }
+    // -------------------- CONSTRUCTORS --------------------
+
+    public IngestMessageBean() { }
+
+    // -------------------- LOGIC --------------------
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void onMessage(Message message) {
-        IngestMessage ingestMessage = null;
+        IngestMessage ingestMessage;
 
-        Long datafile_id = null;
+        Long datafile_id;
 
         try {
             ObjectMessage om = (ObjectMessage) message;
             ingestMessage = (IngestMessage) om.getObject();
 
-            Iterator iter = ingestMessage.getFileIds().iterator();
+            Iterator<Long> iter = ingestMessage.getFileIds().iterator();
             datafile_id = null;
 
             while (iter.hasNext()) {
-                datafile_id = (Long) iter.next();
+                datafile_id = iter.next();
 
                 logger.fine("Start ingest job;");
                 try {
                     if (ingestService.ingestAsTabular(datafile_id)) {
-                        //Thread.sleep(10000);
                         logger.fine("Finished ingest job;");
                     } else {
                         logger.warning("Error occurred during ingest job for file id " + datafile_id + "!");
                     }
                 } catch (Exception ex) {
-                    //ex.printStackTrace();
-                    // TODO: 
+                    // TODO:
                     // this solution is working - but it would be cleaner to instead
                     // make sure that all the exceptions are interrupted and appropriate
-                    // action taken still on the ingest service side. 
-                    // -- L.A. Aug. 13 2014; 
+                    // action taken still on the ingest service side.
+                    // -- L.A. Aug. 13 2014;
                     logger.info("Unknown exception occurred  during ingest (supressed stack trace); re-setting ingest status.");
                     if (datafile_id != null) {
                         logger.fine("looking up datafile for id " + datafile_id);
@@ -108,22 +110,15 @@ public class IngestMessageBean implements MessageListener {
                             datafile.setDataTable(null);
 
                             logger.info("trying to save datafile and the failed ingest report, id=" + datafile_id);
-                            datafile = datafileService.save(datafile);
-
-                            Dataset dataset = datafile.getOwner();
-                            if (dataset != null && dataset.getId() != null) {
-                                //logger.info("attempting to remove dataset lock for dataset " + dataset.getId());
-                                //datasetService.removeDatasetLock(dataset.getId());
-                                ingestService.sendFailNotification(dataset.getId());
-                            }
+                            datafileService.save(datafile);
                         }
                     }
                 }
             }
 
-            // Remove the dataset lock: 
+            // Remove the dataset lock:
             // (note that the assumption here is that all of the datafiles
-            // packed into this IngestMessage belong to the same dataset) 
+            // packed into this IngestMessage belong to the same dataset)
             if (datafile_id != null) {
                 DataFile datafile = datafileService.find(datafile_id);
                 if (datafile != null) {
@@ -133,19 +128,8 @@ public class IngestMessageBean implements MessageListener {
                     }
                 }
             }
-
-        } catch (JMSException ex) {
-            ex.printStackTrace(); // error in getting object from message; can't send e-mail
-
-        } finally {
-            // when we're done, go ahead and remove the lock (not yet)
-            try {
-                //datasetService.removeDatasetLock( ingestMessage.getDatasetId() );
-            } catch (Exception ex) {
-                ex.printStackTrace(); // application was unable to remove the datasetLock
-            }
+        } catch (JMSException je) {
+            logger.log(Level.WARNING, "Error in getting object from message – can't send e-mail", je);
         }
     }
-
-
 }

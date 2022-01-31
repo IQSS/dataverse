@@ -22,8 +22,6 @@ package edu.harvard.iq.dataverse.ingest;
 
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetDao;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.files.mime.ApplicationMimeType;
 import edu.harvard.iq.dataverse.common.files.mime.TextMimeType;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -53,6 +51,7 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.xlsx.XLSXFileRea
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.xlsx.XLSXFileReaderSpi;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFileCategory;
+import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.persistence.datafile.datavariable.SummaryStatistic;
@@ -71,10 +70,10 @@ import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
-import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SumStatCalculator;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.control.Option;
+import org.apache.commons.lang3.StringUtils;
 import org.dataverse.unf.UNFUtil;
 import org.dataverse.unf.UnfException;
 
@@ -84,7 +83,6 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.enterprise.event.Event;
-import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.inject.Inject;
 import java.io.BufferedInputStream;
@@ -103,7 +101,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -122,12 +119,16 @@ import java.util.logging.Logger;
 @ManagedBean
 public class IngestServiceBean {
     private static final Logger logger = Logger.getLogger(IngestServiceBean.class.getCanonicalName());
+
+    private static String dateTimeFormat_ymdhmsS = "yyyy-MM-dd HH:mm:ss.SSS";
+    private static String dateFormat_ymd = "yyyy-MM-dd";
+
     @EJB
-    DatasetDao datasetDao;
+    private DatasetDao datasetDao;
     @EJB
-    DataFileServiceBean fileService;
+    private DataFileServiceBean fileService;
     @EJB
-    SystemConfig systemConfig;
+    private SystemConfig systemConfig;
 
     @Inject
     private SettingsServiceBean settingsService;
@@ -139,14 +140,11 @@ public class IngestServiceBean {
     private Event<IngestMessageSendEvent> ingestMessageSendEventEvent;
 
     @Inject
-    FinalizeIngestService finalizeIngestService;
+    private FinalizeIngestService finalizeIngestService;
 
     private DataAccess dataAccess = DataAccess.dataAccess();
 
-
-    private static String timeFormat_hmsS = "HH:mm:ss.SSS";
-    private static String dateTimeFormat_ymdhmsS = "yyyy-MM-dd HH:mm:ss.SSS";
-    private static String dateFormat_ymd = "yyyy-MM-dd";
+    // -------------------- LOGIC --------------------
 
     // This method tries to permanently store new files on the filesystem.
     // Then it adds the files that *have been successfully saved* to the
@@ -158,200 +156,187 @@ public class IngestServiceBean {
     // It must be called before we attempt to permanently save the files in
     // the database by calling the Save command on the dataset and/or version.
     public List<DataFile> saveAndAddFilesToDataset(DatasetVersion version, List<DataFile> newFiles) {
-        List<DataFile> ret = new ArrayList<>();
+        List<DataFile> result = new ArrayList<>();
 
-        if (newFiles != null && newFiles.size() > 0) {
-            //ret = new ArrayList<>();
-            // final check for duplicate file names;
-            // we tried to make the file names unique on upload, but then
-            // the user may have edited them on the "add files" page, and
-            // renamed FOOBAR-1.txt back to FOOBAR.txt...
+        if (newFiles == null || newFiles.isEmpty()) {
+            return result;
+        }
+        // final check for duplicate file names;
+        // we tried to make the file names unique on upload, but then
+        // the user may have edited them on the "add files" page, and
+        // renamed FOOBAR-1.txt back to FOOBAR.txt...
 
-            IngestUtil.checkForDuplicateFileNamesFinal(version, newFiles);
+        IngestUtil.checkForDuplicateFileNamesFinal(version, newFiles);
 
-            Dataset dataset = version.getDataset();
+        Dataset dataset = version.getDataset();
 
-            for (DataFile dataFile : newFiles) {
+        for (DataFile dataFile : newFiles) {
 
-                Path tempLocationPath = Paths.get(FileUtil.getFilesTempDirectory() + "/" + dataFile.getStorageIdentifier());
+            Path tempLocationPath = Paths.get(FileUtil.getFilesTempDirectory() + "/" + dataFile.getStorageIdentifier());
 
-                boolean unattached = false;
-                boolean savedSuccess = false;
-                StorageIO<DataFile> storageIO = null;
+            boolean unattached = false;
+            boolean savedSuccess = false;
+            StorageIO<DataFile> storageIO = null;
 
-                try {
-                    logger.fine("Attempting to create a new storageIO object for " + dataFile.getStorageIdentifier());
-                    if (dataFile.getOwner() == null) {
-                        unattached = true;
-                        dataFile.setOwner(dataset);
-                    }
-                    dataFile.setStorageIdentifier(null);
-                    storageIO = dataAccess.createNewStorageIO(dataFile);
-
-                    logger.fine("Successfully created a new storageIO object.");
-
-                    storageIO.savePath(tempLocationPath);
-
-                    dataFile.setFilesize(storageIO.getSize());
-                    savedSuccess = true;
-                    logger.fine("Success: permanently saved file " + dataFile.getFileMetadata().getLabel());
-
-                } catch (IOException ioex) {
-                    logger.warning("Failed to save the file, storage id " + dataFile.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
+            try {
+                logger.fine("Attempting to create a new storageIO object for " + dataFile.getStorageIdentifier());
+                if (dataFile.getOwner() == null) {
+                    unattached = true;
+                    dataFile.setOwner(dataset);
                 }
+                dataFile.setStorageIdentifier(null);
+                storageIO = dataAccess.createNewStorageIO(dataFile);
 
-                // Since we may have already spent some CPU cycles scaling down image thumbnails,
-                // we may as well save them, by moving these generated images to the permanent
-                // dataset directory. We should also remember to delete any such files in the
-                // temp directory:
-                List<Path> generatedTempFiles = listGeneratedTempFiles(Paths.get(FileUtil.getFilesTempDirectory()),
-                                                                       dataFile.getStorageIdentifier());
-                if (generatedTempFiles != null) {
-                    for (Path generated : generatedTempFiles) {
-                        if (savedSuccess) { // no need to try to save this aux file permanently, if we've failed to save the main file!
-                            logger.fine("(Will also try to permanently save generated thumbnail file " + generated.toString() + ")");
-                            try {
-                                //Files.copy(generated, Paths.get(dataset.getFileSystemDirectory().toString(), generated.getFileName().toString()));
-                                int i = generated.toString().lastIndexOf("thumb");
-                                if (i > 1) {
-                                    String extensionTag = generated.toString().substring(i);
-                                    storageIO.savePathAsAux(generated, extensionTag);
-                                    logger.fine(
-                                            "Saved generated thumbnail as aux object. \"preview available\" status: " + dataFile.isPreviewImageAvailable());
-                                } else {
-                                    logger.warning("Generated thumbnail file name does not match the expected pattern: " + generated.toString());
-                                }
+                logger.fine("Successfully created a new storageIO object.");
 
-                            } catch (IOException ioex) {
-                                logger.warning("Failed to save generated file " + generated.toString());
-                            }
-                        }
+                storageIO.savePath(tempLocationPath);
 
-                        // ... but we definitely want to delete it:
+                dataFile.setFilesize(storageIO.getSize());
+                savedSuccess = true;
+                logger.fine("Success: permanently saved file " + dataFile.getFileMetadata().getLabel());
+
+            } catch (IOException ioex) {
+                logger.warning("Failed to save the file, storage id " + dataFile.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
+            }
+
+            // Since we may have already spent some CPU cycles scaling down image thumbnails,
+            // we may as well save them, by moving these generated images to the permanent
+            // dataset directory. We should also remember to delete any such files in the
+            // temp directory:
+            List<Path> generatedTempFiles = listGeneratedTempFiles(Paths.get(FileUtil.getFilesTempDirectory()),
+                                                                   dataFile.getStorageIdentifier());
+            if (generatedTempFiles != null) {
+                for (Path generated : generatedTempFiles) {
+                    if (savedSuccess) { // no need to try to save this aux file permanently, if we've failed to save the main file!
+                        logger.fine("(Will also try to permanently save generated thumbnail file " + generated.toString() + ")");
                         try {
-                            Files.delete(generated);
+                            int i = generated.toString().lastIndexOf("thumb");
+                            if (i > 1) {
+                                String extensionTag = generated.toString().substring(i);
+                                storageIO.savePathAsAux(generated, extensionTag);
+                                logger.fine(
+                                        "Saved generated thumbnail as aux object. \"preview available\" status: "
+                                                + dataFile.isPreviewImageAvailable());
+                            } else {
+                                logger.warning("Generated thumbnail file name does not match the expected pattern: "
+                                        + generated.toString());
+                            }
+
                         } catch (IOException ioex) {
-                            logger.warning("Failed to delete generated file " + generated.toString());
-                        }
-                    }
-                }
-
-                // ... and let's delete the main temp file:
-                try {
-                    logger.fine("Will attempt to delete the temp file " + tempLocationPath.toString());
-                    Files.delete(tempLocationPath);
-                } catch (IOException ex) {
-                    // (non-fatal - it's just a temp file.)
-                    logger.warning("Failed to delete temp file " + tempLocationPath.toString());
-                }
-
-                if (unattached) {
-                    dataFile.setOwner(null);
-                }
-                // Any necessary post-processing:
-                //performPostProcessingTasks(dataFile);
-
-                if (savedSuccess) {
-                    // These are all brand new files, so they should all have
-                    // one filemetadata total. -- L.A.
-                    FileMetadata fileMetadata = dataFile.getFileMetadatas().get(0);
-                    String fileName = fileMetadata.getLabel();
-
-                    boolean metadataExtracted = false;
-                    if (FileUtil.canIngestAsTabular(dataFile)) {
-                        /*
-                         * Note that we don't try to ingest the file right away -
-                         * instead we mark it as "scheduled for ingest", then at
-                         * the end of the save process it will be queued for async.
-                         * ingest in the background. In the meantime, the file
-                         * will be ingested as a regular, non-tabular file, and
-                         * appear as such to the user, until the ingest job is
-                         * finished with the Ingest Service.
-                         */
-                        dataFile.SetIngestScheduled();
-                    } else if (fileMetadataExtractable(dataFile)) {
-
-                        try {
-                            // FITS is the only type supported for metadata
-                            // extraction, as of now. -- L.A. 4.0
-                            metadataExtracted = extractMetadata(tempLocationPath.toString(), dataFile, version);
-                        } catch (IOException mex) {
-                            logger.severe("Caught exception trying to extract indexable metadata from file " + fileName + ",  " + mex.getMessage());
-                        }
-                        if (metadataExtracted) {
-                            logger.fine("Successfully extracted indexable metadata from file " + fileName);
-                        } else {
-                            logger.fine("Failed to extract indexable metadata from file " + fileName);
-                        }
-                    }
-                    // temp dbug line
-                    //System.out.println("ADDING FILE: " + fileName + "; for dataset: " + dataset.getGlobalId());
-                    // Make sure the file is attached to the dataset and to the version, if this
-                    // hasn't been done yet:
-                    if (dataFile.getOwner() == null) {
-                        dataFile.setOwner(dataset);
-
-                        version.addFileMetadata(dataFile.getFileMetadata());
-                        dataFile.getFileMetadata().setDatasetVersion(version);
-                        dataset.getFiles().add(dataFile);
-
-                        if (dataFile.getFileMetadata().getCategories() != null) {
-                            ListIterator<DataFileCategory> dfcIt = dataFile.getFileMetadata().getCategories().listIterator();
-
-                            while (dfcIt.hasNext()) {
-                                DataFileCategory dataFileCategory = dfcIt.next();
-
-                                if (dataFileCategory.getDataset() == null) {
-                                    DataFileCategory newCategory = dataset.getCategoryByName(dataFileCategory.getName());
-                                    if (newCategory != null) {
-                                        newCategory.addFileMetadata(dataFile.getFileMetadata());
-                                        //dataFileCategory = newCategory;
-                                        dfcIt.set(newCategory);
-                                    } else {
-                                        dfcIt.remove();
-                                    }
-                                }
-                            }
+                            logger.warning("Failed to save generated file " + generated.toString());
                         }
                     }
 
-                    ret.add(dataFile);
+                    // ... but we definitely want to delete it:
+                    try {
+                        Files.delete(generated);
+                    } catch (IOException ioex) {
+                        logger.warning("Failed to delete generated file " + generated.toString());
+                    }
                 }
             }
 
-            logger.fine("Done! Finished saving new files in permanent storage and adding them to the dataset.");
-        }
+            // ... and let's delete the main temp file:
+            try {
+                logger.fine("Will attempt to delete the temp file " + tempLocationPath.toString());
+                Files.delete(tempLocationPath);
+            } catch (IOException ex) {
+                // (non-fatal - it's just a temp file.)
+                logger.warning("Failed to delete temp file " + tempLocationPath.toString());
+            }
 
-        return ret;
+            if (unattached) {
+                dataFile.setOwner(null);
+            }
+            // Any necessary post-processing:
+            // performPostProcessingTasks(dataFile);
+
+            if (!savedSuccess) {
+                continue;
+            }
+
+            // These are all brand new files, so they should all have
+            // one filemetadata total. -- L.A.
+            FileMetadata fileMetadata = dataFile.getFileMetadatas().get(0);
+            String fileName = fileMetadata.getLabel();
+
+            boolean metadataExtracted = false;
+            if (FileUtil.canIngestAsTabular(dataFile)) {
+                /*
+                 * Note that we don't try to ingest the file right away -
+                 * instead we mark it as "scheduled for ingest", then at
+                 * the end of the save process it will be queued for async.
+                 * ingest in the background. In the meantime, the file
+                 * will be ingested as a regular, non-tabular file, and
+                 * appear as such to the user, until the ingest job is
+                 * finished with the Ingest Service.
+                 */
+                dataFile.SetIngestScheduled();
+            } else if (fileMetadataExtractable(dataFile)) {
+
+                try {
+                    // FITS is the only type supported for metadata
+                    // extraction, as of now. -- L.A. 4.0
+                    metadataExtracted = extractMetadata(tempLocationPath.toString(), dataFile, version);
+                } catch (IOException mex) {
+                    logger.severe("Caught exception trying to extract indexable metadata from file " + fileName + ",  " + mex.getMessage());
+                }
+                logger.fine(metadataExtracted
+                        ? "Successfully extracted indexable metadata from file " + fileName
+                        : "Failed to extract indexable metadata from file " + fileName);
+            }
+            // Make sure the file is attached to the dataset and to the version, if this
+            // hasn't been done yet:
+            if (dataFile.getOwner() == null) {
+                dataFile.setOwner(dataset);
+
+                version.addFileMetadata(dataFile.getFileMetadata());
+                dataFile.getFileMetadata().setDatasetVersion(version);
+                dataset.getFiles().add(dataFile);
+
+                if (dataFile.getFileMetadata().getCategories() != null) {
+                    ListIterator<DataFileCategory> dfcIt = dataFile.getFileMetadata().getCategories().listIterator();
+
+                    while (dfcIt.hasNext()) {
+                        DataFileCategory dataFileCategory = dfcIt.next();
+
+                        if (dataFileCategory.getDataset() != null) {
+                            continue;
+                        }
+                        DataFileCategory newCategory = dataset.getCategoryByName(dataFileCategory.getName());
+                        if (newCategory != null) {
+                            newCategory.addFileMetadata(dataFile.getFileMetadata());
+                            dfcIt.set(newCategory);
+                        } else {
+                            dfcIt.remove();
+                        }
+                    }
+                }
+            }
+            result.add(dataFile);
+        }
+        logger.fine("Done! Finished saving new files in permanent storage and adding them to the dataset.");
+        return result;
     }
 
     public List<Path> listGeneratedTempFiles(Path tempDirectory, String baseName) {
         List<Path> generatedFiles = new ArrayList<>();
 
-        // for example, <filename>.thumb64 or <filename>.thumb400.
-
-        if (baseName == null || baseName.equals("")) {
+        if (StringUtils.isEmpty(baseName)) {
             return null;
         }
 
-        DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
-            @Override
-            public boolean accept(Path file) throws IOException {
-                return (file.getFileName() != null
-                        && file.getFileName().toString().startsWith(baseName + ".thumb"));
-            }
-        };
+        DirectoryStream.Filter<Path> filter = file ->
+                file.getFileName() != null
+                && file.getFileName().toString().startsWith(baseName + ".thumb");
 
         try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(tempDirectory, filter)) {
-            for (Path filePath : dirStream) {
-                generatedFiles.add(filePath);
-            }
-        } catch (IOException ex) {
+            dirStream.forEach(generatedFiles::add);
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, "Exception encountered: ", ioe);
         }
-
         return generatedFiles;
     }
-
 
     // TODO: consider creating a version of this method that would take
     // datasetversion as the argument.
@@ -368,13 +353,12 @@ public class IngestServiceBean {
                 scheduledFiles.add(dataFile);
             }
         }
-
         startIngestJobs(scheduledFiles, user);
     }
 
     public String startIngestJobs(List<DataFile> dataFiles, AuthenticatedUser user) {
 
-        IngestMessage ingestMessage = null;
+        IngestMessage ingestMessage;
         StringBuilder sb = new StringBuilder();
 
         List<DataFile> scheduledFiles = new ArrayList<>();
@@ -436,218 +420,22 @@ public class IngestServiceBean {
         return sb.toString();
     }
 
-
-    public void produceSummaryStatistics(DataFile dataFile, File generatedTabularFile) throws IOException {
-        /*
-        logger.info("Skipping summary statistics and UNF.");
-         */
-        produceDiscreteNumericSummaryStatistics(dataFile, generatedTabularFile);
-        produceContinuousSummaryStatistics(dataFile, generatedTabularFile);
-        produceCharacterSummaryStatistics(dataFile, generatedTabularFile);
-
-        recalculateDataFileUNF(dataFile);
-        recalculateDatasetVersionUNF(dataFile.getFileMetadata().getDatasetVersion());
-    }
-
-    public void produceContinuousSummaryStatistics(DataFile dataFile, File generatedTabularFile) throws IOException {
-
-        /*
-        // quick, but memory-inefficient way:
-        // - this method just loads the entire file-worth of continuous vectors
-        // into a Double[][] matrix.
-        //Double[][] variableVectors = subsetContinuousVectors(dataFile);
-        //calculateContinuousSummaryStatistics(dataFile, variableVectors);
-
-        // A more sophisticated way: this subsets one column at a time, using
-        // the new optimized subsetting that does not have to read any extra
-        // bytes from the file to extract the column:
-
-        TabularSubsetGenerator subsetGenerator = new TabularSubsetGenerator();
-        */
-
-        for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
-            if (dataFile.getDataTable().getDataVariables().get(i).isIntervalContinuous()) {
-                logger.fine("subsetting continuous vector");
-
-                if ("float".equals(dataFile.getDataTable().getDataVariables().get(i).getFormat())) {
-                    Float[] variableVector = TabularSubsetGenerator.subsetFloatVector(new FileInputStream(
-                            generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
-                    logger.fine("Calculating summary statistics on a Float vector;");
-                    calculateContinuousSummaryStatistics(dataFile, i, variableVector);
-                    // calculate the UNF while we are at it:
-                    logger.fine("Calculating UNF on a Float vector;");
-                    calculateUNF(dataFile, i, variableVector);
-                    variableVector = null;
-                } else {
-                    Double[] variableVector = TabularSubsetGenerator.subsetDoubleVector(new FileInputStream(
-                            generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
-                    logger.fine("Calculating summary statistics on a Double vector;");
-                    calculateContinuousSummaryStatistics(dataFile, i, variableVector);
-                    // calculate the UNF while we are at it:
-                    logger.fine("Calculating UNF on a Double vector;");
-                    calculateUNF(dataFile, i, variableVector);
-                    variableVector = null;
-                }
-                logger.fine("Done! (continuous);");
-            }
-        }
-    }
-
-    public void produceDiscreteNumericSummaryStatistics(DataFile dataFile, File generatedTabularFile) throws IOException {
-
-        //TabularSubsetGenerator subsetGenerator = new TabularSubsetGenerator();
-
-        for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
-            if (dataFile.getDataTable().getDataVariables().get(i).isIntervalDiscrete()
-                    && dataFile.getDataTable().getDataVariables().get(i).isTypeNumeric()) {
-                logger.fine("subsetting discrete-numeric vector");
-
-                Long[] variableVector = TabularSubsetGenerator.subsetLongVector(new FileInputStream(generatedTabularFile),
-                                                                                i,
-                                                                                dataFile.getDataTable().getCaseQuantity().intValue());
-                // We are discussing calculating the same summary stats for
-                // all numerics (the same kind of sumstats that we've been calculating
-                // for numeric continuous type)  -- L.A. Jul. 2014
-                calculateContinuousSummaryStatistics(dataFile, i, variableVector);
-                // calculate the UNF while we are at it:
-                logger.fine("Calculating UNF on a Long vector");
-                calculateUNF(dataFile, i, variableVector);
-                logger.fine("Done! (discrete numeric)");
-                variableVector = null;
-            }
-        }
-    }
-
-    public void produceCharacterSummaryStatistics(DataFile dataFile, File generatedTabularFile) throws IOException {
-
-        /*
-            At this point it's still not clear what kinds of summary stats we
-            want for character types. Though we are pretty confident we don't
-            want to keep doing what we used to do in the past, i.e. simply
-            store the total counts for all the unique values; even if it's a
-            very long vector, and *every* value in it is unique. (As a result
-            of this, our Categorical Variable Value table is the single
-            largest in the production database. With no evidence whatsoever,
-            that this information is at all useful.
-                -- L.A. Jul. 2014
-
-        TabularSubsetGenerator subsetGenerator = new TabularSubsetGenerator();
-        */
-
-        for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
-            if (dataFile.getDataTable().getDataVariables().get(i).isTypeCharacter()) {
-
-                logger.fine("subsetting character vector");
-                String[] variableVector = TabularSubsetGenerator.subsetStringVector(new FileInputStream(
-                        generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
-                //calculateCharacterSummaryStatistics(dataFile, i, variableVector);
-                // calculate the UNF while we are at it:
-                logger.fine("Calculating UNF on a String vector");
-                calculateUNF(dataFile, i, variableVector);
-                logger.fine("Done! (character)");
-                variableVector = null;
-            }
-        }
-    }
-
-    public static void produceFrequencyStatistics(DataFile dataFile, File generatedTabularFile) throws IOException {
-
+    public static void produceFrequencyStatistics(String[][] table, DataFile dataFile) throws IOException {
         List<DataVariable> vars = dataFile.getDataTable().getDataVariables();
-
-        produceFrequencies(generatedTabularFile, vars);
+        produceFrequencies(table, vars);
     }
 
     public static void produceFrequencies(File generatedTabularFile, List<DataVariable> vars) throws IOException {
-
-        for (int i = 0; i < vars.size(); i++) {
-
-            Collection<VariableCategory> cats = vars.get(i).getCategories();
-            int caseQuantity = vars.get(i).getDataTable().getCaseQuantity().intValue();
-            boolean isNumeric = vars.get(i).isTypeNumeric();
-            Object[] variableVector = null;
-            if (cats.size() > 0) {
-                if (isNumeric) {
-                    variableVector = TabularSubsetGenerator.subsetFloatVector(new FileInputStream(generatedTabularFile),
-                                                                              i,
-                                                                              caseQuantity);
-                } else {
-                    variableVector = TabularSubsetGenerator.subsetStringVector(new FileInputStream(generatedTabularFile),
-                                                                               i,
-                                                                               caseQuantity);
-                }
-                if (variableVector != null) {
-                    Map<Object, Double> freq = calculateFrequency(variableVector);
-                    for (VariableCategory cat : cats) {
-                        Object catValue;
-                        if (isNumeric) {
-                            catValue = new Float(cat.getValue());
-                        } else {
-                            catValue = cat.getValue();
-                        }
-                        Double numberFreq = freq.get(catValue);
-                        if (numberFreq != null) {
-                            cat.setFrequency(numberFreq);
-                        } else {
-                            cat.setFrequency(0D);
-                        }
-                    }
-                } else {
-                    logger.fine("variableVector is null for variable " + vars.get(i).getName());
-                }
-            }
+        if (vars.isEmpty()) {
+            return;
         }
-    }
-
-    public static Map<Object, Double> calculateFrequency(Object[] variableVector) {
-        Map<Object, Double> freq = new HashMap<>();
-
-        for (int j = 0; j < variableVector.length; j++) {
-            if (variableVector[j] != null) {
-                Double freqNum = freq.get(variableVector[j]);
-                if (freqNum != null) {
-                    freq.put(variableVector[j], freqNum + 1);
-                } else {
-                    freq.put(variableVector[j], 1D);
-                }
-            }
-        }
-
-        return freq;
-
-    }
-
-    public void recalculateDataFileUNF(DataFile dataFile) {
-        String[] unfValues = new String[dataFile.getDataTable().getVarQuantity().intValue()];
-        String fileUnfValue = null;
-
-        for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
-            String varunf = dataFile.getDataTable().getDataVariables().get(i).getUnf();
-            unfValues[i] = varunf;
-        }
-
-        try {
-            fileUnfValue = UNFUtil.calculateUNF(unfValues);
-        } catch (IOException ex) {
-            logger.warning("Failed to recalculate the UNF for the datafile id=" + dataFile.getId());
-        } catch (UnfException uex) {
-            logger.warning("UNF Exception: Failed to recalculate the UNF for the dataset version id=" + dataFile.getId());
-        }
-
-        if (fileUnfValue != null) {
-            dataFile.getDataTable().setUnf(fileUnfValue);
-        }
+        DataTable dataTable = vars.get(0).getDataTable();
+        String[][] table = TabularSubsetGenerator.readFileIntoTable(dataTable, generatedTabularFile);
+        produceFrequencies(table, vars);
     }
 
     public void recalculateDatasetVersionUNF(DatasetVersion version) {
         IngestUtil.recalculateDatasetVersionUNF(version);
-    }
-
-    public void sendFailNotification(Long dataset_id) {
-        FacesMessage facesMessage = new FacesMessage(BundleUtil.getStringFromBundle("ingest.failed"));
-        /* commented out push channel message:
-            PushContext pushContext = PushContextFactory.getDefault().getPushContext();
-            pushContext.push("/ingest" + dataset_id, facesMessage);
-        */
     }
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
@@ -727,7 +515,7 @@ public class IngestServiceBean {
             }
         }
 
-        TabularDataIngest tabDataIngest = null;
+        TabularDataIngest tabDataIngest;
         try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(localFile.get()))) {
             tabDataIngest = ingestPlugin.read(inputStream, additionalData);
         } catch (IngestException ex) {
@@ -737,9 +525,7 @@ public class IngestServiceBean {
             logger.log(Level.WARNING, "Ingest failure.", ex);
             fileService.saveInNewTransaction(dataFile);
             return false;
-
         } catch (Exception ingestEx) {
-
             dataFile.SetIngestProblem();
             dataFile.setIngestReport(IngestReport.createIngestFailureReport(dataFile, IngestError.UNKNOWN_ERROR));
             fileService.saveInNewTransaction(dataFile);
@@ -781,8 +567,9 @@ public class IngestServiceBean {
         tabDataIngest.getDataTable().setDataFile(dataFile);
 
         try {
-            produceSummaryStatistics(dataFile, tabFile);
-            produceFrequencyStatistics(dataFile, tabFile);
+            String[][] table = TabularSubsetGenerator.readFileIntoTable(dataFile.getDataTable(), tabFile);
+            produceSummaryStatistics(table, dataFile);
+            produceFrequencyStatistics(table, dataFile);
         } catch (IOException postIngestEx) {
 
             dataFile.SetIngestProblem();
@@ -802,38 +589,6 @@ public class IngestServiceBean {
             tabFile.delete();
         }
     }
-
-
-    private void restoreIngestedDataFile(DataFile dataFile, TabularDataIngest tabDataIngest, long originalSize, String originalFileName, String originalContentType) {
-        dataFile.setDataTable(null);
-        if (tabDataIngest != null && tabDataIngest.getDataTable() != null) {
-            tabDataIngest.getDataTable().setDataFile(null);
-        }
-        dataFile.getFileMetadata().setLabel(originalFileName);
-        dataFile.setContentType(originalContentType);
-        dataFile.setFilesize(originalSize);
-    }
-
-    // TODO: Further move the code that doesn't really need to be in an EJB bean
-    // (i.e., the code that doesn't need to persist anything in the database) into
-    // outside static utilities and/or helpers; so that unit tests could be written
-    // easily. -- L.A. 4.6
-
-    /* not needed anymore, but keeping it around, as a demo of how Push
-       notifications work
-    private void sendStatusNotification(Long datasetId, FacesMessage message) {*/
-        /*
-        logger.fine("attempting to send push notification to channel /ingest/dataset/"+datasetId+"; "+message.getDetail());
-        EventBus eventBus = EventBusFactory.getDefault().eventBus();
-        if (eventBus == null) {
-            logger.warning("Failed to obtain eventBus!");
-            return;
-        }
-        // TODO:
-        // add more diagnostics here! 4.2.3 -- L.A.
-        eventBus.publish("/ingest/dataset/" + datasetId, message);
-        */
-    /* }*/
 
     public TabularDataFileReader getTabDataReaderByMimeType(String mimeType) {
         /*
@@ -933,267 +688,346 @@ public class IngestServiceBean {
         return ingestSuccessful;
     }
 
+    // This method takes a list of file ids, checks the format type of the ingested
+    // original, and attempts to fix it if it's missing.
+    // Note the @Asynchronous attribute - this allows us to just kick off and run this
+    // (potentially large) job in the background.
+    // The method is called by the "fixmissingoriginaltypes" /admin api call.
+    @Asynchronous
+    public void fixMissingOriginalTypes(List<Long> datafileIds) {
+        for (Long fileId : datafileIds) {
+            fixMissingOriginalType(fileId);
+        }
+        logger.info("Finished repairing tabular data files that were missing the original file format labels.");
+    }
 
-    private void processDatasetMetadata(FileMetadataIngest fileMetadataIngest, DatasetVersion editVersion) throws IOException {
+    // This method takes a list of file ids and tries to fix the size of the saved
+    // original, if present
+    // Note the @Asynchronous attribute - this allows us to just kick off and run this
+    // (potentially large) job in the background.
+    // The method is called by the "fixmissingoriginalsizes" /admin api call.
+    @Asynchronous
+    public void fixMissingOriginalSizes(List<Long> datafileIds) {
+        for (Long fileId : datafileIds) {
+            fixMissingOriginalSize(fileId);
+            try {
+                Thread.sleep(1000);
+            } catch (Exception e) {
+                logger.log(Level.WARNING, "Exception encountered: ", e);
+            }
+        }
+        logger.info("Finished repairing tabular data files that were missing the original file sizes.");
+    }
 
+    // -------------------- PRIVATE --------------------
+
+    private void restoreIngestedDataFile(DataFile dataFile, TabularDataIngest tabDataIngest, long originalSize, String originalFileName, String originalContentType) {
+        dataFile.setDataTable(null);
+        if (tabDataIngest != null && tabDataIngest.getDataTable() != null) {
+            tabDataIngest.getDataTable().setDataFile(null);
+        }
+        dataFile.getFileMetadata().setLabel(originalFileName);
+        dataFile.setContentType(originalContentType);
+        dataFile.setFilesize(originalSize);
+    }
+
+    private static void produceFrequencies(String[][] table, List<DataVariable> vars) {
+        for (int i = 0; i < vars.size(); i++) {
+            Collection<VariableCategory> cats = vars.get(i).getCategories();
+            int caseQuantity = vars.get(i).getDataTable().getCaseQuantity().intValue();
+            boolean isNumeric = vars.get(i).isTypeNumeric();
+            Object[] variableVector;
+            if (cats.size() > 0) {
+                if (isNumeric) {
+                    variableVector = TabularSubsetGenerator.subsetFloatVector(table, i, caseQuantity);
+                } else {
+                    variableVector = TabularSubsetGenerator.subsetStringVector(table, i, caseQuantity);
+                }
+                Map<Object, Double> freq = calculateFrequency(variableVector);
+                for (VariableCategory cat : cats) {
+                    Object catValue;
+                    if (isNumeric) {
+                        catValue = new Float(cat.getValue());
+                    } else {
+                        catValue = cat.getValue();
+                    }
+                    Double numberFreq = freq.get(catValue);
+                    if (numberFreq != null) {
+                        cat.setFrequency(numberFreq);
+                    } else {
+                        cat.setFrequency(0D);
+                    }
+                }
+            }
+        }
+    }
+
+    private static Map<Object, Double> calculateFrequency(Object[] variableVector) {
+        Map<Object, Double> frequencies = new HashMap<>();
+
+        for (Object variable : variableVector) {
+            if (variable != null) {
+                Double freqNum = frequencies.get(variable);
+                frequencies.put(variable, freqNum != null ? freqNum + 1 : 1D);
+            }
+        }
+        return frequencies;
+    }
+
+    private void processDatasetMetadata(FileMetadataIngest fileMetadataIngest, DatasetVersion editVersion) {
 
         for (MetadataBlock mdb : editVersion.getDataset().getOwner().getRootMetadataBlocks()) {
-            if (mdb.getName().equals(fileMetadataIngest.getMetadataBlockName())) {
-                logger.fine("Ingest Service: dataset version has " + mdb.getName() + " metadata block enabled.");
+            if (!mdb.getName().equals(fileMetadataIngest.getMetadataBlockName())) {
+                continue;
+            }
+            logger.fine("Ingest Service: dataset version has " + mdb.getName() + " metadata block enabled.");
 
-                editVersion.setDatasetFields(editVersion.initDatasetFields());
+            editVersion.setDatasetFields(editVersion.initDatasetFields());
 
-                Map<String, Set<String>> fileMetadataMap = fileMetadataIngest.getMetadataMap();
-                for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()) {
-                    if (dsft.isPrimitive()) {
-                        if (!dsft.isHasParent()) {
-                            String dsfName = dsft.getName();
-                            // See if the plugin has found anything for this field:
-                            if (fileMetadataMap.get(dsfName) != null && !fileMetadataMap.get(dsfName).isEmpty()) {
+            Map<String, Set<String>> fileMetadataMap = fileMetadataIngest.getMetadataMap();
+            for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()) {
+                if (dsft.isPrimitive()) {
+                    if (dsft.isHasParent()) {
+                        continue;
+                    }
+                    String dsfName = dsft.getName();
+                    // See if the plugin has found anything for this field:
+                    if (fileMetadataMap.get(dsfName) != null && !fileMetadataMap.get(dsfName).isEmpty()) {
 
-                                logger.fine("Ingest Service: found extracted metadata for field " + dsfName);
-                                // go through the existing fields:
-                                for (DatasetField dsf : editVersion.getFlatDatasetFields()) {
-                                    if (dsf.getDatasetFieldType().equals(dsft)) {
-                                        // yep, this is our field!
-                                        // let's go through the values that the ingest
-                                        // plugin found in the file for this field:
+                        logger.fine("Ingest Service: found extracted metadata for field " + dsfName);
+                        // go through the existing fields:
+                        for (DatasetField dsf : editVersion.getFlatDatasetFields()) {
+                            if (!dsf.getDatasetFieldType().equals(dsft)) {
+                                continue;
+                            }
+                            // yep, this is our field!
+                            // let's go through the values that the ingest
+                            // plugin found in the file for this field:
 
-                                        Set<String> mValues = fileMetadataMap.get(dsfName);
+                            Set<String> mValues = fileMetadataMap.get(dsfName);
 
-                                        // Special rules apply to aggregation of values for
-                                        // some specific fields - namely, the resolution.*
-                                        // fields from the Astronomy Metadata block.
-                                        // TODO: rather than hard-coded, this needs to be
-                                        // programmatically defined. -- L.A. 4.0
-                                        if (dsfName.equals("resolution.Temporal")
-                                                || dsfName.equals("resolution.Spatial")
-                                                || dsfName.equals("resolution.Spectral")) {
-                                            // For these values, we aggregate the minimum-maximum
-                                            // pair, for the entire set.
-                                            // So first, we need to go through the values found by
-                                            // the plugin and select the min. and max. values of
-                                            // these:
-                                            // (note that we are assuming that they all must
-                                            // validate as doubles!)
+                            // Special rules apply to aggregation of values for
+                            // some specific fields - namely, the resolution.*
+                            // fields from the Astronomy Metadata block.
+                            // TODO: rather than hard-coded, this needs to be
+                            // programmatically defined. -- L.A. 4.0
+                            if ("resolution.Temporal".equals(dsfName)
+                                    || "resolution.Spatial".equals(dsfName)
+                                    || "resolution.Spectral".equals(dsfName)) {
+                                // For these values, we aggregate the minimum-maximum
+                                // pair, for the entire set.
+                                // So first, we need to go through the values found by
+                                // the plugin and select the min. and max. values of
+                                // these:
+                                // (note that we are assuming that they all must
+                                // validate as doubles!)
 
-                                            Double minValue = null;
-                                            Double maxValue = null;
+                                Double minValue = null;
+                                Double maxValue = null;
 
-                                            for (String fValue : mValues) {
+                                for (String fValue : mValues) {
 
-                                                try {
-                                                    double thisValue = Double.parseDouble(fValue);
+                                    try {
+                                        double thisValue = Double.parseDouble(fValue);
 
-                                                    if (minValue == null || Double.compare(thisValue, minValue) < 0) {
-                                                        minValue = thisValue;
-                                                    }
-                                                    if (maxValue == null || Double.compare(thisValue, maxValue) > 0) {
-                                                        maxValue = thisValue;
-                                                    }
-                                                } catch (NumberFormatException e) {
+                                        if (minValue == null || Double.compare(thisValue, minValue) < 0) {
+                                            minValue = thisValue;
+                                        }
+                                        if (maxValue == null || Double.compare(thisValue, maxValue) > 0) {
+                                            maxValue = thisValue;
+                                        }
+                                    } catch (NumberFormatException nfe) {
+                                        logger.log(Level.FINEST, "Wrong value: ", nfe);
+                                    }
+                                }
+
+                                // Now let's see what aggregated values we
+                                // have stored already:
+
+                                // (all of these resolution.* fields have allowedMultiple set to FALSE,
+                                // so there can be only one!)
+                                //logger.fine("Min value: "+minValue+", Max value: "+maxValue);
+                                if (minValue == null) {
+                                    // Ouch.
+                                    continue;
+                                }
+                                Double storedMinValue;
+                                Double storedMaxValue;
+
+                                String storedValue = "";
+
+                                if (dsf.getFieldValue().isDefined()) {
+                                    storedValue = dsf.getFieldValue().get();
+
+                                    if (StringUtils.isNotEmpty(storedValue)) {
+                                        try {
+                                            boolean isRange = storedValue.contains(" - ");
+                                            storedMinValue = isRange
+                                                    ? Double.parseDouble(storedValue.substring(0, storedValue.indexOf(" - ")))
+                                                    : Double.parseDouble(storedValue);
+                                            storedMaxValue = isRange
+                                                    ? Double.parseDouble(storedValue.substring(storedValue.indexOf(" - ") + 3))
+                                                    : storedMinValue;
+                                            if (storedMinValue.compareTo(minValue) < 0) {
+                                                minValue = storedMinValue;
+                                            }
+                                            if (storedMaxValue.compareTo(maxValue) > 0) {
+                                                maxValue = storedMaxValue;
+                                            }
+                                        } catch (NumberFormatException e) {
+                                            logger.log(Level.FINE, "Wrong value: ", e);
+                                        }
+                                    } else {
+                                        storedValue = "";
+                                    }
+                                }
+
+                                String newAggregateValue = minValue.equals(maxValue)
+                                        ? minValue.toString()
+                                        : minValue.toString() + " - " + maxValue.toString();
+
+                                // finally, compare it to the value we have now:
+                                if (!storedValue.equals(newAggregateValue)) {
+                                    dsf.setFieldValue(newAggregateValue);
+                                }
+                            } else {
+                                // Other fields are aggregated simply by
+                                // collecting a list of *unique* values encountered
+                                // for this Field throughout the dataset.
+                                // This means we need to only add the values *not yet present*.
+                                // (the implementation below may be inefficient - ?)
+
+                                for (String fValue : mValues) {
+                                    if (!dsft.isControlledVocabulary()) {
+                                        for (DatasetField dsfv : dsf.getDatasetFieldsChildren()) {
+                                            if (!fValue.equals(dsfv.getValue())) {
+                                                logger.fine("Creating a new value for field " + dsfName + ": " + fValue);
+                                                dsfv.setFieldValue(fValue);
+                                            }
+                                        }
+                                    } else {
+                                        // A controlled vocabulary entry:
+                                        // first, let's see if it's a legit control vocab. entry:
+                                        ControlledVocabularyValue legitControlledVocabularyValue = null;
+                                        Collection<ControlledVocabularyValue> definedVocabularyValues
+                                                = dsft.getControlledVocabularyValues();
+                                        if (definedVocabularyValues != null) {
+                                            for (ControlledVocabularyValue definedVocabValue : definedVocabularyValues) {
+                                                if (fValue.equals(definedVocabValue.getStrValue())) {
+                                                    logger.fine("Yes, " + fValue
+                                                            + " is a valid controlled vocabulary value for the field " + dsfName);
+                                                    legitControlledVocabularyValue = definedVocabValue;
+                                                    break;
                                                 }
                                             }
+                                        }
+                                        if (legitControlledVocabularyValue == null) {
+                                            continue;
+                                        }
+                                        // Only need to add the value if it is new,
+                                        // i.e. if it does not exist yet:
+                                        boolean valueExists = false;
 
-                                            // Now let's see what aggregated values we
-                                            // have stored already:
-
-                                            // (all of these resolution.* fields have allowedMultiple set to FALSE,
-                                            // so there can be only one!)
-                                            //logger.fine("Min value: "+minValue+", Max value: "+maxValue);
-                                            if (minValue != null) {
-                                                Double storedMinValue = null;
-                                                Double storedMaxValue = null;
-
-                                                String storedValue = "";
-
-                                                if (dsf.getFieldValue().isDefined()) {
-                                                    storedValue = dsf.getFieldValue().get();
-
-                                                    if (storedValue != null && !storedValue.equals("")) {
-                                                        try {
-
-                                                            if (storedValue.contains(" - ")) {
-                                                                storedMinValue = Double.parseDouble(storedValue.substring(
-                                                                        0,
-                                                                        storedValue.indexOf(" - ")));
-                                                                storedMaxValue = Double.parseDouble(storedValue.substring(
-                                                                        storedValue.indexOf(" - ") + 3));
-                                                            } else {
-                                                                storedMinValue = Double.parseDouble(storedValue);
-                                                                storedMaxValue = storedMinValue;
-                                                            }
-                                                            if (storedMinValue.compareTo(minValue) < 0) {
-                                                                minValue = storedMinValue;
-                                                            }
-                                                            if (storedMaxValue.compareTo(maxValue) > 0) {
-                                                                maxValue = storedMaxValue;
-                                                            }
-                                                        } catch (NumberFormatException e) {
-                                                            logger.log(Level.FINE, "", e);
-                                                        }
-                                                    } else {
-                                                        storedValue = "";
-                                                    }
-                                                }
-
-                                                //logger.fine("Stored min value: "+storedMinValue+", Stored max value: "+storedMaxValue);
-
-                                                String newAggregateValue = "";
-
-                                                if (minValue.equals(maxValue)) {
-                                                    newAggregateValue = minValue.toString();
-                                                } else {
-                                                    newAggregateValue = minValue.toString() + " - " + maxValue.toString();
-                                                }
-
-                                                // finally, compare it to the value we have now:
-                                                if (!storedValue.equals(newAggregateValue)) {
-                                                    dsf.setFieldValue(newAggregateValue);
+                                        List<ControlledVocabularyValue> existingControlledVocabValues
+                                                = dsf.getControlledVocabularyValues();
+                                        if (existingControlledVocabValues != null) {
+                                            for (ControlledVocabularyValue cvv : existingControlledVocabValues) {
+                                                if (fValue.equals(cvv.getStrValue())) {
+                                                    // or should I use if (legitControlledVocabularyValue.equals(cvv)) ?
+                                                    logger.fine("Controlled vocab. value " + fValue
+                                                            + " already exists for field " + dsfName);
+                                                    valueExists = true;
+                                                    break;
                                                 }
                                             }
-                                            // Ouch.
-                                        } else {
-                                            // Other fields are aggregated simply by
-                                            // collecting a list of *unique* values encountered
-                                            // for this Field throughout the dataset.
-                                            // This means we need to only add the values *not yet present*.
-                                            // (the implementation below may be inefficient - ?)
+                                        }
 
-                                            for (String fValue : mValues) {
-                                                if (!dsft.isControlledVocabulary()) {
-                                                    Iterator<DatasetField> dsfvIt = dsf.getDatasetFieldsChildren().iterator();
-
-                                                    while (dsfvIt.hasNext()) {
-                                                        DatasetField dsfv = dsfvIt.next();
-                                                        if (!fValue.equals(dsfv.getValue())) {
-                                                            logger.fine("Creating a new value for field " + dsfName + ": " + fValue);
-                                                            dsfv.setFieldValue(fValue);
-                                                        }
-                                                    }
-
-                                                } else {
-                                                    // A controlled vocabulary entry:
-                                                    // first, let's see if it's a legit control vocab. entry:
-                                                    ControlledVocabularyValue legitControlledVocabularyValue = null;
-                                                    Collection<ControlledVocabularyValue> definedVocabularyValues = dsft.getControlledVocabularyValues();
-                                                    if (definedVocabularyValues != null) {
-                                                        for (ControlledVocabularyValue definedVocabValue : definedVocabularyValues) {
-                                                            if (fValue.equals(definedVocabValue.getStrValue())) {
-                                                                logger.fine("Yes, " + fValue + " is a valid controlled vocabulary value for the field " + dsfName);
-                                                                legitControlledVocabularyValue = definedVocabValue;
-                                                                break;
-                                                            }
-                                                        }
-                                                    }
-                                                    if (legitControlledVocabularyValue != null) {
-                                                        // Only need to add the value if it is new,
-                                                        // i.e. if it does not exist yet:
-                                                        boolean valueExists = false;
-
-                                                        List<ControlledVocabularyValue> existingControlledVocabValues = dsf.getControlledVocabularyValues();
-                                                        if (existingControlledVocabValues != null) {
-                                                            Iterator<ControlledVocabularyValue> cvvIt = existingControlledVocabValues.iterator();
-                                                            while (cvvIt.hasNext()) {
-                                                                ControlledVocabularyValue cvv = cvvIt.next();
-                                                                if (fValue.equals(cvv.getStrValue())) {
-                                                                    // or should I use if (legitControlledVocabularyValue.equals(cvv)) ?
-                                                                    logger.fine("Controlled vocab. value " + fValue + " already exists for field " + dsfName);
-                                                                    valueExists = true;
-                                                                    break;
-                                                                }
-                                                            }
-                                                        }
-
-                                                        if (!valueExists) {
-                                                            logger.fine("Adding controlled vocabulary value " + fValue + " to field " + dsfName);
-                                                            dsf.getControlledVocabularyValues().add(
-                                                                    legitControlledVocabularyValue);
-                                                        }
-                                                    }
-                                                }
-                                            }
+                                        if (!valueExists) {
+                                            logger.fine("Adding controlled vocabulary value " + fValue + " to field " + dsfName);
+                                            dsf.getControlledVocabularyValues().add(legitControlledVocabularyValue);
                                         }
                                     }
                                 }
                             }
                         }
-                    } else {
-                        // A compound field:
-                        // See if the plugin has found anything for the fields that
-                        // make up this compound field; if we find at least one
-                        // of the child values in the map of extracted values, we'll
-                        // create a new compound field value and its child
-                        //
-                        List<DatasetField> missingFields = new ArrayList<>();
-                        int nonEmptyFields = 0;
-                        for (DatasetFieldType cdsft : dsft.getChildDatasetFieldTypes()) {
-                            String dsfName = cdsft.getName();
-                            if (fileMetadataMap.get(dsfName) != null && !fileMetadataMap.get(dsfName).isEmpty()) {
-                                logger.fine("Ingest Service: found extracted metadata for field " + dsfName + ", part of the compound field " + dsft.getName());
+                    }
+                } else {
+                    // A compound field:
+                    // See if the plugin has found anything for the fields that
+                    // make up this compound field; if we find at least one
+                    // of the child values in the map of extracted values, we'll
+                    // create a new compound field value and its child
+                    //
+                    List<DatasetField> missingFields = new ArrayList<>();
+                    int nonEmptyFields = 0;
+                    for (DatasetFieldType cdsft : dsft.getChildDatasetFieldTypes()) {
+                        String dsfName = cdsft.getName();
+                        if (fileMetadataMap.get(dsfName) == null || fileMetadataMap.get(dsfName).isEmpty()) {
+                            continue;
+                        }
+                        logger.fine("Ingest Service: found extracted metadata for field " + dsfName + ", part of the compound field " + dsft.getName());
 
-                                if (cdsft.isPrimitive()) {
-                                    // probably an unnecessary check - child fields
-                                    // of compound fields are always primitive...
-                                    // but maybe it'll change in the future.
-                                    if (!cdsft.isControlledVocabulary()) {
-                                        // TODO: can we have controlled vocabulary
-                                        // sub-fields inside compound fields?
-
-                                        DatasetField childDsf = new DatasetField();
-                                        childDsf.setDatasetFieldType(cdsft);
-                                        childDsf.setFieldValue((String) fileMetadataMap.get(dsfName).toArray()[0]);
-
-                                        missingFields.add(childDsf);
-
-                                        nonEmptyFields++;
-                                    }
-                                }
-                            }
+                        // probably an unnecessary check - child fields
+                        // of compound fields are always primitive...
+                        // but maybe it'll change in the future.
+                        if (!cdsft.isPrimitive() || cdsft.isControlledVocabulary()) {
+                            continue;
                         }
 
-                        if (nonEmptyFields > 0) {
-                            // let's go through this dataset's fields and find the
-                            // actual parent for this sub-field:
-                            for (DatasetField dsf : editVersion.getDatasetFields()) {
-                                if (dsf.getDatasetFieldType().equals(dsft)) {
+                        // TODO: can we have controlled vocabulary
+                        // sub-fields inside compound fields?
 
-                                    // Now let's check that the dataset version doesn't already have
-                                    // this compound value - we are only interested in aggregating
-                                    // unique values. Note that we need to compare compound values
-                                    // as sets! -- i.e. all the sub fields in 2 compound fields
-                                    // must match in order for these 2 compounds to be recognized
-                                    // as "the same":
+                        DatasetField childDsf = new DatasetField();
+                        childDsf.setDatasetFieldType(cdsft);
+                        childDsf.setFieldValue((String) fileMetadataMap.get(dsfName).toArray()[0]);
 
-                                    boolean alreadyExists = false;
+                        missingFields.add(childDsf);
 
-                                    int matches = 0;
-                                    for (DatasetField dsfcv : dsf.getDatasetFieldsChildren()) {
+                        nonEmptyFields++;
+                    }
 
-                                        String cdsfName = dsfcv.getDatasetFieldType().getName();
-                                        Option<String> cdsfValue = dsfcv.getFieldValue();
-                                        if (cdsfValue.isDefined() && !cdsfValue.isEmpty()) {
-                                            String extractedValue = (String) fileMetadataMap.get(cdsfName).toArray()[0];
-                                            logger.fine("values: existing: " + cdsfValue + ", extracted: " + extractedValue);
-                                            if (cdsfValue.get().equals(extractedValue)) {
-                                                matches++;
-                                            }
-                                        }
-                                        if (matches == nonEmptyFields) {
-                                            alreadyExists = true;
-                                            break;
-                                        }
-                                    }
+                    if (nonEmptyFields > 0) {
+                        // let's go through this dataset's fields and find the
+                        // actual parent for this sub-field:
+                        for (DatasetField dsf : editVersion.getDatasetFields()) {
+                            if (!dsf.getDatasetFieldType().equals(dsft)) {
+                                continue;
+                            }
 
-                                    if (!alreadyExists) {
-                                        // save this compound value, by attaching it to the
-                                        // version for proper cascading:
-                                        missingFields.forEach(missingField -> {
-                                            missingField.setDatasetFieldParent(dsf);
-                                            dsf.getDatasetFieldsChildren().add(missingField);
-                                        });
+                            // Now let's check that the dataset version doesn't already have
+                            // this compound value - we are only interested in aggregating
+                            // unique values. Note that we need to compare compound values
+                            // as sets! -- i.e. all the sub fields in 2 compound fields
+                            // must match in order for these 2 compounds to be recognized
+                            // as "the same":
+
+                            boolean alreadyExists = false;
+
+                            int matches = 0;
+                            for (DatasetField dsfcv : dsf.getDatasetFieldsChildren()) {
+
+                                String cdsfName = dsfcv.getDatasetFieldType().getName();
+                                Option<String> cdsfValue = dsfcv.getFieldValue();
+                                if (cdsfValue.isDefined() && !cdsfValue.isEmpty()) {
+                                    String extractedValue = (String) fileMetadataMap.get(cdsfName).toArray()[0];
+                                    logger.fine("values: existing: " + cdsfValue + ", extracted: " + extractedValue);
+                                    if (cdsfValue.get().equals(extractedValue)) {
+                                        matches++;
                                     }
                                 }
+                                if (matches == nonEmptyFields) {
+                                    alreadyExists = true;
+                                    break;
+                                }
+                            }
+
+                            if (!alreadyExists) {
+                                // save this compound value, by attaching it to the
+                                // version for proper cascading:
+                                missingFields.forEach(missingField -> {
+                                    missingField.setDatasetFieldParent(dsf);
+                                    dsf.getDatasetFieldsChildren().add(missingField);
+                                });
                             }
                         }
                     }
@@ -1210,20 +1044,16 @@ public class IngestServiceBean {
         // field of the fileMetadata object. -- L.A.
 
         String metadataSummary = fileLevelMetadata.getMetadataSummary();
-        if (metadataSummary != null) {
-            if (!metadataSummary.equals("")) {
-                // The file upload page allows a user to enter file description
-                // on ingest. We don't want to overwrite whatever they may
-                // have entered. Rather, we'll append this generated metadata summary
-                // to the existing value.
-                String userEnteredFileDescription = fileMetadata.getDescription();
-                if (userEnteredFileDescription != null
-                        && !(userEnteredFileDescription.equals(""))) {
-
-                    metadataSummary = userEnteredFileDescription.concat(";\n" + metadataSummary);
-                }
-                fileMetadata.setDescription(metadataSummary);
+        if (StringUtils.isNotEmpty(metadataSummary)) {
+            // The file upload page allows a user to enter file description
+            // on ingest. We don't want to overwrite whatever they may
+            // have entered. Rather, we'll append this generated metadata summary
+            // to the existing value.
+            String userEnteredFileDescription = fileMetadata.getDescription();
+            if (StringUtils.isNotEmpty(userEnteredFileDescription)) {
+                metadataSummary = userEnteredFileDescription.concat(";\n" + metadataSummary);
             }
+            fileMetadata.setDescription(metadataSummary);
         }
     }
 
@@ -1234,21 +1064,17 @@ public class IngestServiceBean {
 
     private void assignContinuousSummaryStatistics(DataVariable variable, double[] sumStats) throws IOException {
         if (sumStats == null || sumStats.length != VariableServiceBean.summaryStatisticTypes.length) {
-            throw new IOException("Wrong number of summary statistics types calculated! (" + sumStats.length + ")");
+            throw new IOException("Wrong number of summary statistics types calculated! ("
+                    + (sumStats == null ? "[null]" : sumStats.length) + ")");
         }
 
         for (int j = 0; j < VariableServiceBean.summaryStatisticTypes.length; j++) {
             SummaryStatistic ss = new SummaryStatistic();
             ss.setTypeByLabel(VariableServiceBean.summaryStatisticTypes[j]);
-            if (!ss.isTypeMode()) {
-                ss.setValue((new Double(sumStats[j])).toString());
-            } else {
-                ss.setValue(".");
-            }
+            ss.setValue(ss.isTypeMode() ? "." : (new Double(sumStats[j])).toString());
             ss.setDataVariable(variable);
             variable.getSummaryStatistics().add(ss);
         }
-
     }
 
     private void calculateUNF(DataFile dataFile, int varnum, Double[] dataVector) {
@@ -1299,12 +1125,8 @@ public class IngestServiceBean {
         if ("time".equals(dataFile.getDataTable().getDataVariables().get(varnum).getFormatCategory())) {
             dateFormats = new String[dataVector.length];
             String savedDateTimeFormat = dataFile.getDataTable().getDataVariables().get(varnum).getFormat();
-            String timeFormat = null;
-            if (savedDateTimeFormat != null && !savedDateTimeFormat.equals("")) {
-                timeFormat = savedDateTimeFormat;
-            } else {
-                timeFormat = dateTimeFormat_ymdhmsS;
-            }
+            String timeFormat = StringUtils.isNotEmpty(savedDateTimeFormat)
+                    ? savedDateTimeFormat : dateTimeFormat_ymdhmsS;
 
             /* What follows is special handling of a special case of time values
              * non-uniform precision; specifically, when some have if some have
@@ -1328,43 +1150,41 @@ public class IngestServiceBean {
             }
 
             for (int i = 0; i < dataVector.length; i++) {
-                if (dataVector[i] != null) {
-
-                    if (simplifiedFormatParser != null) {
-                        // first, try to parse the value against the "full"
-                        // format (with the milliseconds part):
-                        fullFormatParser.setLenient(false);
-
-                        try {
-                            logger.fine("trying the \"full\" time format, with milliseconds: " + timeFormat + ", " + dataVector[i]);
-                            fullFormatParser.parse(dataVector[i]);
-                        } catch (ParseException ex) {
-                            // try the simplified (no time zone) format instead:
-                            logger.fine("trying the simplified format: " + simplifiedFormat + ", " + dataVector[i]);
-                            simplifiedFormatParser.setLenient(false);
-                            try {
-                                simplifiedFormatParser.parse(dataVector[i]);
-                                timeFormat = simplifiedFormat;
-                            } catch (ParseException ex1) {
-                                logger.warning("no parseable format found for time value " + i + " - " + dataVector[i]);
-                                throw new IOException("no parseable format found for time value " + i + " - " + dataVector[i]);
-                            }
-                        }
-
-                    }
-                    dateFormats[i] = timeFormat;
+                if (dataVector[i] == null) {
+                    continue;
                 }
+
+                if (simplifiedFormatParser != null) {
+                    // first, try to parse the value against the "full"
+                    // format (with the milliseconds part):
+                    fullFormatParser.setLenient(false);
+
+                    try {
+                        logger.fine("trying the \"full\" time format, with milliseconds: " + timeFormat + ", " + dataVector[i]);
+                        fullFormatParser.parse(dataVector[i]);
+                    } catch (ParseException ex) {
+                        // try the simplified (no time zone) format instead:
+                        logger.fine("trying the simplified format: " + simplifiedFormat + ", " + dataVector[i]);
+                        simplifiedFormatParser.setLenient(false);
+                        try {
+                            simplifiedFormatParser.parse(dataVector[i]);
+                            timeFormat = simplifiedFormat;
+                        } catch (ParseException ex1) {
+                            logger.warning("no parseable format found for time value " + i + " - " + dataVector[i]);
+                            throw new IOException("no parseable format found for time value " + i + " - " + dataVector[i]);
+                        }
+                    }
+
+                }
+                dateFormats[i] = timeFormat;
             }
         } else if ("date".equals(dataFile.getDataTable().getDataVariables().get(varnum).getFormatCategory())) {
             dateFormats = new String[dataVector.length];
             String savedDateFormat = dataFile.getDataTable().getDataVariables().get(varnum).getFormat();
             for (int i = 0; i < dataVector.length; i++) {
                 if (dataVector[i] != null) {
-                    if (savedDateFormat != null && !savedDateFormat.equals("")) {
-                        dateFormats[i] = savedDateFormat;
-                    } else {
-                        dateFormats[i] = dateFormat_ymd;
-                    }
+                    dateFormats[i] = StringUtils.isNotEmpty(savedDateFormat)
+                            ? savedDateFormat : dateFormat_ymd;
                 }
             }
         }
@@ -1402,11 +1222,11 @@ public class IngestServiceBean {
         try {
             unf = UNFUtil.calculateUNF(dataVector);
         } catch (IOException iex) {
-            logger.warning(
-                    "exception thrown when attempted to calculate UNF signature for numeric, \"continuous\" (float) variable " + varnum);
+            logger.warning("exception thrown when attempted to calculate UNF signature for numeric, \"continuous\" " +
+                    "(float) variable " + varnum);
         } catch (UnfException uex) {
-            logger.warning(
-                    "UNF Exception: thrown when attempted to calculate UNF signature for numeric, \"continuous\" (float) variable" + varnum);
+            logger.warning("UNF Exception: thrown when attempted to calculate UNF signature for numeric, \"continuous\" " +
+                    "(float) variable" + varnum);
         }
 
         if (unf != null) {
@@ -1416,34 +1236,85 @@ public class IngestServiceBean {
         }
     }
 
-    // This method takes a list of file ids, checks the format type of the ingested
-    // original, and attempts to fix it if it's missing.
-    // Note the @Asynchronous attribute - this allows us to just kick off and run this
-    // (potentially large) job in the background.
-    // The method is called by the "fixmissingoriginaltypes" /admin api call.
-    @Asynchronous
-    public void fixMissingOriginalTypes(List<Long> datafileIds) {
-        for (Long fileId : datafileIds) {
-            fixMissingOriginalType(fileId);
-        }
-        logger.info("Finished repairing tabular data files that were missing the original file format labels.");
+    private void produceSummaryStatistics(String[][] table, DataFile dataFile) throws IOException {
+        produceDiscreteNumericSummaryStatistics(table, dataFile);
+        produceContinuousSummaryStatistics(table, dataFile);
+        produceCharacterSummaryStatistics(table, dataFile);
+
+        recalculateDataFileUNF(dataFile);
+        recalculateDatasetVersionUNF(dataFile.getFileMetadata().getDatasetVersion());
     }
 
-    // This method takes a list of file ids and tries to fix the size of the saved
-    // original, if present
-    // Note the @Asynchronous attribute - this allows us to just kick off and run this
-    // (potentially large) job in the background.
-    // The method is called by the "fixmissingoriginalsizes" /admin api call.
-    @Asynchronous
-    public void fixMissingOriginalSizes(List<Long> datafileIds) {
-        for (Long fileId : datafileIds) {
-            fixMissingOriginalSize(fileId);
-            try {
-                Thread.sleep(1000);
-            } catch (Exception ex) {
+    private void produceDiscreteNumericSummaryStatistics(String[][] table, DataFile dataFile) throws IOException {
+        DataTable dataTable = dataFile.getDataTable();
+        int numberOfCases = dataTable.getCaseQuantity().intValue();
+        for (int i = 0; i < dataTable.getVarQuantity(); i++) {
+            Long[] vector = TabularSubsetGenerator.subsetLongVector(table, i, numberOfCases);
+            calculateContinuousSummaryStatistics(dataFile, i, vector);
+            calculateUNF(dataFile, i, vector);
+        }
+    }
+
+    private void produceContinuousSummaryStatistics(String[][] table, DataFile dataFile) throws IOException {
+        DataTable dataTable = dataFile.getDataTable();
+        int numberOfCases = dataTable.getCaseQuantity().intValue();
+        for (int i = 0; i < dataTable.getVarQuantity(); i++) {
+            if (dataTable.getDataVariables().get(i).isIntervalContinuous()) {
+                if ("float".equals(dataTable.getDataVariables().get(i).getFormat())) {
+                    Float[] variableVector = TabularSubsetGenerator.subsetFloatVector(table, i, numberOfCases);
+                    calculateContinuousSummaryStatistics(dataFile, i, variableVector);
+                    calculateUNF(dataFile, i, variableVector);
+                } else {
+                    Double[] variableVector = TabularSubsetGenerator.subsetDoubleVector(table, i, numberOfCases);
+                    calculateContinuousSummaryStatistics(dataFile, i, variableVector);
+                    calculateUNF(dataFile, i, variableVector);
+                }
             }
         }
-        logger.info("Finished repairing tabular data files that were missing the original file sizes.");
+    }
+
+    /*
+    At this point it's still not clear what kinds of summary stats we
+    want for character types. Though we are pretty confident we don't
+    want to keep doing what we used to do in the past, i.e. simply
+    store the total counts for all the unique values; even if it's a
+    very long vector, and *every* value in it is unique. (As a result
+    of this, our Categorical Variable Value table is the single
+    largest in the production database. With no evidence whatsoever,
+    that this information is at all useful.
+        -- L.A. Jul. 2014
+    */
+    private void produceCharacterSummaryStatistics(String[][] table, DataFile dataFile) throws IOException {
+        DataTable dataTable = dataFile.getDataTable();
+        int numberOfCases = dataTable.getCaseQuantity().intValue();
+        for (int i = 0; i < dataTable.getVarQuantity(); i++) {
+            if (dataTable.getDataVariables().get(i).isTypeCharacter()) {
+                String[] variableVector = TabularSubsetGenerator.subsetStringVector(table, i, numberOfCases);
+                calculateUNF(dataFile, i, variableVector);
+            }
+        }
+    }
+
+    private void recalculateDataFileUNF(DataFile dataFile) {
+        String[] unfValues = new String[dataFile.getDataTable().getVarQuantity().intValue()];
+        String fileUnfValue = null;
+
+        for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
+            String varunf = dataFile.getDataTable().getDataVariables().get(i).getUnf();
+            unfValues[i] = varunf;
+        }
+
+        try {
+            fileUnfValue = UNFUtil.calculateUNF(unfValues);
+        } catch (IOException ex) {
+            logger.warning("Failed to recalculate the UNF for the datafile id=" + dataFile.getId());
+        } catch (UnfException uex) {
+            logger.warning("UNF Exception: Failed to recalculate the UNF for the dataset version id=" + dataFile.getId());
+        }
+
+        if (fileUnfValue != null) {
+            dataFile.getDataTable().setUnf(fileUnfValue);
+        }
     }
 
     // This method fixes a datatable object that's missing the format type of
@@ -1455,7 +1326,7 @@ public class IngestServiceBean {
         if (dataFile != null && dataFile.isTabularData()) {
             String originalFormat = dataFile.getDataTable().getOriginalFileFormat();
             Long datatableId = dataFile.getDataTable().getId();
-            if (StringUtil.isEmpty(originalFormat) || originalFormat.equals(TextMimeType.TSV_ALT.getMimeValue())) {
+            if (StringUtils.isEmpty(originalFormat) || originalFormat.equals(TextMimeType.TSV_ALT.getMimeValue())) {
 
                 // We need to determine the mime type of the saved original
                 // and save it in the database.
@@ -1470,8 +1341,8 @@ public class IngestServiceBean {
                 // s3 and similar implementations, we'll read the saved aux
                 // channel and save it as a local temp file.
 
-                String fileTypeDetermined = null;
-                Long savedOriginalFileSize = null;
+                String fileTypeDetermined;
+                long savedOriginalFileSize;
                 Optional<File> tmpFile = Optional.empty();
 
                 try {
@@ -1487,7 +1358,7 @@ public class IngestServiceBean {
                     logger.warning("Exception " + ex.getClass() + " caught trying to determine file type; (datafile id=" + fileId + ", datatable id=" + datatableId + "): " + ex.getMessage());
                     return;
                 } finally {
-                    tmpFile.ifPresent(file -> file.delete());
+                    tmpFile.ifPresent(File::delete);
                 }
 
                 if (fileTypeDetermined == null) {
@@ -1530,9 +1401,7 @@ public class IngestServiceBean {
             Long datatableId = dataFile.getDataTable().getId();
 
             if (savedOriginalFileSize == null) {
-
                 StorageIO<DataFile> storageIO;
-
                 try {
                     storageIO = dataAccess.getStorageIO(dataFile);
                     storageIO.open();
@@ -1546,7 +1415,6 @@ public class IngestServiceBean {
                 // save permanently in the database:
                 dataFile.getDataTable().setOriginalFileSize(savedOriginalFileSize);
                 fileService.saveDataTable(dataFile.getDataTable());
-
             } else {
                 logger.info("DataFile id=" + fileId + "; original file size already present: " + savedOriginalFileSize);
             }

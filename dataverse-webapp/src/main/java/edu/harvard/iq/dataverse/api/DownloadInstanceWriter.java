@@ -67,6 +67,8 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
 
     private DataAccess dataAccess = DataAccess.dataAccess();
 
+    // -------------------- CONSTRUCTORS --------------------
+
     @Override
     public boolean isWriteable(Class<?> clazz, Type type, Annotation[] annotation, MediaType mediaType) {
         return clazz == DownloadInstance.class;
@@ -75,7 +77,6 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
     @Override
     public long getSize(DownloadInstance di, Class<?> clazz, Type type, Annotation[] annotation, MediaType mediaType) {
         return -1;
-        //return getFileSize(di);
     }
 
     @Override
@@ -176,7 +177,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
             try {
                 tempSubsetFile = Optional.of(File.createTempFile("tempSubsetFile", ".tmp"));
                 TabularSubsetGenerator tabularSubsetGenerator = new TabularSubsetGenerator();
-                tabularSubsetGenerator.subsetFile(storageIO.getInputStream(), tempSubsetFile.get().getAbsolutePath(), variablePositionIndex, dataFile.getDataTable().getCaseQuantity(), "\t");
+                tabularSubsetGenerator.subsetFile(storageIO.getInputStream(), tempSubsetFile.get().getAbsolutePath(), variablePositionIndex, dataFile.getDataTable().getCaseQuantity());
 
                 long subsetSize = tempSubsetFile.get().length();
 
@@ -235,6 +236,8 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
 
         writeStorageIOWithGuesbookAndWholeDatasetDownloadSave(storageIO, outstream, httpHeaders, di, dataFile);
     }
+
+    // -------------------- PRIVATE --------------------
 
     private void writeStorageIOWithGuesbookAndWholeDatasetDownloadSave(StorageIO<DataFile> storageIO, OutputStream outstream,
             MultivaluedMap<String, Object> httpHeaders, DownloadInstance di, DataFile dataFile) throws IOException {
@@ -373,7 +376,6 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
     }
 
     private long getContentSize(StorageIO<?> accessObject) {
-
         try {
             long contentSize = accessObject.getSize();
 
@@ -392,5 +394,4 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
         String optionValue = System.getProperty("dataverse.files.s3-download-redirect");
         return "true".equalsIgnoreCase(optionValue);
     }
-
 }

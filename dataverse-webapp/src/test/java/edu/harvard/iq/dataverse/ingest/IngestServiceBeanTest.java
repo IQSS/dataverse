@@ -3,16 +3,23 @@ package edu.harvard.iq.dataverse.ingest;
 import edu.harvard.iq.dataverse.common.files.mime.ApplicationMimeType;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.rdata.RDATAFileReader;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class IngestServiceBeanTest {
+
+    private static final String RSERVE_HOST = "host";
+    private static final int RSERVE_PORT = 633;
+    private static final String RSERVE_USER = "user";
+    private static final String RSERVE_PASSWORD = "password";
 
     @InjectMocks
     private IngestServiceBean ingestServiceBean;
@@ -20,26 +27,25 @@ public class IngestServiceBeanTest {
     @Mock
     private SettingsServiceBean settingsService;
 
-    private final String RSERVE_HOST = "host";
-    private final String RSERVE_USER = "user";
-    private final String RSERVE_PASSWORD = "password";
-    private final int RSERVE_PORT = 633;
+    // -------------------- TESTS --------------------
 
     @Test
     public void getTabDataReaderByMimeType() {
-        //when
-        Mockito.when(settingsService.getValueForKey(SettingsServiceBean.Key.RserveHost)).thenReturn(RSERVE_HOST);
-        Mockito.when(settingsService.getValueForKey(SettingsServiceBean.Key.RserveUser)).thenReturn(RSERVE_USER);
-        Mockito.when(settingsService.getValueForKey(SettingsServiceBean.Key.RservePassword)).thenReturn(RSERVE_PASSWORD);
-        Mockito.when(settingsService.getValueForKeyAsInt(SettingsServiceBean.Key.RservePort)).thenReturn(RSERVE_PORT);
+        // given
+        when(settingsService.getValueForKey(Key.RserveHost)).thenReturn(RSERVE_HOST);
+        when(settingsService.getValueForKeyAsInt(Key.RservePort)).thenReturn(RSERVE_PORT);
+        when(settingsService.getValueForKey(Key.RserveUser)).thenReturn(RSERVE_USER);
+        when(settingsService.getValueForKey(Key.RservePassword)).thenReturn(RSERVE_PASSWORD);
 
+        // when
         RDATAFileReader rdataFileReader =
                 (RDATAFileReader) ingestServiceBean.getTabDataReaderByMimeType(ApplicationMimeType.RDATA.getMimeValue());
 
-        //then
-        Assert.assertEquals(RSERVE_HOST, rdataFileReader.getRserveHost());
-        Assert.assertEquals(RSERVE_PASSWORD, rdataFileReader.getRservePassword());
-        Assert.assertEquals(RSERVE_USER, rdataFileReader.getRserveUser());
-        Assert.assertEquals(RSERVE_PORT, rdataFileReader.getRservePort());
+        // then
+        assertThat(rdataFileReader)
+                .extracting(RDATAFileReader::getRserveHost, RDATAFileReader::getRservePort,
+                        RDATAFileReader::getRserveUser, RDATAFileReader::getRservePassword)
+                .containsExactly(RSERVE_HOST, RSERVE_PORT,
+                        RSERVE_USER, RSERVE_PASSWORD);
     }
 }

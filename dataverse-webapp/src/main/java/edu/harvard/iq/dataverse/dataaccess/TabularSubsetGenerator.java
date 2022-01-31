@@ -20,16 +20,19 @@
 
 package edu.harvard.iq.dataverse.dataaccess;
 
-import org.apache.commons.lang.StringUtils;
+import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
+import org.apache.commons.lang3.StringUtils;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
+import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 import java.util.regex.Matcher;
 
 
@@ -38,269 +41,178 @@ import java.util.regex.Matcher;
  * original author:
  * @author a.sone
  */
-
 public class TabularSubsetGenerator {
 
-    public void subsetFile(InputStream in, String outfile, List<Integer> columns, Long numCases,
-                           String delimiter) {
-        try {
-            Scanner scanner = new Scanner(in);
-            scanner.useDelimiter("\\n");
+    // -------------------- LOGIC --------------------
 
-            BufferedWriter out = new BufferedWriter(new FileWriter(outfile));
+    public void subsetFile(InputStream in, String outfile, List<Integer> columns, Long numCases) {
+        try (BufferedWriter out = new BufferedWriter(new FileWriter(outfile));
+             BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+            String line;
             for (long caseIndex = 0; caseIndex < numCases; caseIndex++) {
-                if (scanner.hasNext()) {
-                    String[] line = (scanner.next()).split(delimiter, -1);
-                    List<String> ln = new ArrayList<String>();
+                line = reader.readLine();
+                if (line != null) {
+                    String[] values = line.split("\t", -1);
+                    List<String> ln = new ArrayList<>();
                     for (Integer i : columns) {
-                        ln.add(line[i]);
+                        ln.add(values[i]);
                     }
                     out.write(StringUtils.join(ln, "\t") + "\n");
                 } else {
                     throw new RuntimeException("Tab file has fewer rows than the determined number of cases.");
                 }
             }
-
-            while (scanner.hasNext()) {
-                if (!"".equals(scanner.next())) {
+            while ((line = reader.readLine()) != null) {
+                if (StringUtils.isNotBlank(line)) {
                     throw new RuntimeException("Tab file has extra nonempty rows than the determined number of cases.");
-
                 }
             }
-
-            scanner.close();
-            out.close();
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ioe) {
+            throw new RuntimeException("Exception while reading file", ioe);
         }
-
     }
 
-    /*
-     * Straightforward method for subsetting a column; inefficient on large
-     * files, OK to use on small files:
-     */
-
-    public static Double[] subsetDoubleVector(InputStream in, int column, int numCases) {
-        Double[] retVector = new Double[numCases];
-        Scanner scanner = new Scanner(in);
-        scanner.useDelimiter("\\n");
-
-        for (int caseIndex = 0; caseIndex < numCases; caseIndex++) {
-            if (scanner.hasNext()) {
-                String[] line = (scanner.next()).split("\t", -1);
-
-                // Verified: new Double("nan") works correctly,
-                // resulting in Double.NaN;
-                // Double("[+-]Inf") doesn't work however;
-                // (the constructor appears to be expecting it
-                // to be spelled as "Infinity", "-Infinity", etc.
-                if ("inf".equalsIgnoreCase(line[column]) || "+inf".equalsIgnoreCase(line[column])) {
-                    retVector[caseIndex] = java.lang.Double.POSITIVE_INFINITY;
-                } else if ("-inf".equalsIgnoreCase(line[column])) {
-                    retVector[caseIndex] = java.lang.Double.NEGATIVE_INFINITY;
-                } else if (line[column] == null || line[column].equals("")) {
-                    // missing value:
-                    retVector[caseIndex] = null;
+    public static String[][] readFileIntoTable(DataTable dataTable, File generatedTabularFile) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(generatedTabularFile))) {
+            String[][] result = new String[dataTable.getCaseQuantity().intValue()][];
+            String line;
+            for (int i = 0; i < dataTable.getCaseQuantity(); i++) {
+                line = reader.readLine();
+                if (line != null) {
+                    result[i] = line.split("\t", -1);
                 } else {
-                    try {
-                        retVector[caseIndex] = new Double(line[column]);
-                    } catch (NumberFormatException ex) {
-                        retVector[caseIndex] = null; // missing value
-                    }
+                    throw new RuntimeException("The file has fewer rows than the determined number of cases.");
                 }
-
-            } else {
-                scanner.close();
-                throw new RuntimeException("Tab file has fewer rows than the stored number of cases!");
             }
-        }
-
-        int tailIndex = numCases;
-        while (scanner.hasNext()) {
-            String nextLine = scanner.next();
-            if (!"".equals(nextLine)) {
-                scanner.close();
-                throw new RuntimeException("Column " + column + ": tab file has more nonempty rows than the stored number of cases (" + numCases + ")! current index: " + tailIndex + ", line: " + nextLine);
+            while ((line = reader.readLine()) != null) {
+                if (StringUtils.isNotBlank(line)) {
+                    throw new RuntimeException("The file has extra non-empty rows than the determined number of cases.");
+                }
             }
-            tailIndex++;
+            return result;
+        } catch (IOException ioe) {
+            throw new RuntimeException("Exception while reading file", ioe);
         }
-
-        scanner.close();
-        return retVector;
-
     }
 
-    /*
-     * Same deal as with the method above - straightforward, but (potentially) slow.
-     * Not a resource hog though - will only try to store one vector in memory.
-     */
-    public static Float[] subsetFloatVector(InputStream in, int column, int numCases) {
-        Float[] retVector = new Float[numCases];
-        Scanner scanner = new Scanner(in);
-        scanner.useDelimiter("\\n");
+    public static Double[] subsetDoubleVector(String[][] table, int column, int numCases) {
+        Double[] vector = new Double[numCases];
 
         for (int caseIndex = 0; caseIndex < numCases; caseIndex++) {
-            if (scanner.hasNext()) {
-                String[] line = (scanner.next()).split("\t", -1);
-                // Verified: new Float("nan") works correctly,
-                // resulting in Float.NaN;
-                // Float("[+-]Inf") doesn't work however;
-                // (the constructor appears to be expecting it
-                // to be spelled as "Infinity", "-Infinity", etc.
-                if ("inf".equalsIgnoreCase(line[column]) || "+inf".equalsIgnoreCase(line[column])) {
-                    retVector[caseIndex] = java.lang.Float.POSITIVE_INFINITY;
-                } else if ("-inf".equalsIgnoreCase(line[column])) {
-                    retVector[caseIndex] = java.lang.Float.NEGATIVE_INFINITY;
-                } else if (line[column] == null || line[column].equals("")) {
-                    // missing value:
-                    retVector[caseIndex] = null;
-                } else {
-                    try {
-                        retVector[caseIndex] = new Float(line[column]);
-                    } catch (NumberFormatException ex) {
-                        retVector[caseIndex] = null; // missing value
-                    }
-                }
+            String value;
+            try {
+                value = table[caseIndex][column];
+            } catch (ArrayIndexOutOfBoundsException obe) {
+                throw new RuntimeException("No data for row " + caseIndex + " and column " + column);
+            }
+            // Verified: new Double("NaN") works correctly, resulting in Double.NaN; Double("[+-]Inf") doesn't work
+            // however – the constructor appears to be expecting it to be spelled as "Infinity", "-Infinity", etc.
+            if ("inf".equalsIgnoreCase(value) || "+inf".equalsIgnoreCase(value)) {
+                vector[caseIndex] = Double.POSITIVE_INFINITY;
+            } else if ("-inf".equalsIgnoreCase(value)) {
+                vector[caseIndex] = Double.NEGATIVE_INFINITY;
+            } else if (StringUtils.isBlank(value)) {
+                vector[caseIndex] = null;
             } else {
-                scanner.close();
-                throw new RuntimeException("Tab file has fewer rows than the stored number of cases!");
-            }
-        }
-
-        int tailIndex = numCases;
-        while (scanner.hasNext()) {
-            String nextLine = scanner.next();
-            if (!"".equals(nextLine)) {
-                scanner.close();
-                throw new RuntimeException("Column " + column + ": tab file has more nonempty rows than the stored number of cases (" + numCases + ")! current index: " + tailIndex + ", line: " + nextLine);
-            }
-            tailIndex++;
-        }
-
-        scanner.close();
-        return retVector;
-
-    }
-
-    /*
-     * Same deal as with the method above - straightforward, but (potentially) slow.
-     * Not a resource hog though - will only try to store one vector in memory.
-     */
-    public static Long[] subsetLongVector(InputStream in, int column, int numCases) {
-        Long[] retVector = new Long[numCases];
-        Scanner scanner = new Scanner(in);
-        scanner.useDelimiter("\\n");
-
-        for (int caseIndex = 0; caseIndex < numCases; caseIndex++) {
-            if (scanner.hasNext()) {
-                String[] line = (scanner.next()).split("\t", -1);
                 try {
-                    retVector[caseIndex] = Long.valueOf(line[column]);
+                    vector[caseIndex] = new Double(value);
                 } catch (NumberFormatException ex) {
-                    retVector[caseIndex] = null; // assume missing value
+                    vector[caseIndex] = null; // missing value
                 }
-            } else {
-                scanner.close();
-                throw new RuntimeException("Tab file has fewer rows than the stored number of cases!");
             }
         }
-
-        int tailIndex = numCases;
-        while (scanner.hasNext()) {
-            String nextLine = scanner.next();
-            if (!"".equals(nextLine)) {
-                scanner.close();
-                throw new RuntimeException("Column " + column + ": tab file has more nonempty rows than the stored number of cases (" + numCases + ")! current index: " + tailIndex + ", line: " + nextLine);
-            }
-            tailIndex++;
-        }
-
-        scanner.close();
-        return retVector;
-
+        return vector;
     }
 
-    /*
-     * Same deal as with the method above - straightforward, but (potentially) slow.
-     * Not a resource hog though - will only try to store one vector in memory.
-     */
-    public static String[] subsetStringVector(InputStream in, int column, int numCases) {
-        String[] retVector = new String[numCases];
-        Scanner scanner = new Scanner(in);
-        scanner.useDelimiter("\\n");
+    public static Float[] subsetFloatVector(String[][] table, int column, int numCases) {
+        Float[] vector = new Float[numCases];
 
         for (int caseIndex = 0; caseIndex < numCases; caseIndex++) {
-            if (scanner.hasNext()) {
-                String[] line = (scanner.next()).split("\t", -1);
-                retVector[caseIndex] = line[column];
-
-
-                if ("".equals(line[column])) {
-                    // An empty string is a string missing value!
-                    // An empty string in quotes is an empty string!
-                    retVector[caseIndex] = null;
-                } else {
-                    // Strip the outer quotes:
-                    line[column] = line[column].replaceFirst("^\\\"", "");
-                    line[column] = line[column].replaceFirst("\\\"$", "");
-
-                    // We need to restore the special characters that
-                    // are stored in tab files escaped - quotes, new lines
-                    // and tabs. Before we do that however, we need to
-                    // take care of any escaped backslashes stored in
-                    // the tab file. I.e., "foo\t" should be transformed
-                    // to "foo<TAB>"; but "foo\\t" should be transformed
-                    // to "foo\t". This way new lines and tabs that were
-                    // already escaped in the original data are not
-                    // going to be transformed to unescaped tab and
-                    // new line characters!
-                    String[] splitTokens = line[column].split(Matcher.quoteReplacement("\\\\"), -2);
-
-                    // (note that it's important to use the 2-argument version
-                    // of String.split(), and set the limit argument to a
-                    // negative value; otherwise any trailing backslashes
-                    // are lost.)
-                    for (int i = 0; i < splitTokens.length; i++) {
-                        splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\\""), "\"");
-                        splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\t"), "\t");
-                        splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\n"), "\n");
-                        splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\r"), "\r");
-                    }
-                    // TODO:
-                    // Make (some of?) the above optional; for ex., we
-                    // do need to restore the newlines when calculating UNFs;
-                    // But if we are subsetting these vectors in order to
-                    // create a new tab-delimited file, they will
-                    // actually break things! -- L.A. Jul. 28 2014
-
-                    line[column] = StringUtils.join(splitTokens, '\\');
-
-                    retVector[caseIndex] = line[column];
-                }
-
+            String value;
+            try {
+                value = table[caseIndex][column];
+            } catch (ArrayIndexOutOfBoundsException obe) {
+                throw new RuntimeException("No data for row " + caseIndex + " and column " + column);
+            }
+            // Verified: new Float("NaN") works correctly, resulting in Float.NaN; Float("[+-]Inf") doesn't work
+            // however – the constructor appears to be expecting it to be spelled as "Infinity", "-Infinity", etc.
+            if ("inf".equalsIgnoreCase(value) || "+inf".equalsIgnoreCase(value)) {
+                vector[caseIndex] = Float.POSITIVE_INFINITY;
+            } else if ("-inf".equalsIgnoreCase(value)) {
+                vector[caseIndex] = Float.NEGATIVE_INFINITY;
+            } else if (value == null || value.equals("")) {
+                vector[caseIndex] = null;
             } else {
-                scanner.close();
-                throw new RuntimeException("Tab file has fewer rows than the stored number of cases!");
+                try {
+                    vector[caseIndex] = new Float(value);
+                } catch (NumberFormatException ex) {
+                    vector[caseIndex] = null; // missing value
+                }
             }
         }
+        return vector;
+    }
 
-        int tailIndex = numCases;
-        while (scanner.hasNext()) {
-            String nextLine = scanner.next();
-            if (!"".equals(nextLine)) {
-                scanner.close();
-                throw new RuntimeException("Column " + column + ": tab file has more nonempty rows than the stored number of cases (" + numCases + ")! current index: " + tailIndex + ", line: " + nextLine);
+    public static Long[] subsetLongVector(String[][] table, int column, int numCases) {
+        Long[] vector = new Long[numCases];
+        for (int caseIndex = 0; caseIndex < numCases; caseIndex++) {
+            try {
+                vector[caseIndex] = Long.valueOf(table[caseIndex][column]);
+            } catch (NumberFormatException nfe) {
+                vector[caseIndex] = null;
+            } catch (ArrayIndexOutOfBoundsException obe) {
+                throw new RuntimeException("No data for row " + caseIndex + " and column " + column);
             }
-            tailIndex++;
         }
+        return vector;
+    }
 
-        scanner.close();
-        return retVector;
+    public static String[] subsetStringVector(String[][] table, int column, int numCases) {
+        String[] vector = new String[numCases];
 
+        for (int caseIndex = 0; caseIndex < numCases; caseIndex++) {
+            String value;
+            try {
+                value = table[caseIndex][column];
+            } catch (ArrayIndexOutOfBoundsException obe) {
+                throw new RuntimeException("No data for row " + caseIndex + " and column " + column);
+            }
+
+            if (StringUtils.EMPTY.equals(value)) {
+                // An empty string is a string missing value!
+                // An empty string in quotes is an empty string!
+                vector[caseIndex] = null;
+            } else {
+                // Strip the outer quotes:
+                value = value.replaceFirst("^\"", "")
+                        .replaceFirst("\"$", "");
+
+                // We need to restore the special characters that are stored in tab files escaped - quotes, new lines
+                // and tabs. Before we do that however, we need to take care of any escaped backslashes stored in
+                // the tab file. I.e., "foo\t" should be transformed to "foo<TAB>"; but "foo\\t" should be transformed
+                // to "foo\t". This way new lines and tabs that were already escaped in the original data are not
+                // going to be transformed to unescaped tab and new line characters!
+                String[] splitTokens = value.split(Matcher.quoteReplacement("\\\\"), -2);
+
+                // (note that it's important to use the 2-argument version of String.split(), and set the limit argument
+                // to a negative value; otherwise any trailing backslashes are lost.)
+                for (int i = 0; i < splitTokens.length; i++) {
+                    splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\\""), "\"")
+                            .replaceAll(Matcher.quoteReplacement("\\t"), "\t")
+                            .replaceAll(Matcher.quoteReplacement("\\n"), "\n")
+                            .replaceAll(Matcher.quoteReplacement("\\r"), "\r");
+                }
+                // TODO:
+                // Make (some of?) the above optional; for ex., we do need to restore the newlines when calculating
+                // UNFs; But if we are subsetting these vectors in order to create a new tab-delimited file, they will
+                // actually break things! -- L.A. Jul. 28 2014
+
+                value = StringUtils.join(splitTokens, '\\');
+
+                vector[caseIndex] = value;
+            }
+        }
+        return vector;
     }
 }
 
