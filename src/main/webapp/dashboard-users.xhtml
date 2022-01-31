@@ -42,6 +42,25 @@
                         </div>
                     </div>
 
+                    <div class="row">
+                        <div class="col-xs-12" style="margin-bottom: 1em;">
+                            <div class="btn-group pull-right">
+                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                                    <span class="glyphicon glyphicon-sort"></span> #{bundle['dataverse.results.btn.sort']} <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu pull-right text-left" role="menu">
+                                    <ui:repeat value="#{DashboardUsersPage.getSortingMap().entrySet()}" var="sortFieldEntry">
+                                        <li>
+                                            <p:commandLink action="#{DashboardUsersPage.runUserSearchWithSort(sortFieldEntry.key)}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
+                                                <h:outputText value="#{bundle[sortFieldEntry.value]}" styleClass="#{DashboardUsersPage.isSortedBy(sortFieldEntry.key) ? 'highlightBold' : ''}"/>
+                                            </p:commandLink>
+                                        </li>
+                                    </ui:repeat>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
                     <ui:include src="dashboard-users-pager.xhtml">
                         <ui:param name="listPager" value="#{DashboardUsersPage.pager}" />
                     </ui:include>

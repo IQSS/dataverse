@@ -13,7 +13,7 @@ Any questions regarding the features of TwoRavens, bug reports and
 such, should be addressed directly to the developers of the
 application.  The `TwoRavens GitHub repository
 <https://github.com/IQSS/TwoRavens>`_ and the `TwoRavens project page
-<http://2ra.vn/community/index.html>`_ are good places to start.
+<http://2ra.vn/index.html>`_ are good places to start.
 
 For now, the Dataverse Project team will continue providing 
 installation and integration support. We have created a new (as
@@ -33,7 +33,7 @@ Please be warned:
 
 - This process may still require some system administration skills. 
 - The guide below is very Linux-specific. This process has been tested
-  on RedHat/CentOS servers only. In some ways it *may* actually be
+  on RedHat/derivative servers only. In some ways it *may* actually be
   easier to get it all installed on MacOS X (because
   MacOS X versions of third party R packages are available
   pre-compiled), or even on Windows. But it hasn't been attempted, and
@@ -137,7 +137,7 @@ change it to
 b. R:
 -----
 
-The simplest way to install R on RHEL/CentOS systems is with yum, using the EPEL repository::
+The simplest way to install R on RHEL/derivative systems is with yum, using the EPEL repository::
 
        yum install epel-release
        yum install R-core R-core-devel
@@ -169,7 +169,7 @@ Wipe clean any R packages that were left behind::
 c. rApache: 
 -----------
 
-We maintain the following rpms of rApache, built for the following version of RedHat/CentOS distribution:
+We maintain the following rpms of rApache, built for the following version of RedHat/derivative distribution:
 
 For RHEL/CentOS 6 and R 3.4, download :download:`rapache-1.2.6-rpm0.x86_64.rpm <../_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.6-rpm0.x86_64.rpm>` and install it with::
 
@@ -343,7 +343,8 @@ e. Enable TwoRavens in a Dataverse Installation
 
 Now that you have installed TwoRavens, you can make it available to your users by adding it an "external tool" for your Dataverse installation. (For more on external tools in general, see the :doc:`/admin/external-tools` section of the Admin Guide.)
 
-First, download :download:`twoRavens.json <../_static/installation/files/root/external-tools/twoRavens.json>` as a starting point and edit ``toolUrl`` in that external tool manifest file to be the URL where you want TwoRavens to run. This is the URL reported by the installer script (as in the example at the end of step ``c.``, above).
+First, download :download:`twoRavens.json <../_static/installation/files/root/external-tools/twoRavens.json>` as a starting point and edit ``toolUrl`` in that external tool manifest file to be the URL where you want TwoRavens to run. This is the URL reported by the installer script (as in the example at the end of step ``c.``, above). Please note that this example .json file is not maintained by the TwoRavens developers and may be out of date. For an updated file, contact the `TwoRavens team
+<http://2ra.vn/aboutus/aboutus.html>`_.
 
 Once you have made your edits, make the tool available within your Dataverse installation with the following curl command (assuming ``twoRavens.json`` is in your current working directory):
 

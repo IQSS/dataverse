@@ -153,6 +153,19 @@ Explore Data
 
 Some file types and datasets offer data exploration options if external tools have been installed. The tools are described in the :doc:`/admin/external-tools` section of the Admin Guide.
 
+Exploratory Data Analysis Using Differentially Private Metadata (Experimental)
+------------------------------------------------------------------------------
+
+Through an integration with tools from the OpenDP Project (opendp.org), the Dataverse Software offers an experimental workflow that allows a data depositor to create and deposit Differentially Private (DP) Metadata files, which can then be used for exploratory data analysis. This workflow allows researchers to view the DP metadata for a tabular file, determine whether or not the file contains useful information, and then make an informed decision about whether or not to request access to the original file.
+
+If the data depositor has made available DP metadata for one or more files in their dataset, these access options will appear on the access dropdown on both the Dataset Page and the File Page. These access options will be available even if a file is restricted. Three types of DP metadata will be available:
+
+- .PDF
+- .XML
+- .JSON
+  
+For more information about how data depositors can enable access using the OpenDP tool, visit the :doc:`/user/dataset-management` section of the User Guide.
+
 .. |image-file-tree-view| image:: ./img/file-tree-view.png
    :class: img-responsive
 .. |image-file-search-facets| image:: ./img/file-search-facets.png

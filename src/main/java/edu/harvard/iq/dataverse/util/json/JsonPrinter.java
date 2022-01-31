@@ -1,29 +1,9 @@
 package edu.harvard.iq.dataverse.util.json;
 
-import edu.harvard.iq.dataverse.AuxiliaryFile;
-import edu.harvard.iq.dataverse.ControlledVocabularyValue;
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileTag;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetDistributor;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
-import edu.harvard.iq.dataverse.DatasetLock;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseContact;
-import edu.harvard.iq.dataverse.DataverseFacet;
-import edu.harvard.iq.dataverse.DataverseTheme;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.MetadataBlock;
-import edu.harvard.iq.dataverse.RoleAssignment;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
@@ -76,8 +56,12 @@ public class JsonPrinter {
     @EJB
     static SettingsServiceBean settingsService;
 
-    public static void injectSettingsService(SettingsServiceBean ssb) {
+    @EJB
+    static DatasetFieldServiceBean datasetFieldService;
+    
+    public static void injectSettingsService(SettingsServiceBean ssb, DatasetFieldServiceBean dfsb) {
             settingsService = ssb;
+            datasetFieldService = dfsb;
     }
 
     public JsonPrinter() {
@@ -328,7 +312,8 @@ public class JsonPrinter {
                 .add("authority", ds.getAuthority())
                 .add("publisher", BrandingUtil.getInstallationBrandName())
                 .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
-                .add("storageIdentifier", ds.getStorageIdentifier());
+                .add("storageIdentifier", ds.getStorageIdentifier())
+                .add("metadataLanguage", ds.getMetadataLanguage());
     }
 
     public static JsonObjectBuilder json(DatasetVersion dsv) {
@@ -489,9 +474,11 @@ public class JsonPrinter {
         JsonObjectBuilder blockBld = jsonObjectBuilder();
 
         blockBld.add("displayName", block.getDisplayName());
+        blockBld.add("name", block.getName());
+        
         final JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
-
-        DatasetFieldWalker.walk(fields, settingsService, new DatasetFieldsToJson(fieldsArray));
+        Map<Long, JsonObject> cvocMap = (datasetFieldService==null) ? new HashMap<Long, JsonObject>() :datasetFieldService.getCVocConf(false); 
+        DatasetFieldWalker.walk(fields, settingsService, cvocMap, new DatasetFieldsToJson(fieldsArray));
 
         blockBld.add("fields", fieldsArray);
         return blockBld;
@@ -512,7 +499,8 @@ public class JsonPrinter {
             return null;
         } else {
             JsonArrayBuilder fieldArray = Json.createArrayBuilder();
-            DatasetFieldWalker.walk(dfv, new DatasetFieldsToJson(fieldArray));
+            Map<Long, JsonObject> cvocMap = (datasetFieldService==null) ? new HashMap<Long, JsonObject>() :datasetFieldService.getCVocConf(false);
+            DatasetFieldWalker.walk(dfv, new DatasetFieldsToJson(fieldArray), cvocMap);
             JsonArray out = fieldArray.build();
             return out.getJsonObject(0);
         }
@@ -576,6 +564,8 @@ public class JsonPrinter {
                 .add("formatVersion", auxFile.getFormatVersion()) // "label" is the filename
                 .add("origin", auxFile.getOrigin()) 
                 .add("isPublic", auxFile.getIsPublic())
+                .add("type", auxFile.getType())
+                .add("contentType", auxFile.getContentType())
                 .add("fileSize", auxFile.getFileSize())
                 .add("checksum", auxFile.getChecksum())
                 .add("dataFile", JsonPrinter.json(auxFile.getDataFile()));
@@ -608,15 +598,18 @@ public class JsonPrinter {
         if (new GlobalId(df).toURL() != null){
             pidURL = new GlobalId(df).toURL().toString();
         }
+
+        JsonObjectBuilder embargo = df.getEmbargo() != null ? JsonPrinter.json(df.getEmbargo()) : null;
         
         return jsonObjectBuilder()
                 .add("id", df.getId())
                 .add("persistentId", df.getGlobalIdString())
                 .add("pidURL", pidURL)
                 .add("filename", fileName)
-                .add("contentType", df.getContentType())            
-                .add("filesize", df.getFilesize())            
-                .add("description", df.getDescription())    
+                .add("contentType", df.getContentType())
+                .add("filesize", df.getFilesize())
+                .add("description", df.getDescription())
+                .add("embargo", embargo)
                 //.add("released", df.isReleased())
                 //.add("restricted", df.isRestricted())
                 .add("storageIdentifier", df.getStorageIdentifier())
@@ -700,19 +693,44 @@ public class JsonPrinter {
             objectStack.peek().add("multiple", typ.isAllowMultiples());
             objectStack.peek().add("typeClass", typeClassString(typ));
         }
+        
+        @Override
+        public void addExpandedValuesArray(DatasetField f) {
+            // Invariant: all values are multiple. Diffrentiation between multiple and single is done at endField.
+            valueArrStack.push(Json.createArrayBuilder());
+        }
 
         @Override
         public void endField(DatasetField f) {
             JsonObjectBuilder jsonField = objectStack.pop();
+            JsonArray expandedValues = valueArrStack.pop().build();
             JsonArray jsonValues = valueArrStack.pop().build();
             if (!jsonValues.isEmpty()) {
                 jsonField.add("value",
                         f.getDatasetFieldType().isAllowMultiples() ? jsonValues
                                 : jsonValues.get(0));
+                if (!expandedValues.isEmpty()) {
+                    jsonField.add("expandedvalue",
+                            f.getDatasetFieldType().isAllowMultiples() ? expandedValues
+                                    : expandedValues.get(0));
+                }
+                
                 valueArrStack.peek().add(jsonField);
             }
         }
 
+        @Override
+        public void externalVocabularyValue(DatasetFieldValue dsfv, JsonObject cvocEntry) {
+            if (dsfv.getValue() != null) {
+                if (cvocEntry.containsKey("retrieval-filtering")) {
+                    JsonObject value = datasetFieldService.getExternalVocabularyValue(dsfv.getValue());
+                    if (value!=null) {
+                        valueArrStack.peek().add(value);
+                    }
+                }
+            }
+        }
+        
         @Override
         public void primitiveValue(DatasetFieldValue dsfv) {
             if (dsfv.getValue() != null) {
@@ -721,7 +739,7 @@ public class JsonPrinter {
         }
 
         @Override
-        public void controledVocabularyValue(ControlledVocabularyValue cvv) {
+        public void controlledVocabularyValue(ControlledVocabularyValue cvv) {
             valueArrStack.peek().add(cvv.getStrValue());
         }
 
@@ -780,6 +798,11 @@ public class JsonPrinter {
         return jsonObjectBuilder()
                     .add("id", String.valueOf(aFacet.getId())) // TODO should just be id I think
                     .add("name", aFacet.getDatasetFieldType().getDisplayName());
+    }
+
+    public static JsonObjectBuilder json(Embargo embargo) {
+        return jsonObjectBuilder().add("dateAvailable", embargo.getDateAvailable().toString()).add("reason",
+                embargo.getReason());
     }
         
     public static Collector<String, JsonArrayBuilder, JsonArrayBuilder> stringsToJsonArray() {

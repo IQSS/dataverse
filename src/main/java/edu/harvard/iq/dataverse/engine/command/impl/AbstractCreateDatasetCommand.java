@@ -60,6 +60,11 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         // base class - default to nothing.
     }
     
+
+    protected void postDBFlush( Dataset theDataset, CommandContext ctxt ) throws CommandException {
+        // base class - default to nothing.
+    }
+    
     protected abstract void handlePid( Dataset theDataset, CommandContext ctxt ) throws CommandException ;
     
     @Override
@@ -122,6 +127,9 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         
         // Now we need the acutal dataset id, so we can start indexing.
         ctxt.em().flush();
+        
+        //Use for code that requires database ids
+        postDBFlush(theDataset, ctxt);
         
         // TODO: this needs to be moved in to an onSuccess method; not adding to this PR as its out of scope
         // TODO: switch to asynchronous version when JPA sync works

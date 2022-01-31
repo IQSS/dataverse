@@ -63,7 +63,7 @@ We currently only support the following HTML tags for any of our textbox metadat
 <strong>, <strike>, <u>, <ul>.
 
 File Upload
-==============
+===========
 
 The Dataverse Software offers multiple methods of uploading files to a dataset. These upload methods are configurable by the administrator of a Dataverse installation, so you might not see some of these options on the Dataverse installation you're using.
 
@@ -179,6 +179,38 @@ Additional download options available for tabular data (found in the same drop-d
 - Data File Citation (currently in either RIS, EndNote XML, or BibTeX format); 
 - All of the above, as a zipped bundle. 
 
+Differentially Private (DP) Metadata can also be accessed for restricted tabular files if the data depositor has created a DP Metadata Release. See :ref:`dp-release-create` for more information.
+
+Research Code
+-------------
+
+Code files - such as Stata, R, MATLAB, or Python files or scripts - have become a frequent addition to the research data deposited in Dataverse repositories. Research code is typically developed by few researchers with the primary goal of obtaining results, while its reproducibility and reuse aspects are sometimes overlooked. Because several independent studies reported issues trying to rerun research code, please consider the following guidelines if your dataset contains code.
+
+The following are general guidelines applicable to all programming languages.
+
+- Create a README text file in the top-level directory to introduce your project. It should answer questions that reviewers or reusers would likely have, such as how to install and use your code. If in doubt, consider using existing templates such as `a  README template for social science replication packages <https://social-science-data-editors.github.io/template_README/template-README.html>`_.
+- Depending on the number of files in your dataset, consider having data and code in distinct directories, each of which should have some documentation like a README. 
+- Consider adding a license to your source code. You can do that by creating a LICENSE file in the dataset or by specifying the license(s) in the README or directly in the code. Find out more about code licenses at `the Open Source Initiative webpage <https://opensource.org/licenses>`_.
+- If possible, use free and open-source file formats and software to make your research outputs more reusable and accessible.
+- Consider testing your code in a clean environment before sharing it, as it could help you identify missing files or other errors. For example, your code should use relative file paths instead of absolute (or full) file paths, as they can cause an execution error.
+- Consider providing notes (in the README) on the expected code outputs or adding tests in the code, which would ensure that its functionality is intact.
+
+Capturing code dependencies will help other researchers recreate the necessary runtime environment. Without it, your code will not be able to run correctly (or at all). 
+One option is to use platforms such as `Whole Tale <https://wholetale.org>`_, `Jupyter Binder <https://mybinder.org>`_ or `Renku <https://renkulab.io>`_, which facilitate research reproducibility. Have a look at `Dataverse Integrations <https://guides.dataverse.org/en/5.4/admin/integrations.html>`_ for more information. 
+Another option is to use an automatic code dependency capture, which is often supported through the programming language. Here are a few examples:
+
+- If you are using the conda package manager, you can export your environment with the command ``conda env export > environment.yml``. For more information, see the `official documentation <https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#sharing-an-environment>`__.
+- Python has multiple conventions for capturing its dependencies, but probably the best-known one is with the ``requirements.txt`` file, which is created using the command ``pip freeze > requirements. txt``. Managing environments with ``pip`` is explained in the `official documentation <https://docs.python.org/3/tutorial/venv.html#managing-packages-with-pip>`__.
+- If you are using the R programming language, create a file called ``install.R``, and list all library dependencies that your code requires. This file should be executable in R to set up the environment. See also other strategies for capturing the environment proposed by RStudio in the `official documentation <https://environments.rstudio.com>`__.
+- In case you are using multiple programming languages or different versions of the same language, consider using a containerization technology such as Docker. You can create a Dockerfile that builds your environment and deposit it within your dataset (see `the official documentation <https://docs.docker.com/language/python/build-images/>`__). It is worth noting that creating a reliable Dockerfile may be tricky. If you choose this route, make sure to specify dependency versions and check out `Docker's best practices <https://docs.docker.com/develop/develop-images/dockerfile_best-practices/>`_.
+
+Finally, automating your code can be immensely helpful to the code and research reviewers. Here are a few options on how to automate your code.
+
+- A simple way to automate your code is using a bash script or Make. The Turing Way Community has `a detailed guide <https://the-turing-way.netlify.app/reproducible-research/make.html>`_ on how to use the Make build automation tool.
+- Consider using research workflow tools to automate your analysis. A popular workflow tool is called Common Workflow Language, and you can find more information about it `from the Common Workflow Language User Guide <https://www.commonwl.org/user_guide/>`_.
+
+**Note:** Capturing code dependencies and automating your code will create new files in your directory. Make sure to include them when depositing your dataset.
+
 Astronomy (FITS)
 ----------------
 
@@ -209,6 +241,8 @@ Restricted Files
 ================
 
 When you restrict a file it cannot be downloaded unless permission has been granted.
+
+Differentially Private (DP) Metadata can be accessed for restricted tabular files if the data depositor has created a DP Metadata Release. See :ref:`dp-release-create` for more information.
 
 See also :ref:`terms-of-access` and :ref:`permissions`.
 
@@ -293,7 +327,7 @@ Here is an `example of a Data Usage Agreement <https://support.dataverse.harvard
 
 .. _terms-of-access:
 
-Restricted Files + Terms of Access 
+Restricted Files + Terms of Access
 ----------------------------------
 
 If you restrict any files in your dataset, you will be prompted by a pop-up to enter Terms of Access for the data. This can also be edited in the Terms tab or selecting Terms in the "Edit" dropdown button in the dataset. You may also allow users to request access for your restricted files by enabling "Request Access". To add more information about the Terms of Access, we have provided fields like Data Access Place, Availability Status, Contact for Access, etc. If you restrict a file, it will not have a preview shown on the file page.
@@ -301,6 +335,23 @@ If you restrict any files in your dataset, you will be prompted by a pop-up to e
 **Note:** Some Dataverse installations do not allow for file restriction.
 
 See also :ref:`restricted-files`.
+
+.. _dp-release-create:
+
+Creating and Depositing Differentially Private Metadata (Experimental)
+----------------------------------------------------------------------
+
+Through an integration with tools from the OpenDP Project (opendp.org), the Dataverse Software offers an experimental workflow that allows a data depositor to create and deposit Differentially Private (DP) Metadata files, which can then be used for exploratory data analysis. This workflow allows researchers to view the DP metadata for a tabular file, determine whether or not the file contains useful information, and then make an informed decision about whether or not to request access to the original file.
+
+If this integration has been enabled in your Dataverse installation, you can follow these steps to create a DP Metadata Release and make it available to researchers, while still keeping the files themselves restricted and able to be accessed after a successful access request.
+
+- Deposit a tabular file and let the ingest process complete
+- Restrict the File
+- In the kebab next to the file on the dataset page, or from the "Edit Files" dropdown on the file page, click "OpenDP Tool"
+- Go through the process to create a DP Metadata Release in the OpenDP tool, and at the end of the process deposit the DP Metadata Release back to the Dataverse installation
+- Publish the Dataset
+
+Once the dataset is published, users will be able to request access using the normal process, but will also have the option to download DP Statistics in order to get more information about the file. 
 
 Guestbook
 ---------
@@ -310,13 +361,13 @@ This is where you will enable a particular Guestbook for your dataset, which is 
 .. _permissions:
 
 Roles & Permissions
-=====================
+===================
 
 Dataverse installation user accounts can be granted roles that define which actions they are allowed to take on specific Dataverse collections, datasets, and/or files. Each role comes with a set of permissions, which define the specific actions that users may take.
 
 Roles and permissions may also be granted to groups. Groups can be defined as a set of Dataverse user accounts, a collection of IP addresses (e.g. all users of a library's computers), or a collection of all users who log in using a particular institutional login (e.g. everyone who logs in with a particular university's account credentials).
 
-Dataset-Level 
+Dataset-Level
 -------------
 
 Admins or curators of a dataset can assign roles and permissions to the users of that dataset. If you are an admin or curator of a dataset, then you can get to the dataset permissions page by clicking the "Edit" button, highlighting "Permissions" from the dropdown list, and clicking "Dataset".
@@ -454,13 +505,32 @@ Private URL to Review Unpublished Dataset
 
 Creating a Private URL for your dataset allows you to share your dataset (for viewing and downloading of files) before it is published to a wide group of individuals who may not have a user account on the Dataverse installation. Anyone you send the Private URL to will not have to log into the Dataverse installation to view the dataset.
 
+**Note:** To create a Private URL, you must have the *ManageDatasetPermissions* permission for your dataset, usually given by the :ref:`roles <permissions>` *Curator* or *Administrator*.
+
 #. Go to your unpublished dataset
 #. Select the “Edit” button
 #. Select “Private URL” in the dropdown menu
-#. In the pop-up select “Create Private URL”
+#. In the pop-up select “Create Private URL” or "Create URL for Anonymized Access". The latter supports anonymous review by removing author names and other potentially identifying information from citations, version history tables, and some metadata fields (as configured by the administrator).
 #. Copy the Private URL which has been created for this dataset and it can now be shared with anyone you wish to have access to view or download files in your unpublished dataset.
 
 To disable a Private URL and to revoke access, follow the same steps as above until step #3 when you return to the popup, click the “Disable Private URL” button.
+Note that only one PrivateURL (normal or with anonymized access) can be configured per dataset at a time. 
+
+Embargoes
+=========
+
+A Dataverse instance may be configured to support file-level embargoes. Embargoes make file content inaccessible after a dataset version is published  - until the embargo end date.
+This means that file previews and the ability to download files will be blocked. The effect is similar to when a file is restricted except that the embargo will end at the specified date without further action and during the embargo, requests for file access cannot be made. 
+Embargoes of files in a version 1.0 dataset may also affect the date shown in the dataset and file citations. The recommended practice is for the citation to reflect the date on which all embargoes on files in version 1.0 end. (Since Dataverse creates one persistent identifier per dataset and doesn't create new ones for each version, the publication of later versions, with or without embargoed files, does not affect the citation date.)
+
+Embargoes are intended to support use cases where, for example, a journal or project team allows a period after publication of a dataset and/or the associated paper, during which the authors still have sole access to the data. Setting an embargo on relevant files and publishing the dataset in Dataverse publicizes the persistent identifier (e.g. DOI or Handle) for the dataset (and files if the instance is configured to create persistent identifiers for them ) and makes the metadata, and any the content of un-embargoed files immediately available, but automatically denies access to any embargoed files until the specified embargoes expire. 
+Once a dataset with embargoed files has been published, no further action is needed to cause the embargoed files to become accessible as of the specified embargo end date. (Note that embargoes can be set along with using the 'restrict' functionality on files. The restricted status will affect their availability as normal (and described elsewhere) once the embargo expires.)
+
+- Setting the same embargo on all files in the dataset can be seen as providing a dataset-level embargo - making the dataset persistent identifier and metadata available but restricting access to all files.
+
+- "Rolling" embargoes on time-series data can be supported by publishing multiple dataset versions and adding new embargoes on the files added in that version. For example, every year, files containing the prior year's results can be added to a dataset and given an embargo ending one year later than the embargoes set in the last dataset version, and the new dataset version can then be published. The datafiles published in the different versions will become available when their individual embargoes expire at yearly intervals.
+
+As the primary use case of embargoes is to make the existence of data known now, with a promise (to a journal, project team, etc.) that the data itself will become available at a given future date, users cannot change an embargo once a dataset version is published. Dataverse instance administrators do have the ability to correct mistakes and make changes if/when circumstances warrant.
 
 Dataset Versions
 ================

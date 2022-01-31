@@ -121,3 +121,27 @@ EJB Timers
 Should you be interested in monitoring the EJB timers, this script may be used as an example:
 
 .. literalinclude:: ../_static/util/check_timer.bash
+
+AWS RDS
+-------
+
+Some installations of Dataverse use AWS's "database as a service" offering called RDS (Relational Database Service) so it's worth mentioning some monitoring tips here.
+
+There are two documents that are especially worth reviewing:
+
+- `Monitoring an Amazon RDS DB instance <https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Monitoring.html>`_: The official documentation.
+- `Performance Monitoring Workshop for RDS PostgreSQL and Aurora PostgreSQL <https://rdspg-monitoring.workshop.aws/en/intro.html>`_: A workshop that steps through practical examples and even includes labs featuring tools to generate load.
+
+Tips:
+
+- Enable **Performance Insights**. The `product page <https://aws.amazon.com/rds/performance-insights/>`_ includes a `video from 2017 <https://youtu.be/4462hcfkApM>`_ that is still compelling today. For example, the `Top SQL <https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.UsingDashboard.Components.AvgActiveSessions.TopLoadItemsTable.TopSQL.html>`_ tab shows the SQL queries that are contributing the most to database load. There's also a `video from 2018 <https://www.youtube.com/watch?v=yOeWcPBT458>`_ mentioned in the `overview <https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.Overview.html>`_ that's worth watching.
+
+  - Note that Performance Insights is only available for `PostgreSQL 10 and higher <https://aws.amazon.com/about-aws/whats-new/2018/04/rds-performance-insights-on-rds-for-postgresql/>`_ (also mentioned `in docs <https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.Overview.Engines.html>`_). Version 11 has digest statistics enabled automatically but there's an `extra step <https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.UsingDashboard.AnalyzeDBLoad.AdditionalMetrics.PostgreSQL.html#USER_PerfInsights.UsingDashboard.AnalyzeDBLoad.AdditionalMetrics.PostgreSQL.digest>`_ for version 10.
+  - `Performance Insights policies <https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.access-control.html>`_ describes how to give access to Performance Insights to someone who doesn't have full access to RDS (``AmazonRDSFullAccess``).
+
+- Enable the **slow query log** and consider using pgbadger to analyze the log files. Set ``log_min_duration_statement`` to "5000", for example, to log all queries that take 5 seconds or more. See `enable query logging <https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.Concepts.PostgreSQL.html#USER_LogAccess.Concepts.PostgreSQL.Query_Logging>`_ in the user guide or `slides <https://rdspg-monitoring.workshop.aws/en/postgresql-logs/enable-slow-query-log.html>`_ from the workshop for details. Using pgbadger is also mentioned as a `common DBA task <https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.PostgreSQL.CommonDBATasks.html#Appendix.PostgreSQL.CommonDBATasks.Badger>`_.
+- Use **CloudWatch**. CloudWatch gathers metrics about CPU utilization from the hypervisor for a DB instance. It's a separate service to log into so access can be granted more freely than to RDS. See `CloudWatch docs <https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/monitoring-cloudwatch.html>`_.
+- Use **Enhanced Monitoring**. Enhanced Monitoring gathers its metrics from an agent on the instance. See `Enhanced Monitoring docs <https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Monitoring.OS.html>`_.
+- It's possible to view and act on **RDS Events** such as snapshots, parameter changes, etc. See `Working with Amazon RDS events <https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.access-control.html>`_ for details.
+- RDS monitoring is available via API and the ``aws`` command line tool. For example, see `Retrieving metrics with the Performance Insights API <https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.API.html>`_.
+- To play with monitoring RDS using a server configured by `dataverse-ansible <https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible>`_ set ``use_rds`` to true to skip some steps that aren't necessary when using RDS. See also the :doc:`/developers/deployment` section of the Developer Guide.

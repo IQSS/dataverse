@@ -639,31 +639,38 @@ Updating the Solr Schema
 Once you have enabled a new metadata block you should be able to see the new fields in the GUI but before you can save
 the dataset, you must add additional fields to your Solr schema.
 
-An API endpoint of your Dataverse installation provides you with a generated set of all fields that need to be added to the Solr schema
-configuration, including any enabled metadata schemas:
+An API endpoint of your Dataverse installation provides you with a generated set of all fields that need to be added to
+the Solr schema configuration, including any enabled metadata schemas:
 
-``curl http://localhost:8080/api/admin/index/solr/schema``
+``curl "http://localhost:8080/api/admin/index/solr/schema"``
 
-For convenience and automation you can download and consider running :download:`updateSchemaMDB.sh <../../../../conf/solr/8.8.1/updateSchemaMDB.sh>`. It uses the API endpoint above and writes schema files to the filesystem (so be sure to run it on the Solr server itself as the Unix user who owns the Solr files) and then triggers a Solr reload.
+You can use :download:`update-fields.sh <../../../../conf/solr/8.8.1/update-fields.sh>` to easily add these to the
+Solr schema you installed for your Dataverse installation.
 
-By default, it will download from your Dataverse installation at `http://localhost:8080` and reload Solr at `http://localhost:8983`.
-You may use the following environment variables with this script or mix'n'match with options:
+The script needs a target XML file containing your Solr schema. (See the :doc:`/installation/prerequisites/` section of
+the Installation Guide for a suggested location on disk for the Solr schema file.)
 
-====================  ======  ===============================================  =========================================================
-Environment variable  Option  Description                                      Example
-====================  ======  ===============================================  =========================================================
-`DATAVERSE_URL`       `-d`    Provide the URL to your Dataverse installation   *http://localhost:8080*
-`SOLR_URL`            `-s`    Provide the URL to your Solr instance            *http://localhost:8983*
-`UNBLOCK_KEY`         `-u`    If your installation has a blocked admin API     *xyz* or */secrets/unblock.key*
-                              endpoint, you can provide either the key itself
-                              or a path to a keyfile
-`TARGET`              `-t`    Provide the config directory of your Solr core   */usr/local/solr/solr-8.8.1/server/solr/collection1/conf*
-                              "collection1"
-====================  ======  ===============================================  =========================================================
+You can either pipe the downloaded schema to the script or provide the file as an argument. (We recommended you to take
+a look at usage output of ``update-fields.sh -h``)
 
-See the :doc:`/installation/prerequisites/` section of the Installation Guide for a suggested location on disk for the Solr schema file.
+.. code-block::
+    :caption: Example usage of ``update-fields.sh``
 
-Please note that if you are going to make a pull request updating ``conf/solr/8.8.1/schema.xml`` with fields you have added, you should first load all the custom metadata blocks in ``scripts/api/data/metadatablocks`` (including ones you don't care about) to create a complete list of fields.
+    curl "http://localhost:8080/api/admin/index/solr/schema" | update-fields.sh /usr/local/solr/server/solr/collection1/conf/schema.xml
+
+You will need to reload your Solr schema via an HTTP-API call, targeting your Solr instance:
+
+``curl "http://localhost:8983/solr/admin/cores?action=RELOAD&core=collection1"``
+
+You can easily roll your own little script to automate the process (which might involve fetching the schema bits
+from some place else than your Dataverse installation).
+
+Please note that reconfigurations of your Solr index might require a re-index. Usually release notes indicate
+a necessary re-index, but for your custom metadata you will need to keep track on your own.
+
+Please note also that if you are going to make a pull request updating ``conf/solr/8.8.1/schema.xml`` with fields you have
+added, you should first load all the custom metadata blocks in ``scripts/api/data/metadatablocks`` (including ones you
+don't care about) to create a complete list of fields. (This might change in the future.)
 
 Reloading a Metadata Block
 --------------------------
@@ -675,6 +682,37 @@ As mentioned above, changes to metadata blocks that ship with the Dataverse Soft
 Great care must be taken when reloading a metadata block. Matching is done on field names (or identifiers and then names in the case of controlled vocabulary values) so it's easy to accidentally create duplicate fields.
 
 The ability to reload metadata blocks means that SQL update scripts don't need to be written for these changes. See also the :doc:`/developers/sql-upgrade-scripts` section of the Developer Guide.
+
+Using External Vocabulary Services
+----------------------------------
+
+The Dataverse software has a mechanism to associate specific fields defined in metadata blocks with a vocabulary(ies) managed by external services. The mechanism relies on trusted third-party Javascripts. The mapping from field type to external vocabulary(ies) is managed via the :ref:`:CVocConf <:CVocConf>` setting.
+
+*This functionality is considered 'experimental'. It may require significant effort to configure and is likely to evolve in subsequent Dataverse software releases.*
+
+
+The effect of configuring this mechanism is similar to that of defining a field in a metadata block with 'allowControlledVocabulary=true':
+
+- Users are able to select from a controlled list of values.
+- Values can be shown in any language the term has been defined in.
+  
+In general, the external vocabulary support mechanism may be a better choice for large vocabularies, hierarchical/structured vocabularies, and/or vocabularies managed by third-parties. In addition, the external vocabulary mechanism differs from the internal controlled vocabulary mechanism in several ways that may make it a preferred option:
+
+- the machine-readable URI form of a vocabulary is stored in the Dataverse database and can be included in exported metadata files.
+- vocabulary mappings can be changed without changing the metadata block, making it possible for different Dataverse installations to use different vocabularies in the same field.
+- mappings can associate a field with more than one vocabulary.
+- mappings can be configured to also allow custom/free-text entries as well as vocabulary values.
+- mappings can be configured for compound fields and a user's selection of a given vocabulary value can be used to fill in related child fields (e.g. selection of a keyword could fill in a vocabulary name field as well).
+- removing a mapping does not affect stored values (the field would revert to allowing free text).
+ 
+The specifics of the user interface for entering/selecting a vocabulary term and how that term is then displayed are managed by third-party Javascripts. The initial Javascripts that have been created provide auto-completion, displaying a list of choices that match what the user has typed so far, but other interfaces, such as displaying a tree of options for a hierarchical vocabulary, are possible. 
+Similarly, existing scripts do relatively simple things for displaying a term - showing the term's name in the appropriate language and providing a link to an external URL with more information, but more sophisticated displays are possible.
+
+Scripts supporting use of vocabularies from services supporting the SKOMOS protocol (see https://skosmos.org) and retrieving ORCIDs (from https:/orcid.org) are available https://github.com/gdcc/dataverse-external-vocab-support. (Custom scripts can also be used and community members are encouraged to share new scripts through the dataverse-external-vocab-support repository.)
+
+Configuration involves specifying which fields are to be mapped, whether free-text entries are allowed, which vocabulary(ies) should be used, what languages those vocabulary(ies) are available in, and several service protocol and service instance specific parameters.
+These are all defined in the :ref:`:CVocConf <:CVocConf>` setting as a JSON array. Details about the required elements as well as example JSON arrays are available at https://github.com/gdcc/dataverse-external-vocab-support, along with an example metadata block that can be used for testing.
+The scripts required can be hosted locally or retrieved dynamically from https://gdcc.github.io/ (similar to how dataverse-previewers work).
 
 Tips from the Dataverse Community
 ---------------------------------

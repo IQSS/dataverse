@@ -147,6 +147,7 @@ a.tooltip-icon:hover, a.tool-tip:focus, a.tool-tip:active {text-decoration: none
     min-width: 100%;
 }
 
+/*Open/Close is now handled by javascript (provides a delay on close for accessibility) - leaving this to work when javascript is disabled*/
 .dropdown-submenu:hover>.dropdown-menu {
     display: block;
 }
@@ -375,6 +376,9 @@ form.btn-form {display:inline-block;}
 .button-block span.ui-state-disabled:last-child, .button-block.pull-right .btn:last-child, 
 .button-block .btn:only-child, .button-block div.btn-group:only-child {margin-right:0;}
 
+.disabledTitle {
+  pointer-events: auto;
+}
 /* DIASABLED LINK-BTN TITLE PF COMMANDLINK HACK */
 /* TODO - REVIEW DISABLED CLASS LINKS WHICH 
           ARE NOW FUNCTIONAL DUE TO HACK?? 
@@ -387,6 +391,7 @@ div.btn-group ul.dropdown-menu li.disabled span.ui-commandlink.ui-state-disabled
 div.field-add-delete a.btn {margin:0 1em 0 0;}
 div.field-add-delete a.btn:last-child {margin-right:0;}
 div.field-add-delete a.btn.compound-field-btn {margin-top:1.8em;}
+div[data-cvoc-parentfield] ~ div.field-add-delete a.btn.compound-field-btn {margin-top:0px;}
 div.field-add-delete a.btn.nolabel-field-btn {margin-top:0;}
 
 /* Featured Dataverses*/
@@ -655,7 +660,7 @@ div.edit-field div.ui-message {margin:6px 0;}
 /* TRUNCATION */
 div.more-block {text-align:center; padding-top:250px; width:100%; position:absolute; bottom:0; background:linear-gradient(180deg,hsla(0,0%,100%,0),#fff 80%);}
 button.desc-more-link {margin:0; padding:0;}
-div.less-block {text-align:center;};
+div.less-block {text-align:center;}
 
 /* Primefaces vs Bootstrap selectOneMenu fix */
 div.ui-selectonemenu.form-control {padding:0px;}
@@ -756,6 +761,23 @@ div[id$="filesTable"] thead[id$="filesTable_head"] th.ui-selection-column .ui-ch
     /* Non standard for webkit */
     word-break: break-word;
 }
+
+/* REQUEST ACCESS DOWNLOAD OPTION LINK */
+div[id$="requestPanel"].iq-dropdown-list-item {display:list-item !important;}
+div[id$="requestPanel"].iq-dropdown-list-item>a.ui-commandlink{display:block;padding:3px 20px;clear:both;font-weight:400;line-height:1.42857143;color:#333;white-space:nowrap}
+div[id$="requestPanel"].iq-dropdown-list-item>a.ui-commandlink:focus,
+div[id$="requestPanel"].iq-dropdown-list-item>a.ui-commandlink:hover{color:#262626;text-decoration:none;background-color:#f5f5f5}
+div[id$="requestPanel"].iq-dropdown-list-item>a.ui-commandlink.active,
+div[id$="requestPanel"].iq-dropdown-list-item>a.ui-commandlink.active:focus,
+div[id$="requestPanel"].iq-dropdown-list-item>a.ui-commandlink.active:hover{color:#fff;text-decoration:none;background-color:#337ab7;outline:0}
+div[id$="requestPanel"].iq-dropdown-list-item.disabled>span.ui-commandlink.ui-state-disabled{display:block;padding:3px 20px;clear:both;font-weight:400;line-height:1.42857143;white-space:nowrap}
+div[id$="requestPanel"].iq-dropdown-list-item.disabled>span.ui-commandlink.ui-state-disabled,
+div[id$="requestPanel"].iq-dropdown-list-item.disabled>span.ui-commandlink.ui-state-disabled:focus,
+div[id$="requestPanel"].iq-dropdown-list-item.disabled>span.ui-commandlink.ui-state-disabled:hover{background-color:transparent;color:#777;}
+div[id$="requestPanel"].iq-dropdown-list-item.disabled>span.ui-commandlink.ui-state-disabled:focus,
+div[id$="requestPanel"].iq-dropdown-list-item.disabled>span.ui-commandlink.ui-state-disabled:hover{text-decoration:none;background-color:transparent;background-image:none;filter:progid:DXImageTransform.Microsoft.gradient(enabled=false)}
+div[id$="requestPanel"].iq-dropdown-list-item.disabled{cursor:not-allowed;}
+div[id$="requestPanel"].iq-dropdown-list-item.disabled>span.ui-commandlink.ui-state-disabled{pointer-events:none;}
 
 /* PAGINATION */
 div[id$="filesTable"] .ui-paginator {
@@ -899,6 +921,7 @@ span.ui-autocomplete input.ui-autocomplete-input {width:100%;}
 
 /* Overwrite Bootstrap */
 .btn, .input-group-btn {white-space: normal !important;}
+.dropdown-item-text {display: block;padding: 3px 20px;color: #212529;}
 
 @media print {
     a[href]:after {
@@ -978,4 +1001,73 @@ progress::-webkit-progress-bar {
 
 progress::-webkit-progress-value {
   background-color:green;
+}
+
+/*External vocabulary support*/
+
+.select2-container .select2-selection--single {
+        border:1px solid #cccccc;
+        border-radius: 3px;
+        height:34px;
+        display:inline;
+        background:#ffffff;
+}
+
+.select2-container .select2-selection--single .select2-selection__rendered {
+        display:inline-block!important;
+        max-width:90%
+}
+.select2-selection__clear, .select2-selection__rendered {
+        vertical-align: -webkit-baseline-middle;
+}
+.select2-results li {
+        font-weight:400;
+        font-size:14px;
+}
+.select2-rendered__match {
+        font-weight:600;
+}
+.cvoc-vocab {
+padding-left:0px;
+padding-right:0px;
+}
+.cvoc-term {
+padding-right:0px;
+}
+
+/*EMBARGO*/
+.ui-datepicker {
+  z-index: 100001!important;
+}
+.embargoright {
+  margin-left:10px;
+}
+.embargocheckbox {
+  margin-top: 20px;
+  padding-bottom: 30px;
+}
+.embargomsg {
+  display:block;
+}
+.embargo {
+        display:flex;
+        flex-direction:column;
+}
+.embargo.text-warning, .embargo.text-danger {
+        flex-direction:row;
+}
+.embargo span {
+        margin-right: 10px;
+}
+.embargo span.glyphicon-asterisk {
+            font-size: .5em;
+                vertical-align: top;
+}
+
+.embargo .col-lg-3 {
+    padding-left:0px;
+}
+
+.embargolabel {
+    font-weight: 700;
 }
