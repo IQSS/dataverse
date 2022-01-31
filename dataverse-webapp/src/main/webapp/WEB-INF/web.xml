@@ -22,7 +22,7 @@
         <param-name>org.jboss.weld.context.conversation.lazy</param-name>
         <param-value>false</param-value>
     </context-param>
-    <!-- UI warnings that can be enabled setting to Develop or another level. 
+    <!-- UI warnings that can be enabled setting to Develop or another level.
             See https://docs.oracle.com/javaee/6/tutorial/doc/bnaxj.html#giqxl -->
     <context-param>
         <param-name>javax.faces.PROJECT_STAGE</param-name>
@@ -74,6 +74,10 @@
         <filter-name>Authorizer</filter-name>
         <filter-class>edu.harvard.iq.dataverse.api.filters.ApiAuthorizationFilter</filter-class>
     </filter>
+    <filter>
+        <filter-name>CookieOverwriteFilter</filter-name>
+        <filter-class>edu.harvard.iq.dataverse.CookieOverwriteFilter</filter-class>
+    </filter>
     <filter-mapping>
         <filter-name>Router</filter-name>
         <url-pattern>/api/*</url-pattern>
@@ -89,6 +93,12 @@
     <filter-mapping>
         <filter-name>Authorizer</filter-name>
         <url-pattern>/api/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>CookieOverwriteFilter</filter-name>
+        <url-pattern>*.xhtml</url-pattern>
         <dispatcher>REQUEST</dispatcher>
         <dispatcher>FORWARD</dispatcher>
     </filter-mapping>
