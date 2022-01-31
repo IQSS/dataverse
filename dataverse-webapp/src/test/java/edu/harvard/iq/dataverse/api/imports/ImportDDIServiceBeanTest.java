@@ -2,13 +2,12 @@ package edu.harvard.iq.dataverse.api.imports;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import edu.harvard.iq.dataverse.UnitTestUtils;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
-import edu.harvard.iq.dataverse.api.dto.FileDTO;
-import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
+import edu.harvard.iq.dataverse.api.dto.FileMetadataDTO;
+import edu.harvard.iq.dataverse.api.dto.MetadataBlockWithFieldsDTO;
+import edu.harvard.iq.dataverse.api.dto.DatasetFieldDTO;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType;
 import edu.harvard.iq.dataverse.persistence.datafile.license.License;
@@ -22,13 +21,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
-import static edu.harvard.iq.dataverse.api.dto.FieldDTO.createCompoundFieldDTO;
-import static edu.harvard.iq.dataverse.api.dto.FieldDTO.createMultipleCompoundFieldDTO;
-import static edu.harvard.iq.dataverse.api.dto.FieldDTO.createMultiplePrimitiveFieldDTO;
-import static edu.harvard.iq.dataverse.api.dto.FieldDTO.createPrimitiveFieldDTO;
-import static edu.harvard.iq.dataverse.api.dto.FieldDTO.createVocabFieldDTO;
+import static edu.harvard.iq.dataverse.api.dto.DatasetFieldDTOFactory.createCompound;
+import static edu.harvard.iq.dataverse.api.dto.DatasetFieldDTOFactory.createMultipleCompound;
+import static edu.harvard.iq.dataverse.api.dto.DatasetFieldDTOFactory.createMultiplePrimitive;
+import static edu.harvard.iq.dataverse.api.dto.DatasetFieldDTOFactory.createPrimitive;
+import static edu.harvard.iq.dataverse.api.dto.DatasetFieldDTOFactory.createVocabulary;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
@@ -56,7 +57,7 @@ public class ImportDDIServiceBeanTest {
         assertThat(datasetDto.getProtocol()).isEqualTo("doi");
         assertThat(datasetDto.getAuthority()).isEqualTo("10.18150");
         assertThat(datasetDto.getIdentifier()).isEqualTo("FK2/AJ4VYO");
-        assertThat(datasetDto.getDatasetVersion().getVersionState()).isEqualTo(VersionState.RELEASED);
+        assertThat(datasetDto.getDatasetVersion().getVersionState()).isEqualTo(VersionState.RELEASED.name());
     }
 
     @Test
@@ -75,7 +76,7 @@ public class ImportDDIServiceBeanTest {
         assertThat(datasetDto.getProtocol()).isEqualTo("hdl");
         assertThat(datasetDto.getAuthority()).isEqualTo("20.1000");
         assertThat(datasetDto.getIdentifier()).isEqualTo("100");
-        assertThat(datasetDto.getDatasetVersion().getVersionState()).isEqualTo(VersionState.RELEASED);
+        assertThat(datasetDto.getDatasetVersion().getVersionState()).isEqualTo(VersionState.RELEASED.name());
     }
 
     @Test
@@ -94,7 +95,7 @@ public class ImportDDIServiceBeanTest {
         assertThat(datasetDto.getProtocol()).isEqualTo("doi");
         assertThat(datasetDto.getAuthority()).isEqualTo("10.18150");
         assertThat(datasetDto.getIdentifier()).isEqualTo("FK2/AJ4VYO");
-        assertThat(datasetDto.getDatasetVersion().getVersionState()).isEqualTo(VersionState.RELEASED);
+        assertThat(datasetDto.getDatasetVersion().getVersionState()).isEqualTo(VersionState.RELEASED.name());
     }
 
     @Test
@@ -110,125 +111,125 @@ public class ImportDDIServiceBeanTest {
 
         assertThat(datasetVersionDto.getMetadataBlocks()).containsOnlyKeys("citation", "socialscience", "geospatial");
 
-        MetadataBlockDTO citationBlock = datasetVersionDto.getMetadataBlocks().get("citation");
+        MetadataBlockWithFieldsDTO citationBlock = datasetVersionDto.getMetadataBlocks().get("citation");
 
-        assertThat(citationBlock.getField(DatasetFieldConstant.title)).isEqualTo(
-                createPrimitiveFieldDTO(DatasetFieldConstant.title, "All metadata Dataset"));
+        assertThat(getField(DatasetFieldConstant.title, citationBlock)).isEqualTo(
+                createPrimitive(DatasetFieldConstant.title, "All metadata Dataset"));
 
-        assertThat(citationBlock.getField(DatasetFieldConstant.subTitle)).isEqualTo(
-                createPrimitiveFieldDTO(DatasetFieldConstant.subTitle, "Subtitle"));
+        assertThat(getField(DatasetFieldConstant.subTitle, citationBlock)).isEqualTo(
+                createPrimitive(DatasetFieldConstant.subTitle, "Subtitle"));
 
-        assertThat(citationBlock.getField(DatasetFieldConstant.alternativeTitle)).isEqualTo(
-                createPrimitiveFieldDTO(DatasetFieldConstant.alternativeTitle, "variant of title"));
+        assertThat(getField(DatasetFieldConstant.alternativeTitle, citationBlock)).isEqualTo(
+                createPrimitive(DatasetFieldConstant.alternativeTitle, "variant of title"));
 
-        assertThat(citationBlock.getField(DatasetFieldConstant.otherId)).isEqualTo(
-                createMultipleCompoundFieldDTO(DatasetFieldConstant.otherId,
+        assertThat(getField(DatasetFieldConstant.otherId, citationBlock)).isEqualTo(
+                createMultipleCompound(DatasetFieldConstant.otherId,
                                                ImmutableList.of(
                                                        ImmutableSet.of(
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.otherIdAgency, "Other id agency"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.otherIdValue, "123")),
+                                                               createPrimitive(DatasetFieldConstant.otherIdAgency, "Other id agency"),
+                                                               createPrimitive(DatasetFieldConstant.otherIdValue, "123")),
                                                        ImmutableSet.of(
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.otherIdAgency, "Other id agency 2"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.otherIdValue, "124"))
+                                                               createPrimitive(DatasetFieldConstant.otherIdAgency, "Other id agency 2"),
+                                                               createPrimitive(DatasetFieldConstant.otherIdValue, "124"))
                                                )));
 
-        assertThat(citationBlock.getField(DatasetFieldConstant.author)).isEqualTo(
-                createMultipleCompoundFieldDTO(DatasetFieldConstant.author,
+        assertThat(getField(DatasetFieldConstant.author, citationBlock)).isEqualTo(
+                createMultipleCompound(DatasetFieldConstant.author,
                                                ImmutableList.of(
                                                        ImmutableSet.of(
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.authorName, "First, Author"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.authorAffiliation, "author1 aff")),
+                                                               createPrimitive(DatasetFieldConstant.authorName, "First, Author"),
+                                                               createPrimitive(DatasetFieldConstant.authorAffiliation, "author1 aff")),
                                                        ImmutableSet.of(
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.authorName, "Second, Author"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.authorAffiliation, "author2 Aff"))
+                                                               createPrimitive(DatasetFieldConstant.authorName, "Second, Author"),
+                                                               createPrimitive(DatasetFieldConstant.authorAffiliation, "author2 Aff"))
                                                )));
 
-        assertThat(citationBlock.getField(DatasetFieldConstant.producer)).isEqualTo(
-                createMultipleCompoundFieldDTO(DatasetFieldConstant.producer,
+        assertThat(getField(DatasetFieldConstant.producer, citationBlock)).isEqualTo(
+                createMultipleCompound(DatasetFieldConstant.producer,
                                                ImmutableList.of(
                                                        ImmutableSet.of(
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.producerName, "Some, Producer"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.producerAbbreviation, "PRODU"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.producerAffiliation, "producer aff"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.producerLogo, "https://example.com/images/producer.jpg"))
+                                                               createPrimitive(DatasetFieldConstant.producerName, "Some, Producer"),
+                                                               createPrimitive(DatasetFieldConstant.producerAbbreviation, "PRODU"),
+                                                               createPrimitive(DatasetFieldConstant.producerAffiliation, "producer aff"),
+                                                               createPrimitive(DatasetFieldConstant.producerLogo, "https://example.com/images/producer.jpg"))
                                                )));
 
-        assertThat(citationBlock.getField(DatasetFieldConstant.productionDate)).isEqualTo(
-                createPrimitiveFieldDTO(DatasetFieldConstant.productionDate, "2001-12-12"));
+        assertThat(getField(DatasetFieldConstant.productionDate, citationBlock)).isEqualTo(
+                createPrimitive(DatasetFieldConstant.productionDate, "2001-12-12"));
 
-        assertThat(citationBlock.getField(DatasetFieldConstant.productionPlace)).isEqualTo(
-                createPrimitiveFieldDTO(DatasetFieldConstant.productionPlace, "Some production place"));
+        assertThat(getField(DatasetFieldConstant.productionPlace, citationBlock)).isEqualTo(
+                createPrimitive(DatasetFieldConstant.productionPlace, "Some production place"));
 
-        assertThat(citationBlock.getField(DatasetFieldConstant.software)).isEqualTo(
-                createMultipleCompoundFieldDTO(DatasetFieldConstant.software,
+        assertThat(getField(DatasetFieldConstant.software, citationBlock)).isEqualTo(
+                createMultipleCompound(DatasetFieldConstant.software,
                                                ImmutableList.of(
                                                        ImmutableSet.of(
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.softwareName, "Software1"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.softwareVersion, "v1")),
+                                                               createPrimitive(DatasetFieldConstant.softwareName, "Software1"),
+                                                               createPrimitive(DatasetFieldConstant.softwareVersion, "v1")),
                                                        ImmutableSet.of(
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.softwareName, "Software2"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.softwareVersion, "v2"))
+                                                               createPrimitive(DatasetFieldConstant.softwareName, "Software2"),
+                                                               createPrimitive(DatasetFieldConstant.softwareVersion, "v2"))
                                                )));
 
-        assertThat(citationBlock.getField(DatasetFieldConstant.grantNumber)).isEqualTo(
-                createMultipleCompoundFieldDTO(DatasetFieldConstant.grantNumber,
+        assertThat(getField(DatasetFieldConstant.grantNumber, citationBlock)).isEqualTo(
+                createMultipleCompound(DatasetFieldConstant.grantNumber,
                                                ImmutableList.of(
                                                        ImmutableSet.of(
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.grantNumberAgency, "Grant Agency 1"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.grantNumberValue, "GRANT.1")),
+                                                               createPrimitive(DatasetFieldConstant.grantNumberAgency, "Grant Agency 1"),
+                                                               createPrimitive(DatasetFieldConstant.grantNumberValue, "GRANT.1")),
                                                        ImmutableSet.of(
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.grantNumberAgency, "Grant Agency 2"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.grantNumberValue, "GRANT.2"))
-                                               )));
-
-
-        assertThat(citationBlock.getField(DatasetFieldConstant.distributor)).isEqualTo(
-                createMultipleCompoundFieldDTO(DatasetFieldConstant.distributor,
-                                               ImmutableList.of(
-                                                       ImmutableSet.of(
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.distributorName, "Some, Distributor1"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.distributorAbbreviation, "DIST1"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.distributorAffiliation, "distributor1 aff"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.distributorURL, "http://distributor1.org")),
-                                                       ImmutableSet.of(
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.distributorName, "Some, Distributor2"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.distributorAbbreviation, "DIST2"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.distributorAffiliation, "distributor2 aff"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.distributorURL, "http://distributor2.org"))
-                                               )));
-
-        assertThat(citationBlock.getField(DatasetFieldConstant.datasetContact)).isEqualTo(
-                createMultipleCompoundFieldDTO(DatasetFieldConstant.datasetContact,
-                                               ImmutableList.of(
-                                                       ImmutableSet.of(
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.datasetContactName, "First, Contact"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.datasetContactAffiliation, "contact1 Aff"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.datasetContactEmail, "contact1@example.com")),
-                                                       ImmutableSet.of(
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.datasetContactName, "Second, Contact"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.datasetContactAffiliation, "contact2 Aff"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.datasetContactEmail, "contact2@example.com"))
+                                                               createPrimitive(DatasetFieldConstant.grantNumberAgency, "Grant Agency 2"),
+                                                               createPrimitive(DatasetFieldConstant.grantNumberValue, "GRANT.2"))
                                                )));
 
 
-        assertThat(citationBlock.getField(DatasetFieldConstant.depositor)).isEqualTo(
-                createPrimitiveFieldDTO(DatasetFieldConstant.depositor, "Some, Depositor"));
+        assertThat(getField(DatasetFieldConstant.distributor, citationBlock)).isEqualTo(
+                createMultipleCompound(DatasetFieldConstant.distributor,
+                                               ImmutableList.of(
+                                                       ImmutableSet.of(
+                                                               createPrimitive(DatasetFieldConstant.distributorName, "Some, Distributor1"),
+                                                               createPrimitive(DatasetFieldConstant.distributorAbbreviation, "DIST1"),
+                                                               createPrimitive(DatasetFieldConstant.distributorAffiliation, "distributor1 aff"),
+                                                               createPrimitive(DatasetFieldConstant.distributorURL, "http://distributor1.org")),
+                                                       ImmutableSet.of(
+                                                               createPrimitive(DatasetFieldConstant.distributorName, "Some, Distributor2"),
+                                                               createPrimitive(DatasetFieldConstant.distributorAbbreviation, "DIST2"),
+                                                               createPrimitive(DatasetFieldConstant.distributorAffiliation, "distributor2 aff"),
+                                                               createPrimitive(DatasetFieldConstant.distributorURL, "http://distributor2.org"))
+                                               )));
 
-        assertThat(citationBlock.getField(DatasetFieldConstant.dateOfDeposit)).isEqualTo(
-                createPrimitiveFieldDTO(DatasetFieldConstant.dateOfDeposit, "2021-02-15"));
+        assertThat(getField(DatasetFieldConstant.datasetContact, citationBlock)).isEqualTo(
+                createMultipleCompound(DatasetFieldConstant.datasetContact,
+                                               ImmutableList.of(
+                                                       ImmutableSet.of(
+                                                               createPrimitive(DatasetFieldConstant.datasetContactName, "First, Contact"),
+                                                               createPrimitive(DatasetFieldConstant.datasetContactAffiliation, "contact1 Aff"),
+                                                               createPrimitive(DatasetFieldConstant.datasetContactEmail, "contact1@example.com")),
+                                                       ImmutableSet.of(
+                                                               createPrimitive(DatasetFieldConstant.datasetContactName, "Second, Contact"),
+                                                               createPrimitive(DatasetFieldConstant.datasetContactAffiliation, "contact2 Aff"),
+                                                               createPrimitive(DatasetFieldConstant.datasetContactEmail, "contact2@example.com"))
+                                               )));
 
-        assertThat(citationBlock.getField(DatasetFieldConstant.distributionDate)).isEqualTo(
-                createPrimitiveFieldDTO(DatasetFieldConstant.distributionDate, "1990"));
 
-        assertThat(citationBlock.getField(DatasetFieldConstant.series)).isEqualTo(
-                createCompoundFieldDTO(DatasetFieldConstant.series,
-                                       createPrimitiveFieldDTO(DatasetFieldConstant.seriesName, "series name"),
-                                       createPrimitiveFieldDTO(DatasetFieldConstant.seriesInformation, "series info")));
+        assertThat(getField(DatasetFieldConstant.depositor, citationBlock)).isEqualTo(
+                createPrimitive(DatasetFieldConstant.depositor, "Some, Depositor"));
 
-        MetadataBlockDTO socialBlock = datasetVersionDto.getMetadataBlocks().get("socialscience");
+        assertThat(getField(DatasetFieldConstant.dateOfDeposit, citationBlock)).isEqualTo(
+                createPrimitive(DatasetFieldConstant.dateOfDeposit, "2021-02-15"));
 
-        assertThat(socialBlock.getField(DatasetFieldConstant.datasetLevelErrorNotes)).isEqualTo(
-                createPrimitiveFieldDTO(DatasetFieldConstant.datasetLevelErrorNotes, "notes on errors in dataset level"));
+        assertThat(getField(DatasetFieldConstant.distributionDate, citationBlock)).isEqualTo(
+                createPrimitive(DatasetFieldConstant.distributionDate, "1990"));
+
+        assertThat(getField(DatasetFieldConstant.series, citationBlock)).isEqualTo(
+                createCompound(DatasetFieldConstant.series,
+                                       createPrimitive(DatasetFieldConstant.seriesName, "series name"),
+                                       createPrimitive(DatasetFieldConstant.seriesInformation, "series info")));
+
+        MetadataBlockWithFieldsDTO socialBlock = datasetVersionDto.getMetadataBlocks().get("socialscience");
+
+        assertThat(getField(DatasetFieldConstant.datasetLevelErrorNotes, socialBlock)).isEqualTo(
+                createPrimitive(DatasetFieldConstant.datasetLevelErrorNotes, "notes on errors in dataset level"));
 
     }
 
@@ -242,106 +243,106 @@ public class ImportDDIServiceBeanTest {
 
         // then
         DatasetVersionDTO datasetVersionDto = datasetDto.getDatasetVersion();
-        MetadataBlockDTO citationBlock = datasetVersionDto.getMetadataBlocks().get("citation");
-        MetadataBlockDTO geospatialBlock = datasetVersionDto.getMetadataBlocks().get("geospatial");
-        MetadataBlockDTO socialBlock = datasetVersionDto.getMetadataBlocks().get("socialscience");
+        MetadataBlockWithFieldsDTO citationBlock = datasetVersionDto.getMetadataBlocks().get("citation");
+        MetadataBlockWithFieldsDTO geospatialBlock = datasetVersionDto.getMetadataBlocks().get("geospatial");
+        MetadataBlockWithFieldsDTO socialBlock = datasetVersionDto.getMetadataBlocks().get("socialscience");
 
-        assertThat(citationBlock.getField(DatasetFieldConstant.keyword)).isEqualTo(
-                createMultipleCompoundFieldDTO(DatasetFieldConstant.keyword,
+        assertThat(getField(DatasetFieldConstant.keyword, citationBlock)).isEqualTo(
+                createMultipleCompound(DatasetFieldConstant.keyword,
                                                ImmutableList.of(
                                                        ImmutableSet.of(
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.keywordValue, "Astronomy and Astrophysics")),
+                                                               createPrimitive(DatasetFieldConstant.keywordValue, "Astronomy and Astrophysics")),
                                                        ImmutableSet.of(
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.keywordValue, "Chemistry")),
+                                                               createPrimitive(DatasetFieldConstant.keywordValue, "Chemistry")),
                                                        ImmutableSet.of(
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.keywordValue, "keyword 1"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.keywordVocab, "LCSH"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.keywordVocabURI, "http://lcsg.com")),
+                                                               createPrimitive(DatasetFieldConstant.keywordValue, "keyword 1"),
+                                                               createPrimitive(DatasetFieldConstant.keywordVocab, "LCSH"),
+                                                               createPrimitive(DatasetFieldConstant.keywordVocabURI, "http://lcsg.com")),
                                                        ImmutableSet.of(
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.keywordValue, "keyword 2"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.keywordVocab, "MeSH"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.keywordVocabURI, "http://mesh.com"))
+                                                               createPrimitive(DatasetFieldConstant.keywordValue, "keyword 2"),
+                                                               createPrimitive(DatasetFieldConstant.keywordVocab, "MeSH"),
+                                                               createPrimitive(DatasetFieldConstant.keywordVocabURI, "http://mesh.com"))
                                                )));
 
-        assertThat(citationBlock.getField(DatasetFieldConstant.topicClassification)).isEqualTo(
-                createMultipleCompoundFieldDTO(DatasetFieldConstant.topicClassification,
+        assertThat(getField(DatasetFieldConstant.topicClassification, citationBlock)).isEqualTo(
+                createMultipleCompound(DatasetFieldConstant.topicClassification,
                                                ImmutableList.of(
                                                        ImmutableSet.of(
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.topicClassValue, "topic 1"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.topicClassVocab, "dict"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.topicClassVocabURI, "http://dict.com")),
+                                                               createPrimitive(DatasetFieldConstant.topicClassValue, "topic 1"),
+                                                               createPrimitive(DatasetFieldConstant.topicClassVocab, "dict"),
+                                                               createPrimitive(DatasetFieldConstant.topicClassVocabURI, "http://dict.com")),
                                                        ImmutableSet.of(
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.topicClassValue, "topic 2"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.topicClassVocab, "dict 2"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.topicClassVocabURI, "http://dict2.com"))
+                                                               createPrimitive(DatasetFieldConstant.topicClassValue, "topic 2"),
+                                                               createPrimitive(DatasetFieldConstant.topicClassVocab, "dict 2"),
+                                                               createPrimitive(DatasetFieldConstant.topicClassVocabURI, "http://dict2.com"))
                                                )));
 
-        assertThat(citationBlock.getField(DatasetFieldConstant.description)).isEqualTo(
-                createMultipleCompoundFieldDTO(DatasetFieldConstant.description,
+        assertThat(getField(DatasetFieldConstant.description, citationBlock)).isEqualTo(
+                createMultipleCompound(DatasetFieldConstant.description,
                                                ImmutableList.of(
                                                        ImmutableSet.of(
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.descriptionText, "<p>some description</p>"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.descriptionDate, "1999")),
+                                                               createPrimitive(DatasetFieldConstant.descriptionText, "<p>some description</p>"),
+                                                               createPrimitive(DatasetFieldConstant.descriptionDate, "1999")),
                                                        ImmutableSet.of(
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.descriptionText, "<p>second description</p>"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.descriptionDate, "2000-08"))
+                                                               createPrimitive(DatasetFieldConstant.descriptionText, "<p>second description</p>"),
+                                                               createPrimitive(DatasetFieldConstant.descriptionDate, "2000-08"))
                                                )));
 
-        assertThat(citationBlock.getField(DatasetFieldConstant.timePeriodCovered)).isEqualTo(
-                createMultipleCompoundFieldDTO(DatasetFieldConstant.timePeriodCovered,
+        assertThat(getField(DatasetFieldConstant.timePeriodCovered, citationBlock)).isEqualTo(
+                createMultipleCompound(DatasetFieldConstant.timePeriodCovered,
                                                ImmutableList.of(
                                                        ImmutableSet.of(
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.timePeriodCoveredStart, "1001"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.timePeriodCoveredEnd, "1002")),
+                                                               createPrimitive(DatasetFieldConstant.timePeriodCoveredStart, "1001"),
+                                                               createPrimitive(DatasetFieldConstant.timePeriodCoveredEnd, "1002")),
                                                        ImmutableSet.of(
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.timePeriodCoveredStart, "1004"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.timePeriodCoveredEnd, "1005"))
+                                                               createPrimitive(DatasetFieldConstant.timePeriodCoveredStart, "1004"),
+                                                               createPrimitive(DatasetFieldConstant.timePeriodCoveredEnd, "1005"))
                                                )));
 
-        assertThat(citationBlock.getField(DatasetFieldConstant.dateOfCollection)).isEqualTo(
-                createMultipleCompoundFieldDTO(DatasetFieldConstant.dateOfCollection,
+        assertThat(getField(DatasetFieldConstant.dateOfCollection, citationBlock)).isEqualTo(
+                createMultipleCompound(DatasetFieldConstant.dateOfCollection,
                                                ImmutableList.of(
                                                        ImmutableSet.of(
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.dateOfCollectionStart, "1100"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.dateOfCollectionEnd, "1200")),
+                                                               createPrimitive(DatasetFieldConstant.dateOfCollectionStart, "1100"),
+                                                               createPrimitive(DatasetFieldConstant.dateOfCollectionEnd, "1200")),
                                                        ImmutableSet.of(
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.dateOfCollectionStart, "1205"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.dateOfCollectionEnd, "1210"))
+                                                               createPrimitive(DatasetFieldConstant.dateOfCollectionStart, "1205"),
+                                                               createPrimitive(DatasetFieldConstant.dateOfCollectionEnd, "1210"))
                                                )));
 
 
-        assertThat(geospatialBlock.getField(DatasetFieldConstant.geographicCoverage)).isEqualTo(
-                createMultipleCompoundFieldDTO(DatasetFieldConstant.geographicCoverage,
+        assertThat(getField(DatasetFieldConstant.geographicCoverage, geospatialBlock)).isEqualTo(
+                createMultipleCompound(DatasetFieldConstant.geographicCoverage,
                                                ImmutableList.of(
                                                        ImmutableSet.of(
-                                                               createVocabFieldDTO(DatasetFieldConstant.country, "Algeria")),
+                                                               createVocabulary(DatasetFieldConstant.country, "Algeria")),
                                                        ImmutableSet.of(
-                                                               createVocabFieldDTO(DatasetFieldConstant.country, "United States"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.otherGeographicCoverage,
+                                                               createVocabulary(DatasetFieldConstant.country, "United States"),
+                                                               createPrimitive(DatasetFieldConstant.otherGeographicCoverage,
                                                                                        "City in Algeria; State in Algeria; Other notes for geo coverage Algeria; Boston; Massachusetts; Other notes for geo coverage USA"))
                                                )));
 
-        assertThat(geospatialBlock.getField(DatasetFieldConstant.geographicUnit)).isEqualTo(
-                createMultiplePrimitiveFieldDTO(DatasetFieldConstant.geographicUnit, ImmutableList.of("geo unit", "geo unit 2")));
+        assertThat(getField(DatasetFieldConstant.geographicUnit, geospatialBlock)).isEqualTo(
+                createMultiplePrimitive(DatasetFieldConstant.geographicUnit, ImmutableList.of("geo unit", "geo unit 2")));
 
-        assertThat(geospatialBlock.getField(DatasetFieldConstant.geographicBoundingBox)).isEqualTo(
-                createMultipleCompoundFieldDTO(DatasetFieldConstant.geographicBoundingBox,
+        assertThat(getField(DatasetFieldConstant.geographicBoundingBox, geospatialBlock)).isEqualTo(
+                createMultipleCompound(DatasetFieldConstant.geographicBoundingBox,
                                                ImmutableList.of(
                                                        ImmutableSet.of(
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.northLatitude, "12"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.southLatitude, "-12"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.eastLongitude, "98"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.westLongitude, "90"))
+                                                               createPrimitive(DatasetFieldConstant.northLatitude, "12"),
+                                                               createPrimitive(DatasetFieldConstant.southLatitude, "-12"),
+                                                               createPrimitive(DatasetFieldConstant.eastLongitude, "98"),
+                                                               createPrimitive(DatasetFieldConstant.westLongitude, "90"))
                                                )));
 
-        assertThat(socialBlock.getField(DatasetFieldConstant.unitOfAnalysis)).isEqualTo(
-                createMultiplePrimitiveFieldDTO(DatasetFieldConstant.unitOfAnalysis, ImmutableList.of("Family", "EventOrProcess")));
+        assertThat(getField(DatasetFieldConstant.unitOfAnalysis, socialBlock)).isEqualTo(
+                createMultiplePrimitive(DatasetFieldConstant.unitOfAnalysis, ImmutableList.of("Family", "EventOrProcess")));
 
-        assertThat(socialBlock.getField(DatasetFieldConstant.universe)).isEqualTo(
-                createMultiplePrimitiveFieldDTO(DatasetFieldConstant.universe, ImmutableList.of("social universe 1", "social universe 2")));
+        assertThat(getField(DatasetFieldConstant.universe, socialBlock)).isEqualTo(
+                createMultiplePrimitive(DatasetFieldConstant.universe, ImmutableList.of("social universe 1", "social universe 2")));
 
-        assertThat(citationBlock.getField(DatasetFieldConstant.kindOfData)).isEqualTo(
-                createMultiplePrimitiveFieldDTO(DatasetFieldConstant.kindOfData, ImmutableList.of("Numeric", "Geospatial")));
+        assertThat(getField(DatasetFieldConstant.kindOfData, citationBlock)).isEqualTo(
+                createMultiplePrimitive(DatasetFieldConstant.kindOfData, ImmutableList.of("Numeric", "Geospatial")));
     }
 
     @Test
@@ -354,78 +355,78 @@ public class ImportDDIServiceBeanTest {
 
         // then
         DatasetVersionDTO datasetVersionDto = datasetDto.getDatasetVersion();
-        MetadataBlockDTO citationBlock = datasetVersionDto.getMetadataBlocks().get("citation");
-        MetadataBlockDTO socialBlock = datasetVersionDto.getMetadataBlocks().get("socialscience");
+        MetadataBlockWithFieldsDTO citationBlock = datasetVersionDto.getMetadataBlocks().get("citation");
+        MetadataBlockWithFieldsDTO socialBlock = datasetVersionDto.getMetadataBlocks().get("socialscience");
 
-        assertThat(socialBlock.getField(DatasetFieldConstant.timeMethod)).isEqualTo(
-                createPrimitiveFieldDTO(DatasetFieldConstant.timeMethod, "Longitudinal, Longitudinal.TrendRepeatedCrossSection, TimeSeries"));
+        assertThat(getField(DatasetFieldConstant.timeMethod, socialBlock)).isEqualTo(
+                createPrimitive(DatasetFieldConstant.timeMethod, "Longitudinal, Longitudinal.TrendRepeatedCrossSection, TimeSeries"));
 
-        assertThat(socialBlock.getField(DatasetFieldConstant.dataCollector)).isEqualTo(
-                createPrimitiveFieldDTO(DatasetFieldConstant.dataCollector, "Jam jest podmiot zbierający dane"));
+        assertThat(getField(DatasetFieldConstant.dataCollector, socialBlock)).isEqualTo(
+                createPrimitive(DatasetFieldConstant.dataCollector, "Jam jest podmiot zbierający dane"));
 
-        assertThat(socialBlock.getField(DatasetFieldConstant.collectorTraining)).isEqualTo(
-                createPrimitiveFieldDTO(DatasetFieldConstant.collectorTraining, "szkolenie podmiotu"));
+        assertThat(getField(DatasetFieldConstant.collectorTraining, socialBlock)).isEqualTo(
+                createPrimitive(DatasetFieldConstant.collectorTraining, "szkolenie podmiotu"));
 
-        assertThat(socialBlock.getField(DatasetFieldConstant.frequencyOfDataCollection)).isEqualTo(
-                createPrimitiveFieldDTO(DatasetFieldConstant.frequencyOfDataCollection, "1 sekunda"));
+        assertThat(getField(DatasetFieldConstant.frequencyOfDataCollection, socialBlock)).isEqualTo(
+                createPrimitive(DatasetFieldConstant.frequencyOfDataCollection, "1 sekunda"));
 
-        assertThat(socialBlock.getField(DatasetFieldConstant.samplingProcedure)).isEqualTo(
-                createPrimitiveFieldDTO(DatasetFieldConstant.samplingProcedure, "Probability, Probability.SystematicRandom"));
+        assertThat(getField(DatasetFieldConstant.samplingProcedure, socialBlock)).isEqualTo(
+                createPrimitive(DatasetFieldConstant.samplingProcedure, "Probability, Probability.SystematicRandom"));
 
-        assertThat(socialBlock.getField(DatasetFieldConstant.targetSampleSize)).isEqualTo(
-                createCompoundFieldDTO(DatasetFieldConstant.targetSampleSize,
-                                       createPrimitiveFieldDTO(DatasetFieldConstant.targetSampleActualSize, "100")));
+        assertThat(getField(DatasetFieldConstant.targetSampleSize, socialBlock)).isEqualTo(
+                createCompound(DatasetFieldConstant.targetSampleSize,
+                                       createPrimitive(DatasetFieldConstant.targetSampleActualSize, "100")));
 
-        assertThat(socialBlock.getField(DatasetFieldConstant.deviationsFromSampleDesign)).isEqualTo(
-                createPrimitiveFieldDTO(DatasetFieldConstant.deviationsFromSampleDesign, "odchylenie"));
+        assertThat(getField(DatasetFieldConstant.deviationsFromSampleDesign, socialBlock)).isEqualTo(
+                createPrimitive(DatasetFieldConstant.deviationsFromSampleDesign, "odchylenie"));
 
-        assertThat(socialBlock.getField(DatasetFieldConstant.collectionMode)).isEqualTo(
-                createPrimitiveFieldDTO(DatasetFieldConstant.collectionMode, "Interview.FaceToFace, Interview.FaceToFace.PAPI, Interview.WebBased"));
+        assertThat(getField(DatasetFieldConstant.collectionMode, socialBlock)).isEqualTo(
+                createPrimitive(DatasetFieldConstant.collectionMode, "Interview.FaceToFace, Interview.FaceToFace.PAPI, Interview.WebBased"));
 
-        assertThat(socialBlock.getField(DatasetFieldConstant.researchInstrument)).isEqualTo(
-                createPrimitiveFieldDTO(DatasetFieldConstant.researchInstrument, "Questionnaire, Questionnaire.Unstructured"));
+        assertThat(getField(DatasetFieldConstant.researchInstrument, socialBlock)).isEqualTo(
+                createPrimitive(DatasetFieldConstant.researchInstrument, "Questionnaire, Questionnaire.Unstructured"));
 
-        assertThat(citationBlock.getField(DatasetFieldConstant.dataSources)).isEqualTo(
-                createMultiplePrimitiveFieldDTO(DatasetFieldConstant.dataSources, ImmutableList.of("data source 1", "data source 2")));
+        assertThat(getField(DatasetFieldConstant.dataSources, citationBlock)).isEqualTo(
+                createMultiplePrimitive(DatasetFieldConstant.dataSources, ImmutableList.of("data source 1", "data source 2")));
 
-        assertThat(citationBlock.getField(DatasetFieldConstant.originOfSources)).isEqualTo(
-                createPrimitiveFieldDTO(DatasetFieldConstant.originOfSources, "sources origin"));
+        assertThat(getField(DatasetFieldConstant.originOfSources, citationBlock)).isEqualTo(
+                createPrimitive(DatasetFieldConstant.originOfSources, "sources origin"));
 
-        assertThat(citationBlock.getField(DatasetFieldConstant.characteristicOfSources)).isEqualTo(
-                createPrimitiveFieldDTO(DatasetFieldConstant.characteristicOfSources, "sources characteristics text"));
+        assertThat(getField(DatasetFieldConstant.characteristicOfSources, citationBlock)).isEqualTo(
+                createPrimitive(DatasetFieldConstant.characteristicOfSources, "sources characteristics text"));
 
-        assertThat(socialBlock.getField(DatasetFieldConstant.dataCollectionSituation)).isEqualTo(
-                createPrimitiveFieldDTO(DatasetFieldConstant.dataCollectionSituation, "collecting data situation characteristics"));
+        assertThat(getField(DatasetFieldConstant.dataCollectionSituation, socialBlock)).isEqualTo(
+                createPrimitive(DatasetFieldConstant.dataCollectionSituation, "collecting data situation characteristics"));
 
-        assertThat(socialBlock.getField(DatasetFieldConstant.actionsToMinimizeLoss)).isEqualTo(
-                createPrimitiveFieldDTO(DatasetFieldConstant.actionsToMinimizeLoss, "actions to minimize loss"));
+        assertThat(getField(DatasetFieldConstant.actionsToMinimizeLoss, socialBlock)).isEqualTo(
+                createPrimitive(DatasetFieldConstant.actionsToMinimizeLoss, "actions to minimize loss"));
 
-        assertThat(socialBlock.getField(DatasetFieldConstant.controlOperations)).isEqualTo(
-                createPrimitiveFieldDTO(DatasetFieldConstant.controlOperations, "control operation text"));
+        assertThat(getField(DatasetFieldConstant.controlOperations, socialBlock)).isEqualTo(
+                createPrimitive(DatasetFieldConstant.controlOperations, "control operation text"));
 
-        assertThat(socialBlock.getField(DatasetFieldConstant.weighting)).isEqualTo(
-                createPrimitiveFieldDTO(DatasetFieldConstant.weighting, "PostStratification, MixedPostStratificationDesign"));
+        assertThat(getField(DatasetFieldConstant.weighting, socialBlock)).isEqualTo(
+                createPrimitive(DatasetFieldConstant.weighting, "PostStratification, MixedPostStratificationDesign"));
 
-        assertThat(socialBlock.getField(DatasetFieldConstant.cleaningOperations)).isEqualTo(
-                createPrimitiveFieldDTO(DatasetFieldConstant.cleaningOperations, "operations cleaning text"));
+        assertThat(getField(DatasetFieldConstant.cleaningOperations, socialBlock)).isEqualTo(
+                createPrimitive(DatasetFieldConstant.cleaningOperations, "operations cleaning text"));
 
-        assertThat(socialBlock.getField(DatasetFieldConstant.socialScienceNotes)).isEqualTo(
-                createCompoundFieldDTO(DatasetFieldConstant.socialScienceNotes,
-                                       createPrimitiveFieldDTO(DatasetFieldConstant.socialScienceNotesSubject, "notes subject (social)"),
-                                       createPrimitiveFieldDTO(DatasetFieldConstant.socialScienceNotesType, "type of notes (social)"),
-                                       createPrimitiveFieldDTO(DatasetFieldConstant.socialScienceNotesText, "notes text (social)")));
+        assertThat(getField(DatasetFieldConstant.socialScienceNotes, socialBlock)).isEqualTo(
+                createCompound(DatasetFieldConstant.socialScienceNotes,
+                                       createPrimitive(DatasetFieldConstant.socialScienceNotesSubject, "notes subject (social)"),
+                                       createPrimitive(DatasetFieldConstant.socialScienceNotesType, "type of notes (social)"),
+                                       createPrimitive(DatasetFieldConstant.socialScienceNotesText, "notes text (social)")));
 
-        assertThat(socialBlock.getField(DatasetFieldConstant.responseRate)).isEqualTo(
-                createPrimitiveFieldDTO(DatasetFieldConstant.responseRate, "99.9"));
+        assertThat(getField(DatasetFieldConstant.responseRate, socialBlock)).isEqualTo(
+                createPrimitive(DatasetFieldConstant.responseRate, "99.9"));
 
-        assertThat(socialBlock.getField(DatasetFieldConstant.samplingErrorEstimates)).isEqualTo(
-                createPrimitiveFieldDTO(DatasetFieldConstant.samplingErrorEstimates, "11"));
+        assertThat(getField(DatasetFieldConstant.samplingErrorEstimates, socialBlock)).isEqualTo(
+                createPrimitive(DatasetFieldConstant.samplingErrorEstimates, "11"));
 
-        assertThat(socialBlock.getField(DatasetFieldConstant.otherDataAppraisal)).isEqualTo(
-                createPrimitiveFieldDTO(DatasetFieldConstant.otherDataAppraisal, "appraisal method text"));
+        assertThat(getField(DatasetFieldConstant.otherDataAppraisal, socialBlock)).isEqualTo(
+                createPrimitive(DatasetFieldConstant.otherDataAppraisal, "appraisal method text"));
 
-        assertThat(citationBlock.getField(DatasetFieldConstant.notesText)).isEqualTo(
-                createPrimitiveFieldDTO(DatasetFieldConstant.notesText, "Notes: notes noted;"));
+        assertThat(getField(DatasetFieldConstant.notesText, citationBlock)).isEqualTo(
+                createPrimitive(DatasetFieldConstant.notesText, "Notes: notes noted;"));
     }
 
     @Test
@@ -438,25 +439,25 @@ public class ImportDDIServiceBeanTest {
 
         // then
         DatasetVersionDTO datasetVersionDto = datasetDto.getDatasetVersion();
-        MetadataBlockDTO citationBlock = datasetVersionDto.getMetadataBlocks().get("citation");
+        MetadataBlockWithFieldsDTO citationBlock = datasetVersionDto.getMetadataBlocks().get("citation");
 
-        assertThat(citationBlock.getField(DatasetFieldConstant.publication)).isEqualTo(
-                createMultipleCompoundFieldDTO(DatasetFieldConstant.publication,
+        assertThat(getField(DatasetFieldConstant.publication, citationBlock)).isEqualTo(
+                createMultipleCompound(DatasetFieldConstant.publication,
                                                ImmutableList.of(
                                                        ImmutableSet.of(
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.publicationCitation, "Related publication citation"),
-                                                               createVocabFieldDTO(DatasetFieldConstant.publicationIDType, "doi"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.publicationIDNumber, "10.1010/abc"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.publicationURL, "http://doi.org/10.1010/abc")),
+                                                               createPrimitive(DatasetFieldConstant.publicationCitation, "Related publication citation"),
+                                                               createVocabulary(DatasetFieldConstant.publicationIDType, "doi"),
+                                                               createPrimitive(DatasetFieldConstant.publicationIDNumber, "10.1010/abc"),
+                                                               createPrimitive(DatasetFieldConstant.publicationURL, "http://doi.org/10.1010/abc")),
                                                        ImmutableSet.of(
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.publicationCitation, "Second related citation"),
-                                                               createVocabFieldDTO(DatasetFieldConstant.publicationIDType, "arXiv"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.publicationIDNumber, "123903829"),
-                                                               createPrimitiveFieldDTO(DatasetFieldConstant.publicationURL, "http://relatedarxiv.com"))
+                                                               createPrimitive(DatasetFieldConstant.publicationCitation, "Second related citation"),
+                                                               createVocabulary(DatasetFieldConstant.publicationIDType, "arXiv"),
+                                                               createPrimitive(DatasetFieldConstant.publicationIDNumber, "123903829"),
+                                                               createPrimitive(DatasetFieldConstant.publicationURL, "http://relatedarxiv.com"))
                                                )));
 
-        assertThat(citationBlock.getField(DatasetFieldConstant.otherReferences)).isEqualTo(
-                createMultiplePrimitiveFieldDTO(DatasetFieldConstant.otherReferences, ImmutableList.of("references to others")));
+        assertThat(getField(DatasetFieldConstant.otherReferences, citationBlock)).isEqualTo(
+                createMultiplePrimitive(DatasetFieldConstant.otherReferences, ImmutableList.of("references to others")));
 
     }
 
@@ -486,8 +487,8 @@ public class ImportDDIServiceBeanTest {
 
         assertThat(datasetVersionDto.getFiles()).hasSize(2)
                                                 .extracting(
-                                                        FileDTO::getLabel,
-                                                        FileDTO::getDescription,
+                                                        FileMetadataDTO::getLabel,
+                                                        FileMetadataDTO::getDescription,
                                                         f -> f.getDataFile().getContentType(),
                                                         f -> f.getDataFile().getStorageIdentifier())
                                                 .contains(
@@ -520,8 +521,8 @@ public class ImportDDIServiceBeanTest {
 
         assertThat(datasetVersionDto.getFiles()).hasSize(2)
                                                 .extracting(
-                                                        FileDTO::getLabel,
-                                                        FileDTO::getDescription,
+                                                        FileMetadataDTO::getLabel,
+                                                        FileMetadataDTO::getDescription,
                                                         f -> f.getDataFile().getContentType(),
                                                         f -> f.getDataFile().getStorageIdentifier())
                                                 .contains(
@@ -537,12 +538,12 @@ public class ImportDDIServiceBeanTest {
         DatasetDTO datasetDto = importDdiService.doImport(ImportType.HARVEST, ddiXml);
         // then
         DatasetVersionDTO datasetVersionDto = datasetDto.getDatasetVersion();
-        MetadataBlockDTO citationBlock = datasetVersionDto.getMetadataBlocks().get("citation");
+        MetadataBlockWithFieldsDTO citationBlock = datasetVersionDto.getMetadataBlocks().get("citation");
 
-        assertThat(citationBlock.getField(DatasetFieldConstant.otherId)).isEqualTo(
-                createMultipleCompoundFieldDTO(DatasetFieldConstant.otherId,
+        assertThat(getField(DatasetFieldConstant.otherId, citationBlock)).isEqualTo(
+                createMultipleCompound(DatasetFieldConstant.otherId,
                                                ImmutableList.of(
-                                                       ImmutableSet.of(createPrimitiveFieldDTO(DatasetFieldConstant.otherIdValue, "someId")))));
+                                                       ImmutableSet.of(createPrimitive(DatasetFieldConstant.otherIdValue, "someId")))));
     }
 
     @Test
@@ -566,7 +567,7 @@ public class ImportDDIServiceBeanTest {
         assertThat(datasetVersionDto.getFiles()).hasSize(2)
                                                 .allSatisfy(file -> {
                                                     assertThat(file)
-                                                            .extracting(FileDTO::getTermsOfUseType, FileDTO::getLicenseName)
+                                                            .extracting(FileMetadataDTO::getTermsOfUseType, FileMetadataDTO::getLicenseName)
                                                             .containsExactly(TermsOfUseType.LICENSE_BASED.toString(), License.CCO_LICENSE_NAME);
                                                 });
 
@@ -594,7 +595,7 @@ public class ImportDDIServiceBeanTest {
         assertThat(datasetVersionDto.getFiles()).hasSize(2)
                                                 .allSatisfy(file -> {
                                                     assertThat(file)
-                                                            .extracting(FileDTO::getTermsOfUseType, FileDTO::getLicenseName)
+                                                            .extracting(FileMetadataDTO::getTermsOfUseType, FileMetadataDTO::getLicenseName)
                                                             .containsExactly(TermsOfUseType.LICENSE_BASED.toString(), "Text");
                                                 });
 
@@ -617,7 +618,7 @@ public class ImportDDIServiceBeanTest {
         assertThat(datasetVersionDto.getFiles()).hasSize(2)
                                                 .allSatisfy(file -> {
                                                     assertThat(file)
-                                                            .extracting(FileDTO::getTermsOfUseType)
+                                                            .extracting(FileMetadataDTO::getTermsOfUseType)
                                                             .isEqualTo(TermsOfUseType.TERMS_UNKNOWN.toString());
                                                 });
 
@@ -634,22 +635,22 @@ public class ImportDDIServiceBeanTest {
         DatasetDTO datasetDTO = importDdiService.doImport(ImportType.HARVEST, ddiXml);
 
         //then
-        assertThat(extractJsonValues(datasetDTO, DatasetFieldConstant.relatedMaterial, DatasetFieldConstant.relatedMaterialCitation))
+        assertThat(extractValues(datasetDTO, DatasetFieldConstant.relatedMaterial, DatasetFieldConstant.relatedMaterialCitation))
                 .isNotNull();
-        assertThat(extractJsonValues(datasetDTO, DatasetFieldConstant.relatedMaterial, DatasetFieldConstant.relatedMaterialIDType))
+        assertThat(extractValues(datasetDTO, DatasetFieldConstant.relatedMaterial, DatasetFieldConstant.relatedMaterialIDType))
                 .isNotNull();
-        assertThat(extractJsonValues(datasetDTO, DatasetFieldConstant.relatedMaterial, DatasetFieldConstant.relatedMaterialIDNumber))
+        assertThat(extractValues(datasetDTO, DatasetFieldConstant.relatedMaterial, DatasetFieldConstant.relatedMaterialIDNumber))
                 .isNotNull();
-        assertThat(extractJsonValues(datasetDTO, DatasetFieldConstant.relatedMaterial, DatasetFieldConstant.relatedMaterialURL))
+        assertThat(extractValues(datasetDTO, DatasetFieldConstant.relatedMaterial, DatasetFieldConstant.relatedMaterialURL))
                 .isNotNull();
 
-        assertThat(extractJsonValues(datasetDTO, DatasetFieldConstant.relatedDataset, DatasetFieldConstant.relatedDatasetCitation))
+        assertThat(extractValues(datasetDTO, DatasetFieldConstant.relatedDataset, DatasetFieldConstant.relatedDatasetCitation))
                 .isNotNull();
-        assertThat(extractJsonValues(datasetDTO, DatasetFieldConstant.relatedDataset, DatasetFieldConstant.relatedDatasetIDType))
+        assertThat(extractValues(datasetDTO, DatasetFieldConstant.relatedDataset, DatasetFieldConstant.relatedDatasetIDType))
                 .isNotNull();
-        assertThat(extractJsonValues(datasetDTO, DatasetFieldConstant.relatedDataset, DatasetFieldConstant.relatedDatasetIDNumber))
+        assertThat(extractValues(datasetDTO, DatasetFieldConstant.relatedDataset, DatasetFieldConstant.relatedDatasetIDNumber))
                 .isNotNull();
-        assertThat(extractJsonValues(datasetDTO, DatasetFieldConstant.relatedDataset, DatasetFieldConstant.relatedDatasetURL))
+        assertThat(extractValues(datasetDTO, DatasetFieldConstant.relatedDataset, DatasetFieldConstant.relatedDatasetURL))
                 .isNotNull();
 
     }
@@ -657,44 +658,42 @@ public class ImportDDIServiceBeanTest {
     @Test
     void isRelatedMaterial_And_Dataset_ParsedCorrectly_for_legacyDDI() throws IOException, XMLStreamException, ImportException {
         //given
-        final String ddiXml = IOUtils.toString(Objects.requireNonNull(HarvestedJsonParserIT.class
+        String ddiXml = IOUtils.toString(Objects.requireNonNull(HarvestedJsonParserIT.class
                                                                               .getClassLoader()
                                                                               .getResource("xml/imports/legacyDdi.xml")), StandardCharsets.UTF_8);
-
         //when
         DatasetDTO datasetDTO = importDdiService.doImport(ImportType.HARVEST, ddiXml);
-        final JsonArray relatedMaterials = datasetDTO
-                .getDatasetVersion()
-                .getMetadataBlocks()
-                .get("citation")
-                .getField(DatasetFieldConstant.relatedMaterial)
-                .getValue()
-                .getAsJsonArray();
+        List<Map<String, DatasetFieldDTO>> relatedMaterials = (List<Map<String, DatasetFieldDTO>>)
+                getField(DatasetFieldConstant.relatedMaterial, datasetDTO.getDatasetVersion().getMetadataBlocks().get("citation"))
+                .getValue();
 
-        final JsonArray relatedDatasets = datasetDTO
-                .getDatasetVersion()
-                .getMetadataBlocks()
-                .get("citation")
-                .getField(DatasetFieldConstant.relatedDataset)
-                .getValue()
-                .getAsJsonArray();
+        List<Map<String, DatasetFieldDTO>> relatedDatasets = (List<Map<String, DatasetFieldDTO>>)
+                getField(DatasetFieldConstant.relatedDataset, datasetDTO.getDatasetVersion().getMetadataBlocks().get("citation"))
+                .getValue();
 
         //then
         assertThat(relatedMaterials).hasSize(2)
-                                       .extracting(JsonElement::getAsJsonObject)
-                                       .extracting(jsonObject -> jsonObject.get(DatasetFieldConstant.relatedMaterialCitation))
+                                       .extracting(e -> e.get(DatasetFieldConstant.relatedMaterialCitation))
                                        .isNotNull();
 
         assertThat(relatedDatasets).hasSize(2)
-                                       .extracting(JsonElement::getAsJsonObject)
-                                       .extracting(jsonObject -> jsonObject.get(DatasetFieldConstant.relatedMaterialCitation))
+                                       .extracting(e -> e.get(DatasetFieldConstant.relatedMaterialCitation))
                                        .isNotNull();
 
     }
 
-    private JsonElement extractJsonValues(DatasetDTO datasetDTO, String citationParentField, String childField) {
-        return datasetDTO.getDatasetVersion().getMetadataBlocks().get("citation").getField(citationParentField)
-                         .getValue().getAsJsonArray().get(0).getAsJsonObject().get(childField);
+    private DatasetFieldDTO getField(String name, MetadataBlockWithFieldsDTO metadataBlock) {
+        return metadataBlock.getFields().stream()
+                .filter(f -> name.equals(f.getTypeName()))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private DatasetFieldDTO extractValues(DatasetDTO datasetDTO, String citationParentField, String childField) {
+        return ((List<Map<String, DatasetFieldDTO>>) getField(citationParentField,
+                datasetDTO.getDatasetVersion().getMetadataBlocks().get("citation")).getValue())
+                .get(0)
+                .get(childField);
     }
 
 }

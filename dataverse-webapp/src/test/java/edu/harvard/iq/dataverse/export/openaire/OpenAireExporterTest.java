@@ -2,14 +2,14 @@ package edu.harvard.iq.dataverse.export.openaire;
 
 import edu.harvard.iq.dataverse.export.OpenAireExporter;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.extension.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 class OpenAireExporterTest {
@@ -18,7 +18,6 @@ class OpenAireExporterTest {
     private OpenAireExporter instance;
 
     @Mock private SettingsServiceBean settingsService;
-    @Mock private JsonPrinter jsonPrinter;
 
     // -------------------- TESTS --------------------
 

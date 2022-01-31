@@ -1,21 +1,18 @@
 package edu.harvard.iq.dataverse.export.openaire;
 
-import com.google.gson.Gson;
 import com.rometools.utils.Lists;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
-import edu.harvard.iq.dataverse.api.dto.FieldDTO;
-import edu.harvard.iq.dataverse.api.dto.FileDTO;
-import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
+import edu.harvard.iq.dataverse.api.dto.FileMetadataDTO;
+import edu.harvard.iq.dataverse.api.dto.MetadataBlockWithFieldsDTO;
+import edu.harvard.iq.dataverse.api.dto.DatasetFieldDTO;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.common.MarkupChecker;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
-import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.json.JsonObject;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.xml.stream.XMLOutputFactory;
@@ -48,15 +45,7 @@ public class OpenAireExportUtil {
     public static String RESOURCE_NAMESPACE = "http://datacite.org/schema/kernel-3";
     public static String RESOURCE_SCHEMA_LOCATION = "http://schema.datacite.org/meta/kernel-3.1/metadata.xsd";
 
-    public static void datasetJson2openaire(JsonObject datasetDtoAsJson, OutputStream outputStream) throws XMLStreamException {
-        logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson.toString()));
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(datasetDtoAsJson.toString(), DatasetDTO.class);
-
-        dto2openaire(datasetDto, outputStream);
-    }
-
-    private static void dto2openaire(DatasetDTO datasetDto, OutputStream outputStream) throws XMLStreamException {
+    public static void datasetJson2openaire(DatasetDTO datasetDto, OutputStream outputStream) throws XMLStreamException {
         XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
 
         xmlw.writeStartElement("resource"); // <resource>
@@ -160,13 +149,13 @@ public class OpenAireExportUtil {
         String language = null;
 
         // set the default language (using language attribute)
-        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+        for (Map.Entry<String, MetadataBlockWithFieldsDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
-            MetadataBlockDTO value = entry.getValue();
+            MetadataBlockWithFieldsDTO value = entry.getValue();
             if ("citation".equals(key)) {
-                for (FieldDTO fieldDTO : value.getFields()) {
+                for (DatasetFieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.language.equals(fieldDTO.getTypeName())) {
-                        for (String language_found : fieldDTO.getMultipleVocab()) {
+                        for (String language_found : fieldDTO.getMultipleVocabulary()) {
                             if (StringUtils.isNotBlank(language_found)) {
                                 language = language_found;
                                 break;
@@ -220,20 +209,20 @@ public class OpenAireExportUtil {
         // write all creators
         boolean creator_check = false;
 
-        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+        for (Map.Entry<String, MetadataBlockWithFieldsDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
-            MetadataBlockDTO value = entry.getValue();
+            MetadataBlockWithFieldsDTO value = entry.getValue();
             if ("citation".equals(key)) {
-                for (FieldDTO fieldDTO : value.getFields()) {
+                for (DatasetFieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.author.equals(fieldDTO.getTypeName())) {
-                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<DatasetFieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String creatorName = null;
                             String affiliation = null;
                             String nameIdentifier = null;
                             String nameIdentifierScheme = null;
 
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
-                                FieldDTO next = iterator.next();
+                            for (Iterator<DatasetFieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
+                                DatasetFieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.authorName.equals(next.getTypeName())) {
                                     creatorName = next.getSinglePrimitive();
                                 }
@@ -401,13 +390,13 @@ public class OpenAireExportUtil {
         // subjects -> subject with subjectScheme and schemeURI attributes
         boolean subject_check = false;
 
-        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+        for (Map.Entry<String, MetadataBlockWithFieldsDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
-            MetadataBlockDTO value = entry.getValue();
+            MetadataBlockWithFieldsDTO value = entry.getValue();
             if ("citation".equals(key)) {
-                for (FieldDTO fieldDTO : value.getFields()) {
+                for (DatasetFieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.subject.equals(fieldDTO.getTypeName())) {
-                        for (String subject : fieldDTO.getMultipleVocab()) {
+                        for (String subject : fieldDTO.getMultipleVocabulary()) {
                             if (StringUtils.isNotBlank(subject)) {
                                 subject_check = writeOpenTag(xmlw, "subjects", subject_check);
                                 writeSubjectElement(xmlw, null, null, subject, language);
@@ -416,13 +405,13 @@ public class OpenAireExportUtil {
                     }
 
                     if (DatasetFieldConstant.keyword.equals(fieldDTO.getTypeName())) {
-                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<DatasetFieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String subject = null;
                             String subjectScheme = null;
                             String schemeURI = null;
 
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
-                                FieldDTO next = iterator.next();
+                            for (Iterator<DatasetFieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
+                                DatasetFieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.keywordValue.equals(next.getTypeName())) {
                                     subject = next.getSinglePrimitive();
                                 }
@@ -444,13 +433,13 @@ public class OpenAireExportUtil {
                     }
 
                     if (DatasetFieldConstant.topicClassification.equals(fieldDTO.getTypeName())) {
-                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<DatasetFieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String subject = null;
                             String subjectScheme = null;
                             String schemeURI = null;
 
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
-                                FieldDTO next = iterator.next();
+                            for (Iterator<DatasetFieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
+                                DatasetFieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.topicClassValue.equals(next.getTypeName())) {
                                     subject = next.getSinglePrimitive();
                                 }
@@ -522,19 +511,19 @@ public class OpenAireExportUtil {
         // contributors -> contributor with ContributorType attribute -> contributorName, affiliation
         boolean contributor_check = false;
 
-        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+        for (Map.Entry<String, MetadataBlockWithFieldsDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
-            MetadataBlockDTO value = entry.getValue();
+            MetadataBlockWithFieldsDTO value = entry.getValue();
             if ("citation".equals(key)) {
-                for (FieldDTO fieldDTO : value.getFields()) {
+                for (DatasetFieldDTO fieldDTO : value.getFields()) {
                     // skip non-scompound value
 
                     if (DatasetFieldConstant.producer.equals(fieldDTO.getTypeName())) {
-                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<DatasetFieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String producerName = null;
                             String producerAffiliation = null;
 
-                            for (FieldDTO next : foo) {
+                            for (DatasetFieldDTO next : foo) {
                                 if (DatasetFieldConstant.producerName.equals(next.getTypeName())) {
                                     producerName = next.getSinglePrimitive();
                                 }
@@ -549,11 +538,11 @@ public class OpenAireExportUtil {
                             }
                         }
                     } else if (DatasetFieldConstant.distributor.equals(fieldDTO.getTypeName())) {
-                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<DatasetFieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String distributorName = null;
                             String distributorAffiliation = null;
 
-                            for (FieldDTO next : foo) {
+                            for (DatasetFieldDTO next : foo) {
                                 if (DatasetFieldConstant.distributorName.equals(next.getTypeName())) {
                                     distributorName = next.getSinglePrimitive();
                                 }
@@ -572,11 +561,11 @@ public class OpenAireExportUtil {
                             }
                         }
                     } else if (DatasetFieldConstant.datasetContact.equals(fieldDTO.getTypeName())) {
-                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<DatasetFieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String contactName = null;
                             String contactAffiliation = null;
 
-                            for (FieldDTO next : foo) {
+                            for (DatasetFieldDTO next : foo) {
                                 if (DatasetFieldConstant.datasetContactName.equals(next.getTypeName())) {
                                     contactName = next.getSinglePrimitive();
                                 }
@@ -595,11 +584,11 @@ public class OpenAireExportUtil {
                             }
                         }
                     } else if (DatasetFieldConstant.contributor.equals(fieldDTO.getTypeName())) {
-                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<DatasetFieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String contributorName = null;
                             String contributorType = null;
 
-                            for (FieldDTO next : foo) {
+                            for (DatasetFieldDTO next : foo) {
                                 if (DatasetFieldConstant.contributorName.equals(next.getTypeName())) {
                                     contributorName = next.getSinglePrimitive();
                                 }
@@ -615,10 +604,10 @@ public class OpenAireExportUtil {
                         }
                     } else if (DatasetFieldConstant.grantNumber.equals(fieldDTO.getTypeName())) {
 
-                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<DatasetFieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             GrantInfo grantInfo = new GrantInfo();
 
-                            for (FieldDTO next : foo) {
+                            for (DatasetFieldDTO next : foo) {
 
                                 if (DatasetFieldConstant.grantNumberAgency.equals(next.getTypeName())) {
                                     grantInfo.setGrantFunder(next.getSinglePrimitive());
@@ -715,7 +704,7 @@ public class OpenAireExportUtil {
      * @throws XMLStreamException
      */
     public static void writeDatesElement(XMLStreamWriter xmlw, DatasetDTO dataset, String language) throws XMLStreamException {
-        if (dataset.isEmbargoActive()) {
+        if (dataset.getEmbargoActive()) {
             embargoDatesElement(xmlw, dataset, language);
         } else {
             standardDatesElement(xmlw, dataset.getDatasetVersion(), language);
@@ -761,18 +750,18 @@ public class OpenAireExportUtil {
                              language);
         }
 
-        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+        for (Map.Entry<String, MetadataBlockWithFieldsDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
-            MetadataBlockDTO value = entry.getValue();
+            MetadataBlockWithFieldsDTO value = entry.getValue();
             if ("citation".equals(key)) {
-                for (FieldDTO fieldDTO : value.getFields()) {
+                for (DatasetFieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.dateOfCollection.equals(fieldDTO.getTypeName())) {
-                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<DatasetFieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String dateOfCollectionStart = null;
                             String dateOfCollectionEnd = null;
 
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
-                                FieldDTO next = iterator.next();
+                            for (Iterator<DatasetFieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
+                                DatasetFieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.dateOfCollectionStart.equals(next.getTypeName())) {
                                     dateOfCollectionStart = next.getSinglePrimitive();
                                 }
@@ -816,13 +805,13 @@ public class OpenAireExportUtil {
     public static void writeResourceTypeElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String language) throws XMLStreamException {
         // resourceType with resourceTypeGeneral attribute
         boolean resourceTypeFound = false;
-        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+        for (Map.Entry<String, MetadataBlockWithFieldsDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
-            MetadataBlockDTO value = entry.getValue();
+            MetadataBlockWithFieldsDTO value = entry.getValue();
             if ("citation".equals(key)) {
-                for (FieldDTO fieldDTO : value.getFields()) {
+                for (DatasetFieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.kindOfData.equals(fieldDTO.getTypeName())) {
-                        for (String resourceType : fieldDTO.getMultipleVocab()) {
+                        for (String resourceType : fieldDTO.getMultipleVocabulary()) {
                             if (StringUtils.isNotBlank(resourceType)) {
                                 Map<String, String> resourceType_map = new HashMap<String, String>();
                                 resourceType_map.put("resourceTypeGeneral", "Dataset");
@@ -854,18 +843,18 @@ public class OpenAireExportUtil {
         // alternateIdentifiers -> alternateIdentifier with alternateIdentifierType attribute
         boolean alternateIdentifier_check = false;
 
-        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+        for (Map.Entry<String, MetadataBlockWithFieldsDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
-            MetadataBlockDTO value = entry.getValue();
+            MetadataBlockWithFieldsDTO value = entry.getValue();
             if ("citation".equals(key)) {
-                for (FieldDTO fieldDTO : value.getFields()) {
+                for (DatasetFieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.otherId.equals(fieldDTO.getTypeName())) {
-                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<DatasetFieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String alternateIdentifier = null;
                             String alternateIdentifierType = null;
 
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
-                                FieldDTO next = iterator.next();
+                            for (Iterator<DatasetFieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
+                                DatasetFieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.otherIdValue.equals(next.getTypeName())) {
                                     alternateIdentifier = next.getSinglePrimitive();
                                 }
@@ -939,22 +928,22 @@ public class OpenAireExportUtil {
             relatedIdentifierTypeMap.put("WOS".toLowerCase(), "WOS");
         }
 
-        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+        for (Map.Entry<String, MetadataBlockWithFieldsDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
-            MetadataBlockDTO value = entry.getValue();
+            MetadataBlockWithFieldsDTO value = entry.getValue();
             if ("citation".equals(key)) {
-                for (FieldDTO fieldDTO : value.getFields()) {
+                for (DatasetFieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.publication.equals(fieldDTO.getTypeName())
                         || DatasetFieldConstant.relatedDataset.equals(fieldDTO.getTypeName())
                         || DatasetFieldConstant.relatedMaterial.equals(fieldDTO.getTypeName())) {
-                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<DatasetFieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String relatedIdentifierType = null;
                             String relatedIdentifier = null; // is used when relatedIdentifierType variable is not URL
                             String relatedURL = null; // is used when relatedIdentifierType variable is URL
                             String relationType = null;
 
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
-                                FieldDTO next = iterator.next();
+                            for (Iterator<DatasetFieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
+                                DatasetFieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.publicationIDType.equals(next.getTypeName())
                                     || DatasetFieldConstant.relatedDatasetIDType.equals(next.getTypeName())
                                     || DatasetFieldConstant.relatedMaterialIDType.equals(next.getTypeName())) {
@@ -1042,7 +1031,7 @@ public class OpenAireExportUtil {
 
         if (datasetVersionDTO.getFiles() != null) {
             for (int i = 0; i < datasetVersionDTO.getFiles().size(); i++) {
-                Long size = datasetVersionDTO.getFiles().get(i).getDataFile().getFileSize();
+                Long size = datasetVersionDTO.getFiles().get(i).getDataFile().getFilesize();
                 if (size != null) {
                     size_check = writeOpenTag(xmlw, "sizes", size_check);
                     writeFullElement(xmlw, null, "size", null, size.toString(), language);
@@ -1112,16 +1101,16 @@ public class OpenAireExportUtil {
     public static void writeAccessRightsElement(XMLStreamWriter xmlw, DatasetDTO dataset) throws XMLStreamException {
         // rightsList -> rights with rightsURI attribute
         xmlw.writeStartElement("rightsList"); // <rightsList>
-        if (dataset.isEmbargoActive()) {
+        if (dataset.getEmbargoActive()) {
             writeRightsHeader(xmlw);
             xmlw.writeAttribute("rightsURI", RIGHTS_URI_EMBARGOED_ACCESS);
             xmlw.writeEndElement();
         } else {
-            List<FileDTO> files = Optional.ofNullable(dataset.getDatasetVersion())
+            List<FileMetadataDTO> files = Optional.ofNullable(dataset.getDatasetVersion())
                     .map(DatasetVersionDTO::getFiles)
                     .orElseGet(Collections::emptyList);
             // set terms from the info:eu-repo-Access-Terms vocabulary
-            writeRightsUriInfoAttribute(xmlw, files, dataset.hasActiveGuestbook());
+            writeRightsUriInfoAttribute(xmlw, files, dataset.getHasActiveGuestbook());
             writeRightsUriLicenseInfoAttribute(xmlw, files);
         }
         xmlw.writeEndElement(); // </rightsList>
@@ -1153,17 +1142,17 @@ public class OpenAireExportUtil {
         // descriptions -> description with descriptionType attribute
         boolean description_check = false;
 
-        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+        for (Map.Entry<String, MetadataBlockWithFieldsDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
-            MetadataBlockDTO value = entry.getValue();
+            MetadataBlockWithFieldsDTO value = entry.getValue();
             if ("citation".equals(key)) {
-                for (FieldDTO fieldDTO : value.getFields()) {
+                for (DatasetFieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.description.equals(fieldDTO.getTypeName())) {
-                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<DatasetFieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String descriptionOfAbstract = null;
 
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
-                                FieldDTO next = iterator.next();
+                            for (Iterator<DatasetFieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
+                                DatasetFieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.descriptionText.equals(next.getTypeName())) {
                                     descriptionOfAbstract = MarkupChecker.stripAllTags(next.getSinglePrimitive());
                                     descriptionOfAbstract = StringEscapeUtils.unescapeHtml(descriptionOfAbstract);
@@ -1180,18 +1169,18 @@ public class OpenAireExportUtil {
             }
         }
 
-        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+        for (Map.Entry<String, MetadataBlockWithFieldsDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
-            MetadataBlockDTO value = entry.getValue();
+            MetadataBlockWithFieldsDTO value = entry.getValue();
             if ("citation".equals(key)) {
-                for (FieldDTO fieldDTO : value.getFields()) {
+                for (DatasetFieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.software.equals(fieldDTO.getTypeName())) {
-                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<DatasetFieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String softwareName = null;
                             String softwareVersion = null;
 
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
-                                FieldDTO next = iterator.next();
+                            for (Iterator<DatasetFieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
+                                DatasetFieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.softwareName.equals(next.getTypeName())) {
                                     softwareName = next.getSinglePrimitive();
                                 }
@@ -1232,18 +1221,18 @@ public class OpenAireExportUtil {
             writeDescriptionElement(xmlw, "Methods", descriptionOfMethodsAccess, language);
         }
 
-        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+        for (Map.Entry<String, MetadataBlockWithFieldsDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
-            MetadataBlockDTO value = entry.getValue();
+            MetadataBlockWithFieldsDTO value = entry.getValue();
             if ("citation".equals(key)) {
-                for (FieldDTO fieldDTO : value.getFields()) {
+                for (DatasetFieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.series.equals(fieldDTO.getTypeName())) {
                         // String seriesName = null;
                         String seriesInformation = null;
 
-                        Set<FieldDTO> foo = fieldDTO.getSingleCompound();
-                        for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
-                            FieldDTO next = iterator.next();
+                        Set<DatasetFieldDTO> foo = fieldDTO.getSingleCompound();
+                        for (Iterator<DatasetFieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
+                            DatasetFieldDTO next = iterator.next();
                             /*if (DatasetFieldConstant.seriesName.equals(next.getTypeName())) {
                                 seriesName =  next.getSinglePrimitive();
                             }*/
@@ -1310,13 +1299,13 @@ public class OpenAireExportUtil {
         boolean hasValidBoxLocation = false;
 
         // get DatasetFieldConstant.geographicBoundingBox
-        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
-            MetadataBlockDTO value = entry.getValue();
-            for (FieldDTO fieldDTO : value.getFields()) {
+        for (Map.Entry<String, MetadataBlockWithFieldsDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+            MetadataBlockWithFieldsDTO value = entry.getValue();
+            for (DatasetFieldDTO fieldDTO : value.getFields()) {
                 if (DatasetFieldConstant.geographicBoundingBox.equals(fieldDTO.getTypeName())) {
                     geoLocations_check = writeOpenTag(xmlw, "geoLocations", geoLocations_check);
                     if (fieldDTO.getMultiple()) {
-                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<DatasetFieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             boolean hasValidCurrentBoxLocation = writeGeoLocationsElement(xmlw, foo, geoLocationPlace, language);
                             hasValidBoxLocation = hasValidBoxLocation || hasValidCurrentBoxLocation;
                         }
@@ -1348,15 +1337,15 @@ public class OpenAireExportUtil {
      * @param language         current language
      * @throws XMLStreamException
      */
-    public static boolean writeGeoLocationsElement(XMLStreamWriter xmlw, Set<FieldDTO> foo, String geoLocationPlace, String language) throws XMLStreamException {
+    public static boolean writeGeoLocationsElement(XMLStreamWriter xmlw, Set<DatasetFieldDTO> foo, String geoLocationPlace, String language) throws XMLStreamException {
 
         String northLatitude = StringUtils.EMPTY;
         String southLatitude = StringUtils.EMPTY;
         String eastLongitude = StringUtils.EMPTY;
         String westLongitude = StringUtils.EMPTY;
 
-        for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
-            FieldDTO next = iterator.next();
+        for (Iterator<DatasetFieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
+            DatasetFieldDTO next = iterator.next();
 
             String value = next.getSinglePrimitive().trim();
 
@@ -1424,9 +1413,9 @@ public class OpenAireExportUtil {
 
     private static String dto2Primitive(DatasetVersionDTO datasetVersionDTO, String datasetFieldTypeName) {
         // give the single value of the given metadata
-        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
-            MetadataBlockDTO value = entry.getValue();
-            for (FieldDTO fieldDTO : value.getFields()) {
+        for (Map.Entry<String, MetadataBlockWithFieldsDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+            MetadataBlockWithFieldsDTO value = entry.getValue();
+            for (DatasetFieldDTO fieldDTO : value.getFields()) {
                 if (datasetFieldTypeName.equals(fieldDTO.getTypeName())) {
                     return fieldDTO.getSinglePrimitive();
                 }
@@ -1520,7 +1509,7 @@ public class OpenAireExportUtil {
         return result;
     }
 
-    private static void writeRightsUriLicenseInfoAttribute(XMLStreamWriter xmlw, List<FileDTO> files) throws XMLStreamException {
+    private static void writeRightsUriLicenseInfoAttribute(XMLStreamWriter xmlw, List<FileMetadataDTO> files) throws XMLStreamException {
         if (!Lists.isEmpty(files)) {
             writeRightsHeader(xmlw);
 
@@ -1542,7 +1531,7 @@ public class OpenAireExportUtil {
         }
     }
 
-    private static void writeRightsUriInfoAttribute(XMLStreamWriter xmlw, List<FileDTO> files, boolean hasActiveGuestbook) throws XMLStreamException {
+    private static void writeRightsUriInfoAttribute(XMLStreamWriter xmlw, List<FileMetadataDTO> files, boolean hasActiveGuestbook) throws XMLStreamException {
         writeRightsHeader(xmlw);
 
         if (Lists.isEmpty(files)) {
@@ -1557,7 +1546,7 @@ public class OpenAireExportUtil {
         xmlw.writeEndElement(); // </rights>
     }
 
-    public static boolean areAllFilesUnderSameLincese(List<FileDTO> files) {
+    public static boolean areAllFilesUnderSameLincese(List<FileMetadataDTO> files) {
         final String firstFileLicense = files.get(0).getLicenseName();
         if (StringUtils.isNotEmpty(firstFileLicense)) {
             return files
@@ -1566,28 +1555,28 @@ public class OpenAireExportUtil {
         }
         return false;
     }
-    
-    public static boolean areAllFilesAllRightsReserved(List<FileDTO> files) {
+
+    public static boolean areAllFilesAllRightsReserved(List<FileMetadataDTO> files) {
         return files
                 .stream()
                 .allMatch(fileDTO -> isOfTermsOfUseType(fileDTO, FileTermsOfUse.TermsOfUseType.ALL_RIGHTS_RESERVED));
     }
-    
-    public static boolean areAllFilesRestricted(List<FileDTO> files) {
+
+    public static boolean areAllFilesRestricted(List<FileMetadataDTO> files) {
         return files
                 .stream()
                 .allMatch(fileDTO -> isOfTermsOfUseType(fileDTO, FileTermsOfUse.TermsOfUseType.RESTRICTED));
     }
-    
-    
-    public static boolean hasRestrictedFile(List<FileDTO> files) {
+
+
+    public static boolean hasRestrictedFile(List<FileMetadataDTO> files) {
         return files
                 .stream()
                 .anyMatch(fileDTO -> isOfTermsOfUseType(fileDTO, FileTermsOfUse.TermsOfUseType.RESTRICTED));
     }
-    
 
-    public static boolean isOfTermsOfUseType(FileDTO fileDTO, FileTermsOfUse.TermsOfUseType termsOfUseType) {
+
+    public static boolean isOfTermsOfUseType(FileMetadataDTO fileDTO, FileTermsOfUse.TermsOfUseType termsOfUseType) {
         return fileDTO.getTermsOfUseType().equals(termsOfUseType.toString());
     }
 }

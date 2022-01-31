@@ -10,7 +10,13 @@ import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.S3PackageImporter;
 import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
+import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetLockDTO;
+import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
+import edu.harvard.iq.dataverse.api.dto.FileMetadataDTO;
+import edu.harvard.iq.dataverse.api.dto.MetadataBlockWithFieldsDTO;
+import edu.harvard.iq.dataverse.api.dto.PrivateUrlDTO;
+import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.api.dto.SubmitForReviewDataDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
@@ -94,7 +100,6 @@ import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import io.vavr.control.Either;
 import io.vavr.control.Try;
 import org.apache.commons.cli.MissingArgumentException;
@@ -137,15 +142,17 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Clock;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -210,9 +217,6 @@ public class Datasets extends AbstractApiBean {
     private FileDownloadAPIHandler fileDownloadAPIHandler;
 
     @Inject
-    private JsonPrinter jsonPrinter;
-
-    @Inject
     private DataverseRoleServiceBean rolesSvc;
 
     @Inject
@@ -223,8 +227,6 @@ public class Datasets extends AbstractApiBean {
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
-     *
-     * @param <T>
      */
     private interface DsVersionHandler<T> {
         T handleLatest();
@@ -240,13 +242,19 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}")
     public Response getDataset(@PathParam("id") String id) {
         return response(req -> {
-            final Dataset retrieved = execCommand(new GetDatasetCommand(req, findDatasetOrDie(id)));
-            final DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(req, retrieved));
-            final JsonObjectBuilder jsonbuilder = jsonPrinter.json(retrieved);
-
-            return allowCors(ok(jsonbuilder.add("latestVersion", (latest != null) ?
-                    jsonPrinter.json(latest, settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport))
-                    : null)));
+            Dataset retrieved = execCommand(new GetDatasetCommand(req, findDatasetOrDie(id)));
+            DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(req, retrieved));
+            DatasetDTO dataset = new DatasetDTO.Converter().convert(retrieved);
+            if (latest != null) {
+                DatasetVersionDTO latestVersion = new DatasetVersionDTO.Converter().convert(latest);
+                latestVersion = settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport)
+                        ? latestVersion.clearEmailFields() : latestVersion;
+                Map<String, Object> dto = dataset.asMap();
+                dto.put("latestVersion", latestVersion);
+                return allowCors(ok(dto));
+            } else {
+                return allowCors(ok(dataset));
+            }
         });
     }
 
@@ -368,7 +376,6 @@ public class Datasets extends AbstractApiBean {
             if (!deleteStorageLocations.isEmpty()) {
                 fileService.finalizeFileDeletes(deleteStorageLocations);
             }
-
             return ok("Dataset " + id + " destroyed");
         });
     }
@@ -462,28 +469,32 @@ public class Datasets extends AbstractApiBean {
     @GET
     @Path("{id}/versions")
     public Response listVersions(@PathParam("id") String id) {
-        return allowCors(response(req ->
-                                          ok(execCommand(new ListVersionsCommand(req, findDatasetOrDie(id)))
-                                                     .stream()
-                                                     .map(d -> jsonPrinter.json(d,
-                                                                    settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport)))
-                                                     .collect(jsonPrinter.toJsonArray()))));
+        DatasetVersionDTO.Converter converter = new DatasetVersionDTO.Converter();
+        boolean excludeEmails = settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport);
+        return allowCors(response(req -> ok(
+                execCommand(new ListVersionsCommand(req, findDatasetOrDie(id))).stream()
+                        .map(v -> {
+                            DatasetVersionDTO dto = converter.convert(v);
+                            return excludeEmails ? dto.clearEmailFields() : dto;
+                        })
+                        .collect(Collectors.toList()))));
     }
 
     @GET
     @Path("{id}/versions/{versionId}")
     public Response getVersion(@PathParam("id") String datasetId, @PathParam("versionId") String versionId) {
         return allowCors(response(req -> {
-            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId));
-            return (dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
-                    : ok(jsonPrinter.json(dsv, settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport)));
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId));
+            DatasetVersionDTO dto = new DatasetVersionDTO.Converter().convert(datasetVersion);
+            return ok(settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport)
+                    ? dto.clearEmailFields() : dto);
         }));
     }
 
     @GET
     @Path("{id}/versions/{versionId}/files")
     public Response listVersionFiles(@PathParam("id") String datasetId, @PathParam("versionId") String versionId) {
-        return allowCors(response(req -> ok(jsonPrinter.jsonFileMetadatas(
+        return allowCors(response(req -> ok(new FileMetadataDTO.Converter().convert(
                 getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId)).getFileMetadatas()))));
     }
 
@@ -505,18 +516,26 @@ public class Datasets extends AbstractApiBean {
 
         StreamingOutput fileStream = fileDownloadAPIHandler.downloadFiles(apiTokenUser, versionId,
                                                                           originalFormatRequested, gbrecs);
-
         return Response.ok(fileStream).build();
     }
 
     @GET
     @Path("{id}/versions/{versionId}/metadata")
     public Response getVersionMetadata(@PathParam("id") String datasetId, @PathParam("versionId") String versionId) {
-        return allowCors(response(req -> ok(
-                jsonPrinter.jsonByBlocks(
-                        getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId))
-                                .getDatasetFields(),
-                        settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport)))));
+        MetadataBlockWithFieldsDTO.Creator creator = new MetadataBlockWithFieldsDTO.Creator();
+        return allowCors(response(r -> {
+            List<DatasetField> fields = getDatasetVersionOrDie(r, versionId, findDatasetOrDie(datasetId)).getDatasetFields();
+            Map<String, MetadataBlockWithFieldsDTO> dto = DatasetField.groupByBlock(fields)
+                    .entrySet().stream()
+                    .map(e -> creator.create(e.getKey(), e.getValue()))
+                    .collect(Collectors.toMap(
+                            MetadataBlockWithFieldsDTO::getDisplayName, Function.identity(),
+                            (prev, next) -> next, LinkedHashMap::new));
+            if (settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport)) {
+                dto.values().forEach(MetadataBlockWithFieldsDTO::clearEmailFields);
+            }
+            return ok(dto);
+        }));
     }
 
     @GET
@@ -531,9 +550,11 @@ public class Datasets extends AbstractApiBean {
             Map<MetadataBlock, List<DatasetField>> fieldsByBlock = DatasetField.groupByBlock(dsv.getDatasetFields());
             for (Map.Entry<MetadataBlock, List<DatasetField>> p : fieldsByBlock.entrySet()) {
                 if (p.getKey().getName().equals(blockName)) {
-                    return ok(jsonPrinter.json(p.getKey(),
-                                   p.getValue(),
-                                   settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport)));
+                    MetadataBlockWithFieldsDTO blockWithFields = new MetadataBlockWithFieldsDTO.Creator().create(p.getKey(), p.getValue());
+                    if (settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport)) {
+                        blockWithFields.clearEmailFields();
+                    }
+                    return ok(blockWithFields);
                 }
             }
             return notFound("metadata block named " + blockName + " not found");
@@ -583,7 +604,7 @@ public class Datasets extends AbstractApiBean {
 
         return response(req -> {
             execCommand(new UpdateDvObjectPIDMetadataCommand(findDatasetOrDie(id), req));
-            List<String> args = Arrays.asList(id);
+            List<String> args = Collections.singletonList(id);
             return ok(BundleUtil.getStringFromBundle("datasets.api.updatePIDMetadata.success.for.single.dataset",
                                                      args));
         });
@@ -640,11 +661,9 @@ public class Datasets extends AbstractApiBean {
             } else {
                 managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, incomingVersion));
             }
-//            DatasetVersion managedVersion = execCommand( updateDraft
-//                                                             ? new UpdateDatasetVersionCommand(req, incomingVersion)
-//                                                             : new CreateDatasetVersionCommand(req, ds, incomingVersion));
-            return ok(jsonPrinter.json(managedVersion,
-                           settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport)));
+            DatasetVersionDTO dto = new DatasetVersionDTO.Converter().convert(managedVersion);
+            return ok(settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport)
+                    ? dto.clearEmailFields() : dto);
 
         } catch (JsonParseException ex) {
             logger.log(Level.SEVERE, "Semantic error parsing dataset version Json: " + ex.getMessage(), ex);
@@ -752,7 +771,6 @@ public class Datasets extends AbstractApiBean {
                     for (DatasetField oldField : oldFieldsGroupedByType.get(fieldsToRemoveEntry.getKey())) {
                         if (oldField.getDatasetFieldType().isControlledVocabulary()) {
                             List<ControlledVocabularyValue> controlledVocabularyItemsToRemove = new ArrayList<>();
-
                             if (oldField.getDatasetFieldType().isAllowMultiples()) {
                                 for (ControlledVocabularyValue cvv : removableField.getControlledVocabularyValues()) {
                                     for (ControlledVocabularyValue existing : oldField.getControlledVocabularyValues()) {
@@ -761,7 +779,6 @@ public class Datasets extends AbstractApiBean {
                                             valueFound = true;
                                         }
                                     }
-
                                     if (!controlledVocabularyItemsToRemove.contains(cvv)) {
                                         logger.log(Level.SEVERE,
                                                    "Delete metadata failed: " + cvv.getDatasetFieldType().getDisplayName() + ": " + cvv.getStrValue() + " not found.");
@@ -770,21 +787,17 @@ public class Datasets extends AbstractApiBean {
 
                                     }
                                 }
-
                                 for (ControlledVocabularyValue remove : controlledVocabularyItemsToRemove) {
                                     oldField.getControlledVocabularyValues().remove(remove);
                                 }
-
                             } else {
                                 if (oldField.getSingleControlledVocabularyValue().getStrValue().equals(
                                         removableField.getSingleControlledVocabularyValue().getStrValue())) {
                                     oldField.setSingleControlledVocabularyValue(null);
                                     valueFound = true;
                                 }
-
                             }
                         } else {
-
                             if (removableField.getDatasetFieldType().isPrimitive()) {
                                 if (oldField.getFieldValue().getOrElse("").equals(removableField.getFieldValue().getOrElse(
                                         ""))) {
@@ -793,7 +806,6 @@ public class Datasets extends AbstractApiBean {
                                     valueFound = true;
                                 }
                             } else {
-
                                 if (DatasetFieldUtil.joinAllValues(removableField).equals(
                                         DatasetFieldUtil.joinAllValues(
                                                 oldField))) {
@@ -804,16 +816,13 @@ public class Datasets extends AbstractApiBean {
                             }
                         }
                     }
-
                     if (!valueFound) {
                         String displayValue = !removableField.getDisplayValue().isEmpty() ? removableField.getDisplayValue() : removableField.getCompoundDisplayValue();
                         logger.log(Level.SEVERE, "Delete metadata failed: " + removableField.getDatasetFieldType().getDisplayName() + ": " + displayValue + " not found.");
                         return error(Response.Status.BAD_REQUEST, "Delete metadata failed: " + removableField.getDatasetFieldType().getDisplayName() + ": " + displayValue + " not found.");
                     }
-
                 }
             }
-
 
             fields.stream()
                     .map(DatasetField::getDatasetFieldsChildren)
@@ -823,32 +832,27 @@ public class Datasets extends AbstractApiBean {
             DatasetVersion managedVersion = updateDraft
                     ? execCommand(new UpdateDatasetVersionCommand(ds, req)).getEditVersion()
                     : execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
-            return ok(jsonPrinter.json(managedVersion,
-                           settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport)));
-
+            DatasetVersionDTO dto = new DatasetVersionDTO.Converter().convert(managedVersion);
+            return ok(settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport)
+                    ? dto.clearEmailFields() : dto);
         } catch (
                 JsonParseException ex) {
             logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + ex.getMessage(), ex);
             return error(Response.Status.BAD_REQUEST, "Error processing metadata delete: " + ex.getMessage());
-
         } catch (
                 WrappedResponse ex) {
             logger.log(Level.SEVERE, "Delete metadata error: " + ex.getMessage(), ex);
             return ex.getResponse();
-
         }
-
     }
 
     @PUT
     @ApiWriteOperation
     @Path("{id}/editMetadata")
-    public Response editVersionMetadata(String jsonBody, @PathParam("id") String id, @QueryParam("replace") Boolean replace) throws WrappedResponse {
-
+    public Response editVersionMetadata(String jsonBody, @PathParam("id") String id, @QueryParam("replace") Boolean replace)
+            throws WrappedResponse {
         Boolean replaceData = replace != null;
-
         DataverseRequest req = createDataverseRequest(findUserOrDie());
-
         return processDatasetUpdate(jsonBody, id, req, replaceData);
     }
 
@@ -861,15 +865,11 @@ public class Datasets extends AbstractApiBean {
             DatasetVersion dsv = ds.getEditVersion();
 
             List<DatasetField> freshFieldsModel;
-            DatasetField singleField = null;
 
             JsonArray fieldsJson = json.getJsonArray("fields");
-            if (fieldsJson == null) {
-                freshFieldsModel = new LinkedList<>(jsonParser().parseField(json, Boolean.FALSE));
-            } else {
-                freshFieldsModel = jsonParser().parseMultipleFields(json);
-            }
-
+            freshFieldsModel = fieldsJson == null
+                    ? new LinkedList<>(jsonParser().parseField(json, Boolean.FALSE))
+                    : jsonParser().parseMultipleFields(json);
 
             String valdationErrors = validateDatasetFieldValues(freshFieldsModel);
 
@@ -948,36 +948,30 @@ public class Datasets extends AbstractApiBean {
                     updatedFieldsGroupedByType.entrySet().stream()
                             .filter(fieldTypeListEntry -> !oldFieldsGroupedByType.containsKey(fieldTypeListEntry.getKey()))
                             .map(Map.Entry::getValue)
-                            .forEach(fieldNotFound -> {
-                                fieldNotFound.forEach(datasetField -> {
-                                    datasetField.setDatasetVersion(dsv);
-                                    dsv.getDatasetFields().add(datasetField);
-                                });
-                            });
+                            .forEach(fieldNotFound -> fieldNotFound.forEach(
+                                    datasetField -> {
+                                        datasetField.setDatasetVersion(dsv);
+                                        dsv.getDatasetFields().add(datasetField);
+                                    }));
 
                     dsv.getDatasetFields().addAll(fieldsToAdd);
                 }
             }
             boolean updateDraft = ds.getLatestVersion().isDraft();
-            DatasetVersion managedVersion;
+            DatasetVersion managedVersion = updateDraft
+                    ? execCommand(new UpdateDatasetVersionCommand(ds, req)).getEditVersion()
+                    : execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
 
-            if (updateDraft) {
-                managedVersion = execCommand(new UpdateDatasetVersionCommand(ds, req)).getEditVersion();
-            } else {
-                managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
-            }
-
-            return ok(jsonPrinter.json(managedVersion,
-                           settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport)));
+            DatasetVersionDTO dto = new DatasetVersionDTO.Converter().convert(managedVersion);
+            return ok(settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport)
+                    ? dto.clearEmailFields() : dto);
 
         } catch (JsonParseException ex) {
             logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + ex.getMessage(), ex);
             return error(Response.Status.BAD_REQUEST, "Error parsing dataset update: " + ex.getMessage());
-
         } catch (WrappedResponse ex) {
             logger.log(Level.SEVERE, "Update metdata error: " + ex.getMessage(), ex);
             return ex.getResponse();
-
         }
     }
 
@@ -994,10 +988,7 @@ public class Datasets extends AbstractApiBean {
             }
         }
 
-        if (!error.toString().isEmpty()) {
-            return (error.toString());
-        }
-        return "";
+        return !error.toString().isEmpty() ? error.toString() : "";
     }
 
     /**
@@ -1041,7 +1032,7 @@ public class Datasets extends AbstractApiBean {
                     break;
                 default:
                     return error(Response.Status.BAD_REQUEST,
-                                 "Illegal 'type' parameter value '" + type + "'. It needs to be either 'major', 'minor', or 'updatecurrent'.");
+                                "Illegal 'type' parameter value '" + type + "'. It needs to be either 'major', 'minor', or 'updatecurrent'.");
             }
 
             Dataset ds = findDatasetOrDie(id);
@@ -1055,9 +1046,8 @@ public class Datasets extends AbstractApiBean {
                 String errorMsg = null;
                 String successMsg = null;
                 try {
-                    CuratePublishedDatasetVersionCommand cmd = new CuratePublishedDatasetVersionCommand(ds,
-                                                                                                        createDataverseRequest(
-                                                                                                                user));
+                    CuratePublishedDatasetVersionCommand cmd =
+                            new CuratePublishedDatasetVersionCommand(ds, createDataverseRequest(user));
                     ds = commandEngine.submit(cmd);
                     successMsg = BundleUtil.getStringFromBundle("datasetversion.update.success");
 
@@ -1080,11 +1070,8 @@ public class Datasets extends AbstractApiBean {
                          */
                         try {
                             updateVersion = commandEngine.submit(archiveCommand);
-                            if (updateVersion.getArchivalCopyLocation() != null) {
-                                successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.success");
-                            } else {
-                                successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure");
-                            }
+                            successMsg = BundleUtil.getStringFromBundle(updateVersion.getArchivalCopyLocation() != null
+                                    ? "datasetversion.update.archive.success" : "datasetversion.update.archive.failure");
                         } catch (CommandException ex) {
                             successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure") + " - " + ex.toString();
                             logger.severe(ex.getMessage());
@@ -1094,21 +1081,13 @@ public class Datasets extends AbstractApiBean {
                     errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.failure") + " - " + ex.toString();
                     logger.severe(ex.getMessage());
                 }
-                if (errorMsg != null) {
-                    return error(Response.Status.INTERNAL_SERVER_ERROR, errorMsg);
-                } else {
-                    return Response.ok(Json.createObjectBuilder()
-                                               .add("status", STATUS_OK)
-                                               .add("status_details", successMsg)
-                                               .add("data", jsonPrinter.json(ds)).build())
-                            .type(MediaType.APPLICATION_JSON)
-                            .build();
-                }
+                return errorMsg != null
+                        ? error(Response.Status.INTERNAL_SERVER_ERROR, errorMsg)
+                        : ok(new DatasetDTO.Converter().convert(ds), successMsg);
             } else {
-                PublishDatasetResult res = execCommand(new PublishDatasetCommand(ds,
-                                                                                 createDataverseRequest(user),
-                                                                                 isMinor));
-                return res.isCompleted() ? ok(jsonPrinter.json(res.getDataset())) : accepted(jsonPrinter.json(res.getDataset()));
+                PublishDatasetResult res = execCommand(new PublishDatasetCommand(ds, createDataverseRequest(user), isMinor));
+                DatasetDTO dto = new DatasetDTO.Converter().convert(res.getDataset());
+                return res.isCompleted() ? ok(dto) : accepted(dto);
             }
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -1131,8 +1110,7 @@ public class Datasets extends AbstractApiBean {
             }
             //Command requires Super user - it will be tested by the command
             execCommand(new MoveDatasetCommand(
-                    createDataverseRequest(u), ds, target, force
-            ));
+                    createDataverseRequest(u), ds, target, force));
             return ok("Dataset moved successfully");
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -1154,8 +1132,7 @@ public class Datasets extends AbstractApiBean {
                 return error(Response.Status.BAD_REQUEST, "Linking Dataverse not found.");
             }
             execCommand(new LinkDatasetCommand(
-                    createDataverseRequest(u), linking, linked
-            ));
+                    createDataverseRequest(u), linking, linked));
             return ok("Dataset " + linked.getId() + " linked successfully to " + linking.getAlias());
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -1208,7 +1185,7 @@ public class Datasets extends AbstractApiBean {
             DataverseRole theRole = rolesSvc.findBuiltinRoleByAlias(BuiltInRole.ADMIN);
             String privateUrlToken = null;
             return ok(
-                    jsonPrinter.json(execCommand(new AssignRoleCommand(assignee,
+                    new RoleAssignmentDTO.Converter().convert(execCommand(new AssignRoleCommand(assignee,
                                                            theRole,
                                                            dataset,
                                                            createDataverseRequest(findUserOrDie()),
@@ -1222,11 +1199,12 @@ public class Datasets extends AbstractApiBean {
     @GET
     @Path("{identifier}/assignments")
     public Response getAssignments(@PathParam("identifier") String id) {
+        RoleAssignmentDTO.Converter converter = new RoleAssignmentDTO.Converter();
         return response(req ->
                                 ok(execCommand(
                                         new ListRoleAssignments(req, findDatasetOrDie(id))).stream()
-                                        .map(ra -> jsonPrinter.json(ra))
-                                        .collect(jsonPrinter.toJsonArray())));
+                                        .map(converter::convert)
+                                        .collect(Collectors.toList())));
     }
 
     @GET
@@ -1234,7 +1212,8 @@ public class Datasets extends AbstractApiBean {
     public Response getPrivateUrlData(@PathParam("id") String idSupplied) {
         return response(req -> {
             PrivateUrl privateUrl = execCommand(new GetPrivateUrlCommand(req, findDatasetOrDie(idSupplied)));
-            return (privateUrl != null) ? ok(jsonPrinter.json(privateUrl))
+            return privateUrl != null
+                    ? ok(new PrivateUrlDTO.Converter().convert(privateUrl))
                     : error(Response.Status.NOT_FOUND, "Private URL not found.");
         });
     }
@@ -1243,9 +1222,9 @@ public class Datasets extends AbstractApiBean {
     @ApiWriteOperation
     @Path("{id}/privateUrl")
     public Response createPrivateUrl(@PathParam("id") String idSupplied) {
-        return response(req ->
-                                ok(jsonPrinter.json(execCommand(
-                                        new CreatePrivateUrlCommand(req, findDatasetOrDie(idSupplied))))));
+        return response(req -> ok(
+                new PrivateUrlDTO.Converter().convert(
+                        execCommand(new CreatePrivateUrlCommand(req, findDatasetOrDie(idSupplied))))));
     }
 
     @DELETE
@@ -1384,7 +1363,7 @@ public class Datasets extends AbstractApiBean {
             return error(Response.Status.METHOD_NOT_ALLOWED,
                          SettingsServiceBean.Key.UploadMethods + " does not contain " + SystemConfig.FileUploadMethods.RSYNC + ".");
         }
-        Dataset dataset = null;
+        Dataset dataset;
         try {
             dataset = findDatasetOrDie(id);
             AuthenticatedUser user = findAuthenticatedUserOrDie();
@@ -1429,7 +1408,7 @@ public class Datasets extends AbstractApiBean {
     @Path("{identifier}/dataCaptureModule/checksumValidation")
     public Response receiveChecksumValidationResults(@PathParam("identifier") String id, JsonObject jsonFromDcm) {
         logger.log(Level.FINE, "jsonFromDcm: {0}", jsonFromDcm);
-        AuthenticatedUser authenticatedUser = null;
+        AuthenticatedUser authenticatedUser;
         try {
             authenticatedUser = findAuthenticatedUserOrDie();
         } catch (WrappedResponse ex) {
@@ -1459,7 +1438,7 @@ public class Datasets extends AbstractApiBean {
                                 createDataverseRequest(findUserOrDie()),
                                 dataset,
                                 uploadFolder,
-                                new Long(totalSize),
+                                (long) totalSize,
                                 importMode));
                         long jobId = jsonFromImportJobKickoff.getInt("executionId");
                         String message = jsonFromImportJobKickoff.getString("message");
@@ -1473,15 +1452,12 @@ public class Datasets extends AbstractApiBean {
                                      "Uploaded files have passed checksum validation but something went wrong while attempting to put the files into Dataverse. Message was '" + message + "'.");
                     }
                 } else if (storageDriver.equals("s3")) {
-
                     logger.log(Level.INFO, "S3 storage driver used for DCM (dataset id={0})", dataset.getId());
                     try {
 
                         //Where the lifting is actually done, moving the s3 files over and having dataverse know of the existance of the package
                         s3PackageImporter.copyFromS3(dataset, uploadFolder);
-                        DataFile packageFile = s3PackageImporter.createPackageDataFile(dataset,
-                                                                                       uploadFolder,
-                                                                                       new Long(totalSize));
+                        DataFile packageFile = s3PackageImporter.createPackageDataFile(dataset, uploadFolder, totalSize);
 
                         if (packageFile == null) {
                             logger.log(Level.SEVERE, "S3 File package import failed.");
@@ -1529,22 +1505,18 @@ public class Datasets extends AbstractApiBean {
                 Map<String, AuthenticatedUser> distinctAuthors = permissionService.getDistinctUsersWithPermissionOn(
                         Permission.EditDataset,
                         dataset);
-                distinctAuthors.values().forEach((value) -> {
-                    userNotificationService.sendNotificationWithEmail(value,
+                distinctAuthors.values().forEach((value) -> userNotificationService.sendNotificationWithEmail(value,
+                                                                  new Timestamp(new Date().getTime()),
+                                                                  NotificationType.CHECKSUMFAIL,
+                                                                  dataset.getId(),
+                                                                  NotificationObjectType.DATASET));
+                List<AuthenticatedUser> superUsers = authenticationServiceBean.findSuperUsers();
+                if (superUsers != null && !superUsers.isEmpty()) {
+                    superUsers.forEach((au) -> userNotificationService.sendNotificationWithEmail(au,
                                                                       new Timestamp(new Date().getTime()),
                                                                       NotificationType.CHECKSUMFAIL,
                                                                       dataset.getId(),
-                                                                      NotificationObjectType.DATASET);
-                });
-                List<AuthenticatedUser> superUsers = authenticationServiceBean.findSuperUsers();
-                if (superUsers != null && !superUsers.isEmpty()) {
-                    superUsers.forEach((au) -> {
-                        userNotificationService.sendNotificationWithEmail(au,
-                                                                          new Timestamp(new Date().getTime()),
-                                                                          NotificationType.CHECKSUMFAIL,
-                                                                          dataset.getId(),
-                                                                          NotificationObjectType.DATASET);
-                    });
+                                                                      NotificationObjectType.DATASET));
                 }
                 return ok("User notified about checksum validation failure.");
             } else {
@@ -1555,7 +1527,6 @@ public class Datasets extends AbstractApiBean {
             return ex.getResponse();
         }
     }
-
 
     @POST
     @ApiWriteOperation
@@ -1594,7 +1565,7 @@ public class Datasets extends AbstractApiBean {
         JsonObject json = Json.createReader(rdr).readObject();
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
-            String reasonForReturn = null;
+            String reasonForReturn;
             reasonForReturn = json.getString("reasonForReturn");
             // TODO: Once we add a box for the curator to type into, pass the reason for return to the ReturnDatasetToAuthorCommand and delete this check and call to setReturnReason on the API side.
             if (reasonForReturn == null || reasonForReturn.isEmpty()) {
@@ -1616,13 +1587,6 @@ public class Datasets extends AbstractApiBean {
 
     /**
      * Add a File to an existing Dataset
-     *
-     * @param idSupplied
-     * @param jsonData
-     * @param fileInputStream
-     * @param contentDispositionHeader
-     * @param formDataBodyPart
-     * @return
      */
     @POST
     @ApiWriteOperation
@@ -1632,16 +1596,12 @@ public class Datasets extends AbstractApiBean {
                                      @FormDataParam("jsonData") String jsonData,
                                      @FormDataParam("file") InputStream fileInputStream,
                                      @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
-                                     @FormDataParam("file") final FormDataBodyPart formDataBodyPart
-    ) {
-
+                                     @FormDataParam("file") final FormDataBodyPart formDataBodyPart) {
         if (!systemConfig.isHTTPUpload()) {
             return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
         }
 
-        // -------------------------------------
         // (1) Get the user from the API key
-        // -------------------------------------
         User authUser;
         try {
             authUser = findUserOrDie();
@@ -1651,24 +1611,15 @@ public class Datasets extends AbstractApiBean {
             );
         }
 
-
-        // -------------------------------------
         // (2) Get the Dataset Id
-        //
-        // -------------------------------------
         Dataset dataset;
-
         try {
             dataset = findDatasetOrDie(idSupplied);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
 
-        //------------------------------------
         // (2a) Make sure dataset does not have package file
-        //
-        // --------------------------------------
-
         for (DatasetVersion dv : dataset.getVersions()) {
             if (dv.isHasPackageFile()) {
                 return error(Response.Status.FORBIDDEN,
@@ -1677,17 +1628,12 @@ public class Datasets extends AbstractApiBean {
             }
         }
 
-
-        // -------------------------------------
         // (3) Get the file name and content type
-        // -------------------------------------
         String newFilename = contentDispositionHeader.getFileName();
         String newFileContentType = formDataBodyPart.getMediaType().toString();
 
-
         // (2a) Load up optional params via JSON
-        //---------------------------------------
-        OptionalFileParams optionalFileParams = null;
+        OptionalFileParams optionalFileParams;
         logger.fine("Loading (api) jsonData: " + jsonData);
 
         try {
@@ -1704,24 +1650,16 @@ public class Datasets extends AbstractApiBean {
             return error(Response.Status.BAD_REQUEST, ejbe.getCause().getMessage());
         }
 
-
-        //-------------------
         // (3) Create the AddReplaceFileHelper object
-        //-------------------
-
         DataverseRequest dvRequest2 = createDataverseRequest(authUser);
         AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequest2,
                                                                       ingestService,
                                                                       fileService,
                                                                       dataFileCreator,
                                                                       permissionSvc,
-                                                                      jsonPrinter,
-                                                                      commandEngine, optionalFileParamsSvc);
+                commandEngine, optionalFileParamsSvc);
 
-
-        //-------------------
         // (4) Run "runAddFileByDatasetId"
-        //-------------------
         try {
             addFileHelper.runAddFileByDataset(dataset,
                                           newFilename,
@@ -1732,13 +1670,11 @@ public class Datasets extends AbstractApiBean {
             IOUtils.closeQuietly(fileInputStream);
         }
 
-
         if (addFileHelper.hasError()) {
             return error(addFileHelper.getHttpErrorCode(), addFileHelper.getErrorMessagesAsString("\n"));
         } else {
             String successMsg = BundleUtil.getStringFromBundle("file.addreplace.success.add");
             try {
-                //msgt("as String: " + addFileHelper.getSuccessResult());
                 /**
                  * @todo We need a consistent, sane way to communicate a human
                  * readable message to an API client suitable for human
@@ -1747,7 +1683,7 @@ public class Datasets extends AbstractApiBean {
                  * user. Human readable.
                  */
                 logger.fine("successMsg: " + successMsg);
-                return ok(addFileHelper.getSuccessResultAsJsonObjectBuilder());
+                return ok(addFileHelper.getSuccessResult());
                 //"Look at that!  You added a file! (hey hey, it may have worked)");
             } catch (NoFilesException ex) {
                 Logger.getLogger(Files.class.getName()).log(Level.SEVERE, null, ex);
@@ -1756,14 +1692,12 @@ public class Datasets extends AbstractApiBean {
             }
         }
 
-    } // end: addFileToDataset
-
+    }
 
     @GET
     @Path("{identifier}/locks")
     public Response getLocks(@PathParam("identifier") String id, @QueryParam("type") DatasetLock.Reason lockType) {
-
-        Dataset dataset = null;
+        Dataset dataset;
         try {
             dataset = findDatasetOrDie(id);
             Set<DatasetLock> locks;
@@ -1772,7 +1706,6 @@ public class Datasets extends AbstractApiBean {
             } else {
                 // request for a specific type lock:
                 DatasetLock lock = dataset.getLockFor(lockType);
-
                 locks = new HashSet<>();
                 if (lock != null) {
                     locks.add(lock);
@@ -1782,9 +1715,7 @@ public class Datasets extends AbstractApiBean {
             List<DatasetLockDTO> allLocks = locks.stream()
                     .map(l -> new DatasetLockDTO.Converter().convert(l))
                     .collect(Collectors.toList());
-
             return ok(allLocks);
-
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -1836,9 +1767,7 @@ public class Datasets extends AbstractApiBean {
             } catch (WrappedResponse wr) {
                 return wr.getResponse();
             }
-
         });
-
     }
 
     @POST
@@ -1866,10 +1795,8 @@ public class Datasets extends AbstractApiBean {
             } catch (WrappedResponse wr) {
                 return wr.getResponse();
             }
-
         });
     }
-
 
     private <T> T handleVersion(String versionId, DsVersionHandler<T> hdl)
             throws WrappedResponse {
@@ -1938,8 +1865,7 @@ public class Datasets extends AbstractApiBean {
 
     private RoleAssignee findAssignee(String identifier) {
         try {
-            RoleAssignee roleAssignee = roleAssigneeSvc.getRoleAssignee(identifier);
-            return roleAssignee;
+            return roleAssigneeSvc.getRoleAssignee(identifier);
         } catch (EJBException ex) {
             Throwable cause = ex;
             while (cause.getCause() != null) {
@@ -1949,6 +1875,4 @@ public class Datasets extends AbstractApiBean {
             return null;
         }
     }
-
 }
-

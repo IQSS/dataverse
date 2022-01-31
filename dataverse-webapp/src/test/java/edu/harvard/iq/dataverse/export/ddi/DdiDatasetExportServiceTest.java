@@ -3,10 +3,10 @@ package edu.harvard.iq.dataverse.export.ddi;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.UnitTestUtils;
-import edu.harvard.iq.dataverse.api.dto.DataFileDTO;
-import edu.harvard.iq.dataverse.api.dto.DataTableDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
-import edu.harvard.iq.dataverse.api.dto.FileDTO;
+import edu.harvard.iq.dataverse.api.dto.FileMetadataDTO;
+import edu.harvard.iq.dataverse.api.dto.FileMetadataDTO.DataFileDTO;
+import edu.harvard.iq.dataverse.export.DeserializartionHelper;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
@@ -22,7 +22,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.json.JsonObject;
 import javax.xml.stream.XMLStreamException;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -50,7 +49,7 @@ class DdiDatasetExportServiceTest {
     @Mock
     private DdiVariableWriter ddiVariableWriter;
 
-    
+
     // -------------------- TESTS --------------------
 
     @Test
@@ -83,7 +82,7 @@ class DdiDatasetExportServiceTest {
                     .add("files", createArrayBuilder())).build();
 
         DatasetDTO datasetDTO = new Gson().fromJson(json.toString(), DatasetDTO.class);
-
+        datasetDTO.setEmbargoActive(false);
         Map<String, String> collectionModeIndex = new HashMap<>();
         collectionModeIndex.put(modeA, "Collection mode A");
         collectionModeIndex.put(modeB, "Collection mode B");
@@ -135,44 +134,43 @@ class DdiDatasetExportServiceTest {
         verify(ddiDataAccessWriter).writeDataAccess(any(), same(datasetDTO));
 
     }
-    
+
     @Test
     void datasetJson2ddi__withFiles() throws IOException, URISyntaxException, XMLStreamException {
 
         // given
         DatasetDTO datasetDTO = readDtoFromFile("json/export/ddi/dataset-finch1.json");
-        
-        FileDTO tabularFileDto = new FileDTO();
+
+        FileMetadataDTO file1 = new FileMetadataDTO();
         DataFileDTO tabularDataFileDto = new DataFileDTO();
-        tabularDataFileDto.setFilename("file.tab");
-        tabularDataFileDto.setDataTables(Lists.newArrayList(new DataTableDTO()));
-        tabularFileDto.setDataFile(tabularDataFileDto);
-        
-        FileDTO nonTabularFileDto = new FileDTO();
+        tabularDataFileDto.setFilename("file1.tab");
+        file1.setDataFile(tabularDataFileDto);
+
+        FileMetadataDTO file2 = new FileMetadataDTO();
         DataFileDTO nonTabularDataFileDto = new DataFileDTO();
         nonTabularDataFileDto.setFilename("file2.txt");
-        nonTabularFileDto.setDataFile(nonTabularDataFileDto);
+        file2.setDataFile(nonTabularDataFileDto);
 
-        datasetDTO.getDatasetVersion().setFiles(Lists.newArrayList(tabularFileDto, nonTabularFileDto));
+        datasetDTO.getDatasetVersion().setFiles(Lists.newArrayList(file1, file2));
 
         // when
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         ddiDatasetExportService.datasetJson2ddi(datasetDTO, outputStream, Collections.emptyMap());
 
         // then
-        verify(ddiFileWriter).writeOtherMatFromFileDto(any(), same(nonTabularFileDto));
-        verify(ddiFileWriter).writeOtherMatFromFileDto(any(), same(tabularFileDto));
+        verify(ddiFileWriter).writeOtherMatFromFileDto(any(), same(file2));
+        verify(ddiFileWriter).writeOtherMatFromFileDto(any(), same(file1));
         verifyNoMoreInteractions(ddiFileWriter);
 
     }
-    
+
     @Test
     void datasetJson2ddi_full__withFiles() throws IOException, URISyntaxException, XMLStreamException {
 
         // given
         DatasetDTO datasetDTO = readDtoFromFile("json/export/ddi/dataset-finch1.json");
         DatasetVersion version = new DatasetVersion();
-        
+
         FileMetadata nonTabularFile = createFileMetadata();
         DataVariable variable1 = new DataVariable();
         DataVariable variable2 = new DataVariable();
@@ -180,18 +178,18 @@ class DdiDatasetExportServiceTest {
         DataVariable variable3 = new DataVariable();
         DataVariable variable4 = new DataVariable();
         FileMetadata tabularFile2 = createFileMetadataForTabularFile(variable3, variable4);
-        
+
         version.setFileMetadatas(Lists.newArrayList(nonTabularFile, tabularFile1, tabularFile2));
 
         // when
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         ddiDatasetExportService.datasetJson2ddi(datasetDTO, version, outputStream, Collections.emptyMap());
-        
+
         // then
         verify(ddiFileWriter).writeOtherMatFromFileMetadata(any(), same(nonTabularFile));
         verify(ddiFileWriter).writeFileDscr(any(), same(tabularFile1));
         verify(ddiFileWriter).writeFileDscr(any(), same(tabularFile2));
-        
+
         verify(ddiVariableWriter).createVarDDI(any(), same(variable1), same(tabularFile1));
         verify(ddiVariableWriter).createVarDDI(any(), same(variable2), same(tabularFile1));
         verify(ddiVariableWriter).createVarDDI(any(), same(variable3), same(tabularFile2));
@@ -203,9 +201,12 @@ class DdiDatasetExportServiceTest {
     private DatasetDTO readDtoFromFile(String path) throws IOException {
         String datasetDtoJson = UnitTestUtils.readFileToString(path);
         Gson gson = new Gson();
-        return gson.fromJson(datasetDtoJson, DatasetDTO.class);
+        DatasetDTO dto = gson.fromJson(datasetDtoJson, DatasetDTO.class);
+        dto.setEmbargoActive(false);
+        DeserializartionHelper.repairNestedDatasetFields(dto);
+        return dto;
     }
-    
+
     private String readFile(String path) throws IOException, URISyntaxException {
         return UnitTestUtils.readFileToString(path);
     }
@@ -216,14 +217,14 @@ class DdiDatasetExportServiceTest {
         fileMetadata.setDataFile(dataFile);
         return fileMetadata;
     }
-    
+
     private FileMetadata createFileMetadataForTabularFile(DataVariable...dataVariables) {
         FileMetadata fileMetadata = createFileMetadata();
         DataFile dataFile = fileMetadata.getDataFile();
         DataTable dataTable = new DataTable();
         dataTable.setDataVariables(Lists.newArrayList(dataVariables));
         dataFile.setDataTable(dataTable);
-        
+
         return fileMetadata;
     }
 }

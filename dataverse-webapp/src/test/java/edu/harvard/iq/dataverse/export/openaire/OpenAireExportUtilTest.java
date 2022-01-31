@@ -3,11 +3,13 @@ package edu.harvard.iq.dataverse.export.openaire;
 import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
-import edu.harvard.iq.dataverse.api.dto.FileDTO;
+import edu.harvard.iq.dataverse.api.dto.FileMetadataDTO;
+import edu.harvard.iq.dataverse.export.DeserializartionHelper;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import org.apache.commons.io.FileUtils;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Test;
 
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -202,9 +204,6 @@ public class OpenAireExportUtilTest {
      * Test: 4, Publisher (M)
      * <p>
      * publisher
-     *
-     * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
      */
     @Test
     public void testWritePublisherElement() throws XMLStreamException, IOException {
@@ -224,9 +223,6 @@ public class OpenAireExportUtilTest {
      * Test: 5, PublicationYear (M)
      * <p>
      * publicationYear
-     *
-     * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
      */
     @Test
     public void testWritePublicationYearElement() throws XMLStreamException, IOException, URISyntaxException {
@@ -245,9 +241,6 @@ public class OpenAireExportUtilTest {
      * Test: 6, Subject (with scheme sub-property) R
      * <p>
      * subjects
-     *
-     * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
      */
     @Test
     public void testSubjectsElement() throws XMLStreamException, IOException, URISyntaxException {
@@ -428,9 +421,6 @@ public class OpenAireExportUtilTest {
      * Test: 8, Date (with type sub-property) (R)
      * <p>
      * dates
-     *
-     * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
      */
     @Test
     public void testWriteDatesElement() throws XMLStreamException, IOException, URISyntaxException {
@@ -477,9 +467,6 @@ public class OpenAireExportUtilTest {
      * Test: 9, Language (O)
      * <p>
      * language
-     *
-     * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
      */
     @Test
     public void testWriteLanguageElement() throws XMLStreamException, IOException, URISyntaxException {
@@ -500,9 +487,6 @@ public class OpenAireExportUtilTest {
      * property) (M)
      * <p>
      * resourceType
-     *
-     * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
      */
     @Test
     public void testWriteResourceTypeElement() throws XMLStreamException, IOException, URISyntaxException {
@@ -522,9 +506,6 @@ public class OpenAireExportUtilTest {
      * Test: 11 AlternateIdentifier (with type sub-property) (O)
      * <p>
      * alternateIdentifier
-     *
-     * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
      */
     @Test
     public void testWriteAlternateIdentifierElement() throws XMLStreamException, IOException, URISyntaxException {
@@ -550,9 +531,6 @@ public class OpenAireExportUtilTest {
      * (R)
      * <p>
      * relatedIdentifier
-     *
-     * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
      */
     @Test
     public void testWriteRelatedIdentifierElement() throws XMLStreamException, IOException, URISyntaxException {
@@ -578,9 +556,6 @@ public class OpenAireExportUtilTest {
      * Test: 13, Size (O)
      * <p>
      * size
-     *
-     * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
      */
     @Test
     public void testWriteEmptySizeElement() throws XMLStreamException, IOException, URISyntaxException {
@@ -590,7 +565,7 @@ public class OpenAireExportUtilTest {
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
         {
             // set an empty file list
-            dto.setFiles(new ArrayList<FileDTO>());
+            dto.setFiles(new ArrayList<FileMetadataDTO>());
 
             // Fragment must be enclosed in a fake root element.
             writer.xml.writeStartElement("root");
@@ -607,9 +582,6 @@ public class OpenAireExportUtilTest {
      * Test: 13, Size (O)
      * <p>
      * relatedIdentifier
-     *
-     * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
      */
     @Test
     public void testWriteSizeElement() throws XMLStreamException, IOException, URISyntaxException {
@@ -631,9 +603,6 @@ public class OpenAireExportUtilTest {
      * Test: 14, Format (O)
      * <p>
      * size
-     *
-     * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
      */
     @Test
     public void testWriteEmptyFormatElement() throws XMLStreamException, IOException, URISyntaxException {
@@ -643,7 +612,7 @@ public class OpenAireExportUtilTest {
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
         {
             // set an empty file list
-            dto.setFiles(new ArrayList<FileDTO>());
+            dto.setFiles(new ArrayList<FileMetadataDTO>());
 
             // Fragment must be enclosed in a fake root element.
             writer.xml.writeStartElement("root");
@@ -661,9 +630,6 @@ public class OpenAireExportUtilTest {
      * Test: 14, Format (O)
      * <p>
      * size
-     *
-     * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
      */
     @Test
     public void testWriteFormatElement() throws XMLStreamException, IOException, URISyntaxException {
@@ -685,9 +651,6 @@ public class OpenAireExportUtilTest {
      * Test: 15, Version (O)
      * <p>
      * version
-     *
-     * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
      */
     @Test
     public void testWriteEmptyVersionElement() throws XMLStreamException, IOException, URISyntaxException {
@@ -712,9 +675,6 @@ public class OpenAireExportUtilTest {
      * Test: 15, Version (O)
      * <p>
      * version
-     *
-     * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
      */
     @Test
     public void testWriteVersionElement() throws XMLStreamException, IOException, URISyntaxException {
@@ -737,9 +697,6 @@ public class OpenAireExportUtilTest {
      * Test: 16 Rights (O)
      * <p>
      * rights
-     *
-     * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
      */
     @Test
     public void testWriteAccessRightElement_openAccess_sameLicenses() throws XMLStreamException, IOException, URISyntaxException {
@@ -760,9 +717,6 @@ public class OpenAireExportUtilTest {
      * Test: 17, Description (R)
      * <p>
      * description
-     *
-     * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
      */
     @Test
     public void testWriteDescriptionsElement() throws XMLStreamException, IOException, URISyntaxException {
@@ -799,9 +753,6 @@ public class OpenAireExportUtilTest {
      * Test: 18, GeoLocation (with point, box and polygon sub-properties) (R)
      * <p>
      * description
-     *
-     * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
      */
     @Test
     public void testWriteGeoLocationElement() throws XMLStreamException, IOException, URISyntaxException {
@@ -829,9 +780,6 @@ public class OpenAireExportUtilTest {
      * Test: 18, GeoLocation (with box) (R)
      * <p>
      * description
-     *
-     * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
      */
     @Test
     public void testWriteGeoLocationElement2() throws XMLStreamException, IOException, URISyntaxException {
@@ -853,9 +801,6 @@ public class OpenAireExportUtilTest {
      * Test: 18, GeoLocation (without box, with place) (R)
      * <p>
      * description
-     *
-     * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
      */
     @Test
     public void testWriteGeoLocationElement3() throws XMLStreamException, IOException, URISyntaxException {
@@ -1039,7 +984,10 @@ public class OpenAireExportUtilTest {
                                                .getResource(filePath).toURI()).toUri());
         String text = FileUtils.readFileToString(file, Charset.defaultCharset());
         Gson gson = new Gson();
-        return gson.fromJson(text, DatasetDTO.class);
+        DatasetDTO dto = gson.fromJson(text, DatasetDTO.class);
+        DeserializartionHelper.repairNestedDatasetFields(dto);
+        dto.setEmbargoActive(false);
+        return dto;
     }
 
     // -------------------- INNER CLASSES --------------------

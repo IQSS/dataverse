@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
+import edu.harvard.iq.dataverse.api.dto.AuthenticatedUserDTO;
 import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -51,7 +52,6 @@ import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
@@ -59,8 +59,6 @@ import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.EJB;
 import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
 import javax.persistence.TypedQuery;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.BadRequestException;
@@ -97,6 +95,7 @@ import java.util.Properties;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
@@ -150,8 +149,6 @@ public class Access extends AbstractApiBean {
     private ImageThumbConverter imageThumbConverter;
     @Inject
     private CitationFactory citationFactory;
-    @Inject
-    private JsonPrinter jsonPrinter;
     @Inject
     private RoleAssigneeServiceBean roleAssigneeSvc;
 
@@ -873,13 +870,10 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestList.noRequestsFound"));
         }
 
-        JsonArrayBuilder userArray = Json.createArrayBuilder();
-
-        for (AuthenticatedUser au : requesters) {
-            userArray.add(jsonPrinter.json(au));
-        }
-
-        return ok(userArray);
+        AuthenticatedUserDTO.Converter converter = new AuthenticatedUserDTO.Converter();
+        return ok(requesters.stream()
+                .map(converter::convert)
+                .collect(Collectors.toList()));
 
     }
 
@@ -1114,7 +1108,7 @@ public class Access extends AbstractApiBean {
 
         User apiTokenUser = getApiTokenUserWithGuestFallbackOnInvalidToken();
         User sessionUser = getSessionUserWithGuestFallback();
-        
+
         if (!GuestUser.get().equals(apiTokenUser) && isAccessAuthorizedForUser(apiTokenUser, df, fileIsInsideAnyReleasedDsVersion)) {
             logger.log(Level.FINE, "Token-based auth: user {0} has access rights on the datafile with id: {1}.",
                     new Object[] { apiTokenUser.getIdentifier(), df.getId() });

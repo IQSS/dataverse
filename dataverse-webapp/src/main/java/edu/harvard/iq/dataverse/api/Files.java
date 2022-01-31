@@ -26,7 +26,6 @@ import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -45,7 +44,6 @@ import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -65,36 +63,12 @@ public class Files extends AbstractApiBean {
     @Inject
     private OptionalFileParams optionalFileParams;
     @Inject
-    private JsonPrinter jsonPrinter;
-    @Inject
     private PermissionServiceBean permissionSvc;
 
     private static final Logger logger = Logger.getLogger(Files.class.getName());
 
-
-    private void msg(String m) {
-        System.out.println(m);
-    }
-
-    private void dashes() {
-        msg("----------------");
-    }
-
-    private void msgt(String m) {
-        dashes();
-        msg(m);
-        dashes();
-    }
-
-
     /**
      * Replace an Existing File
-     *
-     * @param
-     * @param testFileInputStream
-     * @param contentDispositionHeader
-     * @param formDataBodyPart
-     * @return
      */
     @POST
     @ApiWriteOperation
@@ -163,7 +137,6 @@ public class Files extends AbstractApiBean {
         //-------------------
         // (4) Create the AddReplaceFileHelper object
         //-------------------
-        msg("REPLACE!");
 
         DataverseRequest dvRequest2 = createDataverseRequest(authUser);
         AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequest2,
@@ -171,8 +144,7 @@ public class Files extends AbstractApiBean {
                                                                       fileService,
                                                                       dataFileCreator,
                                                                       permissionSvc,
-                                                                      jsonPrinter,
-                                                                      commandEngine, this.optionalFileParams);
+                commandEngine, this.optionalFileParams);
 
         //-------------------
         // (5) Run "runReplaceFileByDatasetId"
@@ -207,17 +179,13 @@ public class Files extends AbstractApiBean {
         } finally {
             IOUtils.closeQuietly(testFileInputStream);
         }
-        msg("we're back.....");
         if (addFileHelper.hasError()) {
-            msg("yes, has error");
             return error(addFileHelper.getHttpErrorCode(), addFileHelper.getErrorMessagesAsString("\n"));
 
         } else {
-            msg("no error");
             String successMsg = BundleUtil.getStringFromBundle("file.addreplace.success.replace");
 
             try {
-                msgt("as String: " + addFileHelper.getSuccessResult());
                 /**
                  * @todo We need a consistent, sane way to communicate a human
                  * readable message to an API client suitable for human
@@ -226,7 +194,7 @@ public class Files extends AbstractApiBean {
                  * user. Human readable.
                  */
                 logger.fine("successMsg: " + successMsg);
-                return ok(addFileHelper.getSuccessResultAsJsonObjectBuilder());
+                return ok(addFileHelper.getSuccessResult());
                 //return okResponseGsonObject(successMsg,
                 //        addFileHelper.getSuccessResultAsGsonObject());
                 //"Look at that!  You added a file! (hey hey, it may have worked)");

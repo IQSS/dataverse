@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.api.dto.DataFileListDTO;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.datafile.DataFileCreator;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -16,7 +17,6 @@ import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.validation.DatasetFieldValidationService;
 import edu.harvard.iq.dataverse.validation.datasetfield.ValidationResult;
 import org.apache.commons.io.IOUtils;
@@ -24,7 +24,6 @@ import org.apache.commons.lang.StringUtils;
 import org.ocpsoft.common.util.Strings;
 
 import javax.ejb.EJBException;
-import javax.json.JsonObjectBuilder;
 import javax.validation.ConstraintViolation;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -102,7 +101,6 @@ public class AddReplaceFileHelper {
     private DataFileServiceBean fileService;
     private DataFileCreator dataFileCreator;
     private PermissionServiceBean permissionService;
-    private JsonPrinter jsonPrinter;
     private EjbDataverseEngine commandEngine;
     private OptionalFileParams optionalFileParams;
 
@@ -153,7 +151,6 @@ public class AddReplaceFileHelper {
                                 DataFileServiceBean fileService,
                                 DataFileCreator dataFileCreator,
                                 PermissionServiceBean permissionService,
-                                JsonPrinter jsonPrinter,
                                 EjbDataverseEngine commandEngine,
                                 OptionalFileParams optionalFileParams) {
 
@@ -170,7 +167,6 @@ public class AddReplaceFileHelper {
         this.fileService = requireNonNull(fileService, "fileService cannot be null");
         this.dataFileCreator = requireNonNull(dataFileCreator, "dataFileCreator cannot be null");
         this.permissionService = requireNonNull(permissionService, "permissionService cannot be null");
-        this.jsonPrinter = requireNonNull(jsonPrinter);
         this.commandEngine = requireNonNull(commandEngine, "commandEngine cannot be null");
         this.optionalFileParams = optionalFileParams;
 
@@ -1361,21 +1357,7 @@ public class AddReplaceFileHelper {
 
     }
 
-    public String getSuccessResult() throws NoFilesException {
-        if (hasError()) {
-            throw new NoFilesException("Don't call this method if an error exists!! First check 'hasError()'");
-        }
-
-        if (newlyAddedFiles == null) {
-            throw new NullPointerException("newlyAddedFiles is null!");
-        }
-
-        return getSuccessResultAsJsonObjectBuilder().toString();
-
-    }
-
-    public JsonObjectBuilder getSuccessResultAsJsonObjectBuilder() throws NoFilesException {
-
+    public DataFileListDTO getSuccessResult() throws NoFilesException {
         if (hasError()) {
             throw new NoFilesException("Don't call this method if an error exists!! First check 'hasError()'");
         }
@@ -1388,7 +1370,7 @@ public class AddReplaceFileHelper {
             throw new NoFilesException("newlyAddedFiles is empty!");
         }
 
-        return jsonPrinter.jsonDataFileList(newlyAddedFiles);
+        return new DataFileListDTO.Converter().convert(newlyAddedFiles);
     }
 
 

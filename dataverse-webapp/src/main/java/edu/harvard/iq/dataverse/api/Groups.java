@@ -9,13 +9,10 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupProvider
 import edu.harvard.iq.dataverse.persistence.group.IpGroup;
 import edu.harvard.iq.dataverse.persistence.group.ShibGroup;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.ws.rs.DELETE;
@@ -43,9 +40,6 @@ public class Groups extends AbstractApiBean {
 
     private IpGroupProvider ipGroupPrv;
     private ShibGroupProvider shibGroupPrv;
-
-    @Inject
-    private JsonPrinter jsonPrinter;
 
     @Inject
     private GroupServiceBean groupSvc;

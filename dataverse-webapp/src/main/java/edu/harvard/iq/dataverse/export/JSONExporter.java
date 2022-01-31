@@ -1,31 +1,25 @@
 package edu.harvard.iq.dataverse.export;
 
+import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.common.BundleUtil;
-import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import org.apache.commons.lang.StringUtils;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.json.JsonObjectBuilder;
 import javax.ws.rs.core.MediaType;
 
 
 
 @ApplicationScoped
-public class JSONExporter implements Exporter {
-
-    private SettingsServiceBean settingsService;
-    private JsonPrinter jsonPrinter;
+public class JSONExporter extends ExporterBase {
 
     // -------------------- CONSTRUCTORS --------------------
 
     @Inject
-    public JSONExporter(SettingsServiceBean settingsService, JsonPrinter jsonPrinter) {
-        this.settingsService = settingsService;
-        this.jsonPrinter = jsonPrinter;
+    public JSONExporter(SettingsServiceBean settingsService, CitationFactory citationFactory) {
+        super(citationFactory, settingsService);
     }
 
     // -------------------- LOGIC --------------------
@@ -42,21 +36,13 @@ public class JSONExporter implements Exporter {
 
     @Override
     public String getDisplayName() {
-        return BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.json") != null ? BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.json") : "JSON";
+        return BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.json") != null
+                ? BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.json") : "JSON";
     }
 
     @Override
-    public String exportDataset(DatasetVersion version) throws ExportException {
-        try {
-            JsonObjectBuilder jsonObjectBuilder = jsonPrinter.jsonAsDatasetDto(version, settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport));
-
-            return jsonObjectBuilder
-                    .build()
-                    .toString();
-
-        } catch (Exception e) {
-            throw new ExportException("Unknown exception caught during JSON export.", e);
-        }
+    public String exportDataset(DatasetVersion version) {
+        return createDatasetJsonString(version);
     }
 
     @Override

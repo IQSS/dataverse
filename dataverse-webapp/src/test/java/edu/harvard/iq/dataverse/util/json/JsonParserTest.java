@@ -7,9 +7,7 @@ package edu.harvard.iq.dataverse.util.json;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.api.dto.IpGroupDTO;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
-import edu.harvard.iq.dataverse.citation.CitationDataExtractor;
-import edu.harvard.iq.dataverse.citation.CitationFactory;
-import edu.harvard.iq.dataverse.citation.StandardCitationFormatsConverter;
+import edu.harvard.iq.dataverse.common.Util;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.ControlledVocabularyValue;
@@ -85,9 +83,6 @@ public class JsonParserTest {
     DatasetFieldType pubIdType;
     DatasetFieldType compoundSingleType;
     JsonParser sut;
-
-    private JsonPrinter jsonPrinter = new JsonPrinter(
-            new CitationFactory(new CitationDataExtractor(), new StandardCitationFormatsConverter()));
 
     @BeforeClass
     public static void setUpClass() {
@@ -338,7 +333,7 @@ public class JsonParserTest {
         c.clear();
         c.set(2015, 8, 15);
         Date d = c.getTime();
-        String generated = jsonPrinter.format(d);
+        String generated = format(d);
         System.err.println(generated);
 
         //when
@@ -354,12 +349,11 @@ public class JsonParserTest {
     }
 
     /**
-     * Test that a date-time string that the {@link JsonPrinter} outputs a string
-     * that JsonParser can read correctly. This defines a non-UTC date-time that
-     * when output as a string and parsed must give the same date-time.
+     * Test that a date-time string that JsonParser can read correctly.
+     * This defines a non-UTC date-time that when output as a string
+     * and parsed must give the same date-time.
      *
-     * @throws ParseException when JsonPrinter outputs a string that JsonParse
-     *                        cannot read.
+     * @throws ParseException on a string that JsonParse cannot read.
      */
     @Test
     public void testDateTimeRoundtrip() throws ParseException {
@@ -368,7 +362,7 @@ public class JsonParserTest {
         c.clear();
         c.set(2015, 8, 15, 13, 37, 56);
         Date d = c.getTime();
-        String generated = jsonPrinter.format(d);
+        String generated = format(d);
         System.err.println(generated);
 
         //when
@@ -712,4 +706,7 @@ public class JsonParserTest {
         assertEquals(displayOrder, datasetVersion.getFileMetadatas().get(index).getDisplayOrder());
     }
 
+    public String format(Date date) {
+        return date != null ? Util.getDateTimeFormat().format(date) : null;
+    }
 }

@@ -478,7 +478,7 @@ public class FeedbackUtilTest {
         assertEquals("First.Last@someU.edu", feedback.getFromEmail());
     }
 
-    // We are starting to accumulate a lot of these. See DDIExporterTest, SchemaDotOrgExporterTest, JsonParserTest, and JsonPrinterTest.
+    // We are starting to accumulate a lot of these. See DDIExporterTest, SchemaDotOrgExporterTest, JsonParserTest.
     @TestBean
     static class MockDatasetFieldSvc extends DatasetFieldServiceBean {
 

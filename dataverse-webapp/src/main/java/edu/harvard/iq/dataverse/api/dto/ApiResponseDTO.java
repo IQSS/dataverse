@@ -8,6 +8,7 @@ import javax.ws.rs.core.Response;
 public class ApiResponseDTO<T> {
 
     protected String status;
+    protected String message;
     protected int code;
     private T data;
 
@@ -15,14 +16,23 @@ public class ApiResponseDTO<T> {
 
     public ApiResponseDTO() { }
 
-    public ApiResponseDTO(String status, int code, T data) {
+    public ApiResponseDTO(String status, int code, T data, String message) {
         this.status = status;
         this.code = code;
         this.data = data;
+        this.message = message;
+    }
+
+    public ApiResponseDTO(String status, int code, T data) {
+        this(status, code, data, null);
+    }
+
+    public ApiResponseDTO(Response.Status status, T data, String message) {
+        this(status.name(), status.getStatusCode(), data, message);
     }
 
     public ApiResponseDTO(Response.Status status, T data) {
-        this(status.name(), status.getStatusCode(), data);
+        this(status, data, null);
     }
 
     // -------------------- GETTERS --------------------
@@ -39,4 +49,7 @@ public class ApiResponseDTO<T> {
         return data;
     }
 
+    public String getMessage() {
+        return message;
+    }
 }

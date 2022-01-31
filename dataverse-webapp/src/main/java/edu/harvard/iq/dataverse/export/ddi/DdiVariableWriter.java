@@ -28,12 +28,12 @@ public class DdiVariableWriter {
      * on Dataverse DataVariable, DataTable, etc. objects.
      * This is because for this release (4.5) we are recycling the already available
      * code, and this is what we got. (We already have DTO objects for DataTable,
-     * and DataVariable, etc., but the current version JsonPrinter.jsonAsDatasetDto()
-     * does not produce JSON for these objects - it stops at DataFile. Eventually
-     * we want all of our objects to be exportable as JSON, and then all the exports
-     * can go through the same DTO state... But we don't have time for it now;
-     * plus, the structure of file-level metadata is currently being re-designed,
-     * so we probably should not invest any time into it right now). -- L.A. 4.5
+     * and DataVariable, etc., but currently we don't produce JSON for these objects
+     * - we stop at DataFile. Eventually we want all of our objects to be exportable
+     * as JSON, and then all the exports can go through the same DTO state...
+     * But we don't have time for it now; plus, the structure of file-level metadata
+     * is currently being re-designed, so we probably should not invest any time into
+     * it right now). -- L.A. 4.5
      */
     public void createVarDDI(XMLStreamWriter xmlw, DataVariable dv, FileMetadata fileMetadata) throws XMLStreamException {
         xmlw.writeStartElement("var");
@@ -124,7 +124,7 @@ public class DdiVariableWriter {
             xmlw.writeEndElement(); // invalrng
         }
     }
-    
+
     private void writeVarUniverse(XMLStreamWriter xmlw, DataVariable dataVariable, FileMetadata fileMetadata) throws XMLStreamException {
         //universe
         VariableMetadata vm = null;
@@ -140,7 +140,7 @@ public class DdiVariableWriter {
             writeFullElement(xmlw, "universe", vm.getUniverse());
         }
     }
-    
+
     private void writeVarSumStat(XMLStreamWriter xmlw, DataVariable dataVariable) throws XMLStreamException {
         for (SummaryStatistic sumStat : dataVariable.getSummaryStatistics()) {
             xmlw.writeStartElement("sumStat");
@@ -153,7 +153,7 @@ public class DdiVariableWriter {
             xmlw.writeEndElement(); //sumStat
         }
     }
-    
+
     private void writeVarCatgry(XMLStreamWriter xmlw, DataVariable dataVariable) throws XMLStreamException {
         for (VariableCategory cat : dataVariable.getCategories()) {
             xmlw.writeStartElement("catgry");

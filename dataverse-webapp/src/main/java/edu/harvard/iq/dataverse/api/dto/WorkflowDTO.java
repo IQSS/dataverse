@@ -90,9 +90,7 @@ public class WorkflowDTO {
 
     public static class Converter {
         public WorkflowDTO convert(Workflow workflow) {
-            WorkflowDTO converted = new WorkflowDTO();
-            converted.setName(workflow.getName());
-            converted.setId(workflow.getId());
+            WorkflowDTO converted = convertMinimal(workflow);
             if (workflow.getSteps() == null) {
                 return converted;
             }
@@ -107,6 +105,13 @@ public class WorkflowDTO {
                     })
                     .collect(Collectors.toList());
             converted.setSteps(steps);
+            return converted;
+        }
+
+        public WorkflowDTO convertMinimal(Workflow workflow) {
+            WorkflowDTO converted = new WorkflowDTO();
+            converted.setName(workflow.getName());
+            converted.setId(workflow.getId());
             return converted;
         }
     }

@@ -539,9 +539,13 @@ public abstract class AbstractApiBean {
     }
 
     protected <T> Response ok(T objectToBeSerialized) {
+        return ok(objectToBeSerialized, null);
+    }
+
+    protected <T> Response ok(T objectToBeSerialized, String message) {
         ObjectMapper objectMapper = new ObjectMapper();
 
-        ApiResponseDTO<T> response = new ApiResponseDTO<>(Status.OK, objectToBeSerialized);
+        ApiResponseDTO<T> response = new ApiResponseDTO<>(Status.OK, objectToBeSerialized, message);
 
         String serializedObj = Try.of(() -> objectMapper.writeValueAsString(response))
                 .getOrElseThrow(throwable -> new SerializationException("There was a problem with serializing object",
@@ -587,12 +591,16 @@ public abstract class AbstractApiBean {
                 .build();
     }
 
-    protected Response accepted(JsonObjectBuilder bld) {
+    protected <T> Response accepted(T objectToBeSerialized) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        ApiResponseDTO<T> response = new ApiResponseDTO<>(STATUS_WF_IN_PROGRESS, 202, objectToBeSerialized);
+        String serializedObj = Try.of(() -> objectMapper.writeValueAsString(response))
+                .getOrElseThrow(throwable -> new SerializationException("There was a problem with serializing object",
+                        throwable));
         return Response.accepted()
-                .entity(Json.createObjectBuilder()
-                                .add("status", STATUS_WF_IN_PROGRESS)
-                                .add("data", bld).build()
-                ).build();
+                .type(MediaType.APPLICATION_JSON_TYPE)
+                .entity(serializedObj)
+                .build();
     }
 
     protected Response accepted() {

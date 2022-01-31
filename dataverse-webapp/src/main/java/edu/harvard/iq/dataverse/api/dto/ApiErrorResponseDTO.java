@@ -6,7 +6,6 @@ import javax.ws.rs.core.Response;
 
 public class ApiErrorResponseDTO extends ApiResponseDTO<Void> {
 
-    private String message;
     private String incidentId;
 
     // -------------------- CONSTRUCTORS --------------------
@@ -14,10 +13,6 @@ public class ApiErrorResponseDTO extends ApiResponseDTO<Void> {
     private ApiErrorResponseDTO() { }
 
     // -------------------- GETTERS -------------------
-
-    public String getMessage() {
-        return message;
-    }
 
     public String getIncidentId() {
         return incidentId;

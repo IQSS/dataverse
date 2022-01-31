@@ -1,10 +1,7 @@
 package edu.harvard.iq.dataverse.util.json;
 
-import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlockDao;
-import edu.harvard.iq.dataverse.api.dto.FieldDTO;
-import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.common.Util;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
@@ -26,21 +23,17 @@ import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowStepData;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
-import javax.json.JsonReader;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
-import java.io.StringReader;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -432,36 +425,6 @@ public class JsonParser {
 
         return dataFile;
     }
-
-    /**
-     * Special processing for GeographicCoverage compound field:
-     * Handle parsing exceptions caused by invalid controlled vocabulary in the "country" field by
-     * putting the invalid data in "otherGeographicCoverage" in a new compound value.
-     *
-     * @param ex - contains the invalid values to be processed
-     * @return a compound DatasetFields that contains the newly created values, in addition to
-     * the original valid values.
-     * @throws JsonParseException
-     */
-    private List<DatasetField> remapGeographicCoverage(CompoundVocabularyException ex) throws JsonParseException {
-        List<Set<FieldDTO>> geoCoverageList = new ArrayList<>();
-        // For each exception, create HashSet of otherGeographic Coverage and add to list
-        for (ControlledVocabularyException vocabEx : ex.getExList()) {
-            Set<FieldDTO> set = new HashSet<>();
-            set.add(FieldDTO.createPrimitiveFieldDTO(DatasetFieldConstant.otherGeographicCoverage, vocabEx.getStrValue()));
-            geoCoverageList.add(set);
-        }
-        FieldDTO geoCoverageDTO = FieldDTO.createMultipleCompoundFieldDTO(DatasetFieldConstant.geographicCoverage, geoCoverageList);
-
-        // convert DTO to datasetField so we can back valid values.
-        Gson gson = new Gson();
-        String jsonString = gson.toJson(geoCoverageDTO);
-        JsonReader jsonReader = Json.createReader(new StringReader(jsonString));
-        JsonObject obj = jsonReader.readObject();
-
-        return parseField(obj);
-    }
-
 
     public DatasetField parseFieldForDelete(JsonObject json) throws JsonParseException {
         DatasetField ret = new DatasetField();

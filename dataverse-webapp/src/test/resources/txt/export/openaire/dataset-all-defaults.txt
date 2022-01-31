@@ -774,7 +774,7 @@
           {
             "typeName": "relatedMaterial",
             "multiple": true,
-            "typeClass": "primitive",
+            "typeClass": "compound",
             "value": [
               {
                 "relatedMaterialCitation": {
@@ -813,7 +813,7 @@
           {
             "typeName": "relatedDataset",
             "multiple": true,
-            "typeClass": "primitive",
+            "typeClass": "compound",
             "value": [
               {
                 "relatedDatasetCitation": {

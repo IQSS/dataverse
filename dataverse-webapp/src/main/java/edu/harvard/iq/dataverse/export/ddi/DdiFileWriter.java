@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.export.ddi;
 
-import edu.harvard.iq.dataverse.api.dto.DataFileDTO;
-import edu.harvard.iq.dataverse.api.dto.FileDTO;
+import edu.harvard.iq.dataverse.api.dto.FileMetadataDTO;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFileTag;
 import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
@@ -15,7 +14,13 @@ import javax.inject.Inject;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import static edu.harvard.iq.dataverse.export.ddi.DdiConstants.*;
+import static edu.harvard.iq.dataverse.export.ddi.DdiConstants.LEVEL_FILE;
+import static edu.harvard.iq.dataverse.export.ddi.DdiConstants.NOTE_SUBJECT_CONTENTTYPE;
+import static edu.harvard.iq.dataverse.export.ddi.DdiConstants.NOTE_SUBJECT_TAG;
+import static edu.harvard.iq.dataverse.export.ddi.DdiConstants.NOTE_SUBJECT_UNF;
+import static edu.harvard.iq.dataverse.export.ddi.DdiConstants.NOTE_TYPE_CONTENTTYPE;
+import static edu.harvard.iq.dataverse.export.ddi.DdiConstants.NOTE_TYPE_TAG;
+import static edu.harvard.iq.dataverse.export.ddi.DdiConstants.NOTE_TYPE_UNF;
 import static edu.harvard.iq.dataverse.util.xml.XmlStreamWriterUtils.writeAttribute;
 import static edu.harvard.iq.dataverse.util.xml.XmlStreamWriterUtils.writeFullElement;
 import static edu.harvard.iq.dataverse.util.xml.XmlStreamWriterUtils.writeFullElementWithAttributes;
@@ -44,12 +49,12 @@ public class DdiFileWriter {
      * contentType? Unfs and such? (in the "short" DDI that is being used for
      * harvesting *all* files are encoded as otherMats; even tabular ones.
      */
-    public void writeOtherMatFromFileDto(XMLStreamWriter xmlw, FileDTO fileDto)
+    public void writeOtherMatFromFileDto(XMLStreamWriter xmlw, FileMetadataDTO fileDto)
             throws XMLStreamException {
 
-        DataFileDTO dataFileDto = fileDto.getDataFile();
+        FileMetadataDTO.DataFileDTO dataFileDto = fileDto.getDataFile();
         String fileDdiId = "f" + dataFileDto.getId();
-        String fileUrl = StringUtils.isNotEmpty(dataFileDto.getPidURL()) ? 
+        String fileUrl = StringUtils.isNotEmpty(dataFileDto.getPidURL()) ?
                 dataFileDto.getPidURL()
                 : systemConfig.getDataverseSiteUrl() + "/api/access/datafile/" + dataFileDto.getId();
 
@@ -58,7 +63,7 @@ public class DdiFileWriter {
 
 
     /**
-     * An alternative version of the {@link #writeOtherMatFromFileDto(XMLStreamWriter, FileDTO)}
+     * An alternative version of the {@link #writeOtherMatFromFileDto(XMLStreamWriter, FileMetadataDTO)}
      * method - this one is used
      * when a "full" DDI is being cooked; just like the fileDscr and data/var sections methods,
      * it operates on the list of FileMetadata entities, not on File DTOs. This is because
@@ -73,7 +78,7 @@ public class DdiFileWriter {
         DataFile dataFile = fileMetadata.getDataFile();
         String fileDdiId = "f" + dataFile.getId();
 
-        String fileUrl = dataFile.getGlobalId().isComplete() ? 
+        String fileUrl = dataFile.getGlobalId().isComplete() ?
                 dataFile.getGlobalId().toURL().toString()
                 : systemConfig.getDataverseSiteUrl() + "/api/access/datafile/" + dataFile.getId();
 
@@ -137,7 +142,7 @@ public class DdiFileWriter {
 
     // -------------------- PRIVATE --------------------
 
-    private void writeOtherMatFile(XMLStreamWriter xmlw, String fileDdiId, String fileUrl, 
+    private void writeOtherMatFile(XMLStreamWriter xmlw, String fileDdiId, String fileUrl,
             String label, String description, String contentType) throws XMLStreamException {
         xmlw.writeStartElement("otherMat");
         writeAttribute(xmlw, "ID", fileDdiId);

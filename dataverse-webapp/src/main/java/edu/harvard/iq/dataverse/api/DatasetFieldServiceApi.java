@@ -17,7 +17,6 @@ import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.InputRendererType;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 import edu.harvard.iq.dataverse.search.SolrField;
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.EJB;
@@ -27,8 +26,6 @@ import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -41,14 +38,17 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 
 @Path("admin/datasetfield")
 public class DatasetFieldServiceApi extends AbstractApiBean {
+    private static final Logger logger = Logger.getLogger(DatasetFieldServiceApi.class.getName());
 
     @EJB
     DatasetFieldServiceBean datasetFieldService;
@@ -63,66 +63,33 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
     ControlledVocabularyValueServiceBean controlledVocabularyValueService;
 
     @Inject
-    private JsonPrinter jsonPrinter;
-
-    @Inject
     private ActionLogServiceBean actionLogSvc;
 
-    private static final Logger logger = Logger.getLogger(DatasetFieldServiceApi.class.getName());
 
     @GET
     public Response getAll() {
         try {
-            List<String> listOfIsHasParentsTrue = new ArrayList<>();
-            List<String> listOfIsHasParentsFalse = new ArrayList<>();
-            List<String> listOfIsAllowsMultiplesTrue = new ArrayList<>();
-            List<String> listOfIsAllowsMultiplesFalse = new ArrayList<>();
-            for (DatasetFieldType dsf : datasetFieldService.findAllOrderedById()) {
-                if (dsf.isHasParent()) {
-                    listOfIsHasParentsTrue.add(dsf.getName());
-                    listOfIsAllowsMultiplesTrue.add(dsf.getName());
-                } else {
-                    listOfIsHasParentsFalse.add(dsf.getName());
-                    listOfIsAllowsMultiplesFalse.add(dsf.getName());
-                }
-            }
-            final List<DatasetFieldType> requiredFields = datasetFieldService.findAllRequiredFields();
-            final List<String> requiredFieldNames = new ArrayList<>(requiredFields.size());
-            for (DatasetFieldType dt : requiredFields) {
-                requiredFieldNames.add(dt.getName());
-            }
-            return ok(Json.createObjectBuilder().add("haveParents", jsonPrinter.asJsonArray(listOfIsHasParentsTrue))
-                              .add("noParents", jsonPrinter.asJsonArray(listOfIsHasParentsFalse))
-                              .add("allowsMultiples", jsonPrinter.asJsonArray(listOfIsAllowsMultiplesTrue))
-                              .add("allowsMultiples", jsonPrinter.asJsonArray(listOfIsAllowsMultiplesTrue))
-                              .add("doesNotAllowMultiples", jsonPrinter.asJsonArray(listOfIsAllowsMultiplesFalse))
-                              .add("required", jsonPrinter.asJsonArray(requiredFieldNames))
-            );
-
-        } catch (EJBException ex) {
-            Throwable cause = ex;
-            StringBuilder sb = new StringBuilder();
-            sb.append(ex).append(" ");
-            while (cause.getCause() != null) {
-                cause = cause.getCause();
-                sb.append(cause.getClass().getCanonicalName()).append(" ");
-                sb.append(cause.getMessage()).append(" ");
-                if (cause instanceof ConstraintViolationException) {
-                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                    for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                        sb.append("(invalid value: <<<")
-                                .append(violation.getInvalidValue())
-                                .append(">>> for ")
-                                .append(violation.getPropertyPath())
-                                .append(" at ")
-                                .append(violation.getLeafBean())
-                                .append(" - ")
-                                .append(violation.getMessage())
-                                .append(")");
-                    }
-                }
-            }
-            return error(Status.INTERNAL_SERVER_ERROR, sb.toString());
+            List<DatasetFieldType> datasetFields = datasetFieldService.findAllOrderedById();
+            Map<Boolean, List<String>> byParent = datasetFields.stream().collect(
+                    Collectors.partitioningBy(DatasetFieldType::isHasParent,
+                            Collectors.mapping(DatasetFieldType::getName, Collectors.toList())));
+            Map<Boolean, List<String>> byMultiples = datasetFields.stream().collect(
+                    Collectors.partitioningBy(DatasetFieldType::isAllowMultiples,
+                            Collectors.mapping(DatasetFieldType::getName, Collectors.toList())));
+            List<String> requiredFieldNames = datasetFields.stream()
+                    .filter(DatasetFieldType::isRequired)
+                    .map(DatasetFieldType::getName)
+                    .collect(Collectors.toList());
+            Map<String, List<String>> dto = new LinkedHashMap<>();
+            dto.put("haveParents", byParent.get(Boolean.TRUE));
+            dto.put("noParents", byParent.get(Boolean.FALSE));
+            dto.put("allowsMultiples", byMultiples.get(Boolean.TRUE));
+            dto.put("doesNotAllowMultiples", byMultiples.get(Boolean.FALSE));
+            dto.put("required", requiredFieldNames);
+            return ok(dto);
+        } catch (EJBException eex) {
+            logger.log(Level.WARNING, "Exception encountered: ", eex);
+            return error(Status.INTERNAL_SERVER_ERROR, "Exception encountered");
         }
     }
 
@@ -178,21 +145,8 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             return notFound(name);
 
         } catch (EJBException | NullPointerException ex) {
-            Throwable cause = ex;
-            StringBuilder sb = new StringBuilder();
-            sb.append(ex).append(" ");
-            while (cause.getCause() != null) {
-                cause = cause.getCause();
-                sb.append(cause.getClass().getCanonicalName()).append(" ");
-                sb.append(cause.getMessage()).append(" ");
-                if (cause instanceof ConstraintViolationException) {
-                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                    for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                        sb.append("(invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ").append(violation.getPropertyPath()).append(" at ").append(violation.getLeafBean()).append(" - ").append(violation.getMessage()).append(")");
-                    }
-                }
-            }
-            return error(Status.INTERNAL_SERVER_ERROR, sb.toString());
+            logger.log(Level.WARNING, "Exception encountered: ", ex);
+            return error(Status.INTERNAL_SERVER_ERROR, "Exception encountered");
         }
 
     }

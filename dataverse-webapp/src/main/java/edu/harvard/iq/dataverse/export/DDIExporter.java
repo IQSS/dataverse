@@ -1,20 +1,15 @@
 package edu.harvard.iq.dataverse.export;
 
-import com.google.gson.Gson;
-import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
+import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.export.ddi.DdiConstants;
 import edu.harvard.iq.dataverse.export.ddi.DdiDatasetExportService;
-import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.json.JsonObject;
 import javax.xml.stream.XMLStreamException;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -31,22 +26,19 @@ import java.util.Map;
  * - renamed OAI_DDIExporter)
  */
 @ApplicationScoped
-public class DDIExporter implements Exporter {
+public class DDIExporter extends ExporterBase {
 
     private DdiDatasetExportService ddiDatasetExportService;
-    private SettingsServiceBean settingsService;
     private VocabularyValuesIndexer vocabularyValuesIndexer;
-    private JsonPrinter jsonPrinter;
 
     // -------------------- CONSTRUCTORS --------------------
 
     @Inject
     DDIExporter(DdiDatasetExportService ddiDatasetExportService, SettingsServiceBean settingsService,
-                VocabularyValuesIndexer vocabularyValuesIndexer, JsonPrinter jsonPrinter) {
+                VocabularyValuesIndexer vocabularyValuesIndexer, CitationFactory citationFactory) {
+        super(citationFactory, settingsService);
         this.ddiDatasetExportService = ddiDatasetExportService;
-        this.settingsService = settingsService;
         this.vocabularyValuesIndexer = vocabularyValuesIndexer;
-        this.jsonPrinter = jsonPrinter;
     }
 
     // -------------------- LOGIC --------------------
@@ -71,15 +63,9 @@ public class DDIExporter implements Exporter {
     @Override
     public String exportDataset(DatasetVersion version) throws ExportException {
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
-
-            JsonObject datasetAsJson = jsonPrinter.jsonAsDatasetDto(version, settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport))
-                    .build();
             Map<String, Map<String, String>> localizedVocabularyIndex
                     = vocabularyValuesIndexer.indexLocalizedNamesOfUsedKeysByTypeAndValue(version, Locale.ENGLISH);
-
-            Gson gson = new Gson();
-            DatasetDTO datasetDto = gson.fromJson(datasetAsJson.toString(), DatasetDTO.class);
-            ddiDatasetExportService.datasetJson2ddi(datasetDto, version, byteArrayOutputStream, localizedVocabularyIndex);
+            ddiDatasetExportService.datasetJson2ddi(createDTO(version), version, byteArrayOutputStream, localizedVocabularyIndex);
             return byteArrayOutputStream.toString(StandardCharsets.UTF_8.name());
         } catch (XMLStreamException | IOException xse) {
             throw new ExportException("Caught XMLStreamException performing DDI export");

@@ -1,74 +1,166 @@
 package edu.harvard.iq.dataverse.api.dto;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
+import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 
-/**
- * @author ellenk
- */
+import java.util.Map;
+import java.util.stream.Collectors;
+
+
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class MetadataBlockDTO {
-    String displayName;
-    List<FieldDTO> fields = new ArrayList<FieldDTO>();
+    private Long id;
+    private String name;
+    private String displayName;
+    private Map<String, DatasetFieldTypeDTO> fields;
+
+    // -------------------- GETTERS --------------------
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
 
     public String getDisplayName() {
         return displayName;
+    }
+
+    public Map<String, DatasetFieldTypeDTO> getFields() {
+        return fields;
+    }
+
+    // -------------------- SETTERS --------------------
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
     }
 
-    public FieldDTO getField(String typeName) {
-
-        for (FieldDTO field : fields) {
-            if (field.getTypeName().equals(typeName)) {
-                return field;
-            }
-        }
-        return null;
-    }
-
-    public void addField(FieldDTO newField) {
-        FieldDTO current = getField(newField.getTypeName());
-        // If there is no Field in this Metadatablock with the typeName,
-        // then add it to the list
-        if (current == null) {
-            fields.add(newField);
-            // Else, add/replace the value in the new field to the current field
-        } else {
-            if (current.getMultiple()) {
-                if ("compound".equals(newField.getTypeClass())) {
-                    List<Set<FieldDTO>> currentValue = current.getMultipleCompound();
-                    currentValue.addAll(newField.getMultipleCompound());
-                    current.setMultipleCompound(currentValue);
-                } else if ("controlledVocabulary".equals(newField.getTypeClass())) {
-                    List<String> currentValue = current.getMultipleVocab();
-                    currentValue.addAll(newField.getMultipleVocab());
-                    current.setMultipleVocab(currentValue);
-                } else {
-                    List<String> currentValue = current.getMultiplePrimitive();
-                    currentValue.addAll(newField.getMultiplePrimitive());
-                    current.setMultiplePrimitive(currentValue);
-                }
-            } else {
-                // If this Field doesn't allow multiples, just replace the value
-                // with the new field value.
-                current.setValue(newField.getValue());
-            }
-        }
-    }
-
-    public List<FieldDTO> getFields() {
-        return fields;
-    }
-
-    public void setFields(List<FieldDTO> fields) {
+    public void setFields(Map<String, DatasetFieldTypeDTO> fields) {
         this.fields = fields;
     }
 
-    @Override
-    public String toString() {
-        return "MetadataBlockDTO{" + "displayName=" + displayName + ", fields=" + fields + '}';
+    // -------------------- INNER CLASSES --------------------
+
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    public static class DatasetFieldTypeDTO {
+        private String name;
+        private String displayName;
+        private String title;
+        private String type;
+        private String watermark;
+        private String description;
+        private Map<String, DatasetFieldTypeDTO> childFields;
+
+        // -------------------- GETTERS --------------------
+
+        public String getName() {
+            return name;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public String getWatermark() {
+            return watermark;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public Map<String, DatasetFieldTypeDTO> getChildFields() {
+            return childFields;
+        }
+
+        // -------------------- SETTERS --------------------
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public void setDisplayName(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public void setWatermark(String watermark) {
+            this.watermark = watermark;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        public void setChildFields(Map<String, DatasetFieldTypeDTO> childFields) {
+            this.childFields = childFields;
+        }
+    }
+
+    public static class Converter {
+
+        // -------------------- LOGIC --------------------
+
+        public MetadataBlockDTO convert(MetadataBlock metadataBlock) {
+            MetadataBlockDTO converted = convertMinimal(metadataBlock);
+            converted.setFields(metadataBlock.getDatasetFieldTypes().stream()
+                    .map(this::convertDatasetFieldType)
+                    .collect(Collectors.toMap(DatasetFieldTypeDTO::getName, t -> t)));
+            return converted;
+        }
+
+        public MetadataBlockDTO convertMinimal(MetadataBlock metadataBlock) {
+            MetadataBlockDTO converted = new MetadataBlockDTO();
+            converted.setId(metadataBlock.getId());
+            converted.setName(metadataBlock.getName());
+            converted.setDisplayName(metadataBlock.getDisplayName());
+            return converted;
+        }
+
+        // -------------------- PRIVATE --------------------
+
+        private DatasetFieldTypeDTO convertDatasetFieldType(DatasetFieldType datasetFieldType) {
+            DatasetFieldTypeDTO converted = new DatasetFieldTypeDTO();
+            converted.setName(datasetFieldType.getName());
+            converted.setDisplayName(datasetFieldType.getDisplayName());
+            converted.setTitle(datasetFieldType.getTitle());
+            converted.setType(datasetFieldType.getFieldType().toString());
+            converted.setWatermark(datasetFieldType.getWatermark());
+            converted.setDescription(datasetFieldType.getDescription());
+            if (datasetFieldType.getChildDatasetFieldTypes().isEmpty()) {
+                return converted;
+            }
+            converted.setChildFields(datasetFieldType.getChildDatasetFieldTypes().stream()
+                    .map(this::convertDatasetFieldType)
+                    .collect(Collectors.toMap(DatasetFieldTypeDTO::getName, t -> t)));
+            return converted;
+        }
     }
 }

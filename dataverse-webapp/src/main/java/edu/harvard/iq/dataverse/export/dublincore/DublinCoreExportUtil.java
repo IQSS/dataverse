@@ -1,17 +1,15 @@
 package edu.harvard.iq.dataverse.export.dublincore;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
-import edu.harvard.iq.dataverse.api.dto.FieldDTO;
-import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
+import edu.harvard.iq.dataverse.api.dto.MetadataBlockWithFieldsDTO;
+import edu.harvard.iq.dataverse.api.dto.DatasetFieldDTO;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.export.ddi.DdiDatasetExportService;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
-import javax.json.JsonObject;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -45,18 +43,7 @@ public class DublinCoreExportUtil {
     public static String DC_FLAVOR_OAI = "dc";
     public static String DC_FLAVOR_DCTERMS = "dcterms";
 
-    public static String DEFAULT_DC_FLAVOR = DC_FLAVOR_DCTERMS;
-
-
-    public static void datasetJson2dublincore(JsonObject datasetDtoAsJson, OutputStream outputStream, String dcFlavor) throws XMLStreamException {
-        logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson.toString()));
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(datasetDtoAsJson.toString(), DatasetDTO.class);
-
-        dto2dublincore(datasetDto, outputStream, dcFlavor);
-    }
-
-    private static void dto2dublincore(DatasetDTO datasetDto, OutputStream outputStream, String dcFlavor) throws XMLStreamException {
+    public static void datasetJson2dublincore(DatasetDTO datasetDto, OutputStream outputStream, String dcFlavor) throws XMLStreamException {
         XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
         if (DC_FLAVOR_DCTERMS.equals(dcFlavor)) {
             xmlw.writeStartDocument();
@@ -76,7 +63,6 @@ public class DublinCoreExportUtil {
             //writeAttribute(xmlw, "version", DEFAULT_XML_VERSION);
             createOAIDC(xmlw, datasetDto, dcFlavor);
         }
-
 
         xmlw.writeEndElement(); // <metadata> or <oai_dc:dc>
         xmlw.flush();
@@ -175,16 +161,16 @@ public class DublinCoreExportUtil {
 
     private static void writeAuthorsElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String dcFlavor) throws XMLStreamException {
 
-        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+        for (Map.Entry<String, MetadataBlockWithFieldsDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
-            MetadataBlockDTO value = entry.getValue();
+            MetadataBlockWithFieldsDTO value = entry.getValue();
             if ("citation".equals(key)) {
-                for (FieldDTO fieldDTO : value.getFields()) {
-                    if (DatasetFieldConstant.author.equals(fieldDTO.getTypeName())) {
+                for (DatasetFieldDTO DatasetFieldDTO : value.getFields()) {
+                    if (DatasetFieldConstant.author.equals(DatasetFieldDTO.getTypeName())) {
                         String authorName = "";
-                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
-                                FieldDTO next = iterator.next();
+                        for (Set<DatasetFieldDTO> foo : DatasetFieldDTO.getMultipleCompound()) {
+                            for (Iterator<DatasetFieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
+                                DatasetFieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.authorName.equals(next.getTypeName())) {
                                     authorName = next.getSinglePrimitive();
                                 }
@@ -202,16 +188,16 @@ public class DublinCoreExportUtil {
     }
 
     private static void writeAbstractElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String dcFlavor) throws XMLStreamException {
-        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+        for (Map.Entry<String, MetadataBlockWithFieldsDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
-            MetadataBlockDTO value = entry.getValue();
+            MetadataBlockWithFieldsDTO value = entry.getValue();
             if ("citation".equals(key)) {
-                for (FieldDTO fieldDTO : value.getFields()) {
-                    if (DatasetFieldConstant.description.equals(fieldDTO.getTypeName())) {
+                for (DatasetFieldDTO DatasetFieldDTO : value.getFields()) {
+                    if (DatasetFieldConstant.description.equals(DatasetFieldDTO.getTypeName())) {
                         String descriptionText = "";
-                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
-                                FieldDTO next = iterator.next();
+                        for (Set<DatasetFieldDTO> foo : DatasetFieldDTO.getMultipleCompound()) {
+                            for (Iterator<DatasetFieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
+                                DatasetFieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.descriptionText.equals(next.getTypeName())) {
                                     descriptionText = next.getSinglePrimitive();
                                 }
@@ -232,24 +218,24 @@ public class DublinCoreExportUtil {
 
         //Key Words and Subject
 
-        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+        for (Map.Entry<String, MetadataBlockWithFieldsDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
-            MetadataBlockDTO value = entry.getValue();
+            MetadataBlockWithFieldsDTO value = entry.getValue();
             if ("citation".equals(key)) {
-                for (FieldDTO fieldDTO : value.getFields()) {
-                    if (DatasetFieldConstant.subject.equals(fieldDTO.getTypeName())) {
-                        for (String subject : fieldDTO.getMultipleVocab()) {
+                for (DatasetFieldDTO DatasetFieldDTO : value.getFields()) {
+                    if (DatasetFieldConstant.subject.equals(DatasetFieldDTO.getTypeName())) {
+                        for (String subject : DatasetFieldDTO.getMultipleVocabulary()) {
                             xmlw.writeStartElement(dcFlavor + ":" + "subject");
                             xmlw.writeCharacters(subject);
                             xmlw.writeEndElement(); //Keyword
                         }
                     }
 
-                    if (DatasetFieldConstant.keyword.equals(fieldDTO.getTypeName())) {
-                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                    if (DatasetFieldConstant.keyword.equals(DatasetFieldDTO.getTypeName())) {
+                        for (Set<DatasetFieldDTO> foo : DatasetFieldDTO.getMultipleCompound()) {
                             String keywordValue = "";
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
-                                FieldDTO next = iterator.next();
+                            for (Iterator<DatasetFieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
+                                DatasetFieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.keywordValue.equals(next.getTypeName())) {
                                     keywordValue = next.getSinglePrimitive();
                                 }
@@ -267,20 +253,20 @@ public class DublinCoreExportUtil {
     }
 
     private static void writeRelPublElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String dcFlavor) throws XMLStreamException {
-        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+        for (Map.Entry<String, MetadataBlockWithFieldsDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
-            MetadataBlockDTO value = entry.getValue();
+            MetadataBlockWithFieldsDTO value = entry.getValue();
             if ("citation".equals(key)) {
-                for (FieldDTO fieldDTO : value.getFields()) {
-                    if (DatasetFieldConstant.publication.equals(fieldDTO.getTypeName())) {
-                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                for (DatasetFieldDTO DatasetFieldDTO : value.getFields()) {
+                    if (DatasetFieldConstant.publication.equals(DatasetFieldDTO.getTypeName())) {
+                        for (Set<DatasetFieldDTO> foo : DatasetFieldDTO.getMultipleCompound()) {
                             String pubString = "";
                             String citation = "";
                             String IDType = "";
                             String IDNo = "";
                             String url = "";
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
-                                FieldDTO next = iterator.next();
+                            for (Iterator<DatasetFieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
+                                DatasetFieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.publicationCitation.equals(next.getTypeName())) {
                                     citation = next.getSinglePrimitive();
                                 }
@@ -310,16 +296,16 @@ public class DublinCoreExportUtil {
     }
 
     private static void writeContributorElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String dcFlavor) throws XMLStreamException {
-        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+        for (Map.Entry<String, MetadataBlockWithFieldsDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
-            MetadataBlockDTO value = entry.getValue();
+            MetadataBlockWithFieldsDTO value = entry.getValue();
             if ("citation".equals(key)) {
-                for (FieldDTO fieldDTO : value.getFields()) {
-                    if (DatasetFieldConstant.contributor.equals(fieldDTO.getTypeName())) {
+                for (DatasetFieldDTO DatasetFieldDTO : value.getFields()) {
+                    if (DatasetFieldConstant.contributor.equals(DatasetFieldDTO.getTypeName())) {
                         String contributorName = "";
-                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
-                                FieldDTO next = iterator.next();
+                        for (Set<DatasetFieldDTO> foo : DatasetFieldDTO.getMultipleCompound()) {
+                            for (Iterator<DatasetFieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
+                                DatasetFieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.contributorName.equals(next.getTypeName())) {
                                     contributorName = next.getSinglePrimitive();
                                 }
@@ -337,17 +323,17 @@ public class DublinCoreExportUtil {
     }
 
     private static void writeTimeElements(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String dcFlavor) throws XMLStreamException {
-        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+        for (Map.Entry<String, MetadataBlockWithFieldsDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
-            MetadataBlockDTO value = entry.getValue();
+            MetadataBlockWithFieldsDTO value = entry.getValue();
             if ("citation".equals(key)) {
-                for (FieldDTO fieldDTO : value.getFields()) {
-                    if (DatasetFieldConstant.timePeriodCovered.equals(fieldDTO.getTypeName())) {
+                for (DatasetFieldDTO DatasetFieldDTO : value.getFields()) {
+                    if (DatasetFieldConstant.timePeriodCovered.equals(DatasetFieldDTO.getTypeName())) {
                         String dateValStart = "";
                         String dateValEnd = "";
-                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
-                                FieldDTO next = iterator.next();
+                        for (Set<DatasetFieldDTO> foo : DatasetFieldDTO.getMultipleCompound()) {
+                            for (Iterator<DatasetFieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
+                                DatasetFieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.timePeriodCoveredStart.equals(next.getTypeName())) {
                                     dateValStart = next.getSinglePrimitive();
                                 }
@@ -363,12 +349,12 @@ public class DublinCoreExportUtil {
                             }
                         }
                     }
-                    if (DatasetFieldConstant.dateOfCollection.equals(fieldDTO.getTypeName())) {
+                    if (DatasetFieldConstant.dateOfCollection.equals(DatasetFieldDTO.getTypeName())) {
                         String dateValStart = "";
                         String dateValEnd = "";
-                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
-                                FieldDTO next = iterator.next();
+                        for (Set<DatasetFieldDTO> foo : DatasetFieldDTO.getMultipleCompound()) {
+                            for (Iterator<DatasetFieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
+                                DatasetFieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.dateOfCollectionStart.equals(next.getTypeName())) {
                                     dateValStart = next.getSinglePrimitive();
                                 }
@@ -390,15 +376,15 @@ public class DublinCoreExportUtil {
     }
 
     private static void writeSpatialElements(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String dcFlavor) throws XMLStreamException {
-        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+        for (Map.Entry<String, MetadataBlockWithFieldsDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
-            MetadataBlockDTO value = entry.getValue();
+            MetadataBlockWithFieldsDTO value = entry.getValue();
             if ("geospatial".equals(key)) {
-                for (FieldDTO fieldDTO : value.getFields()) {
-                    if (DatasetFieldConstant.geographicCoverage.equals(fieldDTO.getTypeName())) {
-                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
-                                FieldDTO next = iterator.next();
+                for (DatasetFieldDTO DatasetFieldDTO : value.getFields()) {
+                    if (DatasetFieldConstant.geographicCoverage.equals(DatasetFieldDTO.getTypeName())) {
+                        for (Set<DatasetFieldDTO> foo : DatasetFieldDTO.getMultipleCompound()) {
+                            for (Iterator<DatasetFieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
+                                DatasetFieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.country.equals(next.getTypeName())) {
                                     writeFullElement(xmlw, dcFlavor + ":" + "spatial", next.getSinglePrimitive());
                                 }
@@ -432,11 +418,11 @@ public class DublinCoreExportUtil {
 
 
     private static String dto2Primitive(DatasetVersionDTO datasetVersionDTO, String datasetFieldTypeName) {
-        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
-            MetadataBlockDTO value = entry.getValue();
-            for (FieldDTO fieldDTO : value.getFields()) {
-                if (datasetFieldTypeName.equals(fieldDTO.getTypeName())) {
-                    return fieldDTO.getSinglePrimitive();
+        for (Map.Entry<String, MetadataBlockWithFieldsDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+            MetadataBlockWithFieldsDTO value = entry.getValue();
+            for (DatasetFieldDTO DatasetFieldDTO : value.getFields()) {
+                if (datasetFieldTypeName.equals(DatasetFieldDTO.getTypeName())) {
+                    return DatasetFieldDTO.getSinglePrimitive();
                 }
             }
         }
@@ -444,13 +430,13 @@ public class DublinCoreExportUtil {
     }
 
     private static List<String> dto2PrimitiveList(DatasetVersionDTO datasetVersionDTO, String datasetFieldTypeName) {
-        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
-            MetadataBlockDTO value = entry.getValue();
-            for (FieldDTO fieldDTO : value.getFields()) {
-                if (datasetFieldTypeName.equals(fieldDTO.getTypeName())) {
-                    return fieldDTO.getMultiple()
-                            ? fieldDTO.getMultiplePrimitive()
-                            : Stream.of(fieldDTO.getSinglePrimitive()).collect(Collectors.toList());
+        for (Map.Entry<String, MetadataBlockWithFieldsDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+            MetadataBlockWithFieldsDTO value = entry.getValue();
+            for (DatasetFieldDTO DatasetFieldDTO : value.getFields()) {
+                if (datasetFieldTypeName.equals(DatasetFieldDTO.getTypeName())) {
+                    return DatasetFieldDTO.getMultiple()
+                            ? DatasetFieldDTO.getMultiplePrimitive()
+                            : Stream.of(DatasetFieldDTO.getSinglePrimitive()).collect(Collectors.toList());
                 }
             }
         }
@@ -458,14 +444,13 @@ public class DublinCoreExportUtil {
     }
 
     private static String extractChildValue(DatasetVersionDTO datasetVersionDTO, String dsfParentName, String dsfChildName) {
-        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
-            MetadataBlockDTO value = entry.getValue();
-            for (FieldDTO fieldDTO : value.getFields()) {
-                if (dsfParentName.equals(fieldDTO.getTypeName())) {
-                    return fieldDTO.getMultipleCompound().stream().flatMap(Collection::stream)
+        for (Map.Entry<String, MetadataBlockWithFieldsDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+            MetadataBlockWithFieldsDTO value = entry.getValue();
+            for (DatasetFieldDTO DatasetFieldDTO : value.getFields()) {
+                if (dsfParentName.equals(DatasetFieldDTO.getTypeName())) {
+                    return DatasetFieldDTO.getMultipleCompound().stream().flatMap(Collection::stream)
                             .filter(field -> field.getTypeName().equals(dsfChildName))
-                            .map(FieldDTO::getValue)
-                            .map(JsonElement::getAsString)
+                            .map(f -> (String) f.getValue())
                             .findFirst()
                             .orElse(null);
                 }

@@ -95,7 +95,7 @@ public class OREMap {
                         vals.add(val);
                     }
                 } else {
-                    // ToDo: Needs to be recursive (as in JsonPrinter?)
+                    // ToDo: Needs to be recursive
                         // compound values are of different types
                         JsonObjectBuilder child = Json.createObjectBuilder();
 

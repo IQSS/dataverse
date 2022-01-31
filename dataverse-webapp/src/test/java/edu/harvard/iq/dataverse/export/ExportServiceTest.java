@@ -23,11 +23,9 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import io.vavr.control.Either;
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -85,9 +83,6 @@ public class ExportServiceTest {
 
     private JsonLdBuilder jsonLdBuilder;
 
-    private JsonPrinter jsonPrinter = new JsonPrinter(
-            new CitationFactory(new CitationDataExtractor(), new StandardCitationFormatsConverter()));
-
     @BeforeEach
     void prepareData() {
         when(settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport)).thenReturn(false);
@@ -96,15 +91,15 @@ public class ExportServiceTest {
         jsonLdBuilder = new JsonLdBuilder(dataFileService, settingsService, systemConfig);
 
         mockDatasetFields();
-
+        CitationFactory citationFactory = new CitationFactory(new CitationDataExtractor(), new StandardCitationFormatsConverter());
         when(exporters.iterator()).thenReturn(IteratorUtils.arrayIterator(
-                new DataCiteExporter(new CitationFactory(new CitationDataExtractor(), new StandardCitationFormatsConverter())),
-                new DCTermsExporter(settingsService, jsonPrinter),
-                new DublinCoreExporter(settingsService,jsonPrinter),
+                new DataCiteExporter(citationFactory),
+                new DCTermsExporter(settingsService, citationFactory),
+                new DublinCoreExporter(settingsService, citationFactory),
                 new OAI_OREExporter(settingsService, systemConfig, clock),
                 new SchemaDotOrgExporter(jsonLdBuilder),
-                new OpenAireExporter(settingsService, jsonPrinter),
-                new JSONExporter(settingsService, jsonPrinter)));
+                new OpenAireExporter(settingsService, citationFactory),
+                new JSONExporter(settingsService, citationFactory)));
         exportService = new ExportService(exporters);
         exportService.loadAllExporters();
     }

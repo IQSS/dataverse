@@ -4,9 +4,10 @@ import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlockDao;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
+import edu.harvard.iq.dataverse.api.dto.DatasetFieldDTOFactory;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
-import edu.harvard.iq.dataverse.api.dto.FieldDTO;
-import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
+import edu.harvard.iq.dataverse.api.dto.MetadataBlockWithFieldsDTO;
+import edu.harvard.iq.dataverse.api.dto.DatasetFieldDTO;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
@@ -151,7 +152,7 @@ public class ImportGenericServiceBean {
         }
 
 
-        datasetDTO.getDatasetVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
+        datasetDTO.getDatasetVersion().setVersionState(DatasetVersion.VersionState.RELEASED.name());
 
         // Our DC import handles the contents of the dc:identifier field
         // as an "other id". In the context of OAI harvesting, we expect
@@ -202,8 +203,8 @@ public class ImportGenericServiceBean {
                     String dataverseFieldName = mappingDefined.getDatasetfieldName();
                     // Process attributes, if any are defined in the mapping:
                     if (mappingDefinedFieldType.isCompound()) {
-                        List<Set<FieldDTO>> compoundField = new ArrayList<>();
-                        Set<FieldDTO> set = new HashSet<>();
+                        List<Set<DatasetFieldDTO>> compoundField = new ArrayList<>();
+                        Set<DatasetFieldDTO> set = new HashSet<>();
                         for (ForeignMetadataFieldMapping childMapping : mappingDefined.getChildFieldMappings()) {
                             if (childMapping.isAttribute()) {
                                 String attributeName = childMapping.getForeignFieldXPath();
@@ -229,35 +230,36 @@ public class ImportGenericServiceBean {
                         }
                         if (!set.isEmpty()) {
                             compoundField.add(set);
-                            MetadataBlockDTO citationBlock = datasetDTO.getDatasetVersion().getMetadataBlocks().get(mappingDefinedFieldType.getMetadataBlock().getName());
-                            citationBlock.addField(FieldDTO.createMultipleCompoundFieldDTO(mappingDefined.getDatasetfieldName(), compoundField));
+                            MetadataBlockWithFieldsDTO citationBlock = datasetDTO.getDatasetVersion().getMetadataBlocks().get(mappingDefinedFieldType.getMetadataBlock().getName());
+                            DatasetFieldDTOFactory.embedInMetadataBlock(
+                                    DatasetFieldDTOFactory.createMultipleCompound(mappingDefined.getDatasetfieldName(), compoundField), citationBlock);
                         } else {
-                            FieldDTO value;
+                            DatasetFieldDTO value;
                             if (mappingDefinedFieldType.isAllowMultiples()) {
                                 List<String> values = new ArrayList<>();
                                 values.add(parseText(xmlr));
-                                value = FieldDTO.createMultiplePrimitiveFieldDTO(dataverseFieldName, values);
+                                value = DatasetFieldDTOFactory.createMultiplePrimitive(dataverseFieldName, values);
                             } else {
-                                value = FieldDTO.createPrimitiveFieldDTO(dataverseFieldName, parseText(xmlr));
+                                value = DatasetFieldDTOFactory.createPrimitive(dataverseFieldName, parseText(xmlr));
                             }
 
                             value = makeDTO(mappingDefinedFieldType, value, dataverseFieldName);
-                            MetadataBlockDTO citationBlock = datasetDTO.getDatasetVersion().getMetadataBlocks().get(mappingDefinedFieldType.getMetadataBlock().getName());
-                            citationBlock.addField(value);
+                            MetadataBlockWithFieldsDTO citationBlock = datasetDTO.getDatasetVersion().getMetadataBlocks().get(mappingDefinedFieldType.getMetadataBlock().getName());
+                            DatasetFieldDTOFactory.embedInMetadataBlock(value, citationBlock);
                         }
                     } else if (dataverseFieldName != null && !dataverseFieldName.isEmpty()) {
                             DatasetFieldType dataverseFieldType = datasetfieldService.findByNameOpt(dataverseFieldName);
-                            FieldDTO value;
+                            DatasetFieldDTO value;
                             if (dataverseFieldType != null) {
 
                                 if (dataverseFieldType.isControlledVocabulary()) {
-                                    value = FieldDTO.createVocabFieldDTO(dataverseFieldName, parseText(xmlr));
+                                    value = DatasetFieldDTOFactory.createVocabulary(dataverseFieldName, parseText(xmlr));
                                 } else {
-                                    value = FieldDTO.createPrimitiveFieldDTO(dataverseFieldName, parseText(xmlr));
+                                    value = DatasetFieldDTOFactory.createPrimitive(dataverseFieldName, parseText(xmlr));
                                 }
                                 value = makeDTO(dataverseFieldType, value, dataverseFieldName);
-                                MetadataBlockDTO citationBlock = datasetDTO.getDatasetVersion().getMetadataBlocks().get(mappingDefinedFieldType.getMetadataBlock().getName());
-                                citationBlock.addField(value);
+                                MetadataBlockWithFieldsDTO citationBlock = datasetDTO.getDatasetVersion().getMetadataBlocks().get(mappingDefinedFieldType.getMetadataBlock().getName());
+                                DatasetFieldDTOFactory.embedInMetadataBlock(value, citationBlock);
                             } else {
                                 throw new EJBException("Bad foreign metadata field mapping: no such DatasetField " + dataverseFieldName + "!");
                             }
@@ -274,25 +276,25 @@ public class ImportGenericServiceBean {
         }
     }
 
-    private FieldDTO makeDTO(DatasetFieldType dataverseFieldType, FieldDTO value, String dataverseFieldName) {
+    private DatasetFieldDTO makeDTO(DatasetFieldType dataverseFieldType, DatasetFieldDTO value, String dataverseFieldName) {
         if (dataverseFieldType.isAllowMultiples()) {
             if (dataverseFieldType.isCompound()) {
-                value = FieldDTO.createMultipleCompoundFieldDTO(dataverseFieldName, value);
+                value = DatasetFieldDTOFactory.createMultipleCompound(dataverseFieldName, value);
             } else if (dataverseFieldType.isControlledVocabulary()) {
-                value = FieldDTO.createMultipleVocabFieldDTO(dataverseFieldName, Arrays.asList(value.getSinglePrimitive()));
+                value = DatasetFieldDTOFactory.createMultipleVocabulary(dataverseFieldName, Arrays.asList(value.getSinglePrimitive()));
             } else {
-                value = FieldDTO.createMultiplePrimitiveFieldDTO(dataverseFieldName, Arrays.asList(value.getSinglePrimitive()));
+                value = DatasetFieldDTOFactory.createMultiplePrimitive(dataverseFieldName, Arrays.asList(value.getSinglePrimitive()));
             }
             if (dataverseFieldType.isChild()) {
                 DatasetFieldType parentDatasetFieldType = dataverseFieldType.getParentDatasetFieldType();
                 if (parentDatasetFieldType.isAllowMultiples()) {
-                    value = FieldDTO.createMultipleCompoundFieldDTO(parentDatasetFieldType.getName(), value);
+                    value = DatasetFieldDTOFactory.createMultipleCompound(parentDatasetFieldType.getName(), value);
 
                 }
             }
         } else {
             if (dataverseFieldType.isCompound()) {
-                value = FieldDTO.createCompoundFieldDTO(dataverseFieldName, value);
+                value = DatasetFieldDTOFactory.createCompound(dataverseFieldName, value);
             }
         }
 
@@ -302,7 +304,7 @@ public class ImportGenericServiceBean {
         if (dataverseFieldType.isChild()) {
             DatasetFieldType parentDatasetFieldType = dataverseFieldType.getParentDatasetFieldType();
             if (parentDatasetFieldType.isAllowMultiples()) {
-                value = FieldDTO.createMultipleCompoundFieldDTO(parentDatasetFieldType.getName(), value);
+                value = DatasetFieldDTOFactory.createMultipleCompound(parentDatasetFieldType.getName(), value);
 
             }
         }
@@ -310,15 +312,15 @@ public class ImportGenericServiceBean {
     }
 
     private String getOtherIdFromDTO(DatasetVersionDTO datasetVersionDTO) {
-        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+        for (Map.Entry<String, MetadataBlockWithFieldsDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
-            MetadataBlockDTO value = entry.getValue();
+            MetadataBlockWithFieldsDTO value = entry.getValue();
             if ("citation".equals(key)) {
-                for (FieldDTO fieldDTO : value.getFields()) {
+                for (DatasetFieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.otherId.equals(fieldDTO.getTypeName())) {
                         String otherId = "";
-                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
-                            for (FieldDTO next : foo) {
+                        for (Set<DatasetFieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                            for (DatasetFieldDTO next : foo) {
                                 if (DatasetFieldConstant.otherIdValue.equals(next.getTypeName())) {
                                     otherId = next.getSinglePrimitive();
                                 }
@@ -392,16 +394,16 @@ public class ImportGenericServiceBean {
         DatasetDTO datasetDTO = new DatasetDTO();
         DatasetVersionDTO datasetVersionDTO = new DatasetVersionDTO();
         datasetDTO.setDatasetVersion(datasetVersionDTO);
-        HashMap<String, MetadataBlockDTO> metadataBlocks = new HashMap<>();
+        HashMap<String, MetadataBlockWithFieldsDTO> metadataBlocks = new HashMap<>();
         datasetVersionDTO.setMetadataBlocks(metadataBlocks);
 
-        datasetVersionDTO.getMetadataBlocks().put("citation", new MetadataBlockDTO());
+        datasetVersionDTO.getMetadataBlocks().put("citation", new MetadataBlockWithFieldsDTO());
         datasetVersionDTO.getMetadataBlocks().get("citation").setFields(new ArrayList<>());
-        datasetVersionDTO.getMetadataBlocks().put("geospatial", new MetadataBlockDTO());
+        datasetVersionDTO.getMetadataBlocks().put("geospatial", new MetadataBlockWithFieldsDTO());
         datasetVersionDTO.getMetadataBlocks().get("geospatial").setFields(new ArrayList<>());
-        datasetVersionDTO.getMetadataBlocks().put("social_science", new MetadataBlockDTO());
+        datasetVersionDTO.getMetadataBlocks().put("social_science", new MetadataBlockWithFieldsDTO());
         datasetVersionDTO.getMetadataBlocks().get("social_science").setFields(new ArrayList<>());
-        datasetVersionDTO.getMetadataBlocks().put("astrophysics", new MetadataBlockDTO());
+        datasetVersionDTO.getMetadataBlocks().put("astrophysics", new MetadataBlockWithFieldsDTO());
         datasetVersionDTO.getMetadataBlocks().get("astrophysics").setFields(new ArrayList<>());
 
         return datasetDTO;
@@ -445,9 +447,9 @@ public class ImportGenericServiceBean {
         return content.toString();
     }
 
-    private void addToSet(Set<FieldDTO> set, String typeName, String value) {
+    private void addToSet(Set<DatasetFieldDTO> set, String typeName, String value) {
         if (value != null) {
-            set.add(FieldDTO.createPrimitiveFieldDTO(typeName, value));
+            set.add(DatasetFieldDTOFactory.createPrimitive(typeName, value));
         }
     }
 

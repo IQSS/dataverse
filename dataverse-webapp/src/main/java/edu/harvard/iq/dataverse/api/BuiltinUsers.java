@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
+import edu.harvard.iq.dataverse.api.dto.AuthenticatedUserDTO;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
@@ -14,14 +15,11 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.BuiltinUser;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -32,6 +30,8 @@ import javax.ws.rs.core.Response.Status;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -51,13 +51,12 @@ public class BuiltinUsers extends AbstractApiBean {
     protected BuiltinUserServiceBean builtinUserSvc;
 
     @Inject
-    private JsonPrinter jsonPrinter;
-
-    @Inject
     private ActionLogServiceBean actionLogSvc;
 
     @Inject
     private UserNotificationService userNotificationService;
+
+    // -------------------- LOGIC --------------------
 
     @GET
     @Path("{username}/api-token")
@@ -66,25 +65,26 @@ public class BuiltinUsers extends AbstractApiBean {
         if (!lookupAllowed) {
             return error(Status.FORBIDDEN, "This API endpoint has been disabled.");
         }
-        BuiltinUser u;
 
-        u = builtinUserSvc.findByUserName(username);
+        BuiltinUser builtinUser = builtinUserSvc.findByUserName(username);
 
-        if (u == null) {
+        if (builtinUser == null) {
             return badRequest("Bad username or password");
         }
 
-        boolean passwordOk = PasswordEncryption.getVersion(u.getPasswordEncryptionVersion())
-                .check(password, u.getEncryptedPassword());
+        boolean passwordOk = PasswordEncryption.getVersion(builtinUser.getPasswordEncryptionVersion())
+                .check(password, builtinUser.getEncryptedPassword());
         if (!passwordOk) {
             return badRequest("Bad username or password");
         }
 
-        AuthenticatedUser authUser = authSvc.lookupUser(BuiltinAuthenticationProvider.PROVIDER_ID, u.getUserName());
+        AuthenticatedUser authUser = authSvc.lookupUser(BuiltinAuthenticationProvider.PROVIDER_ID, builtinUser.getUserName());
 
-        ApiToken t = authSvc.findApiTokenByUser(authUser);
+        ApiToken token = authSvc.findApiTokenByUser(authUser);
 
-        return (t != null) ? ok(t.getTokenString()) : notFound("User " + username + " does not have an API token");
+        return token != null
+                ? ok(token.getTokenString())
+                : notFound("User " + username + " does not have an API token");
     }
 
 
@@ -106,11 +106,6 @@ public class BuiltinUsers extends AbstractApiBean {
      * from the RestAssured API. RestAssured doesn't allow a Post request to
      * contain both a body and request parameters. TODO: replace current usage
      * of save() with create?
-     *
-     * @param user
-     * @param password
-     * @param key
-     * @return
      */
     @POST
     @ApiWriteOperation
@@ -118,6 +113,8 @@ public class BuiltinUsers extends AbstractApiBean {
     public Response create(BuiltinUser user, @PathParam("password") String password, @PathParam("key") String key) {
         return internalSave(user, password, key);
     }
+
+    // -------------------- PRIVATE --------------------
 
     private Response internalSave(BuiltinUser user, String password, String key) {
         String expectedKey = settingsSvc.get(API_KEY_IN_SETTINGS);
@@ -129,7 +126,7 @@ public class BuiltinUsers extends AbstractApiBean {
             return badApiKey(key);
         }
 
-        ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.BuiltinUser, "create");
+        ActionLogRecord logRecord = new ActionLogRecord(ActionLogRecord.ActionType.BuiltinUser, "create");
 
         try {
 
@@ -138,8 +135,8 @@ public class BuiltinUsers extends AbstractApiBean {
             }
 
             // Make sure the identifier is unique
-            if ((builtinUserSvc.findByUserName(user.getUserName()) != null)
-                    || (authSvc.identifierExists(user.getUserName()))) {
+            if (builtinUserSvc.findByUserName(user.getUserName()) != null
+                    || authSvc.identifierExists(user.getUserName())) {
                 return error(Status.BAD_REQUEST, "username '" + user.getUserName() + "' already exists");
             }
             user = builtinUserSvc.save(user);
@@ -174,38 +171,44 @@ public class BuiltinUsers extends AbstractApiBean {
             token.setTokenString(java.util.UUID.randomUUID().toString());
             token.setAuthenticatedUser(au);
 
-            Calendar c = Calendar.getInstance();
-            token.setCreateTime(new Timestamp(c.getTimeInMillis()));
-            c.roll(Calendar.YEAR, 1);
-            token.setExpireTime(new Timestamp(c.getTimeInMillis()));
+            Calendar calendar = Calendar.getInstance();
+            token.setCreateTime(new Timestamp(calendar.getTimeInMillis()));
+            calendar.roll(Calendar.YEAR, 1);
+            token.setExpireTime(new Timestamp(calendar.getTimeInMillis()));
             authSvc.save(token);
 
-            JsonObjectBuilder resp = Json.createObjectBuilder();
-            resp.add("user", jsonPrinter.json(user));
-            resp.add("authenticatedUser", jsonPrinter.json(au));
-            resp.add("apiToken", token.getTokenString());
-
-            alr.setInfo("builtinUser:" + user.getUserName() + " authenticatedUser:" + au.getIdentifier());
-            return ok(resp);
-
+            logRecord.setInfo("builtinUser:" + user.getUserName() + " authenticatedUser:" + au.getIdentifier());
+            return ok(buildDto(user, au, token));
         } catch (EJBException ejbx) {
-            alr.setActionResult(ActionLogRecord.Result.InternalError);
-            alr.setInfo(alr.getInfo() + "// " + ejbx.getMessage());
+            logRecord.setActionResult(ActionLogRecord.Result.InternalError);
+            logRecord.setInfo(logRecord.getInfo() + "// " + ejbx.getMessage());
             if (ejbx.getCausedByException() instanceof IllegalArgumentException) {
                 return error(Status.BAD_REQUEST, "Bad request: can't save user. " + ejbx.getCausedByException().getMessage());
             } else {
                 logger.log(Level.WARNING, "Error saving user: ", ejbx);
                 return error(Status.INTERNAL_SERVER_ERROR, "Can't save user: " + ejbx.getMessage());
             }
-
         } catch (Exception e) {
             logger.log(Level.WARNING, "Error saving user", e);
-            alr.setActionResult(ActionLogRecord.Result.InternalError);
-            alr.setInfo(alr.getInfo() + "// " + e.getMessage());
+            logRecord.setActionResult(ActionLogRecord.Result.InternalError);
+            logRecord.setInfo(logRecord.getInfo() + "// " + e.getMessage());
             return error(Status.INTERNAL_SERVER_ERROR, "Can't save user: " + e.getMessage());
         } finally {
-            actionLogSvc.log(alr);
+            actionLogSvc.log(logRecord);
         }
     }
 
+    private Map<String, Object> buildDto(BuiltinUser user, AuthenticatedUser au, ApiToken token) {
+        Map<String, Object> dto = new HashMap<>();
+
+        Map<String, Object> userDto = new HashMap<>();
+        userDto.put("id", user.getId());
+        userDto.put("userName", user.getUserName());
+
+        dto.put("user", userDto);
+        dto.put("authenticatedUser", new AuthenticatedUserDTO.Converter().convert(au));
+        dto.put("apiToken", token.getTokenString());
+
+        return dto;
+    }
 }

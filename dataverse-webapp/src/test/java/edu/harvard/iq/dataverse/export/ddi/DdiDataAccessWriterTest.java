@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.export.ddi;
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
-import edu.harvard.iq.dataverse.api.dto.FileDTO;
+import edu.harvard.iq.dataverse.api.dto.FileMetadataDTO;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.RestrictType;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType;
 import org.junit.jupiter.api.AfterEach;
@@ -74,8 +74,8 @@ public class DdiDataAccessWriterTest {
     @Test
     public void writeDataAccess_same_license_for_all_files() throws XMLStreamException {
         // given
-        FileDTO fileDTO = createFileDTOWithLicenseTerms("CC0");
-        FileDTO fileDTO2 = createFileDTOWithLicenseTerms("CC0");
+        FileMetadataDTO fileDTO = createFileDTOWithLicenseTerms("CC0");
+        FileMetadataDTO fileDTO2 = createFileDTOWithLicenseTerms("CC0");
         DatasetDTO datasetDTO = createDatasetDTOWithFiles(fileDTO, fileDTO2);
 
         // when
@@ -91,8 +91,8 @@ public class DdiDataAccessWriterTest {
     @Test
     public void writeDataAccess_all_rights_reserved_for_all_files() throws XMLStreamException {
         // given
-        FileDTO fileDTO = createFileDTOWithAllRightsReservedTerms();
-        FileDTO fileDTO2 = createFileDTOWithAllRightsReservedTerms();
+        FileMetadataDTO fileDTO = createFileDTOWithAllRightsReservedTerms();
+        FileMetadataDTO fileDTO2 = createFileDTOWithAllRightsReservedTerms();
         DatasetDTO datasetDTO = createDatasetDTOWithFiles(fileDTO, fileDTO2);
 
         // when
@@ -108,8 +108,8 @@ public class DdiDataAccessWriterTest {
     @Test
     public void writeDataAccess_same_restriction_for_all_files() throws XMLStreamException {
         // given
-        FileDTO fileDTO = createFileDTOWithRestrictedTerms(RestrictType.ACADEMIC_PURPOSE, null);
-        FileDTO fileDTO2 = createFileDTOWithRestrictedTerms(RestrictType.ACADEMIC_PURPOSE, null);
+        FileMetadataDTO fileDTO = createFileDTOWithRestrictedTerms(RestrictType.ACADEMIC_PURPOSE, null);
+        FileMetadataDTO fileDTO2 = createFileDTOWithRestrictedTerms(RestrictType.ACADEMIC_PURPOSE, null);
         DatasetDTO datasetDTO = createDatasetDTOWithFiles(fileDTO, fileDTO2);
 
         // when
@@ -125,8 +125,8 @@ public class DdiDataAccessWriterTest {
     @Test
     public void writeDataAccess_same_custom_restriction_for_all_files() throws XMLStreamException {
         // given
-        FileDTO fileDTO = createFileDTOWithRestrictedTerms(RestrictType.CUSTOM, "Some condition");
-        FileDTO fileDTO2 = createFileDTOWithRestrictedTerms(RestrictType.CUSTOM, "Some condition");
+        FileMetadataDTO fileDTO = createFileDTOWithRestrictedTerms(RestrictType.CUSTOM, "Some condition");
+        FileMetadataDTO fileDTO2 = createFileDTOWithRestrictedTerms(RestrictType.CUSTOM, "Some condition");
         DatasetDTO datasetDTO = createDatasetDTOWithFiles(fileDTO, fileDTO2);
 
         // when
@@ -142,8 +142,8 @@ public class DdiDataAccessWriterTest {
     @Test
     public void writeDataAccess_all_restricted_with_different_restrictions() throws XMLStreamException {
         // given
-        FileDTO fileDTO = createFileDTOWithRestrictedTerms(RestrictType.ACADEMIC_PURPOSE, null);
-        FileDTO fileDTO2 = createFileDTOWithRestrictedTerms(RestrictType.NOT_FOR_REDISTRIBUTION, null);
+        FileMetadataDTO fileDTO = createFileDTOWithRestrictedTerms(RestrictType.ACADEMIC_PURPOSE, null);
+        FileMetadataDTO fileDTO2 = createFileDTOWithRestrictedTerms(RestrictType.NOT_FOR_REDISTRIBUTION, null);
         DatasetDTO datasetDTO = createDatasetDTOWithFiles(fileDTO, fileDTO2);
 
         // when
@@ -159,8 +159,8 @@ public class DdiDataAccessWriterTest {
     @Test
     public void writeDataAccess_different_licenses() throws XMLStreamException {
         // given
-        FileDTO fileDTO = createFileDTOWithLicenseTerms("CCO");
-        FileDTO fileDTO2 = createFileDTOWithLicenseTerms("CC1");
+        FileMetadataDTO fileDTO = createFileDTOWithLicenseTerms("CCO");
+        FileMetadataDTO fileDTO2 = createFileDTOWithLicenseTerms("CC1");
         DatasetDTO datasetDTO = createDatasetDTOWithFiles(fileDTO, fileDTO2);
 
         // when
@@ -176,8 +176,8 @@ public class DdiDataAccessWriterTest {
     @Test
     public void writeDataAccess_different_terms_with_one_restricted() throws XMLStreamException {
         // given
-        FileDTO fileDTO = createFileDTOWithLicenseTerms("CCO");
-        FileDTO fileDTO2 = createFileDTOWithRestrictedTerms(RestrictType.ACADEMIC_PURPOSE, null);
+        FileMetadataDTO fileDTO = createFileDTOWithLicenseTerms("CCO");
+        FileMetadataDTO fileDTO2 = createFileDTOWithRestrictedTerms(RestrictType.ACADEMIC_PURPOSE, null);
         DatasetDTO datasetDTO = createDatasetDTOWithFiles(fileDTO, fileDTO2);
 
         // when
@@ -193,21 +193,21 @@ public class DdiDataAccessWriterTest {
 
     // -------------------- PRIVATE --------------------
 
-    private FileDTO createFileDTOWithLicenseTerms(String licenseName) {
-        FileDTO fileDTO = new FileDTO();
+    private FileMetadataDTO createFileDTOWithLicenseTerms(String licenseName) {
+        FileMetadataDTO fileDTO = new FileMetadataDTO();
         fileDTO.setTermsOfUseType(TermsOfUseType.LICENSE_BASED.name());
         fileDTO.setLicenseName(licenseName);
         return fileDTO;
     }
 
-    private FileDTO createFileDTOWithAllRightsReservedTerms() {
-        FileDTO fileDTO = new FileDTO();
+    private FileMetadataDTO createFileDTOWithAllRightsReservedTerms() {
+        FileMetadataDTO fileDTO = new FileMetadataDTO();
         fileDTO.setTermsOfUseType(TermsOfUseType.ALL_RIGHTS_RESERVED.name());
         return fileDTO;
     }
 
-    private FileDTO createFileDTOWithRestrictedTerms(RestrictType restrictType, String restrictCustomText) {
-        FileDTO fileDTO = new FileDTO();
+    private FileMetadataDTO createFileDTOWithRestrictedTerms(RestrictType restrictType, String restrictCustomText) {
+        FileMetadataDTO fileDTO = new FileMetadataDTO();
         fileDTO.setTermsOfUseType(TermsOfUseType.RESTRICTED.name());
         fileDTO.setAccessConditions(restrictType.name());
         fileDTO.setAccessConditionsCustomText(restrictCustomText);
@@ -215,11 +215,11 @@ public class DdiDataAccessWriterTest {
     }
 
 
-    private DatasetDTO createDatasetDTOWithFiles(FileDTO... fileDTOs) {
+    private DatasetDTO createDatasetDTOWithFiles(FileMetadataDTO... fileDTOs) {
         DatasetDTO datasetDTO = new DatasetDTO();
         DatasetVersionDTO datasetVersionDTO = new DatasetVersionDTO();
         datasetDTO.setDatasetVersion(datasetVersionDTO);
-
+        datasetDTO.setEmbargoActive(false);
         datasetVersionDTO.setFiles(Lists.newArrayList(fileDTOs));
         return datasetDTO;
     }

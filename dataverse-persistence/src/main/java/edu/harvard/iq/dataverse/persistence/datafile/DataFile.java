@@ -278,7 +278,7 @@ public class DataFile extends DvObject implements Comparable {
         List<DataFileTag> currentDataTags = this.getTags();
         List<String> tagStrings = new ArrayList<>();
 
-        if ((currentDataTags != null) && (!currentDataTags.isEmpty())) {
+        if (currentDataTags != null && !currentDataTags.isEmpty()) {
 
             for (DataFileTag element : currentDataTags) {
                 tagStrings.add(element.getTypeLabel());

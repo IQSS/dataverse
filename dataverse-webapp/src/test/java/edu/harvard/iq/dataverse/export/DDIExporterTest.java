@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.export;
 
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
-import edu.harvard.iq.dataverse.api.dto.FieldDTO;
+import edu.harvard.iq.dataverse.api.dto.DatasetFieldDTO;
 import edu.harvard.iq.dataverse.citation.CitationDataExtractor;
 import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.citation.StandardCitationFormatsConverter;
@@ -17,19 +17,16 @@ import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.xml.stream.XMLStreamException;
-
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -49,15 +46,14 @@ public class DDIExporterTest {
     @Mock private DdiDatasetExportService ddiDatasetExportService;
     @Mock private SettingsServiceBean settingsService;
     @Mock private VocabularyValuesIndexer vocabularyValuesIndexer;
-    private JsonPrinter jsonPrinter = new JsonPrinter(
-            new CitationFactory(new CitationDataExtractor(), new StandardCitationFormatsConverter()));
 
     @Captor
     private ArgumentCaptor<DatasetDTO> datasetDtoCaptor;
 
     @BeforeEach
     void setUp() {
-        ddiExporter = new DDIExporter(ddiDatasetExportService, settingsService, vocabularyValuesIndexer, jsonPrinter);
+        ddiExporter = new DDIExporter(ddiDatasetExportService, settingsService, vocabularyValuesIndexer,
+                new CitationFactory(new CitationDataExtractor(), new StandardCitationFormatsConverter()));
     }
 
     // -------------------- TESTS --------------------
@@ -92,7 +88,7 @@ public class DDIExporterTest {
         DatasetDTO datasetDTO = datasetDtoCaptor.getValue();
 
         assertThat(extractDatasetField(datasetDTO, "email")).isPresent();
-        FieldDTO capturedEmailField = extractDatasetField(datasetDTO, "email").get();
+        DatasetFieldDTO capturedEmailField = extractDatasetField(datasetDTO, "email").get();
         assertThat(capturedEmailField.getSinglePrimitive()).isEqualTo("example@domain.com");
 
     }
@@ -131,7 +127,7 @@ public class DDIExporterTest {
 
     // -------------------- PRIVATE --------------------
 
-    private Optional<FieldDTO> extractDatasetField(DatasetDTO dataset, String fieldTypeName) {
+    private Optional<DatasetFieldDTO> extractDatasetField(DatasetDTO dataset, String fieldTypeName) {
         return dataset.getDatasetVersion().getMetadataBlocks().values().stream()
                 .flatMap(block -> block.getFields().stream())
                 .filter(field -> field.getTypeName().equals(fieldTypeName))

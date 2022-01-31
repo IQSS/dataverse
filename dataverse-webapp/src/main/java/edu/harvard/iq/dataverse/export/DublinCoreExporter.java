@@ -1,47 +1,35 @@
 package edu.harvard.iq.dataverse.export;
 
+import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.export.dublincore.DublinCoreExportUtil;
-import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import io.vavr.control.Try;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 
 @ApplicationScoped
-public class DublinCoreExporter implements Exporter {
+public class DublinCoreExporter extends ExporterBase {
 
-    private SettingsServiceBean settingsService;
-    private JsonPrinter jsonPrinter;
 
     // -------------------- CONSTRUCTORS --------------------
 
     @Inject
-    public DublinCoreExporter(SettingsServiceBean settingsService, JsonPrinter jsonPrinter) {
-        this.settingsService = settingsService;
-        this.jsonPrinter = jsonPrinter;
+    public DublinCoreExporter(SettingsServiceBean settingsService, CitationFactory citationFactory) {
+        super(citationFactory, settingsService);
     }
 
     // -------------------- LOGIC --------------------
 
     @Override
     public String exportDataset(DatasetVersion version) throws ExportException {
-        JsonObjectBuilder jsonObjectBuilder = jsonPrinter.jsonAsDatasetDto(version, settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport));
-
-        JsonObject jsonDatasetVersion = jsonObjectBuilder
-                .build();
-
-
         return Try.withResources(ByteArrayOutputStream::new)
                 .of(byteArrayOutputStream -> {
-                    DublinCoreExportUtil.datasetJson2dublincore(jsonDatasetVersion,
+                    DublinCoreExportUtil.datasetJson2dublincore(createDTO(version),
                                                                 byteArrayOutputStream,
                                                                 DublinCoreExportUtil.DC_FLAVOR_OAI);
                     return byteArrayOutputStream.toString(StandardCharsets.UTF_8.name());

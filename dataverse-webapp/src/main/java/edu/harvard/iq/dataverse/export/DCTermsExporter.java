@@ -1,15 +1,13 @@
 package edu.harvard.iq.dataverse.export;
 
+import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.export.dublincore.DublinCoreExportUtil;
-import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.json.JsonObject;
 import javax.xml.stream.XMLStreamException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -19,17 +17,14 @@ import java.nio.charset.StandardCharsets;
  * @author Leonid Andreev
  */
 @ApplicationScoped
-public class DCTermsExporter implements Exporter {
+public class DCTermsExporter extends ExporterBase {
 
-    private SettingsServiceBean settingsService;
-    private JsonPrinter jsonPrinter;
 
     // -------------------- CONSTRUCTORS --------------------
 
     @Inject
-    DCTermsExporter(SettingsServiceBean settingsService, JsonPrinter jsonPrinter) {
-        this.settingsService = settingsService;
-        this.jsonPrinter = jsonPrinter;
+    DCTermsExporter(SettingsServiceBean settingsService, CitationFactory citationFactory) {
+        super(citationFactory, settingsService);
     }
 
     // -------------------- LOGIC --------------------
@@ -54,9 +49,7 @@ public class DCTermsExporter implements Exporter {
     @Override
     public String exportDataset(DatasetVersion version) throws ExportException {
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
-            JsonObject datasetAsJson = jsonPrinter.jsonAsDatasetDto(version, settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport))
-                    .build();
-            DublinCoreExportUtil.datasetJson2dublincore(datasetAsJson, byteArrayOutputStream, DublinCoreExportUtil.DC_FLAVOR_DCTERMS);
+            DublinCoreExportUtil.datasetJson2dublincore(createDTO(version), byteArrayOutputStream, DublinCoreExportUtil.DC_FLAVOR_DCTERMS);
             return byteArrayOutputStream.toString(StandardCharsets.UTF_8.name());
         } catch (XMLStreamException | IOException xse) {
             throw new ExportException("Caught XMLStreamException performing DCTERMS export", xse);
