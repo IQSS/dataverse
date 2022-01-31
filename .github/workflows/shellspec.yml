@@ -1,0 +1,83 @@
+name: "Shellspec"
+on:
+    push:
+        paths:
+            - tests/shell/**
+            - conf/solr/**
+            # add more when more specs are written relying on data
+    pull_request:
+        paths:
+            - tests/shell/**
+            - conf/solr/**
+            # add more when more specs are written relying on data
+env:
+    SHELLSPEC_VERSION: 0.28.1
+jobs:
+    shellcheck:
+        name: Shellcheck
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - name: shellcheck
+              uses: reviewdog/action-shellcheck@v1
+              with:
+                  github_token: ${{ secrets.github_token }}
+                  reporter: github-pr-review # Change reporter.
+                  fail_on_error: true
+                  exclude: "./tests/shell/*"
+    shellspec-ubuntu:
+        name: "Ubuntu"
+        runs-on: ubuntu-latest
+        steps:
+            - name: Install shellspec
+              run: curl -fsSL https://git.io/shellspec | sh -s ${{ env.SHELLSPEC_VERSION }} --yes
+            - uses: actions/checkout@v2
+            - name: Run Shellspec
+              run: |
+                  cd tests/shell
+                  shellspec
+    shellspec-centos7:
+        name: "CentOS 7"
+        runs-on: ubuntu-latest
+        container:
+            image: centos:7
+        steps:
+            - uses: actions/checkout@v2
+            - name: Install shellspec
+              run: |
+                  curl -fsSL https://github.com/shellspec/shellspec/releases/download/${{ env.SHELLSPEC_VERSION }}/shellspec-dist.tar.gz | tar -xz -C /usr/share
+                  ln -s /usr/share/shellspec/shellspec /usr/bin/shellspec
+            - name: Install dependencies
+              run: yum install -y ed
+            - name: Run shellspec
+              run: |
+                  cd tests/shell
+                  shellspec
+    shellspec-rocky8:
+        name: "RockyLinux 8"
+        runs-on: ubuntu-latest
+        container:
+            image: rockylinux/rockylinux:8
+        steps:
+            - uses: actions/checkout@v2
+            - name: Install shellspec
+              run: |
+                  curl -fsSL https://github.com/shellspec/shellspec/releases/download/${{ env.SHELLSPEC_VERSION }}/shellspec-dist.tar.gz | tar -xz -C /usr/share
+                  ln -s /usr/share/shellspec/shellspec /usr/bin/shellspec
+            - name: Install dependencies
+              run: dnf install -y ed bc diffutils
+            - name: Run shellspec
+              run: |
+                  cd tests/shell
+                  shellspec
+    shellspec-macos:
+        name: "MacOS"
+        runs-on: macos-10.15
+        steps:
+            - name: Install shellspec
+              run: curl -fsSL https://git.io/shellspec | sh -s 0.28.1 --yes
+            - uses: actions/checkout@v2
+            - name: Run Shellspec
+              run: |
+                  cd tests/shell
+                  /Users/runner/.local/bin/shellspec

@@ -22,9 +22,11 @@ public class UserNameValidator implements ConstraintValidator<ValidateUserName, 
 
     }
     
+    // note: while the ConstraintValidatorContext is not used in this method, 
+    // it is required in order to impelement the ConstraintValidator interface
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
-        return isUserNameValid(value, context);
+        return isUserNameValid(value);
     }
 
     /**
@@ -33,7 +35,7 @@ public class UserNameValidator implements ConstraintValidator<ValidateUserName, 
      * @param username
      * @return boolean 
      */
-    public static boolean isUserNameValid(final String username, ConstraintValidatorContext context) {
+    public static boolean isUserNameValid(final String username) {
         if (username == null) {
             return false;
         }

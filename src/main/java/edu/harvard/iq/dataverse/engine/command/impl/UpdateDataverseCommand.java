@@ -7,16 +7,19 @@ import edu.harvard.iq.dataverse.Dataverse.DataverseType;
 import edu.harvard.iq.dataverse.DataverseFieldTypeInputLevel;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
+import static edu.harvard.iq.dataverse.dataverse.DataverseUtil.validateDataverseMetadataExternally;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.logging.Logger;
 import javax.persistence.TypedQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 
@@ -26,6 +29,7 @@ import org.apache.solr.client.solrj.SolrServerException;
  */
 @RequiredPermissions( Permission.EditDataverse )
 public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
+        private static final Logger logger = Logger.getLogger(UpdateDataverseCommand.class.getName());
 	
 	private final Dataverse editedDv;
 	private final List<DatasetFieldType> facetList;
@@ -57,6 +61,22 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
 	
 	@Override
 	public Dataverse execute(CommandContext ctxt) throws CommandException {
+            logger.fine("Entering update dataverse command");
+            
+            // Perform any optional validation steps, if defined:
+            if (ctxt.systemConfig().isExternalDataverseValidationEnabled()) {
+                // For admins, an override of the external validation step may be enabled: 
+                if (!(getUser().isSuperuser() && ctxt.systemConfig().isExternalValidationAdminOverrideEnabled())) {
+                    String executable = ctxt.systemConfig().getDataverseValidationExecutable();
+                    boolean result = validateDataverseMetadataExternally(editedDv, executable, getRequest());
+
+                    if (!result) {
+                        String rejectionMessage = ctxt.systemConfig().getDataverseUpdateValidationFailureMsg();
+                        throw new IllegalCommandException(rejectionMessage, this);
+                    }
+                }
+            }
+            
             DataverseType oldDvType = ctxt.dataverses().find(editedDv.getId()).getDataverseType();
             String oldDvAlias = ctxt.dataverses().find(editedDv.getId()).getAlias();
             String oldDvName = ctxt.dataverses().find(editedDv.getId()).getName();

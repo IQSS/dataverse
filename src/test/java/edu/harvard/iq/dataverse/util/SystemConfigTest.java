@@ -47,4 +47,12 @@ class SystemConfigTest {
         int actualResult = SystemConfig.getIntLimitFromStringOrDefault(inputString, 5);
         assertEquals(expectedResult, actualResult);
     }
+
+    @Test
+    void testGetThumbnailSizeLimit() {
+        assertEquals(3000000l, SystemConfig.getThumbnailSizeLimit("Image"));
+        assertEquals(1000000l, SystemConfig.getThumbnailSizeLimit("PDF"));
+        assertEquals(0l, SystemConfig.getThumbnailSizeLimit("NoSuchType"));
+    }
+
 }

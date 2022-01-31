@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -32,6 +33,7 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.StoredProcedureQuery;
 import javax.persistence.TypedQuery;
 
 /**
@@ -43,11 +45,14 @@ import javax.persistence.TypedQuery;
 public class GuestbookResponseServiceBean {
     private static final Logger logger = Logger.getLogger(GuestbookResponseServiceBean.class.getCanonicalName());
     
+    @EJB
+    DataverseServiceBean dataverseService;
+    
     // The query below is used for retrieving guestbook responses used to download 
     // the collected data, in CSV format, from the manage-guestbooks and 
     // guestbook-results pages. (for entire dataverses, and for the individual 
     // guestbooks within dataverses, respectively). -- L.A. 
-    private static final String BASE_QUERY_STRING_FOR_DOWNLOAD_AS_CSV = "select r.id, g.name, v.value, r.responsetime, f.downloadtype,"
+    /*private static final String BASE_QUERY_STRING_FOR_DOWNLOAD_AS_CSV = "select r.id, g.name, v.value, r.responsetime, f.downloadtype,"
                 + " m.label, r.dataFile_id, r.name, r.email, r.institution, r.position,"
                 + " o.protocol, o.authority, o.identifier, d.protocol, d.authority, d.identifier "
                 + "from guestbookresponse r, filedownload f, datasetfieldvalue v, filemetadata m, dvobject o, guestbook g, dvobject d "
@@ -55,6 +60,18 @@ public class GuestbookResponseServiceBean {
                 + " v.datasetfield_id = (select id from datasetfield f where datasetfieldtype_id = 1 "
                 + " and datasetversion_id = (select max(id) from datasetversion where dataset_id =r.dataset_id )) "
                 + " and m.datasetversion_id = (select max(datasetversion_id) from filemetadata where datafile_id =r.datafile_id ) "
+                + " and m.datafile_id = r.datafile_id "
+                + " and d.id = r.datafile_id "
+                + " and r.id = f.guestbookresponse_id "
+                + " and r.dataset_id = o.id "
+                + " and r.guestbook_id = g.id ";*/
+    
+    private static final String BASE_QUERY_STRING_FOR_DOWNLOAD_AS_CSV = "select r.id, g.name, o.id, r.responsetime, f.downloadtype,"
+                + " m.label, r.dataFile_id, r.name, r.email, r.institution, r.position,"
+                + " o.protocol, o.authority, o.identifier, d.protocol, d.authority, d.identifier "
+                + "from guestbookresponse r, filedownload f, filemetadata m, dvobject o, guestbook g, dvobject d "
+                + "where "  
+                + "m.datasetversion_id = (select max(datasetversion_id) from filemetadata where datafile_id =r.datafile_id ) "
                 + " and m.datafile_id = r.datafile_id "
                 + " and d.id = r.datafile_id "
                 + " and r.id = f.guestbookresponse_id "
@@ -82,7 +99,7 @@ public class GuestbookResponseServiceBean {
                 + "where q.id = r.customquestion_id "
                 + "and r.guestbookResponse_id = g.id "
                 + "and g.dataset_id = o.id ";
-
+    
     
     private static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MM/d/yyyy");
     
@@ -128,6 +145,19 @@ public class GuestbookResponseServiceBean {
         // of queries now) -- L.A. 
         
         Map<Integer, Object> customQandAs = mapCustomQuestionAnswersAsStrings(dataverseId, guestbookId);
+        Map<Integer, String> datasetTitles = mapDatasetTitles(dataverseId);
+                
+        List<Object[]> guestbookResults = getGuestbookResults( dataverseId,  guestbookId );
+        // the CSV header:
+        out.write("Guestbook, Dataset, Dataset PID, Date, Type, File Name, File Id, File PID, User Name, Email, Institution, Position, Custom Questions\n".getBytes());
+        for (Object[] result : guestbookResults) {
+            StringBuilder sb = convertGuestbookResponsesToCSV(customQandAs, datasetTitles, result);
+            out.write(sb.toString().getBytes());
+            out.flush();
+        }
+    }
+    
+    public List<Object[]> getGuestbookResults(Long dataverseId, Long guestbookId ){
         
         String queryString = BASE_QUERY_STRING_FOR_DOWNLOAD_AS_CSV
                 + " and  o.owner_id = " 
@@ -137,15 +167,15 @@ public class GuestbookResponseServiceBean {
             queryString+= (" and r.guestbook_id = " + guestbookId.toString());
         }
         
-        queryString += ";";
+        queryString += " ORDER by r.id DESC;";
         logger.fine("stream responses query: " + queryString);
         
-        List<Object[]> guestbookResults = em.createNativeQuery(queryString).getResultList();
-
-        // the CSV header:
-        out.write("Guestbook, Dataset, Dataset PID, Date, Type, File Name, File Id, File PID, User Name, Email, Institution, Position, Custom Questions\n".getBytes());
+        return  em.createNativeQuery(queryString).getResultList();
         
-        for (Object[] result : guestbookResults) {
+    }
+    
+    public StringBuilder convertGuestbookResponsesToCSV ( Map<Integer, Object> customQandAs, Map<Integer, String> datasetTitles, Object[] result) throws IOException {
+
             Integer guestbookResponseId = (Integer)result[0];
             
             StringBuilder sb = new StringBuilder();
@@ -160,7 +190,9 @@ public class GuestbookResponseServiceBean {
 
             
             // Dataset name: 
-            sb.append(((String)result[2]).replace(',', ' '));
+            Integer datasetId = (Integer) result[2];
+            String datasetTitle = datasetTitles.get(datasetId);
+            sb.append(datasetTitle == null ? "" : datasetTitle.replace(',', ' '));
             sb.append(SEPARATOR);
             
             // Dataset persistent identifier: 
@@ -208,35 +240,16 @@ public class GuestbookResponseServiceBean {
             
             // Finally, custom questions and answers, if present:
             
-            // (the old implementation, below, would run one extra query FOR EVERY SINGLE
-            // guestbookresponse entry! -- instead, we are now pre-caching all the 
-            // available custom question responses, with a single native query at 
-            // the top of this method. -- L.A.)
-            
-            /*String cqString = "select q.questionstring, r.response  from customquestionresponse r, customquestion q where q.id = r.customquestion_id and r.guestbookResponse_id = " + result[0];
-            List<Object[]> customResponses = em.createNativeQuery(cqString).getResultList();
-            if (customResponses != null) {
-                for (Object[] response : customResponses) {
-                    sb.append(SEPARATOR);
-                    sb.append(response[0]);
-                    sb.append(SEPARATOR);
-                    sb.append(response[1] == null ? "" : response[1]);
-                }
-            }*/
             
             if (customQandAs.containsKey(guestbookResponseId)) {
                 sb.append(customQandAs.get(guestbookResponseId)); 
             } 
 
             sb.append(NEWLINE);
-
-            // Finally, write the line out: 
-            // (i.e., we are writing one guestbook response at a time, thus allowing the 
-            // whole thing to stream in real time -- L.A.)
-            out.write(sb.toString().getBytes());
-            out.flush();
-        }
+        return sb;
+        
     }
+    
     
     private String formatPersistentIdentifier(String protocol, String authority, String identifier) {
         // Note that the persistent id may be unavailable for this dvObject:
@@ -349,7 +362,7 @@ public class GuestbookResponseServiceBean {
         return selectCustomQuestionAnswers(dataverseId, guestbookId, false, firstResponse, lastResponse);
     }
     
-    private Map<Integer, Object> mapCustomQuestionAnswersAsStrings(Long dataverseId, Long guestbookId) {
+    public Map<Integer, Object> mapCustomQuestionAnswersAsStrings(Long dataverseId, Long guestbookId) {
         return selectCustomQuestionAnswers(dataverseId, guestbookId, true, null, null);
     }
     
@@ -905,7 +918,34 @@ public class GuestbookResponseServiceBean {
     }    
 
     public Long getCountOfAllGuestbookResponses() {
-        // dataset id is null, will return 0        
+        // dataset id is null, will return 0  
+        
+        // "SELECT COUNT(*)" is notoriously expensive in PostgresQL for large 
+        // tables. This makes this call fairly expensive for any installation 
+        // with a lot of download/access activity. (This "total download" metrics
+        // is always displayed when the homepage is loaded). 
+        // It is safe to say that no real life user will need this number to be
+        // precise down to the last few digits, and/or withing a second, 
+        // especially once that number is in the millions. The 
+        // solution implemented below relies on estimating the number. It is 
+        // very efficient, but also very PostgresQL specific - hence it is 
+        // defined as a custom database function. 
+        // An alternative solution would be to get the exact number every 
+        // hour or so, and cache it centrally for the rest of the application 
+        // somehow. -- L.A. 5.6
+        
+        
+        try {        
+            StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("GuestbookResponse.estimateGuestBookResponseTableSize");
+            query.execute();
+            Long totalCount = (Long) query.getOutputParameterValue(1);
+        
+            if (totalCount != null) {
+                return totalCount;
+            }
+        } catch (IllegalArgumentException iae) {
+            // Don't do anything, we'll fall back to using "SELECT COUNT()"
+        }
         Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o;");
         return (Long) query.getSingleResult();
     }
@@ -914,6 +954,25 @@ public class GuestbookResponseServiceBean {
         Query query = em.createNamedQuery("GuestbookResponse.findByAuthenticatedUserId"); 
         query.setParameter("authenticatedUserId", user.getId());
         return query.getResultList();
+    }
+        
+    public Map<Integer, String> mapDatasetTitles(Long dataverseId) {
+        Map<Integer, String> ret = new HashMap<>();
+
+        List<Object[]> titleResults = dataverseService.getDatasetTitlesWithinDataverse(dataverseId);
+
+        if (titleResults != null) {
+            for (Object[] titleObj : titleResults) {
+                Integer datasetId = (Integer) titleObj[1];
+                String datasetTitle = (String) titleObj[0];
+                
+                ret.put(datasetId, datasetTitle);
+
+            }
+        }
+
+        return ret;
+        
     }
     
 }
