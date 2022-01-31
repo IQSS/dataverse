@@ -5,11 +5,11 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -32,9 +32,11 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.IOUtils;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
-import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
-import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.util.StringUtil;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import org.apache.commons.io.FileUtils;
 
 public class DatasetUtil {
 
@@ -89,7 +91,8 @@ public class DatasetUtil {
 
             if (dataFile != null && FileUtil.isThumbnailSupported(dataFile)
                     && ImageThumbConverter.isThumbnailAvailable(dataFile)
-                    && !dataFile.isRestricted()) {
+                    && !dataFile.isRestricted()
+                    && !FileUtil.isActivelyEmbargoed(dataFile)) {
                 String imageSourceBase64 = null;
                 imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(dataFile, size);
 
@@ -154,6 +157,10 @@ public class DatasetUtil {
         } else {
             DataFile thumbnailFile = dataset.getThumbnailFile();
 
+            if (thumbnailFile !=null && (thumbnailFile.isRestricted() || FileUtil.isActivelyEmbargoed(thumbnailFile))) {
+                logger.fine("Dataset (id :" + dataset.getId() + ") has a thumbnail (user selected or automatically chosen) but the file must have later been restricted or embargoed. Returning null.");
+                thumbnailFile= null;
+            }
             if (thumbnailFile == null) {
                 if (dataset.isUseGenericThumbnail()) {
                     logger.fine("Dataset (id :" + dataset.getId() + ") does not have a thumbnail and is 'Use Generic'.");
@@ -170,9 +177,6 @@ public class DatasetUtil {
                         return defaultDatasetThumbnail;
                     }
                 }
-            } else if (thumbnailFile.isRestricted()) {
-                logger.fine("Dataset (id :" + dataset.getId() + ") has a thumbnail the user selected but the file must have later been restricted. Returning null.");
-                return null;
             } else {
                 String imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(thumbnailFile, size);
                 DatasetThumbnail userSpecifiedDatasetThumbnail = new DatasetThumbnail(imageSourceBase64, thumbnailFile);
@@ -257,7 +261,7 @@ public class DatasetUtil {
         for (FileMetadata fmd : datasetVersion.getFileMetadatas()) {
             DataFile testFile = fmd.getDataFile();
             // We don't want to use a restricted image file as the dedicated thumbnail:
-            if (!testFile.isRestricted() && FileUtil.isThumbnailSupported(testFile) && ImageThumbConverter.isThumbnailAvailable(testFile, ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE)) {
+            if (!testFile.isRestricted() && !FileUtil.isActivelyEmbargoed(testFile) && FileUtil.isThumbnailSupported(testFile) && ImageThumbConverter.isThumbnailAvailable(testFile, ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE)) {
                 return testFile;
             }
         }
@@ -466,8 +470,16 @@ public class DatasetUtil {
      * size for tabular files.
      */
     public static String getDownloadSize(DatasetVersion dsv, boolean original) {
+        return FileSizeChecker.bytesToHumanReadable(getDownloadSizeNumeric(dsv, original));
+    }
+    
+    public static Long getDownloadSizeNumeric(DatasetVersion dsv, boolean original) {
+        return getDownloadSizeNumericBySelectedFiles(dsv.getFileMetadatas(), original);
+    }
+    
+    public static Long getDownloadSizeNumericBySelectedFiles(List<FileMetadata> fileMetadatas, boolean original) {
         long bytes = 0l;
-        for (FileMetadata fileMetadata : dsv.getFileMetadatas()) {
+        for (FileMetadata fileMetadata : fileMetadatas) {
             DataFile dataFile = fileMetadata.getDataFile();
             if (original && dataFile.isTabularData()) {                
                 bytes += dataFile.getOriginalFileSize() == null ? 0 : dataFile.getOriginalFileSize();
@@ -475,6 +487,50 @@ public class DatasetUtil {
                 bytes += dataFile.getFilesize();
             }
         }
-        return FileSizeChecker.bytesToHumanReadable(bytes);
+        return bytes;
+    }
+    
+    public static boolean validateDatasetMetadataExternally(Dataset ds, String executable, DataverseRequest request) {
+        String sourceAddressLabel = "0.0.0.0"; 
+        
+        if (request != null) {
+            IpAddress sourceAddress = request.getSourceAddress();
+            if (sourceAddress != null) {
+                sourceAddressLabel = sourceAddress.toString();
+            }
+        }
+        
+        String jsonMetadata; 
+        
+        try {
+            jsonMetadata = json(ds).add("datasetVersion", json(ds.getLatestVersion())).add("sourceAddress", sourceAddressLabel).build().toString();
+        } catch (Exception ex) {
+            logger.warning("Failed to export dataset metadata as json; "+ex.getMessage() == null ? "" : ex.getMessage());
+            return false; 
+        }
+        
+        if (StringUtil.isEmpty(jsonMetadata)) {
+            logger.warning("Failed to export dataset metadata as json.");
+            return false; 
+        }
+       
+        // save the metadata in a temp file: 
+        
+        try {
+            File tempFile = File.createTempFile("datasetMetadataCheck", ".tmp");
+            FileUtils.writeStringToFile(tempFile, jsonMetadata);
+                                    
+            // run the external executable: 
+            String[] params = { executable, tempFile.getAbsolutePath() };
+            Process p = Runtime.getRuntime().exec(params);
+            p.waitFor(); 
+            
+            return p.exitValue() == 0;
+ 
+        } catch (IOException | InterruptedException ex) {
+            logger.warning("Failed run the external executable.");
+            return false; 
+        }
+        
     }
 }

@@ -26,6 +26,7 @@ import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.Embargo;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -70,6 +71,8 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ArrayList;
@@ -81,6 +84,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.activation.MimetypesFileTypeMap;
 import javax.ejb.EJBException;
+import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
+import javax.faces.context.FacesContext;
+import javax.faces.validator.ValidatorException;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -98,7 +108,7 @@ import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import java.util.Arrays;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * a 4.0 implementation of the DVN FileUtil;
@@ -1542,6 +1552,9 @@ public class FileUtil implements java.io.Serializable  {
             logger.fine(msg);
             return false;
         }
+        if (isActivelyEmbargoed(fileMetadata)) {
+            return false;
+        }
         boolean popupReasons = isDownloadPopupRequired(fileMetadata.getDatasetVersion());
         if (popupReasons == true) {
             /**
@@ -1581,6 +1594,9 @@ public class FileUtil implements java.io.Serializable  {
             return false;
         }
         if (fileMetadata.isRestricted()) {
+            return false;
+        }
+        if (isActivelyEmbargoed(fileMetadata)) {
             return false;
         }
         return true;
@@ -1668,7 +1684,7 @@ public class FileUtil implements java.io.Serializable  {
             return false;
         }
         
-        if (file.isHarvested() || "".equals(file.getStorageIdentifier())) {
+        if (file.isHarvested() || StringUtil.isEmpty(file.getStorageIdentifier())) {
             return false;
         }
         
@@ -2061,4 +2077,56 @@ public class FileUtil implements java.io.Serializable  {
                 (originals ? "&original=true" : "");
     }
 
+    /**
+     * This method takes a JsonArray of JsonObjects and extracts the fields of those
+     * objects corresponding to the supplied list of headers to create a rectangular
+     * CSV file (with headers) that lists the values from each object in rows. It
+     * was developed for use with the metrics API but could be useful in other calls
+     * that require the same transformation.
+     * 
+     * @param jsonArray
+     *            - the array of JsonObjects containing key/value pairs with keys
+     *            matching the headers. Keys that don't match a header are
+     *            ignored/not included.
+     * @param headers
+     *            - strings to use as CSV headers
+     * @return - the CSV file as a string, rows separated by '\n'
+     */
+    public static String jsonArrayOfObjectsToCSV(JsonArray jsonArray, String... headers) {
+        StringBuilder csvSB = new StringBuilder(String.join(",", headers));
+        jsonArray.forEach((jv) -> {
+            JsonObject jo = (JsonObject) jv;
+            String[] values = new String[headers.length];
+            for (int i = 0; i < headers.length; i++) {
+                values[i] = jo.get(headers[i]).toString();
+            }
+            csvSB.append("\n").append(String.join(",", values));
+        });
+        return csvSB.toString();
+    }
+
+    public static boolean isActivelyEmbargoed(DataFile df) {
+        Embargo e = df.getEmbargo();
+        if (e != null) {
+            LocalDate endDate = e.getDateAvailable();
+            if (endDate != null && endDate.isAfter(LocalDate.now())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isActivelyEmbargoed(FileMetadata fileMetadata) {
+        return isActivelyEmbargoed(fileMetadata.getDataFile());
+    }
+    
+    public static boolean isActivelyEmbargoed(List<FileMetadata> fmdList) {
+        for (FileMetadata fmd : fmdList) {
+            if (isActivelyEmbargoed(fmd)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
 }

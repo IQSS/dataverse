@@ -2,10 +2,16 @@ package edu.harvard.iq.dataverse.makedatacount;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
+import javax.persistence.Transient;
 
 /**
  * See doc/sphinx-guides/source/admin/make-data-count.rst for user facing docs
@@ -42,6 +48,14 @@ public class MakeDataCountUtil {
 
     public static final String LOG_HEADER = "#Fields: event_time	client_ip	session_cookie_id	user_cookie_id	user_id	request_url	identifier	filename	size	user-agent	title	publisher	publisher_id	authors	publication_date	version	other_id	target_url	publication_year\n";
 
+    //ISO 3166 Country codes as used by Geomind Geolite2 database in counter-processor
+    @Transient private static Set<String> validCountryCodes = Stream
+            .of("a1", "a2", "o1", "ad", "ae", "af", "ag", "ai", "al", "am", "ao", "ap", "aq", "ar", "as", "at", "au", "aw", "ax", "az", "ba", "bb", "bd", "be", "bf", "bg", "bh", "bi", "bj", "bl", "bm", "bn", "bo", "bq", "br", "bs", "bt", "bv", "bw", "by", "bz", "ca", "cc", "cd", "cf", "cg", "ch", "ci", "ck", "cl", "cm", "cn", "co", "cr", "cu", "cv", "cw", "cx", "cy", "cz", "de", "dj", "dk", "dm", "do", "dz", "ec", "ee", "eg", "eh", "er", "es", "et", "eu", "fi", "fj", "fk",
+                    "fm", "fo", "fr", "ga", "gb", "gd", "ge", "gf", "gg", "gh", "gi", "gl", "gm", "gn", "gp", "gq", "gr", "gs", "gt", "gu", "gw", "gy", "hk", "hm", "hn", "hr", "ht", "hu", "id", "ie", "il", "im", "in", "io", "iq", "ir", "is", "it", "je", "jm", "jo", "jp", "ke", "kg", "kh", "ki", "km", "kn", "kp", "kr", "kw", "ky", "kz", "la", "lb", "lc", "li", "lk", "lr", "ls", "lt", "lu", "lv", "ly", "ma", "mc", "md", "me", "mf", "mg", "mh", "mk", "ml", "mm", "mn", "mo",
+                    "mp", "mq", "mr", "ms", "mt", "mu", "mv", "mw", "mx", "my", "mz", "na", "nc", "ne", "nf", "ng", "ni", "nl", "no", "np", "nr", "nu", "nz", "om", "pa", "pe", "pf", "pg", "ph", "pk", "pl", "pm", "pn", "pr", "ps", "pt", "pw", "py", "qa", "re", "ro", "rs", "ru", "rw", "sa", "sb", "sc", "sd", "se", "sg", "sh", "si", "sj", "sk", "sl", "sm", "sn", "so", "sr", "ss", "st", "sv", "sx", "sy", "sz", "tc", "td", "tf", "tg", "th", "tj", "tk", "tl", "tm", "tn", "to",
+                    "tr", "tt", "tv", "tw", "tz", "ua", "ug", "um", "us", "uy", "uz", "va", "vc", "ve", "vg", "vi", "vn", "vu", "wf", "ws", "ye", "yt", "za", "zm", "zw")
+            .collect(Collectors.toCollection(HashSet<String>::new));;
+
     public enum MetricType {
 
         VIEWS_TOTAL("viewsTotal"),
@@ -73,12 +87,31 @@ public class MakeDataCountUtil {
                     }
                 }
             }
-            throw new IllegalArgumentException("MetricType must be one of these values: " + Arrays.asList(MetricType.values()) + ".");
+            throw new IllegalArgumentException("MetricType must be one of these values: " + getMetricNameList() + ".");
+        }
+        
+        private static List<String> getMetricNameList() {
+           ArrayList<String> names = new ArrayList<String>();
+           for(MetricType mt: MetricType.values()) {
+               names.add(mt.text);
+           }
+            return names;
         }
 
         @Override
         public String toString() {
-            return text;
+            switch (this) {
+            case DOWNLOADS_TOTAL:
+                return (MetricType.DOWNLOADS_TOTAL_MACHINE + " + " + MetricType.DOWNLOADS_TOTAL_REGULAR);
+            case VIEWS_TOTAL:
+                return (MetricType.VIEWS_TOTAL_MACHINE + " + " + MetricType.VIEWS_TOTAL_REGULAR);
+            case DOWNLOADS_UNIQUE:
+                return (MetricType.DOWNLOADS_UNIQUE_MACHINE + " + " + MetricType.DOWNLOADS_UNIQUE_REGULAR);
+            case VIEWS_UNIQUE:
+                return (MetricType.VIEWS_UNIQUE_MACHINE + " + " + MetricType.VIEWS_UNIQUE_REGULAR);
+            default:
+                return text;
+            }
         }
     }
 
@@ -105,5 +138,12 @@ public class MakeDataCountUtil {
         }
         return datasetExternalCitations;
     }
+    
+    
+    //counter-processor sushi report uses lower case, so standardizing on that for storage
+    public static boolean isValidCountryCode(String code) {
+        return validCountryCodes.contains(code.toLowerCase());
+    }
+
 
 }

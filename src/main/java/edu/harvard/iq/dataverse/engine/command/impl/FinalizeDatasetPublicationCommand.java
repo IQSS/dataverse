@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -114,13 +115,20 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             theDataset.setPublicationDate(new Timestamp(new Date().getTime()));
         } 
 
+        //Clear any external status
+        theDataset.getLatestVersion().setExternalStatusLabel(null);
+        
         // update metadata
-        theDataset.getLatestVersion().setReleaseTime(getTimestamp());
+        if (theDataset.getLatestVersion().getReleaseTime() == null) {
+            // Allow migrated versions to keep original release dates
+            theDataset.getLatestVersion().setReleaseTime(getTimestamp());
+        }
         theDataset.getLatestVersion().setLastUpdateTime(getTimestamp());
         theDataset.setModificationTime(getTimestamp());
         theDataset.setFileAccessRequest(theDataset.getLatestVersion().getTermsOfUseAndAccess().isFileAccessRequest());
         
-        updateFiles(getTimestamp(), ctxt);
+        //Use dataset pub date (which may not be the current date for migrated datasets)
+        updateFiles(new Timestamp(theDataset.getLatestVersion().getReleaseTime().getTime()), ctxt);
         
         // 
         // TODO: Not sure if this .merge() is necessary here - ? 
@@ -309,17 +317,31 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
 
     private void validateDataFiles(Dataset dataset, CommandContext ctxt) throws CommandException {
         try {
-            for (DataFile dataFile : dataset.getFiles()) {
-                // TODO: Should we validate all the files in the dataset, or only 
-                // the files that haven't been published previously?
-                // (the decision was made to validate all the files on every  
-                // major release; we can revisit the decision if there's any 
-                // indication that this makes publishing take significantly longer.
-                logger.log(Level.FINE, "validating DataFile {0}", dataFile.getId());
-                FileUtil.validateDataFileChecksum(dataFile);
+            long maxDatasetSize = ctxt.systemConfig().getDatasetValidationSizeLimit();
+            long maxFileSize = ctxt.systemConfig().getFileValidationSizeLimit();
+
+            long datasetSize = DatasetUtil.getDownloadSizeNumeric(dataset.getLatestVersion(), false);
+            if (maxDatasetSize == -1 || datasetSize < maxDatasetSize) {
+                for (DataFile dataFile : dataset.getFiles()) {
+                    // TODO: Should we validate all the files in the dataset, or only
+                    // the files that haven't been published previously?
+                    // (the decision was made to validate all the files on every
+                    // major release; we can revisit the decision if there's any
+                    // indication that this makes publishing take significantly longer.
+                    if (maxFileSize == -1 || dataFile.getFilesize() < maxFileSize) {
+                        FileUtil.validateDataFileChecksum(dataFile);
+                    }
+                    else {
+                        String message = "Checksum Validation skipped for this datafile: " + dataFile.getId() + ", because of the size of the datafile limit (set to " + maxFileSize + " ); ";
+                        logger.info(message);
+                    }
+                }
+            }
+            else {
+                String message = "Checksum Validation skipped for this dataset: " + dataset.getId() + ", because of the size of the dataset limit (set to " + maxDatasetSize + " ); ";
+                logger.info(message);
             }
         } catch (Throwable e) {
-            
             if (dataset.isLockedFor(DatasetLock.Reason.finalizePublication)) {
                 DatasetLock lock = dataset.getLockFor(DatasetLock.Reason.finalizePublication);
                 lock.setReason(DatasetLock.Reason.FileValidationFailed);

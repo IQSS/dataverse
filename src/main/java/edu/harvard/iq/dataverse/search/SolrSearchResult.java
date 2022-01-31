@@ -116,6 +116,8 @@ public class SolrSearchResult {
     
     private String filePersistentId = null;
     
+    private Long embargoEndDate;
+    
     public String getDvTree() {
         return dvTree;
     }
@@ -252,6 +254,9 @@ public class SolrSearchResult {
      * @todo: used? remove
      */
     private List<String> matchedFields;
+
+    //External Status Label (enabled via AllowedCurationLabels setting)
+    private String externalStatus;
 
     /**
      * @todo: remove name?
@@ -1204,5 +1209,22 @@ public class SolrSearchResult {
     
     public void setNameOfDataverse(String id) {
         this.nameOfDataverse = id;
+    }
+    
+    public String getExternalStatus() {
+        return externalStatus;
+    }
+
+    public void setExternalStatus(String externalStatus) {
+        this.externalStatus = externalStatus;
+        
+    }
+
+    public Long getEmbargoEndDate() {
+        return embargoEndDate;
+    }
+
+    public void setEmbargoEndDate(Long embargoEndDate) {
+        this.embargoEndDate = embargoEndDate;
     }
 }

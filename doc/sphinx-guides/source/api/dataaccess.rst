@@ -131,6 +131,41 @@ true            Generates a thumbnail image by rescaling to the default thumbnai
 ``N``           Rescales the image to ``N`` pixels wide. ``imageThumb=true`` and ``imageThumb=64`` are equivalent.
 ==============  ===========
 
+Headers:
+~~~~~~~~
+
+==============  ===========
+Header          Description
+==============  ===========
+Range           Download a specified byte range. Examples:
+
+                - ``bytes=0-9`` gets the first 10 bytes.
+                - ``bytes=10-19`` gets 10 bytes from the middle.
+                - ``bytes=-10`` gets the last 10 bytes.
+                - ``bytes=9-`` gets all bytes except the first 10.
+
+                Only a single range is supported. The "If-Range" header is not supported. For more on the "Range" header, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests
+==============  ===========
+
+Examples
+~~~~~~~~
+
+A curl example of using the ``Range`` header to download the first 10 bytes of a file using its file id (database id):
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export FILE_ID=42
+  export RANGE=0-9
+
+  curl -H "Range:bytes=$RANGE" $SERVER_URL/api/access/datafile/$FILE_ID
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "Range:bytes=0-9" https://demo.dataverse.org/api/access/datafile/42
+
 Multiple File ("bundle") download
 ---------------------------------
 
@@ -284,7 +319,7 @@ especially with data files with large numbers of variables. See
 Preprocessed Data
 -----------------
 
-``/api/access/datafile/$id/metadata/preprocessed``
+``/api/access/datafile/$id?format=prep``
 
 This method provides the "preprocessed data" - a summary record that describes the values of the data vectors in the tabular file, in JSON. These metadata values are used by TwoRavens, an external tool that integrates with a Dataverse installation. Please note that this format might change in the future.
 

@@ -72,7 +72,7 @@
                                                 <span class="label label-default">#{bundle['permission.'.concat(prm).concat('.label')]}</span>
                                             </ui:repeat>
                                         </div>
-                                        <p class="help-block">
+                                        <p class="help-block" jsf:rendered="#{!empty managePermissionsPage.assignedRoleObjectTypes}">
                                             <span class="glyphicon glyphicon-warning-sign text-warning"/>
                                             <h:outputFormat styleClass="text-warning" value=" #{bundle['dataverse.permissions.usersOrGroups.assignDialog.role.warning']}">
                                                 <f:param value="#{managePermissionsPage.assignedRole.name}"/>

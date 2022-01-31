@@ -49,7 +49,7 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import javax.validation.constraints.Size;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -171,6 +171,12 @@ public class DatasetVersion implements Serializable {
     @OneToMany(mappedBy = "datasetVersion", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<WorkflowComment> workflowComments;
 
+    @Column(nullable=true)
+    private String externalStatusLabel;
+    
+    @Transient
+    private DatasetVersionDifference dvd;
+    
     
     public Long getId() {
         return this.id;
@@ -394,6 +400,10 @@ public class DatasetVersion implements Serializable {
     }
 
     public DatasetVersionDifference getDefaultVersionDifference() {
+        //Cache to avoid recalculating the difference many many times in the dataset-versions.xhtml page
+        if(dvd!=null) {
+            return dvd;
+        }
         // if version is deaccessioned ignore it for differences purposes
         int index = 0;
         int size = this.getDataset().getVersions().size();
@@ -405,7 +415,7 @@ public class DatasetVersion implements Serializable {
                 if ((index + 1) <= (size - 1)) {
                     for (DatasetVersion dvTest : this.getDataset().getVersions().subList(index + 1, size)) {
                         if (!dvTest.isDeaccessioned()) {
-                            DatasetVersionDifference dvd = new DatasetVersionDifference(this, dvTest);
+                            dvd = new DatasetVersionDifference(this, dvTest);
                             return dvd;
                         }
                     }
@@ -1340,7 +1350,11 @@ public class DatasetVersion implements Serializable {
     }
 
     public String getCitation(boolean html) {
-        return new DataCitation(this).toString(html);
+        return getCitation(html, false);
+    }
+    
+    public String getCitation(boolean html, boolean anonymized) {
+        return new DataCitation(this).toString(html, anonymized);
     }
     
     public Date getCitationDate() {
@@ -1612,6 +1626,7 @@ public class DatasetVersion implements Serializable {
 
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
+
         for (DatasetField dsf : this.getFlatDatasetFields()) {
             dsf.setValidationMessage(null); // clear out any existing validation message
             Set<ConstraintViolation<DatasetField>> constraintViolations = validator.validate(dsf);
@@ -1650,7 +1665,7 @@ public class DatasetVersion implements Serializable {
                 }
             }
         }
-        
+
         return returnSet;
     }
     
@@ -1703,11 +1718,11 @@ public class DatasetVersion implements Serializable {
         JsonArrayBuilder authors = Json.createArrayBuilder();
         for (DatasetAuthor datasetAuthor : this.getDatasetAuthors()) {
             JsonObjectBuilder author = Json.createObjectBuilder();
-            String name = datasetAuthor.getName().getValue();
+            String name = datasetAuthor.getName().getDisplayValue();
             DatasetField authorAffiliation = datasetAuthor.getAffiliation();
             String affiliation = null;
             if (authorAffiliation != null) {
-                affiliation = datasetAuthor.getAffiliation().getValue();
+                affiliation = datasetAuthor.getAffiliation().getDisplayValue();
             }
             // We are aware of "givenName" and "familyName" but instead of a person it might be an organization such as "Gallup Organization".
             //author.add("@type", "Person");
@@ -1859,7 +1874,7 @@ public class DatasetVersion implements Serializable {
             JsonObjectBuilder license = Json.createObjectBuilder().add("@type", "Dataset");
             
             if (TermsOfUseAndAccess.License.CC0.equals(terms.getLicense())) {
-                license.add("text", "CC0").add("url", "https://creativecommons.org/publicdomain/zero/1.0/");
+                license.add("text", "CC0").add("url", TermsOfUseAndAccess.CC0_URI);
             } else {
                 String termsOfUse = terms.getTermsOfUse();
                 // Terms of use can be null if you create the dataset with JSON.
@@ -1945,11 +1960,23 @@ public class DatasetVersion implements Serializable {
             job.add("distribution", fileArray);
         }
         jsonLd = job.build().toString();
+        
+        //Most fields above should be stripped/sanitized but, since this is output in the dataset page as header metadata, do a final sanitize step to make sure
+        jsonLd = MarkupChecker.stripAllTags(jsonLd);
+        
         return jsonLd;
     }
 
     public String getLocaleLastUpdateTime() {
         return DateUtil.formatDate(new Timestamp(lastUpdateTime.getTime()));
+    }
+    
+    public String getExternalStatusLabel() {
+        return externalStatusLabel;
+    }
+
+    public void setExternalStatusLabel(String externalStatusLabel) {
+        this.externalStatusLabel = externalStatusLabel;
     }
 
 }

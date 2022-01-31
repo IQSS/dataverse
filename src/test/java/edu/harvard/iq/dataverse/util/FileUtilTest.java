@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.Embargo;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.Guestbook;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
@@ -11,6 +12,7 @@ import edu.harvard.iq.dataverse.util.FileUtil.FileCitationExtension;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.logging.Level;
@@ -188,9 +190,11 @@ public class FileUtilTest {
 
             FileMetadata restrictedFileMetadata = new FileMetadata();
             restrictedFileMetadata.setRestricted(true);
+            restrictedFileMetadata.setDataFile(new DataFile());
             assertEquals(false, FileUtil.isPubliclyDownloadable(restrictedFileMetadata));
 
             FileMetadata nonRestrictedFileMetadata = new FileMetadata();
+            nonRestrictedFileMetadata.setDataFile(new DataFile());
             DatasetVersion dsv = new DatasetVersion();
             dsv.setVersionState(DatasetVersion.VersionState.RELEASED);
             nonRestrictedFileMetadata.setDatasetVersion(dsv);
@@ -204,6 +208,7 @@ public class FileUtilTest {
         public void testIsPubliclyDownloadable2() {
 
             FileMetadata nonRestrictedFileMetadata = new FileMetadata();
+            nonRestrictedFileMetadata.setDataFile(new DataFile());
             DatasetVersion dsv = new DatasetVersion();
             TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
             termsOfUseAndAccess.setTermsOfUse("be excellent to each other");
@@ -214,6 +219,24 @@ public class FileUtilTest {
             dsv.setDataset(dataset);
             nonRestrictedFileMetadata.setRestricted(false);
             assertEquals(false, FileUtil.isPubliclyDownloadable(nonRestrictedFileMetadata));
+        }
+        
+        @Test
+        public void testIsPubliclyDownloadable3() {
+
+            FileMetadata embargoedFileMetadata = new FileMetadata();
+            DataFile df = new DataFile();
+            Embargo e = new Embargo();
+            e.setDateAvailable(LocalDate.now().plusDays(4) );
+            df.setEmbargo(e);
+            embargoedFileMetadata.setDataFile(df);
+            DatasetVersion dsv = new DatasetVersion();
+            dsv.setVersionState(DatasetVersion.VersionState.RELEASED);
+            embargoedFileMetadata.setDatasetVersion(dsv);
+            Dataset dataset = new Dataset();
+            dsv.setDataset(dataset);
+            embargoedFileMetadata.setRestricted(false);
+            assertEquals(false, FileUtil.isPubliclyDownloadable(embargoedFileMetadata));
         }
 
         @Test

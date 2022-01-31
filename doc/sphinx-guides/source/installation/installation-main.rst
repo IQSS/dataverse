@@ -14,7 +14,7 @@ Running the Dataverse Software Installer
 
 A scripted, interactive installer is provided. This script will configure your app server environment, create the database, set some required options and start the application. Some configuration tasks will still be required after you run the installer! So make sure to consult the next section. 
 
-As mentioned in the :doc:`prerequisites` section, RHEL/CentOS is the recommended Linux distribution. (The installer is also known to work on Mac OS X for setting up a development environment.)
+As mentioned in the :doc:`prerequisites` section, RHEL or a derivative such as RockyLinux or AlmaLinux is recommended. (The installer is also known to work on Mac OS X for setting up a development environment.)
 
 Generally, the installer has a better chance of succeeding if you run it against a freshly installed Payara node that still has all the default configuration settings. In any event, please make sure that it is still configured to accept http connections on port 8080 - because that's where the installer expects to find the application once it's deployed.
 
@@ -99,6 +99,10 @@ The supplied site URL will be saved under the JVM option :ref:`dataverse.siteUrl
 The Dataverse Software uses JHOVE_ to help identify the file format (CSV, PNG, etc.) for files that users have uploaded. The installer places files called ``jhove.conf`` and ``jhoveConfig.xsd`` into the directory ``/usr/local/payara5/glassfish/domains/domain1/config`` by default and makes adjustments to the jhove.conf file based on the directory into which you chose to install Payara.
 
 .. _JHOVE: http://jhove.openpreservation.org
+
+**A note about Payara-5.2021.5:** as of this writing there exists a logging configuration bug in Payara-5.2021.5. Any change to the logging configuration results in the contents of ``/usr/local/payara/glassfish/domains/domain1/config/logging.properties`` getting clobbered. In the absence of a proper logging configuration, Payara logs a number of WELD INFO entries on Payara launch, then proceeds to attempt to update its logging configuration approximately twice a second. This will result in unnecessarily junked-up system logs.
+
+This bug appears to be triggered in new Payara installations during the Dataverse installation routine. As the ``default-logging.properties`` file doesn't match the ``logging.proprties`` file distributed with Payara, we are offering :download:`a copy of it here<../_static/installation/files/usr/local/payara5/glassfish/domains/domain1/config/logging.properties>`. Simply stopping Payara, replacing the file, and starting Payara should correct the issue.
 
 Logging In
 ----------

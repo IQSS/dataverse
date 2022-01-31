@@ -96,7 +96,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
     
     public void writeGuestbookAndStartBatchDownload(GuestbookResponse guestbookResponse, Boolean doNotSaveGuestbookRecord){
-         
+
         if (guestbookResponse == null || guestbookResponse.getSelectedFileIds() == null) {
             return;
         }
@@ -280,6 +280,14 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         redirectToBatchDownloadAPI(multiFileString, true, downloadOriginal);
     }
 
+    public void redirectToAuxFileDownloadAPI(Long fileId, String formatTag, String formatVersion) {
+        String fileDownloadUrl = "/api/access/datafile/" + fileId + "/auxiliary/" + formatTag + "/" + formatVersion;
+        try {
+            FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
+        } catch (IOException ex) {
+            logger.info("Failed to issue a redirect to aux file download url (" + fileDownloadUrl + "): " + ex);
+        }
+    }
     
     /**
      * Launch an "explore" tool which is a type of ExternalTool such as
@@ -492,9 +500,9 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         return false;
     }    
     
-    public void sendRequestFileAccessNotification(Dataset dataset, Long fileId, AuthenticatedUser requestor) {
-        permissionService.getUsersWithPermissionOn(Permission.ManageDatasetPermissions, dataset).stream().forEach((au) -> {
-            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, fileId, null, requestor, false);
+    public void sendRequestFileAccessNotification(DataFile datafile, AuthenticatedUser requestor) {
+        permissionService.getUsersWithPermissionOn(Permission.ManageFilePermissions, datafile).stream().forEach((au) -> {
+            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, datafile.getId(), null, requestor, false);
         });
 
     } 
@@ -533,11 +541,12 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
                 
         if (location != null && fileName != null) {
-            em.createNativeQuery("INSERT INTO CUSTOMZIPSERVICEREQUEST (KEY, STORAGELOCATION, FILENAME, ISSUETIME) VALUES ("
-                    + "'" + key + "',"
-                    + "'" + location + "',"
-                    + "'" + fileName + "',"
-                    + "'" + timestamp + "');").executeUpdate();
+            em.createNativeQuery("INSERT INTO CUSTOMZIPSERVICEREQUEST (KEY, STORAGELOCATION, FILENAME, ISSUETIME) VALUES (?1,?2,?3,?4);")
+                    .setParameter(1,key)
+                    .setParameter(2,location)
+                    .setParameter(3,fileName)
+                    .setParameter(4,timestamp)
+                    .executeUpdate();
         }
         
         // TODO:
