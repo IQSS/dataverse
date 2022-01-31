@@ -34,6 +34,8 @@ class CitationDataExtractorTest {
         assertThat(citationData.getTitle()).isEqualTo("Dataset Title");
         assertThat(citationData.getVersion()).isEqualTo("V1");
         assertThat(citationData.getYear()).isEqualTo("1955");
+        assertThat(citationData.getSpatialCoverages())
+                .containsExactlyInAnyOrder("Poland,Warsaw", "USA,New York,Albany,42°39′09″N 073°45′26″W");
     }
 
     @Test

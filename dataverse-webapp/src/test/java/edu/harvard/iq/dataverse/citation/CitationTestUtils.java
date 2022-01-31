@@ -13,8 +13,14 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import static edu.harvard.iq.dataverse.persistence.MocksFactory.create;
 
 class CitationTestUtils {
 
@@ -43,6 +49,14 @@ class CitationTestUtils {
         if (withAuthor) {
             fields.add(createAuthorField("First Last"));
         }
+
+        fields.addAll(createSpatialCoverages(new String[][] {
+                new String[] { "Poland", null, "Warsaw", null },
+                new String[] { "USA", "New York", "Albany", "42°39′09″N 073°45′26″W" },
+                new String[] {}
+        }));
+        fields.add(create("series", "",
+                Collections.singletonList(create("seriesName", "series-name", Collections.emptyList()))));
 
         if (!fields.isEmpty()) {
             datasetVersion.setDatasetFields(fields);
@@ -100,11 +114,20 @@ class CitationTestUtils {
         return constructPrimitive(DatasetFieldConstant.title, value);
     }
 
-    DatasetField constructPrimitive(String fieldName, String value) {
-        DatasetField field = new DatasetField();
-        field.setDatasetFieldType(
-                new DatasetFieldType(fieldName, FieldType.TEXT, false));
-        field.setFieldValue(value);
-        return field;
+    private List<DatasetField> createSpatialCoverages(String[][] values) {
+        String[] subfields = new String[] { DatasetFieldConstant.country, DatasetFieldConstant.state,
+                DatasetFieldConstant.city, DatasetFieldConstant.otherGeographicCoverage };
+        return Arrays.stream(values)
+                .filter(v -> v.length == 4)
+                .map(v -> IntStream.rangeClosed(0, 3)
+                        .filter(i -> v[i] != null)
+                        .mapToObj(i -> constructPrimitive(subfields[i], v[i]))
+                        .collect(Collectors.toList()))
+                .map(l -> create(DatasetFieldConstant.geographicCoverage, "", l))
+                .collect(Collectors.toList());
+    }
+
+    private DatasetField constructPrimitive(String fieldName, String value) {
+        return create(fieldName, value, Collections.emptyList());
     }
 }

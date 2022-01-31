@@ -42,7 +42,7 @@ public class DatasetVersionServiceBeanIT extends WebappArquillianDeployment {
     @Inject
     private DatasetDao datasetDao;
     @Inject
-    private DatasetFieldServiceBean datasetFieldService; 
+    private DatasetFieldServiceBean datasetFieldService;
     @Inject
     private GuestbookServiceBean guestbookService;
     @Inject
@@ -72,13 +72,13 @@ public class DatasetVersionServiceBeanIT extends WebappArquillianDeployment {
         Dataset dbDataset = datasetDao.find(52L);
         assertEquals(2L, (long) dbDataset.getGuestbook().getId());
     }
-    
+
     @Test
     public void updateDatasetVersion__dataset_without_draft() {
         // given
         Dataset dataset = datasetDao.find(57L);
         DatasetVersion editDatasetVersion = dataset.getEditVersion();
-        
+
         DatasetFieldType depositorFieldType = datasetFieldService.findByName(DatasetFieldConstant.depositor);
         DatasetField depositorField = DatasetField.createNewEmptyDatasetField(depositorFieldType, editDatasetVersion);
         MockMetadataFactory.fillDepositorField(depositorField, "Depositor name");
@@ -89,17 +89,17 @@ public class DatasetVersionServiceBeanIT extends WebappArquillianDeployment {
 
         // then
         Dataset dbDataset = datasetDao.find(57L);
-        
+
         assertThat(dbDataset.getVersions(), hasSize(3));
-        
+
         DatasetVersion dbLastVersion = dbDataset.getLatestVersion();
         DatasetVersion dbPrevVersion = dbDataset.getVersions().get(1);
         DatasetVersion dbPrev2Version = dbDataset.getVersions().get(2);
-        
+
         assertEquals(VersionState.DRAFT, dbLastVersion.getVersionState());
-        assertEquals("Depositor name", dbLastVersion.getDatasetField(depositorFieldType).getRawValue());
-        assertNull(dbPrevVersion.getDatasetField(depositorFieldType));
-        assertNull(dbPrev2Version.getDatasetField(depositorFieldType));
+        assertEquals("Depositor name", getDatasetField(dbLastVersion, depositorFieldType).getRawValue());
+        assertNull(getDatasetField(dbPrevVersion, depositorFieldType));
+        assertNull(getDatasetField(dbPrev2Version, depositorFieldType));
     }
 
     // -------------------- PRIVATE --------------------
@@ -111,5 +111,10 @@ public class DatasetVersionServiceBeanIT extends WebappArquillianDeployment {
 
 
         dataset.getLatestVersion().getFileMetadatas().get(0).setTermsOfUse(termsOfUse);
+    }
+
+    private DatasetField getDatasetField(DatasetVersion version, DatasetFieldType dsfType) {
+        return version.getDatasetFieldByTypeName(dsfType.getName())
+                .orElse(null);
     }
 }

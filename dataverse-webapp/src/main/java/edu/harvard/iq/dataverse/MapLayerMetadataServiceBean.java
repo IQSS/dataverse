@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.api.WorldMapRelatedData;
@@ -85,7 +79,6 @@ public class MapLayerMetadataServiceBean {
 
     /*
         Given a datafile id, return the associated MapLayerMetadata object
-    
     */
     public MapLayerMetadata findMetadataByDatafile(DataFile datafile) {
 
@@ -108,9 +101,7 @@ public class MapLayerMetadataServiceBean {
 
     /*
         Delete a mapLayerMetadata object.
-    
         First check if the given user has permission to edit this data.
-        
     */
     public boolean deleteMapLayerMetadataObject(MapLayerMetadata mapLayerMetadata, User user) {
         logger.info("deleteMapLayerMetadataObject");
@@ -167,10 +158,6 @@ public class MapLayerMetadataServiceBean {
      * first remove any existing .img and .img.* files
      * <p>
      * e.g. delete all that start with (DataFile name) + ".img"
-     *
-     * @param mapLayerMetadata
-     * @return
-     * @throws IOException
      */
     private boolean deleteOlderMapThumbnails(DataFile dataFile) {
         if (dataFile == null) {
@@ -226,10 +213,6 @@ public class MapLayerMetadataServiceBean {
      * srs=EPSG:4326
      * request=GetMap
      * height=550
-     *
-     * @param mapLayerMetadata
-     * @return boolean
-     * @throws IOException
      */
     public boolean retrieveMapImageForIcon(MapLayerMetadata mapLayerMetadata) throws IOException {
         if (mapLayerMetadata == null) {
@@ -297,7 +280,7 @@ public class MapLayerMetadataServiceBean {
             return;
         }
 
-        // Worldmap token: 
+        // Worldmap token:
         WorldMapToken token = tokenServiceBean.getNewToken(dataFile, user);
         if (token == null) {
             logger.severe("token should NOT be null");
@@ -305,7 +288,7 @@ public class MapLayerMetadataServiceBean {
         }
 
         logger.info("-- new token id: " + token.getId());
-        // Callback url for geoConnect: 
+        // Callback url for geoConnect:
         String callback_url = URLEncoder.encode(systemConfig.getDataverseSiteUrl() + WorldMapRelatedData.GET_WORLDMAP_DATAFILE_API_PATH);
 
         String geoConnectAddress = token.getApplication().getMapitLink();
@@ -341,8 +324,7 @@ public class MapLayerMetadataServiceBean {
 
     public List<MapLayerMetadata> findAll() {
         TypedQuery<MapLayerMetadata> typedQuery = em.createNamedQuery("MapLayerMetadata.findAll", MapLayerMetadata.class);
-        List<MapLayerMetadata> mapLayerMetadatas = typedQuery.getResultList();
-        return mapLayerMetadatas;
+        return typedQuery.getResultList();
     }
 
 }

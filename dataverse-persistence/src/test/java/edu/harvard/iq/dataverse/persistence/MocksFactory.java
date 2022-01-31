@@ -274,6 +274,20 @@ public class MocksFactory {
         return datasetField;
     }
 
+    public static DatasetField create(String name, String value, List<DatasetField> subfields) {
+        DatasetField result = new DatasetField();
+        DatasetFieldType type = new DatasetFieldType();
+        type.setName(name);
+        result.setDatasetFieldType(type);
+        result.setValue(value);
+        result.setDatasetFieldsChildren(subfields);
+        return result;
+    }
+
+    public static DatasetField create(String name, String value, DatasetField... subfields) {
+        return create(name, value, Arrays.asList(subfields));
+    }
+
     public static DataverseRole makeRole(String name) {
         DataverseRole dvr = new DataverseRole();
 

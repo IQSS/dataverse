@@ -1,14 +1,17 @@
 package edu.harvard.iq.dataverse.export;
 
 import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.json.JsonUtil;
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.extension.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -23,15 +26,22 @@ import java.io.StringReader;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-import static org.junit.Assert.*;
+import static edu.harvard.iq.dataverse.persistence.MocksFactory.create;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class JsonLdBuilderTest {
+class JsonLdBuilderTest {
 
     @InjectMocks
     private JsonLdBuilder jsonLdBuilder;
@@ -50,7 +60,7 @@ public class JsonLdBuilderTest {
      */
 
     @BeforeEach
-    public void beforeEach() {
+    void beforeEach() {
         Dataverse dv = new Dataverse();
         dv.setName("RepOD");
 
@@ -61,47 +71,69 @@ public class JsonLdBuilderTest {
         jsonLdBuilder = new JsonLdBuilder(dataFileService, settingsService, systemConfig);
     }
 
+    // -------------------- TESTS --------------------
+
     @Test
-    public void testGetJsonLd() throws ParseException {
+    @DisplayName("Should return empty string for unpublished dataset")
+    void getJsonLd__unpublished() {
+        // given
         Dataset dataset = new Dataset();
         dataset.setProtocol("doi");
         dataset.setAuthority("10.5072/FK2");
         dataset.setIdentifier("LK0D1H");
+
         DatasetVersion datasetVersion = new DatasetVersion();
         datasetVersion.setDataset(dataset);
         datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
-        assertEquals("", datasetVersion.getPublicationDateAsString());
-        // Only published datasets return any JSON.
-        assertEquals("", jsonLdBuilder.buildJsonLd(datasetVersion));
+
+        // when
+        String json = jsonLdBuilder.buildJsonLd(datasetVersion);
+
+        // then
+        assertThat(json).isEmpty();
+    }
+
+    @Test
+    void testGetJsonLd() throws ParseException {
+        // given
+        Dataverse dataverse = new Dataverse();
+        dataverse.setName("LibraScholar");
+
+        Dataset dataset = new Dataset();
+        dataset.setProtocol("doi");
+        dataset.setAuthority("10.5072/FK2");
+        dataset.setIdentifier("LK0D1H");
+        dataset.setOwner(dataverse);
+
+        DatasetVersion datasetVersion = new DatasetVersion();
+        datasetVersion.setDataset(dataset);
         datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
         datasetVersion.setVersionNumber(1L);
+
         SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
         Date publicationDate = dateFmt.parse("19551105");
         datasetVersion.setReleaseTime(publicationDate);
         dataset.setPublicationDate(new Timestamp(publicationDate.getTime()));
-        Dataverse dataverse = new Dataverse();
-        dataverse.setName("LibraScholar");
-        dataset.setOwner(dataverse);
+
+        // when
         String jsonLd = jsonLdBuilder.buildJsonLd(datasetVersion);
-        System.out.println("jsonLd: " + JsonUtil.prettyPrint(jsonLd));
+
+        // then
         JsonReader jsonReader = Json.createReader(new StringReader(jsonLd));
         JsonObject obj = jsonReader.readObject();
         assertEquals("http://schema.org", obj.getString("@context"));
         assertEquals("Dataset", obj.getString("@type"));
         assertEquals("https://doi.org/10.5072/FK2/LK0D1H", obj.getString("@id"));
         assertEquals("https://doi.org/10.5072/FK2/LK0D1H", obj.getString("identifier"));
-        assertEquals(null, obj.getString("schemaVersion", null));
+        assertNull(obj.getString("schemaVersion", null));
         assertEquals("CreativeWork", obj.getJsonObject("license").getString("@type"));
         assertEquals("Different licenses or terms for individual files", obj.getJsonObject("license").getString("name"));
         assertEquals("1955-11-05", obj.getString("dateModified"));
         assertEquals("1955-11-05", obj.getString("datePublished"));
         assertEquals("1", obj.getString("version"));
-        // TODO: if it ever becomes easier to mock a dataset title, test it.
         assertEquals("", obj.getString("name"));
-        // TODO: If it ever becomes easier to mock authors, test them.
         JsonArray emptyArray = Json.createArrayBuilder().build();
         assertEquals(emptyArray, obj.getJsonArray("creator"));
-        // TODO: If it ever becomes easier to mock subjects, test them.
         assertEquals(emptyArray, obj.getJsonArray("keywords"));
         assertEquals("Organization", obj.getJsonObject("publisher").getString("@type"));
         assertEquals("LibraScholar", obj.getJsonObject("publisher").getString("name"));
@@ -111,53 +143,103 @@ public class JsonLdBuilderTest {
     }
 
     @Test
-    public void testGetJsonLdNonCC0License() throws ParseException {
-        Dataset dataset = new Dataset();
-        dataset.setProtocol("doi");
-        dataset.setAuthority("10.5072/FK2");
-        dataset.setIdentifier("LK0D1H");
-        DatasetVersion datasetVersion = new DatasetVersion();
-        datasetVersion.setDataset(dataset);
-        datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
-        assertEquals("", datasetVersion.getPublicationDateAsString());
-        // Only published datasets return any JSON.
-        assertEquals("", jsonLdBuilder.buildJsonLd(datasetVersion));
-        datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
-        datasetVersion.setVersionNumber(1L);
-        SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
-        Date publicationDate = dateFmt.parse("19551105");
-        datasetVersion.setReleaseTime(publicationDate);
-        dataset.setPublicationDate(new Timestamp(publicationDate.getTime()));
-        Dataverse dataverse = new Dataverse();
-        dataverse.setName("LibraScholar");
-        dataset.setOwner(dataverse);
+    void getFunders() {
+        // given
+        DatasetVersion version = new DatasetVersion();
+        version.setDatasetFields(IntStream.range(1, 10)
+                .mapToObj(i -> {
+                    switch(i % 3) {
+                        case 0:
+                            return create(DatasetFieldConstant.contributor, "",
+                                    create(DatasetFieldConstant.contributorName, "funder-" + i),
+                                    create(DatasetFieldConstant.contributorType, "Funder"));
+                        case 1:
+                            return create(DatasetFieldConstant.contributor, "",
+                                    create(DatasetFieldConstant.contributorName, "editor-" + i),
+                                    create(DatasetFieldConstant.contributorType, "Editor"));
+                        case 2:
+                            return create(DatasetFieldConstant.grantNumber, "",
+                                    create(DatasetFieldConstant.grantNumberAgency, "agency-" + i));
+                        default:
+                            throw new RuntimeException("Unexpected");
+                    }
+                }).collect(Collectors.toList()));
+        // when
+        List<String> funders = jsonLdBuilder.getFunders(version);
 
-        String jsonLd = jsonLdBuilder.buildJsonLd(datasetVersion);
-        System.out.println("jsonLd: " + JsonUtil.prettyPrint(jsonLd));
-        JsonReader jsonReader = Json.createReader(new StringReader(jsonLd));
-        JsonObject obj = jsonReader.readObject();
-        assertEquals("http://schema.org", obj.getString("@context"));
-        assertEquals("Dataset", obj.getString("@type"));
-        assertEquals("https://doi.org/10.5072/FK2/LK0D1H", obj.getString("@id"));
-        assertEquals("https://doi.org/10.5072/FK2/LK0D1H", obj.getString("identifier"));
-        assertEquals(null, obj.getString("schemaVersion", null));
-        assertEquals("CreativeWork", obj.getJsonObject("license").getString("@type"));
-        assertEquals("Different licenses or terms for individual files", obj.getJsonObject("license").getString("name"));
-        assertEquals("1955-11-05", obj.getString("dateModified"));
-        assertEquals("1955-11-05", obj.getString("datePublished"));
-        assertEquals("1", obj.getString("version"));
-        // TODO: if it ever becomes easier to mock a dataset title, test it.
-        assertEquals("", obj.getString("name"));
-        // TODO: If it ever becomes easier to mock authors, test them.
-        JsonArray emptyArray = Json.createArrayBuilder().build();
-        assertEquals(emptyArray, obj.getJsonArray("creator"));
-        // TODO: If it ever becomes easier to mock subjects, test them.
-        assertEquals(emptyArray, obj.getJsonArray("keywords"));
-        assertEquals("Organization", obj.getJsonObject("publisher").getString("@type"));
-        assertEquals("LibraScholar", obj.getJsonObject("publisher").getString("name"));
-        assertEquals("Organization", obj.getJsonObject("provider").getString("@type"));
-        assertEquals("LibraScholar", obj.getJsonObject("provider").getString("name"));
-        assertEquals("LibraScholar", obj.getJsonObject("includedInDataCatalog").getString("name"));
+        // then
+        assertThat(funders)
+                .containsExactlyInAnyOrder("funder-3", "funder-6", "funder-9", "agency-2", "agency-5", "agency-8");
     }
 
+    @Test
+    void getTimePeriodCovered() {
+        // given
+        DatasetVersion version = new DatasetVersion();
+        version.setDatasetFields(Arrays.asList(
+                createTimePeriod(null, null),
+                createTimePeriod(null, "07-01-2022"),
+                createTimePeriod("01-01-2022", null),
+                createTimePeriod("01-01-2022", "07-01-2022"),
+                createTimePeriod("08-01-2022", "13-01-2022")));
+
+        // when
+        List<String> timePeriodsCovered = jsonLdBuilder.getTimePeriodsCovered(version);
+
+        // then
+        assertThat(timePeriodsCovered)
+                .containsExactlyInAnyOrder("01-01-2022/07-01-2022", "08-01-2022/13-01-2022");
+    }
+
+    @Test
+    void getSpatialCoverages() {
+        // given
+        DatasetVersion version = new DatasetVersion();
+        version.setDatasetFields(Arrays.asList(
+                createSpatialCoverage("Warsaw", null, "Poland", null),
+                createSpatialCoverage("Albany", "NY", "USA", "other"),
+                createSpatialCoverage(null, null, null, null)));
+
+        // when
+        List<String> spatialCoverages = jsonLdBuilder.getSpatialCoverages(version);
+
+        // then
+        assertThat(spatialCoverages)
+                .containsExactlyInAnyOrder("Warsaw, Poland", "Albany, NY, USA, other");
+    }
+
+    @Test
+    void getTopicsClassification() {
+        // given
+        DatasetVersion version = new DatasetVersion();
+        version.setDatasetFields(Arrays.asList(
+                create("topicClassification", ""),
+                create("topicClassification", "", create("topicClassValue", "")),
+                create("topicClassification", "", create("topicClassValue", null)),
+                create("topicClassification", "", create("topicClassValue", "classification-value-1")),
+                create("topicClassification", "", create("topicClassValue", "classification-value-2"))));
+
+        // when
+        List<String> classifications = jsonLdBuilder.getTopicClassifications(version);
+
+        // then
+        assertThat(classifications)
+                .containsExactlyInAnyOrder("classification-value-1", "classification-value-2");
+    }
+
+    // -------------------- PRIVATE --------------------
+
+    private DatasetField createTimePeriod(String start, String end) {
+        return create(DatasetFieldConstant.timePeriodCovered, "",
+                create(DatasetFieldConstant.timePeriodCoveredStart, start),
+                create(DatasetFieldConstant.timePeriodCoveredEnd, end));
+    }
+
+    private DatasetField createSpatialCoverage(String city, String state, String country, String other) {
+        return create(DatasetFieldConstant.geographicCoverage, "",
+                create(DatasetFieldConstant.city, city),
+                create(DatasetFieldConstant.state, state),
+                create(DatasetFieldConstant.country, country),
+                create(DatasetFieldConstant.otherGeographicCoverage, other));
+    }
 }

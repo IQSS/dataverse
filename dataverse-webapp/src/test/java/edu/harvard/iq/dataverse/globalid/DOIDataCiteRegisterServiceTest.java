@@ -74,7 +74,7 @@ class DOIDataCiteRegisterServiceTest {
         DatasetVersion version = mock(DatasetVersion.class);
         dataset.setVersions(Collections.singletonList(version));
         when(version.getDescriptionPlainText()).thenReturn("&nbsp;Description&nbsp;&nbsp;&nbsp;1&nbsp;");
-        when(version.getRootDataverseNameforCitation()).thenReturn("");
+        when(version.getRootDataverseNameForCitation()).thenReturn("");
         when(version.getParsedTitle()).thenReturn("");
 
         // when

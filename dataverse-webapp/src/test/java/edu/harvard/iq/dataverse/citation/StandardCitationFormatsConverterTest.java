@@ -244,10 +244,13 @@ class StandardCitationFormatsConverterTest {
                         "Content: text/plain; charset=\"utf-8\"\r\n" +
                         "TY  - DATA\r\n" +
                         "T1  - Dataset Title\r\n" +
+                        "T3  - series-name\r\n" +
                         "AU  - First Last\r\n" +
                         "DO  - doi:10.5072/FK2/LK0D1H\r\n" +
                         "ET  - V1\r\n" +
                         "PY  - 1955\r\n" +
+                        "RI  - Poland,Warsaw\r\n" +
+                        "RI  - USA,New York,Albany,42°39′09″N 073°45′26″W\r\n" +
                         "SE  - 1955-11-05 00:00:00.0\r\n" +
                         "UR  - https://doi.org/10.5072/FK2/LK0D1H\r\n" +
                         "PB  - LibraScholar\r\n" +
@@ -291,9 +294,12 @@ class StandardCitationFormatsConverterTest {
         assertThat(ris).isEqualTo("Provider: LibraScholar\r\n" +
                         "Content: text/plain; charset=\"utf-8\"\r\n" +
                         "TY  - DATA\r\n" +
+                        "T3  - series-name\r\n" +
                         "DO  - doi:10.5072/FK2/LK0D1H\r\n" +
                         "ET  - V1\r\n" +
                         "PY  - 1955\r\n" +
+                        "RI  - Poland,Warsaw\r\n" +
+                        "RI  - USA,New York,Albany,42°39′09″N 073°45′26″W\r\n" +
                         "SE  - 1955-11-05 00:00:00.0\r\n" +
                         "UR  - https://doi.org/10.5072/FK2/LK0D1H\r\n" +
                         "PB  - LibraScholar\r\n" +
@@ -334,21 +340,26 @@ class StandardCitationFormatsConverterTest {
         // then
         assertThat(endNote).isEqualTo("<?xml version='1.0' encoding='UTF-8'?>" +
                         "<xml>" +
-                        "<records>" +
-                        "<record>" +
-                        "<ref-type name=\"Dataset\">59</ref-type>" +
-                        "<contributors>" +
-                        "<authors><author>First Last</author></authors>" +
-                        "</contributors>" +
-                        "<titles><title>Dataset Title</title></titles>" +
-                        "<section>1955-11-05</section>" +
-                        "<dates><year>1955</year></dates>" +
-                        "<edition>V1</edition>" +
-                        "<publisher>LibraScholar</publisher>" +
-                        "<urls><related-urls><url>https://doi.org/10.5072/FK2/LK0D1H</url></related-urls></urls>" +
-                        "<electronic-resource-num>doi/10.5072/FK2/LK0D1H</electronic-resource-num>" +
-                        "</record>" +
-                        "</records>" +
+                          "<records>" +
+                            "<record>" +
+                              "<ref-type name=\"Dataset\">59</ref-type>" +
+                              "<contributors>" +
+                              "<authors><author>First Last</author></authors>" +
+                              "</contributors>" +
+                              "<titles>" +
+                                "<title>Dataset Title</title>" +
+                                "<tertiary-title>series-name</tertiary-title>" +
+                              "</titles>" +
+                              "<section>1955-11-05</section>" +
+                              "<dates><year>1955</year></dates>" +
+                              "<edition>V1</edition>" +
+                              "<publisher>LibraScholar</publisher>" +
+                              "<reviewed-item>Poland,Warsaw</reviewed-item>" +
+                              "<reviewed-item>USA,New York,Albany,42°39′09″N 073°45′26″W</reviewed-item>" +
+                              "<urls><related-urls><url>https://doi.org/10.5072/FK2/LK0D1H</url></related-urls></urls>" +
+                              "<electronic-resource-num>doi/10.5072/FK2/LK0D1H</electronic-resource-num>" +
+                            "</record>" +
+                          "</records>" +
                         "</xml>");
     }
 
@@ -366,23 +377,23 @@ class StandardCitationFormatsConverterTest {
         // then
         assertThat(endNote).isEqualTo("<?xml version='1.0' encoding='UTF-8'?>" +
                 "<xml>" +
-                "<records>" +
-                "<record>" +
-                "<ref-type name=\"Dataset\">59</ref-type>" +
-                "<contributors>" +
-                "<authors><author>First Last</author></authors>" +
-                "</contributors>" +
-                "<titles><title>Dataset Title</title></titles>" +
-                "<dates><year>" + Year.now() + "</year></dates>" +
-                "<urls><related-urls><url>https://doi.org/10.5072/FK2/LK0D1H</url></related-urls></urls>" +
-                "<electronic-resource-num>doi/10.5072/FK2/LK0D1H</electronic-resource-num>" +
-                "</record>" +
-                "</records>" +
+                  "<records>" +
+                    "<record>" +
+                      "<ref-type name=\"Dataset\">59</ref-type>" +
+                      "<contributors>" +
+                      "<authors><author>First Last</author></authors>" +
+                      "</contributors>" +
+                      "<titles><title>Dataset Title</title></titles>" +
+                      "<dates><year>" + Year.now() + "</year></dates>" +
+                      "<urls><related-urls><url>https://doi.org/10.5072/FK2/LK0D1H</url></related-urls></urls>" +
+                      "<electronic-resource-num>doi/10.5072/FK2/LK0D1H</electronic-resource-num>" +
+                      "</record>" +
+                  "</records>" +
                 "</xml>");
     }
 
     @Test
-    @DisplayName("Should create EndNote citation without title and author")
+    @DisplayName("Should create EndNote citation without main title and author")
     void toEndNoteString__withoutTitleAndAuthor() throws ParseException {
 
         // given
@@ -395,19 +406,23 @@ class StandardCitationFormatsConverterTest {
         // then
         assertThat(endNote).isEqualTo("<?xml version='1.0' encoding='UTF-8'?>" +
                         "<xml>" +
-                        "<records>" +
-                        "<record>" +
-                        "<ref-type name=\"Dataset\">59</ref-type>" +
-                        "<contributors/>" +
-                        "<titles/>" +
-                        "<section>1955-11-05</section>" +
-                        "<dates><year>1955</year></dates>" +
-                        "<edition>V1</edition>" +
-                        "<publisher>LibraScholar</publisher>" +
-                        "<urls><related-urls><url>https://doi.org/10.5072/FK2/LK0D1H</url></related-urls></urls>" +
-                        "<electronic-resource-num>doi/10.5072/FK2/LK0D1H</electronic-resource-num>" +
-                        "</record>" +
-                        "</records>" +
+                          "<records>" +
+                            "<record>" +
+                              "<ref-type name=\"Dataset\">59</ref-type>" +
+                              "<contributors/>" +
+                              "<titles>" +
+                                "<tertiary-title>series-name</tertiary-title>" +
+                        "</titles>" +
+                              "<section>1955-11-05</section>" +
+                              "<dates><year>1955</year></dates>" +
+                              "<edition>V1</edition>" +
+                              "<publisher>LibraScholar</publisher>" +
+                              "<reviewed-item>Poland,Warsaw</reviewed-item>" +
+                              "<reviewed-item>USA,New York,Albany,42°39′09″N 073°45′26″W</reviewed-item>" +
+                              "<urls><related-urls><url>https://doi.org/10.5072/FK2/LK0D1H</url></related-urls></urls>" +
+                              "<electronic-resource-num>doi/10.5072/FK2/LK0D1H</electronic-resource-num>" +
+                            "</record>" +
+                          "</records>" +
                         "</xml>");
     }
 
@@ -425,16 +440,16 @@ class StandardCitationFormatsConverterTest {
         // then
         assertThat(endNote).isEqualTo("<?xml version='1.0' encoding='UTF-8'?>" +
                 "<xml>" +
-                "<records>" +
-                "<record>" +
-                "<ref-type name=\"Dataset\">59</ref-type>" +
-                "<contributors/>" +
-                "<titles/>" +
-                "<dates><year>" + Year.now() +"</year></dates>" +
-                "<urls><related-urls><url>https://doi.org/10.5072/FK2/LK0D1H</url></related-urls></urls>" +
-                "<electronic-resource-num>doi/10.5072/FK2/LK0D1H</electronic-resource-num>" +
-                "</record>" +
-                "</records>" +
+                  "<records>" +
+                    "<record>" +
+                      "<ref-type name=\"Dataset\">59</ref-type>" +
+                      "<contributors/>" +
+                      "<titles/>" +
+                      "<dates><year>" + Year.now() +"</year></dates>" +
+                      "<urls><related-urls><url>https://doi.org/10.5072/FK2/LK0D1H</url></related-urls></urls>" +
+                      "<electronic-resource-num>doi/10.5072/FK2/LK0D1H</electronic-resource-num>" +
+                    "</record>" +
+                  "</records>" +
                 "</xml>");
     }
 

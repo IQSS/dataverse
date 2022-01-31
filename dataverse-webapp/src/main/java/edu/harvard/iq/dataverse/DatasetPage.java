@@ -89,6 +89,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -1092,7 +1093,9 @@ public class DatasetPage implements java.io.Serializable {
      */
     public List<String> getDatasetAuthors() {
         assert (workingVersion != null);
-        return workingVersion.getDatasetAuthorNames();
+        return workingVersion.getDatasetAuthors().stream()
+                .map(a -> a.getName().getValue())
+                .collect(Collectors.toList());
     }
 
     /**
@@ -1125,7 +1128,7 @@ public class DatasetPage implements java.io.Serializable {
      */
     public String getPublisher() {
         assert (null != workingVersion);
-        return workingVersion.getRootDataverseNameforCitation();
+        return workingVersion.getRootDataverseNameForCitation();
     }
 
     /**

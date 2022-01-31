@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.persistence.dataset;
 
+import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.persistence.MocksFactory;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,19 +9,16 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import javax.validation.ConstraintViolation;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static edu.harvard.iq.dataverse.persistence.MocksFactory.create;
 import static edu.harvard.iq.dataverse.persistence.MocksFactory.makeFileMetadata;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.tuple;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 /**
  * @author michael
@@ -42,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
     @Test
     void compareByVersionComparator() {
-        //given
+        // given
         DatasetVersion ds1_0 = new DatasetVersion();
         ds1_0.setId(0L);
         ds1_0.setVersionNumber(1L);
@@ -68,44 +66,38 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
         List<DatasetVersion> expected = Arrays.asList(ds1_0, ds1_1, ds2_0, ds_draft);
         List<DatasetVersion> actual = Arrays.asList(ds2_0, ds1_0, ds_draft, ds1_1);
 
-        //when
+        // when
         actual.sort(DatasetVersion.compareByVersion);
 
-        //then
-        assertEquals(expected, actual);
+        // then
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
     void isInReview() {
+        // given
         Dataset ds = MocksFactory.makeDataset();
 
+        // when
         DatasetVersion draft = ds.getLatestVersion();
         draft.setVersionState(DatasetVersion.VersionState.DRAFT);
         ds.addLock(new DatasetLock(DatasetLock.Reason.InReview, MocksFactory.makeAuthenticatedUser("Lauren", "Ipsumowitch")));
-        assertTrue(draft.isInReview());
-
-        DatasetVersion nonDraft = new DatasetVersion();
-        nonDraft.setVersionState(DatasetVersion.VersionState.RELEASED);
-        assertFalse(nonDraft.isInReview());
-
-        ds.addLock(null);
-        assertFalse(nonDraft.isInReview());
-    }
-
-    @Test
-    void getOnlyFilesMetadataNotUnderEmbargoSorted() {
-        // given
-        Dataset ds = MocksFactory.makeDataset();
-        ds.setEmbargoDate(Date.from(Instant.now().plus(1, ChronoUnit.DAYS)));
-
-        DatasetVersion datasetVersion = ds.getLatestVersion();
-        datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
-
-        // when
-        List<FileMetadata> fileMetadata = datasetVersion.getOnlyFilesMetadataNotUnderEmbargoSorted();
 
         // then
-        assertTrue(fileMetadata.isEmpty());
+        assertThat(draft.isInReview()).isTrue();
+
+        // when
+        DatasetVersion nonDraft = new DatasetVersion();
+        nonDraft.setVersionState(DatasetVersion.VersionState.RELEASED);
+
+        // then
+        assertThat(nonDraft.isInReview()).isFalse();
+
+        // when
+        ds.addLock(null);
+
+        // then
+        assertThat(nonDraft.isInReview()).isFalse();
     }
 
     @Test
@@ -158,7 +150,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 	void validate_emptyFileMetadata() {
 		datasetVersion.setFileMetadatas(new ArrayList<>());
 		Set<ConstraintViolation<FileMetadata>> violations2 = datasetVersion.validateFileMetadata();
-		assertEquals(0, violations2.size());
+		assertThat(violations2).isEmpty();
 	}
 
 	@Test
@@ -170,7 +162,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 	@ValueSource(strings = {"/has/leading/slash", "has/trailing/slash/", "/leadingAndTrailing/"})
 	void validate_expectedViolationWithMessage(String directoryLabel) {
 		Set<ConstraintViolation<FileMetadata>> violations = checkConstraintViolations(directoryLabel, 1);
-		assertEquals("{directoryname.illegalCharacters}", violations.iterator().next().getMessageTemplate());
+		assertThat(violations.iterator().next().getMessageTemplate()).isEqualTo("{directoryname.illegalCharacters}");
 	}
 
 	@ParameterizedTest
@@ -179,15 +171,43 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 		checkConstraintViolations(directoryLabel, 0);
 	}
 
+
+	@Test
+    void getRelatedPublications() {
+        // given
+        DatasetVersion version = new DatasetVersion();
+        version.setDatasetFields(Arrays.asList(
+                create(DatasetFieldConstant.publication, "",
+                        create(DatasetFieldConstant.publicationCitation, "publication-citation"),
+                        create(DatasetFieldConstant.publicationIDNumber, "publication-id-number"),
+                        create(DatasetFieldConstant.publicationIDType, "publication-id-type"),
+                        create(DatasetFieldConstant.publicationURL, "publication-url")),
+                create(DatasetFieldConstant.publication, "",
+                        create(DatasetFieldConstant.publicationIDNumber, "publication-id-number"),
+                        create(DatasetFieldConstant.publicationIDType, null),
+                        create(DatasetFieldConstant.publicationURL, "publication-url"))));
+
+        // when
+        List<DatasetRelPublication> publications = version.getRelatedPublications();
+
+        // then
+        assertThat(publications)
+                .extracting(DatasetRelPublication::getText, DatasetRelPublication::getIdNumber, DatasetRelPublication::getIdType,
+                        DatasetRelPublication::getUrl)
+                .containsExactly(
+                        tuple("publication-citation", "publication-id-number", "publication-id-type", "publication-url"),
+                        tuple(null, "publication-id-number", null, "publication-url"));
+    }
+
     // -------------------- PRIVATE --------------------
 
     private void verifySortOrder(List<FileMetadata> metadatas, String label, int expectedOrderIndex) {
-        assertEquals(label, metadatas.get(expectedOrderIndex).getLabel());
+        assertThat(metadatas.get(expectedOrderIndex).getLabel()).isEqualTo(label);
     }
 
     private void verifyDisplayOrder(List<FileMetadata> metadatas, int index, String label, int displayOrder) {
-        assertEquals(label, metadatas.get(index).getLabel());
-        assertEquals(displayOrder, metadatas.get(index).getDisplayOrder());
+        assertThat(metadatas.get(index).getLabel()).isEqualTo(label);
+        assertThat(metadatas.get(index).getDisplayOrder()).isEqualTo(displayOrder);
     }
 
     private DatasetVersion withUnSortedFiles() {
@@ -222,8 +242,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
         datasetVersion.getFileMetadatas().add(fileMetadata);
 
         Set<ConstraintViolation<FileMetadata>> violations = datasetVersion.validateFileMetadata();
-        assertEquals(expectedViolationsNumber, violations.size());
+        assertThat(violations.size()).isEqualTo(expectedViolationsNumber);
         return violations;
     }
-
 }

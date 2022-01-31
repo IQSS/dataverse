@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersionIdentifier;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersionRepository;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersionUser;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -49,10 +50,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static edu.harvard.iq.dataverse.batch.jobs.importer.filesystem.FileRecordJobListener.SEP;
 
@@ -283,9 +286,6 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
 
     /**
      * Does the version identifier in the URL ask for a "DRAFT"?
-     *
-     * @param version
-     * @return boolean
      */
     public boolean isVersionAskingForDraft(String version) {
 
@@ -319,19 +319,13 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     }
 
     public String getContributorsNames(DatasetVersion version) {
-        String contNames = "";
-        for (String id : version.getVersionContributorIdentifiers()) {
-            id = id.startsWith("@") ? id.substring(1) : id;
-            AuthenticatedUser au = authService.getAuthenticatedUser(id);
-            if (au != null) {
-                if (contNames.isEmpty()) {
-                    contNames = au.getName();
-                } else {
-                    contNames = contNames + ", " + au.getName();
-                }
-            }
-        }
-        return contNames;
+        return Optional.ofNullable(version.getDatasetVersionUsers())
+                .orElse(Collections.emptyList())
+                .stream()
+                .map(DatasetVersionUser::getAuthenticatedUser)
+                .filter(Objects::nonNull)
+                .map(AuthenticatedUser::getName)
+                .collect(Collectors.joining(", "));
     }
 
     /**
