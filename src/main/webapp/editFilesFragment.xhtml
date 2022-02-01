@@ -382,13 +382,13 @@
                                         </div>
                                     </div>
                                     <div class="col-md-10 file-metadata-block">
-                                        <label class="control-label" for="fileName" style="margin-right:1em;margin-bottom:.5em;">
+                                        <label class="control-label" jsf:for="fileName" style="margin-right:1em;margin-bottom:.5em;">
                                             #{bundle['file.fileName']}
                                         </label>
                                         <p:inputText id="fileName" value="#{fileMetadata.label}" style="width:60%; margin-bottom:.5em;" disabled="#{fileMetadata.dataFile.filePackage}"/>
                                         <p:message for="fileName"/>
 
-                                        <label class="control-label" for="fileDirectoryLabel" style="margin-right:1em;margin-bottom:.5em;">
+                                        <label class="control-label" jsf:for="fileDirectoryName" style="margin-right:1em;margin-bottom:.5em;">
                                             #{bundle['file.metadataTab.fileMetadata.hierarchy.label']}    
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.metadataTab.fileMetadata.hierarchy.tip']}"></span>
