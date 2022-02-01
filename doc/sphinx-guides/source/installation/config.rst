@@ -1722,6 +1722,8 @@ Note: After making a change to this setting, a reExportAll needs to be run befor
 
 This will *force* a re-export of every published, local dataset, regardless of whether it has already been exported or not.
 
+The call returns a status message informing the administrator, that the process has been launched (``{"status":"WORKFLOW_IN_PROGRESS"}``). The administrator can check the progress of the process via log files: ``[Payara directory]/glassfish/domains/domain1/logs/export_[time stamp].log``.
+
 :NavbarAboutUrl
 +++++++++++++++
 
