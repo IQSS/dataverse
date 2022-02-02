@@ -109,6 +109,8 @@ public class SettingsWrapper implements java.io.Serializable {
     
     private Boolean dataFilePIDSequentialDependent = null;
     
+    private Boolean customLicenseAllowed = null;
+    
     public String get(String settingKey) {
         if (settingsMap == null) {
             initSettingsMap();
@@ -637,6 +639,13 @@ public class SettingsWrapper implements java.io.Serializable {
             return new ArrayList<String>();
         }
         return Arrays.asList(labelArray);
+    }
+
+    public boolean isCustomLicenseAllowed() {
+        if (customLicenseAllowed == null) {
+            customLicenseAllowed = systemConfig.isAllowCustomTerms();
+        }
+        return customLicenseAllowed;
     }
 }
 
