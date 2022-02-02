@@ -388,7 +388,8 @@ public class SearchServiceBean {
             String dvTree = (String) solrDocument.getFirstValue(SearchFields.SUBTREE);
             String identifierOfDataverse = (String) solrDocument.getFieldValue(SearchFields.IDENTIFIER_OF_DATAVERSE);
             String nameOfDataverse = (String) solrDocument.getFieldValue(SearchFields.DATAVERSE_NAME);
-
+            Long embargoEndDate = (Long) solrDocument.getFieldValue(SearchFields.EMBARGO_END_DATE);
+            
             List<String> matchedFields = new ArrayList<>();
             List<Highlight> highlights = new ArrayList<>();
             Map<SolrField, Highlight> highlightsMap = new HashMap<>();
@@ -427,6 +428,10 @@ public class SearchServiceBean {
                 // this method also sets booleans for individual statuses
                 solrSearchResult.setPublicationStatuses(states);
             }
+            String externalStatus = (String) solrDocument.getFieldValue(SearchFields.EXTERNAL_STATUS);
+            if (externalStatus != null) {
+                solrSearchResult.setExternalStatus(externalStatus);
+            }
 //            logger.info(id + ": " + description);
             solrSearchResult.setId(id);
             solrSearchResult.setEntityId(entityid);
@@ -454,6 +459,8 @@ public class SearchServiceBean {
                 solrSearchResult.setHarvested(true);
             }
 
+            solrSearchResult.setEmbargoEndDate(embargoEndDate);
+            
             /**
              * @todo start using SearchConstants class here
              */
@@ -605,6 +612,7 @@ public class SearchServiceBean {
                 if (solrFieldNameForDataset != null && facetField.getName().equals(solrFieldNameForDataset)) {
                     metadataBlockName = datasetField.getMetadataBlock().getName() ;
                     datasetFieldName = datasetField.getName();
+                    facetCategory.setDatasetFieldTypeId(datasetField.getId());
                     break;
                 }
             }

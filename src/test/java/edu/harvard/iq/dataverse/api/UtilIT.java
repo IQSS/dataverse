@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
@@ -9,6 +10,8 @@ import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -35,10 +38,17 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+
+import static com.jayway.restassured.RestAssured.put;
 import static com.jayway.restassured.path.xml.XmlPath.from;
 import static com.jayway.restassured.RestAssured.given;
+import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.StringReader;
+import java.util.Collections;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -644,12 +654,25 @@ public class UtilIT {
     }
 
     static Response uploadAuxFile(Long fileId, String pathToFile, String formatTag, String formatVersion, String mimeType, boolean isPublic, String type, String apiToken) {
+        String nullOrigin = null;
+        return uploadAuxFile(fileId, pathToFile, formatTag, formatVersion, mimeType, isPublic, type, nullOrigin, apiToken);
+    }
+
+    static Response uploadAuxFile(Long fileId, String pathToFile, String formatTag, String formatVersion, String mimeType, boolean isPublic, String type, String origin, String apiToken) {
         RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .multiPart("file", new File(pathToFile), mimeType)
                 .multiPart("isPublic", isPublic);
+        if (mimeType != null) {
+            requestSpecification.multiPart("file", new File(pathToFile), mimeType);
+        } else {
+            requestSpecification.multiPart("file", new File(pathToFile));
+        }
         if (type != null) {
             requestSpecification.multiPart("type", type);
+        }
+        if (origin != null) {
+            requestSpecification.multiPart("origin", origin);
         }
         return requestSpecification.post("/api/access/datafile/" + fileId + "/auxiliary/" + formatTag + "/" + formatVersion);
     }
@@ -658,6 +681,28 @@ public class UtilIT {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/access/datafile/" + fileId + "/auxiliary/" + formatTag + "/" + formatVersion);
+        return response;
+    }
+
+    static Response listAuxFilesByOrigin(Long fileId, String origin, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/access/datafile/" + fileId + "/auxiliary/" + origin);
+        return response;
+    }
+
+    static Response listAllAuxFiles(Long fileId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/access/datafile/" + fileId + "/auxiliary");
+        return response;
+    }
+
+    
+    static Response deleteAuxFile(Long fileId, String formatTag, String formatVersion, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/access/datafile/" + fileId + "/auxiliary/" + formatTag + "/" + formatVersion);
         return response;
     }
 
@@ -720,13 +765,33 @@ public class UtilIT {
     }
 
     static Response downloadFile(Integer fileId, String apiToken) {
-        return given()
-                /**
-                 * Data Access API does not support X-Dataverse-key header -
-                 * https://github.com/IQSS/dataverse/issues/2662
-                 */
-                //.header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/access/datafile/" + fileId + "?key=" + apiToken);
+        String nullByteRange = null;
+        String nullFormat = null;
+        String nullImageThumb = null;
+        return downloadFile(fileId, nullByteRange, nullFormat, nullImageThumb, apiToken);
+    }
+
+    static Response downloadFile(Integer fileId, String byteRange, String format, String imageThumb, String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (byteRange != null) {
+            requestSpecification.header("Range", "bytes=" + byteRange);
+        }
+        String optionalFormat = "";
+        if (format != null) {
+            optionalFormat = "&format=" + format;
+        }
+        String optionalImageThumb = "";
+        if (format != null) {
+            optionalImageThumb = "&imageThumb=" + imageThumb;
+        }
+        /**
+         * Data Access API does not support X-Dataverse-key header -
+         * https://github.com/IQSS/dataverse/issues/2662
+         *
+         * Actually, these days it does. We could switch.
+         */
+        //.header(API_TOKEN_HTTP_HEADER, apiToken)
+        return requestSpecification.get("/api/access/datafile/" + fileId + "?key=" + apiToken + optionalFormat + optionalImageThumb);
     }
     
     static Response downloadTabularFile(Integer fileId) {
@@ -2641,21 +2706,69 @@ public class UtilIT {
         return response;
     }
     
-    static Response updateDatasetJsonLDMetadata(Integer datasetId, String apiToken, String jsonLDBody, boolean replace) {
-        Response response = given()
+    static Response addLicense(String pathToJsonFile, String apiToken) {
+        String jsonIn = getDatasetJson(pathToJsonFile);
+
+        Response addLicenseResponse = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .contentType("application/ld+json")
-                .body(jsonLDBody.getBytes(StandardCharsets.UTF_8))
-                .put("/api/datasets/" + datasetId + "/metadata?replace=" + replace);
-        return response;
+                .body(jsonIn)
+                .contentType("application/json")
+                .post("/api/licenses");
+        return addLicenseResponse;
+    }
+
+    static Response getLicenses() {
+
+        Response getLicensesResponse = given()
+                .get("/api/licenses");
+        return getLicensesResponse;
+    }
+
+    static Response getLicenseById(Long id) {
+
+        Response getLicenseResponse = given()
+                .get("/api/licenses/"+id.toString());
+        return getLicenseResponse;
+    }
+
+    static Response deleteLicenseById(Long id, String apiToken) {
+
+        Response deleteLicenseResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/licenses/"+id.toString());
+        return deleteLicenseResponse;
+    }
+
+    static Response setDefaultLicenseById(Long id, String apiToken) {
+        Response defaultLicenseResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .put("/api/licenses/default/"+id.toString());
+        return defaultLicenseResponse;
     }
     
+    static Response setLicenseActiveById(Long id, boolean state, String apiToken) {
+        Response activateLicenseResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .put("/api/licenses/"+id.toString() + "/:active/" + state);
+        return activateLicenseResponse;
+    }
+
+
+    static Response updateDatasetJsonLDMetadata(Integer datasetId, String apiToken, String jsonLDBody, boolean replace) {
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .contentType("application/ld+json")
+            .body(jsonLDBody.getBytes(StandardCharsets.UTF_8))
+            .put("/api/datasets/" + datasetId + "/metadata?replace=" + replace);
+        return response;
+    }
+
     static Response deleteDatasetJsonLDMetadata(Integer datasetId, String apiToken, String jsonLDBody) {
         Response response = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .contentType("application/ld+json")
-                .body(jsonLDBody.getBytes(StandardCharsets.UTF_8))
-                .put("/api/datasets/" + datasetId + "/metadata/delete");
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .contentType("application/ld+json")
+            .body(jsonLDBody.getBytes(StandardCharsets.UTF_8))
+            .put("/api/datasets/" + datasetId + "/metadata/delete");
         return response;
     }
 
@@ -2666,5 +2779,36 @@ public class UtilIT {
                 .body(jsonLDBody.getBytes(StandardCharsets.UTF_8))
                 .post("/api/dataverses/" + dataverseAlias +"/datasets");
         return response;
+    }
+    
+    static Response setDataverseCurationLabelSet(String alias, String apiToken, String labelSetName) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .put("/api/admin/dataverse/" + alias + "/curationLabelSet?name=" + labelSetName);
+        return response;
+    }
+    
+    static Response getDatasetCurationLabelSet(Integer datasetId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId + "/curationLabelSet");
+        return response;
+    }
+    
+    static Response setDatasetCurationLabel(Integer datasetId, String apiToken, String label) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .put("/api/datasets/" + datasetId + "/curationStatus?label=" + label);
+        return response;
+    }
+
+    private static DatasetField constructPrimitive(String fieldName, String value) {
+        DatasetField field = new DatasetField();
+        field.setDatasetFieldType(
+                new DatasetFieldType(fieldName, DatasetFieldType.FieldType.TEXT, false));
+        field.setDatasetFieldValues(
+                Collections.singletonList(
+                        new DatasetFieldValue(field, value)));
+        return field;
     }
 }

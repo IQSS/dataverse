@@ -44,6 +44,7 @@
                     <f:viewAction action="#{DataverseUserPage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse(), (DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn'] : bundle.account))}"/>
                 </f:metadata>
+                <h1>#{pageTitle}</h1>
                 <h:form id="dataverseUserForm">
 
                     <p:focus context="dataverseUserForm"/>
@@ -105,6 +106,20 @@
                                                         </o:param>
                                                         <o:param>
                                                             <a href="#{systemConfig.guidesBaseUrl}/#{systemConfig.guidesVersion}/user/dataset-management.html" title="#{bundle['notification.dataset.management.title']}" target="_blank">#{bundle['header.guides.user']}</a>
+                                                        </o:param>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'DATASETCREATED'}">
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
+                                                    <h:outputFormat value="#{bundle['notification.datasetCreated']}" escape="false">
+                                                        <o:param>
+                                                            <a href="/dataset.xhtml?persistentId=#{item.theObject.getGlobalId()}" title="#{item.theObject.getDisplayName()}">#{item.theObject.getDisplayName()}</a>
+                                                        </o:param>
+                                                        <o:param>
+                                                            <a href="/dataverse/#{item.theObject.getOwner().getAlias()}" title="#{item.theObject.getOwner().getDisplayName()}">#{item.theObject.getOwner().getDisplayName()}</a>
+                                                        </o:param>
+                                                        <o:param>
+                                                            #{item.requestor.name}
                                                         </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
@@ -303,6 +318,8 @@
                                                     <h:outputFormat value="#{bundle['notification.ingestCompleted']}" escape="false">
                                                         <f:param value="#{item.theObject.getGlobalId()}"/>
                                                         <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                        <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
+                                                        <f:param value="#{settingsWrapper.guidesVersion}"/>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'INGESTCOMPLETEDWITHERRORS'}">
@@ -310,6 +327,8 @@
                                                     <h:outputFormat value="#{bundle['notification.ingestCompletedWithErrors']}" escape="false">
                                                         <f:param value="#{item.theObject.getGlobalId()}"/>
                                                         <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                        <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
+                                                        <f:param value="#{settingsWrapper.guidesVersion}"/>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'WORKFLOW_FAILURE'}">
@@ -334,6 +353,16 @@
                                                         </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'STATUSUPDATED'}">
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
+                                                    <h:outputFormat value="#{bundle['notification.statusUpdated']}" escape="false">
+                                                        <o:param>
+                                                            <a href="/dataset.xhtml?persistentId=#{item.theObject.getDataset().getGlobalId()}&amp;version=DRAFT&amp;faces-redirect=true" title="#{item.theObject.getDataset().getDisplayName()}">#{item.theObject.getDataset().getDisplayName()}</a>
+                                                        </o:param>
+                                                        <f:param value="#{item.theObject.externalStatusLabel}"/>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+                                                
 
                                             </ui:fragment>
                                             <h:outputText value="#{item.localeSendDate}" styleClass="text-muted small"/>
@@ -361,7 +390,7 @@
                                         </ui:fragment>
                                         <span class="caret"></span>
                                     </button>
-                                    <ul class="dropdown-menu pull-right text-left" role="menu">
+                                    <ul class="dropdown-menu pull-right text-left">
                                         <ui:fragment rendered="#{DataverseUserPage.passwordEditable or DataverseUserPage.accountDetailsEditable}">
                                             <li>
                                                 <p:commandLink id="editAccount" rendered="#{DataverseUserPage.accountDetailsEditable}"

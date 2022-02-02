@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.util.json;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -16,8 +15,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Map.Entry;
 import java.util.TreeMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -31,12 +30,6 @@ import javax.json.JsonValue.ValueType;
 import javax.json.stream.JsonGenerator;
 import javax.ws.rs.BadRequestException;
 
-import org.apache.commons.lang3.StringUtils;
-
-import com.apicatalog.jsonld.JsonLd;
-import com.apicatalog.jsonld.api.JsonLdError;
-import com.apicatalog.jsonld.document.JsonDocument;
-
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
@@ -49,9 +42,15 @@ import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess.License;
+import org.apache.commons.lang3.StringUtils;
+
+import com.apicatalog.jsonld.JsonLd;
+import com.apicatalog.jsonld.api.JsonLdError;
+import com.apicatalog.jsonld.document.JsonDocument;
+
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
-import edu.harvard.iq.dataverse.util.bagit.OREMap;
+import edu.harvard.iq.dataverse.license.License;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 
 public class JSONLDUtil {
 
@@ -75,7 +74,7 @@ public class JSONLDUtil {
     }
 
     public static Dataset updateDatasetMDFromJsonLD(Dataset ds, String jsonLDBody,
-            MetadataBlockServiceBean metadataBlockSvc, DatasetFieldServiceBean datasetFieldSvc, boolean append, boolean migrating) {
+                                                    MetadataBlockServiceBean metadataBlockSvc, DatasetFieldServiceBean datasetFieldSvc, boolean append, boolean migrating, LicenseServiceBean licenseSvc) {
 
         DatasetVersion dsv = new DatasetVersion();
 
@@ -91,7 +90,7 @@ public class JSONLDUtil {
             }
         }
 
-        dsv = updateDatasetVersionMDFromJsonLD(dsv, jsonld, metadataBlockSvc, datasetFieldSvc, append, migrating);
+        dsv = updateDatasetVersionMDFromJsonLD(dsv, jsonld, metadataBlockSvc, datasetFieldSvc, append, migrating, licenseSvc);
         dsv.setDataset(ds);
 
         List<DatasetVersion> versions = new ArrayList<>(1);
@@ -109,9 +108,9 @@ public class JSONLDUtil {
     }
 
     public static DatasetVersion updateDatasetVersionMDFromJsonLD(DatasetVersion dsv, String jsonLDBody,
-            MetadataBlockServiceBean metadataBlockSvc, DatasetFieldServiceBean datasetFieldSvc, boolean append, boolean migrating) {
+            MetadataBlockServiceBean metadataBlockSvc, DatasetFieldServiceBean datasetFieldSvc, boolean append, boolean migrating, LicenseServiceBean licenseSvc) {
         JsonObject jsonld = decontextualizeJsonLD(jsonLDBody);
-        return updateDatasetVersionMDFromJsonLD(dsv, jsonld, metadataBlockSvc, datasetFieldSvc, append, migrating);
+        return updateDatasetVersionMDFromJsonLD(dsv, jsonld, metadataBlockSvc, datasetFieldSvc, append, migrating, licenseSvc);
     }
 
     /**
@@ -127,7 +126,7 @@ public class JSONLDUtil {
      * @return
      */
     public static DatasetVersion updateDatasetVersionMDFromJsonLD(DatasetVersion dsv, JsonObject jsonld,
-            MetadataBlockServiceBean metadataBlockSvc, DatasetFieldServiceBean datasetFieldSvc, boolean append, boolean migrating) {
+            MetadataBlockServiceBean metadataBlockSvc, DatasetFieldServiceBean datasetFieldSvc, boolean append, boolean migrating, LicenseServiceBean licenseSvc) {
 
         //Assume draft to start
         dsv.setVersionState(VersionState.DRAFT);
@@ -145,7 +144,8 @@ public class JSONLDUtil {
             fieldByTypeMap.put(dsf.getDatasetFieldType(), dsf);
         }
 
-        TermsOfUseAndAccess terms = (dsv.getTermsOfUseAndAccess()!=null) ? dsv.getTermsOfUseAndAccess().copyTermsOfUseAndAccess() : new TermsOfUseAndAccess();
+        TermsOfUseAndAccess terms = (dsv.getTermsOfUseAndAccess() != null) ? dsv.getTermsOfUseAndAccess().copyTermsOfUseAndAccess() : new TermsOfUseAndAccess();
+
 
         for (String key : jsonld.keySet()) {
             if (!key.equals("@context")) {
@@ -168,7 +168,6 @@ public class JSONLDUtil {
                         dsf.setDatasetFieldType(dsft);
                     }
 
-                    // Todo - normalize object vs. array
                     JsonArray valArray = getValues(jsonld.get(key), dsft.isAllowMultiples(), dsft.getName());
 
                     addField(dsf, valArray, dsft, datasetFieldSvc, append);
@@ -184,29 +183,32 @@ public class JSONLDUtil {
                             dsv.setVersionNumber(Long.parseLong(friendlyVersion.substring(0, index)));
                             dsv.setMinorVersionNumber(Long.parseLong(friendlyVersion.substring(index + 1)));
                         }
-                    } else if (key.equals(JsonLDTerm.schemaOrg("license").getUrl())) {
-                        //Special handling for license
-                        if (!append || !isSet(terms, key)) {
-                            // Mirror rules from SwordServiceBean
-                            if (jsonld.containsKey(JsonLDTerm.termsOfUse.getUrl())) {
-                                throw new BadRequestException(
-                                        "Cannot specify " + JsonLDTerm.schemaOrg("license").getUrl() + " and "
-                                                + JsonLDTerm.termsOfUse.getUrl());
-                            }
-                            setSemTerm(terms, key, TermsOfUseAndAccess.defaultLicense);
-                        } else {
-                            throw new BadRequestException(
-                                    "Can't append to a single-value field that already has a value: "
-                                            + JsonLDTerm.schemaOrg("license").getUrl());
-                        }
-
-                    } else if (datasetTerms.contains(key)) {
+                    }
+                    else if (datasetTerms.contains(key)) {
                         // Other Dataset-level TermsOfUseAndAccess
                         if (!append || !isSet(terms, key)) {
-                            setSemTerm(terms, key, jsonld.getString(key));
-                        } else {
-                            throw new BadRequestException(
-                                    "Can't append to a single-value field that already has a value: " + key);
+                            if (key.equals(JsonLDTerm.schemaOrg("license").getUrl())) {
+                                if (jsonld.containsKey(JsonLDTerm.termsOfUse.getUrl())) {
+                                    throw new BadRequestException("Cannot specify " + JsonLDTerm.schemaOrg("license").getUrl() + " and " + JsonLDTerm.termsOfUse.getUrl());
+                                }
+                                if (StringUtils.isEmpty(jsonld.getString(key))) {
+                                    setSemTerm(terms, key, licenseSvc.getDefault());
+                                }
+                                else {
+                                        License license = licenseSvc.getByNameOrUri(jsonld.getString(key));
+                                        if (license == null) throw new BadRequestException("Invalid license");
+                                        setSemTerm(terms, key, license);
+                                }
+                            }
+                            else if (key.equals("https://dataverse.org/schema/core#fileRequestAccess")) {
+                                setSemTerm(terms, key, jsonld.getBoolean(key));
+                            }
+                            else {
+                                setSemTerm(terms, key, jsonld.getString(key));
+                            }
+                        }
+                        else {
+                            throw new BadRequestException("Can't append to a single-value field that already has a value: " + key);
                         }
                     } else if (key.equals(JsonLDTerm.fileTermsOfAccess.getUrl())) {
                         // Other DataFile-level TermsOfUseAndAccess
@@ -227,13 +229,12 @@ public class JSONLDUtil {
                             }
                         }
                     }
-                    dsv.setTermsOfUseAndAccess(terms);
                     // ToDo: support Dataverse location metadata? e.g. move to new dataverse?
                     // re: JsonLDTerm.schemaOrg("includedInDataCatalog")
                 }
             }
         }
-
+        dsv.setTermsOfUseAndAccess(terms);
         dsv.setDatasetFields(dsfl);
 
         return dsv;
@@ -249,7 +250,7 @@ public class JSONLDUtil {
      * @return
      */
     public static DatasetVersion deleteDatasetVersionMDFromJsonLD(DatasetVersion dsv, String jsonLDBody,
-            MetadataBlockServiceBean metadataBlockSvc, DatasetFieldServiceBean datasetFieldSvc) {
+            MetadataBlockServiceBean metadataBlockSvc, LicenseServiceBean licenseSvc) {
         logger.fine("deleteDatasetVersionMD");
         JsonObject jsonld = decontextualizeJsonLD(jsonLDBody);
         //All terms are now URIs
@@ -299,8 +300,8 @@ public class JSONLDUtil {
                     // Internal/non-metadatablock terms
                     boolean found=false;
                     if (key.equals(JsonLDTerm.schemaOrg("license").getUrl())) {
-                        if(jsonld.getString(key).equals(TermsOfUseAndAccess.CC0_URI)) {
-                            setSemTerm(terms, key, TermsOfUseAndAccess.License.NONE);
+                        if(licenseSvc.getByNameOrUri(jsonld.getString(key)) != null) {
+                            setSemTerm(terms, key, licenseSvc.getDefault());
                         } else {
                             throw new BadRequestException(
                                     "Term: " + key + " with value: " + jsonld.getString(key) + " not found.");
@@ -363,6 +364,8 @@ public class JSONLDUtil {
         logger.fine("Compound: " + dsft.isCompound());
         logger.fine("CV: " + dsft.isAllowControlledVocabulary());
 
+        Map<Long, JsonObject> cvocMap = datasetFieldSvc.getCVocConf(true);
+        
         if (dsft.isCompound()) {
             /*
              * List<DatasetFieldCompoundValue> vals = parseCompoundValue(type,
@@ -428,7 +431,7 @@ public class JSONLDUtil {
                 }
                 // Only add value to the list if it is not a duplicate
                 if (strValue.equals("Other")) {
-                    System.out.println("vals = " + vals + ", contains: " + vals.contains(cvv));
+                    logger.fine("vals = " + vals + ", contains: " + vals.contains(cvv));
                 }
                 if (!vals.contains(cvv)) {
                     if (vals.size() > 0) {
@@ -441,10 +444,21 @@ public class JSONLDUtil {
             dsf.setControlledVocabularyValues(vals);
 
         } else {
+
+            boolean extVocab=false;
+            if(cvocMap.containsKey(dsft.getId())) {
+                extVocab=true;
+            }
             List<DatasetFieldValue> vals = dsf.getDatasetFieldValues();
 
             for (JsonString strVal : valArray.getValuesAs(JsonString.class)) {
                 String strValue = strVal.getString();
+                if(extVocab) {
+                    if(!datasetFieldSvc.isValidCVocValue(dsft, strValue)) {
+                        throw new BadRequestException("Invalid values submitted for " + dsft.getName() + " which is limited to specific vocabularies.");
+                    }
+                    datasetFieldSvc.registerExternalTerm(cvocMap.get(dsft.getId()), strValue);
+                }
                 DatasetFieldValue datasetFieldValue = new DatasetFieldValue();
 
                 datasetFieldValue.setDisplayOrder(vals.size());
@@ -662,6 +676,7 @@ public class JSONLDUtil {
     // Convenience methods for TermsOfUseAndAccess
 
     public static final List<String> datasetTerms = new ArrayList<String>(Arrays.asList(
+            "http://schema.org/license",
             "https://dataverse.org/schema/core#termsOfUse",
             "https://dataverse.org/schema/core#confidentialityDeclaration",
             "https://dataverse.org/schema/core#specialPermissions", "https://dataverse.org/schema/core#restrictions",
@@ -678,7 +693,7 @@ public class JSONLDUtil {
     public static boolean isSet(TermsOfUseAndAccess terms, String semterm) {
         switch (semterm) {
         case "http://schema.org/license":
-            return !terms.getLicense().equals(TermsOfUseAndAccess.License.NONE);
+            return terms.getLicense() != null;
         case "https://dataverse.org/schema/core#termsOfUse":
             return !StringUtils.isBlank(terms.getTermsOfUse());
         case "https://dataverse.org/schema/core#confidentialityDeclaration":
@@ -720,13 +735,7 @@ public class JSONLDUtil {
     public static void setSemTerm(TermsOfUseAndAccess terms, String semterm, Object value) {
         switch (semterm) {
         case "http://schema.org/license":
-            // Mirror rules from SwordServiceBean
-            if (((License) value).equals(TermsOfUseAndAccess.defaultLicense)) {
-                terms.setLicense(TermsOfUseAndAccess.defaultLicense);
-            } else {
-                throw new BadRequestException("The only allowed value for " + JsonLDTerm.schemaOrg("license").getUrl()
-                        + " is " + TermsOfUseAndAccess.CC0_URI);
-            }
+            terms.setLicense((License) value);
             break;
         case "https://dataverse.org/schema/core#termsOfUse":
             terms.setTermsOfUse((String) value);
