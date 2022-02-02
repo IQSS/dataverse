@@ -16,7 +16,7 @@
             #{bundle['file.requestAccessTermsDialog.embargoed']}
         </p>
         <div class="form-horizontal">
-            <div class="form-group" jsf:rendered="#{workingVersion.termsOfUseAndAccess.license != 'CC0' and !empty workingVersion.termsOfUseAndAccess.termsOfUse}">
+            <div class="form-group" jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.license and workingVersion.termsOfUseAndAccess.license.name != 'CC0' and !empty workingVersion.termsOfUseAndAccess.termsOfUse}">
                 <label class="col-sm-3 control-label">
                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
                 </label>
