@@ -23,6 +23,8 @@ In addition to the automated exports, a Dataverse installation admin can start a
 The former will attempt to export all the published, local (non-harvested) datasets that haven't been exported yet. 
 The latter will *force* a re-export of every published, local dataset, regardless of whether it has already been exported or not. 
 
+These calls return a status message informing the administrator, that the process has been launched (``{"status":"WORKFLOW_IN_PROGRESS"}``). The administrator can check the progress of the process via log files: ``[Payara directory]/glassfish/domains/domain1/logs/export_[time stamp].log``.
+
 Note, that creating, modifying, or re-exporting an OAI set will also attempt to export all the unexported datasets found in the set.
 
 Export Failures
