@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
@@ -43,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -120,6 +122,8 @@ public class IndexServiceBean {
     SettingsServiceBean settingsService;
     @EJB
     SolrClientService solrClientService;
+    @EJB
+    DataFileServiceBean dataFileService;
 
     @EJB
     VariableServiceBean variableService;
@@ -326,6 +330,15 @@ public class IndexServiceBean {
     public Future<String> indexDatasetInNewTransaction(Long datasetId) throws  SolrServerException, IOException{ //Dataset dataset) {
         boolean doNormalSolrDocCleanUp = false;
         Dataset dataset = em.find(Dataset.class, datasetId);
+        // return indexDataset(dataset, doNormalSolrDocCleanUp);
+        Future<String> ret = indexDataset(dataset, doNormalSolrDocCleanUp);
+        dataset = null;
+        return ret;
+    }
+    
+    @TransactionAttribute(REQUIRES_NEW)
+    public Future<String> indexDatasetObjectInNewTransaction(Dataset dataset) throws  SolrServerException, IOException{ //Dataset dataset) {
+        boolean doNormalSolrDocCleanUp = false;
         // return indexDataset(dataset, doNormalSolrDocCleanUp);
         Future<String> ret = indexDataset(dataset, doNormalSolrDocCleanUp);
         dataset = null;
@@ -627,16 +640,18 @@ public class IndexServiceBean {
                 for (FileMetadata fm : latestVersion.getFileMetadatas()) {
                     datafilesInDraftVersion.add(fm.getDataFile().getId());
                 }
-                String indexDraftResult = addOrUpdateDataset(indexableDraftVersion);
-                results.append("The latest version is a working copy (latestVersionState: ")
-                        .append(latestVersionStateString).append(") and will be indexed as ")
-                        .append(solrIdDraftDataset).append(" (limited visibility). Result: ").append(indexDraftResult).append("\n");
+
 
                 desiredCards.put(DatasetVersion.VersionState.RELEASED, true);
                 IndexableDataset indexableReleasedVersion = new IndexableDataset(releasedVersion);
                 String indexReleasedVersionResult = addOrUpdateDataset(indexableReleasedVersion, datafilesInDraftVersion);
                 results.append("There is a published version we will attempt to index. Result: ").append(indexReleasedVersionResult).append("\n");
 
+                String indexDraftResult = addOrUpdateDataset(indexableDraftVersion);
+                results.append("The latest version is a working copy (latestVersionState: ")
+                        .append(latestVersionStateString).append(") and will be indexed as ")
+                        .append(solrIdDraftDataset).append(" (limited visibility). Result: ").append(indexDraftResult).append("\n");
+                
                 desiredCards.put(DatasetVersion.VersionState.DEACCESSIONED, false);
                 if (doNormalSolrDocCleanUp) {
                     String deleteDeaccessionedResult = removeDeaccessioned(dataset);
@@ -713,7 +728,6 @@ public class IndexServiceBean {
         Dataset dataset = indexableDataset.getDatasetVersion().getDataset();
         logger.fine("adding or updating Solr document for dataset id " + dataset.getId());
         Collection<SolrInputDocument> docs = new ArrayList<>();
-        
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         String datasetSolrDocId = indexableDataset.getSolrDocId();
         solrInputDocument.addField(SearchFields.ID, datasetSolrDocId);
@@ -978,9 +992,15 @@ public class IndexServiceBean {
         List<String> filesIndexed = new ArrayList<>();
         if (datasetVersion != null) {
             List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
+            List<FileMetadata> releasedFileMetadatas = new ArrayList<>();
+            Map<Long, FileMetadata> fileMap = new HashMap<>();
             boolean checkForDuplicateMetadata = false;
             if (datasetVersion.isDraft() && dataset.isReleased() && dataset.getReleasedVersion() != null) {
                 checkForDuplicateMetadata = true;
+                releasedFileMetadatas = dataset.getReleasedVersion().getFileMetadatas(); 
+                for(FileMetadata released: releasedFileMetadatas){
+                    fileMap.put(released.getDataFile().getId(), released);
+                }
                 logger.fine(
                         "We are indexing a draft version of a dataset that has a released version. We'll be checking file metadatas if they are exact clones of the released versions.");
             }
@@ -997,37 +1017,24 @@ public class IndexServiceBean {
                 }
 
                 boolean indexThisMetadata = true;
-                if (checkForDuplicateMetadata) {
-                    
+                if (checkForDuplicateMetadata && !releasedFileMetadatas.isEmpty()) {
                     logger.fine("Checking if this file metadata is a duplicate.");
-                    for (FileMetadata releasedFileMetadata : dataset.getReleasedVersion().getFileMetadatas()) {
-                        if (fileMetadata.getDataFile() != null && fileMetadata.getDataFile().equals(releasedFileMetadata.getDataFile())) {
-                            /*
-                             * Duplicate if metadata matches and, for full text indexing and the
-                             * SearchFields.ACCESS field, if the restricted status of the file hasn't
-                             * changed. To address the case where full text indexing was on when a file was
-                             * not restricted and it is now restricted and full text indexing has been shut
-                             * off, we need to check for the change in restricted status regardless of
-                             * whether full text indexing is on now.
-                             */
-                            if ((fileMetadata.getDataFile().isRestricted() == releasedFileMetadata.getDataFile().isRestricted())) {
-                                if (fileMetadata.contentEquals(releasedFileMetadata)
-                                        && variableMetadataUtil.compareVariableMetadata(releasedFileMetadata,fileMetadata)
-                                        ) {
-                                    indexThisMetadata = false;
-                                    logger.fine("This file metadata hasn't changed since the released version; skipping indexing.");
-                                } else {
-                                    logger.fine("This file metadata has changed since the released version; we want to index it!");
-                                }
+                    FileMetadata getFromMap = fileMap.get(fileMetadata.getDataFile().getId());
+                    if (getFromMap != null) {
+                        if ((fileMetadata.getDataFile().isRestricted() == getFromMap.getDataFile().isRestricted())) {
+                            if (fileMetadata.contentEquals(getFromMap)
+                                    && variableMetadataUtil.compareVariableMetadata(getFromMap, fileMetadata)) {
+                                indexThisMetadata = false;
+                                logger.fine("This file metadata hasn't changed since the released version; skipping indexing.");
                             } else {
-                                logger.fine("This file's restricted status has changed since the released version; we want to index it!");
+                                logger.fine("This file metadata has changed since the released version; we want to index it!");
                             }
-                            break;
+                        } else {
+                            logger.fine("This file's restricted status has changed since the released version; we want to index it!");
                         }
                     }
-                }
+                }        
                 if (indexThisMetadata) {
-                    
 
                     SolrInputDocument datafileSolrInputDocument = new SolrInputDocument();
                     Long fileEntityId = fileMetadata.getDataFile().getId();
@@ -1314,7 +1321,7 @@ public class IndexServiceBean {
               solrInputDocument.addField(SearchFields.EMBARGO_END_DATE, embargoEndDate.toEpochDay());
             }
         }
-        
+
         try {
             solrClientService.getSolrClient().add(docs);
             solrClientService.getSolrClient().commit();
