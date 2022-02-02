@@ -11,7 +11,7 @@ python3.6 -m ensurepip
 COUNTER_USER=counter
 echo "Ensuring Unix user '$COUNTER_USER' exists"
 useradd $COUNTER_USER || :
-COMMIT='a73dbced06f0ac2f0d85231e4d9dd4f21bee8487'
+COMMIT='7974dad259465ba196ef639f48dea007cae8f9ac'
 UNZIPPED_DIR="counter-processor-$COMMIT"
 if [ ! -e $UNZIPPED_DIR ]; then
   ZIP_FILE="${COMMIT}.zip"
