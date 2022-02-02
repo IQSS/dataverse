@@ -724,8 +724,8 @@ When a user selects one of the available choices, the Dataverse user interfaces 
 Allowing the Language Used for Dataset Metadata to be Specified
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-Since dataset metadata can only be entered in one language, and administrators may wish to limit which languages metadata can be entered in, Dataverse also offers a separate setting defining allowed metadata languages. 
-The presence of the :ref:`:MetadataLanguages` database setting identifies the available options (which can be different from those in the :Languages setting above, with fewer or more options). 
+Since dataset metadata can only be entered in one language, and administrators may wish to limit which languages metadata can be entered in, Dataverse also offers a separate setting defining allowed metadata languages.
+The presence of the :ref:`:MetadataLanguages` database setting identifies the available options (which can be different from those in the :Languages setting above, with fewer or more options).
 Dataverse collection admins can select from these options to indicate which language should be used for new Datasets created with that specific collection.
 
 When creating or editing a dataset, users will be asked to enter the metadata in that language. The metadata language selected will also be shown when dataset metadata is viewed and will be included in metadata exports (as appropriate for each format) for published datasets:
@@ -1722,6 +1722,8 @@ Note: After making a change to this setting, a reExportAll needs to be run befor
 
 This will *force* a re-export of every published, local dataset, regardless of whether it has already been exported or not.
 
+The call returns a status message informing the administrator, that the process has been launched (``{"status":"WORKFLOW_IN_PROGRESS"}``). The administrator can check the progress of the process via log files: ``[Payara directory]/glassfish/domains/domain1/logs/export_[time stamp].log``.
+
 :NavbarAboutUrl
 +++++++++++++++
 
@@ -2278,7 +2280,7 @@ See :ref:`i18n` for a curl example and related settings.
 :MetadataLanguages
 ++++++++++++++++++
 
-Sets which languages can be used when entering dataset metadata. 
+Sets which languages can be used when entering dataset metadata.
 
 See :ref:`i18n` for further discussion, a curl example, and related settings.
 
@@ -2427,7 +2429,7 @@ A boolean setting that, if true, will send an email and notification to users wh
 
 A JSON-structured setting that configures Dataverse to associate specific metadatablock fields with external vocabulary services and specific vocabularies/sub-vocabularies managed by that service. More information about this capability is available at :doc:`/admin/metadatacustomization`.
 
-Scripts that implement this association for specific service protocols are maintained at https://github.com/gdcc/dataverse-external-vocab-support. That repository also includes a json-schema for validating the structure required by this setting along with an example metadatablock and sample :CVocConf setting values associating entries in the example block with ORCID and SKOSMOS based services. 
+Scripts that implement this association for specific service protocols are maintained at https://github.com/gdcc/dataverse-external-vocab-support. That repository also includes a json-schema for validating the structure required by this setting along with an example metadatablock and sample :CVocConf setting values associating entries in the example block with ORCID and SKOSMOS based services.
 
 ``wget https://gdcc.github.io/dataverse-external-vocab-support/examples/config/cvoc-conf.json``
 
@@ -2437,23 +2439,32 @@ Scripts that implement this association for specific service protocols are maint
 
 :AllowedCurationLabels
 ++++++++++++++++++++++
- 
-A JSON Object containing lists of allowed labels (up to 32 characters, spaces allowed) that can be set, via API or UI by users with the permission to publish a dataset. The set of labels allowed 
-for datasets can be selected by a superuser - via the Dataverse collection page (Edit/General Info) or set via API call. 
-The labels in a set should correspond to the states in an organization's curation process and are intended to help users/curators track the progress of a dataset through a defined curation process. 
-A dataset may only have one label at a time and if a label is set, it will be removed at publication time. 
+
+A JSON Object containing lists of allowed labels (up to 32 characters, spaces allowed) that can be set, via API or UI by users with the permission to publish a dataset. The set of labels allowed
+for datasets can be selected by a superuser - via the Dataverse collection page (Edit/General Info) or set via API call.
+The labels in a set should correspond to the states in an organization's curation process and are intended to help users/curators track the progress of a dataset through a defined curation process.
+A dataset may only have one label at a time and if a label is set, it will be removed at publication time.
 This functionality is disabled when this setting is empty/not set.
 Each set of labels is identified by a curationLabelSet name and a JSON Array of the labels allowed in that set.
 
 ``curl -X PUT -d '{"Standard Process":["Author contacted", "Privacy Review", "Awaiting paper publication", "Final Approval"], "Alternate Process":["State 1","State 2","State 3"]}' http://localhost:8080/api/admin/settings/:AllowedCurationLabels``
+
+.. _:AllowCustomTermsOfUse:
+
+:AllowCustomTermsOfUse
+++++++++++++++++++++++
+
+By default, custom terms of data use and access can be specified after selecting "Custom Terms" from the License/DUA dropdown on the Terms tab. When ``:AllowCustomTermsOfUse`` is  set to ``false`` the "Custom Terms" item is not made available to the depositor.
+
+``curl -X PUT -d false http://localhost:8080/api/admin/settings/:AllowCustomTermsOfUse``
 
 .. _:MaxEmbargoDurationInMonths:
 
 :MaxEmbargoDurationInMonths
 +++++++++++++++++++++++++++
 
-This setting controls whether embargoes are allowed in a Dataverse instance and can limit the maximum duration users are allowed to specify. A value of 0 months or non-existent 
-setting indicates embargoes are not supported. A value of -1 allows embargoes of any length. Any other value indicates the maximum number of months (from the current date) a user 
+This setting controls whether embargoes are allowed in a Dataverse instance and can limit the maximum duration users are allowed to specify. A value of 0 months or non-existent
+setting indicates embargoes are not supported. A value of -1 allows embargoes of any length. Any other value indicates the maximum number of months (from the current date) a user
 can enter for an embargo end date. This limit will be enforced in the popup dialog in which users enter the embargo date. For example, to set a two year maximum:
 
 ``curl -X PUT -d 24 http://localhost:8080/api/admin/settings/:MaxEmbargoDurationInMonths``
