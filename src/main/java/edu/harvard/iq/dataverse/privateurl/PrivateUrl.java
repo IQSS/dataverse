@@ -51,4 +51,8 @@ public class PrivateUrl {
         return link;
     }
 
+    public boolean isAnonymizedAccess() {
+        return roleAssignment.isAnonymizedAccess();
+    }
+
 }

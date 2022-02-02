@@ -29,7 +29,9 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -76,7 +78,7 @@ import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.event.FacesEvent;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.primefaces.PrimeFaces;
 
@@ -134,6 +136,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     @Inject ProvPopupFragmentBean provPopupFragmentBean;
     @Inject
     SettingsWrapper settingsWrapper;
+    @Inject
+    LicenseServiceBean licenseServiceBean;
 
     private Dataset dataset = new Dataset();
     
@@ -170,6 +174,9 @@ public class EditDatafilesPage implements java.io.Serializable {
     private final Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
 
     private Long maxFileUploadSizeInBytes = null;
+    private Long maxIngestSizeInBytes = null;
+    // CSV: 4.8 MB, DTA: 976.6 KB, XLSX: 5.7 MB, etc.
+    private String humanPerFormatTabularLimits = null;
     private Integer multipleUploadFilesLimit = null; 
     
     //MutableBoolean so it can be passed from DatasetPage, supporting DatasetPage.cancelCreate()
@@ -324,7 +331,35 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         return this.maxFileUploadSizeInBytes == null;
     }
-    
+
+    public Long getMaxIngestSizeInBytes() {
+        return maxIngestSizeInBytes;
+    }
+
+    public String getHumanMaxIngestSizeInBytes() {
+        return FileSizeChecker.bytesToHumanReadable(this.maxIngestSizeInBytes);
+    }
+
+    public String getHumanPerFormatTabularLimits() {
+        return humanPerFormatTabularLimits;
+    }
+
+    public String populateHumanPerFormatTabularLimits() {
+        String keyPrefix = ":TabularIngestSizeLimit:";
+        List<String> formatLimits = new ArrayList<>();
+        for (Setting setting : settingsService.listAll()) {
+            String name = setting.getName();
+            if (!name.startsWith(keyPrefix)) {
+                continue;
+            }
+            String tabularName = setting.getName().substring(keyPrefix.length());
+            String bytes = setting.getContent();
+            String humanReadableSize = FileSizeChecker.bytesToHumanReadable(Long.valueOf(bytes));
+            formatLimits.add(tabularName + ": " + humanReadableSize);
+        }
+        return String.join(", ", formatLimits);
+    }
+
     /*
         The number of files the GUI user is allowed to upload in one batch, 
         via drag-and-drop, or through the file select dialog. Now configurable 
@@ -463,6 +498,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         selectedFiles = selectedFileMetadatasList;
         
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
+        this.maxIngestSizeInBytes = systemConfig.getTabularIngestSizeLimit();
+        this.humanPerFormatTabularLimits = populateHumanPerFormatTabularLimits();
         this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
         
         logger.fine("done");
@@ -511,8 +548,10 @@ public class EditDatafilesPage implements java.io.Serializable {
             return permissionsWrapper.notAuthorized();
         }
         
-        clone = workingVersion.cloneDatasetVersion();   
+        clone = workingVersion.cloneDatasetVersion();
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
+        this.maxIngestSizeInBytes = systemConfig.getTabularIngestSizeLimit();
+        this.humanPerFormatTabularLimits = populateHumanPerFormatTabularLimits();
         this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();        
 
         // -------------------------------------------
@@ -534,7 +573,8 @@ public class EditDatafilesPage implements java.io.Serializable {
                                                 datafileService,
                                                 permissionService,
                                                 commandEngine,
-                                                systemConfig);
+                                                systemConfig,
+                                                licenseServiceBean);
                         
             fileReplacePageHelper = new FileReplacePageHelper(addReplaceFileHelper,
                                                 dataset, 
@@ -597,15 +637,6 @@ public class EditDatafilesPage implements java.io.Serializable {
             setUpRsync();
         }
 
-        if (mode == FileEditMode.UPLOAD) {
-            if (settingsWrapper.getUploadMethodsCount() == 1){
-                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.uploadFiles.label"), BundleUtil.getStringFromBundle("dataset.message.uploadFilesSingle.message", Arrays.asList(systemConfig.getGuidesBaseUrl(), systemConfig.getGuidesVersion())));
-            } else if (settingsWrapper.getUploadMethodsCount() > 1) {
-                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.uploadFiles.label"), BundleUtil.getStringFromBundle("dataset.message.uploadFilesMultiple.message", Arrays.asList(systemConfig.getGuidesBaseUrl(), systemConfig.getGuidesVersion())));
-            }
-            
-        }
-        
         if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)){
             JH.addMessage(FacesMessage.SEVERITY_WARN, getBundleString("dataset.message.publicInstall"));
         }   
@@ -1527,10 +1558,22 @@ public class EditDatafilesPage implements java.io.Serializable {
                 }
             } catch (EJBException ex) {
                 logger.warning("Problem getting rsync script (EJBException): " + EjbUtil.ejbExceptionToString(ex));
+                FacesContext.getCurrentInstance().addMessage(uploadComponentId,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                "Problem getting rsync script (EJBException): " + EjbUtil.ejbExceptionToString(ex),
+                                "Problem getting rsync script (EJBException):"));
             } catch (RuntimeException ex) {
                 logger.warning("Problem getting rsync script (RuntimeException): " + ex.getLocalizedMessage());
+                FacesContext.getCurrentInstance().addMessage(uploadComponentId,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                "Problem getting rsync script (RuntimeException): " + ex.getMessage(),
+                                "Problem getting rsync script (RuntimeException):"));
             } catch (CommandException cex) {
                 logger.warning("Problem getting rsync script (Command Exception): " + cex.getLocalizedMessage());
+                FacesContext.getCurrentInstance().addMessage(uploadComponentId,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                "Problem getting rsync script (Command Exception): " + cex.getMessage(),
+                                "Problem getting rsync script (Command Exception):"));
             }
         }
     }
@@ -2037,7 +2080,9 @@ public class EditDatafilesPage implements java.io.Serializable {
     			// -----------------------------------------------------------
     			if (this.isFileReplaceOperation()){
     				this.handleReplaceFileUpload(storageLocation, fileName, contentType, checksumValue, checksumType);
-    				this.setFileMetadataSelectedForTagsPopup(fileReplacePageHelper.getNewFileMetadatasBeforeSave().get(0));
+                                if (fileReplacePageHelper.getNewFileMetadatasBeforeSave() != null){
+                                    this.setFileMetadataSelectedForTagsPopup(fileReplacePageHelper.getNewFileMetadatasBeforeSave().get(0));
+                                }                               
     				return;
     			}
     			// -----------------------------------------------------------
@@ -2967,8 +3012,15 @@ public class EditDatafilesPage implements java.io.Serializable {
     	// ToDo - rsync was written before multiple store support and currently is hardcoded to use the "s3" store. 
     	// When those restrictions are lifted/rsync can be configured per store, the test in the 
         // Dataset Util method should be updated
+          if(settingsWrapper.isRsyncUpload() && !DatasetUtil.isAppropriateStorageDriver(dataset) ){
+              //dataset.file.upload.setUp.rsync.failed.detail
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.upload.setUp.rsync.failed"), BundleUtil.getStringFromBundle("dataset.file.upload.setUp.rsync.failed.detail"));
+                FacesContext.getCurrentInstance().addMessage(null, message);
+          }
 
-    	return settingsWrapper.isRsyncUpload() && DatasetUtil.isAppropriateStorageDriver(dataset);
+
+          
+          return settingsWrapper.isRsyncUpload() && DatasetUtil.isAppropriateStorageDriver(dataset);
     }
     
     

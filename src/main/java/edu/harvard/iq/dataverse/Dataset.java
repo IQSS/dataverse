@@ -3,10 +3,12 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
+import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitations;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,29 +62,22 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 })
 
 /*
-    Below is the stored procedure for getting a numeric value from a database 
-    sequence. Used when the Dataverse is (optionally) configured to use 
-    incremental numeric values for dataset ids, instead of the default 
+    Below is the database stored procedure for getting a string dataset id.
+    Used when the Dataverse is (optionally) configured to use
+    procedurally generated values for dataset ids, instead of the default
     random strings. 
 
-    Unfortunately, there's no standard EJB way of handling sequences. So in the 
-    past we would simply use a NativeQuery to call a proprietary Postgres
-    sequence query. A better way of handling this however is to define any 
-    proprietary SQL functionality outside of the application, in the database, 
-    and call it using the standard JPA @StoredProcedureQuery. 
-
-    The identifier sequence and the stored procedure for accessing it are currently 
-    implemented with PostgresQL "CREATE SEQUENCE ..." and "CREATE FUNCTION ..."; 
-    (we explain how to create these in the installation documentation and supply 
-    a script). If necessary, it can be implemented using other SQL flavors -
+    The use of a stored procedure to create an identifier is explained in the
+    installation documentation (where an example script is supplied).
+    The stored procedure can be implemented using other SQL flavors -
     without having to modify the application code. 
-            -- L.A. 4.6.2
+            -- L.A. 4.6.2 (modified by C.S. for version 5.4.1+)
 */ 
 @NamedStoredProcedureQuery(
-        name = "Dataset.generateIdentifierAsSequentialNumber",
-        procedureName = "generateIdentifierAsSequentialNumber",
+        name = "Dataset.generateIdentifierFromStoredProcedure",
+        procedureName = "generateIdentifierFromStoredProcedure",
         parameters = {
-            @StoredProcedureParameter(mode = ParameterMode.OUT, type = Integer.class)
+            @StoredProcedureParameter(mode = ParameterMode.OUT, type = String.class)
         }
 )
 @Entity
@@ -307,7 +302,7 @@ public class Dataset extends DvObjectContainer {
         //if the latest version has values get them copied over
         if (template != null) {
             dsv.updateDefaultValuesFromTemplate(template);
-            setVersions(new ArrayList());
+            setVersions(new ArrayList<>());
         } else {
             latestVersion = getLatestVersionForCopy();
             
@@ -321,11 +316,6 @@ public class Dataset extends DvObjectContainer {
             
             if (latestVersion.getTermsOfUseAndAccess()!= null){
                 dsv.setTermsOfUseAndAccess(latestVersion.getTermsOfUseAndAccess().copyTermsOfUseAndAccess());
-            } else {
-                TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-                terms.setDatasetVersion(dsv);
-                terms.setLicense(TermsOfUseAndAccess.License.CC0);
-                dsv.setTermsOfUseAndAccess(terms);
             }
 
             for (FileMetadata fm : latestVersion.getFileMetadatas()) {
@@ -402,11 +392,11 @@ public class Dataset extends DvObjectContainer {
      * @todo Investigate if this method should be deprecated in favor of
      * createNewDatasetVersion.
      */
-    public DatasetVersion getCreateVersion() {
+    public DatasetVersion getCreateVersion(License license) {
         DatasetVersion dsv = new DatasetVersion();
         dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
         dsv.setDataset(this);
-        dsv.initDefaultValues();
+        dsv.initDefaultValues(license);
         this.setVersions(new ArrayList<>());
         getVersions().add(0, dsv);
         return dsv;
@@ -566,30 +556,36 @@ public class Dataset extends DvObjectContainer {
     }
     
     public String getProtocolForFileStorage(){
-         String retVal = getProtocol();            
+        String retVal = getProtocol();            
         if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
-            for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
-                retVal = api.getProtocol();
+            for (AlternativePersistentIdentifier altpid : this.getAlternativePersistentIndentifiers()) {
+                if (altpid.isStorageLocationDesignator()) {
+                    retVal = altpid.getProtocol();
+                }
             }
         }
         return retVal;         
     }
     
     public String getAuthorityForFileStorage(){
-         String retVal = getAuthority();            
+        String retVal = getAuthority();            
         if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
-            for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
-                retVal = api.getAuthority();
+            for (AlternativePersistentIdentifier altpid : this.getAlternativePersistentIndentifiers()) {
+                if (altpid.isStorageLocationDesignator()) {
+                    retVal = altpid.getAuthority();
+                }
             }
         }
         return retVal;         
     }
     
     public String getIdentifierForFileStorage(){
-         String retVal = getIdentifier();            
+        String retVal = getIdentifier();            
         if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
-            for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
-                retVal = api.getIdentifier();
+            for (AlternativePersistentIdentifier altpid : this.getAlternativePersistentIndentifiers()) {
+                if (altpid.isStorageLocationDesignator()) {
+                    retVal = altpid.getIdentifier();
+                }
             }
         }
         return retVal;         
@@ -649,12 +645,47 @@ public class Dataset extends DvObjectContainer {
     }
 
     public String getCitation(boolean isOnlineVersion, DatasetVersion version) {
-        return version.getCitation(isOnlineVersion);
+        return getCitation(isOnlineVersion, version, false);
+    }
+    
+    public String getCitation(boolean isOnlineVersion, DatasetVersion version, boolean anonymized) {
+        return version.getCitation(isOnlineVersion, anonymized);
     }
 
     public String getPublicationDateFormattedYYYYMMDD() {
         if (getPublicationDate() != null){
                    return new SimpleDateFormat("yyyy-MM-dd").format(getPublicationDate()); 
+        }
+        return null;
+    }
+    
+    public Timestamp getCitationDate() {
+        Timestamp citationDate = null;
+        //Only calculate if this dataset doesn't use an alternate date field for publication date
+        if (citationDateDatasetFieldType == null) {
+            List<DatasetVersion> versions = this.versions;
+            // TODo - is this ever not version 1.0 (or draft if not published yet)
+            DatasetVersion oldest = versions.get(versions.size() - 1);
+            citationDate = super.getPublicationDate();
+            if (oldest.isPublished()) {
+                List<FileMetadata> fms = oldest.getFileMetadatas();
+                for (FileMetadata fm : fms) {
+                    Embargo embargo = fm.getDataFile().getEmbargo();
+                    if (embargo != null) {
+                        Timestamp embDate = Timestamp.valueOf(embargo.getDateAvailable().atStartOfDay());
+                        if (citationDate.compareTo(embDate) < 0) {
+                            citationDate = embDate;
+                        }
+                    }
+                }
+            }
+        }
+        return citationDate;
+    }
+    
+    public String getCitationDateFormattedYYYYMMDD() {
+        if (getCitationDate() != null){
+                   return new SimpleDateFormat("yyyy-MM-dd").format(getCitationDate()); 
         }
         return null;
     }

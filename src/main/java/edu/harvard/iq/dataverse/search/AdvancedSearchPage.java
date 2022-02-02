@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.WidgetWrapper;
 import static edu.harvard.iq.dataverse.search.SearchUtil.constructQuery;
@@ -13,17 +14,22 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.apache.commons.lang.StringUtils;
+import javax.json.JsonObject;
+
+import org.apache.commons.lang3.StringUtils;
 
 @ViewScoped
 @Named("AdvancedSearchPage")
@@ -38,6 +44,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
     DatasetFieldServiceBean datasetFieldService;
     
     @Inject WidgetWrapper widgetWrapper;
+    @Inject DataverseSession session;
 
     private Dataverse dataverse;
     private String dataverseIdentifier;
@@ -59,6 +66,8 @@ public class AdvancedSearchPage implements java.io.Serializable {
     private String fileFieldVariableLabel;
     private String fileFieldFileTags;
 
+    Map<Long, JsonObject> cachedCvocMap=null;
+    
     public void init() {
 
         if (dataverseIdentifier != null) {
@@ -331,5 +340,23 @@ public class AdvancedSearchPage implements java.io.Serializable {
     public void setFileFieldFileTags(String fileFieldFileTags) {
         this.fileFieldFileTags = fileFieldFileTags;
     }
+    
+    
+    //External Vocabulary Support
 
+    public Map<Long, JsonObject> getCVocConf() {
+        //Cache this in the view
+        if(cachedCvocMap==null) {
+        cachedCvocMap = datasetFieldService.getCVocConf(true);
+        }
+        return cachedCvocMap;
+    }
+    
+    public List<String> getVocabScripts() {
+        return datasetFieldService.getVocabScripts(getCVocConf());
+    }
+
+    public String getFieldLanguage(String languages) {
+        return datasetFieldService.getFieldLanguage(languages,session.getLocaleCode());
+    }
 }

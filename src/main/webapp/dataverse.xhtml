@@ -138,7 +138,7 @@
                                 </h:outputLabel>
                                 <div class="form-col-container">
                                     <div class="input-group">
-                                        <div class="input-group-addon"><span class="small">#{systemConfig.dataverseSiteUrl}/dataverse/</span></div>
+                                        <div class="input-group-addon"><span class="small">#{settingsWrapper.dataverseSiteUrl}/dataverse/</span></div>
                                         <p:inputText id="identifier" styleClass="form-control" 
                                                      validator="#{DataversePage.validateAlias}" 
                                                      value="#{DataversePage.dataverse.alias}" 
@@ -158,6 +158,19 @@
                                               <f:selectItems value="#{DataversePage.getStorageDriverOptions()}" var="driver" itemLabel="#{driver.getKey()}" itemValue="#{driver.getValue()}"/>
                                             </h:selectOneMenu>
                                             <p:message for="dataverseStorage" display="text"/>
+                                </div>
+                            </div>
+                            <div class="col-md-6 form-group" jsf:rendered="#{dataverseSession.user.superuser and DataversePage.getCurationLabelSetOptions().size() >0}">
+                                <h:outputLabel for="dataverseCurationLabels" styleClass="control-label">
+                                    #{bundle.curationLabels} 
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.curationLabels.title']}"></span>
+                                </h:outputLabel>
+                                <div class="form-col-container">
+                                            <h:selectOneMenu id="dataverseCurationLabels" styleClass="form-control" value="#{DataversePage.dataverse.curationLabelSetName}">
+                                              <f:selectItems value="#{DataversePage.getCurationLabelSetOptions()}" var="setName" itemLabel="#{setName.getKey()}" itemValue="#{setName.getValue()}"/>
+                                            </h:selectOneMenu>
+                                            <p:message for="dataverseCurationLabels" display="text"/>
                                 </div>
                             </div>
                         </div>
@@ -225,6 +238,19 @@
                                                 </ui:repeat>
                                             </div>
                                         </p:fragment>
+                                    </div>
+                                    <div class="col-md-6 form-group" jsf:rendered="#{DataversePage.getMetadataLanguages().size()>2}">
+                                        <h:outputLabel for="dsMetadataLanguage" styleClass="control-label">
+                                            #{bundle.metadataLanguage} 
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.metadatalanguage.title']}"></span>
+                                        </h:outputLabel>
+                                        <div class="form-col-container">
+                                            <h:selectOneMenu id="dsMetadataLanguage" styleClass="form-control" value="#{DataversePage.dataverse.metadataLanguage}">
+                                                <f:selectItems value="#{DataversePage.getMetadataLanguages()}" var="lang" itemLabel="#{lang.getValue()}" itemValue="#{lang.getKey()}"/>
+                                            </h:selectOneMenu>
+                                            <p:message for="dsMetadataLanguage" display="text"/>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -389,6 +415,7 @@
                                             </f:facet>
                                             <f:facet name="targetCaption">#{bundle['dataverse.selected']}</f:facet>
                                             <p:ajax event="transfer" listener="#{DataversePage.onFacetTransfer}" update="editFacets" />
+                                            <f:passThroughAttribute name="aria-disabled" value="#{!DataversePage.dataverse.facetRoot and DataversePage.dataverse.owner != null}"/>
                                         </p:pickList>
                                     </div>
                                 </div>
@@ -411,10 +438,10 @@
                                 <!-- Metrics for Root Dataverse -->
                                 <div id="metrics-block1" class="col-xs-4" jsf:rendered="#{DataversePage.isRootDataverse() and !settingsWrapper.rsyncOnly}">
                                     <div id="metrics-label" class="col-xs-4 small text-center">
-                                        <h:outputLink value="#{systemConfig.metricsUrl}" target="_blank" title="#{bundle['metrics.title.tip']}" rendered="#{systemConfig.metricsUrl != null}">
+                                        <h:outputLink value="#{settingsWrapper.metricsUrl}" target="_blank" title="#{bundle['metrics.title.tip']}" rendered="#{settingsWrapper.metricsUrl != null}">
                                             <span class="glyphicon glyphicon-stats"/> #{bundle['metrics.title']}
                                         </h:outputLink>
-                                        <ui:fragment rendered="#{systemConfig.metricsUrl == null}">
+                                        <ui:fragment rendered="#{settingsWrapper.metricsUrl == null}">
                                             <span class="glyphicon glyphicon-stats"/> #{bundle['metrics.title']}
                                         </ui:fragment>
                                     </div>
@@ -466,7 +493,7 @@
                                                 <button type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                                                     <span class="glyphicon glyphicon-link"/> #{bundle['link']} <span class="caret"></span>
                                                 </button>
-                                                <ul class="dropdown-menu pull-right text-left" role="menu">
+                                                <ul class="dropdown-menu pull-right text-left">
                                                     <li class="#{DataversePage.dataverse.owner != null ? '' : 'disabled'}">
                                                         <p:commandLink action="#{DataversePage.setupLinkingPopup('link')}"
                                                                        oncomplete="PF('linkDataverseForm').show()"
@@ -491,7 +518,7 @@
                                                 <button type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
                                                     <span class="glyphicon glyphicon-pencil"/> #{bundle['dataverse.edit']} <span class="caret"></span>
                                                 </button>
-                                                <ul class="dropdown-menu pull-right text-left" role="menu">
+                                                <ul class="dropdown-menu pull-right text-left">
                                                     <li>
                                                         <div id="dataverse-info-dropdown">
                                                             <div class="dataverse-info-logo-icon">
@@ -675,7 +702,7 @@
                     <p:dialog id="shareDialog" header="#{bundle['dataverse.share.dataverseShare']}" widgetVar="shareDialog" modal="true">
                         <h:form styleClass="form-horizontal"> 
                         <p class="help-block">#{bundle['dataverse.share.dataverseShare.tip']}</p>
-                        <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataverse/#{DataversePage.dataverse.alias}" data-text="#{bundle['dataverse.share.dataverseShare.shareText']}"></div>
+                        <div id="sharrre-widget" data-url="#{settingsWrapper.dataverseSiteUrl}/dataverse/#{DataversePage.dataverse.alias}" data-text="#{bundle['dataverse.share.dataverseShare.shareText']}"></div>
                         <div class="button-block">
                             <button class="btn btn-default" onclick="PF('shareDialog').hide()" type="button">
                                 #{bundle.close}

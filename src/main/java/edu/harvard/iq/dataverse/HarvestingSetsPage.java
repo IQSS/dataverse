@@ -35,7 +35,7 @@ import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -249,7 +249,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
         newOaiSet.setDefinition(getNewSetQuery());
         
         boolean success = false;
-        
+        //TODO: Consider putting this in a command that could be used by api as well
         try {
             oaiSetService.save(newOaiSet);
             configuredHarvestingSets = oaiSetService.findAll();  
@@ -292,7 +292,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
         
         // will try to save it now:
         boolean success = false; 
-        
+        //TODO: Consider putting this in a command that could be used by api as well
         try {
             oaiSetService.save(oaiSet);
             configuredHarvestingSets = oaiSetService.findAll(); 
@@ -318,6 +318,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
     }
     
     public void deleteSet() {
+        //TODO: Consider putting this in a command that could be used by api as well
         if (selectedSet != null) {
             logger.info("proceeding to delete harvesting set "+ selectedSet.getSpec());
             try {

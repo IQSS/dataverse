@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
@@ -23,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -31,9 +34,13 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 public class OREMap {
 
     static SettingsServiceBean settingsService;
+    static DatasetFieldServiceBean datasetFieldService;
+    private static final Logger logger = Logger.getLogger(OREMap.class.getCanonicalName());
     
     public static final String NAME = "OREMap";
     private Map<String, String> localContext = new TreeMap<String, String>();
@@ -84,6 +91,7 @@ public class OREMap {
         JsonObjectBuilder aggBuilder = Json.createObjectBuilder();
         List<DatasetField> fields = version.getDatasetFields();
         // That has it's own metadata
+        Map<Long, JsonObject> cvocMap = datasetFieldService.getCVocConf(false);
         for (DatasetField field : fields) {
             if (!field.isEmpty()) {
                 DatasetFieldType dfType = field.getDatasetFieldType();
@@ -99,7 +107,27 @@ public class OREMap {
                 JsonArrayBuilder vals = Json.createArrayBuilder();
                 if (!dfType.isCompound()) {
                     for (String val : field.getValues_nondisplay()) {
-                        vals.add(val);
+                        if (cvocMap.containsKey(dfType.getId())) {
+                            try {
+                            JsonObject cvocEntry = cvocMap.get(dfType.getId());
+                            if (cvocEntry.containsKey("retrieval-filtering")) {
+                                JsonObject filtering = cvocEntry.getJsonObject("retrieval-filtering");
+                                JsonObject context = filtering.getJsonObject("@context");
+                                for (String prefix : context.keySet()) {
+                                    localContext.putIfAbsent(prefix, context.getString(prefix));
+                                }
+                                vals.add(datasetFieldService.getExternalVocabularyValue(val));
+                            } else {
+                                vals.add(val);
+                            }
+                            } catch(Exception e) {
+                                logger.warning("Couldn't interpret value for : " + val + " : " + e.getMessage());
+                                logger.log(Level.FINE, ExceptionUtils.getStackTrace(e));
+                                vals.add(val);
+                            }
+                        } else {
+                            vals.add(val);
+                        }
                     }
                 } else {
                     // ToDo: Needs to be recursive (as in JsonPrinter?)
@@ -156,20 +184,19 @@ public class OREMap {
         addIfNotNull(aggBuilder, JsonLDTerm.schemaOrg("datePublished"), dataset.getPublicationDateFormattedYYYYMMDD());
 
         TermsOfUseAndAccess terms = version.getTermsOfUseAndAccess();
-        if (terms.getLicense() == TermsOfUseAndAccess.License.CC0) {
+        if (terms.getLicense() != null) {
             aggBuilder.add(JsonLDTerm.schemaOrg("license").getLabel(),
-                    TermsOfUseAndAccess.CC0_URI);
+                    terms.getLicense().getUri().toString());
         } else {
             addIfNotNull(aggBuilder, JsonLDTerm.termsOfUse, terms.getTermsOfUse());
+            addIfNotNull(aggBuilder, JsonLDTerm.confidentialityDeclaration, terms.getConfidentialityDeclaration());
+            addIfNotNull(aggBuilder, JsonLDTerm.specialPermissions, terms.getSpecialPermissions());
+            addIfNotNull(aggBuilder, JsonLDTerm.restrictions, terms.getRestrictions());
+            addIfNotNull(aggBuilder, JsonLDTerm.citationRequirements, terms.getCitationRequirements());
+            addIfNotNull(aggBuilder, JsonLDTerm.depositorRequirements, terms.getDepositorRequirements());
+            addIfNotNull(aggBuilder, JsonLDTerm.conditions, terms.getConditions());
+            addIfNotNull(aggBuilder, JsonLDTerm.disclaimer, terms.getDisclaimer());
         }
-        addIfNotNull(aggBuilder, JsonLDTerm.confidentialityDeclaration, terms.getConfidentialityDeclaration());
-        addIfNotNull(aggBuilder, JsonLDTerm.specialPermissions, terms.getSpecialPermissions());
-        addIfNotNull(aggBuilder, JsonLDTerm.restrictions, terms.getRestrictions());
-        addIfNotNull(aggBuilder, JsonLDTerm.citationRequirements, terms.getCitationRequirements());
-        addIfNotNull(aggBuilder, JsonLDTerm.depositorRequirements, terms.getDepositorRequirements());
-        addIfNotNull(aggBuilder, JsonLDTerm.conditions, terms.getConditions());
-        addIfNotNull(aggBuilder, JsonLDTerm.disclaimer, terms.getDisclaimer());
-
         // Add fileTermsofAccess as an object since it is compound
         JsonObjectBuilder fAccess = Json.createObjectBuilder();
         addIfNotNull(fAccess, JsonLDTerm.termsOfAccess, terms.getTermsOfAccess());
@@ -404,7 +431,8 @@ public class OREMap {
         return null;
     }
 
-    public static void injectSettingsService(SettingsServiceBean settingsSvc) {
+    public static void injectSettingsService(SettingsServiceBean settingsSvc, DatasetFieldServiceBean datasetFieldSvc) {
         settingsService = settingsSvc;
+        datasetFieldService = datasetFieldSvc;
     }
 }
