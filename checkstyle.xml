@@ -98,7 +98,7 @@
         </module>
         -->
         <module name="IllegalImport">
-            <property name="illegalPkgs" value="org.apache.commons.lang"/>
+            <property name="illegalPkgs" value="org.apache.commons.lang, org.apache.log4j"/>
         </module>
         <!-- <module name="RedundantImport"/> -->
         <!-- <module name="UnusedImports">

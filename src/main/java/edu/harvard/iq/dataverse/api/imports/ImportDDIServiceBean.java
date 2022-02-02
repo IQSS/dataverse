@@ -1180,12 +1180,7 @@ public class ImportDDIServiceBean {
                     String noteType = xmlr.getAttributeValue(null, "type");
                     if (NOTE_TYPE_TERMS_OF_USE.equalsIgnoreCase(noteType) ) {
                         if ( LEVEL_DV.equalsIgnoreCase(xmlr.getAttributeValue(null, "level"))) {
-                            String termOfUse = parseText(xmlr, "notes");
-                            if (termOfUse != null && termOfUse.trim().equals("CC0 Waiver") ) {
-                                dvDTO.setLicense("CC0");
-                            } else if (termOfUse != null && !termOfUse.trim().equals("")){
-                                dvDTO.setTermsOfUse(termOfUse);
-                            }
+                            parseText(xmlr, "notes");
                         }
                     } else  if (NOTE_TYPE_TERMS_OF_ACCESS.equalsIgnoreCase(noteType) ) {
                         if (LEVEL_DV.equalsIgnoreCase(xmlr.getAttributeValue(null, "level"))) {
