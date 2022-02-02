@@ -83,9 +83,9 @@ Configure Counter Processor
 
 * Change to the directory where you installed Counter Processor.
 
-  * ``cd /usr/local/counter-processor-0.0.1``
+  * ``cd /usr/local/counter-processor-0.1.04``
 
-* Download :download:`counter-processor-config.yaml <../_static/admin/counter-processor-config.yaml>` to ``/usr/local/counter-processor-0.0.1``.
+* Download :download:`counter-processor-config.yaml <../_static/admin/counter-processor-config.yaml>` to ``/usr/local/counter-processor-0.1.04``.
 
 * Edit the config file and pay particular attention to the FIXME lines.
 
@@ -98,7 +98,7 @@ Soon we will be setting up a cron job to run nightly but we start with a single 
 
 * Change to the directory where you installed Counter Processor.
 
-  * ``cd /usr/local/counter-processor-0.0.1``
+  * ``cd /usr/local/counter-processor-0.1.04``
 
 * If you are running Counter Processor for the first time in the middle of a month, you will need create blank log files for the previous days. e.g.:
 

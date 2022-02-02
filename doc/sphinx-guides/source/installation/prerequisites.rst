@@ -96,7 +96,7 @@ PostgreSQL
 ----------
 
 Installing PostgreSQL
-=======================
+=====================
 
 The application has been tested with PostgreSQL versions up to 13 and version 10+ is required. We recommend installing the latest version that is available for your OS distribution. *For example*, to install PostgreSQL 13 under RHEL7/derivative::
 
@@ -421,12 +421,12 @@ Counter Processor has only been tested on el7 (see "Linux" above). Please note t
 As root, download and install Counter Processor::
 
         cd /usr/local
-        wget https://github.com/CDLUC3/counter-processor/archive/v0.0.1.tar.gz
+        wget https://github.com/CDLUC3/counter-processor/archive/v0.1.04.tar.gz
         tar xvfz v0.0.1.tar.gz
 
 As root, change to the Counter Processor directory you just created, download the GeoLite2-Country tarball, untar it, and copy the geoip database into place::
 
-        cd /usr/local/counter-processor-0.0.1
+        cd /usr/local/counter-processor-0.1.04
         wget https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz
         tar xvfz GeoLite2-Country.tar.gz
         cp GeoLite2-Country_*/GeoLite2-Country.mmdb maxmind_geoip
@@ -434,7 +434,7 @@ As root, change to the Counter Processor directory you just created, download th
 As root, create a "counter" user and change ownership of Counter Processor directory to this new user::
 
         useradd counter
-        chown -R counter:counter /usr/local/counter-processor-0.0.1
+        chown -R counter:counter /usr/local/counter-processor-0.1.04
 
 Installing Counter Processor Python Requirements
 ================================================
@@ -452,7 +452,7 @@ Install Python 3.6::
 Install Counter Processor Python requirements::
 
         python3.6 -m ensurepip
-        cd /usr/local/counter-processor-0.0.1
+        cd /usr/local/counter-processor-0.1.04
         pip3 install -r requirements.txt
 
 See the :doc:`/admin/make-data-count` section of the Admin Guide for how to configure and run Counter Processor.
