@@ -3279,7 +3279,8 @@ public class Datasets extends AbstractApiBean {
                     fileService,
                     permissionSvc,
                     commandEngine,
-                    systemConfig
+                    systemConfig,
+                    licenseSvc
             );
 
             // -------------------------------------
