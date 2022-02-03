@@ -11,14 +11,14 @@ import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -322,7 +322,6 @@ public class FileDownloadHelper implements java.io.Serializable {
     
     
      private boolean processRequestAccess(DataFile file, Boolean sendNotification) {
-
          if (fileDownloadService.requestAccess(file.getId())) {
              // update the local file object so that the page properly updates
              if(file.getFileAccessRequesters() == null){
@@ -332,9 +331,11 @@ public class FileDownloadHelper implements java.io.Serializable {
              // create notification if necessary
              if (sendNotification) {
                  fileDownloadService.sendRequestFileAccessNotification(file, (AuthenticatedUser) session.getUser());
-             }
+             }           
+             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("file.accessRequested.success"));
              return true;
          }
+         JsfHelper.addWarningMessage(BundleUtil.getStringFromBundle("file.accessRequested.alreadyRequested", Arrays.asList(file.getDisplayName())));
          return false;
      } 
 
