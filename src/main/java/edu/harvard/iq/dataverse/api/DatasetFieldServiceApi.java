@@ -34,6 +34,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
 import org.apache.commons.lang3.StringUtils;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.asJsonArray;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
@@ -108,18 +109,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                 sb.append(cause.getClass().getCanonicalName()).append(" ");
                 sb.append(cause.getMessage()).append(" ");
                 if (cause instanceof ConstraintViolationException) {
-                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                    for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                        sb.append("(invalid value: <<<")
-                                .append(violation.getInvalidValue())
-                                .append(">>> for ")
-                                .append(violation.getPropertyPath())
-                                .append(" at ")
-                                .append(violation.getLeafBean())
-                                .append(" - ")
-                                .append(violation.getMessage())
-                                .append(")");
-                    }
+                    sb.append(ConstraintViolationUtil.getErrorStringForConstraintViolations(cause));
                 }
             }
             return error(Status.INTERNAL_SERVER_ERROR, sb.toString());
@@ -184,10 +174,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                 sb.append(cause.getClass().getCanonicalName()).append(" ");
                 sb.append(cause.getMessage()).append(" ");
                 if (cause instanceof ConstraintViolationException) {
-                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                    for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                        sb.append("(invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ").append(violation.getPropertyPath()).append(" at ").append(violation.getLeafBean()).append(" - ").append(violation.getMessage()).append(")");
-                    }
+                    sb.append(ConstraintViolationUtil.getErrorStringForConstraintViolations(cause));
                 }
             }
             return error( Status.INTERNAL_SERVER_ERROR, sb.toString() );

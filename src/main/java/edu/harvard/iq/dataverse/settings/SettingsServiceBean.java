@@ -1,18 +1,10 @@
 package edu.harvard.iq.dataverse.settings;
 
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
-import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.util.StringUtil;
 
-import java.io.StringReader;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -20,6 +12,12 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.io.StringReader;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Service bean accessing a persistent hash map, used as settings in the application.
@@ -192,12 +190,14 @@ public class SettingsServiceBean {
         /** Optionally override http://guides.dataverse.org . */
         GuidesBaseUrl,
 
+        CVocConf,
+
         /**
          * A link to an installation of https://github.com/IQSS/miniverse or
          * some other metrics app.
          */
         MetricsUrl,
-        
+
         /**
          * Number of minutes before a metrics query can be rerun. Otherwise a cached value is returned.
          * Previous month dates always return cache. Only applies to new internal caching system (not miniverse).
@@ -431,8 +431,7 @@ public class SettingsServiceBean {
         /**
          * Sort Date Facets Chronologically instead or presenting them in order of # of hits as other facets are. Default is true
          */
-        ChronologicalDateFacets,
-        
+        ChronologicalDateFacets, 
         /**
          * Used where BrandingUtil.getInstallationBrandName is called, overides the default use of the root Dataverse collection name
          */
@@ -457,6 +456,17 @@ public class SettingsServiceBean {
          */
         GlobusClientId,
         /**
+         * Optional external executables to run on the metadata for dataverses 
+         * and datasets being published; as an extra validation step, to 
+         * check for spam, etc. 
+         */
+        DataverseMetadataValidatorScript,
+        DatasetMetadataValidatorScript,
+        DataverseMetadataPublishValidationFailureMsg,
+        DataverseMetadataUpdateValidationFailureMsg,
+        DatasetMetadataValidationFailureMsg,
+        ExternalValidationAdminOverride,
+        /**
          * A comma-separated list of field type names that should be 'withheld' when
          * dataset access occurs via a Private Url with Anonymized Access (e.g. to
          * support anonymized review). A suggested minimum includes author,
@@ -473,7 +483,33 @@ public class SettingsServiceBean {
          * metadata exports) and the title containing a human readable string. These
          * values are selectable at the Dataverse level and apply to Dataset metadata.
          */
-        MetadataLanguages
+        MetadataLanguages,
+        /**
+         * A boolean setting that, if true will send an email and notification to users
+         * when a Dataset is created. Messages go to those who have the
+         * ability/permission necessary to publish the dataset
+         */
+        SendNotificationOnDatasetCreation,
+        /**
+         * A JSON Object containing named comma separated sets(s) of allowed labels (up
+         * to 32 characters, spaces allowed) that can be set on draft datasets, via API
+         * or UI by users with the permission to publish a dataset. (Set names are
+         * string keys, labels are a JSON array of strings). These should correspond to
+         * the states in an organizations curation process(es) and are intended to help
+         * users/curators track the progress of a dataset through an externally defined
+         * curation process. Only one set of labels are allowed per dataset (defined via
+         * API by a superuser per collection (UI or API) or per dataset (API only)). A
+         * dataset may only have one label at a time and if a label is set, it will be
+         * removed at publication time. This functionality is disabled when this setting
+         * is empty/not set.
+         */
+        AllowedCurationLabels,
+        /** This setting enables Embargo capabilities in Dataverse and sets the maximum Embargo duration allowed.
+         * 0 or not set: new embargoes disabled
+         * -1: embargo enabled, no time limit
+         * n: embargo enabled with n months the maximum allowed duration
+         */
+        MaxEmbargoDurationInMonths
         ;
 
         @Override
@@ -505,7 +541,7 @@ public class SettingsServiceBean {
     }
     
     /**
-     * Same as {@link #get(java.lang.String)}, but with static checking.
+     * Same as {@link #get(String)}, but with static checking.
      * @param key Enum value of the name.
      * @return The setting, or {@code null}.
      */

@@ -108,6 +108,20 @@
                                                         </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'DATASETCREATED'}">
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
+                                                    <h:outputFormat value="#{bundle['notification.datasetCreated']}" escape="false">
+                                                        <o:param>
+                                                            <a href="/dataset.xhtml?persistentId=#{item.theObject.getGlobalId()}" title="#{item.theObject.getDisplayName()}">#{item.theObject.getDisplayName()}</a>
+                                                        </o:param>
+                                                        <o:param>
+                                                            <a href="/dataverse/#{item.theObject.getOwner().getAlias()}" title="#{item.theObject.getOwner().getDisplayName()}">#{item.theObject.getOwner().getDisplayName()}</a>
+                                                        </o:param>
+                                                        <o:param>
+                                                            #{item.requestor.name}
+                                                        </o:param>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'SUBMITTEDDS'}">
                                                     <span class="icon-dataset text-icon-inline text-muted"></span>
                                                     <h:outputFormat value="#{bundle['notification.wasSubmittedForReview']}" escape="false">
@@ -362,6 +376,16 @@
                                                         </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'STATUSUPDATED'}">
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
+                                                    <h:outputFormat value="#{bundle['notification.statusUpdated']}" escape="false">
+                                                        <o:param>
+                                                            <a href="/dataset.xhtml?persistentId=#{item.theObject.getDataset().getGlobalId()}&amp;version=DRAFT&amp;faces-redirect=true" title="#{item.theObject.getDataset().getDisplayName()}">#{item.theObject.getDataset().getDisplayName()}</a>
+                                                        </o:param>
+                                                        <f:param value="#{item.theObject.externalStatusLabel}"/>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+                                                
 
                                             </ui:fragment>
                                             <h:outputText value="#{item.localeSendDate}" styleClass="text-muted small"/>

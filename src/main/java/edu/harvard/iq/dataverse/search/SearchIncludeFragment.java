@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -23,6 +24,8 @@ import edu.harvard.iq.dataverse.WidgetWrapper;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -40,6 +43,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
+
 
 //@ViewScoped
 @RequestScoped
@@ -76,6 +80,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
     DataversePage dataversePage;
     @EJB
     SystemConfig systemConfig;
+    @EJB
+    DatasetFieldServiceBean datasetFieldService;
 
     private String browseModeString = "browse";
     private String searchModeString = "search";
@@ -1100,13 +1106,11 @@ public class SearchIncludeFragment implements java.io.Serializable {
             return null;
         }
 
-        String[] parts = filterQuery.split(":");
-
-        if (parts.length != 2) {
-            //Filter query must has 2 parts delimited by a :
+        if(!filterQuery.contains(":")) {
+            //Filter query must be delimited by a :
             return null;
         } else {
-            return parts[0];
+            return filterQuery.substring(0,filterQuery.indexOf(":"));
         }
     }
     
@@ -1119,13 +1123,13 @@ public class SearchIncludeFragment implements java.io.Serializable {
             return null;
         }
         
-        String[] parts = filterQuery.split(":");
-        if (parts.length != 2){
-            //logger.log(Level.INFO, "String array has {0} part(s).  Should have 2: {1}", new Object[]{parts.length, filterQuery});
+        if(!filterQuery.contains(":")) {
             return null;
         }
-        String key = parts[0];
-        String value = parts[1];
+        
+        int index = filterQuery.indexOf(":");
+        String key = filterQuery.substring(0,index);
+        String value = filterQuery.substring(index+1);
 
         List<String> friendlyNames = new ArrayList<>();
 
@@ -1157,6 +1161,15 @@ public class SearchIncludeFragment implements java.io.Serializable {
         return friendlyNames;
     }
     
+    public Long getFieldTypeId(String friendlyName) {
+        List<DatasetFieldType> types = datasetFieldService.findAllFacetableFieldTypes();
+        for (DatasetFieldType type : types) {
+            if (datasetfieldFriendlyNamesBySolrField.get(type.getSolrField().getNameFacetable()).equals(friendlyName)) {
+                return type.getId();
+            }
+        }
+        return null;
+    }
 
     public String getNewSelectedTypes(String typeClicked) {
         List<String> newTypesSelected = new ArrayList<>();
@@ -1259,6 +1272,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
     }
 
+    public boolean canPublishDataset(Long datasetId){
+        return permissionsWrapper.canIssuePublishDatasetCommand(dvObjectService.findDvObject(datasetId));
+    }
+    
     public void setDisplayCardValues() {
 
         Set<Long> harvestedDatasetIds = null;
@@ -1359,6 +1376,15 @@ public class SearchIncludeFragment implements java.io.Serializable {
             dvObjectParentIds = null;
         }
         
+    }
+    
+    public boolean isActivelyEmbargoed(SolrSearchResult result) {
+        Long embargoEndDate = result.getEmbargoEndDate();
+        if(embargoEndDate != null) {
+            return LocalDate.now().toEpochDay() < embargoEndDate;
+        } else {
+            return false;
+        }
     }
     
     public enum SortOrder {

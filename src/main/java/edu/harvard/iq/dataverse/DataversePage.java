@@ -36,6 +36,7 @@ import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -688,15 +689,20 @@ public class DataversePage implements java.io.Serializable {
             return returnRedirect();            
             
 
-        } catch (CommandException ex) {
+        } /*catch (CommandException ex) {
             logger.log(Level.SEVERE, "Unexpected Exception calling dataverse command", ex);
             String errMsg = create ? BundleUtil.getStringFromBundle("dataverse.create.failure") : BundleUtil.getStringFromBundle("dataverse.update.failure");
             JH.addMessage(FacesMessage.SEVERITY_FATAL, errMsg);
             return null;
-        } catch (Exception e) {
+        }*/ catch (Exception e) {
             logger.log(Level.SEVERE, "Unexpected Exception calling dataverse command", e);
             String errMsg = create ? BundleUtil.getStringFromBundle("dataverse.create.failure") : BundleUtil.getStringFromBundle("dataverse.update.failure");
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, errMsg);
+            
+            String failureMessage = e.getMessage() == null 
+                        ? errMsg
+                        : e.getMessage();
+            JsfHelper.addErrorMessage(failureMessage);
+            
             return null;
         }
     }
@@ -893,7 +899,10 @@ public class DataversePage implements java.io.Serializable {
 
             } catch (Exception ex) {
                 logger.log(Level.SEVERE, "Unexpected Exception calling  publish dataverse command", ex);
-                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.publish.failure"));
+                String failureMessage = ex.getMessage() == null 
+                        ? BundleUtil.getStringFromBundle("dataverse.publish.failure")
+                        : ex.getMessage();
+                JsfHelper.addErrorMessage(failureMessage);
 
             }
         } else {
@@ -1210,4 +1219,49 @@ public class DataversePage implements java.io.Serializable {
         return settingsWrapper.getMetadataLanguages(this.dataverse).entrySet();
     }
     
+    public Set<Entry<String, String>> getCurationLabelSetOptions() {
+        HashMap<String, String> setNames = new HashMap<String, String>();
+        Set<String> allowedSetNames = systemConfig.getCurationLabels().keySet();
+        if (allowedSetNames.size() > 0) {
+            // Add an entry for the default (inherited from an ancestor or the system
+            // default)
+            String inheritedLabelSet = getCurationLabelSetNameLabel();
+            if (!StringUtils.isBlank(inheritedLabelSet)) {
+                setNames.put(inheritedLabelSet,SystemConfig.DEFAULTCURATIONLABELSET);
+            }
+            // Add an entry for disabled
+            setNames.put(BundleUtil.getStringFromBundle("dataverse.curationLabels.disabled"), SystemConfig.CURATIONLABELSDISABLED);
+            allowedSetNames.forEach(name -> {
+                setNames.put(name, name);
+            });
+        }
+        return setNames.entrySet();
+    }
+
+    public String getCurationLabelSetNameLabel() {
+        Dataverse parent = dataverse.getOwner();
+        String setName = null;
+        boolean fromAncestor = false;
+        if (parent != null) {
+            setName = parent.getEffectiveCurationLabelSetName();
+            // recurse dataverse chain to root and if any have a curation label set name set,
+            // fromAncestor is true
+            while (parent != null) {
+                if (!parent.getCurationLabelSetName().equals(SystemConfig.DEFAULTCURATIONLABELSET)) {
+                    fromAncestor = true;
+                    break;
+                }
+                parent = parent.getOwner();
+            }
+        }
+        if (setName != null) {
+            if (fromAncestor) {
+                setName = setName + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
+            } else {
+                setName = setName + " " + BundleUtil.getStringFromBundle("dataverse.default");
+            }
+        }
+        return setName;
+    }
+
 }

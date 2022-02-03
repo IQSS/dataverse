@@ -2363,3 +2363,100 @@ When this option is used to disable the checksum validation, it's strongly recom
 Refer to "Physical Files Validation in a Dataset" API :ref:`dataset-files-validation-api` section of our :doc:`/api/native-api` documentation.
 
 Also refer to the "Datafile Integrity" API  :ref:`datafile-integrity`
+
+:SendNotificationOnDatasetCreation
+++++++++++++++++++++++++++++++++++
+
+A boolean setting that, if true will send an email and notification to users when a Dataset is created. Messages go to those, other than the dataset creator,
+ who have the ability/permission necessary to publish the dataset. The intent of this functionality is to simplify tracking activity and planning to follow-up contact.
+  
+``curl -X PUT -d true http://localhost:8080/api/admin/settings/:SendNotificationOnDatasetCreation``
+
+.. _:CVocConf:
+
+:CVocConf
++++++++++
+
+A JSON-structured setting that configures Dataverse to associate specific metadatablock fields with external vocabulary services and specific vocabularies/sub-vocabularies managed by that service. More information about this capability is available at :doc:`/admin/metadatacustomization`.
+
+Scripts that implement this association for specific service protocols are maintained at https://github.com/gdcc/dataverse-external-vocab-support. That repository also includes a json-schema for validating the structure required by this setting along with an example metadatablock and sample :CVocConf setting values associating entries in the example block with ORCID and SKOSMOS based services. 
+
+``wget https://gdcc.github.io/dataverse-external-vocab-support/examples/config/cvoc-conf.json``
+
+``curl -X PUT --upload-file cvoc-conf.json http://localhost:8080/api/admin/settings/:CVocConf``
+
+.. _:AllowedCurationLabels:
+
+:AllowedCurationLabels
+++++++++++++++++++++++
+ 
+A JSON Object containing lists of allowed labels (up to 32 characters, spaces allowed) that can be set, via API or UI by users with the permission to publish a dataset. The set of labels allowed 
+for datasets can be selected by a superuser - via the Dataverse collection page (Edit/General Info) or set via API call. 
+The labels in a set should correspond to the states in an organization's curation process and are intended to help users/curators track the progress of a dataset through a defined curation process. 
+A dataset may only have one label at a time and if a label is set, it will be removed at publication time. 
+This functionality is disabled when this setting is empty/not set.
+Each set of labels is identified by a curationLabelSet name and a JSON Array of the labels allowed in that set.
+
+``curl -X PUT -d '{"Standard Process":["Author contacted", "Privacy Review", "Awaiting paper publication", "Final Approval"], "Alternate Process":["State 1","State 2","State 3"]}' http://localhost:8080/api/admin/settings/:AllowedCurationLabels``
+
+.. _:MaxEmbargoDurationInMonths:
+
+:MaxEmbargoDurationInMonths
++++++++++++++++++++++++++++
+
+This setting controls whether embargoes are allowed in a Dataverse instance and can limit the maximum duration users are allowed to specify. A value of 0 months or non-existent 
+setting indicates embargoes are not supported. A value of -1 allows embargoes of any length. Any other value indicates the maximum number of months (from the current date) a user 
+can enter for an embargo end date. This limit will be enforced in the popup dialog in which users enter the embargo date. For example, to set a two year maximum:
+
+``curl -X PUT -d 24 http://localhost:8080/api/admin/settings/:MaxEmbargoDurationInMonths``
+
+:DataverseMetadataValidatorScript
++++++++++++++++++++++++++++++++++
+
+An optional external script that validates Dataverse collection metadata as it's being updated or published. The script provided should be an executable that takes a single command line argument, the name of the file containing the metadata exported in the native json format. I.e., Dataverse application will be exporting the collection metadata in json format, saving it in a temp file, and passing the name of the temp file to the validation script as the command line argument. The script should exit with a non-zero error code if the validation fails. If that happens, a failure message (customizable in the next two settings below, `:DataverseMetadataPublishValidationFailureMsg` and `:DataverseMetadataUpdateValidationFailureMsg`) will be shown to the user.
+
+For example, once the following setting is created:
+
+``curl -X PUT -d /usr/local/bin/dv_validator.sh http://localhost:8080/api/admin/settings/:DataverseMetadataValidatorScript``
+
+:DataverseMetadataPublishValidationFailureMsg
++++++++++++++++++++++++++++++++++++++++++++++
+
+Specifies a custom error message shown to the user when a Dataverse collection fails an external metadata validation (as specified in the setting above) during an attempt to publish. If not specified, the default message "This dataverse collection cannot be published because it has failed an external metadata validation test" will be used.
+
+For example: 
+
+``curl -X PUT -d "This content needs to go through an additional review by the Curation Team before it can be published." http://localhost:8080/api/admin/settings/:DataverseMetadataPublishValidationFailureMsg``
+
+
+:DataverseMetadataUpdateValidationFailureMsg
+++++++++++++++++++++++++++++++++++++++++++++
+
+Same as above, but specifies a custom error message shown to the user when an external metadata validation check fails during an attempt to modify a Dataverse collection. If not specified, the default message "This dataverse collection cannot be updated because it has failed an external metadata validation test" will be used.
+
+
+:DatasetMetadataValidatorScript
++++++++++++++++++++++++++++++++
+
+An optional external script that validates dataset metadata during publishing. The script provided should be an executable that takes a single command line argument, the name of the file containing the metadata exported in the native json format. I.e., Dataverse application will be exporting the dataset metadata in json format, saving it in a temp file, and passing the name of the file to the validation script as the command line argument. The script should exit with a non-zero error code if the validation fails. If that happens, the dataset is left unpublished, and a failure message (customizable in the next setting below, `:DatasetMetadataValidationFailureMsg`) will be shown to the user.
+
+For example:
+
+``curl -X PUT -d /usr/local/bin/ds_validator.sh http://localhost:8080/api/admin/settings/:DatasetMetadataValidatorScript``
+
+In some ways this duplicates a workflow mechanism, since it is possible to define a workflow with additonal validation steps. But please note that the important difference is that this external validation happens *synchronously*, while the user is wating; while a workflow is performed asynchronously with a lock placed on the dataset. This can be useful to some installations, in some situations. But it also means that the script provided should be expected to always work reasonably fast - ideally, in seconds, rather than minutes, etc. 
+
+:DatasetMetadataValidationFailureMsg
+++++++++++++++++++++++++++++++++++++
+
+Specifies a custom error message shown to the user when a dataset fails an external metadata validation (as specified in the setting above) during an attempt to publish. If not specified, the default message "This dataset cannot be published because it has failed an external metadata validation test" will be used.
+
+For example: 
+
+``curl -X PUT -d "This content needs to go through an additional review by the Curation Team before it can be published." http://localhost:8080/api/admin/settings/:DatasetMetadataValidationFailureMsg``
+
+	
+:ExternalValidationAdminOverride
+++++++++++++++++++++++++++++++++
+
+When set to ``true``, this setting allows a superuser to publish and/or update Dataverse collections and datasets bypassing the external validation checks (specified by the settings above). In an event where an external script is reporting validation failures that appear to be in error, this option gives an admin with superuser privileges a quick way to publish the dataset or update a collection for the user. 

@@ -120,6 +120,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             theDataset.setPublicationDate(new Timestamp(new Date().getTime()));
         } 
 
+        //Clear any external status
+        theDataset.getLatestVersion().setExternalStatusLabel(null);
+        
         // update metadata
         if (theDataset.getLatestVersion().getReleaseTime() == null) {
             // Allow migrated versions to keep original release dates

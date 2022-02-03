@@ -14,6 +14,8 @@ import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,7 +24,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.logging.Logger;
+
 import javax.ejb.EJB;
+import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
+import javax.faces.context.FacesContext;
+import javax.faces.validator.ValidatorException;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 import javax.json.Json;
@@ -43,6 +52,8 @@ import org.json.JSONObject;
 @Named
 public class SettingsWrapper implements java.io.Serializable {
 
+    static final Logger logger = Logger.getLogger(SettingsWrapper.class.getCanonicalName());
+    
     @EJB
     SettingsServiceBean settingsService;
 
@@ -55,7 +66,10 @@ public class SettingsWrapper implements java.io.Serializable {
     private Map<String, String> settingsMap;
     
     // Related to a specific setting for guide urls
-    private String guidesBaseUrl = null; 
+    private String guidesBaseUrl = null;
+    
+    private boolean embargoDateChecked = false;
+    private LocalDate maxEmbargoDate = null;
 
  
     public String get(String settingKey) {
@@ -301,6 +315,85 @@ public class SettingsWrapper implements java.io.Serializable {
         }
         return anonymizedFieldTypes.contains(df.getDatasetFieldType().getName());
     }
+    
+    public LocalDate getMaxEmbargoDate() {
+        if (!embargoDateChecked) {
+            String months = getValueForKey(SettingsServiceBean.Key.MaxEmbargoDurationInMonths);
+            Long maxMonths = null;
+            if (months != null) {
+                try {
+                    maxMonths = Long.parseLong(months);
+                } catch (NumberFormatException nfe) {
+                    logger.warning("Cant interpret :MaxEmbargoDurationInMonths as a long");
+                }
+            }
+
+            if (maxMonths != null && maxMonths != 0) {
+                if (maxMonths == -1) {
+                    maxMonths = 12000l; // Arbitrary cutoff at 1000 years - needs to keep maxDate < year 999999999 and
+                                        // somehwere 1K> x >10K years the datepicker widget stops showing a popup
+                                        // calendar
+                }
+                maxEmbargoDate = LocalDate.now().plusMonths(maxMonths);
+            }
+            embargoDateChecked = true;
+        }
+        return maxEmbargoDate;
+    }
+    
+    public LocalDate getMinEmbargoDate() {
+            return LocalDate.now().plusDays(1);
+    }
+    
+    public boolean isValidEmbargoDate(Embargo e) {
+        
+        if (e.getDateAvailable()==null || (isEmbargoAllowed() && e.getDateAvailable().isAfter(LocalDate.now())
+                && e.getDateAvailable().isBefore(getMaxEmbargoDate().plusDays(1)))) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    public boolean isEmbargoAllowed() {
+        //Need a valid :MaxEmbargoDurationInMonths setting to allow embargoes
+        return getMaxEmbargoDate()!=null;
+    }
+    
+    public void validateEmbargoDate(FacesContext context, UIComponent component, Object value)
+            throws ValidatorException {
+        UIComponent cb = component.findComponent("embargoCheckbox");
+        UIInput endComponent = (UIInput) cb;
+        boolean removedState = false;
+        if (endComponent != null) {
+            try {
+                removedState = (Boolean) endComponent.getSubmittedValue();
+            } catch (NullPointerException npe) {
+                // Do nothing - checkbox is not being shown (and is therefore not checked)
+            }
+        }
+        if (!removedState && value == null) {
+            String msgString = BundleUtil.getStringFromBundle("embargo.date.required");
+            FacesMessage msg = new FacesMessage(msgString);
+            msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+            throw new ValidatorException(msg);
+        }
+        Embargo newE = new Embargo(((LocalDate) value), null);
+        if (!isValidEmbargoDate(newE)) {
+            String minDate = getMinEmbargoDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            String maxDate = getMaxEmbargoDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            String msgString = BundleUtil.getStringFromBundle("embargo.date.invalid", Arrays.asList(minDate, maxDate));
+            // If we don't throw an exception here, the datePicker will use it's own
+            // vaidator and display a default message. The value for that can be set by
+            // adding validatorMessage="#{bundle['embargo.date.invalid']}" (a version with
+            // no params) to the datepicker
+            // element in file-edit-popup-fragment.html, but it would be better to catch all
+            // problems here (so we can show a message with the min/max dates).
+            FacesMessage msg = new FacesMessage(msgString);
+            msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+            throw new ValidatorException(msg);
+        }
+    }
 
     Map<String,String> languageMap = null;
     
@@ -375,5 +468,18 @@ public class SettingsWrapper implements java.io.Serializable {
         }
     }
 
+    List<String> allowedExternalStatuses = null;
+
+    public List<String> getAllowedExternalStatuses(Dataset d) {
+        String setName = d.getEffectiveCurationLabelSetName();
+        if(setName.equals(SystemConfig.CURATIONLABELSDISABLED)) {
+            return new ArrayList<String>();
+        }
+        String[] labelArray = systemConfig.getCurationLabels().get(setName);
+        if(labelArray==null) {
+            return new ArrayList<String>();
+        }
+        return Arrays.asList(labelArray);
+    }
 }
 

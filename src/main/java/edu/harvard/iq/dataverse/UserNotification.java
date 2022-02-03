@@ -30,7 +30,8 @@ public class UserNotification implements Serializable {
         ASSIGNROLE, REVOKEROLE, CREATEDV, CREATEDS, CREATEACC, SUBMITTEDDS, RETURNEDDS, 
         PUBLISHEDDS, REQUESTFILEACCESS, GRANTFILEACCESS, REJECTFILEACCESS, FILESYSTEMIMPORT, 
         CHECKSUMIMPORT, CHECKSUMFAIL, CONFIRMEMAIL, APIGENERATED, INGESTCOMPLETED, INGESTCOMPLETEDWITHERRORS, 
-        PUBLISHFAILED_PIDREG, WORKFLOW_SUCCESS, WORKFLOW_FAILURE, GLOBUSUPLOADCOMPLETED, GLOBUSUPLOADCOMPLETEDWITHERRORS,
+        PUBLISHFAILED_PIDREG, WORKFLOW_SUCCESS, WORKFLOW_FAILURE, STATUSUPDATED, DATASETCREATED,
+        GLOBUSUPLOADCOMPLETED, GLOBUSUPLOADCOMPLETEDWITHERRORS,
         GLOBUSDOWNLOADCOMPLETED, GLOBUSDOWNLOADCOMPLETEDWITHERRORS;
     };
     
@@ -44,6 +45,10 @@ public class UserNotification implements Serializable {
     @JoinColumn( nullable = false )
     private AuthenticatedUser user;
     @ManyToOne
+    /** Requestor now has a more general meaning of 'actor' - the person who's action is causing the emails.
+     * The original use of that was for people requesting dataset access
+     * This is also now used for DATASETCREATED messages where it indicates who created the dataset
+    */
     @JoinColumn( nullable = true )
     private AuthenticatedUser requestor;
     private Timestamp sendDate;

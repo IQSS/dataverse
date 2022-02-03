@@ -192,6 +192,12 @@ public abstract class StorageIO<T extends DvObject> {
 
     /*private int status;*/
     private long size;
+
+    /**
+     * Where in the file to seek to when reading (default is zero bytes, the
+     * start of the file).
+     */
+    private long offset;
     
     private String mimeType;
     private String fileName;
@@ -271,6 +277,10 @@ public abstract class StorageIO<T extends DvObject> {
 
     public long getSize() {
         return size;
+    }
+
+    public long getOffset() {
+        return offset;
     }
 
     public InputStream getInputStream() throws IOException {
@@ -380,6 +390,18 @@ public abstract class StorageIO<T extends DvObject> {
 
     public void setSize(long s) {
         size = s;
+    }
+
+    // open() has already been called. Now we can skip, if need be.
+    public void setOffset(long offset) throws IOException {
+        InputStream inputStream = getInputStream();
+        if (inputStream != null) {
+            inputStream.skip(offset);
+            // The skip has already been done. Why not record it.
+            this.offset = offset;
+        } else {
+            throw new IOException("Could not skip into InputStream because it is null");
+        }
     }
 
     public void setInputStream(InputStream is) {

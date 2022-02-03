@@ -224,7 +224,7 @@ public class FileDownloadHelper implements java.io.Serializable {
            }
        }
 
-        if (!isRestrictedFile){
+        if (!isRestrictedFile && !FileUtil.isActivelyEmbargoed(fileMetadata)){
             // Yes, save answer and return true
             this.fileDownloadPermissionMap.put(fid, true);
             return true;
@@ -239,6 +239,10 @@ public class FileDownloadHelper implements java.io.Serializable {
 
         this.fileDownloadPermissionMap.put(fid, false);
         return false;
+    }
+
+    public boolean isRestrictedOrEmbargoed(FileMetadata fileMetadata) {
+        return fileMetadata.isRestricted() || FileUtil.isActivelyEmbargoed(fileMetadata);
     }
 
      /**
@@ -311,7 +315,7 @@ public class FileDownloadHelper implements java.io.Serializable {
              }
          }
          if (notificationFile != null && succeeded) {
-             fileDownloadService.sendRequestFileAccessNotification(notificationFile.getOwner(), notificationFile.getId(), (AuthenticatedUser) session.getUser());
+             fileDownloadService.sendRequestFileAccessNotification(notificationFile, (AuthenticatedUser) session.getUser());
          }
      }
     
@@ -335,7 +339,7 @@ public class FileDownloadHelper implements java.io.Serializable {
              file.getFileAccessRequesters().add((AuthenticatedUser) session.getUser());
              // create notification if necessary
              if (sendNotification) {
-                 fileDownloadService.sendRequestFileAccessNotification(file.getOwner(), file.getId(), (AuthenticatedUser) session.getUser());
+                 fileDownloadService.sendRequestFileAccessNotification(file, (AuthenticatedUser) session.getUser());
              }
              return true;
          }
