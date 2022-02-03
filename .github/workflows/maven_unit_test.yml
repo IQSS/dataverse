@@ -4,9 +4,13 @@ on:
     push:
         paths:
             - "**.java"
+            - "pom.xml"
+            - "modules/**/pom.xml"
     pull_request:
         paths:
             - "**.java"
+            - "pom.xml"
+            - "modules/**/pom.xml"
 
 jobs:
     unittest:
