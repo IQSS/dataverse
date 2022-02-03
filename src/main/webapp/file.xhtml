@@ -347,6 +347,7 @@
                                         <ui:param name="popupContext" value="previewTab"/>
                                         <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
                                         <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
+                                        <ui:param name="hasRestrictedFile" value="#{FilePage.fileMetadata.restricted}"/>
                                         <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
                                         <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
                                         <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
@@ -618,6 +619,7 @@
                             <ui:param name="popupContext" value="downloadFile"/>
                             <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
                             <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
+                            <ui:param name="hasRestrictedFile" value="#{FilePage.fileMetadata.restricted}"/>
                             <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
                             <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
                             <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>

@@ -39,6 +39,7 @@ import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestServiceShapefileHelper;
 import edu.harvard.iq.dataverse.ingest.IngestableDataChecker;
+import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil;
 import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatDoc;
 import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.HTML_H1;
@@ -1483,9 +1484,9 @@ public class FileUtil implements java.io.Serializable  {
         }
         // 1. License and Terms of Use:
         if (datasetVersion.getTermsOfUseAndAccess() != null) {
-            if (!TermsOfUseAndAccess.License.CC0.equals(datasetVersion.getTermsOfUseAndAccess().getLicense())
-                    && !(datasetVersion.getTermsOfUseAndAccess().getTermsOfUse() == null
-                    || datasetVersion.getTermsOfUseAndAccess().getTermsOfUse().equals(""))) {
+            License license = datasetVersion.getTermsOfUseAndAccess().getLicense();
+            if ((license == null && StringUtils.isNotBlank(datasetVersion.getTermsOfUseAndAccess().getTermsOfUse()))
+                    || (license != null && !license.isDefault())) {
                 logger.fine("Download popup required because of license or terms of use.");
                 return true;
             }
@@ -1521,7 +1522,7 @@ public class FileUtil implements java.io.Serializable  {
         }
         // 1. License and Terms of Use:
         if (datasetVersion.getTermsOfUseAndAccess() != null) {
-            if (!TermsOfUseAndAccess.License.CC0.equals(datasetVersion.getTermsOfUseAndAccess().getLicense())
+            if (!datasetVersion.getTermsOfUseAndAccess().getLicense().isDefault()
                     && !(datasetVersion.getTermsOfUseAndAccess().getTermsOfUse() == null
                     || datasetVersion.getTermsOfUseAndAccess().getTermsOfUse().equals(""))) {
                 logger.fine("Download popup required because of license or terms of use.");

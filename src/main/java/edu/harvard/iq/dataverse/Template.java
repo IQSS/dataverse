@@ -320,12 +320,12 @@ public class Template implements Serializable {
         if (latestVersion.getDatasetFields() != null && !latestVersion.getDatasetFields().isEmpty()) {
             newTemplate.setDatasetFields(newTemplate.copyDatasetFields(source.getDatasetFields()));
         }
-        TermsOfUseAndAccess terms;
+        TermsOfUseAndAccess terms = null;
         if(source.getTermsOfUseAndAccess() != null){
             terms = source.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
         } else {
             terms = new TermsOfUseAndAccess();
-            terms.setLicense(TermsOfUseAndAccess.defaultLicense);
+           // terms.setLicense(TermsOfUseAndAccess.defaultLicense);
             terms.setFileAccessRequest(true);
         }
         newTemplate.setTermsOfUseAndAccess(terms);

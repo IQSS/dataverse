@@ -1,24 +1,22 @@
 package edu.harvard.iq.dataverse.export;
 
-import edu.harvard.iq.dataverse.ControlledVocabularyValue;
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.branding.BrandingUtilTest;
+import edu.harvard.iq.dataverse.license.License;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
 
 import static edu.harvard.iq.dataverse.util.SystemConfig.SITE_URL;
 import static edu.harvard.iq.dataverse.util.SystemConfig.FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS;
+
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringReader;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
@@ -36,6 +34,7 @@ import javax.json.JsonReader;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -46,6 +45,8 @@ public class SchemaDotOrgExporterTest {
 
     private static final Logger logger = Logger.getLogger(SchemaDotOrgExporterTest.class.getCanonicalName());
     private static final MockDatasetFieldSvc datasetFieldTypeSvc = new MockDatasetFieldSvc();
+    private static final SettingsServiceBean settingsService = Mockito.mock(SettingsServiceBean.class);
+    private static final LicenseServiceBean licenseService = Mockito.mock(LicenseServiceBean.class);
     private static final SchemaDotOrgExporter schemaDotOrgExporter = new SchemaDotOrgExporter();
 
     @BeforeAll
@@ -66,10 +67,12 @@ public class SchemaDotOrgExporterTest {
     public void testExportDataset() throws Exception {
         File datasetVersionJson = new File("src/test/resources/json/dataset-finch2.json");
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
+        License license = new License("CC0 1.0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("https://creativecommons.org/publicdomain/zero/1.0/"), URI.create("/resources/images/cc0.png"), true);
+        license.setDefault(true);
 
         JsonReader jsonReader1 = Json.createReader(new StringReader(datasetVersionAsJson));
         JsonObject json1 = jsonReader1.readObject();
-        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, null);
+        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService);
         DatasetVersion version = jsonParser.parseDatasetVersion(json1.getJsonObject("datasetVersion"));
         version.setVersionState(DatasetVersion.VersionState.RELEASED);
         SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
@@ -77,7 +80,7 @@ public class SchemaDotOrgExporterTest {
         version.setReleaseTime(publicationDate);
         version.setVersionNumber(1l);
         TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-        terms.setLicense(TermsOfUseAndAccess.License.CC0);
+        terms.setLicense(license);
         version.setTermsOfUseAndAccess(terms);
 
         Dataset dataset = new Dataset();
@@ -160,9 +163,7 @@ public class SchemaDotOrgExporterTest {
         assertEquals("2002/2005", json2.getJsonArray("temporalCoverage").getString(0));
         assertEquals("2001-10-01/2015-11-15", json2.getJsonArray("temporalCoverage").getString(1));
         assertEquals(null, json2.getString("schemaVersion", null));
-        assertEquals("Dataset", json2.getJsonObject("license").getString("@type"));
-        assertEquals("CC0", json2.getJsonObject("license").getString("text"));
-        assertEquals("https://creativecommons.org/publicdomain/zero/1.0/", json2.getJsonObject("license").getString("url"));
+        assertEquals("https://creativecommons.org/publicdomain/zero/1.0/", json2.getString("license"));
         assertEquals("DataCatalog", json2.getJsonObject("includedInDataCatalog").getString("@type"));
         assertEquals("LibraScholar", json2.getJsonObject("includedInDataCatalog").getString("name"));
         assertEquals("https://librascholar.org", json2.getJsonObject("includedInDataCatalog").getString("url"));

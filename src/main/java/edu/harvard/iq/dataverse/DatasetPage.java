@@ -38,6 +38,7 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
@@ -61,7 +62,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -78,6 +78,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Collection;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
@@ -87,14 +88,12 @@ import javax.faces.event.ValueChangeEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.json.Json;
-import javax.json.JsonArray;
 import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonString;
 
+import org.apache.commons.lang3.StringUtils;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
+
 import javax.validation.ConstraintViolation;
 import org.apache.commons.httpclient.HttpClient;
 //import org.primefaces.context.RequestContext;
@@ -132,7 +131,7 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.io.IOUtils;
-
+import org.primefaces.component.selectonemenu.SelectOneMenu;
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.CloseEvent;
 import org.primefaces.event.TabChangeEvent;
@@ -246,10 +245,12 @@ public class DatasetPage implements java.io.Serializable {
     ProvPopupFragmentBean provPopupFragmentBean;
     @Inject
     MakeDataCountLoggingServiceBean mdcLogService;
-    @Inject 
+    @Inject
     DataverseHeaderFragment dataverseHeaderFragment;
-    @Inject 
+    @Inject
     EmbargoServiceBean embargoService;
+    @Inject
+    LicenseServiceBean licenseServiceBean;
 
     private Dataset dataset = new Dataset();
 
@@ -260,6 +261,7 @@ public class DatasetPage implements java.io.Serializable {
     private Long ownerId;
     private Long versionId;
     private int selectedTabIndex;
+    private String selectTab = "";
     private List<DataFile> newFiles = new ArrayList<>();
     private List<DataFile> uploadedFiles = new ArrayList<>();
     private MutableBoolean uploadInProgress = new MutableBoolean(false);
@@ -1253,8 +1255,6 @@ public class DatasetPage implements java.io.Serializable {
         this.linkingDataverseId = linkingDataverseId;
     }
 
-
-
     public void updateReleasedVersions(){
 
         setReleasedVersionTabList(resetReleasedVersionTabList());
@@ -1583,6 +1583,14 @@ public class DatasetPage implements java.io.Serializable {
         return selectedTabIndex;
     }
 
+    public String getSelectTab() {
+        return selectTab;
+    }
+
+    public void setSelectTab(String selectTab) {
+        this.selectTab = selectTab;
+    }
+
     public void setSelectedTabIndex(int selectedTabIndex) {
         this.selectedTabIndex = selectedTabIndex;
     }
@@ -1659,7 +1667,7 @@ public class DatasetPage implements java.io.Serializable {
             workingVersion.updateDefaultValuesFromTemplate(selectedTemplate);
             updateDatasetFieldInputLevels();
         } else {
-            workingVersion.initDefaultValues();
+            workingVersion.initDefaultValues(licenseServiceBean.getDefault());
             updateDatasetFieldInputLevels();
         }
         resetVersionUI();
@@ -1875,6 +1883,20 @@ public class DatasetPage implements java.io.Serializable {
                 return permissionsWrapper.notFound();
             }
 
+            switch (selectTab){
+                case "dataFilesTab":
+                    selectedTabIndex = 0;
+                    break;
+                case "metadataMapTab":
+                    selectedTabIndex = 1;
+                    break;
+                case "termsTab":
+                    selectedTabIndex = 2;
+                    break;
+                case "versionsTab":
+                    selectedTabIndex = 3;
+                    break;
+            }
 
             //this.dataset = this.workingVersion.getDataset();
 
@@ -1978,7 +2000,7 @@ public class DatasetPage implements java.io.Serializable {
                            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Problem getting rsync script:",  cex.getLocalizedMessage()));                        
                     }
                 }
-               
+
                 tooLargeToDownload = getSizeOfDatasetNumeric() > settingsWrapper.getZipDownloadLimit();
                 tooLargeToDownloadOriginal = getSizeOfDatasetOrigNumeric() > settingsWrapper.getZipDownloadLimit();
                 tooLargeToDownloadArchival = getSizeOfDatasetArchivalNumeric() > settingsWrapper.getZipDownloadLimit();
@@ -2025,7 +2047,7 @@ public class DatasetPage implements java.io.Serializable {
                 workingVersion = dataset.getEditVersion(selectedTemplate, null);
                 updateDatasetFieldInputLevels();
             } else {
-                workingVersion = dataset.getCreateVersion();
+                workingVersion = dataset.getCreateVersion(licenseServiceBean.getDefault());
                 updateDatasetFieldInputLevels();
             }
 
@@ -3014,7 +3036,7 @@ public class DatasetPage implements java.io.Serializable {
         this.setSelectedFiles(workingVersion.getFileMetadatas());
         startDownload(true);
     }
-    
+
     public void startDownloadSelectedArchival() {
         startDownload(false);
     }
@@ -3022,7 +3044,7 @@ public class DatasetPage implements java.io.Serializable {
     public void startDownloadSelectedOriginal() {
         startDownload(true);
     }
-    
+
     private void startDownload(boolean downloadOriginal){
         boolean guestbookRequired = isDownloadPopupRequired();
         boolean validate = validateFilesForDownload(guestbookRequired, downloadOriginal);
@@ -3093,7 +3115,7 @@ public class DatasetPage implements java.io.Serializable {
             setValidateFilesOutcome("Mixed");
             return true;
         }
-        
+
         if (guestbookRequired) {
             setValidateFilesOutcome("GuestbookRequired");
         }
@@ -3101,7 +3123,7 @@ public class DatasetPage implements java.io.Serializable {
         return true;
 
     }
-    
+
     private void updateGuestbookResponse (boolean guestbookRequired, boolean downloadOriginal) {
         // Note that the GuestbookResponse object may still have information from
         // the last download action performed by the user. For example, it may
@@ -3290,6 +3312,18 @@ public class DatasetPage implements java.io.Serializable {
                 commandEngine.submit(cmd);
             }
         }
+    }
+
+    public boolean hasRestrictedFile() {
+        if (workingVersion == null) {
+            return false;
+        }
+        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+            if (fmd.isRestricted()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public int getRestrictedFileCount() {
@@ -5226,7 +5260,7 @@ public class DatasetPage implements java.io.Serializable {
     public String getPrivateUrlLink(PrivateUrl privateUrl) {
         return privateUrl.getLink();
     }
-    
+
     public boolean isAnonymizedAccess() {
         if (anonymizedAccess == null) {
             if (session.getUser() instanceof PrivateUrlUser) {
@@ -5237,7 +5271,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         return anonymizedAccess;
     }
-    
+
     public boolean isAnonymizedPrivateUrl() {
         if(privateUrl != null) {
             return privateUrl.isAnonymizedAccess();
@@ -5245,7 +5279,7 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
     }
-    
+
     public boolean isAnonymizedAccessEnabled() {
         if (settingsWrapper.getValueForKey(SettingsServiceBean.Key.AnonymizedFieldTypeNames) != null) {
             return true;
@@ -5253,7 +5287,7 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
     }
-    
+
     // todo: we should be able to remove - this is passed in the html pages to other fragments, but they could just access this service bean directly.
     public FileDownloadServiceBean getFileDownloadService() {
         return fileDownloadService;
@@ -5672,7 +5706,7 @@ public class DatasetPage implements java.io.Serializable {
     public List<String> getAllowedExternalStatuses() {
         return settingsWrapper.getAllowedExternalStatuses(dataset);
     }
-    
+
     public Embargo getSelectionEmbargo() {
         return selectionEmbargo;
     }
@@ -5681,9 +5715,9 @@ public class DatasetPage implements java.io.Serializable {
         this.selectionEmbargo = selectionEmbargo;
     }
 
-    
+
     private Embargo selectionEmbargo = new Embargo();
-    
+
     public boolean isValidEmbargoSelection() {
         //If fileMetadataForAction is set, someone is using the kebab/single file menu
         if (fileMetadataForAction != null) {
@@ -5701,7 +5735,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         return false;
     }
-    
+
     /*
      * This method checks to see if the selected file/files have an embargo that could be removed. It doesn't return true of a released file has an embargo.
      */
@@ -5722,11 +5756,11 @@ public class DatasetPage implements java.io.Serializable {
 
         return false;
     }
-    
+
     public boolean isActivelyEmbargoed(List<FileMetadata> fmdList) {
         return FileUtil.isActivelyEmbargoed(fmdList);
     }
-    
+
     public boolean isEmbargoForWholeSelection() {
         for (FileMetadata fmd : selectedFiles) {
             if (fmd.getDataFile().isReleased()) {
@@ -5735,7 +5769,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         return true;
     }
-    
+
     private boolean removeEmbargo=false;
 
     public boolean isRemoveEmbargo() {
@@ -5756,16 +5790,16 @@ public class DatasetPage implements java.io.Serializable {
         PrimeFaces.current().resetInputs("datasetForm:embargoInputs");
         }
     }
-    
+
     public String saveEmbargo() {
         if (workingVersion.isReleased()) {
             refreshSelectedFiles(selectedFiles);
         }
-        
+
         if(isRemoveEmbargo() || (selectionEmbargo.getDateAvailable()==null && selectionEmbargo.getReason()==null)) {
             selectionEmbargo=null;
         }
-        
+
         if(!(selectionEmbargo==null || (selectionEmbargo!=null && settingsWrapper.isValidEmbargoDate(selectionEmbargo)))) {
             logger.fine("Validation error: " + selectionEmbargo.getFormattedDateAvailable());
             FacesContext.getCurrentInstance().validationFailed();
@@ -5779,7 +5813,7 @@ public class DatasetPage implements java.io.Serializable {
         } else if (selectedFiles != null && selectedFiles.size() > 0) {
             embargoFMs = selectedFiles;
         }
-        
+
         if(embargoFMs!=null && !embargoFMs.isEmpty()) {
             if(selectionEmbargo!=null) {
                 selectionEmbargo = embargoService.merge(selectionEmbargo);
@@ -5841,7 +5875,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         return false;
     }
-    
+
     public boolean isCantRequestDueToEmbargo() {
         if (fileDownloadHelper.getFilesForRequestAccess() != null) {
             for (DataFile df : fileDownloadHelper.getFilesForRequestAccess()) {
@@ -5866,4 +5900,29 @@ public class DatasetPage implements java.io.Serializable {
         return BundleUtil.getStringFromBundle("file.ingestFailed.message", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), settingsWrapper.getGuidesVersion()));
     }
 
+    public void validateTerms(FacesContext context, UIComponent component, Object value) throws ValidatorException {
+        UIComponent lic = component.findComponent("licenses");
+        SelectOneMenu som = (SelectOneMenu) lic;
+        logger.fine("license in form is " + som.getValue());
+        if (som.getValue() == null) {
+            if (StringUtils.isBlank((String) value)) {
+                FacesMessage msg = new FacesMessage(BundleUtil.getStringFromBundle("dataset.license.custom.blankterms"));
+                msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+
+                throw new ValidatorException(msg);
+            }
+        }
+    }
+    
+    public boolean downloadingRestrictedFiles() {
+        if (fileMetadataForAction != null) {
+            return fileMetadataForAction.isRestricted();
+        }
+        for (FileMetadata fmd : this.selectedFiles) {
+            if (fmd.isRestricted()) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

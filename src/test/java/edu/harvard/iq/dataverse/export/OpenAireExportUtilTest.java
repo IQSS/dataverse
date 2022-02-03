@@ -33,7 +33,7 @@ public class OpenAireExportUtilTest {
     private static final XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newInstance();
     private final StringWriter stringWriter = new StringWriter();
     private XMLStreamWriter xmlWriter;
-    
+
     @BeforeEach
     private void setup() throws XMLStreamException {
         xmlWriter = xmlOutputFactory.createXMLStreamWriter(stringWriter);
@@ -43,7 +43,7 @@ public class OpenAireExportUtilTest {
         stringWriter.flush();
         xmlWriter.close();
     }
-    
+
     /**
      * Test: 1a, Identifier (with mandatory type sub-property) (M) - DOI version
      */
@@ -54,16 +54,16 @@ public class OpenAireExportUtilTest {
         String persistentAuthority = "10.123";
         String persistentId = "123";
         GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId);
-        
+
         // when
         OpenAireExportUtil.writeIdentifierElement(xmlWriter, globalId.toURL().toString(), null);
         xmlWriter.flush();
-        
+
         // then
         assertEquals(String.format("<identifier identifierType=\"DOI\">%s/%s</identifier>", persistentAuthority, persistentId),
                 stringWriter.toString());
     }
-    
+
     /**
      * Test: 1b, Identifier (with mandatory type sub-property) (M) - Handle version
      */
@@ -74,11 +74,11 @@ public class OpenAireExportUtilTest {
         String persistentAuthority = "1902.1";
         String persistentId = "111012";
         GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId);
-        
+
         // when
         OpenAireExportUtil.writeIdentifierElement(xmlWriter, globalId.toURL().toString(), null);
         xmlWriter.flush();
-        
+
         // then
         assertEquals(String.format("<identifier identifierType=\"Handle\">%s/%s</identifier>", persistentAuthority, persistentId),
                 stringWriter.toString());
@@ -95,11 +95,11 @@ public class OpenAireExportUtilTest {
         // given
         DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-simplified.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        
+
         // when
         OpenAireExportUtil.writeCreatorsElement(xmlWriter, dto, null);
         xmlWriter.flush();
-        
+
         // then
         assertEquals("<creators>"
                 + "<creator>"
@@ -148,11 +148,11 @@ public class OpenAireExportUtilTest {
         // given
         DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-organizations.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-    
+
         // when
         OpenAireExportUtil.writeCreatorsElement(xmlWriter, dto, null);
         xmlWriter.flush();
-        
+
         // then
         assertEquals("<creators>"
                 + "<creator>"
@@ -190,7 +190,7 @@ public class OpenAireExportUtilTest {
         // given
         DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-organizations-comma.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-    
+
         // when
         OpenAireExportUtil.writeCreatorsElement(xmlWriter, dto, null);
         xmlWriter.flush();
@@ -223,11 +223,11 @@ public class OpenAireExportUtilTest {
         // given
         DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-simplified.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-    
+
         // when
         OpenAireExportUtil.writeTitlesElement(xmlWriter, dto, null);
         xmlWriter.flush();
-        
+
         //then
         assertEquals("<titles><title>My Dataset</title></titles>", stringWriter.toString());
     }
@@ -245,7 +245,7 @@ public class OpenAireExportUtilTest {
         DatasetDTO datasetDto = new DatasetDTO();
         datasetDto.setPublisher("Publisher01");
         String publisher = datasetDto.getPublisher();
-    
+
         // when
         OpenAireExportUtil.writeFullElement(xmlWriter, null, "publisher", null, publisher, null);
         xmlWriter.flush();
@@ -267,11 +267,11 @@ public class OpenAireExportUtilTest {
         // given
         DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-simplified.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-    
+
         // when
         OpenAireExportUtil.writePublicationYearElement(xmlWriter, dto, null, null);
         xmlWriter.flush();
-        
+
         // then
         assertEquals("<publicationYear>2014</publicationYear>", stringWriter.toString());
     }
@@ -289,11 +289,11 @@ public class OpenAireExportUtilTest {
         // given
         DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-    
+
         // when
         OpenAireExportUtil.writeSubjectsElement(xmlWriter, dto, null);
         xmlWriter.flush();
-        
+
         // then
         assertEquals("<subjects>"
                 + "<subject>Agricultural Sciences</subject>"
@@ -319,11 +319,11 @@ public class OpenAireExportUtilTest {
         // given
         DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-simplified.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-    
+
         // when
         OpenAireExportUtil.writeContributorsElement(xmlWriter, dto, null);
         xmlWriter.flush();
-        
+
         // then
         assertEquals("<contributors>"
                 + "<contributor contributorType=\"ContactPerson\">"
@@ -353,11 +353,11 @@ public class OpenAireExportUtilTest {
         // given
         DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-organizations.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-    
+
         // when
         OpenAireExportUtil.writeContributorsElement(xmlWriter, dto, null);
         xmlWriter.flush();
-        
+
         //then
         assertEquals("<contributors>"
                 + "<contributor contributorType=\"ContactPerson\">"
@@ -398,11 +398,11 @@ public class OpenAireExportUtilTest {
         // given
         DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-organizations-comma.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-    
+
         // when
         OpenAireExportUtil.writeContributorsElement(xmlWriter, dto, null);
         xmlWriter.flush();
-        
+
         // then
         assertEquals("<contributors>"
                 + "<contributor contributorType=\"ContactPerson\">"
@@ -435,11 +435,11 @@ public class OpenAireExportUtilTest {
         // given
         DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-    
+
         // when
         OpenAireExportUtil.writeContributorsElement(xmlWriter, dto, null);
         xmlWriter.flush();
-        
+
         // then
         assertEquals("<contributors>"
                 + "<contributor contributorType=\"ContactPerson\">"
@@ -493,11 +493,11 @@ public class OpenAireExportUtilTest {
         // given
         DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-    
+
         // when
         OpenAireExportUtil.writeDatesElement(xmlWriter, dto, null);
         xmlWriter.flush();
-        
+
         //then
         assertEquals("<dates>"
                 + "<date dateType=\"Issued\">1004-01-01</date>"
@@ -524,11 +524,11 @@ public class OpenAireExportUtilTest {
         DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
         String language = OpenAireExportUtil.getLanguage(xmlWriter, dto);
-    
+
         // when
         OpenAireExportUtil.writeFullElement(xmlWriter, null, "language", null, language, null);
         xmlWriter.flush();
-        
+
         // then
         assertEquals("<language>it</language>", stringWriter.toString());
     }
@@ -547,11 +547,11 @@ public class OpenAireExportUtilTest {
         // given
         DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-    
+
         // when
         OpenAireExportUtil.writeResourceTypeElement(xmlWriter, dto, null);
         xmlWriter.flush();
-    
+
         //then
         assertEquals("<resourceType resourceTypeGeneral=\"Dataset\">KindOfData1</resourceType>", stringWriter.toString());
     }
@@ -569,11 +569,11 @@ public class OpenAireExportUtilTest {
         // given
         DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-    
+
         // when
         OpenAireExportUtil.writeAlternateIdentifierElement(xmlWriter, dto, null);
         xmlWriter.flush();
-    
+
         //then
         assertEquals("<alternateIdentifiers>"
                 + "<alternateIdentifier alternateIdentifierType=\"OtherIDAgency1\">"
@@ -598,11 +598,11 @@ public class OpenAireExportUtilTest {
         // given
         DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-    
+
         // when
         OpenAireExportUtil.writeRelatedIdentifierElement(xmlWriter, dto, null);
         xmlWriter.flush();
-    
+
         //then
         assertEquals("<relatedIdentifiers>"
                 + "<relatedIdentifier relationType=\"IsCitedBy\" relatedIdentifierType=\"ARK\">"
@@ -628,14 +628,14 @@ public class OpenAireExportUtilTest {
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
         // set an empty file list
         dto.setFiles(new ArrayList<>());
-    
+
         // when
         // note: fragment must be enclosed in a fake root element.
         xmlWriter.writeStartElement("root");
         OpenAireExportUtil.writeSizeElement(xmlWriter, dto, null);
         xmlWriter.writeEndElement();
         xmlWriter.flush();
-        
+
         //then
         assertEquals("<root/>", stringWriter.toString());
     }
@@ -653,12 +653,12 @@ public class OpenAireExportUtilTest {
         // given
         DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-    
+
         // when
         // note: fragment must be enclosed in a fake root element.
         OpenAireExportUtil.writeSizeElement(xmlWriter, dto, null);
         xmlWriter.flush();
-    
+
         //then
         assertEquals("<sizes>"
                 + "<size>1000</size>"
@@ -682,14 +682,14 @@ public class OpenAireExportUtilTest {
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
         // set an empty file list
         dto.setFiles(new ArrayList<>());
-    
+
         // when
         // note: fragment must be enclosed in a fake root element.
         xmlWriter.writeStartElement("root");
         OpenAireExportUtil.writeFormatElement(xmlWriter, dto, null);
         xmlWriter.writeEndElement();
         xmlWriter.flush();
-    
+
         //then
         assertEquals("<root/>", stringWriter.toString());
     }
@@ -707,11 +707,11 @@ public class OpenAireExportUtilTest {
         // given
         DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-    
+
         // when
         OpenAireExportUtil.writeFormatElement(xmlWriter, dto, null);
         xmlWriter.flush();
-    
+
         //then
         assertEquals("<formats>"
                 + "<format>application/pdf</format>"
@@ -733,14 +733,14 @@ public class OpenAireExportUtilTest {
         // given
         DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-    
+
         // when
         // note: fragment must be enclosed in a fake root element.
         xmlWriter.writeStartElement("root");
         OpenAireExportUtil.writeVersionElement(xmlWriter, dto, null);
         xmlWriter.writeEndElement();
         xmlWriter.flush();
-    
+
         //then
         assertEquals("<root><version>1.0</version></root>", stringWriter.toString());
     }
@@ -760,11 +760,11 @@ public class OpenAireExportUtilTest {
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
         dto.setVersionNumber(2L);
         dto.setMinorVersionNumber(1L);
-    
+
         // when
         OpenAireExportUtil.writeVersionElement(xmlWriter, dto, null);
         xmlWriter.flush();
-    
+
         //then
         assertEquals("<version>2.1</version>", stringWriter.toString());
     }
@@ -782,16 +782,16 @@ public class OpenAireExportUtilTest {
         // given
         DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-    
+
         // when
         OpenAireExportUtil.writeAccessRightsElement(xmlWriter, dto, null);
         xmlWriter.flush();
-    
+
         //then
         assertEquals("<rightsList>"
                 + "<rights rightsURI=\"info:eu-repo/semantics/closedAccess\"/>"
                 + "<rights rightsURI=\"https://creativecommons.org/publicdomain/zero/1.0/\">"
-                + "CC0 Waiver</rights></rightsList>",
+                + "CC0 1.0</rights></rightsList>",
                 stringWriter.toString());
     }
 
@@ -811,11 +811,11 @@ public class OpenAireExportUtilTest {
         dto.setLicense(null);
         dto.setTermsOfUse(null);
         dto.setFileAccessRequest(true);
-    
+
         // when
         OpenAireExportUtil.writeAccessRightsElement(xmlWriter, dto, null);
         xmlWriter.flush();
-    
+
         //then
         assertEquals("<rightsList>"
                 + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\"/>"
@@ -839,11 +839,11 @@ public class OpenAireExportUtilTest {
         dto.setLicense(null);
         dto.setTermsOfUse(null);
         dto.setFileAccessRequest(false);
-    
+
         // when
         OpenAireExportUtil.writeAccessRightsElement(xmlWriter, dto, null);
         xmlWriter.flush();
-    
+
         //then
         assertEquals("<rightsList>"
                 + "<rights rightsURI=\"info:eu-repo/semantics/closedAccess\"/>"
@@ -864,11 +864,11 @@ public class OpenAireExportUtilTest {
         // given
         DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-    
+
         // when
         OpenAireExportUtil.writeDescriptionsElement(xmlWriter, dto, null);
         xmlWriter.flush();
-    
+
         //then
         assertEquals("<descriptions>"
                 + "<description descriptionType=\"Abstract\">DescriptionText 1"
@@ -905,11 +905,11 @@ public class OpenAireExportUtilTest {
         // given
         DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-    
+
         // when
         OpenAireExportUtil.writeGeoLocationsElement(xmlWriter, dto, null);
         xmlWriter.flush();
-    
+
         //then
         assertEquals("<geoLocations>"
                 + "<geoLocation>"
@@ -946,11 +946,11 @@ public class OpenAireExportUtilTest {
         // given
         DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-simplified.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-    
+
         // when
         OpenAireExportUtil.writeGeoLocationsElement(xmlWriter, dto, null);
         xmlWriter.flush();
-    
+
         //then
         assertEquals("<geoLocations>"
                 + "<geoLocation>"
@@ -978,11 +978,11 @@ public class OpenAireExportUtilTest {
         // given
         DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-    
+
         // when
         OpenAireExportUtil.writeFundingReferencesElement(xmlWriter, dto, null);
         xmlWriter.flush();
-    
+
         //then
         assertEquals("<fundingReferences><fundingReference>"
                 + "<funderName>GrantInformationGrantAgency1</funderName>"
@@ -1005,14 +1005,14 @@ public class OpenAireExportUtilTest {
         // given
         DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-updated.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-    
+
         // when
         // note: fragment must be enclosed in a fake root element.
         xmlWriter.writeStartElement("root");
         OpenAireExportUtil.writeContributorsElement(xmlWriter, dto, null);
         xmlWriter.writeEndElement();
         xmlWriter.flush();
-    
+
         //then
         assertEquals("<root/>", stringWriter.toString());
     }
@@ -1027,11 +1027,11 @@ public class OpenAireExportUtilTest {
         // given
         DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-updated.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-    
+
         // when
         OpenAireExportUtil.writeFundingReferencesElement(xmlWriter, dto, null);
         xmlWriter.flush();
-    
+
         //then
         assertEquals("<fundingReferences>"
                 + "<fundingReference><funderName>Dennis</funderName></fundingReference>"
@@ -1040,10 +1040,10 @@ public class OpenAireExportUtilTest {
                 + "</fundingReferences>",
                 stringWriter.toString());
     }
-    
+
     // private static final Jsonb jsonb = JsonbBuilder.create();
     private static final Gson gson = new Gson();
-    
+
     public static <T> T mapObjectFromJsonTestFile(String subPath, Class<T> klass) throws IOException {
         Path file = Path.of("src/test/java/edu/harvard/iq/dataverse", subPath);
         String json = Files.readString(file, StandardCharsets.UTF_8);

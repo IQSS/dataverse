@@ -29,6 +29,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -138,6 +139,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     ProvPopupFragmentBean provPopupFragmentBean;
     @Inject
     SettingsWrapper settingsWrapper;
+    @Inject
+    LicenseServiceBean licenseServiceBean;
 
     private Dataset dataset = new Dataset();
 
@@ -543,7 +546,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             return permissionsWrapper.notAuthorized();
         }
         
-        clone = workingVersion.cloneDatasetVersion();   
+        clone = workingVersion.cloneDatasetVersion();
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
         this.maxIngestSizeInBytes = systemConfig.getTabularIngestSizeLimit();
         this.humanPerFormatTabularLimits = populateHumanPerFormatTabularLimits();
@@ -571,13 +574,14 @@ public class EditDatafilesPage implements java.io.Serializable {
 
             //DataverseRequest dvRequest2 = createDataverseRequest(authUser);
             AddReplaceFileHelper addReplaceFileHelper = new AddReplaceFileHelper(dvRequestService.getDataverseRequest(),
-                    ingestService,
-                    datasetService,
-                    datafileService,
-                    permissionService,
-                    commandEngine,
-                    systemConfig);
-
+                                                ingestService,
+                                                datasetService,
+                                                datafileService,
+                                                permissionService,
+                                                commandEngine,
+                                                systemConfig,
+                                                licenseServiceBean);
+                        
             fileReplacePageHelper = new FileReplacePageHelper(addReplaceFileHelper,
                     dataset,
                     fileToReplace);
