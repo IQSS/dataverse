@@ -17,7 +17,8 @@
     <properties>
         <!-- This is a special Maven property name, do not change! -->
         <revision>5.9</revision>
-        
+    
+        <target.java.version>11</target.java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <additionalparam>-Xdoclint:none</additionalparam>
         <!-- Needed to avoid IDEA IDE compilation failures. See commits in GH #5059 -->
@@ -31,6 +32,32 @@
         -->
         <argLine>-Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
     
+        <!-- Major system components and dependencies -->
+        <payara.version>5.2021.5</payara.version>
+        <postgresql.version>42.2.19</postgresql.version>
+        <solr.version>8.8.1</solr.version>
+        <aws.version>1.11.762</aws.version>
+        <google.cloud.version>0.157.0</google.cloud.version>
+    
+        <!-- Basic libs, logging -->
+        <jakartaee-api.version>8.0.0</jakartaee-api.version>
+        <slf4j.version>1.7.35</slf4j.version>
+        <commons.io.version>2.11.0</commons.io.version>
+        <commons.logging.version>1.2</commons.logging.version>
+        <commons.lang3.version>3.12.0</commons.lang3.version>
+        <commons.compress.version>1.21</commons.compress.version>
+        <apache.httpcomponents.client.version>4.5.13</apache.httpcomponents.client.version>
+        <apache.httpcomponents.core.version>4.4.14</apache.httpcomponents.core.version>
+    
+        <!-- Testing dependencies -->
+        <testcontainers.version>1.15.0</testcontainers.version>
+        <microbean-mpconfig.version>0.4.1</microbean-mpconfig.version>
+    
+        <junit.version>4.13.1</junit.version>
+        <junit.jupiter.version>5.7.0</junit.jupiter.version>
+        <junit.vintage.version>${junit.jupiter.version}</junit.vintage.version>
+        <mockito.version>2.28.2</mockito.version>
+        
         <!-- Official Maven Plugins -->
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <maven-jar-plugin.version>3.2.2</maven-jar-plugin.version>

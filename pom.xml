@@ -19,26 +19,7 @@
     <name>dataverse</name>
     <properties>
         <skipUnitTests>false</skipUnitTests>
-    
-        <target.java.version>11</target.java.version>
-        <jakartaee-api.version>8.0.0</jakartaee-api.version>
-        <payara.version>5.2021.5</payara.version>
-        <postgresql.version>42.2.19</postgresql.version>
-        <aws.version>1.11.762</aws.version>
-        <slf4j.version>1.7.35</slf4j.version>
         <reload4j.version>1.2.18.4</reload4j.version>
-        <commons.io.version>2.11.0</commons.io.version>
-        <commons.logging.version>1.2</commons.logging.version>
-        <commons.lang3.version>3.12.0</commons.lang3.version>
-        <apache.httpcomponents.client.version>4.5.13</apache.httpcomponents.client.version>
-        <apache.httpcomponents.core.version>4.4.14</apache.httpcomponents.core.version>
-        <google.cloud.version>0.157.0</google.cloud.version>
-        <junit.version>4.13.1</junit.version>
-        <junit.jupiter.version>5.7.0</junit.jupiter.version>
-        <junit.vintage.version>${junit.jupiter.version}</junit.vintage.version>
-        <testcontainers.version>1.15.0</testcontainers.version>
-        <microbean-mpconfig.version>0.4.1</microbean-mpconfig.version>
-        <mockito.version>2.28.2</mockito.version>
         <flyway.version>5.2.4</flyway.version>
         <jhove.version>1.20.1</jhove.version>
         <jacoco.version>0.8.7</jacoco.version>
