@@ -333,7 +333,7 @@
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-solrj</artifactId>
-            <version>8.8.1</version>
+            <version>${solr.version}</version>
         </dependency>
         <dependency>
             <groupId>colt</groupId>
