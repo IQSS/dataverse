@@ -1,0 +1,43 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd;">
+    <modelVersion>4.0.0</modelVersion>
+ 
+    <groupId>edu.harvard.iq</groupId>
+    <artifactId>dataverse-parent</artifactId>
+    <version>${revision}</version>
+    <packaging>pom</packaging>
+ 
+    <name>dataverse-parent</name>
+    <url>https://dataverse.org</url>
+    
+    <modules>
+        <module>../../pom.xml</module>
+    </modules>
+ 
+    <properties>
+        <!-- This is a special Maven property name, do not change! -->
+        <revision>5.9</revision>
+        
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <additionalparam>-Xdoclint:none</additionalparam>
+        <!-- Needed to avoid IDEA IDE compilation failures. See commits in GH #5059 -->
+        <compilerArgument></compilerArgument>
+        <project.timezone>UTC</project.timezone>
+        <project.language>en</project.language>
+        <project.region>US</project.region>
+        <!--
+            Moving this from plugin config to global config, because of GH-5122.
+            This seems to play well with NetBeans 8.2, IDEA 2018.1 and mvn including compatibility with JaCoCo.
+        -->
+        <argLine>-Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
+    
+        <!-- Official Maven Plugins -->
+        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+        <maven-jar-plugin.version>3.2.2</maven-jar-plugin.version>
+        <maven-war-plugin.version>3.3.2</maven-war-plugin.version>
+        <maven-dependency-plugin.version>3.2.0</maven-dependency-plugin.version>
+        <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
+        <maven-failsafe-plugin.version>3.0.0-M5</maven-failsafe-plugin.version>
+    </properties>
+    
+</project>
