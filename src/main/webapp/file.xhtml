@@ -347,6 +347,7 @@
                                         <ui:param name="popupContext" value="previewTab"/>
                                         <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
                                         <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
+                                        <ui:param name="hasRestrictedFile" value="#{FilePage.fileMetadata.restricted}"/>
                                         <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
                                         <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
                                         <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
@@ -361,7 +362,7 @@
                                         <button type="button" id="selectTool" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                             <span class="glyphicon glyphicon-eye-open"/> #{bundle['file.previewTab.button.label']} <span class="caret"></span>
                                         </button>
-                                        <ul class="dropdown-menu" role="menu">
+                                        <ul class="dropdown-menu">
                                             <ui:repeat value="#{FilePage.toolsWithPreviews}" var="tool">
                                                 <li>
                                                     <h:commandLink action="#{FilePage.setSelectedTool(tool)}">
@@ -618,6 +619,7 @@
                             <ui:param name="popupContext" value="downloadFile"/>
                             <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
                             <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
+                            <ui:param name="hasRestrictedFile" value="#{FilePage.fileMetadata.restricted}"/>
                             <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
                             <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
                             <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
