@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -85,10 +87,6 @@ public class DatasetVersion implements Serializable {
     // StudyVersionsFragment.xhtml in order to display the correct value from a Resource Bundle
     public enum VersionState {
         DRAFT, RELEASED, ARCHIVED, DEACCESSIONED
-    };
-
-    public enum License {
-        NONE, CC0
     }
 
     public static final int ARCHIVE_NOTE_MAX_LENGTH = 1000;
@@ -160,7 +158,10 @@ public class DatasetVersion implements Serializable {
 
     @Transient
     private String contributorNames;
-    
+
+    @Transient
+    private final String dataverseSiteUrl = SystemConfig.getDataverseSiteUrlStatic();
+
     @Transient 
     private String jsonLd;
 
@@ -204,7 +205,11 @@ public class DatasetVersion implements Serializable {
 
     public void setVersion(Long version) {
     }
-    
+
+    public String getDataverseSiteUrl() {
+        return dataverseSiteUrl;
+    }
+
     public List<FileMetadata> getFileMetadatas() {
         return fileMetadatas;
     }
@@ -569,12 +574,6 @@ public class DatasetVersion implements Serializable {
             TermsOfUseAndAccess terms = template.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
             terms.setDatasetVersion(this);
             this.setTermsOfUseAndAccess(terms);
-        } else {
-            TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-            terms.setDatasetVersion(this);
-            terms.setLicense(TermsOfUseAndAccess.License.CC0);
-            terms.setDatasetVersion(this);
-            this.setTermsOfUseAndAccess(terms);
         }
     }
     
@@ -593,11 +592,6 @@ public class DatasetVersion implements Serializable {
             
             if (this.getTermsOfUseAndAccess()!= null){
                 dsv.setTermsOfUseAndAccess(this.getTermsOfUseAndAccess().copyTermsOfUseAndAccess());
-            } else {
-                TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-                terms.setDatasetVersion(dsv);
-                terms.setLicense(TermsOfUseAndAccess.License.CC0);
-                dsv.setTermsOfUseAndAccess(terms);
             }
 
             for (FileMetadata fm : this.getFileMetadatas()) {
@@ -620,22 +614,18 @@ public class DatasetVersion implements Serializable {
                 dsv.getFileMetadatas().add(newFm);
             }
 
-
-
-
         dsv.setDataset(this.getDataset());
         return dsv;
-        
     }
 
-    public void initDefaultValues() {
+    public void initDefaultValues(License license) {
         //first clear then initialize - in case values were present 
         // from template or user entry
         this.setDatasetFields(new ArrayList<>());
         this.setDatasetFields(this.initDatasetFields());
         TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
         terms.setDatasetVersion(this);
-        terms.setLicense(TermsOfUseAndAccess.License.CC0);
+        terms.setLicense(license);
         this.setTermsOfUseAndAccess(terms);
 
     }
@@ -1871,19 +1861,7 @@ public class DatasetVersion implements Serializable {
          */
         TermsOfUseAndAccess terms = this.getTermsOfUseAndAccess();
         if (terms != null) {
-            JsonObjectBuilder license = Json.createObjectBuilder().add("@type", "Dataset");
-            
-            if (TermsOfUseAndAccess.License.CC0.equals(terms.getLicense())) {
-                license.add("text", "CC0").add("url", TermsOfUseAndAccess.CC0_URI);
-            } else {
-                String termsOfUse = terms.getTermsOfUse();
-                // Terms of use can be null if you create the dataset with JSON.
-                if (termsOfUse != null) {
-                    license.add("text", termsOfUse);
-                }
-            }
-            
-            job.add("license",license);
+            job.add("license",DatasetUtil.getLicenseURI(this));
         }
         
         job.add("includedInDataCatalog", Json.createObjectBuilder()
@@ -1960,10 +1938,10 @@ public class DatasetVersion implements Serializable {
             job.add("distribution", fileArray);
         }
         jsonLd = job.build().toString();
-        
+
         //Most fields above should be stripped/sanitized but, since this is output in the dataset page as header metadata, do a final sanitize step to make sure
         jsonLd = MarkupChecker.stripAllTags(jsonLd);
-        
+
         return jsonLd;
     }
 

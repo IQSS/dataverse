@@ -298,20 +298,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         ApiToken apiToken = null;
         User user = session.getUser();
         DatasetVersion version = fmd.getDatasetVersion();
-        if (version.isDraft() || (fmd.getDataFile().isRestricted())) {
-            if (user instanceof AuthenticatedUser) {
-                AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
-                apiToken = authService.findApiTokenByUser(authenticatedUser);
-                if (apiToken == null) {
-                    //No un-expired token
-                    apiToken = authService.generateApiTokenForUser(authenticatedUser);
-                }
-            } else if (user instanceof PrivateUrlUser) {
-                PrivateUrlUser privateUrlUser = (PrivateUrlUser) user;
-                PrivateUrl privateUrl = privateUrlService.getPrivateUrlFromDatasetId(privateUrlUser.getDatasetId());
-                apiToken = new ApiToken();
-                apiToken.setTokenString(privateUrl.getToken());
-            }
+        if (version.isDraft() || (fmd.getDataFile().isRestricted()) || (FileUtil.isActivelyEmbargoed(fmd))) {
+            apiToken = getApiToken(user);
         }
         DataFile dataFile = null;
         if (fmd != null) {
@@ -338,6 +326,24 @@ public class FileDownloadServiceBean implements java.io.Serializable {
                 writeGuestbookResponseRecord(guestbookResponse);
             }
         }
+    }
+
+    public ApiToken getApiToken(User user) {
+        ApiToken apiToken = null;
+        if (user instanceof AuthenticatedUser) {
+            AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
+            apiToken = authService.findApiTokenByUser(authenticatedUser);
+            if (apiToken == null || apiToken.isExpired()) {
+                //No un-expired token
+                apiToken = authService.generateApiTokenForUser(authenticatedUser);
+            }
+        } else if (user instanceof PrivateUrlUser) {
+            PrivateUrlUser privateUrlUser = (PrivateUrlUser) user;
+            PrivateUrl privateUrl = privateUrlService.getPrivateUrlFromDatasetId(privateUrlUser.getDatasetId());
+            apiToken = new ApiToken();
+            apiToken.setTokenString(privateUrl.getToken());
+        }
+        return apiToken;
     }
 
     public Boolean canSeeTwoRavensExploreButton(){
