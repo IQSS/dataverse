@@ -44,6 +44,7 @@
                     <f:viewAction action="#{DataverseUserPage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse(), (DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn'] : bundle.account))}"/>
                 </f:metadata>
+                <h1>#{pageTitle}</h1>
                 <h:form id="dataverseUserForm">
 
                     <p:focus context="dataverseUserForm"/>
@@ -345,6 +346,8 @@
                                                     <h:outputFormat value="#{bundle['notification.ingestCompleted']}" escape="false">
                                                         <f:param value="#{item.theObject.getGlobalId()}"/>
                                                         <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                        <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
+                                                        <f:param value="#{settingsWrapper.guidesVersion}"/>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'INGESTCOMPLETEDWITHERRORS'}">
@@ -352,6 +355,8 @@
                                                     <h:outputFormat value="#{bundle['notification.ingestCompletedWithErrors']}" escape="false">
                                                         <f:param value="#{item.theObject.getGlobalId()}"/>
                                                         <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                        <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
+                                                        <f:param value="#{settingsWrapper.guidesVersion}"/>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'WORKFLOW_FAILURE'}">
@@ -413,7 +418,7 @@
                                         </ui:fragment>
                                         <span class="caret"></span>
                                     </button>
-                                    <ul class="dropdown-menu pull-right text-left" role="menu">
+                                    <ul class="dropdown-menu pull-right text-left">
                                         <ui:fragment rendered="#{DataverseUserPage.passwordEditable or DataverseUserPage.accountDetailsEditable}">
                                             <li>
                                                 <p:commandLink id="editAccount" rendered="#{DataverseUserPage.accountDetailsEditable}"

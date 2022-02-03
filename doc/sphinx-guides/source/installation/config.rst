@@ -386,6 +386,9 @@ of two methods described below:
 1. Manually through creation of the credentials and config files or
 2. Automatically via the AWS console commands.
 
+Some usage scenarios might be eased without generating these files. You may also provide :ref:`static credentials via
+MicroProfile Config <s3-mpconfig>`, see below.
+
 Preparation When Using Amazon's S3 Service
 ##########################################
 
@@ -526,28 +529,69 @@ been tested already and what other options have been set for a successful integr
 
 Lastly, go ahead and restart your Payara server. With Dataverse deployed and the site online, you should be able to upload datasets and data files and see the corresponding files in your S3 bucket. Within a bucket, the folder structure emulates that found in local file storage.
 
-S3 Storage Options
-##################
+List of S3 Storage Options
+##########################
 
-===========================================  ==================  ==========================================================================  =============
-JVM Option                                   Value               Description                                                                 Default value
-===========================================  ==================  ==========================================================================  =============
-dataverse.files.storage-driver-id            <id>                Enable <id> as the default storage driver.                                  ``file``
-dataverse.files.<id>.bucket-name             <?>                 The bucket name. See above.                                                 (none)
-dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                          ``false``
-dataverse.files.<id>.upload-redirect         ``true``/``false``  Enable direct upload of files added to a dataset  to the S3 store.          ``false``
-dataverse.files.<id>.ingestsizelimit         <size in bytes>     Maximum size of directupload files that should be ingested                  (none)
-dataverse.files.<id>.url-expiration-minutes  <?>                 If direct uploads/downloads: time until links expire. Optional.             60
-dataverse.files.<id>.min-part-size           <?>                 Multipart direct uploads will occur for files larger than this. Optional.   ``1024**3``
-dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.          (none)
-dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                             ``dataverse``
-dataverse.files.<id>.profile                 <?>                 Allows the use of AWS profiles for storage spanning multiple AWS accounts.  (none)
-dataverse.files.<id>.proxy-url               <?>                 URL of a proxy protecting the S3 store. Optional.                           (none)
-dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.                     ``false``
-dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                            ``false``
-dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                          ``true``
-dataverse.files.<id>.connection-pool-size    <?>                 The maximum number of open connections to the S3 server                     ``256``
-===========================================  ==================  ==========================================================================  =============
+.. table::
+    :align: left
+
+    ===========================================  ==================  ==========================================================================  =============
+    JVM Option                                   Value               Description                                                                 Default value
+    ===========================================  ==================  ==========================================================================  =============
+    dataverse.files.storage-driver-id            <id>                Enable <id> as the default storage driver.                                  ``file``
+    dataverse.files.<id>.type                    ``s3``              **Required** to mark this storage as S3 based.                              (none)
+    dataverse.files.<id>.label                   <?>                 **Required** label to be shown in the UI for this storage                   (none)
+    dataverse.files.<id>.bucket-name             <?>                 The bucket name. See above.                                                 (none)
+    dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                          ``false``
+    dataverse.files.<id>.upload-redirect         ``true``/``false``  Enable direct upload of files added to a dataset  to the S3 store.          ``false``
+    dataverse.files.<id>.ingestsizelimit         <size in bytes>     Maximum size of directupload files that should be ingested                  (none)
+    dataverse.files.<id>.url-expiration-minutes  <?>                 If direct uploads/downloads: time until links expire. Optional.             60
+    dataverse.files.<id>.min-part-size           <?>                 Multipart direct uploads will occur for files larger than this. Optional.   ``1024**3``
+    dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.          (none)
+    dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                             ``dataverse``
+    dataverse.files.<id>.profile                 <?>                 Allows the use of AWS profiles for storage spanning multiple AWS accounts.  (none)
+    dataverse.files.<id>.proxy-url               <?>                 URL of a proxy protecting the S3 store. Optional.                           (none)
+    dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.                     ``false``
+    dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                            ``false``
+    dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                          ``true``
+    dataverse.files.<id>.connection-pool-size    <?>                 The maximum number of open connections to the S3 server                     ``256``
+    ===========================================  ==================  ==========================================================================  =============
+
+.. table::
+    :align: left
+
+    ===========================================  ==================  ==========================================================================  =============
+    MicroProfile Config Option                   Value               Description                                                                 Default value
+    ===========================================  ==================  ==========================================================================  =============
+    dataverse.files.<id>.access-key              <?>                 :ref:`Provide static access key ID. Read before use! <s3-mpconfig>`         ``""``
+    dataverse.files.<id>.secret-key              <?>                 :ref:`Provide static secret access key. Read before use! <s3-mpconfig>`     ``""``
+    ===========================================  ==================  ==========================================================================  =============
+
+
+.. _s3-mpconfig:
+
+Credentials via MicroProfile Config
+###################################
+
+Optionally, you may provide static credentials for each S3 storage using MicroProfile Config options:
+
+- ``dataverse.files.<id>.access-key`` for this storages "access key ID"
+- ``dataverse.files.<id>.secret-key`` for this storages "secret access key"
+
+You may provide the values for these via any of the
+`supported config sources <https://docs.payara.fish/community/docs/documentation/microprofile/config/README.html>`_.
+
+**WARNING:**
+
+*For security, do not use the sources "environment variable" or "system property" (JVM option) in a production context!*
+*Rely on password alias, secrets directory or cloud based sources instead!*
+
+**NOTE:**
+
+1. Providing both AWS CLI profile files (as setup in first step) and static keys, credentials from ``~/.aws``
+   will win over configured keys when valid!
+2. A non-empty ``dataverse.files.<id>.profile`` will be ignored when no credentials can be found for this profile name.
+   Current codebase does not make use of "named profiles" as seen for AWS CLI besides credentials.
 
 Reported Working S3-Compatible Storage
 ######################################
@@ -680,8 +724,8 @@ When a user selects one of the available choices, the Dataverse user interfaces 
 Allowing the Language Used for Dataset Metadata to be Specified
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-Since dataset metadata can only be entered in one language, and administrators may wish to limit which languages metadata can be entered in, Dataverse also offers a separate setting defining allowed metadata languages. 
-The presence of the :ref:`:MetadataLanguages` database setting identifies the available options (which can be different from those in the :Languages setting above, with fewer or more options). 
+Since dataset metadata can only be entered in one language, and administrators may wish to limit which languages metadata can be entered in, Dataverse also offers a separate setting defining allowed metadata languages.
+The presence of the :ref:`:MetadataLanguages` database setting identifies the available options (which can be different from those in the :Languages setting above, with fewer or more options).
 Dataverse collection admins can select from these options to indicate which language should be used for new Datasets created with that specific collection.
 
 When creating or editing a dataset, users will be asked to enter the metadata in that language. The metadata language selected will also be shown when dataset metadata is viewed and will be included in metadata exports (as appropriate for each format) for published datasets:
@@ -1146,12 +1190,12 @@ For overriding the default path to the ``convert`` binary from ImageMagick (``/u
 dataverse.dataAccess.thumbnail.image.limit
 ++++++++++++++++++++++++++++++++++++++++++
 
-For limiting the size (in bytes) of thumbnail images generated from files.
+For limiting the size (in bytes) of thumbnail images generated from files. The default is 3000000 bytes (3 MB).
 
 dataverse.dataAccess.thumbnail.pdf.limit
 ++++++++++++++++++++++++++++++++++++++++
 
-For limiting the size (in bytes) of thumbnail images generated from files.
+For limiting the size (in bytes) of thumbnail images generated from files. The default is 1000000 bytes (1 MB).
 
 .. _doi.baseurlstring:
 
@@ -1678,6 +1722,8 @@ Note: After making a change to this setting, a reExportAll needs to be run befor
 
 This will *force* a re-export of every published, local dataset, regardless of whether it has already been exported or not.
 
+The call returns a status message informing the administrator, that the process has been launched (``{"status":"WORKFLOW_IN_PROGRESS"}``). The administrator can check the progress of the process via log files: ``[Payara directory]/glassfish/domains/domain1/logs/export_[time stamp].log``.
+
 :NavbarAboutUrl
 +++++++++++++++
 
@@ -1747,7 +1793,12 @@ Notes:
 
 - For larger file upload sizes, you may need to configure your reverse proxy timeout. If using apache2 (httpd) with Shibboleth, add a timeout to the ProxyPass defined in etc/httpd/conf.d/ssl.conf (which is described in the :doc:`/installation/shibboleth` setup).
 
+:MultipleUploadFilesLimit
++++++++++++++++++++++++++
 
+This setting controls the number of files that can be uploaded through the UI at once. The default is 1000. It should be set to 1 or higher since 0 has no effect. To limit the number of files in a zip file, see ``:ZipUploadFilesLimit``.
+
+``curl -X PUT -d 500 http://localhost:8080/api/admin/settings/:MultipleUploadFilesLimit``
 
 :ZipDownloadLimit
 +++++++++++++++++
@@ -2229,7 +2280,7 @@ See :ref:`i18n` for a curl example and related settings.
 :MetadataLanguages
 ++++++++++++++++++
 
-Sets which languages can be used when entering dataset metadata. 
+Sets which languages can be used when entering dataset metadata.
 
 See :ref:`i18n` for further discussion, a curl example, and related settings.
 
@@ -2367,8 +2418,7 @@ Also refer to the "Datafile Integrity" API  :ref:`datafile-integrity`
 :SendNotificationOnDatasetCreation
 ++++++++++++++++++++++++++++++++++
 
-A boolean setting that, if true will send an email and notification to users when a Dataset is created. Messages go to those, other than the dataset creator,
- who have the ability/permission necessary to publish the dataset. The intent of this functionality is to simplify tracking activity and planning to follow-up contact.
+A boolean setting that, if true, will send an email and notification to users when a Dataset is created. Messages go to those, other than the dataset creator, who have the ability/permission necessary to publish the dataset. The intent of this functionality is to simplify tracking activity and planning to follow-up contact.
   
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:SendNotificationOnDatasetCreation``
 
@@ -2379,7 +2429,7 @@ A boolean setting that, if true will send an email and notification to users whe
 
 A JSON-structured setting that configures Dataverse to associate specific metadatablock fields with external vocabulary services and specific vocabularies/sub-vocabularies managed by that service. More information about this capability is available at :doc:`/admin/metadatacustomization`.
 
-Scripts that implement this association for specific service protocols are maintained at https://github.com/gdcc/dataverse-external-vocab-support. That repository also includes a json-schema for validating the structure required by this setting along with an example metadatablock and sample :CVocConf setting values associating entries in the example block with ORCID and SKOSMOS based services. 
+Scripts that implement this association for specific service protocols are maintained at https://github.com/gdcc/dataverse-external-vocab-support. That repository also includes a json-schema for validating the structure required by this setting along with an example metadatablock and sample :CVocConf setting values associating entries in the example block with ORCID and SKOSMOS based services.
 
 ``wget https://gdcc.github.io/dataverse-external-vocab-support/examples/config/cvoc-conf.json``
 
@@ -2389,23 +2439,32 @@ Scripts that implement this association for specific service protocols are maint
 
 :AllowedCurationLabels
 ++++++++++++++++++++++
- 
-A JSON Object containing lists of allowed labels (up to 32 characters, spaces allowed) that can be set, via API or UI by users with the permission to publish a dataset. The set of labels allowed 
-for datasets can be selected by a superuser - via the Dataverse collection page (Edit/General Info) or set via API call. 
-The labels in a set should correspond to the states in an organization's curation process and are intended to help users/curators track the progress of a dataset through a defined curation process. 
-A dataset may only have one label at a time and if a label is set, it will be removed at publication time. 
+
+A JSON Object containing lists of allowed labels (up to 32 characters, spaces allowed) that can be set, via API or UI by users with the permission to publish a dataset. The set of labels allowed
+for datasets can be selected by a superuser - via the Dataverse collection page (Edit/General Info) or set via API call.
+The labels in a set should correspond to the states in an organization's curation process and are intended to help users/curators track the progress of a dataset through a defined curation process.
+A dataset may only have one label at a time and if a label is set, it will be removed at publication time.
 This functionality is disabled when this setting is empty/not set.
 Each set of labels is identified by a curationLabelSet name and a JSON Array of the labels allowed in that set.
 
 ``curl -X PUT -d '{"Standard Process":["Author contacted", "Privacy Review", "Awaiting paper publication", "Final Approval"], "Alternate Process":["State 1","State 2","State 3"]}' http://localhost:8080/api/admin/settings/:AllowedCurationLabels``
+
+.. _:AllowCustomTermsOfUse:
+
+:AllowCustomTermsOfUse
+++++++++++++++++++++++
+
+By default, custom terms of data use and access can be specified after selecting "Custom Terms" from the License/DUA dropdown on the Terms tab. When ``:AllowCustomTermsOfUse`` is  set to ``false`` the "Custom Terms" item is not made available to the depositor.
+
+``curl -X PUT -d false http://localhost:8080/api/admin/settings/:AllowCustomTermsOfUse``
 
 .. _:MaxEmbargoDurationInMonths:
 
 :MaxEmbargoDurationInMonths
 +++++++++++++++++++++++++++
 
-This setting controls whether embargoes are allowed in a Dataverse instance and can limit the maximum duration users are allowed to specify. A value of 0 months or non-existent 
-setting indicates embargoes are not supported. A value of -1 allows embargoes of any length. Any other value indicates the maximum number of months (from the current date) a user 
+This setting controls whether embargoes are allowed in a Dataverse instance and can limit the maximum duration users are allowed to specify. A value of 0 months or non-existent
+setting indicates embargoes are not supported. A value of -1 allows embargoes of any length. Any other value indicates the maximum number of months (from the current date) a user
 can enter for an embargo end date. This limit will be enforced in the popup dialog in which users enter the embargo date. For example, to set a two year maximum:
 
 ``curl -X PUT -d 24 http://localhost:8080/api/admin/settings/:MaxEmbargoDurationInMonths``

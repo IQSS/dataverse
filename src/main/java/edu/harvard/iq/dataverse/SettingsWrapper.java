@@ -62,6 +62,9 @@ public class SettingsWrapper implements java.io.Serializable {
 
     @EJB
     SystemConfig systemConfig;
+    
+    @EJB
+    DatasetFieldServiceBean fieldService;
 
     private Map<String, String> settingsMap;
     
@@ -71,7 +74,43 @@ public class SettingsWrapper implements java.io.Serializable {
     private boolean embargoDateChecked = false;
     private LocalDate maxEmbargoDate = null;
 
- 
+    private String siteUrl = null; 
+    
+    private Dataverse rootDataverse = null; 
+    
+    private String guidesVersion = null;
+    
+    private String appVersion = null; 
+    
+    private String appVersionWithBuildNumber = null; 
+    
+    private Boolean shibPassiveLoginEnabled = null; 
+    
+    private String footerCopyrightAndYear = null; 
+    
+    //External Vocabulary support
+    private Map<Long, JsonObject> cachedCvocMap = null;
+    
+    private Long zipDownloadLimit = null; 
+    
+    private Boolean publicInstall = null; 
+    
+    private Integer uploadMethodsCount;
+    
+    private Boolean rsyncUpload = null; 
+    
+    private Boolean rsyncDownload = null; 
+    
+    private Boolean httpUpload = null; 
+    
+    private Boolean rsyncOnly = null;
+    
+    private String metricsUrl = null; 
+    
+    private Boolean dataFilePIDSequentialDependent = null;
+    
+    private Boolean customLicenseAllowed = null;
+    
     public String get(String settingKey) {
         if (settingsMap == null) {
             initSettingsMap();
@@ -148,9 +187,7 @@ public class SettingsWrapper implements java.io.Serializable {
 
     
     public String getGuidesBaseUrl() {
-        if (true)
-
-            if (guidesBaseUrl == null) {
+        if (guidesBaseUrl == null) {
             String saneDefault = "https://guides.dataverse.org";
         
             guidesBaseUrl = getValueForKey(SettingsServiceBean.Key.GuidesBaseUrl);
@@ -169,37 +206,82 @@ public class SettingsWrapper implements java.io.Serializable {
     }
 
     public String getGuidesVersion() {
-        return systemConfig.getGuidesVersion();
+        if (guidesVersion == null) {
+            String saneDefault = getAppVersion();
+            guidesVersion = getValueForKey(SettingsServiceBean.Key.GuidesVersion, saneDefault);
+        }
+        return guidesVersion;
+    }
+    
+    public String getDataverseSiteUrl() {
+        if (siteUrl == null) {
+            siteUrl = systemConfig.getDataverseSiteUrl();
+        }
+        return siteUrl;
     }
     
     public Long getZipDownloadLimit(){
-        return systemConfig.getZipDownloadLimit();
+        if (zipDownloadLimit == null) {
+            String zipLimitOption = getValueForKey(SettingsServiceBean.Key.ZipDownloadLimit);
+            zipDownloadLimit = SystemConfig.getLongLimitFromStringOrDefault(zipLimitOption, SystemConfig.defaultZipDownloadLimit);
+        }
+        return zipDownloadLimit;
     }
 
     public boolean isPublicInstall(){
-        return systemConfig.isPublicInstall();
+        if (publicInstall == null) {
+            publicInstall = systemConfig.isPublicInstall();
+        }
+        return publicInstall; 
     }
     
     public boolean isRsyncUpload() {
-        return systemConfig.isRsyncUpload();
+        if (rsyncUpload == null) {
+            rsyncUpload = getUploadMethodAvailable(SystemConfig.FileUploadMethods.RSYNC.toString());
+        }
+        return rsyncUpload; 
     }
     
     public boolean isRsyncDownload() {
-        return systemConfig.isRsyncDownload();
+        if (rsyncDownload == null) {
+            rsyncDownload = systemConfig.isRsyncDownload();
+        }
+        return rsyncDownload;
     }
 
     public boolean isGlobusUpload() { return systemConfig.isGlobusUpload(); }
     
     public boolean isRsyncOnly() {
-        return systemConfig.isRsyncOnly();
+        if (rsyncOnly == null) {
+            String downloadMethods = getValueForKey(SettingsServiceBean.Key.DownloadMethods);
+            if(downloadMethods == null){
+                rsyncOnly = false;
+            } else if (!downloadMethods.toLowerCase().equals(SystemConfig.FileDownloadMethods.RSYNC.toString())){
+                rsyncOnly = false;
+            } else {
+                String uploadMethods = getValueForKey(SettingsServiceBean.Key.UploadMethods);
+                if (uploadMethods==null){
+                    rsyncOnly = false;
+                } else {
+                    rsyncOnly = Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
+                }
+            }
+        }
+        return rsyncOnly;
     }
     
     public boolean isHTTPUpload(){
-        return systemConfig.isHTTPUpload();
+        if (httpUpload == null) {
+            httpUpload = getUploadMethodAvailable(SystemConfig.FileUploadMethods.NATIVE.toString());
+        }
+        return httpUpload;      
     }
     
     public boolean isDataFilePIDSequentialDependent(){
-        return systemConfig.isDataFilePIDSequentialDependent();
+        if (dataFilePIDSequentialDependent == null) {
+            dataFilePIDSequentialDependent = systemConfig.isDataFilePIDSequentialDependent();
+        }
+        return dataFilePIDSequentialDependent;
     }
     
     public String getSupportTeamName() {
@@ -215,7 +297,15 @@ public class SettingsWrapper implements java.io.Serializable {
     }
     
     public Integer getUploadMethodsCount() {
-        return systemConfig.getUploadMethodCount();
+        if (uploadMethodsCount == null) {
+            String uploadMethods = getValueForKey(SettingsServiceBean.Key.UploadMethods); 
+            if (uploadMethods==null){
+                uploadMethodsCount = 0;
+            } else {
+                uploadMethodsCount = Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size();
+            } 
+        }
+        return uploadMethodsCount;
     }
 
     public boolean isRootDataverseThemeDisabled() {
@@ -362,36 +452,39 @@ public class SettingsWrapper implements java.io.Serializable {
     
     public void validateEmbargoDate(FacesContext context, UIComponent component, Object value)
             throws ValidatorException {
-        UIComponent cb = component.findComponent("embargoCheckbox");
-        UIInput endComponent = (UIInput) cb;
-        boolean removedState = false;
-        if (endComponent != null) {
-            try {
-                removedState = (Boolean) endComponent.getSubmittedValue();
-            } catch (NullPointerException npe) {
-                // Do nothing - checkbox is not being shown (and is therefore not checked)
+        if (isEmbargoAllowed()) {
+            UIComponent cb = component.findComponent("embargoCheckbox");
+            UIInput endComponent = (UIInput) cb;
+            boolean removedState = false;
+            if (endComponent != null) {
+                try {
+                    removedState = (Boolean) endComponent.getSubmittedValue();
+                } catch (NullPointerException npe) {
+                    // Do nothing - checkbox is not being shown (and is therefore not checked)
+                }
             }
-        }
-        if (!removedState && value == null) {
-            String msgString = BundleUtil.getStringFromBundle("embargo.date.required");
-            FacesMessage msg = new FacesMessage(msgString);
-            msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-            throw new ValidatorException(msg);
-        }
-        Embargo newE = new Embargo(((LocalDate) value), null);
-        if (!isValidEmbargoDate(newE)) {
-            String minDate = getMinEmbargoDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-            String maxDate = getMaxEmbargoDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-            String msgString = BundleUtil.getStringFromBundle("embargo.date.invalid", Arrays.asList(minDate, maxDate));
-            // If we don't throw an exception here, the datePicker will use it's own
-            // vaidator and display a default message. The value for that can be set by
-            // adding validatorMessage="#{bundle['embargo.date.invalid']}" (a version with
-            // no params) to the datepicker
-            // element in file-edit-popup-fragment.html, but it would be better to catch all
-            // problems here (so we can show a message with the min/max dates).
-            FacesMessage msg = new FacesMessage(msgString);
-            msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-            throw new ValidatorException(msg);
+            if (!removedState && value == null) {
+                String msgString = BundleUtil.getStringFromBundle("embargo.date.required");
+                FacesMessage msg = new FacesMessage(msgString);
+                msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+                throw new ValidatorException(msg);
+            }
+            Embargo newE = new Embargo(((LocalDate) value), null);
+            if (!isValidEmbargoDate(newE)) {
+                String minDate = getMinEmbargoDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                String maxDate = getMaxEmbargoDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                String msgString = BundleUtil.getStringFromBundle("embargo.date.invalid",
+                        Arrays.asList(minDate, maxDate));
+                // If we don't throw an exception here, the datePicker will use it's own
+                // vaidator and display a default message. The value for that can be set by
+                // adding validatorMessage="#{bundle['embargo.date.invalid']}" (a version with
+                // no params) to the datepicker
+                // element in file-edit-popup-fragment.html, but it would be better to catch all
+                // problems here (so we can show a message with the min/max dates).
+                FacesMessage msg = new FacesMessage(msgString);
+                msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+                throw new ValidatorException(msg);
+            }
         }
     }
 
@@ -430,19 +523,18 @@ public class SettingsWrapper implements java.io.Serializable {
         String mlLabel = Locale.getDefault().getDisplayLanguage();
         Dataverse parent = target.getOwner();
         boolean fromAncestor=false;
-        if(parent != null) {
-            mlLabel = parent.getEffectiveMetadataLanguage();
-            //recurse dataverse chain to root and if any have a metadata language set, fromAncestor is true
-            while(parent!=null) {
-                if(!parent.getMetadataLanguage().equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
-                    fromAncestor=true;
-                    break;
-                }
-                parent=parent.getOwner();
+        if (parent != null) {
+            fromAncestor=true;
+            String mlCode = parent.getEffectiveMetadataLanguage();
+            // If it's 'undefined', it's the global default
+            if (mlCode.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
+                //so it's not from an ancestor
+                fromAncestor=false;
+                //and we need to lookup the global default
+                mlCode = getDefaultMetadataLanguage();
             }
-        }
-        if(mlLabel.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
-            mlLabel = getBaseMetadataLanguageMap(false).get(getDefaultMetadataLanguage());
+            // Get the label for the language code found
+            mlLabel = getBaseMetadataLanguageMap(false).get(mlCode);
         }
         if(fromAncestor) {
             mlLabel = mlLabel + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
@@ -467,6 +559,75 @@ public class SettingsWrapper implements java.io.Serializable {
             return null;
         }
     }
+    
+    public Dataverse getRootDataverse() {
+        if (rootDataverse == null) {
+            rootDataverse = dataverseService.findRootDataverse();
+        }
+        
+        return rootDataverse;
+    }
+    
+    // The following 2 methods may be unnecessary *with the current implementation* of 
+    // how the application version is retrieved (the values are initialized and cached inside 
+    // SystemConfig once per thread - see the code there); 
+    // But in case we switch to some other method, that requires a database 
+    // lookup like other settings, it should be here. 
+    // This would be a prime candidate for moving into some kind of an 
+    // APPLICATION-scope caching singleton. -- L.A. 5.8
+    public String getAppVersion() {
+        if (appVersion == null) {
+            appVersion = systemConfig.getVersion();
+        }
+        return appVersion;
+    }
+    
+    public String getAppVersionWithBuildNumber() {
+        if (appVersionWithBuildNumber == null) {
+            appVersionWithBuildNumber = systemConfig.getVersion(true);
+        }
+        return appVersionWithBuildNumber;
+    }
+    
+    public boolean isShibPassiveLoginEnabled() {
+        if (shibPassiveLoginEnabled == null) {
+            shibPassiveLoginEnabled = systemConfig.isShibPassiveLoginEnabled();
+        }
+        return shibPassiveLoginEnabled;
+    }
+    
+    // Caching this result may not be saving much, *currently* (since the value is 
+    // stored in the bundle). -- L.A. 5.8
+    public String getFooterCopyrightAndYear() {
+        if (footerCopyrightAndYear == null) {
+            footerCopyrightAndYear = systemConfig.getFooterCopyrightAndYear();
+        }
+        return footerCopyrightAndYear; 
+    }
+    
+    public Map<Long, JsonObject> getCVocConf() {
+        //Cache this in the view
+        if(cachedCvocMap==null) {
+        cachedCvocMap = fieldService.getCVocConf(false);
+        }
+        return cachedCvocMap;
+    }
+    
+    public String getMetricsUrl() {
+        if (metricsUrl == null) {
+            metricsUrl = getValueForKey(SettingsServiceBean.Key.MetricsUrl);
+        }
+        return metricsUrl;
+    }
+    
+    private Boolean getUploadMethodAvailable(String method){
+        String uploadMethods = getValueForKey(SettingsServiceBean.Key.UploadMethods); 
+        if (uploadMethods==null){
+            return false;
+        } else {
+           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).contains(method);
+        }
+    }
 
     List<String> allowedExternalStatuses = null;
 
@@ -480,6 +641,13 @@ public class SettingsWrapper implements java.io.Serializable {
             return new ArrayList<String>();
         }
         return Arrays.asList(labelArray);
+    }
+
+    public boolean isCustomLicenseAllowed() {
+        if (customLicenseAllowed == null) {
+            customLicenseAllowed = systemConfig.isAllowCustomTerms();
+        }
+        return customLicenseAllowed;
     }
 }
 

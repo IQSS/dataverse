@@ -49,6 +49,9 @@ function bind_bsui_components(){
         var dialog_id = this.jq.attr('id').split(/[:]+/).pop();
         handleResizeDialog(dialog_id);
     }
+    
+    //Fly-out sub-menu accessibility
+    enableSubMenus();
 }
 
 function bind_tooltip_popover(){
@@ -136,9 +139,9 @@ function sharrre(){
         },
         template: '<div id="sharrre-block" class="clearfix">\n\
                     <input type="hidden" id="sharrre-total" name="sharrre-total" value="{total}"/> \n\
-                    <a href="#" class="sharrre-facebook"><span class="socicon socicon-facebook"/></a> \n\
-                    <a href="#" class="sharrre-twitter"><span class="socicon socicon-twitter"/></a> \n\
-                    <a href="#" class="sharrre-linkedin"><span class="socicon socicon-linkedin"/></a>\n\
+                    <a href="#" class="sharrre-facebook" title="FaceBook"><span class="socicon socicon-facebook"/></a> \n\
+                    <a href="#" class="sharrre-twitter" title="Twitter"><span class="socicon socicon-twitter"/></a> \n\
+                    <a href="#" class="sharrre-linkedin" title="LinkedIn"><span class="socicon socicon-linkedin"/></a>\n\
                     </div>',
         enableHover: false,
         enableTracking: true,
@@ -358,5 +361,53 @@ function handle_dropdown_popup_scroll(){
                 of: $(".DropdownPopup")
             });
         }
+    });
+}
+
+function enableSubMenus() {
+    $('.dropdown-submenu>a').off('keydown').keydown(toggleSubMenu);
+    $('.dropdown-submenu>.dropdown-menu>li:last-of-type>a').off('keydown').keydown(closeOnTab);
+    $('.dropdown-submenu>.dropdown-menu>li:first-of-type>a').off('keydown').keydown(closeOnShiftTab);
+    addMenuDelays();
+}
+
+function toggleSubMenu(event) {
+if ( event.key == ' ' || event.key == 'Enter' ) {
+      event.target.parentElement.classList.toggle('open');
+    }
+}
+
+function closeOnTab(event) {
+        console.log(event.key);
+        if ( event.key == 'Tab') {
+        $(this).parent().parent().parent().removeClass('open');
+        }
+}
+
+function closeOnShiftTab(event) {
+        console.log(event.key);
+        if ( event.key == 'Tab' && event.shiftKey) {
+        $(this).parent().parent().parent().removeClass('open');
+        }
+}
+
+function addMenuDelays() {
+    $('.dropdown-submenu>a').each(function() {
+        var obj =$( this ).parent();
+        //First time - add open class upon mouseover
+        $(this).off('mouseover').mouseover(function() {
+            obj.addClass('open');
+        });
+        var closeMenuTimer;
+        //And add a mouseout function that will 
+        // a) remove that class after a delay, and 
+        // b) update the mouseover to remove the timer if it hasn't run yet (and re-add the open class if it has)
+        $(this).off('mouseout').mouseout(function() {
+            closeMenuTimer = setTimeout(function() {obj.removeClass('open');}, 1000);
+            $(this).off('mouseover').mouseover(function() {
+                obj.addClass('open');
+                clearTimeout(closeMenuTimer);
+            });
+        });
     });
 }

@@ -129,6 +129,7 @@ import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.net.URI;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
@@ -146,6 +147,7 @@ import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.json.*;
 import javax.json.stream.JsonParsingException;
@@ -180,6 +182,8 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import com.amazonaws.services.s3.model.PartETag;
 import java.util.Map.Entry;
 import com.beust.jcommander.Strings;
+
+import java.util.Map.Entry;
 
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
@@ -719,7 +723,7 @@ public class Datasets extends AbstractApiBean {
             DataverseRequest req = createDataverseRequest(findUserOrDie());
             DatasetVersion dsv = ds.getEditVersion();
             boolean updateDraft = ds.getLatestVersion().isDraft();
-            dsv = JSONLDUtil.updateDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, datasetFieldSvc, !replaceTerms, false);
+            dsv = JSONLDUtil.updateDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, datasetFieldSvc, !replaceTerms, false, licenseSvc);
 
             DatasetVersion managedVersion;
             if (updateDraft) {
@@ -748,7 +752,7 @@ public class Datasets extends AbstractApiBean {
             DataverseRequest req = createDataverseRequest(findUserOrDie());
             DatasetVersion dsv = ds.getEditVersion();
             boolean updateDraft = ds.getLatestVersion().isDraft();
-            dsv = JSONLDUtil.deleteDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, datasetFieldSvc);
+            dsv = JSONLDUtil.deleteDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, licenseSvc);
             DatasetVersion managedVersion;
             if (updateDraft) {
                 Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
@@ -1616,6 +1620,29 @@ public class Datasets extends AbstractApiBean {
     }
 
     @GET
+    @Path("{id}/versions/{versionId}/customlicense")
+    public Response getCustomTermsTab(@PathParam("id") String id, @PathParam("versionId") String versionId,
+            @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+        User user = session.getUser();
+        String persistentId;
+        try {
+            if (getDatasetVersionOrDie(createDataverseRequest(user), versionId, findDatasetOrDie(id), uriInfo, headers)
+                    .getTermsOfUseAndAccess().getLicense() != null) {
+                return error(Status.NOT_FOUND, "This Dataset has no custom license");
+            }
+            persistentId = getRequestParameter(":persistentId".substring(1));
+            if (versionId.equals(":draft")) {
+                versionId = "DRAFT";
+            }
+        } catch (WrappedResponse wrappedResponse) {
+            return wrappedResponse.getResponse();
+        }
+        return Response.seeOther(URI.create(systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId="
+                + persistentId + "&version=" + versionId + "&selectTab=termsTab")).build();
+    }
+
+
+    @GET
     @Path("{id}/links")
     public Response getLinks(@PathParam("id") String idSupplied) {
         try {
@@ -2410,7 +2437,8 @@ public class Datasets extends AbstractApiBean {
                 fileService,
                 permissionSvc,
                 commandEngine,
-                systemConfig);
+                                                systemConfig,
+                                                licenseSvc);
 
 
         //-------------------
@@ -3499,7 +3527,8 @@ public class Datasets extends AbstractApiBean {
                 this.fileService,
                 this.permissionSvc,
                 this.commandEngine,
-                this.systemConfig
+                this.systemConfig,
+                this.licenseSvc
         );
 
         return addFileHelper.addFiles(jsonData, dataset, authUser);

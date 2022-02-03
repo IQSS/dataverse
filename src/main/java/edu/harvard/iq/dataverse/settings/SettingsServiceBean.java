@@ -212,12 +212,6 @@ public class SettingsServiceBean {
         /* the number of files the GUI user is allowed to upload in one batch, 
             via drag-and-drop, or through the file select dialog */
         MultipleUploadFilesLimit,
-        /* Size limits for generating thumbnails on the fly */
-        /* (i.e., we'll attempt to generate a thumbnail on the fly if the 
-         * size of the file is less than this)
-        */
-        ThumbnailSizeLimitImage,
-        ThumbnailSizeLimitPDF,
         /* return email address for system emails such as notifications */
         SystemEmail, 
         /* size limit for Tabular data file ingests */
@@ -509,7 +503,11 @@ public class SettingsServiceBean {
          * -1: embargo enabled, no time limit
          * n: embargo enabled with n months the maximum allowed duration
          */
-        MaxEmbargoDurationInMonths
+        MaxEmbargoDurationInMonths,
+        /*
+         * Include "Custom Terms" as an item in the license drop-down or not.
+         */
+        AllowCustomTermsOfUse
         ;
 
         @Override

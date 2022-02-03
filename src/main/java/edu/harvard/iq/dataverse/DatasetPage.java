@@ -38,6 +38,7 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
@@ -79,6 +80,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Collection;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
@@ -88,14 +90,12 @@ import javax.faces.event.ValueChangeEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.json.Json;
-import javax.json.JsonArray;
 import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonString;
 
+import org.apache.commons.lang3.StringUtils;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
+
 import javax.validation.ConstraintViolation;
 import org.apache.commons.httpclient.HttpClient;
 //import org.primefaces.context.RequestContext;
@@ -133,7 +133,7 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.io.IOUtils;
-
+import org.primefaces.component.selectonemenu.SelectOneMenu;
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.CloseEvent;
 import org.primefaces.event.TabChangeEvent;
@@ -251,6 +251,8 @@ public class DatasetPage implements java.io.Serializable {
     DataverseHeaderFragment dataverseHeaderFragment;
     @Inject
     EmbargoServiceBean embargoService;
+    @Inject
+    LicenseServiceBean licenseServiceBean;
 
     private Dataset dataset = new Dataset();
 
@@ -261,6 +263,7 @@ public class DatasetPage implements java.io.Serializable {
     private Long ownerId;
     private Long versionId;
     private int selectedTabIndex;
+    private String selectTab = "";
     private List<DataFile> newFiles = new ArrayList<>();
     private List<DataFile> uploadedFiles = new ArrayList<>();
     private MutableBoolean uploadInProgress = new MutableBoolean(false);
@@ -334,8 +337,6 @@ public class DatasetPage implements java.io.Serializable {
 
     private Boolean hasTabular = false;
 
-    //External Vocabulary support
-    Map<Long, JsonObject> cachedCvocMap=null;
 
     /**
      * If the dataset version has at least one tabular file. The "hasTabular"
@@ -1219,8 +1220,6 @@ public class DatasetPage implements java.io.Serializable {
         this.linkingDataverseId = linkingDataverseId;
     }
 
-
-
     public void updateReleasedVersions(){
 
         setReleasedVersionTabList(resetReleasedVersionTabList());
@@ -1549,6 +1548,14 @@ public class DatasetPage implements java.io.Serializable {
         return selectedTabIndex;
     }
 
+    public String getSelectTab() {
+        return selectTab;
+    }
+
+    public void setSelectTab(String selectTab) {
+        this.selectTab = selectTab;
+    }
+
     public void setSelectedTabIndex(int selectedTabIndex) {
         this.selectedTabIndex = selectedTabIndex;
     }
@@ -1625,7 +1632,7 @@ public class DatasetPage implements java.io.Serializable {
             workingVersion.updateDefaultValuesFromTemplate(selectedTemplate);
             updateDatasetFieldInputLevels();
         } else {
-            workingVersion.initDefaultValues();
+            workingVersion.initDefaultValues(licenseServiceBean.getDefault());
             updateDatasetFieldInputLevels();
         }
         resetVersionUI();
@@ -1841,6 +1848,20 @@ public class DatasetPage implements java.io.Serializable {
                 return permissionsWrapper.notFound();
             }
 
+            switch (selectTab){
+                case "dataFilesTab":
+                    selectedTabIndex = 0;
+                    break;
+                case "metadataMapTab":
+                    selectedTabIndex = 1;
+                    break;
+                case "termsTab":
+                    selectedTabIndex = 2;
+                    break;
+                case "versionsTab":
+                    selectedTabIndex = 3;
+                    break;
+            }
 
             //this.dataset = this.workingVersion.getDataset();
 
@@ -1991,7 +2012,7 @@ public class DatasetPage implements java.io.Serializable {
                 workingVersion = dataset.getEditVersion(selectedTemplate, null);
                 updateDatasetFieldInputLevels();
             } else {
-                workingVersion = dataset.getCreateVersion();
+                workingVersion = dataset.getCreateVersion(licenseServiceBean.getDefault());
                 updateDatasetFieldInputLevels();
             }
 
@@ -3255,6 +3276,18 @@ public class DatasetPage implements java.io.Serializable {
                 commandEngine.submit(cmd);
             }
         }
+    }
+
+    public boolean hasRestrictedFile() {
+        if (workingVersion == null) {
+            return false;
+        }
+        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+            if (fmd.isRestricted()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public int getRestrictedFileCount() {
@@ -4916,7 +4949,10 @@ public class DatasetPage implements java.io.Serializable {
            // return false;
         }
         for (FileMetadata fmd : workingVersion.getFileMetadatas()){
-            if (!this.fileDownloadHelper.canDownloadFile(fmd)){
+            //Change here so that if all restricted files have pending requests there's no Request Button
+            if ((!this.fileDownloadHelper.canDownloadFile(fmd) && (fmd.getDataFile().getFileAccessRequesters() == null
+                    || ( fmd.getDataFile().getFileAccessRequesters() != null
+                 &&   !fmd.getDataFile().getFileAccessRequesters().contains((AuthenticatedUser)session.getUser()))))){
                 return true;
             }
         }
@@ -5177,7 +5213,7 @@ public class DatasetPage implements java.io.Serializable {
     public String getPrivateUrlLink(PrivateUrl privateUrl) {
         return privateUrl.getLink();
     }
-    
+
     public boolean isAnonymizedAccess() {
         if (anonymizedAccess == null) {
             if (session.getUser() instanceof PrivateUrlUser) {
@@ -5595,16 +5631,8 @@ public class DatasetPage implements java.io.Serializable {
         return displayName;
     }
 
-    public Map<Long, JsonObject> getCVocConf() {
-        //Cache this in the view
-        if(cachedCvocMap==null) {
-        cachedCvocMap = fieldService.getCVocConf(false);
-        }
-        return cachedCvocMap;
-    }
-
     public List<String> getVocabScripts() {
-        return fieldService.getVocabScripts(getCVocConf());
+        return fieldService.getVocabScripts(settingsWrapper.getCVocConf());
     }
 
     public String getFieldLanguage(String languages) {
@@ -5819,5 +5847,35 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
         return true;
+    }
+
+    public String getIngestMessage() {
+        return BundleUtil.getStringFromBundle("file.ingestFailed.message", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), settingsWrapper.getGuidesVersion()));
+    }
+
+    public void validateTerms(FacesContext context, UIComponent component, Object value) throws ValidatorException {
+        UIComponent lic = component.findComponent("licenses");
+        SelectOneMenu som = (SelectOneMenu) lic;
+        logger.fine("license in form is " + som.getValue());
+        if (som.getValue() == null) {
+            if (StringUtils.isBlank((String) value)) {
+                FacesMessage msg = new FacesMessage(BundleUtil.getStringFromBundle("dataset.license.custom.blankterms"));
+                msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+
+                throw new ValidatorException(msg);
+            }
+        }
+    }
+
+    public boolean downloadingRestrictedFiles() {
+        if (fileMetadataForAction != null) {
+            return fileMetadataForAction.isRestricted();
+        }
+        for (FileMetadata fmd : this.selectedFiles) {
+            if (fmd.isRestricted()) {
+                return true;
+            }
+        }
+        return false;
     }
 }
