@@ -38,7 +38,7 @@
                                </ui:fragment>
                                <ui:fragment rendered="#{empty editMode and empty termsOfUseAndAccess.license}">
                                    <p>
-                                       <h:outputText value="#{DatasetUtil:getLicenseName(DatasetPage.workingVersion).concat(' ')}" escape="false"/>
+                                       <h:outputText value="#{bundle['license.custom'].concat(' ')}" escape="false"/>
                                        <h:outputText value="#{bundle['file.dataFilesTab.terms.list.license.customterms.txt']}" escape="false"/>
                                    </p>
                                </ui:fragment>
