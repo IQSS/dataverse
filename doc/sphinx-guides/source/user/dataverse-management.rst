@@ -190,7 +190,7 @@ What can you do with a guestbook? After creating a guestbook, you will notice th
 
 - If you want to use a guestbook you have created, you will first need to click the button in the Action column that says Enable. Once a guestbook has been enabled, you can go to the License + Terms for a dataset and select a guestbook for it.
 - There are also options to view, copy, edit, or delete a guestbook.
-- Once someone has downloaded a file in a dataset where a guestbook has been assigned, an option to download collected data will appear. 
+- Once someone has downloaded a file in a dataset where a guestbook has been assigned, an option to download collected data will appear. Note that it is also possible to download guestbook responses via API. See :ref:`download-guestbook-api` for details.
 
 .. _featured-dataverses:
 
