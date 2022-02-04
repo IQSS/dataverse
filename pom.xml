@@ -29,7 +29,8 @@
         <payara.version>5.2021.5</payara.version>
         <postgresql.version>42.3.1</postgresql.version>
         <aws.version>1.11.762</aws.version>
-        <slf4j.version>1.7.32</slf4j.version>
+        <slf4j.version>1.7.35</slf4j.version>
+        <reload4j.version>1.2.18.4</reload4j.version>
         <commons.io.version>2.11.0</commons.io.version>
         <commons.logging.version>1.2</commons.logging.version>
         <commons.lang3.version>3.12.0</commons.lang3.version>
@@ -223,16 +224,14 @@
                 <artifactId>slf4j-jdk14</artifactId>
                 <version>${slf4j.version}</version>
             </dependency>
-            <!-- In *theory* the log4j12 bridge should not be made convergent, as WE decide which way logs flow.
-                 Libraries should *only* rely on the api package. But sometimes... :-/ -->
             <dependency>
                 <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-log4j12</artifactId>
+                <artifactId>jcl-over-slf4j</artifactId>
                 <version>${slf4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
-                <artifactId>jcl-over-slf4j</artifactId>
+                <artifactId>jul-to-slf4j</artifactId>
                 <version>${slf4j.version}</version>
             </dependency>
             
@@ -253,7 +252,7 @@
             <artifactId>slf4j-jdk14</artifactId>
         </dependency>
         
-        <dependency>
+	<dependency>
             <groupId>org.passay</groupId>
             <artifactId>passay</artifactId>
             <version>1.6.0</version>
@@ -573,6 +572,11 @@
         <!-- is still buggy. As an experiment, I'm using -->
         <!-- a patched version I built locally. -->
         <!-- (pull requests pending - L.A. -->
+        <!-- These locally-built XOAI libraries are still a serious debt -->
+        <!-- that needs to be addressed. Adding explicit "exclusion" entries -->
+        <!-- below for the immediate purpose of getting rid of the log4j library -->
+        <!-- that was being added to the project via these dependencies. (L.A. - Jan. 2022) -->
+        <!-- (note the reload4j explicitly added below as a replacement! -->
         <dependency>
             <groupId>com.lyncode</groupId>
             <artifactId>xoai-common</artifactId>
@@ -582,11 +586,31 @@
             <groupId>com.lyncode</groupId>
             <artifactId>xoai-data-provider</artifactId>
             <version>4.1.0-header-patch</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.lyncode</groupId>
             <artifactId>xoai-service-provider</artifactId>
             <version>4.1.0-header-patch</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- reload4j is a drop-in security patch/replacement for log4j1. -->
+        <!-- it is here because the XOAI libraries above need it. -->
+        <!-- (https://reload4j.qos.ch/) -->
+        <dependency>
+            <groupId>ch.qos.reload4j</groupId>
+            <artifactId>reload4j</artifactId>
+            <version>${reload4j.version}</version>
         </dependency>
         <!-- Added for AutoService -->
         <dependency>
@@ -622,7 +646,7 @@
         <dependency>
             <groupId>org.duracloud</groupId>
             <artifactId>common</artifactId>
-            <version>4.4.6</version>
+            <version>7.1.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -637,7 +661,7 @@
         <dependency>
             <groupId>org.duracloud</groupId>
             <artifactId>storeclient</artifactId>
-            <version>4.4.6</version>
+            <version>7.1.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>

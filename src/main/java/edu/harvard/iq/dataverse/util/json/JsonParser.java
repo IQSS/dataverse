@@ -18,7 +18,6 @@ import edu.harvard.iq.dataverse.DataverseTheme;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess.License;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
@@ -27,6 +26,8 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress
 import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
+import edu.harvard.iq.dataverse.license.License;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
@@ -35,10 +36,24 @@ import org.apache.commons.validator.routines.DomainValidator;
 import java.io.StringReader;
 import java.sql.Timestamp;
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.json.*;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonString;
+import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
 
 /**
@@ -53,6 +68,7 @@ public class JsonParser {
     DatasetFieldServiceBean datasetFieldSvc;
     MetadataBlockServiceBean blockService;
     SettingsServiceBean settingsService;
+    LicenseServiceBean licenseService;
     
     /**
      * if lenient, we will accept alternate spellings for controlled vocabulary values
@@ -63,6 +79,13 @@ public class JsonParser {
         this.datasetFieldSvc = datasetFieldSvc;
         this.blockService = blockService;
         this.settingsService = settingsService;
+    }
+
+    public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService, LicenseServiceBean licenseService) {
+        this.datasetFieldSvc = datasetFieldSvc;
+        this.blockService = blockService;
+        this.settingsService = settingsService;
+        this.licenseService = licenseService;
     }
 
     public JsonParser() {
@@ -322,22 +345,27 @@ public class JsonParser {
             dsv.setUNF(obj.getString("UNF", null));
             // Terms of Use related fields
             TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-            terms.setTermsOfUse(obj.getString("termsOfUse", null));           
+            License license = parseLicense(obj.getString("license", null));
+            if (license == null) {
+                terms.setLicense(license);
+                terms.setTermsOfUse(obj.getString("termsOfUse", null));
+                terms.setConfidentialityDeclaration(obj.getString("confidentialityDeclaration", null));
+                terms.setSpecialPermissions(obj.getString("specialPermissions", null));
+                terms.setRestrictions(obj.getString("restrictions", null));
+                terms.setCitationRequirements(obj.getString("citationRequirements", null));
+                terms.setDepositorRequirements(obj.getString("depositorRequirements", null));
+                terms.setConditions(obj.getString("conditions", null));
+                terms.setDisclaimer(obj.getString("disclaimer", null));
+            } else {
+                terms.setLicense(license);
+            }
             terms.setTermsOfAccess(obj.getString("termsOfAccess", null));
-            terms.setConfidentialityDeclaration(obj.getString("confidentialityDeclaration", null));
-            terms.setSpecialPermissions(obj.getString("specialPermissions", null));
-            terms.setRestrictions(obj.getString("restrictions", null));
-            terms.setCitationRequirements(obj.getString("citationRequirements", null));
-            terms.setDepositorRequirements(obj.getString("depositorRequirements", null));
-            terms.setConditions(obj.getString("conditions", null));
-            terms.setDisclaimer(obj.getString("disclaimer", null));
             terms.setDataAccessPlace(obj.getString("dataAccessPlace", null));
             terms.setOriginalArchive(obj.getString("originalArchive", null));
             terms.setAvailabilityStatus(obj.getString("availabilityStatus", null));
             terms.setContactForAccess(obj.getString("contactForAccess", null));
             terms.setSizeOfCollection(obj.getString("sizeOfCollection", null));
             terms.setStudyCompletion(obj.getString("studyCompletion", null));
-            terms.setLicense(parseLicense(obj.getString("license", null)));
             terms.setFileAccessRequest(obj.getBoolean("fileAccessRequest", false));
             dsv.setTermsOfUseAndAccess(terms);
             
@@ -359,11 +387,18 @@ public class JsonParser {
         }
     }
     
-    private License parseLicense(String inString) {
-        if (inString != null && inString.equalsIgnoreCase("CC0")) {
-            return TermsOfUseAndAccess.License.CC0;
+    private edu.harvard.iq.dataverse.license.License parseLicense(String licenseNameOrUri) throws JsonParseException {
+        if (licenseNameOrUri == null){
+            boolean safeDefaultIfKeyNotFound = true;
+            if (settingsService.isTrueForKey(SettingsServiceBean.Key.AllowCustomTermsOfUse, safeDefaultIfKeyNotFound)){
+                return null;
+            } else {
+                return licenseService.getDefault();
+            }
         }
-        return TermsOfUseAndAccess.License.NONE;       
+        License license = licenseService.getByNameOrUri(licenseNameOrUri);
+        if (license == null) throw new JsonParseException("Invalid license: " + licenseNameOrUri);
+        return license;
     }
 
     public List<DatasetField> parseMetadataBlocks(JsonObject json) throws JsonParseException {
