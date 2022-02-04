@@ -27,7 +27,7 @@
     
         <jakartaee-api.version>8.0.0</jakartaee-api.version>
         <payara.version>5.2021.5</payara.version>
-        <postgresql.version>42.3.1</postgresql.version>
+        <postgresql.version>42.3.2</postgresql.version>
         <aws.version>1.11.762</aws.version>
         <slf4j.version>1.7.35</slf4j.version>
         <reload4j.version>1.2.18.4</reload4j.version>
