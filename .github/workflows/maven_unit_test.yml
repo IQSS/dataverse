@@ -10,16 +10,19 @@ on:
 
 jobs:
     unittest:
-        name: (JDK ${{ matrix.jdk }} / ${{ matrix.os }}) Unit Tests
+        name: (${{ matrix.status}} / JDK ${{ matrix.jdk }}) Unit Tests
         strategy:
             fail-fast: false
             matrix:
-                os: [ ubuntu-latest ]
                 jdk: [ '11' ]
-                #include:
-                #    -   os: ubuntu-latest
-                #        jdk: '16'
-        runs-on: ${{ matrix.os }}
+                experimental: [false]
+                status:  ["Stable"]
+                include:
+                    - jdk: '17'
+                      experimental: true
+                      status: "Experimental"
+        continue-on-error: ${{ matrix.experimental }}
+        runs-on: ubuntu-latest
         steps:
           - uses: actions/checkout@v2
           - name: Set up JDK ${{ matrix.jdk }}
@@ -34,7 +37,7 @@ jobs:
                 key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
                 restore-keys: ${{ runner.os }}-m2
           - name: Build with Maven
-            run: mvn -DcompilerArgument=-Xlint:unchecked -P all-unit-tests clean test
+            run: mvn -DcompilerArgument=-Xlint:unchecked -Dtarget.java.version=${{ matrix.jdk }} -P all-unit-tests clean test
           - name: Maven Code Coverage
             env:
                 CI_NAME: github
