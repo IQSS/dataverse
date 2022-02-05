@@ -958,13 +958,12 @@ public class FilePage implements java.io.Serializable {
         return FileUtil.isPubliclyDownloadable(fileMetadata);
     }
 
-<<<<<<< HEAD
     /**
      * In Dataverse 4.19 and below file preview was determined by
      * isPubliclyDownloadable. Now we always allow a PrivateUrlUser to preview
      * files.
      */
-    public boolean isPreviewAllowed() {
+/*    public boolean isPreviewAllowed() {
         if (session.getUser() instanceof PrivateUrlUser) {
             // Always allow preview for PrivateUrlUser
             return true;
@@ -978,9 +977,7 @@ public class FilePage implements java.io.Serializable {
         //Datafile is an ingestable type and hasn't been ingested yet or had an ingest fail
         return (FileUtil.canIngestAsTabular(f)&&!(f.isTabularData() || f.isIngestProblem()));
     }
-    
-=======
->>>>>>> refs/remotes/IQSS/develop
+*/
     private Boolean lockedFromEditsVar;
     private Boolean lockedFromDownloadVar; 
     private boolean stateChanged = false;
