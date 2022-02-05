@@ -35,6 +35,7 @@ show_relevance   boolean  Whether or not to show details of which fields were ma
 show_facets      boolean  Whether or not to show facets that can be operated on by the "fq" parameter. False by default. See :ref:`advanced search example <advancedsearch-example>`.
 fq               string   A filter query on the search term. Multiple "fq" parameters can be used. See :ref:`advanced search example <advancedsearch-example>`.
 show_entity_ids  boolean  Whether or not to show the database IDs of the search results (for developer use).
+metadata_fields  string	  Includes the requested fields for each dataset in the response. Multiple "metadata_fields" parameters can be used to include several fields. The value must be in the form "{metadata_block_name}:{field_name}" to include a specific field from a metadata block (see :ref:`example <dynamic-citation-some>`) or "{metadata_field_set_name}:\*" to include all the fields for a metadata block (see :ref:`example <dynamic-citation-all>`). "{field_name}" cannot be a subfield of a compound field. If "{field_name}" is a compound field, all subfields are included.
 ===============  =======  ===========
 
 Basic Search Example
@@ -150,6 +151,9 @@ https://demo.dataverse.org/api/search?q=trees
 Advanced Search Examples
 ------------------------
 
+Narrowed to Collection, Show Relevance and Facets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 https://demo.dataverse.org/api/search?q=finch&show_relevance=true&show_facets=true&fq=publicationDate:2016&subtree=birds
 
 In this example, ``show_relevance=true`` matches per field are shown. Available facets are shown with ``show_facets=true`` and of the facets is being used with ``fq=publicationDate:2016``. The search is being narrowed to the Dataverse collection with the identifier "birds" with the parameter ``subtree=birds``.
@@ -262,6 +266,9 @@ In this example, ``show_relevance=true`` matches per field are shown. Available 
         }
     }
 
+Retrieve Released Versions Only
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 https://demo.dataverse.org/api/search?q=finch&fq=publicationStatus:Published&type=dataset
 
 The above example ``fq=publicationStatus:Published`` retrieves only "RELEASED" versions of datasets. The same could be done to retrieve "DRAFT" versions, ``fq=publicationStatus:Draft``
@@ -344,6 +351,317 @@ The above example ``fq=publicationStatus:Published`` retrieves only "RELEASED" v
                 }
             ],
             "count_in_response": 2
+        }
+    }
+    
+.. _dynamic-citation-all:
+
+Include Metadata Blocks and/or Metadata Fields
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+https://demo.dataverse.org/api/search?q=\*&type=dataset&metadata_fields=citation:\*
+
+The above example ``metadata_fields=citation:*`` returns under "metadataBlocks" all fields from the "citation" metadata block.
+
+..  code-block:: json
+
+    {
+        "status": "OK",
+        "data": {
+            "q": "*",
+            "total_count": 4,
+            "start": 0,
+            "spelling_alternatives": {},
+            "items": [
+                {
+                    "name": "JDD avec GeoJson 2021-07-13T10:23:46.409Z",
+                    "type": "dataset",
+                    "url": "https://doi.org/10.5072/FK2/GIWCKB",
+                    "global_id": "doi:10.5072/FK2/GIWCKB",
+                    "description": "Démo sprint 5. Cette couche représente l'emprise des cimetières sur le territoire des Métropole. Ces périmètres d'emprise des cimetières sont issus du recensement des informations des PLU/POS de chaque commune de la métropole, des données du cadastre DGFiP et d'un inventaire terrain du Service Planification et Études Urbaines de Métropole",
+                    "publisher": "Sample Data",
+                    "citationHtml": "Rennes M&eacute;tropole, 2021, \"JDD avec GeoJson 2021-07-13T10:23:46.409Z\", <a href=\"https://doi.org/10.5072/FK2/GIWCKB\" target=\"_blank\">https://doi.org/10.5072/FK2/GIWCKB</a>, Root, DRAFT VERSION",
+                    "identifier_of_dataverse": "Sample_data",
+                    "name_of_dataverse": "Sample Data",
+                    "citation": "Métropole, 2021, \"JDD avec GeoJson 2021-07-13T10:23:46.409Z\", https://doi.org/10.5072/FK2/GIWCKB, Root, DRAFT VERSION",
+                    "storageIdentifier": "file://10.5072/FK2/GIWCKB",
+                    "subjects": [
+                        "Other"
+                    ],
+                    "fileCount": 0,
+                    "versionId": 9976,
+                    "versionState": "DRAFT",
+                    "createdAt": "2021-07-13T10:28:45Z",
+                    "updatedAt": "2021-07-13T10:28:45Z",
+                    "contacts": [
+                        {
+                            "name": "string",
+                            "affiliation": "string"
+                        }
+                    ],
+                    "metadataBlocks": {
+                        "citation": {
+                            "displayName": "Citation Metadata",
+                            "fields": [
+                                {
+                                    "typeName": "dsDescription",
+                                    "multiple": true,
+                                    "typeClass": "compound",
+                                    "value": [
+                                        {
+                                            "dsDescriptionValue": {
+                                                "typeName": "dsDescriptionValue",
+                                                "multiple": false,
+                                                "typeClass": "primitive",
+                                                "value": "Démo sprint 5. Cette couche représente l'emprise des cimetières sur le territoire des Métropole. Ces périmètres d'emprise des cimetières sont issus du recensement des informations des PLU/POS de chaque commune de la métropole, des données du cadastre DGFiP et d'un inventaire terrain du Service Planification et Études Urbaines de Métropole"
+                                            },
+                                            "dsDescriptionDate": {
+                                                "typeName": "dsDescriptionDate",
+                                                "multiple": false,
+                                                "typeClass": "primitive",
+                                                "value": "2021-07-13"
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    "typeName": "author",
+                                    "multiple": true,
+                                    "typeClass": "compound",
+                                    "value": [
+                                        {
+                                            "authorName": {
+                                                "typeName": "authorName",
+                                                "multiple": false,
+                                                "typeClass": "primitive",
+                                                "value": "Métropole"
+                                            },
+                                            "authorAffiliation": {
+                                                "typeName": "authorAffiliation",
+                                                "multiple": false,
+                                                "typeClass": "primitive",
+                                                "value": "string"
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    "typeName": "datasetContact",
+                                    "multiple": true,
+                                    "typeClass": "compound",
+                                    "value": [
+                                        {
+                                            "datasetContactName": {
+                                                "typeName": "datasetContactName",
+                                                "multiple": false,
+                                                "typeClass": "primitive",
+                                                "value": "string"
+                                            },
+                                            "datasetContactAffiliation": {
+                                                "typeName": "datasetContactAffiliation",
+                                                "multiple": false,
+                                                "typeClass": "primitive",
+                                                "value": "string"
+                                            },
+                                            "datasetContactEmail": {
+                                                "typeName": "datasetContactEmail",
+                                                "multiple": false,
+                                                "typeClass": "primitive",
+                                                "value": "contact@Sample.fr"
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    "typeName": "subject",
+                                    "multiple": true,
+                                    "typeClass": "controlledVocabulary",
+                                    "value": [
+                                        "Other"
+                                    ]
+                                },
+                                {
+                                    "typeName": "title",
+                                    "multiple": false,
+                                    "typeClass": "primitive",
+                                    "value": "JDD avec GeoJson 2021-07-13T10:23:46.409Z"
+                                }
+                            ]
+                        }
+                    },
+                    "authors": [
+                        "Métropole"
+                    ]
+                },
+                {
+                    "name": "Raja Ampat Islands",
+                    "type": "dataset",
+                    "url": "https://doi.org/10.5072/FK2/ITNXGR",
+                    "global_id": "doi:10.5072/FK2/ITNXGR",
+                    "description": "Raja Ampat is located off the northwest tip of Bird's Head Peninsula on the island of New Guinea, in Indonesia's West Papua province, Raja Ampat, or the Four Kings, is an archipelago comprising over 1,500 small islands, cays, and shoals surrounding the four main islands of Misool, Salawati, Batanta, and Waigeo, and the smaller island of Kofiau. The Raja Ampat archipelago straddles the Equator and forms part of Coral Triangle which contains the richest marine biodiversity on earth. Administratively, the archipelago is part of the province of West Papua (formerly known as Irian Jaya). Most of the islands constitute the Raja Ampat Regency, which was separated out from Sorong Regency in 2004. The regency encompasses around 70,000 square kilometres (27,000 sq mi) of land and sea, and has a population of about 50,000 (as of 2017). (Wikipedia: https://en.wikipedia.org/wiki/Raja_Ampat_Islands)",
+                    "published_at": "2020-07-30T09:23:34Z",
+                    "publisher": "Root",
+                    "citationHtml": "Admin, Dataverse, 2020, \"Raja Ampat Islands\", <a href=\"https://doi.org/10.5072/FK2/ITNXGR\" target=\"_blank\">https://doi.org/10.5072/FK2/ITNXGR</a>, Root, V1",
+                    "identifier_of_dataverse": "root",
+                    "name_of_dataverse": "Root",
+                    "citation": "Admin, Dataverse, 2020, \"Raja Ampat Islands\", https://doi.org/10.5072/FK2/ITNXGR, Root, V1",
+                    "authors": [
+                        "Admin, Dataverse"
+                    ]
+                },
+                {
+                    "name": "Sample Test",
+                    "type": "dataverse",
+                    "url": "https://68b2d8bb37c6/dataverse/Sample_test",
+                    "identifier": "Sample_test",
+                    "description": "Dataverse utilisé pour les tests unitaires de Sample",
+                    "published_at": "2021-03-16T08:11:54Z"
+                },
+                {
+                    "name": "Sample Media Test",
+                    "type": "dataverse",
+                    "url": "https://68b2d8bb37c6/dataverse/Sample_media_test",
+                    "identifier": "Sample_media_test",
+                    "description": "Dataverse de test contenant les médias de Sample, comme les images des fournisseurs et des producteurs",
+                    "published_at": "2021-04-08T15:04:14Z"
+                }
+            ],
+            "count_in_response": 4
+        }
+    }
+
+.. _dynamic-citation-some:
+
+Include Specific Fields Only
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+https://demo.dataverse.org/api/search?q=*&type=dataset&metadata_fields=citation:dsDescription&metadata_fields=citation:author
+
+The above example ``metadata_fields=citation:dsDescription&metadata_fields=citation:author`` returns under "metadataBlocks" only the compound fields "dsDescription" and "author" metadata fields from the "citation" metadata block.
+
+.. code-block:: json
+
+    {
+        "status": "OK",
+        "data": {
+            "q": "*",
+            "total_count": 4,
+            "start": 0,
+            "spelling_alternatives": {},
+            "items": [
+                {
+                    "name": "JDD avec GeoJson 2021-07-13T10:23:46.409Z",
+                    "type": "dataset",
+                    "url": "https://doi.org/10.5072/FK2/GIWCKB",
+                    "global_id": "doi:10.5072/FK2/GIWCKB",
+                    "description": "Démo sprint 5. Cette couche représente l'emprise des cimetières sur le territoire des Métropole. Ces périmètres d'emprise des cimetières sont issus du recensement des informations des PLU/POS de chaque commune de la métropole, des données du cadastre DGFiP et d'un inventaire terrain du Service Planification et Études Urbaines de Métropole",
+                    "publisher": "Sample Data",
+                    "citationHtml": "Rennes M&eacute;tropole, 2021, \"JDD avec GeoJson 2021-07-13T10:23:46.409Z\", <a href=\"https://doi.org/10.5072/FK2/GIWCKB\" target=\"_blank\">https://doi.org/10.5072/FK2/GIWCKB</a>, Root, DRAFT VERSION",
+                    "identifier_of_dataverse": "Sample_data",
+                    "name_of_dataverse": "Sample Data",
+                    "citation": "Métropole, 2021, \"JDD avec GeoJson 2021-07-13T10:23:46.409Z\", https://doi.org/10.5072/FK2/GIWCKB, Root, DRAFT VERSION",
+                    "storageIdentifier": "file://10.5072/FK2/GIWCKB",
+                    "subjects": [
+                        "Other"
+                    ],
+                    "fileCount": 0,
+                    "versionId": 9976,
+                    "versionState": "DRAFT",
+                    "createdAt": "2021-07-13T10:28:45Z",
+                    "updatedAt": "2021-07-13T10:28:45Z",
+                    "contacts": [
+                        {
+                            "name": "string",
+                            "affiliation": "string"
+                        }
+                    ],
+                    "metadataBlocks": {
+                        "citation": {
+                            "displayName": "Citation Metadata",
+                            "fields": [
+                                {
+                                    "typeName": "dsDescription",
+                                    "multiple": true,
+                                    "typeClass": "compound",
+                                    "value": [
+                                        {
+                                            "dsDescriptionValue": {
+                                                "typeName": "dsDescriptionValue",
+                                                "multiple": false,
+                                                "typeClass": "primitive",
+                                                "value": "Démo sprint 5. Cette couche représente l'emprise des cimetières sur le territoire des Métropole. Ces périmètres d'emprise des cimetières sont issus du recensement des informations des PLU/POS de chaque commune de la métropole, des données du cadastre DGFiP et d'un inventaire terrain du Service Planification et Études Urbaines de Métropole"
+                                            },
+                                            "dsDescriptionDate": {
+                                                "typeName": "dsDescriptionDate",
+                                                "multiple": false,
+                                                "typeClass": "primitive",
+                                                "value": "2021-07-13"
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    "typeName": "author",
+                                    "multiple": true,
+                                    "typeClass": "compound",
+                                    "value": [
+                                        {
+                                            "authorName": {
+                                                "typeName": "authorName",
+                                                "multiple": false,
+                                                "typeClass": "primitive",
+                                                "value": "Métropole"
+                                            },
+                                            "authorAffiliation": {
+                                                "typeName": "authorAffiliation",
+                                                "multiple": false,
+                                                "typeClass": "primitive",
+                                                "value": "string"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "authors": [
+                        "Métropole"
+                    ]
+                },
+                {
+                    "name": "Raja Ampat Islands",
+                    "type": "dataset",
+                    "url": "https://doi.org/10.5072/FK2/ITNXGR",
+                    "global_id": "doi:10.5072/FK2/ITNXGR",
+                    "description": "Raja Ampat is located off the northwest tip of Bird's Head Peninsula on the island of New Guinea, in Indonesia's West Papua province, Raja Ampat, or the Four Kings, is an archipelago comprising over 1,500 small islands, cays, and shoals surrounding the four main islands of Misool, Salawati, Batanta, and Waigeo, and the smaller island of Kofiau. The Raja Ampat archipelago straddles the Equator and forms part of Coral Triangle which contains the richest marine biodiversity on earth. Administratively, the archipelago is part of the province of West Papua (formerly known as Irian Jaya). Most of the islands constitute the Raja Ampat Regency, which was separated out from Sorong Regency in 2004. The regency encompasses around 70,000 square kilometres (27,000 sq mi) of land and sea, and has a population of about 50,000 (as of 2017). (Wikipedia: https://en.wikipedia.org/wiki/Raja_Ampat_Islands)",
+                    "published_at": "2020-07-30T09:23:34Z",
+                    "publisher": "Root",
+                    "citationHtml": "Admin, Dataverse, 2020, \"Raja Ampat Islands\", <a href=\"https://doi.org/10.5072/FK2/ITNXGR\" target=\"_blank\">https://doi.org/10.5072/FK2/ITNXGR</a>, Root, V1",
+                    "identifier_of_dataverse": "root",
+                    "name_of_dataverse": "Root",
+                    "citation": "Admin, Dataverse, 2020, \"Raja Ampat Islands\", https://doi.org/10.5072/FK2/ITNXGR, Root, V1",
+                    "authors": [
+                        "Admin, Dataverse"
+                    ]
+                },
+                {
+                    "name": "Sample Media Test",
+                    "type": "dataverse",
+                    "url": "https://68b2d8bb37c6/dataverse/Sample_media_test",
+                    "identifier": "Sample_media_test",
+                    "description": "Dataverse de test contenant les médias de Sample, comme les images des fournisseurs et des producteurs",
+                    "published_at": "2021-04-08T15:04:14Z"
+                },
+                {
+                    "name": "Sample Test",
+                    "type": "dataverse",
+                    "url": "https://68b2d8bb37c6/dataverse/Sample_test",
+                    "identifier": "Sample_test",
+                    "description": "Dataverse utilisé pour les tests unitaires de Sample",
+                    "published_at": "2021-03-16T08:11:54Z"
+                }
+            ],
+            "count_in_response": 4
         }
     }
 

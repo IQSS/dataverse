@@ -31,7 +31,9 @@ import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.search.FileView;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -146,8 +148,10 @@ public class EditDatafilesPage implements java.io.Serializable {
     @Inject ProvPopupFragmentBean provPopupFragmentBean;
     @Inject
     SettingsWrapper settingsWrapper;
+    @Inject
+    LicenseServiceBean licenseServiceBean;
     private final DateFormat displayDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
-
+    
     private Dataset dataset = new Dataset();
     
     private FileReplacePageHelper fileReplacePageHelper;
@@ -186,6 +190,9 @@ public class EditDatafilesPage implements java.io.Serializable {
     private final Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
 
     private Long maxFileUploadSizeInBytes = null;
+    private Long maxIngestSizeInBytes = null;
+    // CSV: 4.8 MB, DTA: 976.6 KB, XLSX: 5.7 MB, etc.
+    private String humanPerFormatTabularLimits = null;
     private Integer multipleUploadFilesLimit = null; 
     
     //MutableBoolean so it can be passed from DatasetPage, supporting DatasetPage.cancelCreate()
@@ -340,7 +347,35 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         return this.maxFileUploadSizeInBytes == null;
     }
-    
+
+    public Long getMaxIngestSizeInBytes() {
+        return maxIngestSizeInBytes;
+    }
+
+    public String getHumanMaxIngestSizeInBytes() {
+        return FileSizeChecker.bytesToHumanReadable(this.maxIngestSizeInBytes);
+    }
+
+    public String getHumanPerFormatTabularLimits() {
+        return humanPerFormatTabularLimits;
+    }
+
+    public String populateHumanPerFormatTabularLimits() {
+        String keyPrefix = ":TabularIngestSizeLimit:";
+        List<String> formatLimits = new ArrayList<>();
+        for (Setting setting : settingsService.listAll()) {
+            String name = setting.getName();
+            if (!name.startsWith(keyPrefix)) {
+                continue;
+            }
+            String tabularName = setting.getName().substring(keyPrefix.length());
+            String bytes = setting.getContent();
+            String humanReadableSize = FileSizeChecker.bytesToHumanReadable(Long.valueOf(bytes));
+            formatLimits.add(tabularName + ": " + humanReadableSize);
+        }
+        return String.join(", ", formatLimits);
+    }
+
     /*
         The number of files the GUI user is allowed to upload in one batch, 
         via drag-and-drop, or through the file select dialog. Now configurable 
@@ -492,6 +527,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         selectedFiles = selectedFileMetadatasList;
         
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
+        this.maxIngestSizeInBytes = systemConfig.getTabularIngestSizeLimit();
+        this.humanPerFormatTabularLimits = populateHumanPerFormatTabularLimits();
         this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
         
         logger.fine("done");
@@ -540,8 +577,10 @@ public class EditDatafilesPage implements java.io.Serializable {
             return permissionsWrapper.notAuthorized();
         }
         
-        clone = workingVersion.cloneDatasetVersion();   
+        clone = workingVersion.cloneDatasetVersion();
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
+        this.maxIngestSizeInBytes = systemConfig.getTabularIngestSizeLimit();
+        this.humanPerFormatTabularLimits = populateHumanPerFormatTabularLimits();
         this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();        
 
         // -------------------------------------------
@@ -563,7 +602,8 @@ public class EditDatafilesPage implements java.io.Serializable {
                                                 datafileService,
                                                 permissionService,
                                                 commandEngine,
-                                                systemConfig);
+                                                systemConfig,
+                                                licenseServiceBean);
                         
             fileReplacePageHelper = new FileReplacePageHelper(addReplaceFileHelper,
                                                 dataset, 
@@ -626,15 +666,6 @@ public class EditDatafilesPage implements java.io.Serializable {
             setUpRsync();
         }
 
-        if (mode == FileEditMode.UPLOAD) {
-            if (settingsWrapper.getUploadMethodsCount() == 1){
-                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.uploadFiles.label"), BundleUtil.getStringFromBundle("dataset.message.uploadFilesSingle.message", Arrays.asList(settingsWrapper.getValueForKey(SettingsServiceBean.Key.QDRDrupalSiteURL))));
-            } else if (settingsWrapper.getUploadMethodsCount() > 1) {
-                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.uploadFiles.label"), BundleUtil.getStringFromBundle("dataset.message.uploadFilesMultiple.message", Arrays.asList(systemConfig.getGuidesBaseUrl(), systemConfig.getGuidesVersion())));
-            }
-            
-        }
-        
         if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)){
             JH.addMessage(FacesMessage.SEVERITY_WARN, getBundleString("dataset.message.publicInstall"));
         }   
@@ -696,6 +727,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         this.versionString = versionString;
     }
     
+    /*
     List<FileMetadata> previouslyRestrictedFiles = null;
     
     public boolean isShowAccessPopup() {
@@ -731,6 +763,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     public void setShowAccessPopup(boolean showAccessPopup) {} // dummy set method
      
+     */
     //This function was reverted to its pre-commands state as the current command
     //requires editDataset privileges. If a non-admin user with only createDataset privileges
     //attempts to restrict a datafile before the dataset is created, the operation

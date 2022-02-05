@@ -958,6 +958,7 @@ public class FilePage implements java.io.Serializable {
         return FileUtil.isPubliclyDownloadable(fileMetadata);
     }
 
+<<<<<<< HEAD
     /**
      * In Dataverse 4.19 and below file preview was determined by
      * isPubliclyDownloadable. Now we always allow a PrivateUrlUser to preview
@@ -978,6 +979,8 @@ public class FilePage implements java.io.Serializable {
         return (FileUtil.canIngestAsTabular(f)&&!(f.isTabularData() || f.isIngestProblem()));
     }
     
+=======
+>>>>>>> refs/remotes/IQSS/develop
     private Boolean lockedFromEditsVar;
     private Boolean lockedFromDownloadVar; 
     private boolean stateChanged = false;
@@ -1165,14 +1168,8 @@ public class FilePage implements java.io.Serializable {
     public String preview(ExternalTool externalTool) {
         ApiToken apiToken = null;
         User user = session.getUser();
-        if (user instanceof AuthenticatedUser) {
-            apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
-        } else if (user instanceof PrivateUrlUser) {
-            PrivateUrlUser privateUrlUser = (PrivateUrlUser) user;
-            PrivateUrl privateUrl = privateUrlService.getPrivateUrlFromDatasetId(privateUrlUser.getDatasetId());
-            privateUrl.getToken();
-            apiToken = new ApiToken();
-            apiToken.setTokenString(privateUrl.getToken());
+        if (fileMetadata.getDatasetVersion().isDraft() || (fileMetadata.getDataFile().isRestricted()) || (FileUtil.isActivelyEmbargoed(fileMetadata))) {
+            apiToken=fileDownloadService.getApiToken(user);
         }
         if(externalTool == null){
             return "";
@@ -1360,4 +1357,9 @@ public class FilePage implements java.io.Serializable {
             return BundleUtil.getStringFromBundle("embargoed.willbeuntil");
         }
     }
+
+    public String getIngestMessage() {
+        return BundleUtil.getStringFromBundle("file.ingestFailed.message", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), settingsWrapper.getGuidesVersion()));
+    }
+
 }

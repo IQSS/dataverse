@@ -579,6 +579,8 @@ public class MailServiceBean implements java.io.Serializable {
                         systemConfig.getDataverseSiteUrl(),
                         dataset.getGlobalIdString(),
                         dataset.getDisplayName(),
+                        systemConfig.getGuidesBaseUrl(),
+                        systemConfig.getGuidesVersion(),
                         comment
                 ));
 
@@ -590,6 +592,8 @@ public class MailServiceBean implements java.io.Serializable {
                         systemConfig.getDataverseSiteUrl(),
                         dataset.getGlobalIdString(),
                         dataset.getDisplayName(),
+                        systemConfig.getGuidesBaseUrl(),
+                        systemConfig.getGuidesVersion(),
                         comment
                 ));
 

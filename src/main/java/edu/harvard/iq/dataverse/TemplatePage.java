@@ -5,23 +5,18 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateTemplateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseTemplateCommand;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 
 /**
  *
@@ -51,6 +46,9 @@ public class TemplatePage implements java.io.Serializable {
     
     @Inject
     DataverseSession session;
+    
+    @Inject
+    LicenseServiceBean licenseServiceBean;
 
     public enum EditMode {
 
@@ -127,13 +125,9 @@ public class TemplatePage implements java.io.Serializable {
             template = templateService.find(templateId);
             template.setDataverse(dataverse);
             template.setMetadataValueBlocks();
-            
-            if (template.getTermsOfUseAndAccess() != null) {
 
-            } else {
-                TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-                terms.setTemplate(template);
-                terms.setLicense(TermsOfUseAndAccess.License.CC0);
+            if (template.getTermsOfUseAndAccess() != null) {
+                TermsOfUseAndAccess terms = template.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
                 template.setTermsOfUseAndAccess(terms);
             }
 
@@ -145,7 +139,7 @@ public class TemplatePage implements java.io.Serializable {
             template = new Template(this.dataverse);
             TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
             terms.setTemplate(template);
-            terms.setLicense(TermsOfUseAndAccess.License.CC0);
+            terms.setLicense(licenseServiceBean.getDefault());
             template.setTermsOfUseAndAccess(terms);
             updateDatasetFieldInputLevels();
         } else {

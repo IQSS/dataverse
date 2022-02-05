@@ -25,8 +25,12 @@
         <div class="ui-tabs-panels">
             <div aria-hidden="false" role="tabpanel" class="ui-tabs-panel ui-widget-content ui-corner-bottom" id="datasetForm:tabView:dataFilesTab">
                 <!-- Create dataset workflow info msg + user guide link -->
-                <ui:fragment rendered="#{createDataset}">
+                <ui:fragment>
                     <p class="help-block">
+                        <h:outputFormat value="#{bundle['dataset.message.uploadFilesSingle.message']}" escape="false"
+                                        rendered="#{settingsWrapper.uploadMethodsCount == 1}">
+                            <f:param value="#{settingsWrapper.get(':QDRDrupalSiteURL')}"/>
+                        </h:outputFormat>
                         <h:outputText value="#{bundle['dataset.message.uploadFilesMultiple.message']}" escape="false"
                                         rendered="#{settingsWrapper.uploadMethodsCount > 1}"/>
                     </p>
@@ -66,11 +70,25 @@
                     <p class="help-block">
                         <h:outputFormat value=" #{bundle['file.selectToAdd.tipMoreInformation']}" escape="false">
                             <f:param value="#{settingsWrapper.get(':QDRDrupalSiteURL')}"/>
-                        </h:outputFormat>                      
+                        </h:outputFormat>
+                        <h:outputFormat value=" #{bundle['file.selectToAdd.tipMaxNumFiles']}" escape="false"
+                                        rendered="#{EditDatafilesPage.maxNumberOfFiles > 0}">
+                            <f:param value="#{EditDatafilesPage.maxNumberOfFiles}"/>
+                        </h:outputFormat>
                         <h:outputFormat value=" #{bundle['file.selectToAdd.tipLimit']}" escape="false"
                                         rendered="#{!EditDatafilesPage.isUnlimitedUploadFileSize()}">
                             <f:param value="#{EditDatafilesPage.getHumanMaxFileUploadSizeInBytes()}"/>
                         </h:outputFormat>                      
+                        <h:outputFormat value=" #{bundle['file.selectToAdd.tipTabularLimit']}" escape="false"
+                                        rendered="#{EditDatafilesPage.maxIngestSizeInBytes != -1}">
+                            <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                            <f:param value="#{systemConfig.guidesVersion}"/>
+                            <f:param value="#{EditDatafilesPage.humanMaxIngestSizeInBytes}"/>
+                        </h:outputFormat>
+                        <h:outputFormat value=" #{bundle['file.selectToAdd.tipPerFileTabularLimit']}"
+                                         rendered="#{not empty EditDatafilesPage.humanPerFormatTabularLimits}">
+                            <f:param value="#{EditDatafilesPage.humanPerFormatTabularLimits}"/>
+                        </h:outputFormat>
                     </p>
                     <script>
                         //<![CDATA[
@@ -386,7 +404,7 @@
                                             #{bundle['file.fileName']}
                                         </label>
                                         <p:inputText id="fileName" value="#{fileMetadata.label}" style="width:60%; margin-bottom:.5em;" disabled="#{fileMetadata.dataFile.filePackage}"/>
-                                        <p:message for="fileName"/>
+                                        <p:message for="datasetForm:filesTable:#{rowNum}:fileName"/>
 
                                         <label class="control-label" jsf:for="fileDirectoryName" style="margin-right:1em;margin-bottom:.5em;">
                                             #{bundle['file.metadataTab.fileMetadata.hierarchy.label']}    
@@ -395,7 +413,7 @@
                                         </label>
                                         <p:inputText id="fileDirectoryName" value="#{fileMetadata.directoryLabel}"                                            
                                                      style="width:60%; margin-bottom:.5em;" disabled="#{fileMetadata.dataFile.filePackage}" widgetVar="fileDirectoryName"/>                        
-                                        <p:message for="fileDirectoryName"/>
+                                        <p:message for="datasetForm:filesTable:#{rowNum}:fileDirectoryName"/>
 
                                         <div class="text-muted small">
                                             <!-- TYPE + SIZE + DATE + CHECKSUM -->

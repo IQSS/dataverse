@@ -1166,7 +1166,7 @@ The fully expanded example above (without environment variables) looks like this
 .. _assign-role-on-a-dataset-api:
 
 Assign a New Role on a Dataset
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Assigns a new role, based on the POSTed JSON:
 
@@ -1194,7 +1194,7 @@ POSTed JSON example (the content of ``role.json`` file)::
 .. _revoke-role-on-a-dataset-api:
 
 Delete Role Assignment from a Dataset
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Delete the assignment whose id is ``$id``:
 
@@ -1400,7 +1400,7 @@ In practice, you only need one the ``dataset_id`` or the ``persistentId``. The e
     print r.status_code
     
 Report the data (file) size of a Dataset
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Shows the combined size in bytes of all the files uploaded into the dataset ``id``.
 
@@ -2511,7 +2511,7 @@ In order to obtain a new token use::
 	curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/users/token/recreate
 
 Delete a Token
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~
 
 In order to delete a token use::
 
@@ -2828,7 +2828,7 @@ Shows all Harvesting Sets defined in the installation::
 
   GET http://$SERVER/api/harvest/server/oaisets/
 
-List A Specific Harvesting Set 
+List A Specific Harvesting Set
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Shows a Harvesting Set with a defined specname::
@@ -3153,7 +3153,7 @@ Deletes an authentication provider from the system. The command succeeds even if
   DELETE http://$SERVER/api/admin/authenticationProviders/$id/
 
 List Global Roles
-~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 List all global roles in the system. ::
 
@@ -3717,3 +3717,49 @@ Recursively applies the role assignments of the specified Dataverse collection, 
   GET http://$SERVER/api/admin/dataverse/{dataverse alias}/addRoleAssignmentsToChildren
   
 Note: setting ``:InheritParentRoleAssignments`` will automatically trigger inheritance of the parent Dataverse collection's role assignments for a newly created Dataverse collection. Hence this API call is intended as a way to update existing child Dataverse collections or to update children after a change in role assignments has been made on a parent Dataverse collection.
+
+.. _license-management-api:
+
+Manage Available Standard License Terms
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+View the list of standard license terms that can be selected for a dataset:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  curl $SERVER_URL/api/licenses
+
+View the details of the standard license with the database ID specified in ``$ID``:
+
+.. code-block:: bash
+
+  export ID=1
+  curl $SERVER_URL/api/licenses/$ID
+
+
+Superusers can add a new license by posting a JSON file adapted from this example :download:`add-license.json <../_static/api/add-license.json>`. The ``name`` and ``uri`` of the new license must be unique. :
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  curl -X POST -H 'Content-Type: application/json' -H X-Dataverse-key:$API_TOKEN --data-binary @add-license.json $SERVER_URL/api/licenses
+
+Superusers can change whether an existing license is active (usable for new dataset versions) or inactive (only allowed on already-published versions) specified by the license ``$ID``:
+
+.. code-block:: bash
+
+  export STATE=true
+  curl -X PUT -H 'Content-Type: application/json' -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/licenses/$ID/:active/$STATE
+
+Superusers can set which license is the default specified by the license ``$ID``:
+
+.. code-block:: bash
+
+  curl -X PUT -H 'Content-Type: application/json' -H X-Dataverse-key:$API_TOKEN --data-binary @edit-license.json $SERVER_URL/api/licenses/default/$ID
+
+Superusers can delete a license that is not in useby the license ``$ID``:
+
+.. code-block:: bash
+
+  curl -X DELETE -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/licenses/$ID

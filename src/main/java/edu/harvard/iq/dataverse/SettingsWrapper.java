@@ -109,6 +109,8 @@ public class SettingsWrapper implements java.io.Serializable {
     
     private Boolean dataFilePIDSequentialDependent = null;
     
+    private Boolean customLicenseAllowed = null;
+    
     public String get(String settingKey) {
         if (settingsMap == null) {
             initSettingsMap();
@@ -541,19 +543,18 @@ public class SettingsWrapper implements java.io.Serializable {
         String mlLabel = Locale.getDefault().getDisplayLanguage();
         Dataverse parent = target.getOwner();
         boolean fromAncestor=false;
-        if(parent != null) {
-            mlLabel = parent.getEffectiveMetadataLanguage();
-            //recurse dataverse chain to root and if any have a metadata language set, fromAncestor is true
-            while(parent!=null) {
-                if(!parent.getMetadataLanguage().equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
-                    fromAncestor=true;
-                    break;
-                }
-                parent=parent.getOwner();
+        if (parent != null) {
+            fromAncestor=true;
+            String mlCode = parent.getEffectiveMetadataLanguage();
+            // If it's 'undefined', it's the global default
+            if (mlCode.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
+                //so it's not from an ancestor
+                fromAncestor=false;
+                //and we need to lookup the global default
+                mlCode = getDefaultMetadataLanguage();
             }
-        }
-        if(mlLabel.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
-            mlLabel = getBaseMetadataLanguageMap(false).get(getDefaultMetadataLanguage());
+            // Get the label for the language code found
+            mlLabel = getBaseMetadataLanguageMap(false).get(mlCode);
         }
         if(fromAncestor) {
             mlLabel = mlLabel + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
@@ -660,6 +661,13 @@ public class SettingsWrapper implements java.io.Serializable {
             return new ArrayList<String>();
         }
         return Arrays.asList(labelArray);
+    }
+
+    public boolean isCustomLicenseAllowed() {
+        if (customLicenseAllowed == null) {
+            customLicenseAllowed = systemConfig.isAllowCustomTerms();
+        }
+        return customLicenseAllowed;
     }
 }
 

@@ -4,6 +4,9 @@ import com.amazonaws.AmazonClientException;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
+import com.amazonaws.auth.AWSCredentialsProviderChain;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
@@ -59,6 +62,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
@@ -77,6 +82,7 @@ import javax.validation.constraints.NotNull;
  */
 public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
+    private static final Config config = ConfigProvider.getConfig();
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.S3AccessIO");
 
     private static HashMap<String, AmazonS3> driverClientMap = new HashMap<String,AmazonS3>();
@@ -1163,8 +1169,20 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
              * The default is "default" which should work when only one profile exists.
              */
             String s3profile = System.getProperty("dataverse.files." + driverId + ".profile","default");
-
-            s3CB.setCredentials(new ProfileCredentialsProvider(s3profile));
+            ProfileCredentialsProvider profileCredentials = new ProfileCredentialsProvider(s3profile);
+    
+            // Try to retrieve credentials via Microprofile Config API, too. For production use, you should not use env
+            // vars or system properties to provide these, but use the secrets config source provided by Payara.
+            AWSStaticCredentialsProvider staticCredentials = new AWSStaticCredentialsProvider(
+                new BasicAWSCredentials(
+                    config.getOptionalValue("dataverse.files." + driverId + ".access-key", String.class).orElse(""),
+                    config.getOptionalValue("dataverse.files." + driverId + ".secret-key", String.class).orElse("")
+                ));
+            
+            // Add both providers to chain - the first working provider will be used (so static credentials are the fallback)
+            AWSCredentialsProviderChain providerChain = new AWSCredentialsProviderChain(profileCredentials, staticCredentials);
+            s3CB.setCredentials(providerChain);
+            
             // let's build the client :-)
             AmazonS3 client =  s3CB.build();
             driverClientMap.put(driverId,  client);

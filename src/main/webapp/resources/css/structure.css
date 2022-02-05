@@ -137,6 +137,9 @@ a.tooltip-icon:hover, a.tool-tip:focus, a.tool-tip:active {text-decoration: none
 .dropdown-submenu {
     position: relative;
 }
+#manageTemplatesForm\:allTemplates .ui-datatable-tablewrapper {
+    overflow: visible;
+}
 .dropdown-submenu.pull-left {
     width: 100%;
 }
@@ -248,7 +251,12 @@ body.widget-view #dataverse-header-block {padding-top:0px;}
 /*QDR*/
 #dataverseHeader .label.status {display:block; float:left; margin-top:16px; margin-bottom: 16px; font-size:14px; font-weight:normal; white-space:normal; text-align:left; line-height:1.2;  border-left:solid 4px #0039f5;padding:1.0em;background:#E8E8ED; color:black;}
 
-
+#dataverseHeader .dataverseHeaderName .dataverseHeaderDataverseName h1 {
+    font-weight: inherit;
+    margin-top: 5px;
+    font-size: 18px;
+    margin-bottom: 10px;
+}
 /* -------- FOOTER -------- */
 #dataverseFooter {margin-top:15px;}
 #dataverseFooter .dataverseFooterLogo img {max-width:940px; max-height:120px;}
@@ -691,6 +699,8 @@ div.edit-field div.ui-message {margin:6px 0;}
 .metadata-container table.metadata th {width:25%;vertical-align:top;padding:6px 12px;}
 .metadata-container table.metadata td {padding:6px 12px;vertical-align:top;}
 
+
+
 /* STACK METADATA TABLE LABELS + VALUES FOR SM, XS */
 @media(max-width:767px){
     .metadata-container:not(#dataset-summary-metadata) table.metadata th, .metadata-container:not(#dataset-summary-metadata) table.metadata td {display:block;width:100%;}
@@ -914,8 +924,24 @@ div[id$="filesTable"] .ui-paginator .ui-paginator-pages .ui-state-active {
 /* FILES TREE */
 div[id$="filesTree"] span.ui-treenode-label span[class^='icon'] {margin-left: -2px;}
 
-/* DOWNLOAD POPUP */
+/* PUBLISH, REQUEST ACCESS, AND DOWNLOAD POPUPS */
 div.panel-body.read-terms{max-height:220px; overflow-y:scroll; width:100%; background-color:#eeeeee;}
+.terms {
+    margin-top:20px;
+}
+.terms .form-group label, .terms .form-group p {
+    padding-top:3px;
+    padding-bottom: 3px;
+}
+.terms .form-group span.col-sm-6, .terms .form-group span.col-sm-9 {
+    padding-top: 3px;
+    padding-bottom: 3px;
+    overflow-y: auto;
+    max-height: 86px;
+    border: 1px;
+    border-style: solid;
+    border-color: lightgray;
+}
 
 /* UPLOAD FILES */
 #dragdropMsg {padding:20px;font-size:1.3em;color:#666666;text-align:center;}
@@ -1323,10 +1349,6 @@ body .ui-widget button {
   font-family: inherit;
 }
 
-a {
-  color: #0039f5;
-}
-
 span.label-primary { background-color: #0039f5; }
 
 /* Pagination Icon URLs and Styles*/
@@ -1453,11 +1475,18 @@ padding-right:0px;
 .text-muted {
         color: #636363;
 }
+a {
+  color: #0039f5;
+}
+.pagination>.disabled>a {
+    color:#767676;
+}
 
 span.label-success { background-color: #388038 }
 span.label-warning { background-color: #A4660E }
 span.label-info { background-color: #20809D }
 span.label-default { background-color: #757575 }
+span.label-danger { background-color: #D3413C }
 
 .btn.btn-link {color: #3174AF;}
 .dropdown-header {color:#666;}
