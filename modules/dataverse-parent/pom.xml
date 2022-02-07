@@ -44,7 +44,12 @@
             </dependency>
             
             <!-- BASIC LIBRARIES / LOGGING / ... -->
-            
+    
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>${postgresql.version}</version>
+            </dependency>
             <dependency>
                 <groupId>commons-logging</groupId>
                 <artifactId>commons-logging</artifactId>
@@ -174,6 +179,7 @@
         <maven-dependency-plugin.version>3.2.0</maven-dependency-plugin.version>
         <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
         <maven-failsafe-plugin.version>3.0.0-M5</maven-failsafe-plugin.version>
+        <maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
     </properties>
     
     <pluginRepositories>
