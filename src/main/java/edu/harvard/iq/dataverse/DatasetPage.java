@@ -1400,6 +1400,10 @@ public class DatasetPage implements java.io.Serializable {
         this.selectedGuestbook = selectedGuestbook;
     }
 
+    public void reset() {
+        dataset.setGuestbook(null);
+    }
+
     public int getFilePaginatorPage() {
         return filePaginatorPage;
     }
