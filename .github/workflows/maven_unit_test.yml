@@ -43,3 +43,7 @@ jobs:
                 CI_NAME: github
                 COVERALLS_SECRET: ${{ secrets.GITHUB_TOKEN }}
             run: mvn -V -B jacoco:report coveralls:report -DrepoToken=${COVERALLS_SECRET} -DpullRequest=${{ github.event.number }}
+          - name: Publish Test Report
+            uses: scacap/action-surefire-report@v1
+            with:
+                check_name: JDK ${{ matrix.jdk }} Test Report
