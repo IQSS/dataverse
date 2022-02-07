@@ -516,7 +516,7 @@
                                    <p:commandButton styleClass="btn btn-default"
                                                     value="#{bundle['file.dataFilesTab.terms.list.guestbook.clearBtn']}" 
                                                     rendered="#{!empty DatasetPage.dataset.guestbook}"
-                                                    update="guestbookTable" process="@this" actionListener="#{DatasetPage.reset}"/>
+                                                    update="guestbookTable" process="@this" oncomplete="PF('guestbookTable').unselectAllRows();" actionListener="#{DatasetPage.reset}"/>
                                    <p:dataTable id="guestbookTable" styleClass="headerless-table margin-top"
                                                 value="#{DatasetPage.dataset.dataverseContext.availableGuestbooks}" var="guestbook" widgetVar="guestbookTable"
                                                 rendered="#{!empty DatasetPage.dataset.dataverseContext.availableGuestbooks}"
