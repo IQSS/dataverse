@@ -37,9 +37,9 @@ public class MailDomainGroupServiceBean {
     ConfirmEmailServiceBean confirmEmailSvc;
     @Inject
     ActionLogServiceBean actionLogSvc;
-	
+    
     MailDomainGroupProvider provider;
-    List<MailDomainGroup> simpleGroups = Collections.EMPTY_LIST;
+    List<MailDomainGroup> simpleGroups = Collections.emptyList();
     Map<MailDomainGroup, Pattern> regexGroups = new HashMap<>();
     
     @PostConstruct
@@ -78,7 +78,9 @@ public class MailDomainGroupServiceBean {
     public Set<MailDomainGroup> findAllWithDomain(AuthenticatedUser user) {
         
         // if the mail address is not verified, escape...
-        if (!confirmEmailSvc.hasVerifiedEmail(user)) { return Collections.emptySet(); }
+        if (!confirmEmailSvc.hasVerifiedEmail(user)) {
+            return Collections.emptySet();
+        }
         
         // otherwise start to bisect the mail and lookup groups.
         // NOTE: the email from the user has been validated via {@link EMailValidator} when persisted.
@@ -192,7 +194,9 @@ public class MailDomainGroupServiceBean {
      */
     static Optional<String> getDomainFromMail(String email) {
         String[] parts = email.split("@");
-        if (parts.length < 2) { return Optional.empty(); }
+        if (parts.length < 2) {
+            return Optional.empty();
+        }
         return Optional.of(parts[parts.length-1]);
     }
     
