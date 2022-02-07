@@ -12,6 +12,7 @@
     
     <modules>
         <module>../../pom.xml</module>
+        <module>../../scripts/zipdownload</module>
     </modules>
     
     <!-- Transitive dependencies, bigger library "bill of materials" (BOM) and
