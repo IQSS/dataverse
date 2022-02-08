@@ -28,7 +28,7 @@
                        rendered="#{fileDownloadHelper.session.user.authenticated}">
             <p:commandLink styleClass="btn-request #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? 'italic'  : ''}"
                         actionListener="#{fileDownloadHelper.handleCommandLinkClick(fileMetadata)}"
-                        update="@([id$=requestAccessConsolidated]), @([id$=requestPanel])"
+                        update="@([id$=requestAccessConsolidated]), @([id$=requestPanel]),  @([id$=filesTable]), @([id$=messagePanel])"
                         id="requestAccessConsolidated"
                         disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
                 #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
@@ -98,6 +98,7 @@
                          disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}" 
                          action="#{guestbookResponseService.modifyDatafile(guestbookResponse, fileMetadata)}"
                          update="@widgetVar(downloadPopup)" oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />
                 <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
                 #{fileMetadata.dataFile.friendlyType == 'Unknown' ? bundle['file.download.filetype.unknown'] : fileMetadata.dataFile.friendlyType}
             </p:commandLink>
@@ -136,6 +137,7 @@
                                action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'original' )}"
                                update="@widgetVar(downloadPopup)"
                                oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                    <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />
                     <h:outputFormat value="#{bundle['file.downloadBtn.format.original']}">
                         <f:param value="#{fileMetadata.dataFile.originalFormatLabel}"/>
                     </h:outputFormat>
@@ -153,6 +155,7 @@
                                disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}" 
                                update="@widgetVar(downloadPopup)"
                                oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                    <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />
                     #{bundle['file.downloadBtn.format.tab']}
                 </p:commandLink>
             </li>
@@ -170,6 +173,7 @@
                                    action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'RData' )}"
                                    update="@widgetVar(downloadPopup)"
                                    oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                        <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />
                         #{bundle['file.downloadBtn.format.rdata']}
                     </p:commandLink>
                 </li>

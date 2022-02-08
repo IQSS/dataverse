@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateTemplateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseTemplateCommand;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.DatasetFieldUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -46,6 +47,9 @@ public class TemplatePage implements java.io.Serializable {
     
     @Inject
     DataverseSession session;
+    
+    @Inject
+    LicenseServiceBean licenseServiceBean;
 
     public enum EditMode {
 
@@ -122,13 +126,9 @@ public class TemplatePage implements java.io.Serializable {
             template = templateService.find(templateId);
             template.setDataverse(dataverse);
             template.setMetadataValueBlocks();
-            
-            if (template.getTermsOfUseAndAccess() != null) {
 
-            } else {
-                TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-                terms.setTemplate(template);
-                terms.setLicense(TermsOfUseAndAccess.License.CC0);
+            if (template.getTermsOfUseAndAccess() != null) {
+                TermsOfUseAndAccess terms = template.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
                 template.setTermsOfUseAndAccess(terms);
             }
 
@@ -140,7 +140,7 @@ public class TemplatePage implements java.io.Serializable {
             template = new Template(this.dataverse);
             TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
             terms.setTemplate(template);
-            terms.setLicense(TermsOfUseAndAccess.License.CC0);
+            terms.setLicense(licenseServiceBean.getDefault());
             template.setTermsOfUseAndAccess(terms);
             updateDatasetFieldInputLevels();
         } else {

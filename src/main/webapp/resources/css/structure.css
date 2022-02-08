@@ -49,12 +49,12 @@ body .ui-widget {font-size: inherit;}
 #status-alert {margin-top:0; margin-bottom:0;}
 #status-alert div.alert {border:0; box-shadow:none;}
 
-#footer {position:absolute; bottom:0; width:100%; height:60px; padding-bottom:100px; color:#808080;}
-#footer.widget-view {position:fixed; left:0; bottom:0; margin:0; padding:4px 0 0 0; min-height:44px; height:auto; background:#fff;}
-#footer .poweredbylogo {text-align:right;}
-#footer .poweredbylogo span {font-size:.85em;margin-right:.3em;}
-#footer .version {vertical-align:bottom;white-space:nowrap;}
-#footer.widget-view .widgetBrandMsg {line-height:42px;}
+#dvfooter {position:absolute; bottom:0; width:100%; height:60px; padding-bottom:100px; color:#767676;}
+#dvfooter.widget-view {position:fixed; left:0; bottom:0; margin:0; padding:4px 0 0 0; min-height:44p; height:auto; background:#fff;}
+#dvfooter .poweredbylogo {text-align:right;}
+#dvfooter .poweredbylogo span {font-size:.85em;margin-right:.3em;}
+#dvfooter .version {vertical-align:bottom;white-space:nowrap;}
+#dvfooter.widget-view .widgetBrandMsg {line-height:42px;}
 
 .form-group table.noBorders tr.ui-widget-content, .form-group table.noBorders td {border:0; padding-left:0;}
 
@@ -226,7 +226,12 @@ body.widget-view #dataverse-header-block {padding-top:0px;}
 #dataverseHeader .dataverseHeaderName span.label.label-unpublished {vertical-align:text-top; line-height: normal; margin-left:1em;}
 #dataverseHeader .dataverseHeaderTagline {padding-left:2em; font-size:1.3em;}
 #dataverseHeader .dataverseHeaderLink {padding-left:2em;}
-
+#dataverseHeader .dataverseHeaderName .dataverseHeaderDataverseName h1 {
+    font-weight: inherit;
+    margin-top: 5px;
+    font-size: 18px;
+    margin-bottom: 10px;
+}
 /* -------- FOOTER -------- */
 #dataverseFooter {margin-top:15px;}
 #dataverseFooter .dataverseFooterLogo img {max-width:940px; max-height:120px;}
@@ -448,8 +453,8 @@ div.panelSearchForm .input-group {margin-right:1em;}
     margin-left: 10px;
   }
   
-  #footer .poweredbylogo {text-align:center;}
-  #footer.widget-view .poweredbylogo {text-align:right;}
+  #dvfooter .poweredbylogo {text-align:center;}
+  #dvfooter.widget-view .poweredbylogo {text-align:right;}
 }
 
 .searchTypeButton {display:block; border:1px solid #DDD; padding:4px 0; margin-bottom: .5em;}
@@ -589,7 +594,7 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 #datasetVersionBlock span.label {vertical-align:text-top; line-height:normal; margin-left: .5em;}
 #title-label-block span:first-of-type {margin-left:0 !important;}
 
-#title {font-size:36px !important;line-height:1.1;font-weight:bold;}
+#title {font-size:36px !important;line-height:1.1;font-weight:bold;margin-top:0px;margin-bottom:0px;}
 #author, #contact {display:block; margin-bottom:.5em;}
 
 /* RESPONSIVE ORDER HACK BOOTSTRAP 3 https://stackoverflow.com/a/24834574 */
@@ -635,6 +640,8 @@ div.edit-field div.ui-message {margin:6px 0;}
 .metadata-container table.metadata {border-collapse:separate;margin:0 4px;width:100%;}
 .metadata-container table.metadata th {width:25%;vertical-align:top;padding:6px 12px;}
 .metadata-container table.metadata td {padding:6px 12px;vertical-align:top;}
+
+
 
 /* STACK METADATA TABLE LABELS + VALUES FOR SM, XS */
 @media(max-width:767px){
@@ -840,8 +847,24 @@ div[id$="filesTable"] .ui-paginator .ui-paginator-pages .ui-state-active {
 /* FILES TREE */
 div[id$="filesTree"] span.ui-treenode-label span[class^='icon'] {margin-left: -2px;}
 
-/* DOWNLOAD POPUP */
+/* PUBLISH, REQUEST ACCESS, AND DOWNLOAD POPUPS */
 div.panel-body.read-terms{max-height:220px; overflow-y:scroll; width:100%; background-color:#eeeeee;}
+.terms {
+    margin-top:20px;
+}
+.terms .form-group label, .terms .form-group p {
+    padding-top:3px;
+    padding-bottom: 3px;
+}
+.terms .form-group span.col-sm-6, .terms .form-group span.col-sm-9 {
+    padding-top: 3px;
+    padding-bottom: 3px;
+    overflow-y: auto;
+    max-height: 86px;
+    border: 1px;
+    border-style: solid;
+    border-color: lightgray;
+}
 
 /* UPLOAD FILES */
 #dragdropMsg {padding:20px;font-size:1.3em;color:#808080;text-align:center;}
@@ -1074,3 +1097,21 @@ padding-right:0px;
 .embargolabel {
     font-weight: 700;
 }
+
+/*Accessibility*/
+.text-muted {
+    color: #707070;
+}
+a {
+    color:#3174AF;
+}
+.pagination>.disabled>a {
+    color:#767676;
+}
+span.label-warning { background-color: #A4660E }
+span.label-danger { background-color: #D3413C }
+span.label-default { background-color: #757575 }
+.dropdown-header { color:#757575 }
+
+.login-container h1 { font-size:30px; }
+#embargoInputs label { font-weight: normal; }
