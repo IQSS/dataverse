@@ -10,7 +10,7 @@ body {
 }
 body.widget-view {margin-bottom:44px;}
 body .ui-widget {font-size: inherit;}
-body .ui-widget .ui-widget-content:not(.ui-picklist-list, .ui-dialog, .ui-panel-content, .ui-selectcheckboxmenu-items, .ui-dialog-content, .ui-fileupload-content, .ui-progressbar, .ui-tabs, .ui-tabs-panel, .ui-datatable-data, .ui-datatable-even, .ui-datatable-odd, .ui-tree) :not(.ui-dialog-titlebar, .ui-dialog-content, .dropdown-menu, .label-default){background: none;}
+body .ui-widget .ui-widget-content:not(.ui-picklist-list, .ui-dialog, .ui-panel-content, .ui-selectcheckboxmenu-items, .ui-dialog-content, .ui-fileupload-content, .ui-progressbar, .ui-tabs, .ui-tabs-panel, .ui-datatable-data, .ui-datatable-even, .ui-datatable-odd, .ui-tree, .ui-selectonemenu-items) :not(.ui-dialog-titlebar, .ui-dialog-content, .dropdown-menu, .label-default, .ui-selectonemenu-item){background: none;}
 .ui-widget-content a {color: #0039f5;}
 .ui-datalist-item .ui-widget-content td > a { font-size: 18px !important;}
 .ui-widget-content a:hover, .ui-widget-content a:focus {color: #337ab7;}
@@ -1272,7 +1272,7 @@ div.container {
   border-top: solid 2px rgba(0, 0, 0, 0.1);
 }
 
-ul > li {
+ul > li:not(.ui-selectonemenu-item) {
   border:none !important;
   font-size: 21px;
   font-family: 'AntoniaH2Heavy';
