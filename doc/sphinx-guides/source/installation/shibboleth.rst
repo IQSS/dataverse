@@ -23,7 +23,7 @@ System Requirements
 
 Support for Shibboleth in the Dataverse Software is built on the popular `"mod_shib" Apache module, "shibd" daemon <https://shibboleth.net/products/service-provider.html>`_, and the `Embedded Discovery Service (EDS) <https://shibboleth.net/products/embedded-discovery-service.html>`_ Javascript library, all of which are distributed by the `Shibboleth Consortium <https://shibboleth.net>`_. EDS is bundled with the Dataverse Software, but ``mod_shib`` and ``shibd`` must be installed and configured per below.
 
-Only Red Hat Enterprise Linux (RHEL) and derivatives have been tested (x86_64 versions) by the Dataverse Project team. See https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPLinuxInstall for details and note that (according to that page) as of this writing Ubuntu and Debian are not offically supported by the Shibboleth project.
+Only Red Hat Enterprise Linux (RHEL) and derivatives have been tested (x86_64 versions) by the Dataverse Project team. See https://shibboleth.atlassian.net/wiki/spaces/SP3/pages/2065335547/LinuxInstall for details and note that (according to that page) as of this writing Ubuntu and Debian are not officially supported by the Shibboleth project.
 
 Install Apache
 ~~~~~~~~~~~~~~
@@ -39,28 +39,12 @@ Install Shibboleth
 
 Installing Shibboleth will give us both the ``shibd`` service and the ``mod_shib`` Apache module.
 
-Enable Shibboleth Yum Repo
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+Install Shibboleth Yum Repo
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This yum repo is recommended at https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPLinuxRPMInstall
+The Shibboleth project now provides `a web form <https://shibboleth.net/downloads/service-provider/RPMS/>`_ to generate an appropriate package repository for use with YUM/DNF.
 
-``cd /etc/yum.repos.d``
-
-Install ``wget`` if you don't have it already:
-
-``yum install wget``
-
-If you are running el8 (RHEL/derivative 8):
-
-``wget http://download.opensuse.org/repositories/security:/shibboleth/CentOS_8/security:shibboleth.repo``
-
-If you are running el7 (RHEL/CentOS 7):
-
-``wget http://download.opensuse.org/repositories/security:/shibboleth/CentOS_7/security:shibboleth.repo``
-
-If you are running el6 (RHEL/CentOS 6):
-
-``wget http://download.opensuse.org/repositories/security:/shibboleth/CentOS_CentOS-6/security:shibboleth.repo``
+You'll want to copy-paste the form results into ``/etc/yum.repos.d/shibboleth.repo`` or wherever is most appropriate for your operating system.
 
 Install Shibboleth Via Yum
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -214,7 +198,7 @@ SELinux is set to "enforcing" by default on RHEL/CentOS, but unfortunately Shibb
 Disable SELinux
 ~~~~~~~~~~~~~~~
 
-The first and easiest option is to set ``SELINUX=permisive`` in ``/etc/selinux/config`` and run ``setenforce permissive`` or otherwise disable SELinux to get Shibboleth to work. This is apparently what the Shibboleth project expects because their `wiki page <https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPSELinux>`_ says, "At the present time, we do not support the SP in conjunction with SELinux, and at minimum we know that communication between the mod_shib and shibd components will fail if it's enabled. Other problems may also occur."
+The first and easiest option is to set ``SELINUX=permisive`` in ``/etc/selinux/config`` and run ``setenforce permissive`` or otherwise disable SELinux to get Shibboleth to work. This is apparently what the Shibboleth project expects because their `wiki page <https://shibboleth.atlassian.net/wiki/spaces/SP3/pages/2065335559/SELinux>`_ says, "At the present time, we do not support the SP in conjunction with SELinux, and at minimum we know that communication between the mod_shib and shibd components will fail if it's enabled. Other problems may also occur."
 
 Reconfigure SELinux to Accommodate Shibboleth
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
