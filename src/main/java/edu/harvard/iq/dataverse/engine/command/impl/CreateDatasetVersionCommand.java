@@ -10,6 +10,8 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.util.DatasetFieldUtil;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -76,7 +78,7 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
         //throwing constraint violations because they
         //had been stripped from the dataset fields prior to validation 
         validateOrDie(newVersion, false);
-        tidyUpFields(newVersion);
+        DatasetFieldUtil.tidyUpFields(newVersion.getDatasetFields(), true);
         
         final List<DatasetVersion> currentVersions = dataset.getVersions();
         ArrayList<DatasetVersion> dsvs = new ArrayList<>(currentVersions.size());
