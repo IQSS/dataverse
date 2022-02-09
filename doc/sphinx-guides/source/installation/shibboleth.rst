@@ -42,7 +42,7 @@ Installing Shibboleth will give us both the ``shibd`` service and the ``mod_shib
 Install Shibboleth Yum Repo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The Shibboleth Project now provides `a web form <https://shibboleth.net/downloads/service-provider/RPMS/>` to generate an appropriate package repository for use with YUM/DNF.
+The Shibboleth project now provides `a web form <https://shibboleth.net/downloads/service-provider/RPMS/>`_ to generate an appropriate package repository for use with YUM/DNF.
 
 Install Shibboleth Via Yum
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
