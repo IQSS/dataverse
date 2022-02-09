@@ -3225,12 +3225,12 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                     assignees.get(ra.getRole().getAlias()).add(ra.getAssigneeIdentifier());
                 }
             }
-            String name = "\"" + dataset.getCurrentName().replace("\"", "\"\"") + "\"";
+            String name = dataset.getCurrentName().replace("\"", "\"\"");
             String status = dataset.getLatestVersion().getExternalStatusLabel();
             String url = systemConfig.getDataverseSiteUrl() + dataset.getTargetUrl() + dataset.getGlobalId().asString();
             String date = new SimpleDateFormat("yyyy-MM-dd").format(dataset.getCreateDate());
             String modDate = new SimpleDateFormat("yyyy-MM-dd").format(dataset.getModificationTime());
-            String hyperlink = "\"=HYPERLINK(\"\"" + url + "\"\",\"\"" + name + "\"\")\"";
+            String hyperlink = "\"=HYPERLINK(\"\"" + url + "\"\",\"" + name + "\")";
             List<String> sList = new ArrayList<String>();
             assignees.entrySet().forEach(e -> sList.add(e.getValue().size() == 0 ? "" : String.join(";", e.getValue())));
             csvSB.append("\n").append(String.join(",", hyperlink, date, modDate, status == null ? "" : status, String.join(",", sList)));
