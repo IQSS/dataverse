@@ -38,7 +38,7 @@
                                </ui:fragment>
                                <ui:fragment rendered="#{empty editMode and empty termsOfUseAndAccess.license}">
                                    <p>
-                                       <h:outputText value="#{DatasetUtil:getLicenseName(DatasetPage.workingVersion).concat(' ')}" escape="false"/>
+                                       <h:outputText value="#{bundle['license.custom'].concat(' ')}" escape="false"/>
                                        <h:outputText value="#{bundle['file.dataFilesTab.terms.list.license.customterms.txt']}" escape="false"/>
                                    </p>
                                </ui:fragment>
@@ -506,33 +506,33 @@
                                     </p>
                                 </ui:fragment>
 
-                                <ui:fragment rendered="#{!empty DatasetPage.dataset.dataverseContext.availableGuestbooks}">
-                                    <p:commandButton styleClass="btn btn-default"
-                                                     value="#{bundle['file.dataFilesTab.terms.list.guestbook.clearBtn']}" 
-                                                     rendered="#{!empty DatasetPage.dataset.guestbook}"
-                                                     update="guestbookTable" process="@this" actionListener="#{DatasetPage.reset}"/>
-                                    <p:dataTable id="guestbookTable" styleClass="headerless-table margin-top"
-                                                 value="#{DatasetPage.dataset.dataverseContext.availableGuestbooks}" var="guestbook" widgetVar="guestbookTable"
-                                                 rendered="#{!empty DatasetPage.dataset.dataverseContext.availableGuestbooks}"
-                                                 rowIndexVar="rowNum" selection="#{DatasetPage.dataset.guestbook}" rowKey="#{guestbook}">
-                                        <p:column selectionMode="single" class="col-select-width text-center"/>
-                                        <p:column>
-                                            <p class="form-control-static pull-left">
-                                                <h:outputText value="#{guestbook.name}"/>
-                                            </p>
-                                            <p:commandButton styleClass="btn btn-default pull-right"
-                                                             value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
-                                                             action="#{DatasetPage.viewSelectedGuestbook(guestbook)}"
-                                                             update=":datasetForm" oncomplete="PF('viewGuestbook').show();bind_bsui_components();"/>
-                                        </p:column>
-                                    </p:dataTable>
-                                </ui:fragment>
-                            </ui:fragment>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div> 
+                               <ui:fragment rendered="#{!empty DatasetPage.dataset.dataverseContext.availableGuestbooks}">
+                                   <p:commandButton styleClass="btn btn-default"
+                                                    value="#{bundle['file.dataFilesTab.terms.list.guestbook.clearBtn']}" 
+                                                    rendered="#{!empty DatasetPage.dataset.guestbook}"
+                                                    update="guestbookTable" process="@this" oncomplete="PF('guestbookTable').unselectAllRows();" actionListener="#{DatasetPage.reset}"/>
+                                   <p:dataTable id="guestbookTable" styleClass="headerless-table margin-top"
+                                                value="#{DatasetPage.dataset.dataverseContext.availableGuestbooks}" var="guestbook" widgetVar="guestbookTable"
+                                                rendered="#{!empty DatasetPage.dataset.dataverseContext.availableGuestbooks}"
+                                                rowIndexVar="rowNum" selection="#{DatasetPage.dataset.guestbook}" rowKey="#{guestbook}">
+                                       <p:column selectionMode="single" class="col-select-width text-center"/>
+                                       <p:column>
+                                           <p class="form-control-static pull-left">
+                                               <h:outputText value="#{guestbook.name}"/>
+                                           </p>
+                                           <p:commandButton styleClass="btn btn-default pull-right"
+                                                          value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
+                                                          action="#{DatasetPage.viewSelectedGuestbook(guestbook)}"
+                                                          update=":datasetForm" oncomplete="PF('viewGuestbook').show();bind_bsui_components();"/>
+                                       </p:column>
+                                   </p:dataTable>
+                               </ui:fragment>
+                           </ui:fragment>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div> 
     </div>
     <!-- / TERMS -->
 
