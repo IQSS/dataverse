@@ -634,7 +634,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
                 <configuration>
                     <release>${target.java.version}</release>
                     <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
@@ -644,7 +643,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>${maven-jar-plugin.version}</version>
                 <configuration>
                     <archive>
                         <manifest>
@@ -657,7 +655,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>${maven-war-plugin.version}</version>
                 <configuration>
                     <attachClasses>true</attachClasses>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
@@ -668,11 +665,6 @@
                         </manifest>
                     </archive>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>${maven-dependency-plugin.version}</version>
             </plugin>
             <plugin>
                 <groupId>de.qaware.maven</groupId>
@@ -720,10 +712,10 @@
                 </dependencies>
             </plugin>
             <plugin>
-                <!-- https://stackoverflow.com/questions/46177921/how-to-run-unit-tests-in-excludedgroups-in-maven -->
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>${maven-surefire-plugin.version}</version>
                 <configuration>
+                    <!-- https://stackoverflow.com/questions/46177921/how-to-run-unit-tests-in-excludedgroups-in-maven -->
                     <!-- testsToExclude come from the profile-->
                     <excludedGroups>${testsToExclude}</excludedGroups>
                     <skip>${skipUnitTests}</skip>
@@ -732,19 +724,11 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>3.1.2</version>
                 <configuration>
                     <configLocation>checkstyle.xml</configLocation>
                     <encoding>UTF-8</encoding>
                     <consoleOutput>true</consoleOutput>
                 </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>com.puppycrawl.tools</groupId>
-                        <artifactId>checkstyle</artifactId>
-                        <version>8.42</version>
-                    </dependency>
-                </dependencies>
             </plugin>
         </plugins>
     </build>
