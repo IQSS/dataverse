@@ -155,6 +155,7 @@ public class IngestServiceBean {
     // DataFileCategory objects, if any were already assigned to the files).
     // It must be called before we attempt to permanently save the files in
     // the database by calling the Save command on the dataset and/or version.
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public List<DataFile> saveAndAddFilesToDataset(DatasetVersion version, List<DataFile> newFiles) {
         List<DataFile> result = new ArrayList<>();
 
@@ -171,7 +172,6 @@ public class IngestServiceBean {
         Dataset dataset = version.getDataset();
 
         for (DataFile dataFile : newFiles) {
-
             Path tempLocationPath = Paths.get(FileUtil.getFilesTempDirectory() + "/" + dataFile.getStorageIdentifier());
 
             boolean unattached = false;

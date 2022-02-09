@@ -8,7 +8,6 @@ import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.annotations.PermissionNeeded;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
-import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.engine.command.exception.NotAuthenticatedException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetGuestbookCommand;
@@ -31,6 +30,8 @@ import edu.harvard.iq.dataverse.search.index.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import java.io.InputStream;
 import java.time.Clock;
@@ -98,6 +99,7 @@ public class DatasetService {
         return dataset;
     }
 
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public AddFilesResult addFilesToDataset(long datasetId, List<DataFile> newFiles) {
 
         Dataset dataset = datasetDao.find(datasetId);
