@@ -136,7 +136,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
             return permissionsWrapper.notFound();
         }
 
-        if (!permissionService.on(dataset).has(Permission.ManageDatasetPermissions)) {
+        if (!permissionService.on(dataset).has(Permission.ManageFilePermissions)) {
             return permissionsWrapper.notAuthorized();
         }
         initMaps();

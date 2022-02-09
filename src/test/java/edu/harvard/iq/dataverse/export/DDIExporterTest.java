@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.branding.BrandingUtilTest;
 import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -39,6 +40,7 @@ public class DDIExporterTest {
 
     private static final Logger logger = Logger.getLogger(DDIExporterTest.class.getCanonicalName());
     private static final SettingsServiceBean settingsService = Mockito.mock(SettingsServiceBean.class);
+    private static final LicenseServiceBean licenseService = Mockito.mock(LicenseServiceBean.class);
     private static final MockDatasetFieldSvc datasetFieldTypeSvc = new MockDatasetFieldSvc();
     private static final Gson gson = new Gson();
     
@@ -84,7 +86,7 @@ public class DDIExporterTest {
 
         JsonReader jsonReader = Json.createReader(new StringReader(datasetVersionAsJson));
         JsonObject json = jsonReader.readObject();
-        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, null);
+        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService);
         DatasetVersion version = jsonParser.parseDatasetVersion(json.getJsonObject("datasetVersion"));
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         DDIExporter instance = new DDIExporter();
@@ -102,8 +104,7 @@ public class DDIExporterTest {
 
         JsonReader jsonReader = Json.createReader(new StringReader(datasetVersionAsJson));
         JsonObject json = jsonReader.readObject();
-//        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsSvc);
-        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, null);
+        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService);
         DatasetVersion version = jsonParser.parseDatasetVersion(json.getJsonObject("datasetVersion"));
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         DDIExporter instance = new DDIExporter();
