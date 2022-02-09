@@ -3280,15 +3280,17 @@ public class DatasetPage implements java.io.Serializable {
 
     public String restrictFiles(boolean restricted) throws CommandException {
         List filesToRestrict = new ArrayList();
-
         if (fileMetadataForAction != null) {
             filesToRestrict.add(fileMetadataForAction);
         } else {
             filesToRestrict = this.getSelectedFiles();
         }
-
         restrictFiles(filesToRestrict, restricted);
-        return save();
+        if (editMode == EditMode.CREATE) {
+            return "";
+        } else {
+            return save();
+        }
     }
 
     private void restrictFiles(List<FileMetadata> filesToRestrict, boolean restricted) throws CommandException {
@@ -3622,6 +3624,8 @@ public class DatasetPage implements java.io.Serializable {
 
         if (editMode != null) {
             if (editMode.equals(EditMode.CREATE)) {
+                
+                System.out.print("adding files...");
                 // We allow users to upload files on Create:
                 int nNewFiles = newFiles.size();
                 logger.fine("NEW FILES: "+nNewFiles);

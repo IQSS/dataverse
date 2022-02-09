@@ -44,7 +44,8 @@
                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}"></span>
                 </label>
                 <div class="col-sm-9">
-                    <p:selectBooleanCheckbox id="requestAccess2" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}"
+                    <p:selectBooleanCheckbox id="requestAccess2" 
+                                             itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}"
                                              value="#{bean.fileAccessRequest}" widgetVar="inputfar">
                     <p:ajax event="change" update="restrictFileButton" />
                     </p:selectBooleanCheckbox>
@@ -59,7 +60,7 @@
                 <div class="col-sm-9">
                     <p:inputTextarea id="termsAccessInput" 
                                      value="#{bean.termsOfAccess}" autoResize="false" rows="5" styleClass="form-control" widgetVar="inputtoa">
-                     <p:ajax event="keyup" update="restrictFileButton" />
+                     <p:ajax event="keyup" update="restrictFileButton"/>
                     </p:inputTextarea> 
                 </div>
             </div>
@@ -72,6 +73,7 @@
             <p:commandLink id="restrictFileButton"  styleClass="btn btn-default" value="#{bundle.saveChanges}" 
                              action="#{bean[restrictFileAction](true)}"
                              disabled="#{empty bean.termsOfAccess  and !bean.fileAccessRequest}"
+                             onclick="PF('accessPopup').hide();"
                              update=":messagePanel" />
             <button class="btn btn-link" onclick="PF('accessPopup').hide();" type="button">
                 #{bundle.cancel}

@@ -927,17 +927,15 @@
                     <!-- END: Create/Save Dataset Button Panel BTM editMode -->
                     <p:blockUI block="datasetForm" widgetVar="blockDatasetForm"/>
                     <!-- POPUPS -->
-                    <ui:fragment rendered="#{dataverseSession.user.authenticated and DatasetPage.editMode != 'CREATE' and DatasetPage.canUpdateDataset()}">
-                        <ui:include src="file-edit-popup-fragment.xhtml">
-                              <ui:param name="datasetVersion" value="#{DatasetPage.workingVersion}"/>   
-                              <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>
-                              <ui:param name="bean" value="#{DatasetPage}"/>
-                              <ui:param name="restrictFileAction" value="restrictFiles"/>
-                              <ui:param name="deleteFileAction" value="deleteFiles"/>
-                              <ui:param name="saveEmbargoAction" value="saveEmbargo"/> 
-                              <ui:param name="updateElements" value=":datasetForm:embargoInputs"/>
-                        </ui:include>
-                    </ui:fragment>
+                    <ui:include src="file-edit-popup-fragment.xhtml">
+                        <ui:param name="datasetVersion" value="#{DatasetPage.workingVersion}"/>   
+                        <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>
+                        <ui:param name="bean" value="#{DatasetPage}"/>
+                        <ui:param name="restrictFileAction" value="restrictFiles"/>
+                        <ui:param name="deleteFileAction" value="deleteFiles"/>
+                        <ui:param name="saveEmbargoAction" value="saveEmbargo"/> 
+                        <ui:param name="updateElements" value=":datasetForm:embargoInputs"/>
+                    </ui:include>
                     <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true" rendered="#{!DatasetPage.workingVersion.deaccessioned}">
                         <p class="help-block">#{bundle['dataset.share.datasetShare.tip']}</p>
                         <div id="sharrre-widget" data-url="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" data-text="#{bundle['dataset.share.datasetShare.shareText']}"></div>
