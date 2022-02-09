@@ -23,7 +23,7 @@ System Requirements
 
 Support for Shibboleth in the Dataverse Software is built on the popular `"mod_shib" Apache module, "shibd" daemon <https://shibboleth.net/products/service-provider.html>`_, and the `Embedded Discovery Service (EDS) <https://shibboleth.net/products/embedded-discovery-service.html>`_ Javascript library, all of which are distributed by the `Shibboleth Consortium <https://shibboleth.net>`_. EDS is bundled with the Dataverse Software, but ``mod_shib`` and ``shibd`` must be installed and configured per below.
 
-Only Red Hat Enterprise Linux (RHEL) and derivatives have been tested (x86_64 versions) by the Dataverse Project team. See https://shibboleth.atlassian.net/wiki/spaces/SP3/pages/2065335566/RPMInstall for details and note that (according to that page) as of this writing Ubuntu and Debian are not offically supported by the Shibboleth project.
+Only Red Hat Enterprise Linux (RHEL) and derivatives have been tested (x86_64 versions) by the Dataverse Project team. See https://shibboleth.atlassian.net/wiki/spaces/SP3/pages/2065335547/LinuxInstall for details and note that (according to that page) as of this writing Ubuntu and Debian are not officially supported by the Shibboleth project.
 
 Install Apache
 ~~~~~~~~~~~~~~
