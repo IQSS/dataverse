@@ -131,7 +131,7 @@ Next you'll want to check out the :doc:`config` section, especially the section 
 Troubleshooting
 ---------------
 
-If the following doesn't apply, please get in touch as explained in the :doc:`intro`. You may be asked to provide ``payara5/glassfish/domains/domain1/logs/server.log`` for debugging.
+If the following doesn't apply, please get in touch as explained in :ref:`support`.
 
 Dataset Cannot Be Published
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -254,3 +254,8 @@ Rerun Installer
 With all the data cleared out, you should be ready to rerun the installer per above.
 
 Related to all this is a series of scripts at https://github.com/IQSS/dataverse/blob/develop/scripts/deploy/phoenix.dataverse.org/deploy that Dataverse Project Team and Community developers use have the test server http://phoenix.dataverse.org rise from the ashes before integration tests are run against it. For more on this topic, see :ref:`rebuilding-dev-environment` section of the Developer Guide.
+
+Getting Support for Installation Trouble
+----------------------------------------
+
+See :ref:`support`.
