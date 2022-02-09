@@ -448,7 +448,7 @@ public class SettingsServiceBean {
         /**Client id for Globus application
          *
          */
-        GlobusClientId,
+        //GlobusClientId,
         /**
          * Optional external executables to run on the metadata for dataverses 
          * and datasets being published; as an extra validation step, to 
