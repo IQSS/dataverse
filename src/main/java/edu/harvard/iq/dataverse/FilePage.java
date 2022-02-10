@@ -971,13 +971,13 @@ public class FilePage implements java.io.Serializable {
             return FileUtil.isPreviewAllowed(fileMetadata);
         }
     }
-
+*/
     public boolean isIngestable() {
         DataFile f = fileMetadata.getDataFile();
         //Datafile is an ingestable type and hasn't been ingested yet or had an ingest fail
         return (FileUtil.canIngestAsTabular(f)&&!(f.isTabularData() || f.isIngestProblem()));
     }
-*/
+
     private Boolean lockedFromEditsVar;
     private Boolean lockedFromDownloadVar; 
     private boolean stateChanged = false;
