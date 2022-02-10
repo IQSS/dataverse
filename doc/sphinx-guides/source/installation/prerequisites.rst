@@ -157,7 +157,7 @@ The Dataverse Software search index is powered by Solr.
 Supported Versions
 ==================
 
-The Dataverse Software has been tested with Solr version 8.8.1. Future releases in the 8.x series are likely to be compatible; however, this cannot be confirmed until they are officially tested. Major releases above 8.x (e.g. 9.x) are not supported.
+The Dataverse Software has been tested with Solr version 8.11.1. Future releases in the 8.x series are likely to be compatible; however, this cannot be confirmed until they are officially tested. Major releases above 8.x (e.g. 9.x) are not supported.
 
 Installing Solr
 ===============
@@ -172,15 +172,15 @@ Become the ``solr`` user and then download and configure Solr::
 
         su - solr
         cd /usr/local/solr
-        wget https://archive.apache.org/dist/lucene/solr/8.8.1/solr-8.8.1.tgz
-        tar xvzf solr-8.8.1.tgz
-        cd solr-8.8.1
+        wget https://archive.apache.org/dist/lucene/solr/8.11.1/solr-8.11.1.tgz
+        tar xvzf solr-8.11.1.tgz
+        cd solr-8.11.1
         cp -r server/solr/configsets/_default server/solr/collection1
 
 You should already have a "dvinstall.zip" file that you downloaded from https://github.com/IQSS/dataverse/releases . Unzip it into ``/tmp``. Then copy the files into place::
 
-        cp /tmp/dvinstall/schema*.xml /usr/local/solr/solr-8.8.1/server/solr/collection1/conf
-        cp /tmp/dvinstall/solrconfig.xml /usr/local/solr/solr-8.8.1/server/solr/collection1/conf
+        cp /tmp/dvinstall/schema*.xml /usr/local/solr/solr-8.11.1/server/solr/collection1/conf
+        cp /tmp/dvinstall/solrconfig.xml /usr/local/solr/solr-8.11.1/server/solr/collection1/conf
 
 Note: The Dataverse Project team has customized Solr to boost results that come from certain indexed elements inside the Dataverse installation, for example prioritizing results from Dataverse collections over Datasets. If you would like to remove this, edit your ``solrconfig.xml`` and remove the ``<str name="qf">`` element and its contents. If you have ideas about how this boosting could be improved, feel free to contact us through our Google Group https://groups.google.com/forum/#!forum/dataverse-dev .
 
@@ -203,7 +203,7 @@ Solr launches asynchronously and attempts to use the ``lsof`` binary to watch fo
 
 Finally, you need to tell Solr to create the core "collection1" on startup::
 
-        echo "name=collection1" > /usr/local/solr/solr-8.8.1/server/solr/collection1/core.properties
+        echo "name=collection1" > /usr/local/solr/solr-8.11.1/server/solr/collection1/core.properties
 
 Solr Init Script
 ================
