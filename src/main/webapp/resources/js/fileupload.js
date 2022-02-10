@@ -404,7 +404,7 @@ async function uploadFileDirectly(urls, storageId, filesize) {
                 //As long as we have the right file size, we're OK
                 for (i = 0; i < fileList.length; i++) {
                         if (fileList[i].file.size == filesize) {
-                                upload = fileList.splice(i,i+1)[0];
+                                upload = fileList.splice(i,1)[0];
                                 break;
                         }
                 }
