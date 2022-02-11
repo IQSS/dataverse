@@ -451,7 +451,8 @@
             </div>
         </div>
 
-        <div class="panel panel-default" jsf:rendered="#{!settingsWrapper.rsyncOnly and (managePage==false or datasetPage == true)}">
+        <div class="panel panel-default" jsf:rendered="#{!settingsWrapper.rsyncOnly and (managePage==false or datasetPage == true)
+                                                         and (!empty DatasetPage.dataset.guestbook or (dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)))}">
            <div data-toggle="collapse" data-target="#panelCollapseGuestbook" class="panel-heading text-info">
                #{bundle['file.dataFilesTab.terms.list.guestbook']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
            </div>
@@ -469,7 +470,13 @@
                                                         and ((!dataverseSession.user.authenticated or !permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset))
                                                         or ((dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) 
                                                            and !empty DatasetPage.dataset.dataverseContext.availableGuestbooks)))}">
-                                   <p>#{bundle['file.dataFilesTab.terms.list.guestbook.noSelected.tip']}</p>
+                                   <p class="help-block">
+                                       #{bundle['file.dataFilesTab.terms.list.guestbook.noSelected.tip']}
+                                       <h:outputFormat value="#{bundle['dataset.manageGuestbooks.noGuestbooks.learnMore']}" escape="false">
+                                           <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                           <f:param value="#{systemConfig.guidesVersion}"/>
+                                       </h:outputFormat>
+                                   </p>
                                </ui:fragment>
                                <ui:fragment rendered="#{empty DatasetPage.dataset.guestbook 
                                                  and (dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset))
@@ -481,21 +488,27 @@
                                    </p>
                                </ui:fragment>
 
-                                <ui:fragment rendered="#{!empty DatasetPage.dataset.guestbook}">
-                                    <p class="help-block">#{bundle['file.dataFilesTab.terms.list.guestbook.inUse.tip']}</p>
-                                    <div class="panel panel-default">
-                                        <div class="panel-body">
-                                            <p class="form-control-static pull-left">#{DatasetPage.dataset.guestbook.name}</p>
-                                            <p:commandButton styleClass="btn btn-default pull-right"
-                                                             value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
-                                                             action="#{DatasetPage.viewSelectedGuestbook(DatasetPage.dataset.guestbook)}"
-                                                             update=":datasetForm" oncomplete="PF('viewGuestbook').show();bind_bsui_components();"/>
-                                        </div>
-                                    </div>
-                                </ui:fragment>
-                            </ui:fragment>
-                            <ui:fragment rendered="#{!empty editMode and datasetPage}">
-                                <p class="help-block">#{bundle['file.dataFilesTab.terms.list.guestbook.select.tip']}</p>
+                               <ui:fragment rendered="#{!empty DatasetPage.dataset.guestbook}">
+                                   <p class="help-block">#{bundle['file.dataFilesTab.terms.list.guestbook.inUse.tip']}</p>
+                                   <div class="panel panel-default">
+                                       <div class="panel-body">
+                                           <p class="form-control-static pull-left">#{DatasetPage.dataset.guestbook.name}</p>
+                                           <p:commandButton styleClass="btn btn-default pull-right"
+                                                          value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
+                                                          action="#{DatasetPage.viewSelectedGuestbook(DatasetPage.dataset.guestbook)}"
+                                                          update=":datasetForm" oncomplete="PF('viewGuestbook').show();bind_bsui_components();"/>
+                                       </div>
+                                   </div>
+                               </ui:fragment>
+                           </ui:fragment>
+                           <ui:fragment rendered="#{!empty editMode and datasetPage}">
+                               <p class="help-block">
+                                   #{bundle['file.dataFilesTab.terms.list.guestbook.select.tip']}
+                                       <h:outputFormat value=" #{bundle['dataset.manageGuestbooks.noGuestbooks.learnMore']}" escape="false">
+                                            <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                            <f:param value="#{systemConfig.guidesVersion}"/>
+                                        </h:outputFormat>
+                               </p>
 
                                 <ui:fragment rendered="#{empty DatasetPage.dataset.dataverseContext.availableGuestbooks}">
                                     <p class="help-block">
