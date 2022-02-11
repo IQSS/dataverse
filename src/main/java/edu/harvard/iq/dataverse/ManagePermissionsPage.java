@@ -420,9 +420,15 @@ public class ManagePermissionsPage implements java.io.Serializable {
                 }
 
             } else if (dvObject instanceof DataFile) {
-                // TODO: consider changing the logic here to be more like for Dataset
-                // in order to capture new roles that get added having only File scoped permissions
-                roles.add(roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER));
+                // only show roles that have File level permissions
+                // current the available roles for a file are gotten from its parent's parent                
+                for (DataverseRole role : roleService.availableRoles(dvObject.getOwner().getOwner().getId())) {
+                    for (Permission permission : role.permissions()) {
+                        if (permission.appliesTo(DataFile.class)) {
+                            roles.add(role);
+                            break;
+                        }
+                    }
             }
 
             Collections.sort(roles, DataverseRole.CMP_BY_NAME);
