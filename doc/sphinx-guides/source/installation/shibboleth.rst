@@ -23,7 +23,7 @@ System Requirements
 
 Support for Shibboleth in the Dataverse Software is built on the popular `"mod_shib" Apache module, "shibd" daemon <https://shibboleth.net/products/service-provider.html>`_, and the `Embedded Discovery Service (EDS) <https://shibboleth.net/products/embedded-discovery-service.html>`_ Javascript library, all of which are distributed by the `Shibboleth Consortium <https://shibboleth.net>`_. EDS is bundled with the Dataverse Software, but ``mod_shib`` and ``shibd`` must be installed and configured per below.
 
-Only Red Hat Enterprise Linux (RHEL) and derivatives have been tested (x86_64 versions) by the Dataverse Project team. See https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPLinuxInstall for details and note that (according to that page) as of this writing Ubuntu and Debian are not offically supported by the Shibboleth project.
+Only Red Hat Enterprise Linux (RHEL) and derivatives have been tested (x86_64 versions) by the Dataverse Project team. See https://shibboleth.atlassian.net/wiki/spaces/SP3/pages/2065335547/LinuxInstall for details and note that (according to that page) as of this writing Ubuntu and Debian are not officially supported by the Shibboleth project.
 
 Install Apache
 ~~~~~~~~~~~~~~
@@ -39,28 +39,12 @@ Install Shibboleth
 
 Installing Shibboleth will give us both the ``shibd`` service and the ``mod_shib`` Apache module.
 
-Enable Shibboleth Yum Repo
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+Install Shibboleth Yum Repo
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This yum repo is recommended at https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPLinuxRPMInstall
+The Shibboleth project now provides `a web form <https://shibboleth.net/downloads/service-provider/RPMS/>`_ to generate an appropriate package repository for use with YUM/DNF.
 
-``cd /etc/yum.repos.d``
-
-Install ``wget`` if you don't have it already:
-
-``yum install wget``
-
-If you are running el8 (RHEL/derivative 8):
-
-``wget http://download.opensuse.org/repositories/security:/shibboleth/CentOS_8/security:shibboleth.repo``
-
-If you are running el7 (RHEL/CentOS 7):
-
-``wget http://download.opensuse.org/repositories/security:/shibboleth/CentOS_7/security:shibboleth.repo``
-
-If you are running el6 (RHEL/CentOS 6):
-
-``wget http://download.opensuse.org/repositories/security:/shibboleth/CentOS_CentOS-6/security:shibboleth.repo``
+You'll want to copy-paste the form results into ``/etc/yum.repos.d/shibboleth.repo`` or wherever is most appropriate for your operating system.
 
 Install Shibboleth Via Yum
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -156,7 +140,7 @@ Configure Shibboleth
 shibboleth2.xml
 ~~~~~~~~~~~~~~~
 
-``/etc/shibboleth/shibboleth2.xml`` should look something like the :download:`sample shibboleth2.xml file <../_static/installation/files/etc/shibboleth/shibboleth2.xml>` below, but you must substitute your hostname in the ``entityID`` value. If your starting point is a ``shibboleth2.xml`` file provided by someone else, you must ensure that ``attributePrefix="AJP_"`` is added under ``ApplicationDefaults`` per the `Shibboleth wiki <https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPJavaInstall>`_ . Without the ``AJP_`` configuration in place, the required :ref:`shibboleth-attributes` will be null and users will be unable to log in.
+``/etc/shibboleth/shibboleth2.xml`` should look something like the :download:`sample shibboleth2.xml file <../_static/installation/files/etc/shibboleth/shibboleth2.xml>` below, but you must substitute your hostname in the ``entityID`` value. If your starting point is a ``shibboleth2.xml`` file provided by someone else, you must ensure that ``attributePrefix="AJP_"`` is added under ``ApplicationDefaults`` per the `Shibboleth wiki <https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPJavaInstall>`_. Without the ``AJP_`` configuration in place, the required :ref:`shibboleth-attributes` will be null and users will be unable to log in.
 
 .. literalinclude:: ../_static/installation/files/etc/shibboleth/shibboleth2.xml
    :language: xml
@@ -171,11 +155,11 @@ Most Dataverse installations will probably only want to authenticate users via S
 Identity Federation
 ^^^^^^^^^^^^^^^^^^^
 
-Rather than or in addition to specifying individual Identity Provider(s) you may wish to broaden the number of users who can log into your Dataverse installation by registering your Dataverse installation as a Service Provider (SP) within an identity federation. For example, in the United States, users from the `many institutions registered with the "InCommon" identity federation <https://incommon.org/federation/info/all-entities.html#IdPs>`_ that release the `"Research & Scholarship Attribute Bundle" <https://spaces.internet2.edu/display/InCFederation/Research+and+Scholarship+Attribute+Bundle>`_  will be able to log into your Dataverse installation if you register it as an `InCommon Service Provider <https://incommon.org/federation/info/all-entities.html#SPs>`_ that is part of the `Research & Scholarship (R&S) category <https://incommon.org/federation/info/all-entity-categories.html#SPs>`_.
+Rather than or in addition to specifying individual Identity Provider(s) you may wish to broaden the number of users who can log into your Dataverse installation by registering your Dataverse installation as a Service Provider (SP) within an identity federation. For example, in the United States, users from the `many institutions registered with the "InCommon" identity federation <https://incommon.org/community-organizations/>`_ that release the `"Research & Scholarship Attribute Bundle" <https://refeds.org/research-and-scholarship>`_  will be able to log into your Dataverse installation if you register it as an `InCommon Service Provider <https://spaces.at.internet2.edu/display/federation/federation-manager-add-sp>`_ that is part of the `Research & Scholarship (R&S) category <https://refeds.org/research-and-scholarship>`_.
 
-The details of how to register with an identity federation are out of scope for this document, but a good starting point may be this list of identity federations across the world: http://www.protectnetwork.org/support/faq/identity-federations
+The details of how to register with an identity federation are out of scope for this document, but a good starting point may be `this list of identity federations across the world <https://refeds.org/federations>`_.
 
-One of the benefits of using ``shibd`` is that it can be configured to periodically poll your identity federation for updates as new Identity Providers (IdPs) join the federation you've registered with. For the InCommon federation, the following page describes how to download and verify signed InCommon metadata every hour: https://spaces.internet2.edu/display/InCFederation/Shibboleth+Metadata+Config#ShibbolethMetadataConfig-ConfiguretheShibbolethSP . You can also see an example of this as ``maxRefreshDelay="3600"`` in the commented out section of the ``shibboleth2.xml`` file above.
+One of the benefits of using ``shibd`` is that it can be configured to periodically poll your identity federation for updates as new Identity Providers (IdPs) join the federation you've registered with. For the InCommon federation, `this page describes how to download and verify signed InCommon metadata every hour <https://spaces.at.internet2.edu/display/federation/Download+InCommon+metadata>`_. You can also see an example of this as ``maxRefreshDelay="3600"`` in the commented out section of the ``shibboleth2.xml`` file above.
 
 Once you've joined a federation the list of IdPs in the dropdown can be quite long! If you're curious how many are in the list you could try something like this: ``curl https://dataverse.example.edu/Shibboleth.sso/DiscoFeed | jq '.[].entityID' | wc -l``
 
@@ -192,7 +176,7 @@ The following attributes are required for a successful Shibboleth login:
 - sn
 - email
 
-See also https://www.incommon.org/federation/attributesummary.html and https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPAttributeAccess
+See also https://incommon.org/federation/attributes/ and https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPAttributeAccess
 
 attribute-map.xml
 ~~~~~~~~~~~~~~~~~
@@ -214,7 +198,7 @@ SELinux is set to "enforcing" by default on RHEL/CentOS, but unfortunately Shibb
 Disable SELinux
 ~~~~~~~~~~~~~~~
 
-The first and easiest option is to set ``SELINUX=permisive`` in ``/etc/selinux/config`` and run ``setenforce permissive`` or otherwise disable SELinux to get Shibboleth to work. This is apparently what the Shibboleth project expects because their wiki page at https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPSELinux says, "At the present time, we do not support the SP in conjunction with SELinux, and at minimum we know that communication between the mod_shib and shibd components will fail if it's enabled. Other problems may also occur."
+The first and easiest option is to set ``SELINUX=permisive`` in ``/etc/selinux/config`` and run ``setenforce permissive`` or otherwise disable SELinux to get Shibboleth to work. This is apparently what the Shibboleth project expects because their `wiki page <https://shibboleth.atlassian.net/wiki/spaces/SP3/pages/2065335559/SELinux>`_ says, "At the present time, we do not support the SP in conjunction with SELinux, and at minimum we know that communication between the mod_shib and shibd components will fail if it's enabled. Other problems may also occur."
 
 Reconfigure SELinux to Accommodate Shibboleth
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
