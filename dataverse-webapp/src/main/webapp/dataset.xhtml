@@ -41,6 +41,9 @@
                 <h:outputText value="#{DatasetPage.jsonLd}"/>
             </script>
         </ui:define>
+        <ui:define name="robots_info">
+            <meta jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}" name="robots" content="noindex"/>
+        </ui:define>
         <ui:define name="og_header">
             <meta property="og:title" content="#{DatasetPage.title}"/>
             <meta property="og:type" content="article"/>
@@ -188,12 +191,12 @@
                                           widgetVar="shareDialog" modal="true"
                                           rendered="#{!DatasetPage.workingVersion.deaccessioned}">
                                     <p class="help-block">#{bundle['dataset.share.datasetShare.tip']}</p>
-    
+
                                     <div id="sharrre-widget"
                                          data-url="#{systemConfig.dataverseSiteUrl}/dataset.xhtml?persistentId=#{DatasetPage.dataset.globalId}"
                                          data-text="#{bundle['dataset.share.datasetShare.shareText']}"
                                          data-language="#{dataverseSession.localeCode}" />
-    
+
                                     <div class="button-block">
                                         <button type="button" onclick="PF('shareDialog').hide()" class="btn btn-default"
                                                 value="#{bundle.close}">
@@ -222,7 +225,7 @@
                                                                    and DatasetPage.isLatestDatasetWithAnyFilesIncluded()}">
                                             <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                         </p:commandLink>
-    
+
                                         <p:commandLink type="button"
                                                        styleClass="btn btn-default btn-access #{conditionallyDisable}"
                                                        onclick="primeFacesShowModal('noFilesInDataset', this)"
@@ -232,7 +235,7 @@
                                                                    and !DatasetPage.isLatestDatasetWithAnyFilesIncluded()}">
                                             <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                         </p:commandLink>
-    
+
                                         <p:commandLink type="button"
                                                        styleClass="btn btn-default btn-access #{conditionallyDisable}"
                                                        onclick="primeFacesShowModal('releaseDraft', this)"
@@ -243,7 +246,7 @@
                                                         and DatasetPage.isLatestDatasetWithAnyFilesIncluded()}">
                                             <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                         </p:commandLink>
-    
+
                                         <!-- 4.2.1:  replaced permissionServiceBean.on(DatasetPage.dataset.owner).has('PublishDataverse') with DatasetPage.canPublishDataverse() -->
                                         <p:commandLink type="button"
                                                        styleClass="btn btn-default btn-access #{conditionallyDisable}"
@@ -255,7 +258,7 @@
                                                                    and DatasetPage.isLatestDatasetWithAnyFilesIncluded()}">
                                             <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                         </p:commandLink>
-    
+
                                         <p:commandLink type="button"
                                                        styleClass="btn btn-default btn-access #{conditionallyDisable}"
                                                        onclick="primeFacesShowModal('publishParent', this)"
@@ -267,7 +270,7 @@
                                                                    and DatasetPage.isLatestDatasetWithAnyFilesIncluded()}">
                                             <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                         </p:commandLink>
-    
+
                                         <p:commandLink type="button"
                                                        styleClass="btn btn-default btn-access #{conditionallyDisable}"
                                                        rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
@@ -279,7 +282,7 @@
                                             <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                         </p:commandLink>
                                         <!-- END: Publish Buttons -->
-    
+
                                         <!-- Return to Author Button -->
                                         <p:commandLink id="returnForModificationButton" type="button" styleClass="btn btn-default btn-access #{(DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview)
                                                                                                               ? 'disabled' : ''}"
@@ -289,7 +292,7 @@
                                             <span class="glyphicon glyphicon-repeat"/> #{bundle['dataset.rejectBtn']}
                                         </p:commandLink>
                                         <!-- END: Return to Author Button -->
-    
+
                                         <!-- Submit for Review Button -->
                                         <ui:fragment rendered="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                                     and !DatasetPage.datasetLockedInWorkflow
@@ -307,11 +310,11 @@
                                                 <span class="glyphicon glyphicon-globe"/> #{DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitForReview.submitBtn']}
                                             </p:commandLink>
                                         </ui:fragment>
-    
+
                                         <!-- End: Submit for Review Button -->
                                     </ui:fragment>
                                     <!-- END: Publish/Submit for Review/Return to Author Button Group -->
-    
+
                                     <p:commandLink
                                             rendered="#{DatasetPage.canLinkDatasetToSomeDataverse()}"
                                             type="button" styleClass="btn btn-default btn-access"
@@ -319,7 +322,7 @@
                                             update="linkDatasetForm">
                                         <span class="glyphicon glyphicon-link"/> #{bundle['link']}
                                     </p:commandLink>
-    
+
                                     <!-- Edit Button -->
                                     <ui:fragment rendered="#{DatasetPage.showEditDropdownButton()}">
                                         <button type="button" id="editDataSet"
@@ -522,7 +525,7 @@
                                             </div>
                                         </div>
                                         <div id="publication" class="form-group"
-                                             jsf:rendered="#{!empty DatasetPage.firstRelPublication and 
+                                             jsf:rendered="#{!empty DatasetPage.firstRelPublication and
                                                 fieldsByType.datasetFieldType.name=='publication'}">
                                             <div class="col-sm-3 control-label section-title">
                                                 #{fieldsByType.datasetFieldType.localeTitle}
@@ -745,7 +748,7 @@
                         <ui:include src="pluggable/dataset-extra-tabs.xhtml">
                             <ui:param name="DatasetPage" value="#{DatasetPage}"/>
                         </ui:include>
-                        
+
                     </p:tabView>
                 </div>
                 <!-- END View/Tabs infoMode -->
@@ -847,7 +850,7 @@
                         </div>
                         <script type="text/javascript">
                             // Move input to the correct place and make it usable
-                            
+
                             $(document).ready(function() {
                                 var datePickerInput = $("#datasetForm\\:embargoDatePicker_input");
                                 var calendar = (PF("embargoDatePickerCalendar") ? PF("embargoDatePickerCalendar") : PF("embargoDatePickerMaxLimitedCalendar"));
@@ -859,7 +862,7 @@
                                 if (datePickerInput.length  > 0) {
                                     datePickerInput.attr("type", "text")
                                     datePickerInput.insertAfter($("label[for*=embargoDatePicker_input]").next());
-    
+
                                     datePickerInput.on("input", function() {
                                         if (calendar) {
                                             calendar.setDate(this.value);
