@@ -161,8 +161,10 @@ public class ManagePermissionsPage implements java.io.Serializable {
             Set<RoleAssignment> ras = roleService.rolesAssignments(dvObject);
             raList = new ArrayList<>(ras.size());
             for (RoleAssignment roleAssignment : ras) {
+                //do not display DatasetCreator roles on dataset permission level, as it only makes sense on Dataverse level
+                boolean isDatasetCreatorOnDataverse = dvObject instanceof Dataset && DataverseRole.DS_CONTRIBUTOR.equals(roleAssignment.getRole().getAlias());
                 // for files, only show role assignments which can download
-                if (!(dvObject instanceof DataFile) || roleAssignment.getRole().permissions().contains(Permission.DownloadFile)) {
+                if ((!(dvObject instanceof DataFile) || roleAssignment.getRole().permissions().contains(Permission.DownloadFile)) && !isDatasetCreatorOnDataverse) {
                     RoleAssignee roleAssignee = roleAssigneeService.getRoleAssignee(roleAssignment.getAssigneeIdentifier());
                     if (roleAssignee != null) {
                         raList.add(new RoleAssignmentRow(roleAssignment, roleAssignee.getDisplayInfo()));
