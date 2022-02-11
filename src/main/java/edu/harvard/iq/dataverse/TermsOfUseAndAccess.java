@@ -300,14 +300,6 @@ public class TermsOfUseAndAccess implements Serializable {
         this.validationMessage = validationMessage;
     }
     
-    /**
-     * @todo What does the GUI use for a default license? What does the "native"
-     * API use? See also https://github.com/IQSS/dataverse/issues/1385
-     */
-    /*
-    public static TermsOfUseAndAccess.License defaultLicense = TermsOfUseAndAccess.License.CC0;
-    public static String CC0_URI = "https://creativecommons.org/publicdomain/zero/1.0/";
-    */
     @Override
     public int hashCode() {
         int hash = 0;
