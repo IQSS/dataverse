@@ -429,6 +429,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
                             break;
                         }
                     }
+                }
             }
 
             Collections.sort(roles, DataverseRole.CMP_BY_NAME);
