@@ -57,6 +57,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
+            <scope>runtime</scope>
         </dependency>
         
 	    <dependency>
@@ -417,6 +418,7 @@
             <groupId>ch.qos.reload4j</groupId>
             <artifactId>reload4j</artifactId>
             <version>${reload4j.version}</version>
+            <scope>runtime</scope>
         </dependency>
         <!-- Added for AutoService -->
         <dependency>
