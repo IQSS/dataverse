@@ -3625,7 +3625,6 @@ public class DatasetPage implements java.io.Serializable {
         if (editMode != null) {
             if (editMode.equals(EditMode.CREATE)) {
                 
-                System.out.print("adding files...");
                 // We allow users to upload files on Create:
                 int nNewFiles = newFiles.size();
                 logger.fine("NEW FILES: "+nNewFiles);
