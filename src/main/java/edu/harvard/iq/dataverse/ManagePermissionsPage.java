@@ -420,7 +420,16 @@ public class ManagePermissionsPage implements java.io.Serializable {
                 }
 
             } else if (dvObject instanceof DataFile) {
-                roles.add(roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER));
+                // only show roles that have File level permissions
+                // current the available roles for a file are gotten from its parent's parent                
+                for (DataverseRole role : roleService.availableRoles(dvObject.getOwner().getOwner().getId())) {
+                    for (Permission permission : role.permissions()) {
+                        if (permission.appliesTo(DataFile.class)) {
+                            roles.add(role);
+                            break;
+                        }
+                    }
+                }
             }
 
             Collections.sort(roles, DataverseRole.CMP_BY_NAME);
