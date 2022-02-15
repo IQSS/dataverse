@@ -66,6 +66,7 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
+import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
 import java.io.StringReader;
@@ -110,6 +111,7 @@ import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import javax.servlet.http.HttpServletResponse;
@@ -300,6 +302,11 @@ public class Dataverses extends AbstractApiBean {
             ds.setIdentifier(null);
             ds.setProtocol(null);
             ds.setGlobalIdCreateTime(null);
+            
+            //Verify metadatalanguage is allowed
+            if(ds.getMetadataLanguage()!= null && !settingsService.getBaseMetadataLanguageMap(new HashMap<String, String>(), true).containsKey(ds.getMetadataLanguage())) {
+                throw new BadRequestException("Specified metadatalangauge (" + JsonLDTerm.schemaOrg("inLanguage").getUrl() + ") not allowed.");
+            }
 
             Dataset managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u)));
             return created("/datasets/" + managedDs.getId(),
@@ -479,8 +486,11 @@ public class Dataverses extends AbstractApiBean {
             if(!datasetSvc.isIdentifierLocallyUnique(ds)) {
                 throw new BadRequestException("Cannot recreate a dataset whose PID is already in use");
             }
-
             
+          //Verify metadatalanguage is allowed
+            if(ds.getMetadataLanguage()!= null && !settingsService.getBaseMetadataLanguageMap(new HashMap<String, String>(), true).containsKey(ds.getMetadataLanguage())) {
+                throw new BadRequestException("Specified metadatalangauge (" + JsonLDTerm.schemaOrg("inLanguage").getUrl() + ") not allowed.");
+            }
 
             if (ds.getVersions().isEmpty()) {
                 return badRequest("Supplied json must contain a single dataset version.");

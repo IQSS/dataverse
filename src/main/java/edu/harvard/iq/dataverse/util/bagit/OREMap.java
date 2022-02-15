@@ -214,7 +214,10 @@ public class OREMap {
 
         aggBuilder.add(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel(),
                 BrandingUtil.getRootDataverseCollectionName());
-
+        
+        addIfNotNull(aggBuilder, JsonLDTerm.schemaOrg("inLanguage"), dataset.getMetadataLanguage());
+        
+        
         // The aggregation aggregates aggregatedresources (Datafiles) which each have
         // their own entry and metadata
         JsonArrayBuilder aggResArrayBuilder = Json.createArrayBuilder();
