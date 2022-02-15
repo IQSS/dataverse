@@ -199,7 +199,7 @@ However, as life is a box of chocolates, you might find yourself in *version con
 knowing, but experiencing unintended side effects.
 
 When you look at the topmost graph above, imagine *B* and *TB* rely on different *versions* of *TC*. How does Maven
-decide which version it will include? Easy: the dependent version of the nearest version wins:
+decide which version it will include? Easy: the "nearest" dependency version wins. The following graph gives an example:
 
 .. graphviz::
 
@@ -220,8 +220,8 @@ In this case, version "2.0" will be included. If you know something about semant
 in your mind right now. How do we know that *B* is compatible with *Z v2.0* when depending on *Z v1.0*?
 
 Another scenario getting us in trouble: indirect use of transitive dependencies. Imagine the following: we rely on *Z*
-in our code, but do not include a direct dependency for it within the POM. Now *B* is updated and removed its dependency
-on *Z*. You definitely don't want to head down that road.
+in our code, but do not include a direct dependency for it within the POM. Now assume *B* is updated and removed its 
+dependency on *Z*. You definitely don't want to head down that road.
 
 **Follow the rules to be safe:**
 
