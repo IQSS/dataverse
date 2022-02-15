@@ -804,7 +804,12 @@ public class IndexServiceBean {
             if(datasetVersion.getExternalStatusLabel()!=null) {
                 solrInputDocument.addField(SearchFields.EXTERNAL_STATUS, datasetVersion.getExternalStatusLabel());
             }
-
+            Set<String> langs = new HashSet<String>();
+            langs.addAll(settingsService.getBaseMetadataLanguageMap(new HashMap<String, String>(), true).keySet());
+            Map<String, String> configuredLocales = new LinkedHashMap<>();
+            settingsService.initLocaleSettings(configuredLocales);
+            langs.addAll(configuredLocales.keySet());
+            
             Map<Long, JsonObject> cvocMap = datasetFieldService.getCVocConf(false);
             for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
 
@@ -892,7 +897,10 @@ public class IndexServiceBean {
                                 if (controlledVocabularyValue.getStrValue().equals(DatasetField.NA_VALUE)) {
                                     continue;
                                 }
-                                solrInputDocument.addField(solrFieldSearchable, controlledVocabularyValue.getStrValue());
+                                // Index in all used languages (display and metadata languages
+                                for(String locale: langs) {
+                                    solrInputDocument.addField(solrFieldSearchable, controlledVocabularyValue.getLocaleStrValue(locale));
+                                }
                                 if (dsfType.getSolrField().isFacetable()) {
                                     solrInputDocument.addField(solrFieldFacetable, controlledVocabularyValue.getStrValue());
                                 }
