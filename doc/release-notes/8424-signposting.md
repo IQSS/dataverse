@@ -1,6 +1,6 @@
-# Signposting for DV 5.5
+# Signposting for DV 5.9
 
-This branch adds [Signposting](https://signposting.org/) support to DV 5.5.
+This branch adds [Signposting](https://signposting.org/) support to DV 5.9.
 
 There are 2 Signposting profile levels, level 1 and level 2. In this implementation, 
  * level 1 links are shown in 
@@ -28,8 +28,7 @@ config items.
 }
 ```
 
- * The `license` is a `dict` contains the URI for `CC0`. Please be noted that this is a 
-temporary solution as all the licenses should be given by `multi-license` support once it's merged.
+ * The `license` is a `dict` contains the URI for `CC0`. Please note, this option is not used anymore, should be set through MultiLicense. 
  * `describedby` is required by [Signposting](https://signposting.org/). It shows the link to the metadata 
 which describes the resources that is the origin of the link.
  * `useDefaultFileType` and `defaultFileTypeValue` are used in combination to provide extra `Dataset` type to DV 
