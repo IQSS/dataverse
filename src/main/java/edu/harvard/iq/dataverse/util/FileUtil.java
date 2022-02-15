@@ -208,6 +208,8 @@ public class FileUtil implements java.io.Serializable  {
     private static final String FILE_FACET_CLASS_TEXT = "Text";
     private static final String FILE_FACET_CLASS_OTHER = "Other";
     private static final String FILE_FACET_CLASS_UNKNOWN = "Unknown";
+    
+    public static final String OVERWRITE_MIME_TYPE_PREFIX = "force-";
 
     // The file type facets and type-specific thumbnail classes (above) are
     // very similar, but not exactly 1:1; so the following map is for 
@@ -802,24 +804,32 @@ public class FileUtil implements java.io.Serializable  {
             // than the type supplied:
             // -- L.A.
             String recognizedType = null;
-
-            try {
-                recognizedType = determineFileType(tempFile.toFile(), fileName);
-                logger.fine("File utility recognized the file as " + recognizedType);
-                if (recognizedType != null && !recognizedType.equals("")) {
-                    if (useRecognizedType(suppliedContentType, recognizedType)) {
-                        finalType = recognizedType;
-                    }
-                }
-
-            } catch (Exception ex) {
-                logger.warning("Failed to run the file utility mime type check on file " + fileName);
+            
+            // If we detect the dataverse prefix in the supplied mimetype we do no 
+            // further recognition
+            if (suppliedContentType.toLowerCase().startsWith(OVERWRITE_MIME_TYPE_PREFIX)) {
+            	finalType = suppliedContentType.toLowerCase().substring(OVERWRITE_MIME_TYPE_PREFIX.length());
+            	logger.fine("Overwrite prefix detected. Using supplied mime type.");
             }
-
-            if (finalType == null) {
-                finalType = (suppliedContentType == null || suppliedContentType.equals(""))
-                        ? MIME_TYPE_UNDETERMINED_DEFAULT
-                        : suppliedContentType;
+            else {
+	            try {
+	                recognizedType = determineFileType(tempFile.toFile(), fileName);
+	                logger.fine("File utility recognized the file as " + recognizedType);
+	                if (recognizedType != null && !recognizedType.equals("")) {
+	                    if (useRecognizedType(suppliedContentType, recognizedType)) {
+	                        finalType = recognizedType;
+	                    }
+	                }
+	
+	            } catch (Exception ex) {
+	                logger.warning("Failed to run the file utility mime type check on file " + fileName);
+	            }
+	
+	            if (finalType == null) {
+	                finalType = (suppliedContentType == null || suppliedContentType.equals(""))
+	                        ? MIME_TYPE_UNDETERMINED_DEFAULT
+	                        : suppliedContentType;
+	            }
             }
 
             // A few special cases:
