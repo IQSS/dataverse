@@ -786,12 +786,12 @@
         </dependency>
     </dependencies>
     <build>
-        <!--       <testResources>
+        <!--        <testResources>
             <testResource>
                 <directory>${project.basedir}/src/main/resources</directory>
             </testResource>
         </testResources>-->
-        <!--       <testResources>
+        <!--        <testResources>
             <testResource>
               <directory>${project.basedir}/src/test/java</directory>
               <excludes>
