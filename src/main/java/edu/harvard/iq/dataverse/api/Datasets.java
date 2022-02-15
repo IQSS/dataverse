@@ -86,13 +86,11 @@ import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.SignpostingResources;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonLinkset;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
-
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext;
@@ -218,7 +216,7 @@ public class Datasets extends AbstractApiBean {
 
     @Inject
     WorkflowServiceBean wfService;
-
+    
     @Inject
     DataverseRoleServiceBean dataverseRoleService;
 
@@ -2080,7 +2078,7 @@ public class Datasets extends AbstractApiBean {
             return Response.fromResponse(wr.getResponse()).status(Response.Status.BAD_REQUEST).build();
         }
     }
-
+    
     @DELETE
     @Path("{id}/curationStatus")
     public Response deleteCurationStatus(@PathParam("id") String idSupplied) {
@@ -2100,7 +2098,7 @@ public class Datasets extends AbstractApiBean {
             return Response.fromResponse(wr.getResponse()).status(Response.Status.BAD_REQUEST).build();
         }
     }
-
+    
 @GET
 @Path("{id}/uploadsid")
 @Deprecated
@@ -2917,8 +2915,8 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
     @GET
     @Path("{identifier}/curationLabelSet")
     public Response getCurationLabelSet(@PathParam("identifier") String dvIdtf,
-            @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
-
+            @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse { 
+        
         try {
             AuthenticatedUser user = findAuthenticatedUserOrDie();
             if (!user.isSuperuser()) {
@@ -2927,24 +2925,24 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
-
-        Dataset dataset;
-
+        
+        Dataset dataset; 
+        
         try {
             dataset = findDatasetOrDie(dvIdtf);
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
-
+            
         return response(req -> ok(dataset.getEffectiveCurationLabelSetName()));
     }
-
+    
     @PUT
     @Path("{identifier}/curationLabelSet")
     public Response setCurationLabelSet(@PathParam("identifier") String dvIdtf,
             @QueryParam("name") String curationLabelSet,
             @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
-
+        
         // Superuser-only:
         AuthenticatedUser user;
         try {
@@ -2955,9 +2953,9 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         if (!user.isSuperuser()) {
             return error(Response.Status.FORBIDDEN, "Superusers only.");
         }
-
-        Dataset dataset;
-
+        
+        Dataset dataset; 
+        
         try {
             dataset = findDatasetOrDie(dvIdtf);
         } catch (WrappedResponse ex) {
@@ -2979,12 +2977,12 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         return error(Response.Status.BAD_REQUEST,
             "No Such Curation Label Set");
     }
-
+    
     @DELETE
     @Path("{identifier}/curationLabelSet")
     public Response resetCurationLabelSet(@PathParam("identifier") String dvIdtf,
             @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
-
+    
         // Superuser-only:
         AuthenticatedUser user;
         try {
@@ -2995,15 +2993,15 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         if (!user.isSuperuser()) {
             return error(Response.Status.FORBIDDEN, "Superusers only.");
         }
-
-        Dataset dataset;
-
+        
+        Dataset dataset; 
+        
         try {
             dataset = findDatasetOrDie(dvIdtf);
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
-
+        
         dataset.setCurationLabelSetName(SystemConfig.DEFAULTCURATIONLABELSET);
         datasetService.merge(dataset);
         return ok("Curation Label Set reset to default: " + SystemConfig.DEFAULTCURATIONLABELSET);
@@ -3012,16 +3010,16 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
     @GET
     @Path("{identifier}/allowedCurationLabels")
     public Response getAllowedCurationLabels(@PathParam("identifier") String dvIdtf,
-            @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+            @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse { 
         AuthenticatedUser user = null;
         try {
             user = findAuthenticatedUserOrDie();
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
-
-        Dataset dataset;
-
+        
+        Dataset dataset; 
+        
         try {
             dataset = findDatasetOrDie(dvIdtf);
         } catch (WrappedResponse ex) {
@@ -3034,7 +3032,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
             return error(Response.Status.FORBIDDEN, "You are not permitted to view the allowed curation labels for this dataset.");
         }
     }
-
+    
     @GET
     @Path("{identifier}/timestamps")
     @Produces(MediaType.APPLICATION_JSON)
@@ -3176,10 +3174,10 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         return addFileHelper.addFiles(jsonData, dataset, authUser);
 
     }
-
-    /**
+    
+    /** 
      * API to find curation assignments and statuses
-     *
+     * 
      * @return
      * @throws WrappedResponse
      */

@@ -56,7 +56,7 @@
             <f:passThroughAttribute name="data-cvoc-managed-field" value="#{dsfv.datasetField.datasetFieldType.name}"/>
         </p:inputText>
     </ui:fragment>
-
+    
     <p:inputTextarea value="#{dsfv.valueForEdit}" id="description" pt:aria-required="#{dsf.required}" pt:aria-label="#{dsfvIndex!=0 ? bundle['dataset.additionalEntry']:''}"
                      rows="5" cols="60" styleClass="form-control"
                      rendered="#{dsfv.datasetField.datasetFieldType.fieldType == 'TEXTBOX'}"/>

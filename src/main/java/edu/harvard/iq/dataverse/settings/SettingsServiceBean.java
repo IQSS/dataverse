@@ -430,7 +430,7 @@ public class SettingsServiceBean {
         /**
          * Sort Date Facets Chronologically instead or presenting them in order of # of hits as other facets are. Default is true
          */
-        ChronologicalDateFacets,
+        ChronologicalDateFacets, 
         /**
          * Used where BrandingUtil.getInstallationBrandName is called, overides the default use of the root Dataverse collection name
          */
@@ -442,9 +442,9 @@ public class SettingsServiceBean {
          */
         ExportInstallationAsDistributorOnlyWhenNotSet,
         /**
-         * Optional external executables to run on the metadata for dataverses
-         * and datasets being published; as an extra validation step, to
-         * check for spam, etc.
+         * Optional external executables to run on the metadata for dataverses 
+         * and datasets being published; as an extra validation step, to 
+         * check for spam, etc. 
          */
         DataverseMetadataValidatorScript,
         DatasetMetadataValidatorScript,

@@ -94,8 +94,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
 
-import javax.json.*;
-
 import javax.validation.ConstraintViolation;
 import org.apache.commons.httpclient.HttpClient;
 //import org.primefaces.context.RequestContext;
@@ -337,7 +335,7 @@ public class DatasetPage implements java.io.Serializable {
     private Boolean hasRsyncScript = false;
 
     private Boolean hasTabular = false;
-
+    
 
     /**
      * If the dataset version has at least one tabular file. The "hasTabular"
@@ -1960,10 +1958,10 @@ public class DatasetPage implements java.io.Serializable {
                         }
                     } catch (RuntimeException ex) {
                         logger.warning("Problem getting rsync script(RuntimeException): " + ex.getLocalizedMessage());
-                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Problem getting rsync script:",  ex.getLocalizedMessage()));
+                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Problem getting rsync script:",  ex.getLocalizedMessage())); 
                     } catch (CommandException cex) {
                         logger.warning("Problem getting rsync script (Command Exception): " + cex.getLocalizedMessage());
-                           FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Problem getting rsync script:",  cex.getLocalizedMessage()));
+                           FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Problem getting rsync script:",  cex.getLocalizedMessage()));                        
                     }
                 }
 
@@ -2832,7 +2830,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public String deleteDatasetVersion() {
         DeleteDatasetVersionCommand cmd;
-
+        
         Map<Long, String> deleteStorageLocations = datafileService.getPhysicalFilesToDelete(dataset.getLatestVersion());
         boolean deleteCommandSuccess = false;
         try {
@@ -2844,7 +2842,7 @@ public class DatasetPage implements java.io.Serializable {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataset.message.deleteFailure"));
             logger.severe(ex.getMessage());
         }
-
+        
         if (deleteCommandSuccess && !deleteStorageLocations.isEmpty()) {
             datafileService.finalizeFileDeletes(deleteStorageLocations);
         }
@@ -4947,7 +4945,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         for (FileMetadata fmd : workingVersion.getFileMetadatas()){
             //Change here so that if all restricted files have pending requests there's no Request Button
-            if ((!this.fileDownloadHelper.canDownloadFile(fmd) && (fmd.getDataFile().getFileAccessRequesters() == null
+            if ((!this.fileDownloadHelper.canDownloadFile(fmd) && (fmd.getDataFile().getFileAccessRequesters() == null 
                     || ( fmd.getDataFile().getFileAccessRequesters() != null
                  &&   !fmd.getDataFile().getFileAccessRequesters().contains((AuthenticatedUser)session.getUser()))))){
                 return true;
@@ -5610,7 +5608,7 @@ public class DatasetPage implements java.io.Serializable {
 
         return dataFile.getDeleted();
     }
-
+    
     public String getEffectiveMetadataLanguage() {
         String mdLang = dataset.getEffectiveMetadataLanguage();
         if (mdLang.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
@@ -5618,16 +5616,16 @@ public class DatasetPage implements java.io.Serializable {
         }
         return mdLang;
     }
-
+    
     public String getLocaleDisplayName(String code) {
         String displayName = settingsWrapper.getBaseMetadataLanguageMap(false).get(code);
         if(displayName==null) {
             //Default (for cases such as :when a Dataset has a metadatalanguage code but :MetadataLanguages is no longer defined).
-            displayName = new Locale(code).getDisplayName();
+            displayName = new Locale(code).getDisplayName(); 
         }
-        return displayName;
+        return displayName; 
     }
-
+    
     public List<String> getVocabScripts() {
         return fieldService.getVocabScripts(settingsWrapper.getCVocConf());
     }
@@ -5635,7 +5633,7 @@ public class DatasetPage implements java.io.Serializable {
     public String getFieldLanguage(String languages) {
         return fieldService.getFieldLanguage(languages,session.getLocaleCode());
     }
-
+    
     public void setExternalStatus(String status) {
         try {
             dataset = commandEngine.submit(new SetCurationStatusCommand(dvRequestService.getDataverseRequest(), dataset, status));
@@ -5652,7 +5650,7 @@ public class DatasetPage implements java.io.Serializable {
             JsfHelper.addErrorMessage(msg);
         }
     }
-
+    
     public List<String> getAllowedExternalStatuses() {
         return settingsWrapper.getAllowedExternalStatuses(dataset);
     }
@@ -5863,7 +5861,7 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
     }
-
+    
     public boolean downloadingRestrictedFiles() {
         if (fileMetadataForAction != null) {
             return fileMetadataForAction.isRestricted();

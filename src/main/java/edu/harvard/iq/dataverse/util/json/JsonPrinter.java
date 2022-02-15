@@ -64,7 +64,7 @@ public class JsonPrinter {
 
     @EJB
     static DatasetFieldServiceBean datasetFieldService;
-
+    
     public static void injectSettingsService(SettingsServiceBean ssb, DatasetFieldServiceBean dfsb) {
             settingsService = ssb;
             datasetFieldService = dfsb;
@@ -462,9 +462,9 @@ public class JsonPrinter {
 
         blockBld.add("displayName", block.getDisplayName());
         blockBld.add("name", block.getName());
-
+        
         final JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
-        Map<Long, JsonObject> cvocMap = (datasetFieldService==null) ? new HashMap<Long, JsonObject>() :datasetFieldService.getCVocConf(false);
+        Map<Long, JsonObject> cvocMap = (datasetFieldService==null) ? new HashMap<Long, JsonObject>() :datasetFieldService.getCVocConf(false); 
         DatasetFieldWalker.walk(fields, settingsService, cvocMap, new DatasetFieldsToJson(fieldsArray));
 
         blockBld.add("fields", fieldsArray);
@@ -680,7 +680,7 @@ public class JsonPrinter {
             objectStack.peek().add("multiple", typ.isAllowMultiples());
             objectStack.peek().add("typeClass", typeClassString(typ));
         }
-
+        
         @Override
         public void addExpandedValuesArray(DatasetField f) {
             // Invariant: all values are multiple. Diffrentiation between multiple and single is done at endField.
@@ -701,7 +701,7 @@ public class JsonPrinter {
                             f.getDatasetFieldType().isAllowMultiples() ? expandedValues
                                     : expandedValues.get(0));
                 }
-
+                
                 valueArrStack.peek().add(jsonField);
             }
         }
@@ -717,7 +717,7 @@ public class JsonPrinter {
                 }
             }
         }
-
+        
         @Override
         public void primitiveValue(DatasetFieldValue dsfv) {
             if (dsfv.getValue() != null) {
