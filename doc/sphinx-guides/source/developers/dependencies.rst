@@ -244,7 +244,7 @@ Maven can manage versions of transitive dependencies in four ways:
     * - Safe Good Practice
       - (1) Explicitly declare the transitive dependency in ``<dependencyManagement>`` with a ``<version>`` tag.
       - (2) For more complex transitive dependencies, reuse a "Bill of Materials" (BOM) within ``<dependencyManagement>``.
-            Many bigger and standard use projects provide them, making the POM much less bloated compared to adding every bit yourself.
+            Many bigger projects provide them, making the POM much less bloated compared to adding every bit yourself.
     * - Better Avoid or Don't
       - (3) Use ``<optional>`` or ``<exclusion>`` tags on direct dependencies that request the transitive dependency.
             *Last resort*, you really should avoid this. Not explained or used here, but sometimes unavoidable.
