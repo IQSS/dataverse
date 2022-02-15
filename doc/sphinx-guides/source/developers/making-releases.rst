@@ -31,7 +31,7 @@ Add the version being released to the lists in the following two files:
 - scripts/database/releases.txt
 
 Here's an example commit where three of the four files above were updated at once: https://github.com/IQSS/dataverse/commit/99e23f96ec362ac2f524cb5cd80ca375fa13f196
-(Note: the version has been moved to a property in parent module since this commit was created)
+(Note: the version has been moved to a property in parent module since this commit was created.)
 
 2. Check in the Changes Above...
 ================================

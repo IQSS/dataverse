@@ -2322,7 +2322,7 @@ If you don’t want date facets to be sorted chronologically, set:
 ++++++++++++++++++++++++++++
 
 The location of the "Standalone Zipper" service. If this option is specified, the Dataverse installation will be
-redirecing bulk/mutli-file zip download requests to that location, instead of serving them internally.
+redirecing bulk/multi-file zip download requests to that location, instead of serving them internally.
 See :ref:`zipdownloader` of the Advanced Installation guide for information on how to install the external zipper.
 (This is still an **experimental** feature, as of Dataverse Software 5.0).
 
