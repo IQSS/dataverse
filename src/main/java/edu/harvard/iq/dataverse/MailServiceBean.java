@@ -440,6 +440,12 @@ public class MailServiceBean implements java.io.Serializable {
                 String[] paramArrayRejectFileAccess = {dataset.getDisplayName(), getDatasetLink(dataset)};
                 messageText += MessageFormat.format(pattern, paramArrayRejectFileAccess);
                 return messageText;
+            case DATASETCREATED:
+                dataset = (Dataset) targetObject;
+                pattern = BundleUtil.getStringFromBundle("notification.email.datasetWasCreated");
+                String[] paramArrayDatasetCreated = {getDatasetLink(dataset), dataset.getDisplayName(), userNotification.getRequestor().getName(), dataset.getOwner().getDisplayName()};
+                messageText += MessageFormat.format(pattern, paramArrayDatasetCreated);
+                return messageText;
             case CREATEDS:
                 version =  (DatasetVersion) targetObject;
                 String datasetCreatedMessage = BundleUtil.getStringFromBundle("notification.email.createDataset", Arrays.asList(
@@ -522,6 +528,12 @@ public class MailServiceBean implements java.io.Serializable {
                 String[] paramArrayWorkflowFailure = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset()), comment};
                 messageText += MessageFormat.format(pattern, paramArrayWorkflowFailure);
                 return messageText;
+            case STATUSUPDATED:
+                version =  (DatasetVersion) targetObject;
+                pattern = BundleUtil.getStringFromBundle("notification.email.status.change");
+                String[] paramArrayStatus = {version.getDataset().getDisplayName(), (version.getExternalStatusLabel()==null) ? "<none>" : version.getExternalStatusLabel()};
+                messageText += MessageFormat.format(pattern, paramArrayStatus);
+                return messageText;
             case CREATEACC:
                 InternetAddress systemAddress = getSystemAddress();
                 String accountCreatedMessage = BundleUtil.getStringFromBundle("notification.email.welcome", Arrays.asList(
@@ -575,6 +587,8 @@ public class MailServiceBean implements java.io.Serializable {
                         systemConfig.getDataverseSiteUrl(),
                         dataset.getGlobalIdString(),
                         dataset.getDisplayName(),
+                        systemConfig.getGuidesBaseUrl(),
+                        systemConfig.getGuidesVersion(),
                         comment
                 ));
 
@@ -586,6 +600,8 @@ public class MailServiceBean implements java.io.Serializable {
                         systemConfig.getDataverseSiteUrl(),
                         dataset.getGlobalIdString(),
                         dataset.getDisplayName(),
+                        systemConfig.getGuidesBaseUrl(),
+                        systemConfig.getGuidesVersion(),
                         comment
                 ));
 
@@ -613,6 +629,7 @@ public class MailServiceBean implements java.io.Serializable {
                 return dataFileService.find(userNotification.getObjectId());
             case GRANTFILEACCESS:
             case REJECTFILEACCESS:
+            case DATASETCREATED:
                 return datasetService.find(userNotification.getObjectId());
             case CREATEDS:
             case SUBMITTEDDS:
@@ -621,6 +638,7 @@ public class MailServiceBean implements java.io.Serializable {
             case RETURNEDDS:
             case WORKFLOW_SUCCESS:
             case WORKFLOW_FAILURE:
+            case STATUSUPDATED:
                 return versionService.find(userNotification.getObjectId());
             case CREATEACC:
                 return userNotification.getUser();

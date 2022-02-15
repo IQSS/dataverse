@@ -22,6 +22,8 @@ import java.util.Optional;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
 import static edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult.Status;
+import static edu.harvard.iq.dataverse.dataset.DatasetUtil.validateDatasetMetadataExternally;
+
 
 /**
  * Kick-off a dataset publication process. The process may complete immediately, 
@@ -90,6 +92,20 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             theDataset.getLatestVersion().setMinorVersionNumber(new Long(0));
         }
         
+        // Perform any optional validation steps, if defined:
+        if (ctxt.systemConfig().isExternalDatasetValidationEnabled()) {
+            // For admins, an override of the external validation step may be enabled: 
+            if (!(getUser().isSuperuser() && ctxt.systemConfig().isExternalValidationAdminOverrideEnabled())) {
+                String executable = ctxt.systemConfig().getDatasetValidationExecutable();
+                boolean result = validateDatasetMetadataExternally(theDataset, executable, getRequest());
+            
+                if (!result) {
+                    String rejectionMessage = ctxt.systemConfig().getDatasetValidationFailureMsg();
+                    throw new IllegalCommandException(rejectionMessage, this);
+                }
+            } 
+        }
+        
         //ToDo - should this be in onSuccess()? May relate to todo above 
         Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.PrePublishDataset);
         if ( prePubWf.isPresent() ) {
@@ -136,10 +152,25 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             info += validatePhysicalFiles ? "Validating Datafiles Asynchronously" : "";
             
             AuthenticatedUser user = request.getAuthenticatedUser();
-            DatasetLock lock = new DatasetLock(DatasetLock.Reason.finalizePublication, user);
-            lock.setDataset(theDataset);
-            lock.setInfo(info);
-            ctxt.datasets().addDatasetLock(theDataset, lock);
+            /*
+             * datasetExternallyReleased is only true in the case of the
+             * Dataverses.importDataset() and importDatasetDDI() methods. In that case, we
+             * are still in the transaction that creates theDataset, so
+             * A) Trying to create a DatasetLock referncing that dataset in a new 
+             * transaction (as ctxt.datasets().addDatasetLock() does) will fail since the 
+             * dataset doesn't yet exist, and 
+             * B) a lock isn't needed because no one can be trying to edit it yet (as it
+             * doesn't exist).
+             * Thus, we can/need to skip creating the lock. Since the calls to removeLocks
+             * in FinalizeDatasetPublicationCommand search for and remove existing locks, if
+             * one doesn't exist, the removal is a no-op in this case.
+             */
+            if (!datasetExternallyReleased) {
+                DatasetLock lock = new DatasetLock(DatasetLock.Reason.finalizePublication, user);
+                lock.setDataset(theDataset);
+                lock.setInfo(info);
+                ctxt.datasets().addDatasetLock(theDataset, lock);
+            }
             theDataset = ctxt.em().merge(theDataset);
             // The call to FinalizePublicationCommand has been moved to the new @onSuccess()
             // method:

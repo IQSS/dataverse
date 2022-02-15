@@ -24,27 +24,25 @@ alternatives --set java /usr/lib/jvm/jre-11-openjdk/bin/java
 java -version
 
 # maven included in centos8 requires 1.8.0 - download binary instead
-# current version is 3.6.3 - requires newer jacoco.pom.xml
-wget -q https://www-us.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
-tar xfz apache-maven-3.6.3-bin.tar.gz
+wget -q https://archive.apache.org/dist/maven/maven-3/3.8.2/binaries/apache-maven-3.8.2-bin.tar.gz
+tar xfz apache-maven-3.8.2-bin.tar.gz
 mkdir /opt/maven
-mv apache-maven-3.6.3/* /opt/maven/
+mv apache-maven-3.8.2/* /opt/maven/
 echo "export JAVA_HOME=/usr/lib/jvm/jre-openjdk" > /etc/profile.d/maven.sh
 echo "export M2_HOME=/opt/maven" >> /etc/profile.d/maven.sh
 echo "export MAVEN_HOME=/opt/maven" >> /etc/profile.d/maven.sh
 echo "export PATH=/opt/maven/bin:${PATH}" >> /etc/profile.d/maven.sh
 chmod 0755 /etc/profile.d/maven.sh
 
-# disable centos8 postgresql module and install postgresql10-server
-# note: postgresql10 because 9.6 isn't backwards compatible with python3-psycopg2
+# disable centos8 postgresql module and install postgresql13-server
 dnf -qy module disable postgresql
 dnf install -qy https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
-dnf install -qy postgresql10-server
-/usr/pgsql-10/bin/postgresql-10-setup initdb
-/usr/bin/systemctl stop postgresql-10
-cp /dataverse/conf/vagrant/var/lib/pgsql/data/pg_hba.conf /var/lib/pgsql/10/data/pg_hba.conf
-/usr/bin/systemctl start postgresql-10
-/usr/bin/systemctl enable postgresql-10
+dnf install -qy postgresql13-server
+/usr/pgsql-13/bin/postgresql-13-setup initdb
+/usr/bin/systemctl stop postgresql-13
+cp /dataverse/conf/vagrant/var/lib/pgsql/data/pg_hba.conf /var/lib/pgsql/13/data/pg_hba.conf
+/usr/bin/systemctl start postgresql-13
+/usr/bin/systemctl enable postgresql-13
 
 PAYARA_USER=dataverse
 echo "Ensuring Unix user '$PAYARA_USER' exists"
@@ -53,7 +51,7 @@ SOLR_USER=solr
 echo "Ensuring Unix user '$SOLR_USER' exists"
 useradd $SOLR_USER || :
 DOWNLOAD_DIR='/dataverse/downloads'
-PAYARA_ZIP="$DOWNLOAD_DIR/payara-5.2020.6.zip"
+PAYARA_ZIP="$DOWNLOAD_DIR/payara-5.2021.5.zip"
 SOLR_TGZ="$DOWNLOAD_DIR/solr-8.8.1.tgz"
 if [ ! -f $PAYARA_ZIP ] || [ ! -f $SOLR_TGZ ]; then
     echo "Couldn't find $PAYARA_ZIP or $SOLR_TGZ! Running download script...."

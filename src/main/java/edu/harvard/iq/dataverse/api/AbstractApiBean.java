@@ -41,6 +41,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.metrics.MetricsServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.locality.StorageSiteServiceBean;
@@ -181,6 +182,9 @@ public abstract class AbstractApiBean {
     protected MetadataBlockServiceBean metadataBlockSvc;
 
     @EJB
+    protected LicenseServiceBean licenseSvc;
+
+    @EJB
     protected UserServiceBean userSvc;
 
 	@EJB
@@ -266,7 +270,7 @@ public abstract class AbstractApiBean {
     private final LazyRef<JsonParser> jsonParserRef = new LazyRef<>(new Callable<JsonParser>() {
         @Override
         public JsonParser call() throws Exception {
-            return new JsonParser(datasetFieldSvc, metadataBlockSvc,settingsSvc);
+            return new JsonParser(datasetFieldSvc, metadataBlockSvc,settingsSvc, licenseSvc);
         }
     });
 
@@ -362,7 +366,17 @@ public abstract class AbstractApiBean {
             return GuestUser.get();
         }
         PrivateUrlUser privateUrlUser = privateUrlSvc.getPrivateUrlUserFromToken(requestApiKey);
+        // For privateUrlUsers restricted to anonymized access, all api calls are off-limits except for those used in the UI
+        // to download the file or image thumbs
         if (privateUrlUser != null) {
+            if (privateUrlUser.hasAnonymizedAccess()) {
+                String pathInfo = httpRequest.getPathInfo();
+                String prefix= "/access/datafile/";
+                if (!(pathInfo.startsWith(prefix) && !pathInfo.substring(prefix.length()).contains("/"))) {
+                    logger.info("Anonymized access request for " + pathInfo);
+                    throw new WrappedResponse(error(Status.UNAUTHORIZED, "API Access not allowed with this Key"));
+                }
+            }
             return privateUrlUser;
         }
         return findAuthenticatedUserOrDie(requestApiKey, requestWFKey);

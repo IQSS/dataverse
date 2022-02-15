@@ -2,7 +2,8 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:ui="http://java.sun.com/jsf/facelets"
-                xmlns:p="http://primefaces.org/ui">
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:jsf="http://xmlns.jcp.org/jsf">
     
     <ui:remove>
     <!--       
@@ -32,7 +33,7 @@
         </p>
         <div class="form-horizontal">
             <div class="form-group">
-                <label for="termsAccessInput" class="col-sm-3 control-label">
+                <label for="datasetForm:termsAccessInput" class="col-sm-3 control-label">
                     #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}"></span>
@@ -64,6 +65,82 @@
         </div>
     </p:dialog>  
 
+    <!-- Embargo Dialog-->
+    <p:dialog id="fileEmbargoPopup" styleClass="smallPopUp" resizable="false" header="#{bundle['file.editEmbargo']}" widgetVar="fileEmbargoPopup" modal="true">
+        <p:focus for="fileEmbargoDate"/>
+        <p class="help-block" jsf:rendered="#{bean.validEmbargoSelection}">#{bundle['file.editEmbargoDialog.tip']}</p>
+        <p class="text-warning embargo" jsf:rendered="#{bean.validEmbargoSelection and !bean.embargoForWholeSelection}"><span class="glyphicon glyphicon-warning-sign"/>#{bundle['file.editEmbargoDialog.some.tip']} #{bundle['file.editEmbargoDialog.partial.tip']}</p>
+        <p class="text-danger embargo" jsf:rendered="#{!bean.validEmbargoSelection}"><span class="glyphicon glyphicon-exclamation-sign"/>#{bundle['file.editEmbargoDialog.none.tip']}</p>
+
+        <h:panelGroup id="embargoInputs">
+            <div class="embargo">
+
+                <div class="form-horizontal"
+                    jsf:rendered="#{bean.validEmbargoSelection}">
+                    <div class="col-lg-3">
+                        <h:outputText class="embargolabel"
+                            value="#{bundle[ 'file.editEmbargo.add']}" />
+                    </div>
+                    <div class="col-lg-9">
+                        <div>
+                            <label class="help-block" for="datasetForm:fileEmbargoDate_input">
+                                #{bundle['file.editEmbargoDialog.newDate']} <span
+                                    class="glyphicon glyphicon-asterisk text-danger"
+                                    jsf:rendered="#{!bean.removeEmbargo}" />
+                            </label>
+                            <p:datePicker id="fileEmbargoDate"
+                                value="#{bean.selectionEmbargo.dateAvailable}"
+                                locale="#{dataverseSession.localeCode}"
+                                mindate="#{settingsWrapper.minEmbargoDate}" pattern="yyyy-MM-dd"
+                                maxdate="#{settingsWrapper.maxEmbargoDate}"
+                                disabled="#{bean.removeEmbargo}"
+                                validator="#{settingsWrapper.validateEmbargoDate}" >
+                                <p:ajax process="#{updateElements}"
+                                    update="#{updateElements}"
+                                    />
+                                </p:datePicker>
+                            <div>
+                                <h:message for="fileEmbargoDate"
+                                    styleClass="bg-danger text-danger" />
+                            </div>
+                        </div>
+                        <div class="p-field p-col-12 p-md-4">
+                            <p class="help-block">#{bundle['file.editEmbargoDialog.reason.tip']}</p>
+                            <p:inputText id="fileEmbargoAddReason" styleClass="form-control"
+                                disabled="#{bean.removeEmbargo}" type="text"
+                                value="#{bean.selectionEmbargo.reason}"
+                                placeholder="#{bundle['file.editEmbargoDialog.newReason']}"
+                                onkeypress="if (event.keyCode == 13) { return false;}" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="embargo">
+                <div jsf:rendered="#{bean.existingEmbargo}" class="embargocheckbox">
+                    <div class="col-lg-3">
+                        <h:outputText class="embargolabel"
+                            value="#{bundle[ 'file.editEmbargo.delete']}" />
+                    </div>
+                    <div class="col-lg-9">
+                        <p:selectBooleanCheckbox value="#{bean.removeEmbargo}" id="embargoCheckbox"
+                            itemLabel="#{bundle['file.editEmbargoDialog.remove']}"
+                            disabled="#{facesContext.validationFailed}">
+                            <p:ajax process="#{updateElements}"
+                                update="#{updateElements}"
+                                />
+                        </p:selectBooleanCheckbox>
+                    </div>
+                </div>
+            </div>
+        </h:panelGroup>
+        <div class="button-block">
+            <p:commandButton rendered="#{bean.validEmbargoSelection}" styleClass="btn btn-default" id="fileEmbargoPopupSaveButton" value="#{bundle.saveChanges}" 
+            oncomplete="if (args &amp;&amp; !args.validationFailed) PF('fileEmbargoPopup').hide();return false;" update="#{updateElements}" action="#{bean[saveEmbargoAction]}"/>
+            <p:commandButton styleClass="btn btn-link" id="fileEmbargoPopupCancelButton" value="#{bundle.cancel}" onclick="PF('fileEmbargoPopup').hide();
+                    PF('blockDatasetForm').hide();" action="#{bean.clearEmbargoPopup()}" update="#{updateElements}" immediate="true"/>
+        </div>
+    </p:dialog>
+    
     <p:dialog id="deleteFileConfirm" styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteFileConfirmation" modal="true">
         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.immediate']}</p>
         <ui:fragment rendered="#{datasetVersion.dataset.released}">

@@ -1,29 +1,9 @@
 package edu.harvard.iq.dataverse.util.json;
 
-import edu.harvard.iq.dataverse.AuxiliaryFile;
-import edu.harvard.iq.dataverse.ControlledVocabularyValue;
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileTag;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetDistributor;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
-import edu.harvard.iq.dataverse.DatasetLock;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseContact;
-import edu.harvard.iq.dataverse.DataverseFacet;
-import edu.harvard.iq.dataverse.DataverseTheme;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.MetadataBlock;
-import edu.harvard.iq.dataverse.RoleAssignment;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
@@ -37,15 +17,20 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import edu.harvard.iq.dataverse.util.SignpostingResources;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 
+import java.net.URISyntaxException;
 import java.util.*;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -77,8 +62,12 @@ public class JsonPrinter {
     @EJB
     static SettingsServiceBean settingsService;
 
-    public static void injectSettingsService(SettingsServiceBean ssb) {
+    @EJB
+    static DatasetFieldServiceBean datasetFieldService;
+
+    public static void injectSettingsService(SettingsServiceBean ssb, DatasetFieldServiceBean dfsb) {
             settingsService = ssb;
+            datasetFieldService = dfsb;
     }
 
     public JsonPrinter() {
@@ -329,45 +318,46 @@ public class JsonPrinter {
                 .add("authority", ds.getAuthority())
                 .add("publisher", BrandingUtil.getInstallationBrandName())
                 .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
-                .add("storageIdentifier", ds.getStorageIdentifier());
+                .add("storageIdentifier", ds.getStorageIdentifier())
+                .add("metadataLanguage", ds.getMetadataLanguage());
     }
 
     public static JsonObjectBuilder json(DatasetVersion dsv) {
         JsonObjectBuilder bld = jsonObjectBuilder()
-                .add("id", dsv.getId())
-                .add("datasetId", dsv.getDataset().getId())
+                .add("id", dsv.getId()).add("datasetId", dsv.getDataset().getId())
                 .add("datasetPersistentId", dsv.getDataset().getGlobalId().asString())
                 .add("storageIdentifier", dsv.getDataset().getStorageIdentifier())
-                .add("versionNumber", dsv.getVersionNumber())
-                .add("versionMinorNumber", dsv.getMinorVersionNumber())
-                .add("versionState", dsv.getVersionState().name())
-                .add("versionNote", dsv.getVersionNote())
-                .add("archiveNote", dsv.getArchiveNote())
-                .add("deaccessionLink", dsv.getDeaccessionLink())
-                .add("distributionDate", dsv.getDistributionDate())
-                .add("productionDate", dsv.getProductionDate())
-                .add("UNF", dsv.getUNF())
-                .add("archiveTime", format(dsv.getArchiveTime()))
-                .add("lastUpdateTime", format(dsv.getLastUpdateTime()))
-                .add("releaseTime", format(dsv.getReleaseTime()))
-                .add("createTime", format(dsv.getCreateTime()))
-                .add("license", dsv.getTermsOfUseAndAccess().getLicense() != null ? dsv.getTermsOfUseAndAccess().getLicense().toString() : null)
-                .add("termsOfUse", getLicenseInfo(dsv))
-                .add("confidentialityDeclaration", dsv.getTermsOfUseAndAccess().getConfidentialityDeclaration() != null ? dsv.getTermsOfUseAndAccess().getConfidentialityDeclaration() : null)
-                .add("availabilityStatus", dsv.getTermsOfUseAndAccess().getAvailabilityStatus() != null ? dsv.getTermsOfUseAndAccess().getAvailabilityStatus() : null)
-                .add("specialPermissions", dsv.getTermsOfUseAndAccess().getSpecialPermissions() != null ? dsv.getTermsOfUseAndAccess().getSpecialPermissions() : null)
-                .add("restrictions", dsv.getTermsOfUseAndAccess().getRestrictions() != null ? dsv.getTermsOfUseAndAccess().getRestrictions() : null)
-                .add("citationRequirements", dsv.getTermsOfUseAndAccess().getCitationRequirements() != null ? dsv.getTermsOfUseAndAccess().getCitationRequirements() : null)
-                .add("depositorRequirements", dsv.getTermsOfUseAndAccess().getDepositorRequirements() != null ? dsv.getTermsOfUseAndAccess().getDepositorRequirements() : null)
-                .add("conditions", dsv.getTermsOfUseAndAccess().getConditions() != null ? dsv.getTermsOfUseAndAccess().getConditions() : null)
-                .add("disclaimer", dsv.getTermsOfUseAndAccess().getDisclaimer() != null ? dsv.getTermsOfUseAndAccess().getDisclaimer() : null)
-                .add("termsOfAccess", dsv.getTermsOfUseAndAccess().getTermsOfAccess() != null ? dsv.getTermsOfUseAndAccess().getTermsOfAccess() : null)
-                .add("dataAccessPlace", dsv.getTermsOfUseAndAccess().getDataAccessPlace() != null ? dsv.getTermsOfUseAndAccess().getDataAccessPlace() : null)
-                .add("originalArchive", dsv.getTermsOfUseAndAccess().getOriginalArchive() != null ? dsv.getTermsOfUseAndAccess().getOriginalArchive() : null)
-                .add("availabilityStatus", dsv.getTermsOfUseAndAccess().getAvailabilityStatus() != null ? dsv.getTermsOfUseAndAccess().getAvailabilityStatus() : null)
-                .add("contactForAccess", dsv.getTermsOfUseAndAccess().getContactForAccess() != null ? dsv.getTermsOfUseAndAccess().getContactForAccess() : null)
-                .add("sizeOfCollection", dsv.getTermsOfUseAndAccess().getSizeOfCollection() != null ? dsv.getTermsOfUseAndAccess().getSizeOfCollection() : null)
-                .add("studyCompletion", dsv.getTermsOfUseAndAccess().getStudyCompletion() != null ? dsv.getTermsOfUseAndAccess().getStudyCompletion() : null)
+                .add("versionNumber", dsv.getVersionNumber()).add("versionMinorNumber", dsv.getMinorVersionNumber())
+                .add("versionState", dsv.getVersionState().name()).add("versionNote", dsv.getVersionNote())
+                .add("archiveNote", dsv.getArchiveNote()).add("deaccessionLink", dsv.getDeaccessionLink())
+                .add("distributionDate", dsv.getDistributionDate()).add("productionDate", dsv.getProductionDate())
+                .add("UNF", dsv.getUNF()).add("archiveTime", format(dsv.getArchiveTime()))
+                .add("lastUpdateTime", format(dsv.getLastUpdateTime())).add("releaseTime", format(dsv.getReleaseTime()))
+                .add("createTime", format(dsv.getCreateTime()));
+        License license = dsv.getTermsOfUseAndAccess().getLicense();
+        if (license != null) {
+            // Standard license
+            bld.add("license", jsonObjectBuilder()
+                    .add("name", DatasetUtil.getLicenseName(dsv))
+                    .add("uri", DatasetUtil.getLicenseURI(dsv)));
+        } else {
+            // Custom terms
+            bld.add("termsOfUse", dsv.getTermsOfUseAndAccess().getTermsOfUse())
+                    .add("confidentialityDeclaration", dsv.getTermsOfUseAndAccess().getConfidentialityDeclaration())
+                    .add("specialPermissions", dsv.getTermsOfUseAndAccess().getSpecialPermissions())
+                    .add("restrictions", dsv.getTermsOfUseAndAccess().getRestrictions())
+                    .add("citationRequirements", dsv.getTermsOfUseAndAccess().getCitationRequirements())
+                    .add("depositorRequirements", dsv.getTermsOfUseAndAccess().getDepositorRequirements())
+                    .add("conditions", dsv.getTermsOfUseAndAccess().getConditions())
+                    .add("disclaimer", dsv.getTermsOfUseAndAccess().getDisclaimer());
+        }
+        bld.add("termsOfAccess", dsv.getTermsOfUseAndAccess().getTermsOfAccess())
+                .add("dataAccessPlace", dsv.getTermsOfUseAndAccess().getDataAccessPlace())
+                .add("originalArchive", dsv.getTermsOfUseAndAccess().getOriginalArchive())
+                .add("availabilityStatus", dsv.getTermsOfUseAndAccess().getAvailabilityStatus())
+                .add("contactForAccess", dsv.getTermsOfUseAndAccess().getContactForAccess())
+                .add("sizeOfCollection", dsv.getTermsOfUseAndAccess().getSizeOfCollection())
+                .add("studyCompletion", dsv.getTermsOfUseAndAccess().getStudyCompletion())
                 .add("fileAccessRequest", dsv.getTermsOfUseAndAccess().isFileAccessRequest());
 
         bld.add("metadataBlocks", jsonByBlocks(dsv.getDatasetFields()));
@@ -395,13 +385,6 @@ public class JsonPrinter {
         bld.add("files", jsonFileMetadatas(dataFileList));
 
         return bld;
-    }
-
-    private static String getLicenseInfo(DatasetVersion dsv) {
-        if (dsv.getTermsOfUseAndAccess().getLicense() != null && dsv.getTermsOfUseAndAccess().getLicense().equals(TermsOfUseAndAccess.License.CC0)) {
-            return "CC0 Waiver";
-        }
-        return dsv.getTermsOfUseAndAccess().getTermsOfUse();
     }
 
     /**
@@ -478,9 +461,11 @@ public class JsonPrinter {
         JsonObjectBuilder blockBld = jsonObjectBuilder();
 
         blockBld.add("displayName", block.getDisplayName());
-        final JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
+        blockBld.add("name", block.getName());
 
-        DatasetFieldWalker.walk(fields, settingsService, new DatasetFieldsToJson(fieldsArray));
+        final JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
+        Map<Long, JsonObject> cvocMap = (datasetFieldService==null) ? new HashMap<Long, JsonObject>() :datasetFieldService.getCVocConf(false);
+        DatasetFieldWalker.walk(fields, settingsService, cvocMap, new DatasetFieldsToJson(fieldsArray));
 
         blockBld.add("fields", fieldsArray);
         return blockBld;
@@ -501,7 +486,8 @@ public class JsonPrinter {
             return null;
         } else {
             JsonArrayBuilder fieldArray = Json.createArrayBuilder();
-            DatasetFieldWalker.walk(dfv, new DatasetFieldsToJson(fieldArray));
+            Map<Long, JsonObject> cvocMap = (datasetFieldService==null) ? new HashMap<Long, JsonObject>() :datasetFieldService.getCVocConf(false);
+            DatasetFieldWalker.walk(dfv, new DatasetFieldsToJson(fieldArray), cvocMap);
             JsonArray out = fieldArray.build();
             return out.getJsonObject(0);
         }
@@ -599,15 +585,18 @@ public class JsonPrinter {
         if (new GlobalId(df).toURL() != null){
             pidURL = new GlobalId(df).toURL().toString();
         }
-        
+
+        JsonObjectBuilder embargo = df.getEmbargo() != null ? JsonPrinter.json(df.getEmbargo()) : null;
+
         return jsonObjectBuilder()
                 .add("id", df.getId())
                 .add("persistentId", df.getGlobalIdString())
                 .add("pidURL", pidURL)
                 .add("filename", fileName)
-                .add("contentType", df.getContentType())            
-                .add("filesize", df.getFilesize())            
-                .add("description", df.getDescription())    
+                .add("contentType", df.getContentType())
+                .add("filesize", df.getFilesize())
+                .add("description", df.getDescription())
+                .add("embargo", embargo)
                 //.add("released", df.isReleased())
                 //.add("restricted", df.isRestricted())
                 .add("storageIdentifier", df.getStorageIdentifier())
@@ -693,14 +682,39 @@ public class JsonPrinter {
         }
 
         @Override
+        public void addExpandedValuesArray(DatasetField f) {
+            // Invariant: all values are multiple. Diffrentiation between multiple and single is done at endField.
+            valueArrStack.push(Json.createArrayBuilder());
+        }
+
+        @Override
         public void endField(DatasetField f) {
             JsonObjectBuilder jsonField = objectStack.pop();
+            JsonArray expandedValues = valueArrStack.pop().build();
             JsonArray jsonValues = valueArrStack.pop().build();
             if (!jsonValues.isEmpty()) {
                 jsonField.add("value",
                         f.getDatasetFieldType().isAllowMultiples() ? jsonValues
                                 : jsonValues.get(0));
+                if (!expandedValues.isEmpty()) {
+                    jsonField.add("expandedvalue",
+                            f.getDatasetFieldType().isAllowMultiples() ? expandedValues
+                                    : expandedValues.get(0));
+                }
+
                 valueArrStack.peek().add(jsonField);
+            }
+        }
+
+        @Override
+        public void externalVocabularyValue(DatasetFieldValue dsfv, JsonObject cvocEntry) {
+            if (dsfv.getValue() != null) {
+                if (cvocEntry.containsKey("retrieval-filtering")) {
+                    JsonObject value = datasetFieldService.getExternalVocabularyValue(dsfv.getValue());
+                    if (value!=null) {
+                        valueArrStack.peek().add(value);
+                    }
+                }
             }
         }
 
@@ -712,7 +726,7 @@ public class JsonPrinter {
         }
 
         @Override
-        public void controledVocabularyValue(ControlledVocabularyValue cvv) {
+        public void controlledVocabularyValue(ControlledVocabularyValue cvv) {
             valueArrStack.peek().add(cvv.getStrValue());
         }
 
@@ -772,7 +786,23 @@ public class JsonPrinter {
                     .add("id", String.valueOf(aFacet.getId())) // TODO should just be id I think
                     .add("name", aFacet.getDatasetFieldType().getDisplayName());
     }
-        
+
+    public static JsonObjectBuilder json(Embargo embargo) {
+        return jsonObjectBuilder().add("dateAvailable", embargo.getDateAvailable().toString()).add("reason",
+                embargo.getReason());
+    }
+
+    public static JsonObjectBuilder json(License license) {
+        return jsonObjectBuilder()
+            .add("id", license.getId())
+            .add("name", license.getName())
+            .add("shortDescription", license.getShortDescription())
+            .add("uri", license.getUri().toString())
+            .add("iconUrl", license.getIconUrl().toString())
+            .add("active", license.isActive())
+            .add("isDefault", license.isDefault());
+    }
+
     public static Collector<String, JsonArrayBuilder, JsonArrayBuilder> stringsToJsonArray() {
         return new Collector<String, JsonArrayBuilder, JsonArrayBuilder>() {
 

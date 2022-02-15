@@ -16,9 +16,14 @@ package edu.harvard.iq.dataverse.util;
   The configuration can be modified during run time by the administrator.
  */
 
-import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DatasetAuthor;
+import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
+import edu.harvard.iq.dataverse.license.License;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -38,7 +43,7 @@ public class SignpostingResources {
     private static final Logger logger = Logger.getLogger(SignpostingResources.class.getCanonicalName());
     SystemConfig systemConfig;
     DatasetVersion workingDatasetVersion;
-    JsonObject licJsonObj;
+//    JsonObject licJsonObj;
     JsonObject describedByJsonObj;
     Boolean useDefaultFileType;
     String defaultFileTypeValue;
@@ -54,7 +59,7 @@ public class SignpostingResources {
         JsonReader jsonReader = Json.createReader(new StringReader(jsonSetting));
         JsonObject spJsonSetting = jsonReader.readObject();
         jsonReader.close();
-        licJsonObj = spJsonSetting.getJsonObject("license");
+//        licJsonObj = spJsonSetting.getJsonObject("license");
         describedByJsonObj = spJsonSetting.getJsonObject("describedby");
         useDefaultFileType = spJsonSetting.getBoolean("useDefaultFileType", true);
         defaultFileTypeValue = spJsonSetting.getString("defaultFileTypeValue", "https://schema.org/Dataset");
@@ -143,13 +148,11 @@ public class SignpostingResources {
         valueList.add(type);
 
         // TODO: support only CC0 now, should add flexible license support when flex-terms or multi-license is ready
-        TermsOfUseAndAccess.License license = workingDatasetVersion.getTermsOfUseAndAccess().getLicense();
-        String licenseString = "";
-        if (license == null || license == TermsOfUseAndAccess.License.CC0) {
-            // On the current Dataverse, only None and CC0. In the signposting protocol: cardinality is 1
-            licenseString = licJsonObj.getString(TermsOfUseAndAccess.License.CC0.name()) + ";rel=\"license\"";
-            valueList.add(licenseString);
-        }
+//        License license = workingDatasetVersion.getTermsOfUseAndAccess().getLicense();
+        License license = workingDatasetVersion.getTermsOfUseAndAccess().getLicense();
+        String licenseString = license.getUri() + ";rel=\"license\"";
+        valueList.add(licenseString);
+
         /*
         else {
             TODO: when multilicense is merged, should get license link from multilicense
@@ -229,20 +232,8 @@ public class SignpostingResources {
         List<FileMetadata> fms = workingDatasetVersion.getFileMetadatas();
         JsonArrayBuilder items = getJsonItems(fms);
 
-        TermsOfUseAndAccess.License license = workingDatasetVersion.getTermsOfUseAndAccess().getLicense();
-        String licenseString = "";
-        if (license == null || license == TermsOfUseAndAccess.License.CC0) {
-            licenseString = licJsonObj.getString(TermsOfUseAndAccess.License.CC0.name());
-        }
-        /*
-        else {
-            TODO: when multilicense is merged, should get license link from multilicense
-             Thus the checking would not be necessary?
-             Currently, when the License is None, which means bring-your-own-license,
-             Mostly, we will not have a valid URI in the License, so we skip it here despite that signposting requires 1
-             valid URI.
-        }
-        */
+        License license = workingDatasetVersion.getTermsOfUseAndAccess().getLicense();
+        String licenseString = license.getUri().toString();
 
         JsonArrayBuilder mediaTypes = Json.createArrayBuilder();
         mediaTypes.add(
