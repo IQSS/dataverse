@@ -199,7 +199,7 @@ However, as life is a box of chocolates, you might find yourself in *version con
 knowing, but experiencing unintended side effects.
 
 When you look at the topmost graph above, imagine *B* and *TB* rely on different *versions* of *TC*. How does Maven
-decide which version it will include? Easy: the "nearest" dependency version wins. The following graph gives an example:
+decide which version it will include? Easy: the version of the dependency nearest to our project ("Your Code)" wins. The following graph gives an example:
 
 .. graphviz::
 
