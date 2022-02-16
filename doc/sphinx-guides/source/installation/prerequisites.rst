@@ -44,7 +44,7 @@ On RHEL/derivative you can make Java 11 the default with the ``alternatives`` co
 Payara
 ------
 
-Payara 5.2020.6 is recommended. Newer versions might work fine, regular updates are recommended.
+Payara 5.2021.5 is recommended. Newer versions might work fine, regular updates are recommended.
 
 Installing Payara
 =================
@@ -55,8 +55,8 @@ Installing Payara
 
 - Download and install Payara (installed in ``/usr/local/payara5`` in the example commands below)::
 
-	# wget https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2020.6/payara-5.2020.6.zip
-	# unzip payara-5.2020.6.zip
+	# wget https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2021.5/payara-5.2021.5.zip
+	# unzip payara-5.2021.5.zip
 	# mv payara5 /usr/local
 
 If you intend to install and run Payara under a service account (and we hope you do), chown -R the Payara hierarchy to root to protect it but give the service account access to the below directories:
@@ -265,6 +265,8 @@ or you may install it manually::
         # chmod +x jq
         # jq --version
 
+.. _install-imagemagick:
+
 ImageMagick
 -----------
 
@@ -279,8 +281,6 @@ On a Red Hat or derivative Linux distribution, you can install ImageMagick with 
 
 (most RedHat systems will have it pre-installed).
 When installed using standard ``yum`` mechanism, above, the executable for the ImageMagick convert utility will be located at ``/usr/bin/convert``. No further configuration steps will then be required.
-
-On MacOS you can compile ImageMagick from sources, or use one of the popular installation frameworks, such as brew.
 
 If the installed location of the convert executable is different from ``/usr/bin/convert``, you will also need to specify it in your Payara configuration using the JVM option, below. For example::
 
@@ -362,7 +362,14 @@ The Dataverse Software uses `Rserve <https://rforge.net/Rserve/>`_ to communicat
 to R. Rserve is installed as a library package, as described in the
 step above. It runs as a daemon process on the server, accepting
 network connections on a dedicated port. This requires some extra
-configuration and we provide a  script (:fixedwidthplain:`scripts/r/rserve/rserve-setup.sh`) for setting it up.
+configuration and we provide a script for setting it up.
+
+You'll want to obtain local copies of the Rserve setup files found in
+https://github.com/IQSS/dataverse/tree/master/scripts/r/rserve
+either by cloning a local copy of the IQSS repository:
+:fixedwidthplain:`git clone -b master https://github.com/IQSS/dataverse.git`
+or by downloading the files individually.
+
 Run the script as follows (as root)::
 
     cd <DATAVERSE SOURCE TREE>/scripts/r/rserve

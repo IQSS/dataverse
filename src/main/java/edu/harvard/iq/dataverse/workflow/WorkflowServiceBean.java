@@ -135,7 +135,11 @@ public class WorkflowServiceBean {
             /*
              * Sleep here briefly to make sure the database update from the callers
              * transaction completes which avoids any concurrency/optimistic lock issues.
-             * Note: 1 second appears long enough, but shorter delays may work
+             * Note: 1 second appears long enough, but shorter delays may work.
+             * One example:
+             * the Dataverses.importDataset()/importDatasetDDI() calls with release=yes will
+             * trigger a prepublish workflow on a dataset that isn't committed to the
+             * database until the API call completes.
              */
             try {
                 Thread.sleep(1000);

@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.iq.dataverse.search.SortBy;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class FileSortFieldAndOrder {
 

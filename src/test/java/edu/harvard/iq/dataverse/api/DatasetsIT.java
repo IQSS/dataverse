@@ -7,6 +7,8 @@ import com.jayway.restassured.response.Response;
 import java.util.logging.Logger;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.Mockito;
+import org.skyscreamer.jsonassert.JSONAssert;
 import org.junit.Ignore;
 import com.jayway.restassured.path.json.JsonPath;
 
@@ -21,23 +23,28 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
+
 import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.UUID;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import com.jayway.restassured.parsing.Parser;
 import static com.jayway.restassured.path.json.JsonPath.with;
 import com.jayway.restassured.path.xml.XmlPath;
-import edu.harvard.iq.dataverse.Dataset;
 import static edu.harvard.iq.dataverse.api.UtilIT.equalToCI;
-import static edu.harvard.iq.dataverse.authorization.AuthenticationResponse.Status.ERROR;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
+
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -45,26 +52,17 @@ import java.util.HashMap;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObjectBuilder;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-import javax.persistence.PersistenceContext;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
 import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.CoreMatchers.nullValue;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import org.junit.Before;
 import static org.junit.matchers.JUnitMatchers.containsString;
 
 public class DatasetsIT {
@@ -327,6 +325,36 @@ public class DatasetsIT {
         
         publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         //"Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + displayValue + " not found."
+    }
+    
+    @Test
+    public void testAddEmptyDatasetViaNativeAPI() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);        
+        
+        String pathToJsonFile = "scripts/search/tests/data/emptyDataset.json";
+        Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
+        createDatasetResponse.prettyPrint();
+
+        createDatasetResponse.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode())
+                .body("message", startsWith("Validation Failed: "));  
+        
+        pathToJsonFile = "scripts/search/tests/data/datasetMissingReqFields.json";        
+        createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
+        createDatasetResponse.prettyPrint();
+        
+        createDatasetResponse.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode())
+                .body("message", startsWith("Validation Failed: "));
+ 
     }
 
     /**
@@ -733,8 +761,19 @@ public class DatasetsIT {
     }
 
     @Test
-    public void testSequentialNumberAsIdentifierGenerationStyle() {
-
+    public void testStoredProcGeneratedAsIdentifierGenerationStyle() {
+        // Please note that this test only works if the stored procedure
+        // named generateIdentifierFromStoredProcedure() has been created in the 
+        // database (see the documentation for the "IdentifierGenerationStyle" option
+        // in the Configuration section of the Installation guide).
+        // Furthermore, the test below expects the identifier generated by the stored
+        // procedure to be a numeric string. The "sequential numerical values" procedure, 
+        // documented as the first example in the guide above, will satisfy the test. 
+        // If your installation is using a stored procedure that generates the identifiers
+        // in any other format, the test below will fail. 
+        // (The test is mainly used by the Dataverse Project's automated API test system 
+        // to verify the integrity of this framework for generating the identifiers on the 
+        // database side). 
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         String username = UtilIT.getUsernameFromResponse(createUser);
@@ -744,8 +783,8 @@ public class DatasetsIT {
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
-        Response setSequentialNumberAsIdentifierGenerationStyle = UtilIT.setSetting(SettingsServiceBean.Key.IdentifierGenerationStyle, "sequentialNumber");
-        setSequentialNumberAsIdentifierGenerationStyle.then().assertThat()
+        Response setStoredProcGeneratedAsIdentifierGenerationStyle = UtilIT.setSetting(SettingsServiceBean.Key.IdentifierGenerationStyle, "storedProcGenerated");
+        setStoredProcGeneratedAsIdentifierGenerationStyle.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
@@ -2164,4 +2203,294 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("message", equalTo("You do not have permission to download this file."));
     }
 
+    @Test
+    public void testSemanticMetadataAPIs() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        // Create a dataset using native api
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+        // Get the metadata with the semantic api
+        Response response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
+        response.then().assertThat().statusCode(OK.getStatusCode());
+        // Compare the metadata with an expected value - the metadatablock entries
+        // should be the same but there will be additional fields with values related to
+        // the dataset's creation (e.g. new id)
+        String jsonLDString = getData(response.getBody().asString());
+        JsonObject jo = null;
+        try {
+            jo = JSONLDUtil.decontextualizeJsonLD(jsonLDString);
+        } catch (NoSuchMethodError e) {
+            logger.info(ExceptionUtils.getStackTrace(e));
+        }
+        
+
+        String expectedJsonLD = UtilIT.getDatasetJson("scripts/search/tests/data/dataset-finch1.jsonld");
+        jo = Json.createObjectBuilder(jo).remove("@id").remove("http://schema.org/dateModified").build();
+        String jsonLD = jo.toString();
+
+        // ToDo: Are the static pars as expected
+        JSONAssert.assertEquals(expectedJsonLD, jsonLD, false);
+        // Now change the title
+        response = UtilIT.updateDatasetJsonLDMetadata(datasetId, apiToken,
+                "{\"Title\": \"New Title\", \"@context\":{\"Title\": \"http://purl.org/dc/terms/title\"}}", true);
+        response.then().assertThat().statusCode(OK.getStatusCode());
+
+        response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
+        response.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Check that the semantic api returns the new title
+        jsonLDString = getData(response.getBody().asString());
+        JsonObject jsonLDObject = JSONLDUtil.decontextualizeJsonLD(jsonLDString);
+        assertEquals("New Title", jsonLDObject.getString("http://purl.org/dc/terms/title"));
+
+        // Add an additional description (which is multi-valued and compound)
+        // Also add new terms of use (single value so would fail with replace false if a
+        // value existed)
+        String newDescription = "{\"citation:Description\": {\"dsDescription:Text\": \"New description\"}, \"https://dataverse.org/schema/core#termsOfUse\": \"New terms\", \"@context\":{\"citation\": \"https://dataverse.org/schema/citation/\",\"dsDescription\": \"https://dataverse.org/schema/citation/dsDescription#\"}}";
+        response = UtilIT.updateDatasetJsonLDMetadata(datasetId, apiToken, newDescription, false);
+        response.then().assertThat().statusCode(OK.getStatusCode());
+
+        response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
+        response.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Look for a second description
+        jsonLDString = getData(response.getBody().asString());
+        jsonLDObject = JSONLDUtil.decontextualizeJsonLD(jsonLDString);
+        assertEquals("New description",
+                ((JsonObject) jsonLDObject.getJsonArray("https://dataverse.org/schema/citation/Description").get(1))
+                        .getString("https://dataverse.org/schema/citation/dsDescription#Text"));
+
+        // Can't add terms of use with replace=false and a value already set (single
+        // valued field)
+        String badTerms = "{\"https://dataverse.org/schema/core#termsOfUse\": \"Bad terms\"}}";
+        response = UtilIT.updateDatasetJsonLDMetadata(datasetId, apiToken, badTerms, false);
+        response.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+
+        // Delete the terms of use
+        response = UtilIT.deleteDatasetJsonLDMetadata(datasetId, apiToken,
+                "{\"https://dataverse.org/schema/core#termsOfUse\": \"New terms\"}");
+        response.then().assertThat().statusCode(OK.getStatusCode());
+
+        response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
+        response.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Verify that they're gone
+        jsonLDString = getData(response.getBody().asString());
+        jsonLDObject = JSONLDUtil.decontextualizeJsonLD(jsonLDString);
+        assertTrue(!jsonLDObject.containsKey("https://dataverse.org/schema/core#termsOfUse"));
+
+        // Cleanup - delete dataset, dataverse, user...
+        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        deleteDatasetResponse.prettyPrint();
+        assertEquals(200, deleteDatasetResponse.getStatusCode());
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverseResponse.prettyPrint();
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+
+    }
+    
+    @Test
+    public void testReCreateDataset() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        assertEquals(200, makeSuperUser.getStatusCode());
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        // Create a dataset using native API
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+        // Get the semantic metadata
+        Response response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
+        response.then().assertThat().statusCode(OK.getStatusCode());
+
+        String expectedString = getData(response.getBody().asString());
+        
+        // Delete the dataset via native API
+        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        deleteDatasetResponse.prettyPrint();
+        assertEquals(200, deleteDatasetResponse.getStatusCode());
+
+        // Now use the migrate API to recreate the dataset
+        // Now use the migrate API to recreate the dataset
+        response = UtilIT.recreateDatasetJsonLD(apiToken, dataverseAlias, expectedString);
+        String body = response.getBody().asString();
+        response.then().assertThat().statusCode(CREATED.getStatusCode());
+
+        try (StringReader rdr = new StringReader(body)) {
+            datasetId = Json.createReader(rdr).readObject().getJsonObject("data").getInt("id");
+        }
+        // Get the jsonLD metadata for what we recreated
+        response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
+        response.then().assertThat().statusCode(OK.getStatusCode());
+
+        String jsonLDString = getData(response.getBody().asString());
+        JsonObject jsonLD = JSONLDUtil.decontextualizeJsonLD(jsonLDString);
+
+        JsonObject expectedJsonLD = JSONLDUtil.decontextualizeJsonLD(expectedString);
+        expectedJsonLD = Json.createObjectBuilder(expectedJsonLD).remove("@id").remove("http://schema.org/dateModified")
+                .build();
+        // ToDo: Assert that the semantic api response is the same (everything in the
+        // expected version is in the new one - deleting the @id and dateModified means
+        // those won't be compared (with last param = false)
+        JSONAssert.assertEquals(expectedJsonLD.toString(), jsonLD.toString(), false);
+
+        // Now cleanup
+        deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        deleteDatasetResponse.prettyPrint();
+        assertEquals(200, deleteDatasetResponse.getStatusCode());
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverseResponse.prettyPrint();
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+    }
+
+    @Test
+    public void testCurationLabelAPIs() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response setCurationLabelSets = UtilIT.setSetting(SettingsServiceBean.Key.AllowedCurationLabels, "{\"StandardProcess\":[\"Author contacted\", \"Privacy Review\", \"Awaiting paper publication\", \"Final Approval\"],\"AlternateProcess\":[\"State 1\",\"State 2\",\"State 3\"]}");
+        setCurationLabelSets.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        
+        //Set curation label set on dataverse
+        //Valid option, bad user
+        Response setDataverseCurationLabelSetResponse = UtilIT.setDataverseCurationLabelSet(dataverseAlias, apiToken, "AlternateProcess");
+        setDataverseCurationLabelSetResponse.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+        
+        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        assertEquals(200, makeSuperUser.getStatusCode());
+
+        //Non-existent option
+        Response setDataverseCurationLabelSetResponse2 = UtilIT.setDataverseCurationLabelSet(dataverseAlias, apiToken, "OddProcess");
+        setDataverseCurationLabelSetResponse2.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        //Valid option, superuser
+        Response setDataverseCurationLabelSetResponse3 = UtilIT.setDataverseCurationLabelSet(dataverseAlias, apiToken, "AlternateProcess");
+        setDataverseCurationLabelSetResponse3.then().assertThat().statusCode(OK.getStatusCode());
+
+        
+        // Create a dataset using native api
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        // Get the curation label set in use
+        Response response = UtilIT.getDatasetCurationLabelSet(datasetId, apiToken);
+        response.then().assertThat().statusCode(OK.getStatusCode());
+        //Verify that the set name is what was set on the dataverse
+        String labelSetName = getData(response.getBody().asString());
+        // full should be {"message":"AlternateProcess"}
+        assertTrue(labelSetName.contains("AlternateProcess"));
+        
+        // Now set a label
+        //Option from the wrong set
+        Response response2 = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "Author contacted");
+        response2.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        // Valid option
+        Response response3 = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "State 1");
+        response3.then().assertThat().statusCode(OK.getStatusCode());
+    }
+
+    private String getData(String body) {
+        try (StringReader rdr = new StringReader(body)) {
+            return Json.createReader(rdr).readObject().getJsonObject("data").toString();
+        }
+    }
+
+    @Test
+    public void testFilesUnchangedAfterDatasetMetadataUpdate() throws IOException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        createUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.prettyPrint();
+        createDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String datasetPid = JsonPath.from(createDataset.asString()).getString("data.persistentId");
+        Integer datasetId = JsonPath.from(createDataset.asString()).getInt("data.id");
+
+        Path pathtoScript = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "run.sh");
+        java.nio.file.Files.write(pathtoScript, "#!/bin/bash\necho hello".getBytes());
+
+        JsonObjectBuilder json1 = Json.createObjectBuilder()
+                .add("description", "A script to reproduce results.")
+                .add("directoryLabel", "code");
+
+        Response uploadReadme1 = UtilIT.uploadFileViaNative(datasetId.toString(), pathtoScript.toString(), json1.build(), apiToken);
+        uploadReadme1.prettyPrint();
+        uploadReadme1.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("run.sh"))
+                .body("data.files[0].directoryLabel", equalTo("code"));
+
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        Response getDatasetJsonBeforeUpdate = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJsonBeforeUpdate.prettyPrint();
+        getDatasetJsonBeforeUpdate.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.latestVersion.files[0].label", equalTo("run.sh"))
+                .body("data.latestVersion.files[0].directoryLabel", equalTo("code"));
+        
+        String pathToJsonFile = "doc/sphinx-guides/source/_static/api/dataset-update-metadata.json";
+        Response updateTitle = UtilIT.updateDatasetMetadataViaNative(datasetPid, pathToJsonFile, apiToken);
+        updateTitle.prettyPrint();
+        updateTitle.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        Response getDatasetJsonAfterUpdate = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJsonAfterUpdate.prettyPrint();
+        getDatasetJsonAfterUpdate.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.latestVersion.files[0].label", equalTo("run.sh"))
+                .body("data.latestVersion.files[0].directoryLabel", equalTo("code"));
+        
+    }
+    
 }
