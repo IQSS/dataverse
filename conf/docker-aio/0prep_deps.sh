@@ -13,7 +13,7 @@ if [ ! -e dv/deps/solr-8.11.1dv.tgz ]; then
 	echo "solr dependency prep"
 	# schema changes *should* be the only ones...
 	cd dv/deps/	
-	wget https://archive.apache.org/dist/lucene/solr/8.8.1/solr-8.11.1.tgz -O solr-8.11.1dv.tgz
+	wget https://archive.apache.org/dist/lucene/solr/8.11.1/solr-8.11.1.tgz -O solr-8.11.1dv.tgz
 	cd ../../
 fi
 
