@@ -2517,7 +2517,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
     
     @GET
     @Path("{identifier}/locks")
-    public Response getLocks(@PathParam("identifier") String id, @QueryParam("type") DatasetLock.Reason lockType) {
+    public Response getLocksForDataset(@PathParam("identifier") String id, @QueryParam("type") DatasetLock.Reason lockType) {
 
         Dataset dataset = null;
         try {
@@ -2641,6 +2641,34 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 
         });
     }
+    
+    @GET
+    @Path("locks")
+    public Response listLocks(@QueryParam("type") DatasetLock.Reason lockType) {        
+        // This API is here, under /datasets, and not under /admin, because we
+        // likely want it to be accessible to admin users who may not necessarily 
+        // have localhost access, that would be required to get to /api/admin in 
+        // most installations. It is still reasonable however to limit access to
+        // this api to admin users only. (?)
+        AuthenticatedUser user;
+        try {
+            user = findAuthenticatedUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.UNAUTHORIZED, "Authentication is required.");
+        }
+        if (!user.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
+        
+        if (lockType == null) {
+            // Not 100% sure if it really needs to be a required parameter really. 
+            return error(Response.Status.BAD_REQUEST, "Required parameter missing: type");
+        }
+        List<DatasetLock> locks = datasetService.getDatasetLocksByType(lockType);
+                            
+        return ok(locks.stream().map(lock -> json(lock)).collect(toJsonArray()));
+    }   
+    
     
     @GET
     @Path("{id}/makeDataCount/citations")

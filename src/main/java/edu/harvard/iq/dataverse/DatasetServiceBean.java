@@ -533,6 +533,17 @@ public class DatasetServiceBean implements java.io.Serializable {
         em.merge(datasetLock);
     }
     
+    public List<DatasetLock> getDatasetLocksByType(DatasetLock.Reason lockType) {
+
+        TypedQuery<DatasetLock> query = em.createNamedQuery("DatasetLock.getLocksByType", DatasetLock.class);
+        query.setParameter("lockType", lockType);
+        try {
+            return query.getResultList();
+        } catch (javax.persistence.NoResultException e) {
+            return null;
+        }
+    }
+    
     /*
     getTitleFromLatestVersion methods use native query to return a dataset title
     
