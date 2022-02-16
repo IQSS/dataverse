@@ -117,7 +117,7 @@ On Linux, you should just install PostgreSQL using your favorite package manager
 Install Solr
 ~~~~~~~~~~~~
 
-`Solr <http://lucene.apache.org/solr/>`_ 8.8.1 is required.
+`Solr <http://lucene.apache.org/solr/>`_ 8.11.1 is required.
 
 To install Solr, execute the following commands:
 
@@ -127,25 +127,25 @@ To install Solr, execute the following commands:
 
 ``cd /usr/local/solr``
 
-``curl -O http://archive.apache.org/dist/lucene/solr/8.8.1/solr-8.8.1.tgz``
+``curl -O http://archive.apache.org/dist/lucene/solr/8.11.1/solr-8.11.1.tgz``
 
-``tar xvfz solr-8.8.1.tgz``
+``tar xvfz solr-8.11.1.tgz``
 
-``cd solr-8.8.1/server/solr``
+``cd solr-8.11.1/server/solr``
 
 ``cp -r configsets/_default collection1``
 
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/8.8.1/schema.xml``
+``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/8.11.1/schema.xml``
 
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/8.8.1/schema_dv_mdb_fields.xml``
+``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/8.11.1/schema_dv_mdb_fields.xml``
 
 ``mv schema*.xml collection1/conf``
 
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/8.8.1/solrconfig.xml``
+``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/8.11.1/solrconfig.xml``
 
 ``mv solrconfig.xml collection1/conf/solrconfig.xml``
 
-``cd /usr/local/solr/solr-8.8.1``
+``cd /usr/local/solr/solr-8.11.1``
 
 (Please note that the extra jetty argument below is a security measure to limit connections to Solr to only your computer. For extra security, run a firewall.)
 
