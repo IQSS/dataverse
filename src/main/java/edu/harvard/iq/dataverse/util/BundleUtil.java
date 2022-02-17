@@ -95,8 +95,13 @@ public class BundleUtil {
         if (filesRootDirectory == null || filesRootDirectory.isEmpty()) {
             bundle = ResourceBundle.getBundle("propertyFiles/" +propertyFileName, currentLocale);
         } else {
+            try {
             ClassLoader loader = getClassLoader(filesRootDirectory);
             bundle = ResourceBundle.getBundle(propertyFileName, currentLocale, loader);
+            } catch (MissingResourceException mre) {
+                logger.warning("No property file named " + propertyFileName+"_" + currentLocale.getLanguage() + " found in " + filesRootDirectory +", using untranslated values");
+                bundle = ResourceBundle.getBundle("propertyFiles/" +propertyFileName, currentLocale);
+            }
         }
 
         return bundle ;
