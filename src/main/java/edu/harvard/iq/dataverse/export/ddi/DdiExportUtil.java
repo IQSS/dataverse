@@ -93,6 +93,7 @@ public class DdiExportUtil {
     
     public static final String NOTE_TYPE_CONTENTTYPE = "DATAVERSE:CONTENTTYPE";
     public static final String NOTE_SUBJECT_CONTENTTYPE = "Content/MIME Type";
+    public static final String CITATION_BLOCK_NAME = "citation";
 
     public static String datasetDtoAsJson2ddi(String datasetDtoAsJson) {
         logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson));
@@ -524,7 +525,7 @@ public class DdiExportUtil {
     private static void writeMultipleElement(XMLStreamWriter xmlw, String element, FieldDTO fieldDTO, String lang) throws XMLStreamException {
         for (String value : fieldDTO.getMultiplePrimitive()) {
             //Write multiple lang vals for controlled vocab, otherwise don't include any lang tag
-            writeFullElement(xmlw, element, value, fieldDTO.getTypeClass().equals("controlledVocabulary") ? lang : null);
+            writeFullElement(xmlw, element, value, fieldDTO.isControlledVocabularyField() ? lang : null);
         }
     }
     
@@ -550,10 +551,10 @@ public class DdiExportUtil {
 
         writeTargetSampleElement(xmlw, version);
 
-        writeI18nElement(xmlw, "deviat", version, DatasetFieldConstant.deviationsFromSampleDesign, lang);
+        writeI18NElement(xmlw, "deviat", version, DatasetFieldConstant.deviationsFromSampleDesign, lang);
 
         xmlw.writeStartElement("sources");
-        writeI18NElementList(xmlw, "dataSrc", version, DatasetFieldConstant.dataSources, lang);
+        writeFullElementList(xmlw, "dataSrc", dto2PrimitiveList(version, DatasetFieldConstant.dataSources));
         writeI18NElement(xmlw, "srcOrig", version, DatasetFieldConstant.originOfSources, lang);
         writeI18NElement(xmlw, "srcChar", version, DatasetFieldConstant.characteristicOfSources, lang);
         writeI18NElement(xmlw, "srcDocu", version, DatasetFieldConstant.accessToSources, lang);
@@ -582,18 +583,20 @@ public class DdiExportUtil {
     private static void writeSubjectElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String lang) throws XMLStreamException{ 
         
         //Key Words and Topic Classification
-        
-        xmlw.writeStartElement("subject");        
+        Locale defaultLocale = Locale.getDefault();
+        xmlw.writeStartElement("subject");
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
-            if ("citation".equals(key)) {
+            if (CITATION_BLOCK_NAME.equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
-                    if (DatasetFieldConstant.subject.equals(fieldDTO.getTypeName())){
-                        writeI18NElementList(xmlw, "keyword", fieldDTO.getMultipleVocab(), "subject", fieldDTO.getTypeClass(), "citation", lang);
+                    if (DatasetFieldConstant.subject.equals(fieldDTO.getTypeName())) {
+                        writeI18NElementList(xmlw, "keyword", fieldDTO.getMultipleVocab(), "subject",
+                                fieldDTO.getTypeClass(), "citation", lang);
                     }
-                    
+
                     if (DatasetFieldConstant.keyword.equals(fieldDTO.getTypeName())) {
+                        boolean isCVV = false;
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String keywordValue = "";
                             String keywordVocab = "";
@@ -601,30 +604,57 @@ public class DdiExportUtil {
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.keywordValue.equals(next.getTypeName())) {
-                                    keywordValue =  next.getSinglePrimitive();
+                                    if (next.isControlledVocabularyField()) {
+                                        isCVV = true;
+                                    }
+                                    keywordValue = next.getSinglePrimitive();
                                 }
                                 if (DatasetFieldConstant.keywordVocab.equals(next.getTypeName())) {
-                                    keywordVocab =  next.getSinglePrimitive();
+                                    keywordVocab = next.getSinglePrimitive();
                                 }
                                 if (DatasetFieldConstant.keywordVocabURI.equals(next.getTypeName())) {
-                                    keywordURI =  next.getSinglePrimitive();
+                                    keywordURI = next.getSinglePrimitive();
                                 }
                             }
-                            if (!keywordValue.isEmpty()){
-                                xmlw.writeStartElement("keyword"); 
-                                if(!keywordVocab.isEmpty()){
-                                   writeAttribute(xmlw,"vocab",keywordVocab); 
+                            if (!keywordValue.isEmpty()) {
+                                xmlw.writeStartElement("keyword");
+                                if (!keywordVocab.isEmpty()) {
+                                    writeAttribute(xmlw, "vocab", keywordVocab);
                                 }
-                                if(!keywordURI.isEmpty()){
-                                   writeAttribute(xmlw,"vocabURI",keywordURI);
-                                } 
-                                xmlw.writeCharacters(keywordValue);
-                                xmlw.writeEndElement(); //Keyword
+                                if (!keywordURI.isEmpty()) {
+                                    writeAttribute(xmlw, "vocabURI", keywordURI);
+                                }
+                                if (lang != null && isCVV) {
+                                    writeAttribute(xmlw, "xml:lang", defaultLocale.getLanguage());
+                                    xmlw.writeCharacters(ControlledVocabularyValue.getLocaleStrValue(keywordValue,
+                                            DatasetFieldConstant.keywordValue, CITATION_BLOCK_NAME, defaultLocale,
+                                            true));
+                                } else {
+                                    xmlw.writeCharacters(keywordValue);
+                                }
+                                xmlw.writeEndElement(); // Keyword
+                                if (lang != null && isCVV && !defaultLocale.getLanguage().equals(lang)) {
+                                    String translatedValue = ControlledVocabularyValue.getLocaleStrValue(keywordValue,
+                                            DatasetFieldConstant.keywordValue, CITATION_BLOCK_NAME, new Locale(lang),
+                                            false);
+                                    if (translatedValue != null) {
+                                        xmlw.writeStartElement("keyword");
+                                        if (!keywordVocab.isEmpty()) {
+                                            writeAttribute(xmlw, "vocab", keywordVocab);
+                                        }
+                                        if (!keywordURI.isEmpty()) {
+                                            writeAttribute(xmlw, "vocabURI", keywordURI);
+                                        }
+                                        writeAttribute(xmlw, "xml:lang", lang);
+                                        xmlw.writeCharacters(translatedValue);
+                                        xmlw.writeEndElement(); // Keyword
+                                    }
+                                }
                             }
-
                         }
                     }
                     if (DatasetFieldConstant.topicClassification.equals(fieldDTO.getTypeName())) {
+                        boolean isCVV = false;
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String topicClassificationValue = "";
                             String topicClassificationVocab = "";
@@ -632,34 +662,63 @@ public class DdiExportUtil {
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.topicClassValue.equals(next.getTypeName())) {
-                                    topicClassificationValue =  next.getSinglePrimitive();
+                                    // Currently getSingleVocab() is the same as getSinglePrimitive() so this works
+                                    // for either case
+                                    topicClassificationValue = next.getSinglePrimitive();
+                                    if (next.isControlledVocabularyField()) {
+                                        isCVV = true;
+                                    }
                                 }
                                 if (DatasetFieldConstant.topicClassVocab.equals(next.getTypeName())) {
-                                    topicClassificationVocab =  next.getSinglePrimitive();
+                                    topicClassificationVocab = next.getSinglePrimitive();
                                 }
                                 if (DatasetFieldConstant.topicClassVocabURI.equals(next.getTypeName())) {
-                                    topicClassificationURI =  next.getSinglePrimitive();
+                                    topicClassificationURI = next.getSinglePrimitive();
                                 }
                             }
-                            if (!topicClassificationValue.isEmpty()){
-                                xmlw.writeStartElement("topcClas"); 
-                                if(!topicClassificationVocab.isEmpty()){
-                                   writeAttribute(xmlw,"vocab",topicClassificationVocab); 
-                                } 
-                                if(!topicClassificationURI.isEmpty()){
-                                   writeAttribute(xmlw,"vocabURI",topicClassificationURI);
-                                } 
-                                xmlw.writeCharacters(topicClassificationValue);
-                                xmlw.writeEndElement(); //topcClas
+                            if (!topicClassificationValue.isEmpty()) {
+                                xmlw.writeStartElement("topcClas");
+                                if (!topicClassificationVocab.isEmpty()) {
+                                    writeAttribute(xmlw, "vocab", topicClassificationVocab);
+                                }
+                                if (!topicClassificationURI.isEmpty()) {
+                                    writeAttribute(xmlw, "vocabURI", topicClassificationURI);
+                                }
+                                if (lang != null && isCVV) {
+                                    writeAttribute(xmlw, "xml:lang", defaultLocale.getLanguage());
+                                    xmlw.writeCharacters(ControlledVocabularyValue.getLocaleStrValue(
+                                            topicClassificationValue, DatasetFieldConstant.topicClassValue,
+                                            CITATION_BLOCK_NAME, defaultLocale, true));
+                                } else {
+                                    xmlw.writeCharacters(topicClassificationValue);
+                                }
+                                xmlw.writeEndElement(); // topcClas
+                                if (lang != null && isCVV && !defaultLocale.getLanguage().equals(lang)) {
+                                    String translatedValue = ControlledVocabularyValue.getLocaleStrValue(
+                                            topicClassificationValue, DatasetFieldConstant.topicClassValue,
+                                            CITATION_BLOCK_NAME, new Locale(lang), false);
+                                    if (translatedValue != null) {
+                                        xmlw.writeStartElement("topcClas");
+                                        if (!topicClassificationVocab.isEmpty()) {
+                                            writeAttribute(xmlw, "vocab", topicClassificationVocab);
+                                        }
+                                        if (!topicClassificationURI.isEmpty()) {
+                                            writeAttribute(xmlw, "vocabURI", topicClassificationURI);
+                                        }
+                                        writeAttribute(xmlw, "xml:lang", lang);
+                                        xmlw.writeCharacters(translatedValue);
+                                        xmlw.writeEndElement(); // topcClas
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
-        }        
+        }
         xmlw.writeEndElement(); // subject       
     }
-    
+
     private static void writeAuthorsElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException {
 
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
@@ -1339,7 +1398,7 @@ public class DdiExportUtil {
             for (FieldDTO fieldDTO : value.getFields()) {
                 if (datasetFieldTypeName.equals(fieldDTO.getTypeName())) {
                     String rawVal = fieldDTO.getSinglePrimitive();
-                    if (fieldDTO.getTypeClass().equals("controlledVocabulary")) {
+                    if (fieldDTO.isControlledVocabularyField()) {
                         return ControlledVocabularyValue.getLocaleStrValue(rawVal, datasetFieldTypeName, value.getName(),
                                 locale, false);
                     }
