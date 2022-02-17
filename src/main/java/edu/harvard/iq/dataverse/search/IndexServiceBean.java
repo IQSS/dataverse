@@ -247,10 +247,14 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.AFFILIATION, dataverse.getAffiliation());
             solrInputDocument.addField(SearchFields.DATAVERSE_AFFILIATION, dataverse.getAffiliation());
         }
+        Set<String> langs = settingsService.getConfiguredLanguages();
         for (ControlledVocabularyValue dataverseSubject : dataverse.getDataverseSubjects()) {
             String subject = dataverseSubject.getStrValue();
             if (!subject.equals(DatasetField.NA_VALUE)) {
-                solrInputDocument.addField(SearchFields.DATAVERSE_SUBJECT, subject);
+             // Index in all used languages (display and metadata languages
+                for(String locale: langs) {
+                    solrInputDocument.addField(SearchFields.DATAVERSE_SUBJECT, dataverseSubject.getLocaleStrValue(locale));
+                }
                 // collapse into shared "subject" field used as a facet
                 solrInputDocument.addField(SearchFields.SUBJECT, subject);
             }
@@ -804,12 +808,8 @@ public class IndexServiceBean {
             if(datasetVersion.getExternalStatusLabel()!=null) {
                 solrInputDocument.addField(SearchFields.EXTERNAL_STATUS, datasetVersion.getExternalStatusLabel());
             }
-            Set<String> langs = new HashSet<String>();
-            langs.addAll(settingsService.getBaseMetadataLanguageMap(new HashMap<String, String>(), true).keySet());
-            Map<String, String> configuredLocales = new LinkedHashMap<>();
-            settingsService.initLocaleSettings(configuredLocales);
-            langs.addAll(configuredLocales.keySet());
-            
+
+            Set<String> langs = settingsService.getConfiguredLanguages();
             Map<Long, JsonObject> cvocMap = datasetFieldService.getCVocConf(false);
             for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
 

@@ -471,11 +471,18 @@ public class SettingsWrapper implements java.io.Serializable {
 
     Map<String,String> languageMap = null;
     
+    Map<String, String> getBaseMetadataLanguageMap(boolean refresh) {
+        if (languageMap == null || refresh) {
+           languageMap = settingsService.getBaseMetadataLanguageMap(languageMap, true);
+        }
+        return languageMap;
+    }
+    
     public Map<String, String> getMetadataLanguages(DvObjectContainer target) {
         Map<String,String> currentMap = new HashMap<String,String>();
-        currentMap.putAll(settingsService.getBaseMetadataLanguageMap(languageMap, true));
-        languageMap.put(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE, getDefaultMetadataLanguageLabel(target));
-        return languageMap;
+        currentMap.putAll(getBaseMetadataLanguageMap(false));
+        currentMap.put(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE, getDefaultMetadataLanguageLabel(target));
+        return currentMap;
     }
     
     private String getDefaultMetadataLanguageLabel(DvObjectContainer target) {
@@ -493,7 +500,7 @@ public class SettingsWrapper implements java.io.Serializable {
                 mlCode = getDefaultMetadataLanguage();
             }
             // Get the label for the language code found
-            mlLabel = settingsService.getBaseMetadataLanguageMap(languageMap, false).get(mlCode);
+            mlLabel = getBaseMetadataLanguageMap(false).get(mlCode);
         }
         if(fromAncestor) {
             mlLabel = mlLabel + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
@@ -504,7 +511,7 @@ public class SettingsWrapper implements java.io.Serializable {
     }
     
     public String getDefaultMetadataLanguage() {
-        Map<String, String> mdMap = settingsService.getBaseMetadataLanguageMap(languageMap, false);
+        Map<String, String> mdMap = getBaseMetadataLanguageMap(false);
         if(mdMap.size()>=1) {
             if(mdMap.size()==1) {
                 //One entry - it's the default

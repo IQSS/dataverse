@@ -23,6 +23,7 @@ import org.json.JSONObject;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -777,6 +778,16 @@ public class SettingsServiceBean {
             //e.printStackTrace();
             // do we want to know? - probably not
         }
+    }
+    
+
+    public Set<String> getConfiguredLanguages() {
+        Set<String> langs = new HashSet<String>();
+        langs.addAll(getBaseMetadataLanguageMap(new HashMap<String, String>(), true).keySet());
+        Map<String, String> configuredLocales = new LinkedHashMap<>();
+        initLocaleSettings(configuredLocales);
+        langs.addAll(configuredLocales.keySet());
+        return langs;
     }
 
 }
