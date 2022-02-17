@@ -9,3 +9,5 @@ With this release we upgrade to the latest available stable release in the Solr 
 Before you start the "index all", the Dataverse installation will appear to be empty because the search results come from Solr. As indexing progresses, partial results will appear until indexing is complete.
 
 See <http://guides.dataverse.org/en/5.10/installation/prerequisites.html#installing-solr> for more information.
+
+Also please refer to <https://guides.dataverse.org/en/5.10/admin/metadatacustomization.html#updating-the-solr-schema> for information on updating your solr schema for any custom metadata blocks in your installation.
