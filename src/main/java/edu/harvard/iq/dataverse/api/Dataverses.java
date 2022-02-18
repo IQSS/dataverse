@@ -305,7 +305,7 @@ public class Dataverses extends AbstractApiBean {
             
             //Verify metadatalanguage is allowed
             if(ds.getMetadataLanguage()!= null && !settingsService.getBaseMetadataLanguageMap(new HashMap<String, String>(), true).containsKey(ds.getMetadataLanguage())) {
-                throw new BadRequestException("Specified metadatalangauge (" + JsonLDTerm.schemaOrg("inLanguage").getUrl() + ") not allowed.");
+                throw new BadRequestException("Specified metadatalanguage (" + JsonLDTerm.schemaOrg("inLanguage").getUrl() + ") not allowed.");
             }
 
             Dataset managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u)));
@@ -489,7 +489,7 @@ public class Dataverses extends AbstractApiBean {
             
           //Verify metadatalanguage is allowed
             if(ds.getMetadataLanguage()!= null && !settingsService.getBaseMetadataLanguageMap(new HashMap<String, String>(), true).containsKey(ds.getMetadataLanguage())) {
-                throw new BadRequestException("Specified metadatalangauge (" + JsonLDTerm.schemaOrg("inLanguage").getUrl() + ") not allowed.");
+                throw new BadRequestException("Specified metadatalanguage (" + JsonLDTerm.schemaOrg("inLanguage").getUrl() + ") not allowed.");
             }
 
             if (ds.getVersions().isEmpty()) {
