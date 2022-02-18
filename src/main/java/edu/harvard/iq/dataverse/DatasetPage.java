@@ -5618,11 +5618,15 @@ public class DatasetPage implements java.io.Serializable {
     
     public String getLocaleDisplayName(String code) {
         String displayName = settingsWrapper.getBaseMetadataLanguageMap(false).get(code);
-        if(displayName==null) {
+        if(displayName==null && !code.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
             //Default (for cases such as :when a Dataset has a metadatalanguage code but :MetadataLanguages is no longer defined).
             displayName = new Locale(code).getDisplayName(); 
         }
         return displayName; 
+    }
+    
+    public Set<Entry<String, String>> getMetadataLanguages() {
+        return settingsWrapper.getBaseMetadataLanguageMap(false).entrySet();
     }
     
     public List<String> getVocabScripts() {

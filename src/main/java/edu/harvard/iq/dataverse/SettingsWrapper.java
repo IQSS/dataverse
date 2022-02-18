@@ -488,7 +488,7 @@ public class SettingsWrapper implements java.io.Serializable {
 
     Map<String,String> languageMap = null;
     
-    Map<String, String> getBaseMetadataLanguageMap(boolean refresh) {
+    public Map<String, String> getBaseMetadataLanguageMap(boolean refresh) {
         if (languageMap == null || refresh) {
             languageMap = new HashMap<String, String>();
 
@@ -518,18 +518,13 @@ public class SettingsWrapper implements java.io.Serializable {
     }
     
     private String getDefaultMetadataLanguageLabel(DvObjectContainer target) {
-        String mlLabel = Locale.getDefault().getDisplayLanguage();
-        Dataverse parent = target.getOwner();
-        if (parent != null) {
-            String mlCode = parent.getEffectiveMetadataLanguage();
-            // If it's 'undefined', it's the global default
-            if (mlCode.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
-                mlLabel = BundleUtil.getStringFromBundle("dataverse.metadatalanguage.setatdatasetcreation");
-            } else {
-                // Get the label for the language code found
-                mlLabel = getBaseMetadataLanguageMap(false).get(mlCode);
-                mlLabel = mlLabel + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
-            }
+        String mlLabel = BundleUtil.getStringFromBundle("dataverse.metadatalanguage.setatdatasetcreation");
+        String mlCode = target.getEffectiveMetadataLanguage();
+        // If it's 'undefined', it's the global default
+        if (!mlCode.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
+            // Get the label for the language code found
+            mlLabel = getBaseMetadataLanguageMap(false).get(mlCode);
+            mlLabel = mlLabel + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
         }
         return mlLabel;
     }

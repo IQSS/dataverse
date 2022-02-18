@@ -21,30 +21,6 @@
             <h:outputFormat rendered="#{!(empty mdLang and mdlangCode!='undefined')}" value="#{bundle['dataset.metadatalanguage.view.guidance']}" escape="false">
                 <f:param value="#{mdLang}"/>
             </h:outputFormat>
-            
-            
-                                                <div class="col-md-6 form-group" jsf:rendered="##{!(empty mdLang and mdlangCode=='undefined')}">
-                                        <h:outputLabel for="dsMetadataLanguage" styleClass="control-label">
-                                            #{bundle.metadataLanguage} 
-                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.metadatalanguage.title']}"></span>
-                                        </h:outputLabel>
-                                        <div class="form-col-container">
-                                            <h:selectOneMenu id="dsMetadataLanguage" styleClass="form-control" value="#{DatasetPage.dataset.metadataLanguage}">
-                                                <f:selectItems value="#{DatasetPage.getMetadataLanguages()}" var="lang" itemLabel="#{lang.getValue()}" itemValue="#{lang.getKey()}"/>
-                                            </h:selectOneMenu>
-                                            <p:message for="dsMetadataLanguage" display="text"/>
-                                        </div>
-                                    </div>
-            
-            
-            
-            
-            
-            
-            
-            
-            
         </p>
         <ui:repeat value="#{metadataBlocks}"
                    var="metadataBlockVal" varStatus="block">
@@ -181,9 +157,22 @@
         <o:importFunctions type="java.util.Collections" />
         <div class="panel-group">
             <p>
-                <h:outputFormat rendered="#{(not empty mdLangCode) and ((editMode == 'CREATE') or (editMode == 'METADATA'))}" value="#{bundle['dataset.metadatalanguage.create.guidance']}" escape="false">
+                <h:outputFormat rendered="#{(mdLangCode!='undefined') and ((editMode == 'CREATE') or (editMode == 'METADATA'))}" value="#{bundle['dataset.metadatalanguage.create.guidance']}" escape="false">
                     <f:param value="#{mdLang}"/>
                 </h:outputFormat>
+                <div class="form-group" jsf:rendered="#{(empty mdLang and mdLangCode=='undefined')}">
+                                        <h:outputLabel for="dsMetadataLanguage" styleClass="col-md-3 control-label">
+                                            #{bundle.metadataLanguage}
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.metadatalanguage.title']}"></span>
+                                        </h:outputLabel>
+                                        <div class="col-md-3 form-col-container">
+                                            <h:selectOneMenu id="dsMetadataLanguage" styleClass="form-control" value="#{DatasetPage.dataset.metadataLanguage}">
+                                                <f:selectItems value="#{DatasetPage.getMetadataLanguages()}" var="lang" itemLabel="#{lang.getValue()}" itemValue="#{lang.getKey()}"/>
+                                            </h:selectOneMenu>
+                                            <p:message for="dsMetadataLanguage" display="text"/>
+                                        </div>
+                                    </div>
             </p>
             <ui:repeat value="#{metadataBlocks}" var="metadataBlockVal" varStatus="block">
                 <div class="panel panel-default" jsf:rendered="#{(editMode == 'METADATA' or metadataBlockVal.key.displayOnCreate or !metadataBlockVal.key.isEmpty()
