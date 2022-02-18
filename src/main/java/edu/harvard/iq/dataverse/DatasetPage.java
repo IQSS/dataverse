@@ -5609,7 +5609,10 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public String getEffectiveMetadataLanguage() {
-        String mdLang = dataset.getEffectiveMetadataLanguage();
+        return getEffectiveMetadataLanguage(false);
+    }
+    public String getEffectiveMetadataLanguage(boolean ofParent) {
+        String mdLang = ofParent ? dataset.getOwner().getEffectiveMetadataLanguage() : dataset.getEffectiveMetadataLanguage();
         if (mdLang.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
             mdLang = settingsWrapper.getDefaultMetadataLanguage();
         }
