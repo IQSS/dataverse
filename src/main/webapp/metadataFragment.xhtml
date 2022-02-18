@@ -18,9 +18,33 @@
     <div class="panel-group" jsf:rendered="${empty editMode  or managePage}">
         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
         <p>
-            <h:outputFormat rendered="#{!(empty mdLang)}" value="#{bundle['dataset.metadatalanguage.view.guidance']}" escape="false">
+            <h:outputFormat rendered="#{!(empty mdLang and mdlangCode!='undefined')}" value="#{bundle['dataset.metadatalanguage.view.guidance']}" escape="false">
                 <f:param value="#{mdLang}"/>
             </h:outputFormat>
+            
+            
+                                                <div class="col-md-6 form-group" jsf:rendered="##{!(empty mdLang and mdlangCode=='undefined')}">
+                                        <h:outputLabel for="dsMetadataLanguage" styleClass="control-label">
+                                            #{bundle.metadataLanguage} 
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.metadatalanguage.title']}"></span>
+                                        </h:outputLabel>
+                                        <div class="form-col-container">
+                                            <h:selectOneMenu id="dsMetadataLanguage" styleClass="form-control" value="#{DatasetPage.dataset.metadataLanguage}">
+                                                <f:selectItems value="#{DatasetPage.getMetadataLanguages()}" var="lang" itemLabel="#{lang.getValue()}" itemValue="#{lang.getKey()}"/>
+                                            </h:selectOneMenu>
+                                            <p:message for="dsMetadataLanguage" display="text"/>
+                                        </div>
+                                    </div>
+            
+            
+            
+            
+            
+            
+            
+            
+            
         </p>
         <ui:repeat value="#{metadataBlocks}"
                    var="metadataBlockVal" varStatus="block">
