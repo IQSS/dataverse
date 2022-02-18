@@ -92,13 +92,6 @@ Data Explorer is a GUI which lists the variables in a tabular data file allowing
 
 For installation instructions, see the :doc:`external-tools` section.
 
-TwoRavens/Zelig
-+++++++++++++++
-
-TwoRavens is a web application for tabular data exploration and statistical analysis with Zelig.
-
-For installation instructions, see the :doc:`external-tools` section.
-
 Compute Button
 ++++++++++++++
 

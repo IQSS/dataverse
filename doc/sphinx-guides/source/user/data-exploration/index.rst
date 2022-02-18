@@ -11,5 +11,3 @@ The Dataverse installation you are using may have additional or different tools 
 Contents:
 
 .. toctree::
-
-   tworavens

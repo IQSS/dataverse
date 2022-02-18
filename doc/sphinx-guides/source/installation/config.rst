@@ -6,7 +6,7 @@ Now that you've successfully logged into your Dataverse installation with a supe
 
 Settings within your Dataverse installation itself are managed via JVM options or by manipulating values in the ``setting`` table directly or through API calls.
 
-Once you have finished securing and configuring your Dataverse installation, you may proceed to the :doc:`/admin/index` for more information on the ongoing administration of a Dataverse installation. Advanced configuration topics are covered in the :doc:`r-rapache-tworavens`, :doc:`shibboleth` and :doc:`oauth2` sections.
+Once you have finished securing and configuring your Dataverse installation, you may proceed to the :doc:`/admin/index` for more information on the ongoing administration of a Dataverse installation. Advanced configuration topics are covered in the :doc:`shibboleth` and :doc:`oauth2` sections.
 
 .. contents:: |toctitle|
   :local:
@@ -112,9 +112,7 @@ The need to redirect port HTTP (port 80) to HTTPS (port 443) for security has al
 
 Your decision to proxy or not should primarily be driven by which features of the Dataverse Software you'd like to use. If you'd like to use Shibboleth, the decision is easy because proxying or "fronting" Payara with Apache is required. The details are covered in the :doc:`shibboleth` section.
 
-If you'd like to use TwoRavens, you should also consider fronting with Apache because you will be required to install an Apache anyway to make use of the rApache module. For details, see the :doc:`r-rapache-tworavens` section.
-
-Even if you have no interest in Shibboleth nor TwoRavens, you may want to front your Dataverse installation with Apache or nginx to simply the process of installing SSL certificates. There are many tutorials on the Internet for adding certs to Apache, including a some `notes used by the Dataverse Project team <https://github.com/IQSS/dataverse/blob/v4.6.1/doc/shib/shib.md>`_, but the process of adding a certificate to Payara is arduous and not for the faint of heart. The Dataverse Project team cannot provide much help with adding certificates to Payara beyond linking to `tips <http://stackoverflow.com/questions/906402/importing-an-existing-x509-certificate-and-private-key-in-java-keystore-to-use-i>`_ on the web.
+Even if you have no interest in Shibboleth, you may want to front your Dataverse installation with Apache or nginx to simply the process of installing SSL certificates. There are many tutorials on the Internet for adding certs to Apache, including a some `notes used by the Dataverse Project team <https://github.com/IQSS/dataverse/blob/v4.6.1/doc/shib/shib.md>`_, but the process of adding a certificate to Payara is arduous and not for the faint of heart. The Dataverse Project team cannot provide much help with adding certificates to Payara beyond linking to `tips <http://stackoverflow.com/questions/906402/importing-an-existing-x509-certificate-and-private-key-in-java-keystore-to-use-i>`_ on the web.
 
 Still not convinced you should put Payara behind another web server? Even if you manage to get your SSL certificate into Payara, how are you going to run Payara on low ports such as 80 and 443? Are you going to run Payara as root? Bad idea. This is a security risk. Under "Additional Recommendations" under "Securing Your Installation" above you are advised to configure Payara to run as a user other than root.
 
@@ -1157,26 +1155,26 @@ Can also be set via *MicroProfile Config API* sources, e.g. the environment vari
 dataverse.rserve.host
 +++++++++++++++++++++
 
-Configuration for :doc:`r-rapache-tworavens`.
+Configuration for Rserve, used by ingest.
 
 dataverse.rserve.port
 +++++++++++++++++++++
 
-Configuration for :doc:`r-rapache-tworavens`.
+Configuration for Rserve, used by ingest.
 
 dataverse.rserve.user
 +++++++++++++++++++++
 
-Configuration for :doc:`r-rapache-tworavens`.
+Configuration for Rserve, used by ingest.
 
 dataverse.rserve.tempdir
 ++++++++++++++++++++++++
-Configuration for :doc:`r-rapache-tworavens`.
+Configuration for Rserve, used by ingest.
 
 dataverse.rserve.password
 +++++++++++++++++++++++++
 
-Configuration for :doc:`r-rapache-tworavens`.
+Configuration for Rserve, used by ingest.
 
 .. _dataverse.dropbox.key:
 
@@ -1879,16 +1877,6 @@ Session timeout (in minutes) for logged-in users. The default is 8 hours (480 mi
 In the example below we reduce the timeout to 4 hours:
 
 ``curl -X PUT -d 240 http://localhost:8080/api/admin/settings/:LoginSessionTimeout``
-
-:TwoRavensUrl
-+++++++++++++
-
-The ``:TwoRavensUrl`` option is no longer valid. See :doc:`r-rapache-tworavens` and the :doc:`/admin/external-tools` section of the Admin Guide.
-
-:TwoRavensTabularView
-+++++++++++++++++++++
-
-The ``:TwoRavensTabularView`` option is no longer valid. See :doc:`r-rapache-tworavens` and the :doc:`/admin/external-tools` section of the Admin Guide.
 
 .. _:DatasetPublishPopupCustomText:
 

@@ -297,11 +297,7 @@ installation. It will allow you to ingest R (.RData) files as tabular
 data and to export tabular data as .RData files.  R can be considered an optional component, meaning
 that if you don't have R installed, you will still be able to run and
 use the Dataverse Software - but the functionality specific to tabular data
-mentioned above will not be available to your users.  **Note** that if
-you choose to also install `TwoRavens
-<https://github.com/IQSS/TwoRavens>`_, it will require some extra R
-components and libraries. Please consult the instructions in the
-:doc:`/installation/r-rapache-tworavens/` section of the Installation Guide.
+mentioned above will not be available to your users.
 
 
 Installing R

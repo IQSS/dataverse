@@ -321,7 +321,7 @@ Preprocessed Data
 
 ``/api/access/datafile/$id?format=prep``
 
-This method provides the "preprocessed data" - a summary record that describes the values of the data vectors in the tabular file, in JSON. These metadata values are used by TwoRavens, an external tool that integrates with a Dataverse installation. Please note that this format might change in the future.
+This method provides the "preprocessed data" - a summary record that describes the values of the data vectors in the tabular file, in JSON. These metadata values are used by earlier versions of dataexplorer, an external tool that integrates with a Dataverse installation. Please note that this format might change in the future.
 
 Authentication and Authorization
 -------------------------------- 

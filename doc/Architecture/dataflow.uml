@@ -31,10 +31,6 @@ package "Server Side" {
 	}
 
 	node R {
-     	     component "rApache" {
-     	     	       interface "https" as rApacheInterface
-      	     }
-
 	     component "RServe" {
      	     	       interface "TCP/IP" as RServeInterface
              }    
@@ -53,11 +49,7 @@ package "Server Side" {
 	}
 }
 
-rApacheInterface -up-> webuser
-
 DataServiceHTTPS -up-> webuser
-DataServiceHTTPS .right.> rApacheInterface
-
 
 webuser -down-> IngestComponentHTTPS
 
