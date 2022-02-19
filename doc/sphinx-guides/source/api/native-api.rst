@@ -1634,7 +1634,7 @@ If the dataset is not locked (or if there is no lock of the specified type), the
 List Locks Across All Datasets
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Note that this API requires “superuser” credentials. You must supply the ``X-Dataverse-key`` header with the api token of an admin user (as in the example above).
+Note that this API requires “superuser” credentials. You must supply the ``X-Dataverse-key`` header with the api token of an admin user (as in the example below).
 
 The output of this API is formatted identically to the API that lists the locks for a specific dataset, as in one of the examples above. 
 
@@ -1651,7 +1651,7 @@ For example:
 
 .. code-block:: bash
 
-  curl "http://localhost:8080/api/datasets/locks?type=Ingest&userIdentifier=davis4ever"
+  curl -H "X-Dataverse-key: xxx" "http://localhost:8080/api/datasets/locks?type=Ingest&userIdentifier=davis4ever"
 
 
 .. _dataset-metrics-api:
