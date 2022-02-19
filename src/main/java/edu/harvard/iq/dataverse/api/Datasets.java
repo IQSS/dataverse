@@ -2644,27 +2644,53 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
     
     @GET
     @Path("locks")
-    public Response listLocks(@QueryParam("type") DatasetLock.Reason lockType) {        
+    public Response listLocks(@QueryParam("type") String lockType, @QueryParam("userIdentifier") String userIdentifier) { //DatasetLock.Reason lockType) {        
         // This API is here, under /datasets, and not under /admin, because we
         // likely want it to be accessible to admin users who may not necessarily 
         // have localhost access, that would be required to get to /api/admin in 
         // most installations. It is still reasonable however to limit access to
         // this api to admin users only. (?)
-        AuthenticatedUser user;
+        AuthenticatedUser apiUser;
         try {
-            user = findAuthenticatedUserOrDie();
+            apiUser = findAuthenticatedUserOrDie();
         } catch (WrappedResponse ex) {
             return error(Response.Status.UNAUTHORIZED, "Authentication is required.");
         }
-        if (!user.isSuperuser()) {
+        if (!apiUser.isSuperuser()) {
             return error(Response.Status.FORBIDDEN, "Superusers only.");
         }
         
-        if (lockType == null) {
-            // Not 100% sure if it really needs to be a required parameter really. 
-            return error(Response.Status.BAD_REQUEST, "Required parameter missing: type");
+        // Locks can be optinally filtered by type, user or both.
+        DatasetLock.Reason lockTypeValue = null;
+        AuthenticatedUser user = null; 
+        
+        // For the lock type, we use a QueryParam of type String, instead of 
+        // DatasetLock.Reason; that would be less code to write, but this way 
+        // we can check if the value passed matches a valid lock type ("reason") 
+        // and provide a helpful error message if it doesn't. If you use a 
+        // QueryParam of an Enum type, trying to pass an invalid value to it 
+        // results in a potentially confusing "404/NOT FOUND - requested 
+        // resource is not available".
+        if (lockType != null && !lockType.isEmpty()) {
+            try {
+                lockTypeValue = DatasetLock.Reason.valueOf(lockType);
+            } catch (IllegalArgumentException iax) {
+                String validValues = Strings.join(",", DatasetLock.Reason.values());
+                String errorMessage = "Invalid lock type value: " + lockType + 
+                        "; valid lock types: " + validValues;
+                return error(Response.Status.BAD_REQUEST, errorMessage);
+            }
         }
-        List<DatasetLock> locks = datasetService.getDatasetLocksByType(lockType);
+        
+        if (userIdentifier != null && !userIdentifier.isEmpty()) {
+            user = authSvc.getAuthenticatedUser(userIdentifier);
+            if (user == null) {
+                return error(Response.Status.BAD_REQUEST, "Unknown user identifier: "+userIdentifier);
+            }
+        }
+        
+        //List<DatasetLock> locks = datasetService.getDatasetLocksByType(lockType);
+        List<DatasetLock> locks = datasetService.listLocks(lockTypeValue, user);
                             
         return ok(locks.stream().map(lock -> json(lock)).collect(toJsonArray()));
     }   

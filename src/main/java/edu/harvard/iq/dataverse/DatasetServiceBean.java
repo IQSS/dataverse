@@ -452,13 +452,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     
     public List<DatasetLock> getDatasetLocksByUser( AuthenticatedUser user) {
 
-        TypedQuery<DatasetLock> query = em.createNamedQuery("DatasetLock.getLocksByAuthenticatedUserId", DatasetLock.class);
-        query.setParameter("authenticatedUserId", user.getId());
-        try {
-            return query.getResultList();
-        } catch (javax.persistence.NoResultException e) {
-            return null;
-        }
+        return listLocks(null, user);
     }
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
@@ -533,10 +527,29 @@ public class DatasetServiceBean implements java.io.Serializable {
         em.merge(datasetLock);
     }
     
-    public List<DatasetLock> getDatasetLocksByType(DatasetLock.Reason lockType) {
+    /*
+     * Lists all dataset locks, optionally filtered by lock type or user, or both
+     * @param lockType 
+     * @param user
+     * @return a list of DatasetLocks    
+    */
+    public List<DatasetLock> listLocks(DatasetLock.Reason lockType, AuthenticatedUser user) {
 
-        TypedQuery<DatasetLock> query = em.createNamedQuery("DatasetLock.getLocksByType", DatasetLock.class);
-        query.setParameter("lockType", lockType);
+        TypedQuery<DatasetLock> query; 
+        
+        if (lockType == null && user == null) {
+            query = em.createNamedQuery("DatasetLock.findAll", DatasetLock.class);
+        } else if (user == null) {
+            query = em.createNamedQuery("DatasetLock.getLocksByType", DatasetLock.class);
+            query.setParameter("lockType", lockType);
+        } else if (lockType == null) {
+            query = em.createNamedQuery("DatasetLock.getLocksByAuthenticatedUserId", DatasetLock.class);
+            query.setParameter("authenticatedUserId", user.getId());
+        } else {
+            query = em.createNamedQuery("DatasetLock.getLocksByTypeAndAuthenticatedUserId", DatasetLock.class);
+            query.setParameter("lockType", lockType);
+            query.setParameter("authenticatedUserId", user.getId());
+        }
         try {
             return query.getResultList();
         } catch (javax.persistence.NoResultException e) {
