@@ -1638,7 +1638,7 @@ Note that this API requires “superuser” credentials. You must supply the ``X
 
 The output of this API is formatted identically to the API that lists the locks for a specific dataset, as in one of the examples above. 
 
-Use the following API to list ALL the locks on all the datasets in your installation
+Use the following API to list ALL the locks on all the datasets in your installation:
 
   ``/api/datasets/locks``
 
