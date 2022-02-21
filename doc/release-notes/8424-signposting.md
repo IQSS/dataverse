@@ -1,4 +1,4 @@
-# Signposting for DV 5.9
+# Signposting for Dataverse
 
 This branch adds [Signposting](https://signposting.org/) support to DV 5.9.
 
