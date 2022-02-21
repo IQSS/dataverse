@@ -14,9 +14,6 @@ config items.
 
 ```json
 {
-  "license": {
-    "CC0": "https://creativecommons.org/licenses/cc0/"
-  },
   "describedby": {
     "doi": "https://doi.org/",
     "type": "application/vnd.citationstyles.csl+json"
@@ -28,7 +25,6 @@ config items.
 }
 ```
 
- * The `license` is a `dict` contains the URI for `CC0`. Please note, this option is not used anymore, should be set through MultiLicense. 
  * `describedby` is required by [Signposting](https://signposting.org/). It shows the link to the metadata 
 which describes the resources that is the origin of the link.
  * `useDefaultFileType` and `defaultFileTypeValue` are used in combination to provide extra `Dataset` type to DV 

@@ -8,7 +8,6 @@ package edu.harvard.iq.dataverse.util;
 
   It requires correspondence configuration to function well.
   The configuration key used is SignpostingConf.
-  It is a json structure shown below
 
   useDefaultFileType is an on/off switch during linkset creating time, it controls whether the default type is
   used, which is always Dataset
@@ -43,7 +42,6 @@ public class SignpostingResources {
     private static final Logger logger = Logger.getLogger(SignpostingResources.class.getCanonicalName());
     SystemConfig systemConfig;
     DatasetVersion workingDatasetVersion;
-//    JsonObject licJsonObj;
     JsonObject describedByJsonObj;
     Boolean useDefaultFileType;
     String defaultFileTypeValue;
@@ -59,7 +57,6 @@ public class SignpostingResources {
         JsonReader jsonReader = Json.createReader(new StringReader(jsonSetting));
         JsonObject spJsonSetting = jsonReader.readObject();
         jsonReader.close();
-//        licJsonObj = spJsonSetting.getJsonObject("license");
         describedByJsonObj = spJsonSetting.getJsonObject("describedby");
         useDefaultFileType = spJsonSetting.getBoolean("useDefaultFileType", true);
         defaultFileTypeValue = spJsonSetting.getString("defaultFileTypeValue", "https://schema.org/Dataset");
