@@ -1,6 +1,6 @@
 # Signposting for Dataverse
 
-This branch adds [Signposting](https://signposting.org/) support to DV 5.9.
+This branch adds [Signposting](https://signposting.org/) support to Dataverse
 
 There are 2 Signposting profile levels, level 1 and level 2. In this implementation, 
  * level 1 links are shown in 
