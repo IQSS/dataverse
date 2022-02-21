@@ -2334,6 +2334,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());
 
+        
+        logger.info("SENDING to reCreate Dataset: " + expectedString);
         // Now use the migrate API to recreate the dataset
         // Now use the migrate API to recreate the dataset
         response = UtilIT.recreateDatasetJsonLD(apiToken, dataverseAlias, expectedString);
