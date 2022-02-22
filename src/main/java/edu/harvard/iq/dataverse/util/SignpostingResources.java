@@ -160,7 +160,7 @@ public class SignpostingResources {
         String authorURL = "";
         if (da.getIdValue() != null && !da.getIdValue().trim().isEmpty()) {
             authorURL = da.getIdValue();
-        } else if (da.getIdentifierAsUrl() != null && !da.getIdentifierAsUrl().trim().isEmpty()) {
+        } else {
             authorURL = da.getIdentifierAsUrl();
         }
         return authorURL;
