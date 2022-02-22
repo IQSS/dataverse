@@ -74,7 +74,7 @@ public class SignpostingResources {
      * @param datasetAuthors list of all DatasetAuthor object
      * @return all the non empty author links in a string
      */
-    private String getAuthors(List<DatasetAuthor> datasetAuthors) {
+    private String getAuthorsIdSchema(List<DatasetAuthor> datasetAuthors) {
         String singleAuthorString;
         String identifierSchema = "";
         int visibleAuthorCounter = 0;
@@ -116,7 +116,7 @@ public class SignpostingResources {
         List<String> valueList = new LinkedList<>();
         Dataset ds = workingDatasetVersion.getDataset();
 
-        String identifierSchema = getAuthors(workingDatasetVersion.getDatasetAuthors());
+        String identifierSchema = getAuthorsIdSchema(workingDatasetVersion.getDatasetAuthors());
         if (!identifierSchema.equals("")) {
             valueList.add(identifierSchema);
         }
