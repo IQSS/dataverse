@@ -22,6 +22,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.license.License;
 
 import javax.json.Json;
@@ -143,21 +144,8 @@ public class SignpostingResources {
         }
         valueList.add(type);
 
-        // TODO: support only CC0 now, should add flexible license support when flex-terms or multi-license is ready
-//        License license = workingDatasetVersion.getTermsOfUseAndAccess().getLicense();
-        License license = workingDatasetVersion.getTermsOfUseAndAccess().getLicense();
-        String licenseString = license.getUri() + ";rel=\"license\"";
+        String licenseString = DatasetUtil.getLicenseURI(workingDatasetVersion) + ";rel=\"license\"";
         valueList.add(licenseString);
-
-        /*
-        else {
-            TODO: when multilicense is merged, should get license link from multilicense
-             Thus the checking thus would not be necessary?
-             Currently, when the License is None, which means bring-your-own-license,
-             Mostly, we will not have a valid URI in the License, so we skip it here despite that signposting requires 1
-             valid URI.
-        }
-        */
 
         String linkset = "<" + systemConfig.getDataverseSiteUrl() + "/api/datasets/:persistentId/versions/"
                 + workingDatasetVersion.getVersionNumber() + "." + workingDatasetVersion.getMinorVersionNumber()
