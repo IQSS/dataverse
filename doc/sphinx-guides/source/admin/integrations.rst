@@ -11,6 +11,13 @@ Getting Data In
 
 A variety of integrations are oriented toward making it easier for your researchers to deposit data into your Dataverse installation.
 
+GitHub
++++++++
+
+Dataverse integration with GitHub is implemented via a Dataverse Uploader GitHub Action. It is a reusable, composite workflow for uploading a git repository or subdirectory into a dataset on a target Dataverse installation. The action is customizable, allowing users to choose to replace a dataset, add to the dataset, publish it or leave it as a draft version on Dataverse. The action provides some metadata to the dataset, such as the origin GitHub repository, and it preserves the directory tree structure. 
+
+For instructions on using Dataverse Uploader GitHub Action, visit https://github.com/marketplace/actions/dataverse-uploader-action
+
 Dropbox
 +++++++
 
