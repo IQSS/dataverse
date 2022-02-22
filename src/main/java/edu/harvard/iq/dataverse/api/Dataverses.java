@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldType;
@@ -117,6 +118,8 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.StreamingOutput;
 import javax.xml.stream.XMLStreamException;
+
+import org.glassfish.jersey.media.multipart.FormDataParam;
 
 /**
  * A REST API for dataverses.
@@ -403,6 +406,103 @@ public class Dataverses extends AbstractApiBean {
             } catch (XMLStreamException e) {
                 return badRequest("Invalid file content: "+e.getMessage());
             }
+            ds.setOwner(owner);
+            if (nonEmpty(pidParam)) {
+                if (!GlobalId.verifyImportCharacters(pidParam)) {
+                    return badRequest("PID parameter contains characters that are not allowed by the Dataverse application. On import, the PID must only contain characters specified in this regex: " + BundleUtil.getStringFromBundle("pid.allowedCharacters"));
+                }
+                Optional<GlobalId> maybePid = GlobalId.parse(pidParam);
+                if (maybePid.isPresent()) {
+                    ds.setGlobalId(maybePid.get());
+                } else {
+                    // unparsable PID passed. Terminate.
+                    return badRequest("Cannot parse the PID parameter '" + pidParam + "'. Make sure it is in valid form - see Dataverse Native API documentation.");
+                }
+            }
+
+            boolean shouldRelease = StringUtil.isTrue(releaseParam);
+            DataverseRequest request = createDataverseRequest(u);
+
+            Dataset managedDs = null;
+            if (nonEmpty(pidParam)) {
+                managedDs = execCommand(new ImportDatasetCommand(ds, request));
+            }
+            else {
+                managedDs = execCommand(new CreateNewDatasetCommand(ds, request));
+            }
+
+            JsonObjectBuilder responseBld = Json.createObjectBuilder()
+                    .add("id", managedDs.getId())
+                    .add("persistentId", managedDs.getGlobalIdString());
+
+            if (shouldRelease) {
+                DatasetVersion latestVersion = ds.getLatestVersion();
+                latestVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
+                latestVersion.setVersionNumber(1l);
+                latestVersion.setMinorVersionNumber(0l);
+                if (latestVersion.getCreateTime() != null) {
+                    latestVersion.setCreateTime(new Date());
+                }
+                if (latestVersion.getLastUpdateTime() != null) {
+                    latestVersion.setLastUpdateTime(new Date());
+                }
+                PublishDatasetResult res = execCommand(new PublishDatasetCommand(managedDs, request, false, shouldRelease));
+                responseBld.add("releaseCompleted", res.isCompleted());
+            }
+
+            return created("/datasets/" + managedDs.getId(), responseBld);
+
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+    @POST
+    @Path("{identifier}/datasets/importddiwithjson")
+    public Response importDatasetDdiWithJson( @FormDataParam("xml") String xml, @FormDataParam("jsonData") String jsonBody, @PathParam("identifier") String parentIdtf, @QueryParam("pid") String pidParam, @QueryParam("release") String releaseParam, @QueryParam("replace") Boolean replace) {
+        if (replace == null) {
+            replace = false;
+        }
+        try {
+            User u = findUserOrDie();
+            if (!u.isSuperuser()) {
+                return error(Status.FORBIDDEN, "Not a superuser");
+            }
+            Dataverse owner = findDataverseOrDie(parentIdtf);
+            Dataset ds = null;
+            try {
+                ds = jsonParser().parseDataset(importService.ddiToJson(xml));
+            } catch (JsonParseException jpe) {
+                return badRequest("Error parsing data as Json: "+jpe.getMessage());
+            } catch (ImportException e) {
+                return badRequest("Invalid DOI found in the XML: "+e.getMessage());
+            } catch (XMLStreamException e) {
+                return badRequest("Invalid file content: "+e.getMessage());
+            }
+
+            DatasetVersion dsv = ds.getLatestVersion();
+            //Update from json
+            if (jsonBody != null) {
+                List<DatasetField> fields = null;
+                try {
+                    fields = jsonParser().getFieldsFromJson(jsonBody);
+                } catch (JsonParseException ex) {
+                    logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + ex.getMessage(), ex);
+                    return error(Response.Status.BAD_REQUEST, "Error parsing dataset import: " + ex.getMessage());
+
+                }
+
+                String valdationErrors = dsv.validateDatasetFieldValues(fields);
+                if (!valdationErrors.isEmpty()) {
+                    logger.log(Level.SEVERE, "Semantic error parsing dataset import Json: " + valdationErrors, valdationErrors);
+                    return error(Response.Status.BAD_REQUEST, "Error parsing dataset import: " + valdationErrors);
+                }
+
+                String response = dsv.updateFields(fields, replace);
+                if (!response.isEmpty()) {
+                    return error(Response.Status.BAD_REQUEST, response);
+                }
+            }
+
             ds.setOwner(owner);
             if (nonEmpty(pidParam)) {
                 if (!GlobalId.verifyImportCharacters(pidParam)) {

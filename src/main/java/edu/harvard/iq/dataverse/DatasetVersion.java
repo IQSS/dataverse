@@ -1957,4 +1957,102 @@ public class DatasetVersion implements Serializable {
         this.externalStatusLabel = externalStatusLabel;
     }
 
+    public String updateFields(List<DatasetField> fields, Boolean replaceData) {
+        StringBuilder error = new StringBuilder();
+        for (DatasetField updateField : fields) {
+            boolean found = false;
+            for (DatasetField dsf : getDatasetFields()) {
+                if (dsf.getDatasetFieldType().equals(updateField.getDatasetFieldType())) {
+                    found = true;
+                    if (dsf.isEmpty() || dsf.getDatasetFieldType().isAllowMultiples() || replaceData) {
+                        List priorCVV = new ArrayList<>();
+                        String cvvDisplay = "";
+
+                        if (updateField.getDatasetFieldType().isControlledVocabulary()) {
+                            cvvDisplay = dsf.getDisplayValue();
+                            for (ControlledVocabularyValue cvvOld : dsf.getControlledVocabularyValues()) {
+                                priorCVV.add(cvvOld);
+                            }
+                        }
+
+                        if (replaceData) {
+                            if (dsf.getDatasetFieldType().isAllowMultiples()) {
+                                dsf.setDatasetFieldCompoundValues(new ArrayList<>());
+                                dsf.setDatasetFieldValues(new ArrayList<>());
+                                dsf.setControlledVocabularyValues(new ArrayList<>());
+                                priorCVV.clear();
+                                dsf.getControlledVocabularyValues().clear();
+                            } else {
+                                dsf.setSingleValue("");
+                                dsf.setSingleControlledVocabularyValue(null);
+                            }
+                        }
+                        if (updateField.getDatasetFieldType().isControlledVocabulary()) {
+                            if (dsf.getDatasetFieldType().isAllowMultiples()) {
+                                for (ControlledVocabularyValue cvv : updateField.getControlledVocabularyValues()) {
+                                    if (!cvvDisplay.contains(cvv.getStrValue())) {
+                                        priorCVV.add(cvv);
+                                    }
+                                }
+                                dsf.setControlledVocabularyValues(priorCVV);
+                            } else {
+                                dsf.setSingleControlledVocabularyValue(updateField.getSingleControlledVocabularyValue());
+                            }
+                        } else {
+                            if (!updateField.getDatasetFieldType().isCompound()) {
+                                if (dsf.getDatasetFieldType().isAllowMultiples()) {
+                                    for (DatasetFieldValue dfv : updateField.getDatasetFieldValues()) {
+                                        if (!dsf.getDisplayValue().contains(dfv.getDisplayValue())) {
+                                            dfv.setDatasetField(dsf);
+                                            dsf.getDatasetFieldValues().add(dfv);
+                                        }
+                                    }
+                                } else {
+                                    dsf.setSingleValue(updateField.getValue());
+                                }
+                            } else {
+                                for (DatasetFieldCompoundValue dfcv : updateField.getDatasetFieldCompoundValues()) {
+                                    if (!dsf.getCompoundDisplayValue().contains(updateField.getCompoundDisplayValue())) {
+                                        dfcv.setParentDatasetField(dsf);
+                                        dsf.setDatasetVersion(this);
+                                        dsf.getDatasetFieldCompoundValues().add(dfcv);
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        if (!dsf.isEmpty() && !dsf.getDatasetFieldType().isAllowMultiples() || !replaceData) {
+                            error.append("You may not add data to a field that already has data and does not allow multiples. Use replace=true to replace existing data (" + dsf.getDatasetFieldType().getDisplayName() + ")");
+                            return error.toString();
+                        }
+                    }
+                    break;
+                }
+            }
+            if (!found) {
+                updateField.setDatasetVersion(this);
+                getDatasetFields().add(updateField);
+            }
+        }
+        return error.toString();
+    }
+
+    public String validateDatasetFieldValues(List<DatasetField> fields) {
+        StringBuilder error = new StringBuilder();
+
+        for (DatasetField dsf : fields) {
+            if (dsf.getDatasetFieldType().isAllowMultiples() && dsf.getControlledVocabularyValues().isEmpty()
+                    && dsf.getDatasetFieldCompoundValues().isEmpty() && dsf.getDatasetFieldValues().isEmpty()) {
+                error.append("Empty multiple value for field: ").append(dsf.getDatasetFieldType().getDisplayName()).append(" ");
+            } else if (!dsf.getDatasetFieldType().isAllowMultiples() && dsf.getSingleValue().getValue().isEmpty()) {
+                error.append("Empty value for field: ").append(dsf.getDatasetFieldType().getDisplayName()).append(" ");
+            }
+        }
+
+        if (!error.toString().isEmpty()) {
+            return (error.toString());
+        }
+        return "";
+    }
+
 }

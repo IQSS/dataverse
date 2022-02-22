@@ -1,0 +1,15 @@
+{
+    "fields": [
+        {
+            "typeName": "subject",
+            "value": ["Astronomy and Astrophysics"]
+        },
+	{
+	    "typeName": "language",
+            "value": ["English"]
+	},
+	{"typeName":"datasetContact","multiple":true,"typeClass":"compound","value":[{"datasetContactName":{"typeName":"datasetContactName","multiple":false,"typeClass":"primitive","value":"Leahey, Amber"},"datasetContactAffiliation":{"typeName":"datasetContactAffiliation","multiple":false,"typeClass":"primitive","value":"Scholars Portal"},"datasetContactEmail":{"typeName":"datasetContactEmail","multiple":false,"typeClass":"primitive","value":"amber@scholarsportal.info"}},{"datasetContactEmail":{"typeName":"datasetContactEmail","multiple":false,"typeClass":"primitive","value":"odesi-help@scholarsportal.info"}}]}
+    ]
+}
+
+

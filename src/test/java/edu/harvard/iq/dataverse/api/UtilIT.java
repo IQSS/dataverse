@@ -12,6 +12,7 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -405,6 +406,46 @@ public class UtilIT {
                 .contentType("application/json")
                 .post("/api/dataverses/" + dataverseAlias + "/datasets");
         return createDatasetResponse;
+    }
+
+    static Response importDatasetDDIViaNativeApi(String apiToken, String dataverseAlias, String xml, String jsonBody, String pid, Boolean release, Boolean replace) {
+
+        String postString = "/api/dataverses/" + dataverseAlias + "/datasets/importddiwithjson";
+        if (pid != null || release != null || replace != null ) {
+            postString = postString + "?";
+            if (pid != null) {
+                postString = postString + "pid=" + pid;
+                if (release != null) {
+                    postString = postString + "&release=" + release.toString();
+                }
+                if (replace != null) {
+                    postString = postString + "&replace=" + replace.toString();
+                }
+            } else {
+                if (release != null) {
+                    postString = postString + "release=" + release.toString();
+                    if (replace != null) {
+                        postString = postString + "&replace=" + replace.toString();
+                    }
+                } else {
+                    logger.info("Replace " + replace.toString());
+                    if (replace != null) {
+                        postString = postString + "replace=" + replace.toString();
+                    }
+                }
+            }
+        }
+        logger.info(postString);
+        RequestSpecification importDDI = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .urlEncodingEnabled(false)
+                .multiPart("xml", xml);
+
+        if (jsonBody != null) {
+            importDDI.multiPart("jsonData", jsonBody);
+        }
+
+        return importDDI.post(postString);
     }
 
     static String getDatasetJson(String pathToJsonFile) {

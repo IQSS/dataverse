@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<codeBook version="1.2.2"  xml-lang="en" xmlns="http://www.icpsr.umich.edu/DDI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.icpsr.umich.edu/DDI http://www.icpsr.umich.edu/DDI/Version1-2-2.xsd">
+<docDscr>
+<citation>
+<titlStmt>
+<titl>
+Very Important Title
+</titl>
+<altTitl>
+This is alternative title
+</altTitl>
+<IDNo>
+id
+</IDNo>
+</titlStmt>
+<rspStmt>
+<AuthEnty affiliation="Some University">
+Author_Name
+</AuthEnty>
+<AuthEnty affiliation="Another University">
+Second Author name
+</AuthEnty>
+</rspStmt>
+<prodStmt>
+<producer abbr="my_abbr" affiliation="Some Research Institute">
+Research Institute
+</producer>
+<copyright>
+Copyright of some unoversity
+</copyright>
+<software version="4.0.10" date="2018-05-02">
+Some Publisher
+</software>
+</prodStmt>
+<distStmt>
+<distrbtr abbr="my_abbr" affiliation="Some University">
+Canadian Opinion Research Archive
+</distrbtr>
+<depositr/>
+</distStmt>
+<serStmt>
+<serName>
+Environics Environmental Monitor
+</serName>
+</serStmt>
+<verStmt>
+<version date="2019-12-04">
+December 4, 2019
+</version>
+<verResp>
+Data Services, Some University
+</verResp>
+<notes>
+Updated variable labels
+</notes>
+</verStmt>
+</citation>
+<docSrc>
+<titlStmt>
+<titl>
+title
+</titl>
+</titlStmt>
+<distStmt>
+<depositr/>
+</distStmt>
+</docSrc>
+</docDscr>
+<stdyDscr>
+<citation>
+<titlStmt>
+<titl>
+Title 1992
+</titl>
+<altTitl>
+Alternative title 1992
+</altTitl>
+<IDNo>
+id
+</IDNo>
+</titlStmt>
+<rspStmt>
+<AuthEnty affiliation="Research Group">
+Some Research group
+</AuthEnty>
+</rspStmt>
+<prodStmt>
+<producer abbr="my_abbr" affiliation="Research Group">
+Producer
+</producer>
+<software version="4.0.10" date="2018-05-02">
+Some Publisher
+</software>
+</prodStmt>
+<distStmt>
+<distrbtr abbr="my_abbr" affiliation="Some University" URI="http://university.com">
+Research Archive
+</distrbtr>
+</distStmt>
+<serStmt>
+<serName>
+serName here
+</serName>
+</serStmt>
+<verStmt>
+<version date="2009-10-06">
+1.0
+</version>
+</verStmt>
+</citation>
+<stdyInfo>
+<abstract>
+Here is abstract
+</abstract>
+<sumDscr>
+<collDate date="1992-12-18" event="start"/>
+<collDate date="1993-01-28" event="end"/>
+<nation>
+Canada
+</nation>
+<anlyUnit>
+Individual
+</anlyUnit>
+<dataKind>
+Survey data
+</dataKind>
+</sumDscr>
+</stdyInfo>
+<method>
+<dataColl>
+<sampProc>
+Stratified probability sample
+</sampProc>
+<sources/>
+</dataColl>
+</method>
+<dataAccs>
+<useStmt>
+<restrctn>
+This data is restricted for teaching and research purposes only. It is not to be used for any profit-making purposes.
+</restrctn>
+<citReq>
+The publishing of analysis and results from research using this data is permitted in research communications such as scholarly papers, journals and the like. The authors of these communications are required to cite the Research Group as the source of the data, and to indicate that the results or views expressed are those of the author/authorized user and are not those of Research Group.
+</citReq>
+<disclaimer>
+The original collector of the data and the relevant funding agency bear no responsibility for uses of this collection or for interpretations or inferences based upon such uses.
+</disclaimer>
+</useStmt>
+</dataAccs>
+</stdyDscr>
+</codeBook>

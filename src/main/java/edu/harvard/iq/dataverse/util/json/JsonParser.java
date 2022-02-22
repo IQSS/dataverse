@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.json.Json;
@@ -55,6 +56,7 @@ import javax.json.JsonReader;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
+import javax.ws.rs.core.Response;
 
 /**
  * Parses JSON objects into domain objects.
@@ -927,5 +929,21 @@ public class JsonParser {
               || (jobject.get(fieldName).getValueType()!=expectedValueType) ) {
             throw new JsonParseException( objectName + " missing a field named '"+fieldName+"' of type " + expectedValueType );
         }
+    }
+
+    public List<DatasetField> getFieldsFromJson(String jsonBody) throws JsonParseException {
+        List<DatasetField> fields = new LinkedList<>();
+        StringReader rdr = new StringReader(jsonBody);
+        JsonObject json = Json.createReader(rdr).readObject();
+
+        DatasetField singleField = null;
+        JsonArray fieldsJson = json.getJsonArray("fields");
+        if (fieldsJson == null) {
+                singleField = parseField(json, Boolean.FALSE);
+                fields.add(singleField);
+        } else {
+                fields = parseMultipleFields(json);
+        }
+        return fields;
     }
 }

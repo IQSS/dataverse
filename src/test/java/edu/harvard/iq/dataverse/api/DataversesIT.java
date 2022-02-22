@@ -3,12 +3,17 @@ package edu.harvard.iq.dataverse.api;
 import com.jayway.restassured.RestAssured;
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.path.json.JsonPath.with;
+
+import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -479,6 +484,55 @@ public class DataversesIT {
         authorAttemptsToAddFileViaNative.then().assertThat()
                 .statusCode(OK.getStatusCode());
  
+    }
+    @Test
+    public void testImportDDI() throws IOException {
+
+        Response createUser = UtilIT.createRandomUser();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        assertEquals(200, makeSuperUser.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        assertEquals(200, publishDataverse.getStatusCode());
+
+        String xml = new String(Files.readAllBytes(Paths.get("src/test/resources/xml/example.xml")));
+        JsonObject dvJson;
+        FileReader reader = new FileReader("src/test/resources/json/edit-fields.json");
+        dvJson = Json.createReader(reader).readObject();
+        String jsonBody = dvJson.toString();
+
+        Response importDDI = UtilIT.importDatasetDDIViaNativeApi(apiToken, dataverseAlias, xml, jsonBody, null, false, true);
+        assertEquals(201, importDDI.getStatusCode());
+        importDDI.prettyPrint();
+
+        FileReader readerShort = new FileReader("src/test/resources/json/missing-fields.json");
+        JsonObject dvJsonShort = Json.createReader(readerShort).readObject();
+        String jsonBodyShort = dvJsonShort.toString();
+
+        Response importDDIShort = UtilIT.importDatasetDDIViaNativeApi(apiToken, dataverseAlias, xml, jsonBodyShort, null, true, false);
+        assertEquals(201, importDDIShort.getStatusCode());
+        importDDIShort.prettyPrint();
+
+        //cleanup
+
+        Integer datasetIdInt = JsonPath.from(importDDI.body().asString()).getInt("data.id");
+        Response destroyDatasetResponse = UtilIT.destroyDataset(datasetIdInt, apiToken);
+        assertEquals(200, destroyDatasetResponse.getStatusCode());
+
+        Integer datasetIdIntShort = JsonPath.from(importDDIShort.body().asString()).getInt("data.id");
+        Response destroyDatasetResponseShort = UtilIT.destroyDataset(datasetIdIntShort, apiToken);
+        assertEquals(200, destroyDatasetResponse.getStatusCode());
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        assertEquals(200, deleteUserResponse.getStatusCode());
     }
     
 }
