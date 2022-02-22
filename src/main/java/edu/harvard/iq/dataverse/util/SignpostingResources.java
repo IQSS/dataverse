@@ -65,8 +65,7 @@ public class SignpostingResources {
     }
 
     /**
-     * Get identifier schema for each author
-     * <p>
+     * Get Authors as string
      * For example:
      * if author has VIAF
      * Link: <http://viaf.org/viaf/:id/>; rel="author"
@@ -74,7 +73,7 @@ public class SignpostingResources {
      * @param datasetAuthors list of all DatasetAuthor object
      * @return all the non empty author links in a string
      */
-    private String getAuthorsIdSchema(List<DatasetAuthor> datasetAuthors) {
+    private String getAuthorsAsString(List<DatasetAuthor> datasetAuthors) {
         String singleAuthorString;
         String identifierSchema = "";
         int visibleAuthorCounter = 0;
@@ -116,7 +115,7 @@ public class SignpostingResources {
         List<String> valueList = new LinkedList<>();
         Dataset ds = workingDatasetVersion.getDataset();
 
-        String identifierSchema = getAuthorsIdSchema(workingDatasetVersion.getDatasetAuthors());
+        String identifierSchema = getAuthorsAsString(workingDatasetVersion.getDatasetAuthors());
         if (!identifierSchema.equals("")) {
             valueList.add(identifierSchema);
         }
