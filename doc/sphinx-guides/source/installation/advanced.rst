@@ -89,11 +89,13 @@ in the Dataverse Software 5.0+ source tree for more information.
 
 To install:
 
-1. Follow the instructions in the file above to build ``zipdownloader-0.0.1.jar``. (Also available from
-   `zipper.zip <https://github.com/IQSS/dataverse/releases/download/v5.0/zipper.zip>`_ of the
-   `Dataverse Software 5.0 release on GitHub <https://github.com/IQSS/dataverse/releases/tag/v5.0>`_).
+1. Follow the instructions in the file above to build ``zipdownloader-0.0.1.jar``. Please note that the package name and
+   the version were changed as of the release 5.10, as part of an overall cleanup and reorganization of the project 
+   tree. In the releases 5.0-5.9 it existed under the name ``ZipDownloadService-v1.0.0``. (A pre-built jar file was
+   distributed under that name as part of the 5.0 release on GitHub. Aside from the name change, there have been no 
+   changes in the functionality of the tool). 
 2. Copy it, together with the shell script :download:`cgi-bin/zipdownload <../../../../scripts/zipdownload/cgi-bin/zipdownload>`
-   to the ``cgi-bin`` directory of the chosen Apache server (/var/www/cgi-bin standard).
+   to the ``cgi-bin`` directory of the chosen Apache server (``/var/www/cgi-bin`` standard).
 3. Make sure the shell script (``zipdownload``) is executable, and edit it to configure the database access credentials.
    Do note that the executable does not need access to the entire Dataverse installation database. A security-conscious
    admin can create a dedicated database user with access to just one table: ``CUSTOMZIPSERVICEREQUEST``.
