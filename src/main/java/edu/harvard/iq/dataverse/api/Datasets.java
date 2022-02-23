@@ -2649,7 +2649,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         // likely want it to be accessible to admin users who may not necessarily 
         // have localhost access, that would be required to get to /api/admin in 
         // most installations. It is still reasonable however to limit access to
-        // this api to admin users only. (?)
+        // this api to admin users only.
         AuthenticatedUser apiUser;
         try {
             apiUser = findAuthenticatedUserOrDie();
