@@ -434,8 +434,10 @@
                                         <ul class="dropdown-menu multi-level pull-right text-left">
                                             <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
                                                 <p:commandLink  onclick="if (!testFilesSelected2()) return false;" 
-                                                                oncomplete="PF('editDeleteFileConfirmation').show();">                                                  
-                                                    <h:outputText value="#{bundle['file.delete']}"/> 
+                                                                oncomplete="PF('deleteFileConfirmation').show();">                                                  
+                                                    <h:outputText value="#{bundle['file.delete']}"/>  
+                                                    <f:setPropertyActionListener target="#{DatasetPage.workingVersion.fileMetadatas}" value="#{EditDatafilesPage.fileMetadatas}" /> 
+                                                    <f:setPropertyActionListener target="#{DatasetPage.selectedFiles}" value="#{EditDatafilesPage.selectedFiles}" /> 
                                                 </p:commandLink>
                                             </li>
                                             <li>

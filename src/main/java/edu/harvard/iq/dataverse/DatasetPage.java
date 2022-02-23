@@ -143,6 +143,7 @@ import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrClientService;
+import edu.harvard.iq.dataverse.util.FileMetadataUtil;
 import java.util.Comparator;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
@@ -3374,7 +3375,16 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         deleteFiles(filesToDelete);
-        String retVal = save();
+        String retVal;
+        
+        if (editMode == EditMode.CREATE) {
+            workingVersion.setFileMetadatas(new ArrayList<>());
+            retVal = "";
+        } else {
+            retVal = save();
+        }
+        
+        
         //And delete them only after the dataset is updated
         for(Embargo emb: orphanedEmbargoes) {
             embargoService.deleteById(emb.getId(), ((AuthenticatedUser)session.getUser()).getUserIdentifier());
@@ -3409,32 +3419,12 @@ public class DatasetPage implements java.io.Serializable {
                 // So below we are deleting the metadata from the version; we are
                 // NOT adding the file to the filesToBeDeleted list that will be
                 // passed to the UpdateDatasetCommand. -- L.A. Aug 2017
-                Iterator<FileMetadata> fmit = dataset.getEditVersion().getFileMetadatas().iterator();
-                while (fmit.hasNext()) {
-                    FileMetadata fmd = fmit.next();
-                    if (markedForDelete.getDataFile().getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
-                        // And if this is an image file that happens to be assigned
-                        // as the dataset thumbnail, let's null the assignment here:
+                
+                FileMetadataUtil.removeFileMetadataFromList(workingVersion.getFileMetadatas(), markedForDelete);
+                
+                FileMetadataUtil.removeDataFileFromList(newFiles, markedForDelete.getDataFile());
+                FileUtil.deleteTempFile(markedForDelete.getDataFile(), dataset, ingestService);
 
-                        if (fmd.getDataFile().equals(dataset.getThumbnailFile())) {
-                            dataset.setThumbnailFile(null);
-                        }
-                        /* It should not be possible to get here if this file
-                           is not in fact released! - so the code block below
-                           is not needed.
-                        //if not published then delete identifier
-                        if (!fmd.getDataFile().isReleased()){
-                            try{
-                                commandEngine.submit(new DeleteDataFileCommand(fmd.getDataFile(), dvRequestService.getDataverseRequest()));
-                            } catch (CommandException e){
-                                 //this command is here to delete the identifier of unreleased files
-                                 //if it fails then a reserved identifier may still be present on the remote provider
-                            }
-                        } */
-                        fmit.remove();
-                        break;
-                    }
-                }
             }
         }
 
