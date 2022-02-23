@@ -77,10 +77,7 @@ As of Dataverse Software 5.0 we offer an **experimental** optimization for the m
 If this option (``:CustomZipDownloadServiceUrl``) is enabled, instead of enforcing the size limit on multi-file zipped
 downloads (as normally specified by the option ``:ZipDownloadLimit``), we attempt to serve all the files that the user
 requested (that they are authorized to download), but the request is redirected to a standalone zipper service running
-as a cgi-bin executable under Apache.
-
-Thus moving these potentially long-running jobs completely outside the Application Server (Payara); and preventing
-worker threads from becoming locked serving them. Since zipping is also a CPU-intensive task, it is possible to have
+as a cgi-bin executable under Apache. This moves these potentially long-running jobs completely outside the Application Server (Payara), and prevents worker threads from becoming locked serving them. Since zipping is also a CPU-intensive task, it is possible to have
 this service running on a different host system, freeing the cycles on the main Application Server. (The system running
 the service needs to have access to the database as well as to the storage filesystem, and/or S3 bucket).
 
