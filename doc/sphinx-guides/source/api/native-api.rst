@@ -3727,6 +3727,8 @@ Note: setting ``:InheritParentRoleAssignments`` will automatically trigger inher
 Manage Available Standard License Terms
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+For more context about configuring licenses, see :ref:`license-config` in the Installation Guide.
+
 View the list of standard license terms that can be selected for a dataset:
 
 .. code-block:: bash
@@ -3742,7 +3744,7 @@ View the details of the standard license with the database ID specified in ``$ID
   curl $SERVER_URL/api/licenses/$ID
 
 
-Superusers can add a new license by posting a JSON file adapted from this example :download:`add-license.json <../_static/api/add-license.json>`. The ``name`` and ``uri`` of the new license must be unique. :
+Superusers can add a new license by posting a JSON file adapted from this example :download:`add-license.json <../_static/api/add-license.json>`. The ``name`` and ``uri`` of the new license must be unique. If you are interested in adding a Creative Commons license, you are encouarged to use the JSON files under :ref:`adding-creative-commons-licenses`:
 
 .. code-block:: bash
 
@@ -3762,7 +3764,7 @@ Superusers can set which license is the default specified by the license ``$ID``
 
   curl -X PUT -H 'Content-Type: application/json' -H X-Dataverse-key:$API_TOKEN --data-binary @edit-license.json $SERVER_URL/api/licenses/default/$ID
 
-Superusers can delete a license that is not in useby the license ``$ID``:
+Superusers can delete a license that is not in use by the license ``$ID``:
 
 .. code-block:: bash
 
