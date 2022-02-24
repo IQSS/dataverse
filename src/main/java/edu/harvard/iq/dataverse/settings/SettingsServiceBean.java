@@ -494,7 +494,11 @@ public class SettingsServiceBean {
         /*
          * Include "Custom Terms" as an item in the license drop-down or not.
          */
-        AllowCustomTermsOfUse
+        AllowCustomTermsOfUse,
+        /**
+         * LDN Inbox Allowed Hosts - a comma separated list of IP addresses allowed to submit messages to the inbox
+         */
+        MessageHosts
         ;
 
         @Override
