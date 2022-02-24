@@ -61,8 +61,8 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                 Credential credential = new Credential(System.getProperty("duracloud.username"),
                         System.getProperty("duracloud.password"));
                 storeManager.login(credential);
-
-                String spaceName = dataset.getGlobalId().asString().replace(':', '-').replace('/', '-')
+                String spaceName=dataset.getOwner().getAlias();
+                String baseFileName = dataset.getGlobalId().asString().replace(':', '-').replace('/', '-')
                         .replace('.', '-').toLowerCase();
 
                 ContentStore store;
@@ -75,7 +75,9 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                      */
                     store = storeManager.getPrimaryContentStore();
                     // Create space to copy archival files to
-                    store.createSpace(spaceName);
+                    if(!store.spaceExists(spaceName)) {
+                        store.createSpace(spaceName);
+                    }
                     DataCitation dc = new DataCitation(dv);
                     Map<String, String> metadata = dc.getDataCiteMetadata();
                     String dataciteXml = DOIDataCiteRegisterService.getMetadataFromDvObject(
@@ -105,7 +107,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                             Thread.sleep(10);
                             i++;
                         }
-                        String checksum = store.addContent(spaceName, "datacite.xml", digestInputStream, -1l, null, null,
+                        String checksum = store.addContent(spaceName,baseFileName + "_datacite.xml", digestInputStream, -1l, null, null,
                                 null);
                         logger.fine("Content: datacite.xml added with checksum: " + checksum);
                         String localchecksum = Hex.encodeHexString(digestInputStream.getMessageDigest().digest());
@@ -116,7 +118,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                         }
 
                         // Store BagIt file
-                        String fileName = spaceName + "v" + dv.getFriendlyVersionNumber() + ".zip";
+                        String fileName = baseFileName + "v" + dv.getFriendlyVersionNumber() + ".zip";
 
                         // Add BagIt ZIP file
                         // Although DuraCloud uses SHA-256 internally, it's API uses MD5 to verify the
@@ -194,7 +196,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                     if (!(1 == dv.getVersion()) || !(0 == dv.getMinorVersionNumber())) {
                         mesg = mesg + ": Prior Version archiving not yet complete?";
                     }
-                    return new Failure("Unable to create DuraCloud space with name: " + spaceName, mesg);
+                    return new Failure("Unable to create DuraCloud space with name: " + baseFileName, mesg);
                 } catch (NoSuchAlgorithmException e) {
                     logger.severe("MD5 MessageDigest not available!");
                 }
