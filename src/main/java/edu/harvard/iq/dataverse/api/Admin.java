@@ -1784,7 +1784,7 @@ public class Admin extends AbstractApiBean {
      * @return
      */
     @GET
-    @Path("/archiveAllUnarchivedDataVersions")
+    @Path("/archiveAllUnarchivedDatasetVersions")
     public Response archiveAllUnarchivedDatasetVersions(@QueryParam("listonly") boolean listonly, @QueryParam("limit") Integer limit, @QueryParam("latestonly") boolean latestonly) {
 
         try {
@@ -1814,7 +1814,7 @@ public class Admin extends AbstractApiBean {
                 }
                 String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
                 AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), dsl.get(0));
-
+                final DataverseRequest request = dvRequestService.getDataverseRequest();
                 if (cmd != null) {
                     new Thread(new Runnable() {
                         public void run() {
@@ -1827,7 +1827,7 @@ public class Admin extends AbstractApiBean {
                                 }
                                 if (!latestonly || dv.equals(dv.getDataset().getLatestVersionForCopy())) {
                                     try {
-                                        AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), dv);
+                                        AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, request, dv);
 
                                         dv = commandEngine.submit(cmd);
                                         if (dv.getArchivalCopyLocation() != null) {
