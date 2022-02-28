@@ -364,49 +364,51 @@ Each of the three main sections own sets of properties:
 #controlledVocabulary (enumerated) properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-+-----------------------+-----------------------+-----------------------+
-| **Property**          | **Purpose**           | **Allowed values and  |
-|                       |                       | restrictions**        |
-+-----------------------+-----------------------+-----------------------+
-| DatasetField          | Specifies the         | Must reference an     |
-|                       | #datasetField to which| existing              |
-|                       | this entry applies.   | #datasetField.        |
-|                       |                       | As a best practice,   |
-|                       |                       | the value should      |
-|                       |                       | reference a           |
-|                       |                       | #datasetField in the  |
-|                       |                       | current metadata      |
-|                       |                       | block definition. (It |
-|                       |                       | is technically        |
-|                       |                       | possible to reference |
-|                       |                       | an existing           |
-|                       |                       | #datasetField from    |
-|                       |                       | another metadata      |
-|                       |                       | block.)               |
-+-----------------------+-----------------------+-----------------------+
-| Value                 | A short display       | Free text             |
-|                       | string, representing  |                       |
-|                       | an enumerated value   |                       |
-|                       | for this field. If    |                       |
-|                       | the identifier        |                       |
-|                       | property is empty,    |                       |
-|                       | this value is used as |                       |
-|                       | the identifier.       |                       |
-+-----------------------+-----------------------+-----------------------+
-| identifier            | A string used to      | Free text             |
-|                       | encode the selected   |                       |
-|                       | enumerated value of a |                       |
-|                       | field. If this        |                       |
-|                       | property is empty,    |                       |
-|                       | the value of the      |                       |
-|                       | “Value” field is used |                       |
-|                       | as the identifier.    |                       |
-+-----------------------+-----------------------+-----------------------+
-| displayOrder          | Control the order in  | Non-negative integer. |
-|                       | which the enumerated  |                       |
-|                       | values are displayed  |                       |
-|                       | for selection.        |                       |
-+-----------------------+-----------------------+-----------------------+
+.. list-table::
+    :widths: 10 5 40 40 5
+    :header-rows: 1
+    :align: left
+
+    * - | Property
+        | (Column header)
+      - Column index
+      - Purpose
+      - Allowed values and restrictions
+      - Mandatory
+    * - ``#controlledVocabulary``
+      - 0
+      - Intentionally left blank
+      - (none)
+      - Y
+    * - ``DatasetField``
+      - 1
+      - References the ``#datasetField`` to which this entry applies.
+      - Must reference an existing ``#datasetField``.
+
+        As a best practice, the value should reference a ``#datasetField`` in the current metadata block definition.
+
+        (It is technically possible to reference an existing ``#datasetField`` from another metadata block.)
+      - Y
+    * - ``Value``
+      - 2
+      - A short display string, representing an enumerated value for this field. If the identifier property is empty, this value is used as the identifier.
+      - Free text
+      - Y
+    * - ``identifier``
+      - 3
+      - A string used to encode the selected enumerated value of a field. If this property is empty, the value of the ``Value`` field is used as the ``identifier``.
+      - Either an URL, an URI or free text matching ASCII characters, digits and ``+``, ``-``, ``_``
+      - N
+    * - ``displayOrder``
+      - 4
+      - Control the order in which the enumerated values are displayed for selection.
+      - Non-negative integer
+      - Y
+    * - ``altValue``
+      - 5..n
+      - Provide alternative values for this entry. Column may be repeated as often as necessary.
+      - Free text
+      - N
 
 FieldType definitions
 ~~~~~~~~~~~~~~~~~~~~~
