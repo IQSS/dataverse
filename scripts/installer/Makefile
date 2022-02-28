@@ -56,9 +56,9 @@ ${JHOVE_SCHEMA}:	../../conf/jhove/jhoveConfig.xsd ${INSTALLER_ZIP_DIR}
 	@echo copying jhove schema file
 	/bin/cp ../../conf/jhove/jhoveConfig.xsd ${INSTALLER_ZIP_DIR}
 
-${SOLR_SCHEMA}:		../../conf/solr/8.11.1/schema.xml ../../conf/solr/8.11.1/update-fields.sh ${INSTALLER_ZIP_DIR}
+${SOLR_SCHEMA}:		../../conf/solr/8.11.1/schema.xml ../../modules/solr-configset/src/main/scripts/update-fields.sh ${INSTALLER_ZIP_DIR}
 	@echo copying Solr schema file
-	/bin/cp ../../conf/solr/8.11.1/schema.xml ../../conf/solr/8.11.1/update-fields.sh ${INSTALLER_ZIP_DIR}
+	/bin/cp ../../conf/solr/8.11.1/schema.xml ../../modules/solr-configset/src/main/scripts/update-fields.sh ${INSTALLER_ZIP_DIR}
 
 ${SOLR_CONFIG}:		../../conf/solr/8.11.1/solrconfig.xml ${INSTALLER_ZIP_DIR}
 	@echo copying Solr config file
