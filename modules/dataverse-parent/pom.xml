@@ -129,6 +129,12 @@
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
+    
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter</artifactId>
+                <version>${junit.jupiter.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
  
