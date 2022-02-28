@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.abspath('../../'))
 import sphinx_bootstrap_theme
 
 import xml.etree.ElementTree as et
-pom = et.parse("../../../pom.xml")
+pom = et.parse("../../../modules/dataverse-parent/pom.xml")
 ns = {"mvn": "http://maven.apache.org/POM/4.0.0"}
 
 # Activate the theme.
