@@ -19,6 +19,7 @@ import java.util.regex.Pattern;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.validator.routines.UrlValidator;
 
 /**
  *
@@ -168,7 +169,20 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
 
         if (fieldType.equals(FieldType.URL) && !lengthOnly) {
             try {
-                URL url = new URL(value.getValue());
+                
+                String[] schemes = {"http","https"};
+                UrlValidator urlValidator = new UrlValidator(schemes);
+                
+                String urlString = value.getValue();
+                URL url = new URL(urlString);
+                
+                if (urlValidator.isValid(urlString)) {
+                    return true;
+                } else {
+                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + value.getValue() + "  is not a valid URL.").addConstraintViolation();
+                    return false;
+                }
+                
             } catch (MalformedURLException e) {
                 try {
                     context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + value.getValue() + "  is not a valid URL.").addConstraintViolation();
