@@ -621,11 +621,12 @@ public class MailServiceBean implements java.io.Serializable {
                         BrandingUtil.getInstallationBrandName(), 
                         citingResource.getString("@type"),
                         citingResource.getString("@id"),
+                        citingResource.getString("name"),
                         citingResource.getString("relationship"), 
                         systemConfig.getDataverseSiteUrl(),
                         dataset.getGlobalId().toString(), 
                         dataset.getDisplayName()};
-                messageText += MessageFormat.format(pattern, paramArrayDatasetMentioned);
+                messageText = MessageFormat.format(pattern, paramArrayDatasetMentioned);
                 return messageText;
         }
 

@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.util.json.JsonLDNamespace;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 
 import java.util.Date;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.io.StringWriter;
@@ -27,6 +28,7 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonValue;
 import javax.json.JsonWriter;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.BadRequestException;
@@ -75,27 +77,60 @@ public class LDNInbox extends AbstractApiBean {
             String citingPID = null;
             String citingType = null;
             boolean sent = false;
-            JsonObject jsonld = JSONLDUtil.decontextualizeJsonLD(body);
+
+            JsonObject jsonld = null;
+            jsonld = JSONLDUtil.decontextualizeJsonLD(body);
+            if (jsonld == null) {
+                // Kludge - something about the coar notify URL causes a
+                // LOADING_REMOTE_CONTEXT_FAILED error in the titanium library - so replace it
+                // and try with a local copy
+                body = body.replace("\"https://purl.org/coar/notify\"",
+                        "{\n" + "                \"@vocab\": \"http://purl.org/coar/notify_vocabulary/\",\n"
+                                + "                \"ietf\": \"http://www.iana.org/assignments/relation/\",\n"
+                                + "                \"coar-notify\": \"http://purl.org/coar/notify_vocabulary/\",\n"
+                                + "                \"sorg\": \"http://schema.org/\",\n"
+                                + "                \"ReviewAction\": \"coar-notify:ReviewAction\",\n"
+                                + "                \"EndorsementAction\": \"coar-notify:EndorsementAction\",\n"
+                                + "                \"IngestAction\": \"coar-notify:IngestAction\",\n"
+                                + "                \"ietf:cite-as\": {\n" + "                \"@type\": \"@id\"\n"
+                                + "                }}");
+                jsonld = JSONLDUtil.decontextualizeJsonLD(body);
+            }
             if (jsonld == null) {
                 throw new BadRequestException("Could not parse message to find acceptable citation link to a dataset.");
             }
             String relationship = "isRelatedTo";
-            if (jsonld.containsKey(JsonLDTerm.schemaOrg("identifier").getUrl())) {
-                citingPID = jsonld.getJsonObject(JsonLDTerm.schemaOrg("identifier").getUrl()).getString("@id");
+            String name = null;
+            JsonLDNamespace activityStreams = JsonLDNamespace.defineNamespace("as",
+                    "https://www.w3.org/ns/activitystreams#");
+            JsonLDNamespace ietf = JsonLDNamespace.defineNamespace("ietf", "http://www.iana.org/assignments/relation/");
+            String objectKey = new JsonLDTerm(activityStreams, "object").getUrl();
+            if (jsonld.containsKey(objectKey)) {
+                JsonObject msgObject = jsonld.getJsonObject(objectKey);
+
+                citingPID = msgObject.getJsonObject(new JsonLDTerm(ietf, "cite-as").getUrl()).getString("@id");
                 logger.fine("Citing PID: " + citingPID);
-                if (jsonld.containsKey("@type")) {
-                    citingType = jsonld.getString("@type");
+                if (msgObject.containsKey("@type")) {
+                    citingType = msgObject.getString("@type");
                     if (citingType.startsWith(JsonLDNamespace.schema.getUrl())) {
                         citingType = citingType.replace(JsonLDNamespace.schema.getUrl(), "");
                     }
+                    if(msgObject.containsKey(JsonLDTerm.schemaOrg("name").getUrl())) {
+                        name = msgObject.getString(JsonLDTerm.schemaOrg("name").getUrl());
+                    }
                     logger.fine("Citing Type: " + citingType);
-                    if (jsonld.containsKey(JsonLDTerm.schemaOrg("citation").getUrl())) {
-                        JsonObject citation = jsonld.getJsonObject(JsonLDTerm.schemaOrg("citation").getUrl());
-                        if (citation != null) {
-                            if (citation.containsKey("@type")
-                                    && citation.getString("@type").equals(JsonLDTerm.schemaOrg("Dataset").getUrl())
-                                    && citation.containsKey(JsonLDTerm.schemaOrg("identifier").getUrl())) {
-                                String pid = citation.getString(JsonLDTerm.schemaOrg("identifier").getUrl());
+                    String contextKey = new JsonLDTerm(activityStreams, "context").getUrl();
+
+                    if (jsonld.containsKey(contextKey)) {
+                        JsonObject context = jsonld.getJsonObject(contextKey);
+                        for (Map.Entry<String, JsonValue> entry : context.entrySet()) {
+
+                            relationship = entry.getKey().replace("_:", "");
+                            // Assuming only one for now - should check for array and loop
+                            JsonObject citedResource = (JsonObject) entry.getValue();
+                            String pid = citedResource.getJsonObject(new JsonLDTerm(ietf, "cite-as").getUrl())
+                                    .getString("@id");
+                            if (citedResource.getString("@type").equals(JsonLDTerm.schemaOrg("Dataset").getUrl())) {
                                 logger.fine("Raw PID: " + pid);
                                 if (pid.startsWith(GlobalId.DOI_RESOLVER_URL)) {
                                     pid = pid.replace(GlobalId.DOI_RESOLVER_URL, GlobalId.DOI_PROTOCOL + ":");
@@ -107,7 +142,7 @@ public class LDNInbox extends AbstractApiBean {
                                 Dataset dataset = datasetSvc.findByGlobalId(pid);
                                 if (dataset != null) {
                                     JsonObject citingResource = Json.createObjectBuilder().add("@id", citingPID)
-                                            .add("@type", citingType).add("relationship", relationship).build();
+                                            .add("@type", citingType).add("relationship", relationship).add("name", name).build();
                                     StringWriter sw = new StringWriter(128);
                                     try (JsonWriter jw = Json.createWriter(sw)) {
                                         jw.write(citingResource);
