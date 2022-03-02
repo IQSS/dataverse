@@ -478,6 +478,7 @@ public class DataverseUserPage implements java.io.Serializable {
                 case GRANTFILEACCESS:
                 case REJECTFILEACCESS:
                 case DATASETCREATED:
+                case DATASETMENTIONED:
                     userNotification.setTheObject(datasetService.find(userNotification.getObjectId()));
                     break;
 

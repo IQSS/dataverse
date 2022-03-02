@@ -2,14 +2,22 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.MailServiceBean;
+import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
+import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.UserNotification;
+import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
+import edu.harvard.iq.dataverse.ldn.LDNReleaseAction;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -18,10 +26,13 @@ import edu.harvard.iq.dataverse.util.json.JsonLDNamespace;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Optional;
-
+import java.util.Set;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.io.StringWriter;
+import java.sql.Timestamp;
 import java.util.logging.Logger;
 
 import javax.ejb.EJB;
@@ -29,6 +40,7 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
+import javax.json.JsonWriter;
 import javax.mail.internet.InternetAddress;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.BadRequestException;
@@ -64,6 +76,14 @@ public class LDNInbox extends AbstractApiBean {
     @EJB
     MailServiceBean mailService;
 
+    @EJB
+    UserNotificationServiceBean userNotificationService;
+
+    @EJB
+    DataverseRoleServiceBean roleService;
+
+    @EJB
+    RoleAssigneeServiceBean roleAssigneeService;
     @Context
     protected HttpServletRequest httpRequest;
 
@@ -80,9 +100,9 @@ public class LDNInbox extends AbstractApiBean {
             boolean sent = false;
             JsonObject jsonld = JSONLDUtil.decontextualizeJsonLD(body);
             if (jsonld == null) {
-                throw new BadRequestException(
-                        "Could not parse message to find acceptable citation link to a dataset.");
+                throw new BadRequestException("Could not parse message to find acceptable citation link to a dataset.");
             }
+            String relationship = "isRelatedTo";
             if (jsonld.containsKey(JsonLDTerm.schemaOrg("identifier").getUrl())) {
                 citingPID = jsonld.getJsonObject(JsonLDTerm.schemaOrg("identifier").getUrl()).getString("@id");
                 logger.fine("Citing PID: " + citingPID);
@@ -109,24 +129,40 @@ public class LDNInbox extends AbstractApiBean {
                                 Optional<GlobalId> id = GlobalId.parse(pid);
                                 Dataset dataset = datasetSvc.findByGlobalId(pid);
                                 if (dataset != null) {
-                                    InternetAddress systemAddress = mailService.getSystemAddress();
-                                    String citationMessage = BundleUtil.getStringFromBundle(
-                                            "api.ldninbox.citation.alert",
-                                            Arrays.asList(
-                                                    BrandingUtil.getSupportTeamName(systemAddress),
-                                                    BrandingUtil.getInstallationBrandName(), 
-                                                    citingType, 
-                                                    citingPID,
-                                                    systemConfig.getDataverseSiteUrl(),
-                                                    dataset.getGlobalId().toString(), 
-                                                    dataset.getDisplayName()));
-// Subject: <<<Root: You have been assigned a role>>>. Body: Root Support, the Root has just been notified that the http://schema.org/ScholarlyArticle <a href={3}/dataset.xhtml?persistentId={4}>http://ec2-3-236-45-73.compute-1.amazonaws.com</a> cites "<a href={5}>Une Démonstration</a>.<br><br>You may contact us for support at qqmyers@hotmail.com.<br><br>Thank you,<br>Root Support
-                                    sent = mailService.sendSystemEmail(
-                                            BrandingUtil.getSupportTeamEmailAddress(systemAddress),
-                                            BundleUtil.getStringFromBundle("api.ldninbox.citation.subject",
-                                                    Arrays.asList(BrandingUtil.getInstallationBrandName())),
-                                            citationMessage, true);
+                                    JsonObject citingResource = Json.createObjectBuilder().add("@id", citingPID)
+                                            .add("@type", citingType).add("relationship", relationship).build();
+                                    StringWriter sw = new StringWriter(128);
+                                    try (JsonWriter jw = Json.createWriter(sw)) {
+                                        jw.write(citingResource);
+                                    }
+                                    String jsonstring = sw.toString();
+                                    Set<RoleAssignment> ras = roleService.rolesAssignments(dataset);
+
+                                    roleService.rolesAssignments(dataset).stream()
+                                            .filter(ra -> ra.getRole().permissions()
+                                                    .contains(Permission.PublishDataset))
+                                            .flatMap(
+                                                    ra -> roleAssigneeService
+                                                            .getExplicitUsers(roleAssigneeService
+                                                                    .getRoleAssignee(ra.getAssigneeIdentifier()))
+                                                            .stream())
+                                            .distinct() // prevent double-send
+                                            .forEach(au -> {
+
+                                                if (au.isSuperuser()) {
+                                                    userNotificationService.sendNotification(au,
+                                                            new Timestamp(new Date().getTime()),
+                                                            UserNotification.Type.DATASETMENTIONED, dataset.getId(),
+                                                            null, null, true, jsonstring);
+
+                                                }
+                                            });
+                                    sent = true;
                                 }
+                                // .forEach( au -> userNotificationService.sendNotificationInNewTransaction(au,
+                                // timestamp, type, dataset.getLatestVersion().getId()) );
+
+// Subject: <<<Root: You have been assigned a role>>>. Body: Root Support, the Root has just been notified that the http://schema.org/ScholarlyArticle <a href={3}/dataset.xhtml?persistentId={4}>http://ec2-3-236-45-73.compute-1.amazonaws.com</a> cites "<a href={5}>Une Démonstration</a>.<br><br>You may contact us for support at qqmyers@hotmail.com.<br><br>Thank you,<br>Root Support
                             }
                         }
                     }
@@ -142,11 +178,15 @@ public class LDNInbox extends AbstractApiBean {
                             "Unable to process message. Please contact the administrators.");
                 }
             }
-        } else {
+        } else
+
+        {
             logger.info("Ignoring message from IP address: " + origin.toString());
             throw new ForbiddenException("Inbox does not acept messages from this address");
         }
 
-        return ok("Message Received");
+        return
+
+        ok("Message Received");
     }
 }

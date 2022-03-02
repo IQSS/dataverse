@@ -362,6 +362,18 @@
                                                         <f:param value="#{item.theObject.externalStatusLabel}"/>
                                                     </h:outputFormat>
                                                 </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'DATASETMENTIONED'}">
+                                                <o:importFunctions type="edu.harvard.iq.dataverse.util.json.JsonUtil" />
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
+                                                    <h:outputFormat value="#{bundle['notification.datasetMentioned']}" escape="false">
+                                                    <f:param value="#{JsonUtil:getJsonObject(item.additionalInfo).getString('@id')}"/>
+                                                    <f:param value="#{JsonUtil:getJsonObject(item.additionalInfo).getString('@type')}"/>
+                                                    <f:param value="#{JsonUtil:getJsonObject(item.additionalInfo).getString('relationship', 'isRelatedTo')}"/>
+                                                        <o:param>
+                                                            <a href="/dataset.xhtml?persistentId=#{item.theObject.getGlobalId()}&amp;version=DRAFT&amp;faces-redirect=true" title="#{item.theObject.getDisplayName()}">#{item.theObject.getDisplayName()}</a>
+                                                        </o:param>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
                                                 
 
                                             </ui:fragment>
