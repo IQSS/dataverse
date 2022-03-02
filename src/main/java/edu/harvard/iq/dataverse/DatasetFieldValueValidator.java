@@ -171,11 +171,14 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             
             String[] schemes = {"http","https", "ftp"};
             UrlValidator urlValidator = new UrlValidator(schemes);
-
-            if (urlValidator.isValid(value.getValue())) {
-                return true;
-            } else {
-                context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + value.getValue() + "  is not a valid URL.").addConstraintViolation();
+            
+            try {
+                if (urlValidator.isValid(value.getValue())) {
+                } else {
+                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + value.getValue() + "  is not a valid URL.").addConstraintViolation();
+                    return false;
+                }
+            } catch (NullPointerException npe) {
                 return false;
             }
             
