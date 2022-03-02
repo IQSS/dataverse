@@ -168,30 +168,17 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
         // Note, length validation for FieldType.TEXT was removed to accommodate migrated data that is greater than 255 chars.
 
         if (fieldType.equals(FieldType.URL) && !lengthOnly) {
-            try {
-                
-                String[] schemes = {"http","https"};
-                UrlValidator urlValidator = new UrlValidator(schemes);
-                
-                String urlString = value.getValue();
-                URL url = new URL(urlString);
-                
-                if (urlValidator.isValid(urlString)) {
-                    return true;
-                } else {
-                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + value.getValue() + "  is not a valid URL.").addConstraintViolation();
-                    return false;
-                }
-                
-            } catch (MalformedURLException e) {
-                try {
-                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + value.getValue() + "  is not a valid URL.").addConstraintViolation();
-                } catch (NullPointerException npe) {
+            
+            String[] schemes = {"http","https", "ftp"};
+            UrlValidator urlValidator = new UrlValidator(schemes);
 
-                }
-
+            if (urlValidator.isValid(value.getValue())) {
+                return true;
+            } else {
+                context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + value.getValue() + "  is not a valid URL.").addConstraintViolation();
                 return false;
             }
+            
         }
 
         if (fieldType.equals(FieldType.EMAIL) && !lengthOnly) {
