@@ -68,7 +68,7 @@ public class LDNInbox extends AbstractApiBean {
 
     @POST
     @Path("/")
-    @Consumes(MediaType.APPLICATION_JSON + "+ld")
+    @Consumes("application/ld+json, application/json-ld")
     public Response acceptMessage(String body) {
         IpAddress origin = new DataverseRequest(null, httpRequest).getSourceAddress();
         String whitelist = settingsService.get(SettingsServiceBean.Key.MessageHosts.toString(), "*");
