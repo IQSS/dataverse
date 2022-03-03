@@ -240,7 +240,7 @@ As for the "Remote only" authentication mode, it means that:
 - ``:DefaultAuthProvider`` has been set to use the desired authentication provider
 - The "builtin" authentication provider has been disabled (:ref:`api-toggle-auth-provider`). Note that disabling the "builtin" authentication provider means that the API endpoint for converting an account from a remote auth provider will not work. Converting directly from one remote authentication provider to another (i.e. from GitHub to Google) is not supported. Conversion from remote is always to "builtin". Then the user initiates a conversion from "builtin" to remote. Note that longer term, the plan is to permit multiple login options to the same Dataverse installation account per https://github.com/IQSS/dataverse/issues/3487 (so all this talk of conversion will be moot) but for now users can only use a single login option, as explained in the :doc:`/user/account` section of the User Guide. In short, "remote only" might work for you if you only plan to use a single remote authentication provider such that no conversion between remote authentication providers will be necessary.
 
-File Storage: Using a Local Filesystem and/or Swift and/or S3 object stores
+File Storage: Using a Local Filesystem and/or Swift and/or object stores
 ---------------------------------------------------------------------------
 
 By default, a Dataverse installation stores all data files (files uploaded by end users) on the filesystem at ``/usr/local/payara5/glassfish/domains/domain1/files``. This path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.\<id\>.directory`` JVM option described below.
@@ -601,6 +601,11 @@ Reported Working S3-Compatible Storage
   **Can be used for quick testing, too:** just use the example values above. Uses the public (read: unsecure and
   possibly slow) https://play.minio.io:9000 service.
 
+`StorJ Object Store <https://www.storj.io>`_
+ StorJ is a distributed object store that can be configured with an S3 gateway. Per the S3 Storage instructions above, you'll first set up the StorJ S3 store by defining the id, type, and label. After following the general installation, set the following configurations to use a StorJ object store: ``dataverse.files.<id>.payload-signing=true`` and ``dataverse.files.<id>.chunked-encoding=false``.
+
+ Note that for direct uploads and downloads, Dataverse redirects to the proxy-url but presigns the urls based on the ``dataverse.files.<id>.custom-endpoint-url``. Also, note that if you choose to enable ``dataverse.files.<id>.download-redirect`` the S3 URLs expire after 60 minutes by default. You can change that minute value to reflect a timeout value that’s more appropriate by using ``dataverse.files.<id>.url-expiration-minutes``.
+
 `Surf Object Store v2019-10-30 <https://www.surf.nl/en>`_
   Set ``dataverse.files.<id>.payload-signing=true`` and ``dataverse.files.<id>.chunked-encoding=false`` to use Surf Object
   Store.
@@ -841,6 +846,65 @@ Both Google and Matomo provide the optional capability to track such events and 
 For Google Analytics, the example script at :download:`analytics-code.html </_static/installation/files/var/www/dataverse/branding/analytics-code.html>` will track both page hits and events within your Dataverse installation. You would use this file in the same way as the shorter example above, putting it somewhere outside your deployment directory, replacing ``YOUR ACCOUNT CODE`` with your actual code and setting :WebAnalyticsCode to reference it.
 
 Once this script is running, you can look in the Google Analytics console (Realtime/Events or Behavior/Events) and view events by type and/or the Dataset or File the event involves.
+
+.. _license-config:
+
+Configuring Licenses
+--------------------
+
+Out of the box, users select from the following licenses or terms:
+
+- CC0 1.0 (default)
+- CC BY 4.0
+- Custom Dataset Terms
+
+You have a lot of control over which licenses and terms are available. You can remove licenses and add new ones. You can decide which license is the default. You can remove "Custom Dataset Terms" as a option. You can remove all licenses and make "Custom Dataset Terms" the only option.
+
+Before making changes, you are encouraged to read the :ref:`license-terms` section of the User Guide about why CC0 is the default and what the "Custom Dataset Terms" option allows.
+
+Setting the Default License
++++++++++++++++++++++++++++
+
+The default license can be set with a curl command as explained in the API Guide under :ref:`license-management-api`.
+
+Note that "Custom Dataset Terms" is not a license and cannot be set to be the default.
+
+Adding Licenses
++++++++++++++++
+
+Licenses are added with curl using JSON file as explained in the API Guide under :ref:`license-management-api`.
+
+.. _adding-creative-commons-licenses:
+
+Adding Creative Common Licenses
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+JSON files for `Creative Commons licenses <https://creativecommons.org/about/cclicenses/>`_ are provided below. Note that a new installation of Dataverse already includes CC0 and CC BY.
+
+- :download:`licenseCC0-1.0.json <../../../../scripts/api/data/licenses/licenseCC0-1.0.json>`
+- :download:`licenseCC-BY-4.0.json <../../../../scripts/api/data/licenses/licenseCC-BY-4.0.json>`
+- :download:`licenseCC-BY-SA-4.0.json <../../../../scripts/api/data/licenses/licenseCC-BY-SA-4.0.json>`
+- :download:`licenseCC-BY-NC-4.0.json <../../../../scripts/api/data/licenses/licenseCC-BY-NC-4.0.json>`
+- :download:`licenseCC-BY-NC-SA-4.0.json <../../../../scripts/api/data/licenses/licenseCC-BY-NC-SA-4.0.json>`
+- :download:`licenseCC-BY-ND-4.0.json <../../../../scripts/api/data/licenses/licenseCC-BY-ND-4.0.json>`
+- :download:`licenseCC-BY-NC-ND-4.0.json <../../../../scripts/api/data/licenses/licenseCC-BY-NC-ND-4.0.json>`
+
+.. _adding-custom-licenses:
+
+Adding Custom Licenses
+^^^^^^^^^^^^^^^^^^^^^^
+
+If you are interested in adding a custom license, you will need to create your own JSON file as explained in  see :ref:`standardizing-custom-licenses`.
+
+Removing Licenses
++++++++++++++++++
+
+Licenses can be removed with a curl command as explained in the API Guide under :ref:`license-management-api`.
+
+Disabling Custom Dataset Terms
+++++++++++++++++++++++++++++++
+
+See :ref:`:AllowCustomTermsOfUse` for how to disable the "Custom Dataset Terms" option.
 
 .. _BagIt Export:
 
