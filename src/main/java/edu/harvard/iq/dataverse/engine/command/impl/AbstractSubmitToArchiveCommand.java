@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import edu.harvard.iq.dataverse.DOIDataCiteRegisterService;
+import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -13,6 +15,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
+import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -71,6 +74,13 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
     public String describe() {
         return super.describe() + "DatasetVersion: [" + version.getId() + " (v"
                 + version.getFriendlyVersionNumber()+")]";
+    }
+    
+    String getDataCiteXml(DatasetVersion dv) {
+        DataCitation dc = new DataCitation(dv);
+        Map<String, String> metadata = dc.getDataCiteMetadata();
+        return DOIDataCiteRegisterService.getMetadataFromDvObject(dv.getDataset().getGlobalId().asString(), metadata,
+                dv.getDataset());
     }
 
 }

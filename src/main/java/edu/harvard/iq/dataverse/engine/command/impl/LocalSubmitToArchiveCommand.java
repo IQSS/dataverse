@@ -62,10 +62,7 @@ public class LocalSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand 
                 String spaceName = dataset.getGlobalId().asString().replace(':', '-').replace('/', '-')
                         .replace('.', '-').toLowerCase();
 
-                DataCitation dc = new DataCitation(dv);
-                Map<String, String> metadata = dc.getDataCiteMetadata();
-                String dataciteXml = DOIDataCiteRegisterService.getMetadataFromDvObject(
-                        dv.getDataset().getGlobalId().asString(), metadata, dv.getDataset());
+                String dataciteXml = getDataCiteXml(dv);
 
 
                 FileUtils.writeStringToFile(new File(localPath+"/"+spaceName + "-datacite.v" + dv.getFriendlyVersionNumber()+".xml"), dataciteXml);

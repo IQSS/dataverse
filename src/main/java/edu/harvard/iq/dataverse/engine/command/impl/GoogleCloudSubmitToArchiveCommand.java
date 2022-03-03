@@ -69,10 +69,7 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                     String spaceName = dataset.getGlobalId().asString().replace(':', '-').replace('/', '-')
                             .replace('.', '-').toLowerCase();
 
-                    DataCitation dc = new DataCitation(dv);
-                    Map<String, String> metadata = dc.getDataCiteMetadata();
-                    String dataciteXml = DOIDataCiteRegisterService.getMetadataFromDvObject(
-                            dv.getDataset().getGlobalId().asString(), metadata, dv.getDataset());
+                    String dataciteXml = getDataCiteXml(dv);
                     String blobIdString = null;
                     MessageDigest messageDigest = MessageDigest.getInstance("MD5");
                     try (PipedInputStream dataciteIn = new PipedInputStream(); DigestInputStream digestInputStream = new DigestInputStream(dataciteIn, messageDigest)) {
