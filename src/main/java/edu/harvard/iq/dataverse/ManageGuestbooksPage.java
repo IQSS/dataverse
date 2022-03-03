@@ -338,4 +338,21 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         }
         return "";
     }
+
+    public void streamResponsesByDataverseAndGuestbook(Long guestbookId) {
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
+        response.setContentType("text/comma-separated-values");
+        String fileNameString = "attachment;filename=" + getFileName();
+        response.setHeader("Content-Disposition", fileNameString);
+        try {
+            ServletOutputStream out = response.getOutputStream();
+            guestbookResponseService.streamResponsesByDataverseIdAndGuestbookId(out, dataverseId, guestbookId);
+            out.flush();
+            ctx.responseComplete();
+        } catch (Exception e) {
+            logger.warning("Failed to stream collected guestbook responses for guestbook " + guestbookId + ", dataverse " + dataverseId);
+        }
+    }
+
 }

@@ -44,6 +44,14 @@
                         </div>
                     </ui:fragment>
 
+                    <div class="alert alert-info">
+                        <span class="glyphicon glyphicon-info-sign"></span>
+                        <h:outputFormat value=" #{bundle['dataset.manageGuestbooks.noGuestbooks.learnMore']}" escape="false">
+                            <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                            <f:param value="#{systemConfig.guidesVersion}"/>
+                        </h:outputFormat>
+                    </div>
+
                     <!-- Tabs -->
                     <div class="form-horizontal" jsf:rendered="#{!empty GuestbookPage.editMode}">
                         <div class="form-group">
