@@ -84,18 +84,16 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand imp
                             .replace('.', '-').toLowerCase();
                     String dataciteXml = getDataCiteXml(dv);
                     MessageDigest messageDigest = MessageDigest.getInstance("MD5");
-                    try (ByteArrayInputStream dataciteIn = new ByteArrayInputStream(dataciteXml.getBytes("UTF-8")); DigestInputStream digestInputStream = new DigestInputStream(dataciteIn, messageDigest)) {
+                    try (ByteArrayInputStream dataciteIn = new ByteArrayInputStream(dataciteXml.getBytes("UTF-8"))) {
                         // Add datacite.xml file
                         ObjectMetadata om = new ObjectMetadata();
                         om.setContentLength(dataciteIn.available());
                         String dcKey = spaceName + "/" + spaceName + "_datacite.v" + dv.getFriendlyVersionNumber()+".xml";
-                        tm.upload(new PutObjectRequest(bucketName, dcKey, digestInputStream, om)).waitForCompletion();
-                        String localchecksum = Hex.encodeHexString(digestInputStream.getMessageDigest().digest());
+                        tm.upload(new PutObjectRequest(bucketName, dcKey, dataciteIn, om)).waitForCompletion();
                         om = s3.getObjectMetadata(bucketName, dcKey);
-                        if (!om.getContentMD5().equals(localchecksum)) {
-                            logger.severe(om.getContentMD5() + " not equal to " + localchecksum + " for " + dcKey);
-                            return new Failure("Error in transferring DataCite.xml file to S3",
-                                    "S3 Submission Failure: incomplete metadata transfer");
+                        if(om==null) {
+                            logger.warning("Could not write datacite xml to S3");
+                            return new Failure("S3 Archiver failed writing datacite xml file");
                         }
 
                         // Store BagIt file
@@ -111,18 +109,17 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand imp
                                         if (bagger.generateBag(fileName, false)) {
                                         File bagFile = bagger.getBagFile(fileName);
                                         
-                                        try (FileInputStream in = new FileInputStream(bagFile); DigestInputStream digestInputStream2 = new DigestInputStream(in, messageDigest);) {
+                                        try (FileInputStream in = new FileInputStream(bagFile)) {
                                             om = new ObjectMetadata();
                                             om.setContentLength(bagFile.length());
                                             
-                                            tm.upload(new PutObjectRequest(bucketName, bagKey, digestInputStream2, om)).waitForCompletion();
-                                            localchecksum = Hex.encodeHexString(digestInputStream.getMessageDigest().digest());
+                                            tm.upload(new PutObjectRequest(bucketName, bagKey, in, om)).waitForCompletion();
                                             om = s3.getObjectMetadata(bucketName, bagKey);
                                             
-                                            if (!om.getContentMD5().equals(localchecksum)) {
-                                                logger.severe(om.getContentMD5() + " not equal to " + localchecksum + " for " + fileName);
-                                                return new Failure("Error in transferring DataCite.xml file to S3",
-                                                        "S3 Submission Failure: incomplete metadata transfer");
+                                            if (om ==null) {
+                                                logger.severe("Error sending file to S3: " + fileName);
+                                                return new Failure("Error in transferring Bag file to S3",
+                                                        "S3 Submission Failure: incomplete transfer");
                                             }
                         } catch (RuntimeException rte) {
                             logger.severe("Error creating Bag during S3 archiving: " + rte.getMessage());
