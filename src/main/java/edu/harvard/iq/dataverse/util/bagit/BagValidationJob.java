@@ -25,6 +25,7 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 
 import org.apache.commons.compress.utils.IOUtils;
 
@@ -41,7 +42,7 @@ public class BagValidationJob implements Runnable {
 
     private String hash;
     private String name;
-    private static String hashtype;
+    private static ChecksumType hashtype;
 
     public BagValidationJob(String value, String key) throws IllegalStateException {
         if (zf == null || bagGenerator == null) {
@@ -64,7 +65,7 @@ public class BagValidationJob implements Runnable {
         if (hash.equals(realHash)) {
             log.fine("Valid hash for " + name);
         } else {
-            log.severe("Invalid " + bagGenerator.getHashtype() + " for " + name);
+            log.severe("Invalid " + bagGenerator.getHashtype().name() + " for " + name);
             log.fine("As sent: " + hash);
             log.fine("As calculated: " + realHash);
         }
@@ -89,7 +90,7 @@ public class BagValidationJob implements Runnable {
             } else if (hashtype.equals(DataFile.ChecksumType.MD5)) {
                 realHash = DigestUtils.md5Hex(inputStream);
             } else {
-                log.warning("Unknown hash type: " + hashtype);
+                log.warning("Unknown hash type: " + hashtype.name());
             }
 
         } catch (ZipException e) {

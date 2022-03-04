@@ -903,8 +903,8 @@ public class BagGenerator {
         totalDataSize += inc;
     }
 
-    public String getHashtype() {
-        return hashtype.toString();
+    public ChecksumType getHashtype() {
+        return hashtype;
     }
 
     // Get's all "Has Part" children, standardized to send an array with 0,1, or
