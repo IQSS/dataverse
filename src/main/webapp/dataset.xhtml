@@ -1900,14 +1900,16 @@
                     function editTerms(){  
                         linkEditTerms();
                     }
-                    function editMetadata(){  
+                    function editMetadata(){                         
                         var validTOA = document.getElementById("datasetForm:validTermsofAccess").value;
-                        if (validTOA === false){
+                        if (validTOA === 'false'){                            
                             PF('blockDatasetForm').show();
                             PF('accessPopup').show();
-                        }                       
-                        editMedatdataCommand();
+                        } else {
+                            editMedatdataCommand();
+                        }                            
                     }
+                    
                     function testCheckBoxes() {
                         var count = PF('versionsTable').getSelectedRowsCount();
                         if (count !== 2) {
