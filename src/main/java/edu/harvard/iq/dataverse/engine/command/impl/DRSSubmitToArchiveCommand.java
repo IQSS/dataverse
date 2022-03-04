@@ -2,234 +2,135 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DatasetLock.Reason;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import edu.harvard.iq.dataverse.util.bagit.BagGenerator;
-import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Logger;
 
+import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 
-import org.apache.commons.codec.binary.Hex;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 
-import com.amazonaws.ClientConfiguration;
-import com.amazonaws.auth.AWSCredentialsProviderChain;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
-import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.transfer.TransferManager;
-import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 
 @RequiredPermissions(Permission.PublishDataset)
-public class DRSSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand implements Command<DatasetVersion> {
+public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implements Command<DatasetVersion> {
 
     private static final Logger logger = Logger.getLogger(DRSSubmitToArchiveCommand.class.getName());
-    private static final String S3_CONFIG = ":S3ArchivalConfig";
-    private static final String S3_PROFILE = ":S3ArchivalProfile";
+    private static final String DRS_CONFIG = ":DRSArchivalConfig";
 
     private static final Config config = ConfigProvider.getConfig();
     private AmazonS3 s3 = null;
     private TransferManager tm = null;
-    
+
     public DRSSubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
         super(aRequest, version);
     }
 
     @Override
-    public WorkflowStepResult performArchiveSubmission(DatasetVersion dv, ApiToken token, Map<String, String> requestedSettings) {
+    public WorkflowStepResult performArchiveSubmission(DatasetVersion dv, ApiToken token,
+            Map<String, String> requestedSettings) {
         logger.fine("In DRSSubmitToArchiveCommand...");
-        JsonObject configObject = null;
-        String profileName = requestedSettings.get(S3_PROFILE);
-        String bucketName = null;
-        logger.fine("Profile: " + profileName + " Config: " + configObject);
+        JsonObject drsConfigObject = null;
+
         try {
-        configObject = JsonUtil.getJsonObject(requestedSettings.get(S3_CONFIG));
-        bucketName = configObject.getString("bucket-name", null);
+            drsConfigObject = JsonUtil.getJsonObject(requestedSettings.get(DRS_CONFIG));
         } catch (Exception e) {
-            logger.warning("Unable to parse " + S3_CONFIG + " setting as a Json object");
+            logger.warning("Unable to parse " + DRS_CONFIG + " setting as a Json object");
         }
-        if (configObject != null && profileName != null && bucketName != null) {
+        if (drsConfigObject != null) {
+            Set<String> collections = drsConfigObject.getJsonObject("collections").keySet();
+            Dataset dataset = dv.getDataset();
+            Dataverse ancestor = dataset.getOwner();
+            String alias = ancestor.getAlias();
+            while (ancestor != null && !collections.contains(alias)) {
+                ancestor = ancestor.getOwner();
+                if (ancestor != null) {
+                    alias = ancestor.getAlias();
+                } else {
+                    alias = null;
+                }
+            }
+            if (alias != null) {
+                JsonObject collectionConfig = drsConfigObject.getJsonObject("collections").getJsonObject(alias);
 
-            s3 = createClient(configObject, profileName);
-            tm = TransferManagerBuilder.standard()
-                    .withS3Client(s3)
-                    .build();
-            try {
+                WorkflowStepResult s3Result = super.performArchiveSubmission(dv, token, requestedSettings);
 
-                Dataset dataset = dv.getDataset();
-                if (dataset.getLockFor(Reason.finalizePublication) == null) {
+                if (s3Result == WorkflowStepResult.OK) {
+                    // Now contact DRS
+                    JsonObjectBuilder job = Json.createObjectBuilder(drsConfigObject);
+                    job.remove("collections");
+                    for (Entry<String, JsonValue> entry : collectionConfig.entrySet()) {
+                        job.add(entry.getKey(), entry.getValue());
+                    }
 
-                    String spaceName = dataset.getGlobalId().asString().replace(':', '-').replace('/', '-')
-                            .replace('.', '-').toLowerCase();
-                    String dataciteXml = getDataCiteXml(dv);
-                    MessageDigest messageDigest = MessageDigest.getInstance("MD5");
-                    try (ByteArrayInputStream dataciteIn = new ByteArrayInputStream(dataciteXml.getBytes("UTF-8")); DigestInputStream digestInputStream = new DigestInputStream(dataciteIn, messageDigest)) {
+                    String drsConfigString = JsonUtil.prettyPrint(job.build());
+                    try (ByteArrayInputStream configIn = new ByteArrayInputStream(drsConfigString.getBytes("UTF-8"))) {
                         // Add datacite.xml file
                         ObjectMetadata om = new ObjectMetadata();
-                        om.setContentLength(dataciteIn.available());
-                        String dcKey = spaceName + "/" + spaceName + "_datacite.v" + dv.getFriendlyVersionNumber()+".xml";
-                        tm.upload(new PutObjectRequest(bucketName, dcKey, digestInputStream, om)).waitForCompletion();
-                        String localchecksum = Hex.encodeHexString(digestInputStream.getMessageDigest().digest());
+                        om.setContentLength(configIn.available());
+                        String dcKey = getSpaceName(dataset) + "/drsConfig." + getSpaceName(dataset) + "_v"
+                                + dv.getFriendlyVersionNumber() + ".json";
+                        tm.upload(new PutObjectRequest(bucketName, dcKey, configIn, om)).waitForCompletion();
                         om = s3.getObjectMetadata(bucketName, dcKey);
-                        if (!om.getContentMD5().equals(localchecksum)) {
-                            logger.severe(om.getContentMD5() + " not equal to " + localchecksum + " for " + dcKey);
-                            return new Failure("Error in transferring DataCite.xml file to S3",
-                                    "S3 Submission Failure: incomplete metadata transfer");
-                        }
-
-                        // Store BagIt file
-                        String fileName = spaceName + ".v" + dv.getFriendlyVersionNumber() + ".zip";
-                        String bagKey = spaceName + "/" + fileName;
-                        // Add BagIt ZIP file
-                        // Google uses MD5 as one way to verify the
-                        // transfer
-                        messageDigest = MessageDigest.getInstance("MD5");
-                                        // Generate bag
-                                        BagGenerator bagger = new BagGenerator(new OREMap(dv, false), dataciteXml);
-                                        bagger.setAuthenticationKey(token.getTokenString());
-                                        if (bagger.generateBag(fileName, false)) {
-                                        File bagFile = bagger.getBagFile(fileName);
-                                        
-                                        try (FileInputStream in = new FileInputStream(bagFile); DigestInputStream digestInputStream2 = new DigestInputStream(in, messageDigest);) {
-                                            om = new ObjectMetadata();
-                                            om.setContentLength(bagFile.length());
-                                            
-                                            tm.upload(new PutObjectRequest(bucketName, bagKey, digestInputStream2, om)).waitForCompletion();
-                                            localchecksum = Hex.encodeHexString(digestInputStream.getMessageDigest().digest());
-                                            om = s3.getObjectMetadata(bucketName, bagKey);
-                                            
-                                            if (!om.getContentMD5().equals(localchecksum)) {
-                                                logger.severe(om.getContentMD5() + " not equal to " + localchecksum + " for " + fileName);
-                                                return new Failure("Error in transferring DataCite.xml file to S3",
-                                                        "S3 Submission Failure: incomplete metadata transfer");
-                                            }
-                        } catch (RuntimeException rte) {
-                            logger.severe("Error creating Bag during S3 archiving: " + rte.getMessage());
-                            return new Failure("Error in generating Bag",
-                                    "S3 Submission Failure: archive file not created");
-                        }
-
-                        logger.fine("S3 Submission step: Content Transferred");
-
-                        // Document the location of dataset archival copy location (actually the URL
-                        // where you can
-                        // view it as an admin)
-
-                        //Unsigned URL - gives location but not access without creds
-                        dv.setArchivalCopyLocation(s3.getUrl(bucketName, bagKey).toString());
-                    } else {
-                        logger.warning("Could not write local Bag file " + fileName);
-                        return new Failure("S3 Archiver fail writing temp local bag");
+                    } catch (RuntimeException rte) {
+                        logger.warning("Error creating DRS Config file during DRS archiving: " + rte.getMessage());
+                        return new Failure("Error in generating Config file",
+                                "DRS Submission Failure: config file not created");
+                    } catch (InterruptedException e) {
+                        logger.warning("DRS Archiver failure: " + e.getLocalizedMessage());
+                        e.printStackTrace();
+                        return new Failure("DRS Archiver fail in config transfer");
+                    } catch (UnsupportedEncodingException e1) {
+                        logger.warning("UTF-8 not supported!");
+                    } catch (IOException e1) {
+                        logger.warning("Failure creating ByteArrayInputStream from string!");
                     }
-                    
-                }
-                    } else {
-                    logger.warning("S3 Archiver Submision Workflow aborted: Dataset locked for publication/pidRegister");
-                    return new Failure("Dataset locked");
-                }
-            } catch (Exception e) {
-                logger.warning(e.getLocalizedMessage());
-                e.printStackTrace();
-                return new Failure("S3 Archiver Submission Failure",
-                        e.getLocalizedMessage() + ": check log for details");
 
+                    logger.fine("DRS Submission step: Config Transferred");
+
+                    // Document the location of dataset archival copy location (actually the URL
+                    // where you can
+                    // view it as an admin)
+
+                    // Unsigned URL - gives location but not access without creds
+                } else {
+
+                    logger.warning("DRS: S3 archiving failed - will not send config: " + getSpaceName(dataset) + "_v"
+                            + dv.getFriendlyVersionNumber());
+                    return new Failure("DRS Archiver fail in initial S3 Archiver transfer");
+                }
+
+            } else {
+                logger.fine("DRS Archiver: No matching collection found - will not archive: " + getSpaceName(dataset)
+                        + "_v" + dv.getFriendlyVersionNumber());
+                return WorkflowStepResult.OK;
             }
-            return WorkflowStepResult.OK;
+
         } else {
-            return new Failure("GoogleCloud Submission not configured - no \":GoogleCloudBucket\"  and/or \":GoogleCloudProject\".");
+            logger.warning(DRS_CONFIG + " not found");
+            return new Failure("DRS Submission not configured - no " + DRS_CONFIG + " found.");
         }
+        return WorkflowStepResult.OK;
     }
-
-    private AmazonS3 createClient(JsonObject configObject, String profileName) {
-     // get a standard client, using the standard way of configuration the credentials, etc.
-        AmazonS3ClientBuilder s3CB = AmazonS3ClientBuilder.standard();
-
-        ClientConfiguration cc = new ClientConfiguration();
-        Integer poolSize = configObject.getInt("connection-pool-size", 256);
-        cc.setMaxConnections(poolSize);
-        s3CB.setClientConfiguration(cc);
-        
-        /**
-         * Pass in a URL pointing to your S3 compatible storage.
-         * For possible values see https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/client/builder/AwsClientBuilder.EndpointConfiguration.html
-         */
-        String s3CEUrl = configObject.getString("custom-endpoint-url", "");
-        /**
-         * Pass in a region to use for SigV4 signing of requests.
-         * Defaults to "dataverse" as it is not relevant for custom S3 implementations.
-         */
-        String s3CERegion = configObject.getString("custom-endpoint-region", "dataverse");
-
-        // if the admin has set a system property (see below) we use this endpoint URL instead of the standard ones.
-        if (!s3CEUrl.isEmpty()) {
-            s3CB.setEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(s3CEUrl, s3CERegion));
-        }
-        /**
-         * Pass in a boolean value if path style access should be used within the S3 client.
-         * Anything but case-insensitive "true" will lead to value of false, which is default value, too.
-         */
-        Boolean s3pathStyleAccess = configObject.getBoolean("path-style-access", false);
-        // some custom S3 implementations require "PathStyleAccess" as they us a path, not a subdomain. default = false
-        s3CB.withPathStyleAccessEnabled(s3pathStyleAccess);
-
-        /**
-         * Pass in a boolean value if payload signing should be used within the S3 client.
-         * Anything but case-insensitive "true" will lead to value of false, which is default value, too.
-         */
-        Boolean s3payloadSigning = configObject.getBoolean("payload-signing",false);
-        /**
-         * Pass in a boolean value if chunked encoding should not be used within the S3 client.
-         * Anything but case-insensitive "false" will lead to value of true, which is default value, too.
-         */
-        Boolean s3chunkedEncoding = configObject.getBoolean("chunked-encoding",true);
-        // Openstack SWIFT S3 implementations require "PayloadSigning" set to true. default = false
-        s3CB.setPayloadSigningEnabled(s3payloadSigning);
-        // Openstack SWIFT S3 implementations require "ChunkedEncoding" set to false. default = true
-        // Boolean is inverted, otherwise setting dataverse.files.<id>.chunked-encoding=false would result in leaving Chunked Encoding enabled
-        s3CB.setChunkedEncodingDisabled(!s3chunkedEncoding);
-
-        /**
-         * Pass in a string value if this storage driver should use a non-default AWS S3 profile.
-         * The default is "default" which should work when only one profile exists.
-         */
-        ProfileCredentialsProvider profileCredentials = new ProfileCredentialsProvider(profileName);
-
-        // Try to retrieve credentials via Microprofile Config API, too. For production use, you should not use env
-        // vars or system properties to provide these, but use the secrets config source provided by Payara.
-        AWSStaticCredentialsProvider staticCredentials = new AWSStaticCredentialsProvider(
-            new BasicAWSCredentials(
-                config.getOptionalValue("dataverse.s3archiver.access-key", String.class).orElse(""),
-                config.getOptionalValue("dataverse.s3archiver.secret-key", String.class).orElse("")
-            ));
-        
-        // Add both providers to chain - the first working provider will be used (so static credentials are the fallback)
-        AWSCredentialsProviderChain providerChain = new AWSCredentialsProviderChain(profileCredentials, staticCredentials);
-        s3CB.setCredentials(providerChain);
-        
-        // let's build the client :-)
-        AmazonS3 client =  s3CB.build();
-        return client;
-    }
-
 }
