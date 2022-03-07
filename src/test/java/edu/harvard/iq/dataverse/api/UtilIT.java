@@ -2396,6 +2396,34 @@ public class UtilIT {
         return response;       
     }
     
+    static Response listAllLocks(String apiToken) {        
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .get("api/datasets/locks");
+        return response;       
+    }
+    
+    static Response listLocksByType(String lockType, String apiToken) {        
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .get("api/datasets/locks?type="+lockType);
+        return response;       
+    }
+    
+    static Response listLocksByUser(String userIdentifier, String apiToken) {        
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .get("api/datasets/locks?userIdentifier="+userIdentifier);
+        return response;       
+    }
+    
+    static Response listLocksByTypeAndUser(String lockType, String userIdentifier, String apiToken) {        
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .get("api/datasets/locks?type="+lockType+"&userIdentifier="+userIdentifier);
+        return response;       
+    }
+    
     static Response lockDataset(long datasetId, String lockType, String apiToken) {
         Response response = given()
             .header(API_TOKEN_HTTP_HEADER, apiToken)
