@@ -75,7 +75,7 @@
                              disabled="#{empty bean.termsOfAccess  and !bean.fileAccessRequest}"
                              onclick="PF('accessPopup').hide();"
                              update=":messagePanel" />
-            <button class="btn btn-link" onclick="PF('accessPopup').hide();" type="button">
+            <button class="btn btn-link" onclick="PF('accessPopup').hide();PF('blockDatasetForm').hide();" type="button">
                 #{bundle.cancel}
             </button> 
 
