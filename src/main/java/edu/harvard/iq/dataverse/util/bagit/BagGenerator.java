@@ -359,6 +359,7 @@ public class BagGenerator {
             // Create an output stream backed by the file
             bagFileOS = new FileOutputStream(bagFile);
             if (generateBag(bagFileOS)) {
+                //The generateBag call sets this.bagName to the correct value
                 validateBagFile(bagFile);
                 if (usetemp) {
                     logger.fine("Moving tmp zip");
@@ -384,7 +385,8 @@ public class BagGenerator {
         ZipFile zf = null;
         InputStream is = null;
         try {
-            zf = new ZipFile(getBagFile(bagId));
+            File bagFile = getBagFile(bagId);
+            zf = new ZipFile(bagFile);
             ZipArchiveEntry entry = zf.getEntry(getValidName(bagId) + "/manifest-sha1.txt");
             if (entry != null) {
                 logger.info("SHA1 hashes used");
@@ -424,7 +426,7 @@ public class BagGenerator {
             }
             IOUtils.closeQuietly(is);
             logger.info("HashMap Map contains: " + checksumMap.size() + " entries");
-            checkFiles(checksumMap, zf);
+            checkFiles(checksumMap, bagFile);
         } catch (IOException io) {
             logger.log(Level.SEVERE,"Could not validate Hashes", io);
         } catch (Exception e) {
@@ -453,14 +455,14 @@ public class BagGenerator {
 
     private void validateBagFile(File bagFile) throws IOException {
         // Run a confirmation test - should verify all files and hashes
-        ZipFile zf = new ZipFile(bagFile);
+        
         // Check files calculates the hashes and file sizes and reports on
         // whether hashes are correct
-        checkFiles(checksumMap, zf);
+        checkFiles(checksumMap, bagFile);
 
         logger.info("Data Count: " + dataCount);
         logger.info("Data Size: " + totalDataSize);
-        zf.close();
+        //zf.close();
     }
 
     public static String getValidName(String bagName) {
@@ -477,7 +479,7 @@ public class BagGenerator {
         } else if (item.has(JsonLDTerm.schemaOrg("name").getLabel())) {
             title = item.get(JsonLDTerm.schemaOrg("name").getLabel()).getAsString();
         }
-
+        logger.fine("Adding " + title + "/ to path " + currentPath);
         currentPath = currentPath + title + "/";
         int containerIndex = -1;
         try {
@@ -553,6 +555,7 @@ public class BagGenerator {
                             logger.warning("Duplicate/Collision: " + child.get("@id").getAsString() + " has SHA1 Hash: "
                                 + childHash + " in: " + bagID);
                         }
+                        logger.fine("Adding " + childPath + " with hash " + childHash + " to checksumMap");
                         checksumMap.put(childPath, childHash);
                     }
                 }
@@ -696,29 +699,39 @@ public class BagGenerator {
         addEntry(archiveEntry, supp);
     }
 
-    private void checkFiles(HashMap<String, String> shaMap, ZipFile zf) {
+    private void checkFiles(HashMap<String, String> shaMap, File bagFile) {
         ExecutorService executor = Executors.newFixedThreadPool(numConnections);
-        BagValidationJob.setZipFile(zf);
-        BagValidationJob.setBagGenerator(this);
-        logger.fine("Validating hashes for zipped data files");
-        int i = 0;
-        for (Entry<String, String> entry : shaMap.entrySet()) {
-            BagValidationJob vj = new BagValidationJob(entry.getValue(), entry.getKey());
-            executor.execute(vj);
-            i++;
-            if (i % 1000 == 0) {
-                logger.info("Queuing Hash Validations: " + i);
-            }
-        }
-        logger.fine("All Hash Validations Queued: " + i);
-
-        executor.shutdown();
+        ZipFile zf = null;
         try {
-            while (!executor.awaitTermination(10, TimeUnit.MINUTES)) {
-                logger.fine("Awaiting completion of hash calculations.");
+            zf = new ZipFile(bagFile);
+
+            BagValidationJob.setZipFile(zf);
+            BagValidationJob.setBagGenerator(this);
+            logger.fine("Validating hashes for zipped data files");
+            int i = 0;
+            for (Entry<String, String> entry : shaMap.entrySet()) {
+                BagValidationJob vj = new BagValidationJob(bagName, entry.getValue(), entry.getKey());
+                executor.execute(vj);
+                i++;
+                if (i % 1000 == 0) {
+                    logger.info("Queuing Hash Validations: " + i);
+                }
             }
-        } catch (InterruptedException e) {
-            logger.log(Level.SEVERE,"Hash Calculations interrupted", e);
+            logger.fine("All Hash Validations Queued: " + i);
+
+            executor.shutdown();
+            try {
+                while (!executor.awaitTermination(10, TimeUnit.MINUTES)) {
+                    logger.fine("Awaiting completion of hash calculations.");
+                }
+            } catch (InterruptedException e) {
+                logger.log(Level.SEVERE, "Hash Calculations interrupted", e);
+            } 
+        } catch (IOException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        } finally {
+            IOUtils.closeQuietly(zf);
         }
         logger.fine("Hash Validations Completed");
 
