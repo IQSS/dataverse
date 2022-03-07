@@ -17,14 +17,11 @@ import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
 import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.json.JsonObject;
 
-import org.apache.commons.codec.binary.Hex;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 
@@ -97,8 +94,8 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand imp
                         }
 
                         // Store BagIt file
-                        String fileName = spaceName + ".v" + dv.getFriendlyVersionNumber() + ".zip";
-                        String bagKey = spaceName + "/" + fileName;
+                        String fileName = spaceName + ".v" + dv.getFriendlyVersionNumber();
+                        String bagKey = spaceName + "/" + fileName + ".zip";
                         // Add BagIt ZIP file
                         // Google uses MD5 as one way to verify the
                         // transfer
