@@ -1,0 +1,318 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd;">
+    <modelVersion>4.0.0</modelVersion>
+ 
+    <groupId>edu.harvard.iq</groupId>
+    <artifactId>dataverse-parent</artifactId>
+    <version>${revision}</version>
+    <packaging>pom</packaging>
+ 
+    <name>dataverse-parent</name>
+    <url>https://dataverse.org</url>
+    
+    <modules>
+        <module>../../pom.xml</module>
+        <module>../../scripts/zipdownload</module>
+    </modules>
+    
+    <!-- Transitive dependencies, bigger library "bill of materials" (BOM) and
+         versions of dependencies used both directly and transitive are managed here. -->
+    <dependencyManagement>
+        <dependencies>
+            
+            <!-- MAJOR SYSTEM COMPONENTS, BOMs -->
+            
+            <dependency>
+                <groupId>fish.payara.api</groupId>
+                <artifactId>payara-bom</artifactId>
+                <version>${payara.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.amazonaws</groupId>
+                <artifactId>aws-java-sdk-bom</artifactId>
+                <version>${aws.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.google.cloud</groupId>
+                <artifactId>google-cloud-bom</artifactId>
+                <version>${google.cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            
+            <!-- BASIC LIBRARIES / LOGGING / ... -->
+    
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>${postgresql.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-logging</groupId>
+                <artifactId>commons-logging</artifactId>
+                <version>${commons.logging.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons.lang3.version}</version>
+            </dependency>
+            <!-- Dependency of SolrJ, DuraCloud & used by ourselves -->
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${apache.httpcomponents.client.version}</version>
+            </dependency>
+            <!-- Dependency of SolrJ, Tika, RestAssured, DuraCloud - added here for convergence reasons -->
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpmime</artifactId>
+                <version>${apache.httpcomponents.client.version}</version>
+            </dependency>
+            <!-- Dependency of SolrJ, DuraCloud Store Client & used in our codebase -->
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore</artifactId>
+                <version>${apache.httpcomponents.core.version}</version>
+            </dependency>
+            
+            <!-- Dependency of Tika, Sword2-server, JOSS (Swift), DuraCloud, Lyncode XOAI -->
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons.io.version}</version>
+            </dependency>
+            <!-- Dependency of Sword2-server, Apache POI and in our own codebase -->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-compress</artifactId>
+                <version>${commons.compress.version}</version>
+            </dependency>
+            
+            <!-- Dependency of A LOT of libraries. Ensuring convergence here. -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-jdk14</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jcl-over-slf4j</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jul-to-slf4j</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            
+            <!-- TESTING DEPENDENCIES -->
+            
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-bom</artifactId>
+                <version>${testcontainers.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+ 
+    <properties>
+        <!-- This is a special Maven property name, do not change! -->
+        <revision>5.9-td-dev</revision>
+    
+        <target.java.version>11</target.java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <additionalparam>-Xdoclint:none</additionalparam>
+        <!-- Needed to avoid IDEA IDE compilation failures. See commits in GH #5059 -->
+        <compilerArgument></compilerArgument>
+        <project.timezone>UTC</project.timezone>
+        <project.language>en</project.language>
+        <project.region>US</project.region>
+        <!--
+            Moving this from plugin config to global config, because of GH-5122.
+            This seems to play well with NetBeans 8.2, IDEA 2018.1 and mvn including compatibility with JaCoCo.
+        -->
+        <argLine>-Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
+    
+        <!-- Major system components and dependencies -->
+        <payara.version>5.2021.5</payara.version>
+        <postgresql.version>42.3.3</postgresql.version>
+        <solr.version>8.8.1</solr.version>
+        <aws.version>1.11.762</aws.version>
+        <google.cloud.version>0.157.0</google.cloud.version>
+    
+        <!-- Basic libs, logging -->
+        <jakartaee-api.version>8.0.0</jakartaee-api.version>
+        <slf4j.version>1.7.35</slf4j.version>
+        <commons.io.version>2.11.0</commons.io.version>
+        <commons.logging.version>1.2</commons.logging.version>
+        <commons.lang3.version>3.12.0</commons.lang3.version>
+        <commons.compress.version>1.21</commons.compress.version>
+        <apache.httpcomponents.client.version>4.5.13</apache.httpcomponents.client.version>
+        <apache.httpcomponents.core.version>4.4.14</apache.httpcomponents.core.version>
+    
+        <!-- Testing dependencies -->
+        <testcontainers.version>1.15.0</testcontainers.version>
+        <microbean-mpconfig.version>0.4.1</microbean-mpconfig.version>
+    
+        <junit.version>4.13.1</junit.version>
+        <junit.jupiter.version>5.7.0</junit.jupiter.version>
+        <junit.vintage.version>${junit.jupiter.version}</junit.vintage.version>
+        <mockito.version>2.28.2</mockito.version>
+        
+        <checkstyle.version>9.3</checkstyle.version>
+        
+        <!-- Official Maven Plugins -->
+        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+        <maven-jar-plugin.version>3.2.2</maven-jar-plugin.version>
+        <maven-war-plugin.version>3.3.2</maven-war-plugin.version>
+        <maven-dependency-plugin.version>3.2.0</maven-dependency-plugin.version>
+        <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
+        <maven-failsafe-plugin.version>3.0.0-M5</maven-failsafe-plugin.version>
+        <maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
+        <maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
+    </properties>
+    
+    <pluginRepositories>
+        <pluginRepository>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+        </pluginRepository>
+    </pluginRepositories>
+    
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven-compiler-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>${maven-jar-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-war-plugin</artifactId>
+                    <version>${maven-war-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>${maven-dependency-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven-surefire-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>${maven-failsafe-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <version>${maven-checkstyle-plugin.version}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.puppycrawl.tools</groupId>
+                            <artifactId>checkstyle</artifactId>
+                            <version>${checkstyle.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+    
+    <!--Maven checks for dependencies from these repos in the order shown in the pom.xml
+        This isn't well documented and seems to change between maven versions -MAD 4.9.4 -->
+    <repositories>
+        <repository>
+            <id>payara-nexus-artifacts</id>
+            <name>Payara Nexus Artifacts</name>
+            <url>https://nexus.payara.fish/repository/payara-artifacts</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <!-- This repository is about to being phased out. See https://github.com/payara/Payara_PatchedProjects/issues/366 -->
+        <repository>
+            <id>payara-patched-externals</id>
+            <name>Payara Patched Externals</name>
+            <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>central-repo</id>
+            <name>Central Repository</name>
+            <url>https://repo1.maven.org/maven2</url>
+            <layout>default</layout>
+        </repository>
+        <repository>
+            <id>prime-repo</id>
+            <name>PrimeFaces Maven Repository</name>
+            <url>https://repository.primefaces.org</url>
+            <layout>default</layout>
+        </repository>
+        <repository>
+            <id>dataone.org</id>
+            <url>https://maven.dataone.org</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>dvn.private</id>
+            <name>Local repository for hosting jars not available from network repositories.</name>
+            <url>file://${project.basedir}/local_lib</url>
+        </repository>
+        <!-- Uncomment when using snapshot releases from Maven Central
+        <repository>
+            <id>oss-sonatype</id>
+            <name>oss-sonatype</name>
+            <url>
+                https://s01.oss.sonatype.org/content/repositories/snapshots/
+            </url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        -->
+    </repositories>
+    
+</project>
