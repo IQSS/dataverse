@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -25,23 +26,14 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
-
-import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.transfer.TransferManager;
 
 @RequiredPermissions(Permission.PublishDataset)
 public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implements Command<DatasetVersion> {
 
     private static final Logger logger = Logger.getLogger(DRSSubmitToArchiveCommand.class.getName());
     private static final String DRS_CONFIG = ":DRSArchivalConfig";
-
-    private static final Config config = ConfigProvider.getConfig();
-    private AmazonS3 s3 = null;
-    private TransferManager tm = null;
 
     public DRSSubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
         super(aRequest, version);
@@ -62,15 +54,8 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
             Set<String> collections = drsConfigObject.getJsonObject("collections").keySet();
             Dataset dataset = dv.getDataset();
             Dataverse ancestor = dataset.getOwner();
-            String alias = ancestor.getAlias();
-            while (ancestor != null && !collections.contains(alias)) {
-                ancestor = ancestor.getOwner();
-                if (ancestor != null) {
-                    alias = ancestor.getAlias();
-                } else {
-                    alias = null;
-                }
-            }
+            String alias = getArchivableAncestor(ancestor, collections);
+           
             if (alias != null) {
                 JsonObject collectionConfig = drsConfigObject.getJsonObject("collections").getJsonObject(alias);
 
@@ -95,6 +80,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                         om = s3.getObjectMetadata(bucketName, dcKey);
                     } catch (RuntimeException rte) {
                         logger.warning("Error creating DRS Config file during DRS archiving: " + rte.getMessage());
+                        rte.printStackTrace();
                         return new Failure("Error in generating Config file",
                                 "DRS Submission Failure: config file not created");
                     } catch (InterruptedException e) {
@@ -132,5 +118,36 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
             return new Failure("DRS Submission not configured - no " + DRS_CONFIG + " found.");
         }
         return WorkflowStepResult.OK;
+    }
+    
+    private static String getArchivableAncestor(Dataverse ancestor, Set<String> collections) {
+        String alias = ancestor.getAlias();
+        while (ancestor != null && !collections.contains(alias)) {
+            ancestor = ancestor.getOwner();
+            if (ancestor != null) {
+                alias = ancestor.getAlias();
+            } else {
+                alias = null;
+            }
+        }
+        return null;
+    }
+
+    public static boolean isArchivable(Dataset d, SettingsWrapper sw) {
+        JsonObject drsConfigObject = null;
+
+        try {
+            String config = sw.get(DRS_CONFIG, null);
+            if(config!=null) {
+            drsConfigObject = JsonUtil.getJsonObject(config);
+            }
+        } catch (Exception e) {
+            logger.warning("Unable to parse " + DRS_CONFIG + " setting as a Json object");
+        }
+        if (drsConfigObject != null) {
+            Set<String> collections = drsConfigObject.getJsonObject("collections").keySet();
+            return getArchivableAncestor(d.getOwner(),collections)!=null;
+        }
+        return false;
     }
 }
