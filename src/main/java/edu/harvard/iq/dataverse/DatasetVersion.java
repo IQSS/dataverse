@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.util.MarkupChecker;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
@@ -1951,6 +1952,14 @@ public class DatasetVersion implements Serializable {
     
     public String getExternalStatusLabel() {
         return externalStatusLabel;
+    }
+
+    public String getLocaleExternalStatusLabel() {
+        String localizedName = BundleUtil.getStringFromBundle(externalStatusLabel.toLowerCase().replace(" ", "_"));
+        if (localizedName == null) {
+            localizedName = externalStatusLabel ;
+        }
+        return localizedName;
     }
 
     public void setExternalStatusLabel(String externalStatusLabel) {

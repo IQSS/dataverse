@@ -1249,8 +1249,15 @@ public class DataversePage implements java.io.Serializable {
                 }
                 // Add an entry for disabled
                 setNames.put(BundleUtil.getStringFromBundle("dataverse.curationLabels.disabled"), SystemConfig.CURATIONLABELSDISABLED);
+
                 allowedSetNames.forEach(name -> {
-                    setNames.put(name, name);
+                    String localizedName = BundleUtil.getStringFromBundle( name.toLowerCase().replace(" ","_")) ;
+                    if (localizedName != null) {
+                        setNames.put(localizedName,name);
+                    }
+                    else {
+                        setNames.put(name, name);
+                    }
                 });
             }
             curationLabelSetOptions = setNames.entrySet();
