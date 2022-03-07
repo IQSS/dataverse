@@ -1819,6 +1819,7 @@ public class DatasetsIT {
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        String persistentIdentifier = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
         
         // This should return an empty list, as the dataset should have no locks just yet:
         Response checkDatasetLocks = UtilIT.checkDatasetLocks(datasetId.longValue(), null, apiToken);
@@ -1850,7 +1851,97 @@ public class DatasetsIT {
         lockDatasetResponse.then().assertThat()
                 .body("message", equalTo("dataset already locked with lock type Ingest"))
                 .statusCode(FORBIDDEN.getStatusCode());
-             
+        
+        // Let's also test the new (as of 5.10) API that lists the locks 
+        // present across all datasets. 
+        
+        // First, we'll try listing ALL locks currently in the system, and make sure that the ingest lock 
+        // for this dataset is on the list:
+        checkDatasetLocks = UtilIT.listAllLocks(apiToken);
+        checkDatasetLocks.prettyPrint();
+        checkDatasetLocks.then().assertThat()
+                .statusCode(200);
+        
+        boolean lockListedCorrectly = false;
+        List<Map<String, String>> listedLockEntries = checkDatasetLocks.body().jsonPath().getList("data");
+        for (int i = 0; i < listedLockEntries.size(); i++) {
+            if ("Ingest".equals(listedLockEntries.get(i).get("lockType"))
+                    && username.equals(listedLockEntries.get(i).get("user"))
+                    && persistentIdentifier.equals(listedLockEntries.get(i).get("dataset"))) {
+                lockListedCorrectly = true; 
+                break;
+            } 
+        }
+        assertTrue("Lock missing from the output of /api/datasets/locks", lockListedCorrectly);        
+        
+        // Try the same, but with an api token of a random, non-super user 
+        // (this should get rejected):
+        createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String wrongApiToken = UtilIT.getApiTokenFromResponse(createUser);
+        checkDatasetLocks = UtilIT.listAllLocks(wrongApiToken);
+        checkDatasetLocks.prettyPrint();
+        checkDatasetLocks.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode());
+        
+        // Try to narrow the listing down to the lock of type=Ingest specifically; 
+        // verify that the lock in question is still being listed:
+        checkDatasetLocks = UtilIT.listLocksByType("Ingest", apiToken);
+        checkDatasetLocks.prettyPrint();
+        // We'll again assume that it's possible that the API is going to list 
+        // *multiple* locks; i.e. that there are other datasets with the lock 
+        // of type "Ingest" on them. So we'll go through the list and look for the
+        // lock for this specific dataset again. 
+        lockListedCorrectly = false;
+        listedLockEntries = checkDatasetLocks.body().jsonPath().getList("data");
+        for (int i = 0; i < listedLockEntries.size(); i++) {
+            if ("Ingest".equals(listedLockEntries.get(i).get("lockType"))
+                    && username.equals(listedLockEntries.get(i).get("user"))
+                    && persistentIdentifier.equals(listedLockEntries.get(i).get("dataset"))) {
+                lockListedCorrectly = true; 
+                break;
+            } 
+        }
+        assertTrue("Lock missing from the output of /api/datasets/locks?type=Ingest", lockListedCorrectly);        
+
+        
+        // Try to list locks of an invalid type:
+        checkDatasetLocks = UtilIT.listLocksByType("BadLockType", apiToken);
+        checkDatasetLocks.prettyPrint();
+        checkDatasetLocks.then().assertThat()
+                .body("message", startsWith("Invalid lock type value: BadLockType"))
+                .statusCode(BAD_REQUEST.getStatusCode());
+       
+        // List the locks owned by the current user; verify that the lock above 
+        // is still listed:
+        checkDatasetLocks = UtilIT.listLocksByUser(username, apiToken);
+        checkDatasetLocks.prettyPrint();
+        // Safe to assume there should be only one:
+        checkDatasetLocks.then().assertThat()
+                .body("data[0].lockType", equalTo("Ingest"))
+                .body("data[0].user", equalTo(username))
+                .body("data[0].dataset", equalTo(persistentIdentifier))
+                .statusCode(200);
+        
+        // Further narrow down the listing to both the type AND user: 
+        checkDatasetLocks = UtilIT.listLocksByTypeAndUser("Ingest", username, apiToken);
+        checkDatasetLocks.prettyPrint();
+        // Even safer to assume there should be only one:
+        checkDatasetLocks.then().assertThat()
+                .statusCode(200)
+                .body("data[0].lockType", equalTo("Ingest"))
+                .body("data[0].user", equalTo(username))
+                .body("data[0].dataset", equalTo(persistentIdentifier));
+                
+        
+        // Finally, try asking for the locks owned by this user AND of type "InReview". 
+        // This should produce an empty list:
+        checkDatasetLocks = UtilIT.listLocksByTypeAndUser("InReview", username, apiToken);
+        checkDatasetLocks.prettyPrint();
+        checkDatasetLocks.then().assertThat()
+                .statusCode(200)
+                .body("data", equalTo(emptyArray));
+        
         // And now test deleting the lock:
         Response unlockDatasetResponse = UtilIT.unlockDataset(datasetId.longValue(), "Ingest", apiToken);
         unlockDatasetResponse.prettyPrint();
