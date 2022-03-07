@@ -62,6 +62,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -5478,10 +5480,8 @@ public class DatasetPage implements java.io.Serializable {
      */
     public void archiveVersion(Long id) {
         if (session.getUser() instanceof AuthenticatedUser) {
-            AuthenticatedUser au = ((AuthenticatedUser) session.getUser());
-
             DatasetVersion dv = datasetVersionService.retrieveDatasetVersionByVersionId(id).getDatasetVersion();
-            String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
+            String className = settingsWrapper.getValueForKey(SettingsServiceBean.Key.ArchiverClassName, null);
             AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), dv);
             if (cmd != null) {
                 try {
@@ -5504,6 +5504,24 @@ public class DatasetPage implements java.io.Serializable {
 
             }
         }
+    }
+    
+    boolean isArchiveable() {
+        String className = settingsWrapper.getValueForKey(SettingsServiceBean.Key.ArchiverClassName, null);
+        if (className != null) {
+            try {
+                Class<?> clazz = Class.forName(className);
+
+                Method m = clazz.getMethod("isArchivable", Dataset.class, SettingsWrapper.class);
+                Object[] params = { dataset, settingsWrapper };
+                return (Boolean) m.invoke(null, params);
+            } catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException
+                    | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+                logger.warning("Failed to call is Archivable on configured archiver class: " + className);
+                e.printStackTrace();
+            }
+        }
+        return false;
     }
 
     private static Date getFileDateToCompare(FileMetadata fileMetadata) {
