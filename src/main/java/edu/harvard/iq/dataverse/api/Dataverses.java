@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.GuestbookServiceBean;
@@ -304,7 +305,7 @@ public class Dataverses extends AbstractApiBean {
             ds.setGlobalIdCreateTime(null);
             
             //Verify metadatalanguage is allowed
-            if(ds.getMetadataLanguage()!= null && !settingsService.getBaseMetadataLanguageMap(new HashMap<String, String>(), true).containsKey(ds.getMetadataLanguage())) {
+            if(ds.getMetadataLanguage()!= DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE && !settingsService.getBaseMetadataLanguageMap(new HashMap<String, String>(), true).containsKey(ds.getMetadataLanguage())) {
                 throw new BadRequestException("Specified metadatalanguage (" + JsonLDTerm.schemaOrg("inLanguage").getUrl() + ") not allowed.");
             }
 
