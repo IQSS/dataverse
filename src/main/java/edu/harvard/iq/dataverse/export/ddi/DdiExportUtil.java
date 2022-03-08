@@ -558,7 +558,6 @@ public class DdiExportUtil {
         writeFullElement(xmlw, "srcDocu", dto2Primitive(version, DatasetFieldConstant.accessToSources));
         xmlw.writeEndElement(); //sources
 
-        //writeI18NElement(xmlw, "collMode", version, DatasetFieldConstant.collectionMode, lang);
         FieldDTO collModeFieldDTO = dto2FieldDTO(version, DatasetFieldConstant.collectionMode, "socialscience");
         if (collModeFieldDTO != null) {
             writeI18NElementList(xmlw, "collMode", collModeFieldDTO.getMultipleVocab(), DatasetFieldConstant.collectionMode, collModeFieldDTO.getTypeClass(), "socialscience", lang);
