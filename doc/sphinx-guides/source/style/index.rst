@@ -6,7 +6,7 @@
 Style Guide
 ===========
 
-This style guide is meant to help developers implement clear and appropriate UI elements consistent with the Dataverse Project's standards. This is a test.
+This style guide is meant to help developers implement clear and appropriate UI elements consistent with the Dataverse Project's standards.
 
 **Contents:**
 
