@@ -558,7 +558,11 @@ public class DdiExportUtil {
         writeFullElement(xmlw, "srcDocu", dto2Primitive(version, DatasetFieldConstant.accessToSources));
         xmlw.writeEndElement(); //sources
 
-        writeI18NElement(xmlw, "collMode", version, DatasetFieldConstant.collectionMode, lang); 
+        //writeI18NElement(xmlw, "collMode", version, DatasetFieldConstant.collectionMode, lang);
+        FieldDTO collModeFieldDTO = dto2FieldDTO(version, DatasetFieldConstant.collectionMode, "socialscience");
+        if (collModeFieldDTO != null) {
+            writeI18NElementList(xmlw, "collMode", collModeFieldDTO.getMultipleVocab(), DatasetFieldConstant.collectionMode, collModeFieldDTO.getTypeClass(), "socialscience", lang);
+        }
         writeI18NElement(xmlw, "resInstru", version, DatasetFieldConstant.researchInstrument, lang); 
         writeFullElement(xmlw, "collSitu", dto2Primitive(version, DatasetFieldConstant.dataCollectionSituation)); 
         writeFullElement(xmlw, "actMin", dto2Primitive(version, DatasetFieldConstant.actionsToMinimizeLoss));
@@ -1359,7 +1363,19 @@ public class DdiExportUtil {
         }
         return null;
     }
-
+    
+    private static FieldDTO dto2FieldDTO(DatasetVersionDTO datasetVersionDTO, String datasetFieldTypeName, String metadataBlockName) {
+        MetadataBlockDTO block = datasetVersionDTO.getMetadataBlocks().get(metadataBlockName);
+        if (block != null) {
+            for (FieldDTO fieldDTO : block.getFields()) {
+                if (datasetFieldTypeName.equals(fieldDTO.getTypeName())) {
+                    return fieldDTO;
+                }
+            }
+        }
+        return null;
+    }
+        
     private static void writeFullElementList(XMLStreamWriter xmlw, String name, List<String> values) throws XMLStreamException {
         //For the simplest Elements we can 
         if (values != null && !values.isEmpty()) {
