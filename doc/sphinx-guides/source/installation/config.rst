@@ -241,7 +241,7 @@ As for the "Remote only" authentication mode, it means that:
 - The "builtin" authentication provider has been disabled (:ref:`api-toggle-auth-provider`). Note that disabling the "builtin" authentication provider means that the API endpoint for converting an account from a remote auth provider will not work. Converting directly from one remote authentication provider to another (i.e. from GitHub to Google) is not supported. Conversion from remote is always to "builtin". Then the user initiates a conversion from "builtin" to remote. Note that longer term, the plan is to permit multiple login options to the same Dataverse installation account per https://github.com/IQSS/dataverse/issues/3487 (so all this talk of conversion will be moot) but for now users can only use a single login option, as explained in the :doc:`/user/account` section of the User Guide. In short, "remote only" might work for you if you only plan to use a single remote authentication provider such that no conversion between remote authentication providers will be necessary.
 
 File Storage: Using a Local Filesystem and/or Swift and/or object stores
----------------------------------------------------------------------------
+------------------------------------------------------------------------
 
 By default, a Dataverse installation stores all data files (files uploaded by end users) on the filesystem at ``/usr/local/payara5/glassfish/domains/domain1/files``. This path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.\<id\>.directory`` JVM option described below.
 
@@ -731,7 +731,8 @@ Allowing the Language Used for Dataset Metadata to be Specified
 
 Since dataset metadata can only be entered in one language, and administrators may wish to limit which languages metadata can be entered in, Dataverse also offers a separate setting defining allowed metadata languages.
 The presence of the :ref:`:MetadataLanguages` database setting identifies the available options (which can be different from those in the :Languages setting above, with fewer or more options).
-Dataverse collection admins can select from these options to indicate which language should be used for new Datasets created with that specific collection.
+
+Dataverse collection admins can select from these options to indicate which language should be used for new Datasets created with that specific collection. If they do not, users will be asked when creating a dataset to select the language they want to use when entering metadata. 
 
 When creating or editing a dataset, users will be asked to enter the metadata in that language. The metadata language selected will also be shown when dataset metadata is viewed and will be included in metadata exports (as appropriate for each format) for published datasets:
 
@@ -846,6 +847,65 @@ Both Google and Matomo provide the optional capability to track such events and 
 For Google Analytics, the example script at :download:`analytics-code.html </_static/installation/files/var/www/dataverse/branding/analytics-code.html>` will track both page hits and events within your Dataverse installation. You would use this file in the same way as the shorter example above, putting it somewhere outside your deployment directory, replacing ``YOUR ACCOUNT CODE`` with your actual code and setting :WebAnalyticsCode to reference it.
 
 Once this script is running, you can look in the Google Analytics console (Realtime/Events or Behavior/Events) and view events by type and/or the Dataset or File the event involves.
+
+.. _license-config:
+
+Configuring Licenses
+--------------------
+
+Out of the box, users select from the following licenses or terms:
+
+- CC0 1.0 (default)
+- CC BY 4.0
+- Custom Dataset Terms
+
+You have a lot of control over which licenses and terms are available. You can remove licenses and add new ones. You can decide which license is the default. You can remove "Custom Dataset Terms" as a option. You can remove all licenses and make "Custom Dataset Terms" the only option.
+
+Before making changes, you are encouraged to read the :ref:`license-terms` section of the User Guide about why CC0 is the default and what the "Custom Dataset Terms" option allows.
+
+Setting the Default License
++++++++++++++++++++++++++++
+
+The default license can be set with a curl command as explained in the API Guide under :ref:`license-management-api`.
+
+Note that "Custom Dataset Terms" is not a license and cannot be set to be the default.
+
+Adding Licenses
++++++++++++++++
+
+Licenses are added with curl using JSON file as explained in the API Guide under :ref:`license-management-api`.
+
+.. _adding-creative-commons-licenses:
+
+Adding Creative Common Licenses
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+JSON files for `Creative Commons licenses <https://creativecommons.org/about/cclicenses/>`_ are provided below. Note that a new installation of Dataverse already includes CC0 and CC BY.
+
+- :download:`licenseCC0-1.0.json <../../../../scripts/api/data/licenses/licenseCC0-1.0.json>`
+- :download:`licenseCC-BY-4.0.json <../../../../scripts/api/data/licenses/licenseCC-BY-4.0.json>`
+- :download:`licenseCC-BY-SA-4.0.json <../../../../scripts/api/data/licenses/licenseCC-BY-SA-4.0.json>`
+- :download:`licenseCC-BY-NC-4.0.json <../../../../scripts/api/data/licenses/licenseCC-BY-NC-4.0.json>`
+- :download:`licenseCC-BY-NC-SA-4.0.json <../../../../scripts/api/data/licenses/licenseCC-BY-NC-SA-4.0.json>`
+- :download:`licenseCC-BY-ND-4.0.json <../../../../scripts/api/data/licenses/licenseCC-BY-ND-4.0.json>`
+- :download:`licenseCC-BY-NC-ND-4.0.json <../../../../scripts/api/data/licenses/licenseCC-BY-NC-ND-4.0.json>`
+
+.. _adding-custom-licenses:
+
+Adding Custom Licenses
+^^^^^^^^^^^^^^^^^^^^^^
+
+If you are interested in adding a custom license, you will need to create your own JSON file as explained in  see :ref:`standardizing-custom-licenses`.
+
+Removing Licenses
++++++++++++++++++
+
+Licenses can be removed with a curl command as explained in the API Guide under :ref:`license-management-api`.
+
+Disabling Custom Dataset Terms
+++++++++++++++++++++++++++++++
+
+See :ref:`:AllowCustomTermsOfUse` for how to disable the "Custom Dataset Terms" option.
 
 .. _BagIt Export:
 
@@ -2321,7 +2381,10 @@ If you don’t want date facets to be sorted chronologically, set:
 :CustomZipDownloadServiceUrl
 ++++++++++++++++++++++++++++
 
-The location of the "Standalone Zipper" service. If this option is specified, the Dataverse installation will be redirecing bulk/mutli-file zip download requests to that location, instead of serving them internally. See the "Advanced" section of the Installation guide for information on how to install the external zipper. (This is still an experimental feature, as of Dataverse Software 5.0).
+The location of the "Standalone Zipper" service. If this option is specified, the Dataverse installation will be
+redirecing bulk/multi-file zip download requests to that location, instead of serving them internally.
+See :ref:`zipdownloader` of the Advanced Installation guide for information on how to install the external zipper.
+(This is still an **experimental** feature, as of Dataverse Software 5.0).
 
 To enable redirects to the zipper installed on the same server as the main Dataverse Software application: 
 
@@ -2329,7 +2392,7 @@ To enable redirects to the zipper installed on the same server as the main Datav
 
 To enable redirects to the zipper on a different server: 
 
-``curl -X PUT -d 'https://zipper.example.edu/cgi-bin/zipdownload' http://localhost:8080/api/admin/settings/:CustomZipDownloadServiceUrl`` 
+``curl -X PUT -d 'https://zipper.example.edu/cgi-bin/zipdownload' http://localhost:8080/api/admin/settings/:CustomZipDownloadServiceUrl``
 
 :ArchiverClassName
 ++++++++++++++++++
