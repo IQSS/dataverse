@@ -38,7 +38,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 import org.apache.poi.xssf.model.SharedStrings;
-import org.apache.poi.xssf.model.SharedStringsTable;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -278,7 +277,7 @@ public class XLSXFileReader extends TabularDataFileReader {
         String[] dataRow; 
         PrintWriter tempOut; 
 
-        private SheetHandler(SharedStringsTable sst) {
+        private SheetHandler(SharedStrings sst) {
             this(sst, null, null);
         }
 
