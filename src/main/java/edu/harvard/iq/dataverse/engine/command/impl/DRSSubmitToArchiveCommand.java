@@ -130,7 +130,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                 alias = null;
             }
         }
-        return null;
+        return alias;
     }
 
     public static boolean isArchivable(Dataset d, SettingsWrapper sw) {
