@@ -34,7 +34,7 @@ import java.util.logging.Logger;
 public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand<Dataset> {
 
     private static final Logger logger = Logger.getLogger(CuratePublishedDatasetVersionCommand.class.getCanonicalName());
-    final private boolean validateLenient = true;
+    final private boolean validateLenient = false;
 
     public CuratePublishedDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest) {
         super(aRequest, theDataset);

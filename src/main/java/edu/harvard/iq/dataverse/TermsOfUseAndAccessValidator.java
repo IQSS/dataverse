@@ -39,7 +39,7 @@ public class TermsOfUseAndAccessValidator implements ConstraintValidator<Validat
         if (!valid) {
             try {
                 if (context != null) {
-                    context.buildConstraintViolationWithTemplate("If Request Access is false then Terms of Access must be provided.").addConstraintViolation();
+                    context.buildConstraintViolationWithTemplate(BundleUtil.getStringFromBundle("toua.invalid")).addConstraintViolation();
                 }
 
                value.setValidationMessage(BundleUtil.getStringFromBundle("toua.invalid"));
