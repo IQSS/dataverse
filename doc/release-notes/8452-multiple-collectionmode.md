@@ -1,6 +1,6 @@
 ### A small modification to the Social Science metadata block
 
-The metadata block update allows the field "collectionMode" to have multiple values and to support Controlled Vocabularies. 
+The metadata block update allows the field "collectionMode" to have multiple values. 
 
 For the upgrade instruction:
 
