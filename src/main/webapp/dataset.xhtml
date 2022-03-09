@@ -730,9 +730,7 @@
                                 </p:commandButton>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <span class="glyphicon glyphicon-asterisk text-danger"/> <h:outputText value="#{bundle['dataset.asterisk.tip']}"/>
-                        </div>
+
                     </ui:fragment>
                     <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
                         <ui:include src="metadataFragment.xhtml">
@@ -741,8 +739,8 @@
                             <ui:param name="metadataBlocks" value="#{!empty DatasetPage.editMode ? DatasetPage.datasetVersionUI.metadataBlocksForEdit.entrySet().toArray(): DatasetPage.datasetVersionUI.metadataBlocksForView.entrySet().toArray()}"/>
                             <!-- ui:param name="publicationDate" value="#{DatasetPage.dataset.publicationDateFormattedYYYYMMDD}"/-->
                             <ui:param name="globalId" value="#{DatasetPage.dataset.globalIdString}"/>
-                            <ui:param name="mdLang" value="#{DatasetPage.getLocaleDisplayName(DatasetPage.effectiveMetadataLanguage)}"/>
-                            <ui:param name="mdLangCode" value="#{DatasetPage.effectiveMetadataLanguage}"/>
+                            <ui:param name="mdLang" value="#{DatasetPage.getLocaleDisplayName(DatasetPage.getEffectiveMetadataLanguage(true))}"/>
+                            <ui:param name="mdLangCode" value="#{DatasetPage.getEffectiveMetadataLanguage(true)}"/>
                         </ui:include>
                     </ui:fragment>
                     <!-- Create/Save Dataset Button Panel TOP editMode -->
