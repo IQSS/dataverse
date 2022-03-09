@@ -5506,12 +5506,11 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
     
-    boolean isArchiveable() {
+    public boolean isArchivable() {
         String className = settingsWrapper.getValueForKey(SettingsServiceBean.Key.ArchiverClassName, null);
         if (className != null) {
             try {
                 Class<?> clazz = Class.forName(className);
-
                 Method m = clazz.getMethod("isArchivable", Dataset.class, SettingsWrapper.class);
                 Object[] params = { dataset, settingsWrapper };
                 return (Boolean) m.invoke(null, params);
