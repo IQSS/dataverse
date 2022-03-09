@@ -7,7 +7,7 @@ Here we describe the guidelines that help us provide helpful, clear and consiste
   :local:
 
 Metadata Text Guidelines
-=======================
+========================
 
 `Bootstrap <http://getbootstrap.com/css/#grid>`__ provides a responsive, fluid, 12-column grid system that we use to organize our page layouts.
 
