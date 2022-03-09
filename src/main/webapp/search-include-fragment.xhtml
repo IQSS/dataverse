@@ -535,6 +535,7 @@
                     <!--DATASET CARDS-->
                     <div class="datasetResult clearfix" jsf:rendered="#{result.type == 'datasets'}">
                         <div class="card-title-icon-block">
+                            <o:importFunctions type="edu.harvard.iq.dataverse.dataset.DatasetUtil" />
                             <span class="glyphicon glyphicon-link text-info pull-right" title="#{bundle.linked}" jsf:rendered="#{!SearchIncludeFragment.rootDv and !result.isInTree}"/>
                             <span class="glyphicon glyphicon-new-window text-info pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.harvested}"/>
                             <span class="icon-dataset text-info pull-right" title="#{bundle.dataset}"/>
@@ -548,7 +549,7 @@
                             <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
                             <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{result.deaccessionedState}"/>
                             <h:outputText value="#{bundle['embargoed']}" styleClass="label label-primary" rendered="#{SearchIncludeFragment.isActivelyEmbargoed(result)}"/>
-                            <h:outputText value="#{DatasetPage.getLocaleExternalStatus(result.externalStatus)}" styleClass="label label-info" rendered="#{!empty result.externalStatus and SearchIncludeFragment.canPublishDataset(result.entityId)}"/>
+                            <h:outputText value="#{DatasetUtil:getLocaleExternalStatus(result.externalStatus)}" styleClass="label label-info" rendered="#{!empty result.externalStatus and SearchIncludeFragment.canPublishDataset(result.entityId)}"/>
                             <h:outputText value="#{result.userRole}" styleClass="label label-primary" rendered="#{!empty result.userRole}"/>
                         </div>
                         <div class="card-preview-icon-block text-center">

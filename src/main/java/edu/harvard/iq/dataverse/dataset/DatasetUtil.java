@@ -568,4 +568,12 @@ public class DatasetUtil {
         License license = dsv.getTermsOfUseAndAccess().getLicense();
         return license != null ? license.getShortDescription() : BundleUtil.getStringFromBundle("license.custom.description");
     }
+
+    public static String getLocaleExternalStatus(String status) {
+        String localizedName = BundleUtil.getStringFromBundle(status.toLowerCase().replace(" ", "_"));
+        if (localizedName == null) {
+            localizedName = status ;
+        }
+        return localizedName;
+    }
 }

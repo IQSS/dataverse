@@ -1954,14 +1954,6 @@ public class DatasetVersion implements Serializable {
         return externalStatusLabel;
     }
 
-    public String getLocaleExternalStatusLabel() {
-        String localizedName = BundleUtil.getStringFromBundle(externalStatusLabel.toLowerCase().replace(" ", "_"));
-        if (localizedName == null) {
-            localizedName = externalStatusLabel ;
-        }
-        return localizedName;
-    }
-
     public void setExternalStatusLabel(String externalStatusLabel) {
         this.externalStatusLabel = externalStatusLabel;
     }

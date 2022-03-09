@@ -5649,7 +5649,7 @@ public class DatasetPage implements java.io.Serializable {
             } else {
                 JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.externalstatus.header"),
                         BundleUtil.getStringFromBundle("dataset.externalstatus.info",
-                                Arrays.asList(getLocaleExternalStatus(status))
+                                Arrays.asList(DatasetUtil.getLocaleExternalStatus(status))
                         ));
             }
 
@@ -5660,14 +5660,6 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
 
-    public String getLocaleExternalStatus(String status) {
-        String localizedName = BundleUtil.getStringFromBundle(status.toLowerCase().replace(" ", "_"));
-        if (localizedName == null) {
-            localizedName = status ;
-        }
-        return localizedName;
-    }
-    
     public List<String> getAllowedExternalStatuses() {
         return settingsWrapper.getAllowedExternalStatuses(dataset);
     }

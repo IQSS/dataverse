@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.dataverse.DataverseUtil;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -1251,13 +1252,8 @@ public class DataversePage implements java.io.Serializable {
                 setNames.put(BundleUtil.getStringFromBundle("dataverse.curationLabels.disabled"), SystemConfig.CURATIONLABELSDISABLED);
 
                 allowedSetNames.forEach(name -> {
-                    String localizedName = BundleUtil.getStringFromBundle( name.toLowerCase().replace(" ","_")) ;
-                    if (localizedName != null) {
-                        setNames.put(localizedName,name);
-                    }
-                    else {
-                        setNames.put(name, name);
-                    }
+                    String localizedName = DatasetUtil.getLocaleExternalStatus(name) ;
+                    setNames.put(localizedName,name);
                 });
             }
             curationLabelSetOptions = setNames.entrySet();
