@@ -563,8 +563,7 @@ public class DdiExportUtil {
             // This field was made multiple as of 5.10
             // Below is a backward compatibility check allowing export to work in 
             // an instance where the metadata block has not been updated yet.
-            if (collModeFieldDTO.getMultiple())
-            {
+            if (collModeFieldDTO.getMultiple()) {
                 writeI18NElementList(xmlw, "collMode", collModeFieldDTO.getMultipleVocab(), DatasetFieldConstant.collectionMode, collModeFieldDTO.getTypeClass(), "socialscience", lang);
             } else {
                 writeI18NElement(xmlw, "collMode", version, DatasetFieldConstant.collectionMode, lang);
