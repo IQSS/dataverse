@@ -2524,3 +2524,12 @@ For example:
 ++++++++++++++++++++++++++++++++
 
 When set to ``true``, this setting allows a superuser to publish and/or update Dataverse collections and datasets bypassing the external validation checks (specified by the settings above). In an event where an external script is reporting validation failures that appear to be in error, this option gives an admin with superuser privileges a quick way to publish the dataset or update a collection for the user. 
+
+.. _:SignPostingMaxItems:
+
+:SignpostingMaxItems
+++++++++++++++++++++
+
+Limits the number of items shown.
+
+``curl -X PUT -d 5 http://localhost:8080/api/admin/settings/:SignpostingMaxItems``
