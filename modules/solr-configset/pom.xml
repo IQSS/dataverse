@@ -140,11 +140,13 @@
             <groupId>info.picocli</groupId>
             <artifactId>picocli</artifactId>
             <version>4.6.3</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>net.sf.saxon</groupId>
             <artifactId>Saxon-HE</artifactId>
             <version>10.6</version>
+            <scope>provided</scope>
         </dependency>
         
         <dependency>
