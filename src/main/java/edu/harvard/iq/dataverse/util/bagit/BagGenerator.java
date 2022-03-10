@@ -1002,11 +1002,15 @@ public class BagGenerator {
                         CloseableHttpResponse response;
                         //Note - if we ever need to pass an HttpClientContext, we need a new one per thread.
                         response = client.execute(getMap);
+                        logger.fine("Status: " + response.getStatusLine().getStatusCode());
                         if (response.getStatusLine().getStatusCode() == 200) {
                             logger.finest("Retrieved: " + uri);
                             return response.getEntity().getContent();
+                        } else {
+                            logger.fine("Closing entity for non-200 status");
+                            response.close();
                         }
-                        logger.fine("Status: " + response.getStatusLine().getStatusCode());
+                       
                         tries++;
 
                     } catch (ClientProtocolException e) {
