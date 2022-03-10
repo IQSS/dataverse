@@ -374,7 +374,7 @@
                                                                 <h:outputText value="#{bundle['dataset.editBtn.itemLabel.upload']}"/>
                                                             </h:outputLink>
                                                         </li>
-                                                        <li style="margin-left:20px;margin-bottom:5px;">
+                                                        <li style="margin-left:20px;margin-bottom:2px;">
                                                             <p:commandLink rendered="#{!DatasetPage.hasValidTermsOfAccess}" disabled="#{!DatasetPage.hasValidTermsOfAccess}" >
                                                                 <h:outputText  value="#{bundle['dataset.editBtn.itemLabel.upload']}" />
                                                             </p:commandLink>
@@ -854,7 +854,7 @@
                                                and (empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA')}">
                                 <div class="button-block tab-header margin-bottom text-right" jsf:rendered="#{empty DatasetPage.editMode}">
                                     <p:commandLink styleClass="btn btn-default btn-access" actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:messagePanel" oncomplete="javascript:bind_bsui_components();" 
-                                                   disabled="#{DatasetPage.lockedFromEdits}" 
+                                                   disabled="#{DatasetPage.lockedFromEdits or !DatasetPage.hasValidTermsOfAccess}" 
                                                    rendered="#{!widgetWrapper.widgetView 
                                                                and (DatasetPage.sessionUserAuthenticated 
                                                                and empty DatasetPage.editMode and !widgetWrapper.widgetView
