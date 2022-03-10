@@ -370,14 +370,25 @@
                                                     </button>
                                                     <ul class="dropdown-menu pull-right text-left">
                                                         <li>
-                                                            <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD">
+                                                            <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD" rendered="#{DatasetPage.hasValidTermsOfAccess}">
                                                                 <h:outputText value="#{bundle['dataset.editBtn.itemLabel.upload']}"/>
                                                             </h:outputLink>
                                                         </li>
-                                                        <li>
-                                                            <p:commandLink id="editMetadata" onclick="editMetadata()"  >
+                                                        <li style="margin-left:20px;margin-bottom:5px;">
+                                                            <p:commandLink rendered="#{!DatasetPage.hasValidTermsOfAccess}" disabled="#{!DatasetPage.hasValidTermsOfAccess}" >
+                                                                <h:outputText  value="#{bundle['dataset.editBtn.itemLabel.upload']}" />
+                                                            </p:commandLink>
+                                                        </li>                                                    
+                                                        <li style="margin-left:20px;">
+                                                            <p:commandLink id="editMetadataDisabled" onclick="editMetadata()" rendered="#{!DatasetPage.hasValidTermsOfAccess}" disabled="#{!DatasetPage.hasValidTermsOfAccess}" >
                                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                                                <h:outputText value="#{bundle['dataset.editBtn.itemLabel.metadata']}" />
+                                                                <h:outputText value="#{bundle['dataset.editBtn.itemLabel.metadata']}"  />
+                                                            </p:commandLink>
+                                                        </li> 
+                                                        <li>
+                                                            <p:commandLink id="editMetadata" onclick="editMetadata()" rendered="#{DatasetPage.hasValidTermsOfAccess}">
+                                                                <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                                                <h:outputText value="#{bundle['dataset.editBtn.itemLabel.metadata']}"  />
                                                             </p:commandLink>
                                                         </li>
                                                         <li>
