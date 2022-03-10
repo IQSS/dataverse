@@ -1155,26 +1155,28 @@ Can also be set via *MicroProfile Config API* sources, e.g. the environment vari
 dataverse.rserve.host
 +++++++++++++++++++++
 
-Configuration for Rserve, used by ingest.
+Host name for Rserve, used for tasks that require use of R (to ingest RData files and to save tabular data as RData frames).  
 
 dataverse.rserve.port
 +++++++++++++++++++++
 
-Configuration for Rserve, used by ingest.
+Port number for Rserve, used for tasks that require use of R (to ingest RData files and to save tabular data as RData frames).
 
 dataverse.rserve.user
 +++++++++++++++++++++
 
-Configuration for Rserve, used by ingest.
-
-dataverse.rserve.tempdir
-++++++++++++++++++++++++
-Configuration for Rserve, used by ingest.
+Username for Rserve, used for tasks that require use of R (to ingest RData files and to save tabular data as RData frames).
 
 dataverse.rserve.password
 +++++++++++++++++++++++++
 
-Configuration for Rserve, used by ingest.
+Password for Rserve, used for tasks that require use of R (to ingest RData files and to save tabular data as RData frames).
+
+
+dataverse.rserve.tempdir
+++++++++++++++++++++++++
+
+Temporary directory used by Rserve (defaults to /tmp/Rserv). Note that this location is local to the host on which Rserv is running (specified in ``dataverse.rserve.host`` above). When talking to Rserve, Dataverse needs to know this location in order to generate absolute path names of the files on the other end. 
 
 .. _dataverse.dropbox.key:
 
