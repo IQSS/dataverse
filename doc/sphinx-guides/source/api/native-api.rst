@@ -554,6 +554,15 @@ The optional ``release`` parameter tells the Dataverse installation to immediate
 
 The file is a DDI xml file.
 
+DDI xml does not have a field that would correspond to Dataverse Subject field. Therefore importddi fill Subject field with "N/A". To update subject field one will need to run edit dataset metadata API :ref:`edit-dataset-metadata`
+
+.. code-block:: bash
+  
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/versions/:draft --upload-file subject-update-metadata.json
+
 .. warning::
 
   * This API does not handle files related to the DDI file.
