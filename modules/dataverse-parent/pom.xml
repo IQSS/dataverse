@@ -194,6 +194,10 @@
         <maven-failsafe-plugin.version>3.0.0-M5</maven-failsafe-plugin.version>
         <maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
         <maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
+    
+        <!-- Container related -->
+        <fabric8-dmp.version>0.39.1</fabric8-dmp.version>
+        <ct.registry>ghcr.io</ct.registry>
     </properties>
     
     <pluginRepositories>
@@ -255,6 +259,11 @@
                             <version>${checkstyle.version}</version>
                         </dependency>
                     </dependencies>
+                </plugin>
+                <plugin>
+                    <groupId>io.fabric8</groupId>
+                    <artifactId>docker-maven-plugin</artifactId>
+                    <version>${fabric8-dmp.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -327,4 +336,37 @@
         -->
     </repositories>
     
+    <profiles>
+        <profile>
+            <id>ct</id>
+            <properties/>
+            
+            <build>
+                <plugins>
+                    <!-- This will get the current commit id to include in image tags of container builds as Maven properties -->
+                    <plugin>
+                        <groupId>io.github.git-commit-id</groupId>
+                        <artifactId>git-commit-id-maven-plugin</artifactId>
+                        <version>5.0.0</version>
+                        <executions>
+                            <execution>
+                                <id>retrieve-git-details</id>
+                                <goals>
+                                    <goal>revision</goal>
+                                </goals>
+                                <phase>initialize</phase>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <dotGitDirectory>${project.basedir}/../../.git</dotGitDirectory>
+                            <dateFormatTimeZone>UTC</dateFormatTimeZone>
+                            <abbrevLength>8</abbrevLength>
+                            <verbose>false</verbose>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        
+        </profile>
+    </profiles>
 </project>
