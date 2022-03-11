@@ -32,6 +32,7 @@ import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import java.util.Arrays;
@@ -49,8 +50,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
-
-import org.apache.log4j.lf5.LogLevel;
 
 /**
  * An EJB capable of executing {@link Command}s in a JEE environment.
@@ -298,10 +297,7 @@ public class EjbDataverseEngine {
                 if (cause instanceof ConstraintViolationException) {
                     StringBuilder sb = new StringBuilder(); 
                     sb.append("Unexpected bean validation constraint exception:"); 
-                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                    for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                        sb.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ").append(violation.getPropertyPath()).append(" at ").append(violation.getLeafBean()).append(" - ").append(violation.getMessage());
-                    }
+                    sb.append(ConstraintViolationUtil.getErrorStringForConstraintViolations(cause));
                     logger.log(Level.SEVERE, sb.toString());
                     // set this more detailed info in action log
                     logRec.setInfo(logRec.getInfo() + " (" +  sb.toString() +")");

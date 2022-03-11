@@ -176,21 +176,20 @@ How do you create a template?
 Dataset Guestbooks
 -----------------------------
 
-Guestbooks allow you to collect data about who is downloading the files from your datasets. You can decide to collect account information (username, given name & last name, affiliation, etc.) as well as create custom questions (e.g., What do you plan to use this data for?). You are also able to download the data collected from the enabled guestbooks as Excel files to store and use outside of the Dataverse installation.
+Guestbooks allow you to collect data about who is downloading the files from your datasets. You can decide to collect account information (username, given name & last name, affiliation, etc.) as well as create custom questions (e.g., What do you plan to use this data for?). You are also able to download the data collected from the enabled guestbooks as CSV files to store and use outside of the Dataverse installation.
 
 How do you create a guestbook?
 
-#. After creating a Dataverse collection, click on the Edit Dataverse button and select Dataset Guestbook
-#. By default, guestbooks created in the Dataverse collection your Dataverse collection is in, will appear. If you do not want to use or see those guestbooks, uncheck the checkbox that says Include Guestbooks from Root Dataverse.
-#. To create a new guestbook, click the Create Dataset Guestbook button on the right side of the page. 
-#. Name the guestbook, determine the account information that you would like to be required (all account information fields show when someone downloads a file), and then add Custom Questions (can be required or not required). 
-#. Hit the Create Dataset Guestbook button once you have finished.
+#. After creating a Dataverse collection, click on the "Edit Dataverse" button and select "Dataset Guestbooks".
+#. To create a new guestbook, click the "Create Dataset Guestbook" button on the right side of the page. 
+#. Name the guestbook, determine the account information that you would like to be required (all account information fields show when someone downloads a file), and then add custom questions (can be required or not required), if desired.
+#. Click the "Create Dataset Guestbook" button once you have finished.
 
-What can you do with a guestbook? After creating a guestbook, you will notice there are several options for a guestbook and appear in the list of guestbooks. 
+What can you do with a guestbook? After creating a guestbook, you will notice there are several options for a guestbook that appear in the list of guestbooks.
 
-- If you want to use a guestbook you have created, you will first need to click the button in the Action column that says Enable. Once a guestbook has been enabled, you can go to the License + Terms for a dataset and select a guestbook for it.
-- There are also options to view, copy, edit, or delete a guestbook.
-- Once someone has downloaded a file in a dataset where a guestbook has been assigned, an option to download collected data will appear. 
+- From the dataset page, you can select a guestbook by clicking "Terms" and then "Edit Terms Requirements", unless the guestbook is disabled.
+- From the "Manage Dataset Guestbooks" page, there are options to view, copy, edit, disable, or delete a guestbook. There are also options to download or view responses. By default, guestbooks inherited from the parent Dataverse collection will appear. If you do not want to use or see those guestbooks, uncheck the checkbox that says "Include Guestbooks from [Parent]".
+- Note that it is also possible to download guestbook responses via API. See :ref:`download-guestbook-api` for details.
 
 .. _featured-dataverses:
 

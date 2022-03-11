@@ -198,6 +198,11 @@ public class DatasetServiceBean implements java.io.Serializable {
         return em.createQuery("SELECT o.id FROM Dataset o WHERE o.indexTime IS null ORDER BY o.id DESC", Long.class).getResultList();
     }
 
+    //Used in datasets listcurationstatus API
+    public List<Dataset> findAllUnpublished() {
+        return em.createQuery("SELECT object(o) FROM Dataset o, DvObject d WHERE d.id=o.id and d.publicationDate IS null ORDER BY o.id ASC", Dataset.class).getResultList();
+    }
+
     /**
      * For docs, see the equivalent method on the DataverseServiceBean.
      * @param numPartitions
@@ -218,6 +223,51 @@ public class DatasetServiceBean implements java.io.Serializable {
         typedQuery.setParameter("numPartitions", numPartitions);
         typedQuery.setParameter("partitionId", partitionId);
         return typedQuery.getResultList();
+    }
+    
+        /**
+     * For docs, see the equivalent method on the DataverseServiceBean.
+     * @param numPartitions
+     * @param partitionId
+     * @param skipIndexed
+     * @return a list of datasets
+     * @see DataverseServiceBean#findAllOrSubset(long, long, boolean)
+     */     
+    public List<Long> findAllOrSubsetOrderByFilesOwned(boolean skipIndexed) {
+        /*
+        Disregards deleted or replaced files when determining 'size' of dataset.
+        Could possibly make more efficient by getting file metadata counts
+        of latest published/draft version.
+        Also disregards partitioning which is no longer supported.
+        SEK - 11/09/2021
+        */
+
+        String skipClause = skipIndexed ? "AND o.indexTime is null " : "";
+        Query query = em.createNativeQuery(" Select distinct(o.id), count(f.id) as numFiles FROM dvobject o " +
+            "left join dvobject f on f.owner_id = o.id  where o.dtype = 'Dataset' "
+                + skipClause
+                + " group by o.id "
+                + "ORDER BY count(f.id) asc, o.id");
+
+        List<Object[]> queryResults;
+        queryResults = query.getResultList();
+
+        List<Long> retVal = new ArrayList();
+        for (Object[] result : queryResults) {
+            Long dsId;           
+            if (result[0] != null) {
+                try {
+                    dsId = Long.parseLong(result[0].toString()) ;
+                } catch (Exception ex) {
+                    dsId = null;
+                }
+                if (dsId == null) {
+                    continue;
+                }
+                retVal.add(dsId);
+            }
+        }
+        return retVal;
     }
     
     /**
@@ -402,13 +452,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     
     public List<DatasetLock> getDatasetLocksByUser( AuthenticatedUser user) {
 
-        TypedQuery<DatasetLock> query = em.createNamedQuery("DatasetLock.getLocksByAuthenticatedUserId", DatasetLock.class);
-        query.setParameter("authenticatedUserId", user.getId());
-        try {
-            return query.getResultList();
-        } catch (javax.persistence.NoResultException e) {
-            return null;
-        }
+        return listLocks(null, user);
     }
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
@@ -481,6 +525,36 @@ public class DatasetServiceBean implements java.io.Serializable {
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void updateDatasetLock(DatasetLock datasetLock) {
         em.merge(datasetLock);
+    }
+    
+    /*
+     * Lists all dataset locks, optionally filtered by lock type or user, or both
+     * @param lockType 
+     * @param user
+     * @return a list of DatasetLocks    
+    */
+    public List<DatasetLock> listLocks(DatasetLock.Reason lockType, AuthenticatedUser user) {
+
+        TypedQuery<DatasetLock> query; 
+        
+        if (lockType == null && user == null) {
+            query = em.createNamedQuery("DatasetLock.findAll", DatasetLock.class);
+        } else if (user == null) {
+            query = em.createNamedQuery("DatasetLock.getLocksByType", DatasetLock.class);
+            query.setParameter("lockType", lockType);
+        } else if (lockType == null) {
+            query = em.createNamedQuery("DatasetLock.getLocksByAuthenticatedUserId", DatasetLock.class);
+            query.setParameter("authenticatedUserId", user.getId());
+        } else {
+            query = em.createNamedQuery("DatasetLock.getLocksByTypeAndAuthenticatedUserId", DatasetLock.class);
+            query.setParameter("lockType", lockType);
+            query.setParameter("authenticatedUserId", user.getId());
+        }
+        try {
+            return query.getResultList();
+        } catch (javax.persistence.NoResultException e) {
+            return null;
+        }
     }
     
     /*

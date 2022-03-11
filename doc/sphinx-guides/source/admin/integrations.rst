@@ -11,6 +11,13 @@ Getting Data In
 
 A variety of integrations are oriented toward making it easier for your researchers to deposit data into your Dataverse installation.
 
+GitHub
++++++++
+
+Dataverse integration with GitHub is implemented via a Dataverse Uploader GitHub Action. It is a reusable, composite workflow for uploading a git repository or subdirectory into a dataset on a target Dataverse installation. The action is customizable, allowing users to choose to replace a dataset, add to the dataset, publish it or leave it as a draft version on Dataverse. The action provides some metadata to the dataset, such as the origin GitHub repository, and it preserves the directory tree structure. 
+
+For instructions on using Dataverse Uploader GitHub Action, visit https://github.com/marketplace/actions/dataverse-uploader-action
+
 Dropbox
 +++++++
 
@@ -50,11 +57,18 @@ their research results and retain links to imported and exported data. Users
 can organize their data in "Datasets", which can be exported to a Dataverse installation via
 the command-line interface (CLI).
 
-Renku dataset documentation: https://renku-python.readthedocs.io/en/latest/commands.html#module-renku.cli.dataset
+Renku dataset documentation: https://renku-python.readthedocs.io/en/latest/reference/commands.html#module-renku.cli.dataset
 
 Flagship deployment of the Renku platform: https://renkulab.io
 
 Renku discourse: https://renku.discourse.group/
+
+Amnesia
++++++++
+
+Amnesia is a flexible data anonymization tool that transforms relational and transactional databases to datasets where formal privacy guarantees hold. Amnesia transforms original data to provide k-anonymity and km-anonymity: the original data are transformed by generalizing (i.e., replacing one value with a more abstract one) or suppressing values to achieve the statistical properties required by the anonymization guarantees. Amnesia employs visualization tools and supportive mechanisms to allow non expert users to anonymize relational and object-relational data.
+
+For instructions on depositing or loading data from Dataverse installations to Amnesia, visit https://amnesia.openaire.eu/about-documentation.html
 
 
 Embedding Data on Websites

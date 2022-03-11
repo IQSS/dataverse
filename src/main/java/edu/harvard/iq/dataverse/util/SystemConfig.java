@@ -1,31 +1,46 @@
 package edu.harvard.iq.dataverse.util;
 
 import com.ocpsoft.pretty.PrettyContext;
+
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
+
 import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorUtil;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Year;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonString;
+import javax.json.JsonValue;
+
 import org.passay.CharacterRule;
 import org.apache.commons.io.IOUtils;
 
@@ -78,7 +93,7 @@ public class SystemConfig {
 
     /**
      * A JVM option to override the number of minutes for which a password reset
-     * token is valid ({@link #minutesUntilPasswordResetTokenExpires}).
+     * token is valid ({@link #getMinutesUntilPasswordResetTokenExpires}).
      */
     private static final String PASSWORD_RESET_TIMEOUT_IN_MINUTES = "dataverse.auth.password-reset-timeout-in-minutes";
 
@@ -93,7 +108,7 @@ public class SystemConfig {
      * zip file upload.
      */
     private static final int defaultZipUploadFilesLimit = 1000; 
-    private static final long defaultZipDownloadLimit = 104857600L; // 100MB
+    public static final long defaultZipDownloadLimit = 104857600L; // 100MB
     private static final int defaultMultipleUploadFilesLimit = 1000;
     private static final int defaultLoginSessionTimeout = 480; // = 8 hours
 
@@ -103,11 +118,21 @@ public class SystemConfig {
     private static final String JVM_TIMER_SERVER_OPTION = "dataverse.timerServer";
     
     private static final long DEFAULT_GUESTBOOK_RESPONSES_DISPLAY_LIMIT = 5000L; 
+    private static final long DEFAULT_THUMBNAIL_SIZE_LIMIT_IMAGE = 3000000L; // 3 MB
+    private static final long DEFAULT_THUMBNAIL_SIZE_LIMIT_PDF = 1000000L; // 1 MB
+    
+    public final static String DEFAULTCURATIONLABELSET = "DEFAULT";
+    public final static String CURATIONLABELSDISABLED = "DISABLED";
     
     public String getVersion() {
         return getVersion(false);
     }
     
+    // The return value is a "prviate static String", that should be initialized
+    // once, on the first call (see the code below)... But this is a @Stateless 
+    // bean... so that would mean "once per thread"? - this would be a prime 
+    // candidate for being moved into some kind of an application-scoped caching
+    // service... some CachingService @Singleton - ? (L.A. 5.8)
     public String getVersion(boolean withBuildNumber) {
         
         if (appVersionString == null) {
@@ -394,7 +419,7 @@ public class SystemConfig {
         return metricsUrl;
     }
 
-    static long getLongLimitFromStringOrDefault(String limitSetting, Long defaultValue) {
+    public static long getLongLimitFromStringOrDefault(String limitSetting, Long defaultValue) {
         Long limit = null;
 
         if (limitSetting != null && !limitSetting.equals("")) {
@@ -465,29 +490,28 @@ public class SystemConfig {
         return 500000;
     }
 
-    // TODO: (?)
-    // create sensible defaults for these things? -- 4.2.2
     public long getThumbnailSizeLimitImage() {
-        long limit = getThumbnailSizeLimit("Image");
-        return limit == 0 ? 500000 : limit;
-    } 
-    
-    public long getThumbnailSizeLimitPDF() {
-        long limit = getThumbnailSizeLimit("PDF");
-        return limit == 0 ? 500000 : limit;
+        return getThumbnailSizeLimit("Image");
     }
-    
-    public long getThumbnailSizeLimit(String type) {
+
+    public long getThumbnailSizeLimitPDF() {
+        return getThumbnailSizeLimit("PDF");
+    }
+
+    public static long getThumbnailSizeLimit(String type) {
         String option = null; 
         
         //get options via jvm options
         
         if ("Image".equals(type)) {
             option = System.getProperty("dataverse.dataAccess.thumbnail.image.limit");
+            return getLongLimitFromStringOrDefault(option, DEFAULT_THUMBNAIL_SIZE_LIMIT_IMAGE);
         } else if ("PDF".equals(type)) {
             option = System.getProperty("dataverse.dataAccess.thumbnail.pdf.limit");
+            return getLongLimitFromStringOrDefault(option, DEFAULT_THUMBNAIL_SIZE_LIMIT_PDF);
         }
 
+        // Zero (0) means no limit.
         return getLongLimitFromStringOrDefault(option, 0L);
     }
     
@@ -511,7 +535,7 @@ public class SystemConfig {
         // is no language-specific value
         String appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, saneDefaultForAppTermsOfUse);
         //Now get the language-specific value if it exists
-        if (!language.equalsIgnoreCase(BundleUtil.getDefaultLocale().getLanguage())) {
+        if (language != null && !language.equalsIgnoreCase(BundleUtil.getDefaultLocale().getLanguage())) {
             appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, language,	appTermsOfUse);
         }
         return appTermsOfUse;
@@ -1033,7 +1057,12 @@ public class SystemConfig {
         }
         return retVal;
     }
-    
+
+    public boolean isAllowCustomTerms() {
+        boolean safeDefaultIfKeyNotFound = true;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.AllowCustomTermsOfUse, safeDefaultIfKeyNotFound);
+    }
+
     public boolean isFilePIDsEnabled() {
         boolean safeDefaultIfKeyNotFound = true;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.FilePIDsEnabled, safeDefaultIfKeyNotFound);
@@ -1068,5 +1097,113 @@ public class SystemConfig {
 		//As of 5.0 the 'doi.dataciterestapiurlstring' is the documented jvm option. Prior versions used 'doi.mdcbaseurlstring' or were hardcoded to api.datacite.org, so the defaults are for backward compatibility.
         return System.getProperty("doi.dataciterestapiurlstring", System.getProperty("doi.mdcbaseurlstring", "https://api.datacite.org"));
 	}
+        
+    public boolean isExternalDataverseValidationEnabled() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.DataverseMetadataValidatorScript) != null;
+        // alternatively, we can also check if the script specified exists, 
+        // and is executable. -- ?
+    }
+    
+    public boolean isExternalDatasetValidationEnabled() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.DatasetMetadataValidatorScript) != null;
+        // alternatively, we can also check if the script specified exists, 
+        // and is executable. -- ?
+    }
+    
+    public String getDataverseValidationExecutable() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.DataverseMetadataValidatorScript);
+    }
+    
+    public String getDatasetValidationExecutable() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.DatasetMetadataValidatorScript);
+    }
+    
+    public String getDataverseValidationFailureMsg() {
+        String defaultMessage = "This dataverse collection cannot be published because it has failed an external metadata validation test.";
+        return settingsService.getValueForKey(SettingsServiceBean.Key.DataverseMetadataPublishValidationFailureMsg, defaultMessage);
+    }
+    
+    public String getDataverseUpdateValidationFailureMsg() {
+        String defaultMessage = "This dataverse collection cannot be updated because it has failed an external metadata validation test.";
+        return settingsService.getValueForKey(SettingsServiceBean.Key.DataverseMetadataUpdateValidationFailureMsg, defaultMessage);
+    }
+    
+    public String getDatasetValidationFailureMsg() {
+        String defaultMessage = "This dataset cannot be published because it has failed an external metadata validation test.";
+        return settingsService.getValueForKey(SettingsServiceBean.Key.DatasetMetadataValidationFailureMsg, defaultMessage);
+    }
+    
+    public boolean isExternalValidationAdminOverrideEnabled() {
+        return "true".equalsIgnoreCase(settingsService.getValueForKey(SettingsServiceBean.Key.ExternalValidationAdminOverride));
+    }
+    
+    public long getDatasetValidationSizeLimit() {
+        String limitEntry = settingsService.getValueForKey(SettingsServiceBean.Key.DatasetChecksumValidationSizeLimit);
 
+        if (limitEntry != null) {
+            try {
+                Long sizeOption = new Long(limitEntry);
+                return sizeOption;
+            } catch (NumberFormatException nfe) {
+                logger.warning("Invalid value for DatasetValidationSizeLimit option? - " + limitEntry);
+            }
+        }
+        // -1 means no limit is set;
+        return -1;
+    }
+
+    public long getFileValidationSizeLimit() {
+        String limitEntry = settingsService.getValueForKey(SettingsServiceBean.Key.DataFileChecksumValidationSizeLimit);
+
+        if (limitEntry != null) {
+            try {
+                Long sizeOption = new Long(limitEntry);
+                return sizeOption;
+            } catch (NumberFormatException nfe) {
+                logger.warning("Invalid value for FileValidationSizeLimit option? - " + limitEntry);
+            }
+        }
+        // -1 means no limit is set;
+        return -1;
+    }
+    public Map<String, String[]> getCurationLabels() {
+        Map<String, String[]> labelMap = new HashMap<String, String[]>();
+        String setting = settingsService.getValueForKey(SettingsServiceBean.Key.AllowedCurationLabels, "");
+        if (!setting.isEmpty()) {
+            try {
+                JsonReader jsonReader = Json.createReader(new StringReader(setting));
+
+                Pattern pattern = Pattern.compile("(^[\\w ]+$)"); // alphanumeric, underscore and whitespace allowed
+
+                JsonObject labelSets = jsonReader.readObject();
+                for (String key : labelSets.keySet()) {
+                    JsonArray labels = (JsonArray) labelSets.getJsonArray(key);
+                    String[] labelArray = new String[labels.size()];
+
+                    boolean allLabelsOK = true;
+                    Iterator<JsonValue> iter = labels.iterator();
+                    int i = 0;
+                    while (iter.hasNext()) {
+                        String label = ((JsonString) iter.next()).getString();
+                        Matcher matcher = pattern.matcher(label);
+                        if (!matcher.matches()) {
+                            logger.warning("Label rejected: " + label + ", Label set " + key + " ignored.");
+                            allLabelsOK = false;
+                            break;
+                        }
+                        labelArray[i] = label;
+                        i++;
+                    }
+                    if (allLabelsOK) {
+                        labelMap.put(key, labelArray);
+                    }
+                }
+            } catch (Exception e) {
+                logger.warning("Unable to parse " + SettingsServiceBean.Key.AllowedCurationLabels.name() + ": "
+                        + e.getLocalizedMessage());
+                e.printStackTrace();
+            }
+        }
+        return labelMap;
+    }
 }

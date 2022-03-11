@@ -8,7 +8,6 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -21,19 +20,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.faces.application.FacesMessage;
-import javax.faces.component.UIInput;
-import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.StoredProcedureQuery;
 import javax.persistence.TypedQuery;
-
+import org.apache.commons.text.StringEscapeUtils;
 /**
  *
  * @author skraffmiller
@@ -43,11 +41,14 @@ import javax.persistence.TypedQuery;
 public class GuestbookResponseServiceBean {
     private static final Logger logger = Logger.getLogger(GuestbookResponseServiceBean.class.getCanonicalName());
     
+    @EJB
+    DataverseServiceBean dataverseService;
+    
     // The query below is used for retrieving guestbook responses used to download 
     // the collected data, in CSV format, from the manage-guestbooks and 
     // guestbook-results pages. (for entire dataverses, and for the individual 
     // guestbooks within dataverses, respectively). -- L.A. 
-    private static final String BASE_QUERY_STRING_FOR_DOWNLOAD_AS_CSV = "select r.id, g.name, v.value, r.responsetime, f.downloadtype,"
+    /*private static final String BASE_QUERY_STRING_FOR_DOWNLOAD_AS_CSV = "select r.id, g.name, v.value, r.responsetime, f.downloadtype,"
                 + " m.label, r.dataFile_id, r.name, r.email, r.institution, r.position,"
                 + " o.protocol, o.authority, o.identifier, d.protocol, d.authority, d.identifier "
                 + "from guestbookresponse r, filedownload f, datasetfieldvalue v, filemetadata m, dvobject o, guestbook g, dvobject d "
@@ -55,6 +56,18 @@ public class GuestbookResponseServiceBean {
                 + " v.datasetfield_id = (select id from datasetfield f where datasetfieldtype_id = 1 "
                 + " and datasetversion_id = (select max(id) from datasetversion where dataset_id =r.dataset_id )) "
                 + " and m.datasetversion_id = (select max(datasetversion_id) from filemetadata where datafile_id =r.datafile_id ) "
+                + " and m.datafile_id = r.datafile_id "
+                + " and d.id = r.datafile_id "
+                + " and r.id = f.guestbookresponse_id "
+                + " and r.dataset_id = o.id "
+                + " and r.guestbook_id = g.id ";*/
+    
+    private static final String BASE_QUERY_STRING_FOR_DOWNLOAD_AS_CSV = "select r.id, g.name, o.id, r.responsetime, f.downloadtype,"
+                + " m.label, r.dataFile_id, r.name, r.email, r.institution, r.position,"
+                + " o.protocol, o.authority, o.identifier, d.protocol, d.authority, d.identifier "
+                + "from guestbookresponse r, filedownload f, filemetadata m, dvobject o, guestbook g, dvobject d "
+                + "where "  
+                + "m.datasetversion_id = (select max(datasetversion_id) from filemetadata where datafile_id =r.datafile_id ) "
                 + " and m.datafile_id = r.datafile_id "
                 + " and d.id = r.datafile_id "
                 + " and r.id = f.guestbookresponse_id "
@@ -82,7 +95,7 @@ public class GuestbookResponseServiceBean {
                 + "where q.id = r.customquestion_id "
                 + "and r.guestbookResponse_id = g.id "
                 + "and g.dataset_id = o.id ";
-
+    
     
     private static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MM/d/yyyy");
     
@@ -128,12 +141,13 @@ public class GuestbookResponseServiceBean {
         // of queries now) -- L.A. 
         
         Map<Integer, Object> customQandAs = mapCustomQuestionAnswersAsStrings(dataverseId, guestbookId);
+        Map<Integer, String> datasetTitles = mapDatasetTitles(dataverseId);
                 
         List<Object[]> guestbookResults = getGuestbookResults( dataverseId,  guestbookId );
         // the CSV header:
         out.write("Guestbook, Dataset, Dataset PID, Date, Type, File Name, File Id, File PID, User Name, Email, Institution, Position, Custom Questions\n".getBytes());
         for (Object[] result : guestbookResults) {
-            StringBuilder sb = convertGuestbookResponsesToCSV(customQandAs, result);
+            StringBuilder sb = convertGuestbookResponsesToCSV(customQandAs, datasetTitles, result);
             out.write(sb.toString().getBytes());
             out.flush();
         }
@@ -156,7 +170,7 @@ public class GuestbookResponseServiceBean {
         
     }
     
-    public StringBuilder convertGuestbookResponsesToCSV ( Map<Integer, Object> customQandAs, Object[] result) throws IOException {
+    public StringBuilder convertGuestbookResponsesToCSV ( Map<Integer, Object> customQandAs, Map<Integer, String> datasetTitles, Object[] result) throws IOException {
 
             Integer guestbookResponseId = (Integer)result[0];
             
@@ -167,12 +181,14 @@ public class GuestbookResponseServiceBean {
             // string fields, or the structure of the file will be broken. -- L.A.
             
             // Guestbook name: 
-            sb.append(((String)result[1]).replace(',', ' '));
+            sb.append(StringEscapeUtils.escapeCsv((String)result[1]));
             sb.append(SEPARATOR);
 
             
             // Dataset name: 
-            sb.append(((String)result[2]).replace(',', ' '));
+            Integer datasetId = (Integer) result[2];
+            String datasetTitle = datasetTitles.get(datasetId);
+            sb.append(datasetTitle == null ? "" : StringEscapeUtils.escapeCsv(datasetTitle));
             sb.append(SEPARATOR);
             
             // Dataset persistent identifier: 
@@ -191,7 +207,7 @@ public class GuestbookResponseServiceBean {
             sb.append(SEPARATOR);
 
             // file name: 
-            sb.append(((String)result[5]).replace(',', ' '));
+            sb.append(StringEscapeUtils.escapeCsv((String)result[5]));
             sb.append(SEPARATOR);
 
             // file id (numeric):
@@ -204,19 +220,19 @@ public class GuestbookResponseServiceBean {
             sb.append(SEPARATOR);
             
             // name supplied in the guestbook response: 
-            sb.append(result[7] == null ? "" : ((String)result[7]).replace(',', ' '));
+            sb.append(result[7] == null ? "" : StringEscapeUtils.escapeCsv((String)result[7]));
             sb.append(SEPARATOR);
             
             // email: 
-            sb.append(result[8] == null ? "" : result[8]);
+            sb.append(result[8] == null ? "" : StringEscapeUtils.escapeCsv((String)result[8]));           
             sb.append(SEPARATOR);
             
             // institution:
-            sb.append(result[9] == null ? "" : ((String)result[9]).replace(',', ' '));
+            sb.append(result[9] == null ? "" : StringEscapeUtils.escapeCsv((String)result[9]));
             sb.append(SEPARATOR);
             
             // position: 
-            sb.append(result[10] == null ? "" : ((String)result[10]).replace(',', ' '));
+            sb.append(result[10] == null ? "" : StringEscapeUtils.escapeCsv((String)result[10]));
             
             // Finally, custom questions and answers, if present:
             
@@ -249,7 +265,7 @@ public class GuestbookResponseServiceBean {
       This method is used to produce an array of guestbook responses for displaying 
       on the guestbook-responses page. 
     */
-    public List<Object[]> findArrayByGuestbookIdAndDataverseId (Long guestbookId, Long dataverseId, Long limit){
+    public List<Object[]> findArrayByGuestbookIdAndDataverseId(Long guestbookId, Long dataverseId, Long limit){
 
         Guestbook gbIn = em.find(Guestbook.class, guestbookId);
         boolean hasCustomQuestions = gbIn.getCustomQuestions() != null;
@@ -380,9 +396,8 @@ public class GuestbookResponseServiceBean {
 
                 if (asString) {
                     // as combined strings of comma-separated question and answer values
-                    
-                    String qa = SEPARATOR + ((String)response[0]).replace(',', ' ') + SEPARATOR + (response[1] == null ? "" : ((String)response[1]).replace(',', ' '));
-
+                    //assuming the strings are only being created for writing out to csv which seems to be the case
+                    String qa = SEPARATOR + StringEscapeUtils.escapeCsv((String)response[0]) + SEPARATOR + (response[1] == null ? "" : StringEscapeUtils.escapeCsv((String)response[1]));                   
                     if (ret.containsKey(responseId)) {
                         ret.put(responseId, ret.get(responseId) + qa);
                     } else {
@@ -393,6 +408,9 @@ public class GuestbookResponseServiceBean {
                     
                     if (!ret.containsKey(responseId)) {
                         ret.put(responseId, new ArrayList<>());
+                    }
+                    if(response[1] != null){
+                         response[1]=((String)response[1]).replaceAll("(\r\n|\n)", "<br />");
                     }
                     ((List) ret.get(responseId)).add(response);
                 }
@@ -898,7 +916,34 @@ public class GuestbookResponseServiceBean {
     }    
 
     public Long getCountOfAllGuestbookResponses() {
-        // dataset id is null, will return 0        
+        // dataset id is null, will return 0  
+        
+        // "SELECT COUNT(*)" is notoriously expensive in PostgresQL for large 
+        // tables. This makes this call fairly expensive for any installation 
+        // with a lot of download/access activity. (This "total download" metrics
+        // is always displayed when the homepage is loaded). 
+        // It is safe to say that no real life user will need this number to be
+        // precise down to the last few digits, and/or withing a second, 
+        // especially once that number is in the millions. The 
+        // solution implemented below relies on estimating the number. It is 
+        // very efficient, but also very PostgresQL specific - hence it is 
+        // defined as a custom database function. 
+        // An alternative solution would be to get the exact number every 
+        // hour or so, and cache it centrally for the rest of the application 
+        // somehow. -- L.A. 5.6
+        
+        
+        try {        
+            StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("GuestbookResponse.estimateGuestBookResponseTableSize");
+            query.execute();
+            Long totalCount = (Long) query.getOutputParameterValue(1);
+        
+            if (totalCount != null) {
+                return totalCount;
+            }
+        } catch (IllegalArgumentException iae) {
+            // Don't do anything, we'll fall back to using "SELECT COUNT()"
+        }
         Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o;");
         return (Long) query.getSingleResult();
     }
@@ -907,6 +952,25 @@ public class GuestbookResponseServiceBean {
         Query query = em.createNamedQuery("GuestbookResponse.findByAuthenticatedUserId"); 
         query.setParameter("authenticatedUserId", user.getId());
         return query.getResultList();
+    }
+        
+    public Map<Integer, String> mapDatasetTitles(Long dataverseId) {
+        Map<Integer, String> ret = new HashMap<>();
+
+        List<Object[]> titleResults = dataverseService.getDatasetTitlesWithinDataverse(dataverseId);
+
+        if (titleResults != null) {
+            for (Object[] titleObj : titleResults) {
+                Integer datasetId = (Integer) titleObj[1];
+                String datasetTitle = (String) titleObj[0];
+                
+                ret.put(datasetId, datasetTitle);
+
+            }
+        }
+
+        return ret;
+        
     }
     
 }
