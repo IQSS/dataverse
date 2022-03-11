@@ -294,15 +294,28 @@
                    </ui:fragment>
                    <ui:fragment rendered="#{!empty editMode}">
                         <div class="form-group" jsf:rendered="#{!settingsWrapper.publicInstall}"> 
-                            <p:fragment id="termsOfAccessHelp"  >
+                            <p:fragment id="termsOfAccessHelp">
+                                <ui:remove>
                                 <ui:fragment rendered="#{!DatasetPage.dataset.editVersion.hasRestrictedFile or !DatasetPage.dataset.editVersion.termsOfUseAndAccess.fileAccessRequest}">    
                                     <p class="help-block">
+                                       
                                         <h:outputText value=" #{bundle['file.dataFilesTab.terms.list.termsOfAccess.description']}"/>
                                         <h:outputFormat value=" #{bundle['file.dataFilesTab.terms.list.termsOfAccess.description.line.2']}" escape="false">
                                             <f:param value="#{systemConfig.guidesBaseUrl}"/>
                                             <f:param value="#{systemConfig.guidesVersion}"/>
                                         </h:outputFormat>
-                                    </p>
+                                    </p>                                    
+                                </ui:fragment>
+                                </ui:remove>
+                                <ui:fragment rendered="#{!DatasetPage.dataset.editVersion.hasRestrictedFile or !DatasetPage.dataset.editVersion.termsOfUseAndAccess.fileAccessRequest}">     
+                                    <div class="alert alert-info">
+                                        <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{bundle['messages.info']}</strong> –
+                                        <h:outputText value=" #{bundle['file.dataFilesTab.terms.list.termsOfAccess.description']}"/>
+                                        <h:outputFormat value=" #{bundle['file.dataFilesTab.terms.list.termsOfAccess.description.line.2']}" escape="false">
+                                            <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                            <f:param value="#{systemConfig.guidesVersion}"/>
+                                        </h:outputFormat>
+                                    </div>
                                 </ui:fragment>
                             </p:fragment>    
                            <label for="datasetForm:tabView:requestAccess" class="col-sm-3 control-label">
