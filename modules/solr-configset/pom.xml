@@ -178,6 +178,53 @@
                 </plugins>
             </build>
         </profile>
+    
+        <profile>
+            <id>ct</id>
+            <properties>
+                <solr.packaging.type>docker</solr.packaging.type>
+            </properties>
+            <build>
+                <plugins>
+                    <!-- Build image via Docker Maven Plugin -->
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <images>
+                                <image>
+                                    <alias>solr</alias>
+                                    <name>gdcc/solr:${revision}</name>
+                                    <registry>${ct.registry}</registry>
+                                    <build>
+                                        <from>solr:${solr.version}</from>
+                                        <labels>
+                                            <!-- Git details are coming from the git plugin, see parent module -->
+                                            <org.opencontainers.image.created>${git.build.time}</org.opencontainers.image.created>
+                                            <org.opencontainers.image.authors><![CDATA[Research Data Management at FZJ <forschungsdaten@fz-juelich.de>]]></org.opencontainers.image.authors>
+                                            <org.opencontainers.image.url>https://k8s-docs.gdcc.io</org.opencontainers.image.url>
+                                            <org.opencontainers.image.documentation>https://k8s-docs.gdcc.io</org.opencontainers.image.documentation>
+                                            <org.opencontainers.image.source>https://github.com/gdcc/dataverse/tree/develop%2Bct/modules/solr-configset</org.opencontainers.image.source>
+                                            <org.opencontainers.image.version>${project.version}</org.opencontainers.image.version>
+                                            <org.opencontainers.image.revision>${git.commit.id.abbrev}</org.opencontainers.image.revision>
+                                            <org.opencontainers.image.vendor>Global Dataverse Community Consortium</org.opencontainers.image.vendor>
+                                            <org.opencontainers.image.licenses>Apache-2.0</org.opencontainers.image.licenses>
+                                            <org.opencontainers.image.title>gdcc/solr :: Dataverse-ready Solr</org.opencontainers.image.title>
+                                            <org.opencontainers.image.description>This container image provides a Dataverse-ready Solr Search Index.</org.opencontainers.image.description>
+                                        </labels>
+                                        <assembly>
+                                            <targetDir>/opt/solr/server/solr/configsets</targetDir>
+                                            <descriptor>${project.basedir}/src/assembly/default.xml</descriptor>
+                                        </assembly>
+                                    </build>
+                                </image>
+                            </images>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
     
 </project>
