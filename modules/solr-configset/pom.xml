@@ -30,13 +30,14 @@
                         <goals>
                             <goal>testCompile</goal>
                         </goals>
-                        <configuration>
-                            <release>${target.java.version}</release>
-                            <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
-                            <compilerArgument>${compilerArgument}</compilerArgument>
-                        </configuration>
                     </execution>
                 </executions>
+                <!-- This has been moved here from the execution to make the same configuration apply for different build targets -->
+                <configuration>
+                    <release>${target.java.version}</release>
+                    <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
+                    <compilerArgument>${compilerArgument}</compilerArgument>
+                </configuration>
             </plugin>
             
             <!-- Download Solr to build configset template -->
