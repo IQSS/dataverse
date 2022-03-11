@@ -12,10 +12,11 @@
     
     <artifactId>solr-configset</artifactId>
     <!-- We actually create a ZIP file, so let's not create an empty JAR -->
-    <packaging>pom</packaging>
+    <packaging>${solr.packaging.type}</packaging>
     
     <properties>
         <solr.configset.directory>${project.build.directory}/dataverse</solr.configset.directory>
+        <solr.packaging.type>pom</solr.packaging.type>
     </properties>
     
     <build>
