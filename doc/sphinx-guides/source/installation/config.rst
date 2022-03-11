@@ -1155,7 +1155,7 @@ Can also be set via *MicroProfile Config API* sources, e.g. the environment vari
 dataverse.rserve.host
 +++++++++++++++++++++
 
-Host name for Rserve, used for tasks that require use of R (to ingest RData files and to save tabular data as RData frames).  
+Host name for Rserve, used for tasks that require use of R (to ingest RData files and to save tabular data as RData frames).
 
 dataverse.rserve.port
 +++++++++++++++++++++
@@ -1171,7 +1171,6 @@ dataverse.rserve.password
 +++++++++++++++++++++++++
 
 Password for Rserve, used for tasks that require use of R (to ingest RData files and to save tabular data as RData frames).
-
 
 dataverse.rserve.tempdir
 ++++++++++++++++++++++++
