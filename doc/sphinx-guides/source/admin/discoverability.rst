@@ -14,7 +14,7 @@ If you are using `DataCite <https://datacite.org>`_ as your DOI provider, when d
 OAI-PMH (Harvesting)
 --------------------
 
-The Dataverse Software supports a protocol called OAI-PMH that facilitates harvesting datasets from one system into another. For details on harvesting, see the :doc:`harvestserver` section.
+The Dataverse Software supports a protocol called OAI-PMH that facilitates harvesting dataset metadata from one system into another. For details on harvesting, see the :doc:`harvestserver` section.
 
 Machine-Readable Metadata on Dataset Landing Pages
 --------------------------------------------------
