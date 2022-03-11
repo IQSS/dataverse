@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
 import java.io.IOException;
@@ -87,6 +88,12 @@ public class DataverseServiceBean implements java.io.Serializable {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+
+    private static final String BASE_QUERY_DATASET_TITLES_WITHIN_DV = "select v.value, o.id\n" 
+                + "from datasetfieldvalue v, dvobject o "
+                + "where " 
+                + "v.datasetfield_id = (select id from datasetfield f where datasetfieldtype_id = 1 " 
+                + "and datasetversion_id = (select max(id) from datasetversion where dataset_id = o.id))";
 
     public Dataverse save(Dataverse dataverse) {
        
@@ -172,6 +179,14 @@ public class DataverseServiceBean implements java.io.Serializable {
         
     }
 
+    public List<Dataverse> findByCreatorId(Long creatorId) {
+        return em.createNamedQuery("Dataverse.findByCreatorId").setParameter("creatorId", creatorId).getResultList();
+    }
+
+    public List<Dataverse> findByReleaseUserId(Long releaseUserId) {
+        return em.createNamedQuery("Dataverse.findByReleaseUserId").setParameter("releaseUserId", releaseUserId).getResultList();
+    }
+
     public List<Dataverse> findByOwnerId(Long ownerId) {
         return em.createNamedQuery("Dataverse.findByOwnerId").setParameter("ownerId", ownerId).getResultList();
     }
@@ -193,6 +208,15 @@ public class DataverseServiceBean implements java.io.Serializable {
      */
     public Dataverse findRootDataverse() {
         return em.createNamedQuery("Dataverse.findRoot", Dataverse.class).getSingleResult();
+    }
+    
+    
+    //Similarly - if the above throws that exception, do we need to catch it here?
+    //ToDo - consider caching?
+    public String getRootDataverseName() {
+        Dataverse root = findRootDataverse();
+        String rootDataverseName=root.getName();
+        return StringUtil.isEmpty(rootDataverseName) ? "" : rootDataverseName; 
     }
     
     public List<Dataverse> findAllPublishedByOwnerId(Long ownerId) {
@@ -468,7 +492,7 @@ public class DataverseServiceBean implements java.io.Serializable {
     }
 
     public List<Dataset> findDatasetsThisIdHasLinkedTo(long dataverseId) {
-        return datasetLinkingService.findDatasetsThisDataverseIdHasLinkedTo(dataverseId);
+        return datasetLinkingService.findLinkedDatasets(dataverseId);
     }
 
     public List<Dataverse> findDataversesThatLinkToThisDatasetId(long datasetId) {
@@ -894,5 +918,15 @@ public class DataverseServiceBean implements java.io.Serializable {
         logger.info(result);
         return (result);
     }
+    
+    // A quick custom query that finds all the (direct children) dataset titles 
+    // with a dataverse and returns a list of (dataset_id, title) pairs. 
+    public List<Object[]> getDatasetTitlesWithinDataverse(Long dataverseId) {
+        String cqString = BASE_QUERY_DATASET_TITLES_WITHIN_DV
+                + "and o.owner_id = " + dataverseId;
+
+        return em.createNativeQuery(cqString).getResultList();
+    }
+
     
 }

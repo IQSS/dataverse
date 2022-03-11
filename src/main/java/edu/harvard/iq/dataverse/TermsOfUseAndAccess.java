@@ -8,12 +8,14 @@ package edu.harvard.iq.dataverse;
 import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
+
+import edu.harvard.iq.dataverse.license.License;
 
 /**
  *
@@ -57,10 +59,10 @@ public class TermsOfUseAndAccess implements Serializable {
         this.template = template;
     }
     
-    
-    @Enumerated(EnumType.STRING)
-    private TermsOfUseAndAccess.License license;
-    
+    @ManyToOne
+    @JoinColumn(name="license_id")
+    private License license;
+
     @Column(columnDefinition="TEXT")      
     private String termsOfUse;
     
@@ -116,12 +118,15 @@ public class TermsOfUseAndAccess implements Serializable {
         this.fileAccessRequest = fileAccessRequest;
     }
     
-    public TermsOfUseAndAccess.License getLicense() {
+    public License getLicense() {
         return license;
     }
 
-    public void setLicense(TermsOfUseAndAccess.License license) {
+    public void setLicense(License license) {
         this.license = license;
+        if(license!=null) {
+            clearCustomTermsVariables();
+        }
     }
 
     public String getTermsOfUse() {
@@ -249,37 +254,43 @@ public class TermsOfUseAndAccess implements Serializable {
 
         TermsOfUseAndAccess retVal = new TermsOfUseAndAccess();
         retVal.setAvailabilityStatus(this.getAvailabilityStatus());
-        retVal.setCitationRequirements(this.getCitationRequirements());
-        retVal.setConditions(this.getConditions());
-        retVal.setConfidentialityDeclaration(this.getConfidentialityDeclaration());
         retVal.setContactForAccess(this.getContactForAccess());
         retVal.setDataAccessPlace(this.getDataAccessPlace());
-        retVal.setDepositorRequirements(this.getDepositorRequirements());
-        retVal.setDisclaimer(this.getDisclaimer());
-        retVal.setLicense(this.getLicense());
         retVal.setOriginalArchive(this.getOriginalArchive());
-        retVal.setRestrictions(this.getRestrictions());
         retVal.setSizeOfCollection(this.getSizeOfCollection());
-        retVal.setSpecialPermissions(this.getSpecialPermissions());
         retVal.setStudyCompletion(this.getStudyCompletion());
         retVal.setTermsOfAccess(this.getTermsOfAccess());
-        retVal.setTermsOfUse(this.getTermsOfUse());
         retVal.setFileAccessRequest(this.isFileAccessRequest());
+        retVal.setLicense(this.getLicense());
+        if (license == null) {
+            retVal.setTermsOfUse(this.getTermsOfUse());
+            retVal.setConfidentialityDeclaration(this.getConfidentialityDeclaration());
+            retVal.setSpecialPermissions(this.getSpecialPermissions());
+            retVal.setRestrictions(this.getRestrictions());
+            retVal.setCitationRequirements(this.getCitationRequirements());
+            retVal.setDepositorRequirements(this.getDepositorRequirements());
+            retVal.setConditions(this.getConditions());
+            retVal.setDisclaimer(this.getDisclaimer());
+        }
 
         return retVal;
     }
 
-    
-        
-    public enum License {
-        NONE, CC0
+    private void clearCustomTermsVariables(){
+        termsOfUse = null;
+        confidentialityDeclaration = null;
+        specialPermissions = null;
+        restrictions = null;
+        citationRequirements = null;
+        depositorRequirements = null;
+        conditions = null;
+        disclaimer = null;
     }
     
-        /**
+    /**
      * @todo What does the GUI use for a default license? What does the "native"
      * API use? See also https://github.com/IQSS/dataverse/issues/1385
      */
-    public static TermsOfUseAndAccess.License defaultLicense = TermsOfUseAndAccess.License.CC0;
 
     @Override
     public int hashCode() {

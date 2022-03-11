@@ -32,13 +32,13 @@
         <meta name="msapplication-TileColor" content="#da532c"/>
         <meta name="theme-color" content="#ffffff"/>
         <link type="image/png" rel="image_src" href="#{resource['images/dataverseproject.png']}" />
-        <link type="text/css" rel="stylesheet" href="#{resource['bs/css/bootstrap.min.css']}?version=#{systemConfig.getVersion()}" />
-        <link type="text/css" rel="stylesheet" href="#{resource['bs/css/bootstrap-theme.min.css']}?version=#{systemConfig.getVersion()}" />
-        <link type="text/css" rel="stylesheet" href="#{resource['css/ie-compat.css']}?version=#{systemConfig.getVersion()}" />
-        <link type="text/css" rel="stylesheet" href="#{resource['css/owl.carousel.css']}?version=#{systemConfig.getVersion()}" />
-        <link type="text/css" rel="stylesheet" href="#{resource['css/fontcustom.css']}?version=#{systemConfig.getVersion()}" />
-        <link type="text/css" rel="stylesheet" href="#{resource['css/socicon.css']}?version=#{systemConfig.getVersion()}" />
-        <link type="text/css" rel="stylesheet" href="#{resource['css/structure.css']}?version=#{systemConfig.getVersion()}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['bs/css/bootstrap.min.css']}?version=#{settingsWrapper.appVersion}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['bs/css/bootstrap-theme.min.css']}?version=#{settingsWrapper.appVersion}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['css/ie-compat.css']}?version=#{settingsWrapper.appVersion}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['css/owl.carousel.css']}?version=#{settingsWrapper.appVersion}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['css/fontcustom.css']}?version=#{settingsWrapper.appVersion}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['css/socicon.css']}?version=#{settingsWrapper.appVersion}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['css/structure.css']}?version=#{settingsWrapper.appVersion}" />
         <ui:fragment rendered="#{!widgetWrapper.widgetView}">
             <script>
                 // Break out of iframe
@@ -56,13 +56,13 @@
         <f:loadBundle basename="propertyFiles.Bundle" var="bundle"/>
 	<a href="#content" class="sr-only">#{bundle['body.skip']}</a>                
         <ui:include src="dataverse_header.xhtml">
-            <ui:param name="dataverse" value="#{dataverse != null ? dataverse : dataverseServiceBean.findRootDataverse()}"/>
+            <ui:param name="dataverse" value="#{dataverse != null ? dataverse : settingsWrapper.rootDataverse}"/>
             <ui:param name="editModeDataverse" value="#{editModeDataverse}"/>
             <ui:param name="showDataverseHeader" value="#{showDataverseHeader != null ? showDataverseHeader : true}"/>
             <ui:param name="showMessagePanel" value="#{showMessagePanel != null ? showMessagePanel : true}"/>
             <ui:param name="loginRedirectPage" value="#{loginRedirectPage != null ? '?redirectPage='.concat(loginRedirectPage) : navigationWrapper.redirectPage}"/>
         </ui:include>
-        <div class="container" id="content">
+        <div class="container" id="content" role="main">
             <ui:insert name="body">#{bundle.defaultBody}</ui:insert>
         </div>
         <!-- FOOTER BLOCK -->
@@ -79,14 +79,18 @@
             </f:facet>
         </p:ajaxStatus>
         <ui:include src="contactFormFragment.xhtml"></ui:include>
-        <script defer="defer" src="#{resource['bs/js/bootstrap.min.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script defer="defer" src="#{resource['js/ie-compat.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script defer="defer" src="#{resource['js/dv_rebind_bootstrap_ui.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script defer="defer" src="#{resource['js/owl.carousel.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script defer="defer" src="#{resource['js/jquery.matchHeight.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script defer="defer" src="#{resource['js/jquery.sharrre.js']}?version=#{systemConfig.getVersion()}"></script>  
-        <script defer="defer" src="#{resource['js/clipboard.min.js']}?version=#{systemConfig.getVersion()}"></script>          
-        <ui:fragment rendered="#{systemConfig.isShibPassiveLoginEnabled()}">
+        <script src="#{resource['js/dv_rebind_bootstrap_ui.js']}?version=#{settingsWrapper.appVersion}"></script>
+        <script defer="defer" src="#{resource['bs/js/bootstrap.min.js']}?version=#{settingsWrapper.appVersion}"></script>
+        <script defer="defer" src="#{resource['js/ie-compat.js']}?version=#{settingsWrapper.appVersion}"></script>
+        <script defer="defer" src="#{resource['js/owl.carousel.js']}?version=#{settingsWrapper.appVersion}"></script>
+        <script defer="defer" src="#{resource['js/jquery.matchHeight.js']}?version=#{settingsWrapper.appVersion}"></script>
+        <script defer="defer" src="#{resource['js/jquery.sharrre.js']}?version=#{settingsWrapper.appVersion}"></script>
+        <script defer="defer" src="#{resource['js/clipboard.min.js']}?version=#{settingsWrapper.appVersion}"></script>
+        <ui:fragment rendered="#{settingsWrapper.getCVocConf().size() > 0}">
+            <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+            <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        </ui:fragment> 
+        <ui:fragment rendered="#{settingsWrapper.shibPassiveLoginEnabled}">
             <script defer="defer" src="#{resource['js/shib/isPassive.js']}"></script>
         </ui:fragment>
         <script>
@@ -104,13 +108,13 @@
                     }
                     ;
                 });
-
+                
                 // Rebind bootstrap UI components
                 bind_bsui_components();
-            });            
+            });
             function clickSupportLink() {
                 $("[id$='headerSupportLink']").click();
-            }            
+            }
             //]]>
         </script>
     </h:body>

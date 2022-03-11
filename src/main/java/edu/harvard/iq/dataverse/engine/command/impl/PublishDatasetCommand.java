@@ -22,6 +22,8 @@ import java.util.Optional;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
 import static edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult.Status;
+import static edu.harvard.iq.dataverse.dataset.DatasetUtil.validateDatasetMetadataExternally;
+
 
 /**
  * Kick-off a dataset publication process. The process may complete immediately, 
@@ -61,7 +63,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
     @Override
     public PublishDatasetResult execute(CommandContext ctxt) throws CommandException {
         
-        verifyCommandArguments();
+        verifyCommandArguments(ctxt);
         
         // Invariant 1: If we're here, publishing the dataset makes sense, from a "business logic" point of view.
         // Invariant 2: The latest version of the dataset is the one being published, EVEN IF IT IS NOT DRAFT.
@@ -69,6 +71,10 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
 
         Dataset theDataset = getDataset();
 
+        
+        //ToDo - any reason to set the version in publish versus finalize? Failure in a prepub workflow or finalize will leave draft versions with an assigned version number as is.
+        //Changing the dataset in this transaction also potentially makes a race condition with a prepub workflow, possibly resulting in an OptimisticLockException there.
+        
         // Set the version numbers:
 
         if (theDataset.getPublicationDate() == null) {
@@ -86,12 +92,27 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             theDataset.getLatestVersion().setMinorVersionNumber(new Long(0));
         }
         
+        // Perform any optional validation steps, if defined:
+        if (ctxt.systemConfig().isExternalDatasetValidationEnabled()) {
+            // For admins, an override of the external validation step may be enabled: 
+            if (!(getUser().isSuperuser() && ctxt.systemConfig().isExternalValidationAdminOverrideEnabled())) {
+                String executable = ctxt.systemConfig().getDatasetValidationExecutable();
+                boolean result = validateDatasetMetadataExternally(theDataset, executable, getRequest());
+            
+                if (!result) {
+                    String rejectionMessage = ctxt.systemConfig().getDatasetValidationFailureMsg();
+                    throw new IllegalCommandException(rejectionMessage, this);
+                }
+            } 
+        }
+        
+        //ToDo - should this be in onSuccess()? May relate to todo above 
         Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.PrePublishDataset);
         if ( prePubWf.isPresent() ) {
             // We start a workflow
             theDataset = ctxt.em().merge(theDataset);
             ctxt.em().flush();
-            ctxt.workflows().start(prePubWf.get(), buildContext(theDataset, TriggerType.PrePublishDataset, datasetExternallyReleased));
+            ctxt.workflows().start(prePubWf.get(), buildContext(theDataset, TriggerType.PrePublishDataset, datasetExternallyReleased), true);
             return new PublishDatasetResult(theDataset, Status.Workflow);
             
         } else{
@@ -131,10 +152,25 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             info += validatePhysicalFiles ? "Validating Datafiles Asynchronously" : "";
             
             AuthenticatedUser user = request.getAuthenticatedUser();
-            DatasetLock lock = new DatasetLock(DatasetLock.Reason.finalizePublication, user);
-            lock.setDataset(theDataset);
-            lock.setInfo(info);
-            ctxt.datasets().addDatasetLock(theDataset, lock);
+            /*
+             * datasetExternallyReleased is only true in the case of the
+             * Dataverses.importDataset() and importDatasetDDI() methods. In that case, we
+             * are still in the transaction that creates theDataset, so
+             * A) Trying to create a DatasetLock referncing that dataset in a new 
+             * transaction (as ctxt.datasets().addDatasetLock() does) will fail since the 
+             * dataset doesn't yet exist, and 
+             * B) a lock isn't needed because no one can be trying to edit it yet (as it
+             * doesn't exist).
+             * Thus, we can/need to skip creating the lock. Since the calls to removeLocks
+             * in FinalizeDatasetPublicationCommand search for and remove existing locks, if
+             * one doesn't exist, the removal is a no-op in this case.
+             */
+            if (!datasetExternallyReleased) {
+                DatasetLock lock = new DatasetLock(DatasetLock.Reason.finalizePublication, user);
+                lock.setDataset(theDataset);
+                lock.setInfo(info);
+                ctxt.datasets().addDatasetLock(theDataset, lock);
+            }
             theDataset = ctxt.em().merge(theDataset);
             // The call to FinalizePublicationCommand has been moved to the new @onSuccess()
             // method:
@@ -158,7 +194,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
      * 
      * @throws IllegalCommandException if the publication request is invalid.
      */
-    private void verifyCommandArguments() throws IllegalCommandException {
+    private void verifyCommandArguments(CommandContext ctxt) throws IllegalCommandException {
         if (!getDataset().getOwner().isReleased()) {
             throw new IllegalCommandException("This dataset may not be published because its host dataverse (" + getDataset().getOwner().getAlias() + ") has not been published.", this);
         }
@@ -167,9 +203,10 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             throw new IllegalCommandException("Only authenticated users can release a Dataset. Please authenticate and try again.", this);
         }
         
-        if ( getDataset().isLockedFor(DatasetLock.Reason.Workflow)
+        if ( (getDataset().isLockedFor(DatasetLock.Reason.Workflow)&&!ctxt.permissions().isMatchingWorkflowLock(getDataset(),request.getUser().getIdentifier(),request.getWFInvocationId())) 
                 || getDataset().isLockedFor(DatasetLock.Reason.Ingest) 
-                || getDataset().isLockedFor(DatasetLock.Reason.finalizePublication)) {
+                || getDataset().isLockedFor(DatasetLock.Reason.finalizePublication)
+                || getDataset().isLockedFor(DatasetLock.Reason.EditInProgress)) {
             throw new IllegalCommandException("This dataset is locked. Reason: " 
                     + getDataset().getLocks().stream().map(l -> l.getReason().name()).collect( joining(",") )
                     + ". Please try publishing later.", this);
@@ -212,7 +249,12 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         }
 
         if (dataset != null) {
-            ctxt.datasets().callFinalizePublishCommandAsynchronously(dataset.getId(), ctxt, request, datasetExternallyReleased);
+            Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.PrePublishDataset);
+            //A pre-publication workflow will call FinalizeDatasetPublicationCommand itself when it completes
+            if (! prePubWf.isPresent() ) {
+                logger.fine("From onSuccess, calling FinalizeDatasetPublicationCommand for dataset " + dataset.getGlobalId().asString());
+                ctxt.datasets().callFinalizePublishCommandAsynchronously(dataset.getId(), ctxt, request, datasetExternallyReleased);
+            } 
             return true;
         }
         

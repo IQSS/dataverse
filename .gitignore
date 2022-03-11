@@ -46,6 +46,10 @@ conf/docker-aio/dv/deps/
 conf/docker-aio/dv/install/dvinstall.zip
 # or copy of test data
 conf/docker-aio/testdata/
+
+# docker-aio creates maven/ which reports 86 new files. ignore this wd.
+maven/
+
 scripts/installer/default.config
 *.pem
 
@@ -66,3 +70,6 @@ venv
 scripts/search/data/binary/trees.png.thumb140
 src/main/webapp/resources/images/cc0.png.thumb140
 src/main/webapp/resources/images/dataverseproject.png.thumb140
+
+# apache-maven is downloaded by docker-aio
+apache-maven*

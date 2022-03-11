@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command;
 
+import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.api.batchjob.FileRecordJobResource;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -22,6 +23,7 @@ public class DataverseRequest {
 
     private final User user;
     private final IpAddress sourceAddress;
+    private final String invocationId;
     
     private final static String undefined = "0.0.0.0";
     
@@ -132,14 +134,23 @@ public class DataverseRequest {
                     }
                 }
             }
+            
+            String headerParamWFKey = aHttpServletRequest.getHeader(AbstractApiBean.DATAVERSE_WORKFLOW_INVOCATION_HEADER_NAME);
+            String queryParamWFKey = aHttpServletRequest.getParameter("invocationId");
+                    
+            invocationId = headerParamWFKey!=null ? headerParamWFKey : queryParamWFKey;
 
+        } else {
+            invocationId=null;
         }
+        
         sourceAddress = address;
     }
 
     public DataverseRequest( User aUser, IpAddress aSourceAddress ) {
         user = aUser;
         sourceAddress = aSourceAddress;
+        invocationId=null;
     }
     
     public User getUser() {
@@ -170,6 +181,10 @@ public class DataverseRequest {
             return (AuthenticatedUser)authUser;
         }
         return null;
+    }
+
+    public String getWFInvocationId() {
+        return invocationId;
     }
     
 }

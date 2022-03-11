@@ -8,7 +8,6 @@ import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestAccessCommand;
@@ -86,7 +85,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     @Inject
     DataverseRequestServiceBean dvRequestService;
     
-    @Inject WorldMapPermissionHelper worldMapPermissionHelper;
     @Inject FileDownloadHelper fileDownloadHelper;
     @Inject
     MakeDataCountLoggingServiceBean mdcLogService;
@@ -98,7 +96,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
     
     public void writeGuestbookAndStartBatchDownload(GuestbookResponse guestbookResponse, Boolean doNotSaveGuestbookRecord){
-         
+
         if (guestbookResponse == null || guestbookResponse.getSelectedFileIds() == null) {
             return;
         }
@@ -282,6 +280,14 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         redirectToBatchDownloadAPI(multiFileString, true, downloadOriginal);
     }
 
+    public void redirectToAuxFileDownloadAPI(Long fileId, String formatTag, String formatVersion) {
+        String fileDownloadUrl = "/api/access/datafile/" + fileId + "/auxiliary/" + formatTag + "/" + formatVersion;
+        try {
+            FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
+        } catch (IOException ex) {
+            logger.info("Failed to issue a redirect to aux file download url (" + fileDownloadUrl + "): " + ex);
+        }
+    }
     
     /**
      * Launch an "explore" tool which is a type of ExternalTool such as
@@ -292,20 +298,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         ApiToken apiToken = null;
         User user = session.getUser();
         DatasetVersion version = fmd.getDatasetVersion();
-        if (version.isDraft() || (fmd.getDataFile().isRestricted())) {
-            if (user instanceof AuthenticatedUser) {
-                AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
-                apiToken = authService.findApiTokenByUser(authenticatedUser);
-                if (apiToken == null) {
-                    //No un-expired token
-                    apiToken = authService.generateApiTokenForUser(authenticatedUser);
-                }
-            } else if (user instanceof PrivateUrlUser) {
-                PrivateUrlUser privateUrlUser = (PrivateUrlUser) user;
-                PrivateUrl privateUrl = privateUrlService.getPrivateUrlFromDatasetId(privateUrlUser.getDatasetId());
-                apiToken = new ApiToken();
-                apiToken.setTokenString(privateUrl.getToken());
-            }
+        if (version.isDraft() || (fmd.getDataFile().isRestricted()) || (FileUtil.isActivelyEmbargoed(fmd))) {
+            apiToken = getApiToken(user);
         }
         DataFile dataFile = null;
         if (fmd != null) {
@@ -334,45 +328,28 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
     }
 
-    public String startWorldMapDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
-                
-        if (guestbookResponse != null  && guestbookResponse.isWriteResponse() && ((fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)){
-            if(guestbookResponse.getDataFile() == null && fmd != null){
-                guestbookResponse.setDataFile(fmd.getDataFile());
+    public ApiToken getApiToken(User user) {
+        ApiToken apiToken = null;
+        if (user instanceof AuthenticatedUser) {
+            AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
+            apiToken = authService.findApiTokenByUser(authenticatedUser);
+            if (apiToken == null || apiToken.isExpired()) {
+                //No un-expired token
+                apiToken = authService.generateApiTokenForUser(authenticatedUser);
             }
-            if (fmd == null || !fmd.getDatasetVersion().isDraft()){
-                writeGuestbookResponseRecord(guestbookResponse);
-            }
+        } else if (user instanceof PrivateUrlUser) {
+            PrivateUrlUser privateUrlUser = (PrivateUrlUser) user;
+            PrivateUrl privateUrl = privateUrlService.getPrivateUrlFromDatasetId(privateUrlUser.getDatasetId());
+            apiToken = new ApiToken();
+            apiToken.setTokenString(privateUrl.getToken());
         }
-        DataFile file = null;
-        if (fmd != null){
-            file  = fmd.getDataFile();
-        }
-        if (guestbookResponse != null && guestbookResponse.getDataFile() != null && file == null){
-            file  = guestbookResponse.getDataFile();
-        }
-        
-
-        String retVal = worldMapPermissionHelper.getMapLayerMetadata(file).getLayerLink();
-        
-        try {
-            FacesContext.getCurrentInstance().getExternalContext().redirect(retVal);
-            return retVal;
-        } catch (IOException ex) {
-            logger.info("Failed to issue a redirect to file download url.");
-        }
-        return retVal;
+        return apiToken;
     }
 
     public Boolean canSeeTwoRavensExploreButton(){
         return false;
     }
-    
-    
-    public Boolean canUserSeeExploreWorldMapButton(){
-        return false;
-    }
-    
+
     public void downloadDatasetCitationXML(Dataset dataset) {
         downloadCitationXML(null, dataset, false);
     }
@@ -529,9 +506,9 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         return false;
     }    
     
-    public void sendRequestFileAccessNotification(Dataset dataset, Long fileId, AuthenticatedUser requestor) {
-        permissionService.getUsersWithPermissionOn(Permission.ManageDatasetPermissions, dataset).stream().forEach((au) -> {
-            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, fileId, null, requestor, false);
+    public void sendRequestFileAccessNotification(DataFile datafile, AuthenticatedUser requestor) {
+        permissionService.getUsersWithPermissionOn(Permission.ManageFilePermissions, datafile).stream().forEach((au) -> {
+            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, datafile.getId(), null, requestor, false);
         });
 
     } 
@@ -570,11 +547,12 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
                 
         if (location != null && fileName != null) {
-            em.createNativeQuery("INSERT INTO CUSTOMZIPSERVICEREQUEST (KEY, STORAGELOCATION, FILENAME, ISSUETIME) VALUES ("
-                    + "'" + key + "',"
-                    + "'" + location + "',"
-                    + "'" + fileName + "',"
-                    + "'" + timestamp + "');").executeUpdate();
+            em.createNativeQuery("INSERT INTO CUSTOMZIPSERVICEREQUEST (KEY, STORAGELOCATION, FILENAME, ISSUETIME) VALUES (?1,?2,?3,?4);")
+                    .setParameter(1,key)
+                    .setParameter(2,location)
+                    .setParameter(3,fileName)
+                    .setParameter(4,timestamp)
+                    .executeUpdate();
         }
         
         // TODO:

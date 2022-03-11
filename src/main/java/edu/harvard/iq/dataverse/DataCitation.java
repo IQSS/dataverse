@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 
 import java.io.BufferedWriter;
@@ -32,8 +33,8 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -184,10 +185,17 @@ public class DataCitation {
     }
 
     public String toString(boolean html) {
-        // first add comma separated parts        
+        return toString(html, false);
+    }
+    public String toString(boolean html, boolean anonymized) {
+        // first add comma separated parts
         String separator = ", ";
         List<String> citationList = new ArrayList<>();
-        citationList.add(formatString(getAuthorsString(), html));
+        if(anonymized) {
+            citationList.add(BundleUtil.getStringFromBundle("file.anonymized.authorsWithheld"));
+        } else {
+            citationList.add(formatString(getAuthorsString(), html));
+        }
         citationList.add(year);
         if ((fileTitle != null) && isDirect()) {
             citationList.add(formatString(fileTitle, html, "\""));
@@ -642,7 +650,7 @@ public class DataCitation {
 
     private String formatString(String value, boolean escapeHtml, String wrapperStart, String wrapperEnd) {
         if (!StringUtils.isEmpty(value)) {
-            return new StringBuilder(wrapperStart).append(escapeHtml ? StringEscapeUtils.escapeHtml(value) : value)
+            return new StringBuilder(wrapperStart).append(escapeHtml ? StringEscapeUtils.escapeHtml4(value) : value)
                     .append(wrapperEnd).toString();
         }
         return null;
@@ -654,7 +662,7 @@ public class DataCitation {
         }
 
         if (html && url != null) {
-            return "<a href=\"" + url + "\" target=\"_blank\">" + StringEscapeUtils.escapeHtml(text) + "</a>";
+            return "<a href=\"" + url + "\" target=\"_blank\">" + StringEscapeUtils.escapeHtml4(text) + "</a>";
         } else {
             return text;
         }
@@ -709,8 +717,8 @@ public class DataCitation {
         if (!dsv.getDataset().isHarvested()) {
             citationDate = dsv.getCitationDate();
             if (citationDate == null) {
-                if (dsv.getDataset().getPublicationDate() != null) {
-                    citationDate = dsv.getDataset().getPublicationDate();
+                if (dsv.getDataset().getCitationDate() != null) {
+                    citationDate = dsv.getDataset().getCitationDate();
                 } else { // for drafts
                     citationDate = dsv.getLastUpdateTime();
                 }
@@ -745,7 +753,7 @@ public class DataCitation {
 
     private String getPublisherFrom(DatasetVersion dsv) {
         if (!dsv.getDataset().isHarvested()) {
-            return dsv.getRootDataverseNameforCitation();
+            return BrandingUtil.getInstallationBrandName();
         } else {
             return dsv.getDistributorName();
             // remove += [distributor] SEK 8-18-2016

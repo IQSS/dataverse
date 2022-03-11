@@ -31,7 +31,7 @@ public class ThrowableHandler implements ExceptionMapper<Throwable>{
             .randomIncidentId()
             .internalError(ex)
             .request(request)
-            .log(logger, Level.SEVERE, Optional.of(ex))
+            .log(logger, Level.SEVERE, Optional.of(ex), true)
             .build();
     }
 }

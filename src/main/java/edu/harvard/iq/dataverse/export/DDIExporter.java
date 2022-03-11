@@ -26,10 +26,11 @@ public class DDIExporter implements Exporter {
     public static String DEFAULT_XML_NAMESPACE = "ddi:codebook:2_5";
     public static String DEFAULT_XML_SCHEMALOCATION = "https://ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd";
     public static String DEFAULT_XML_VERSION = "2.5";
+    public static final String PROVIDER_NAME = "ddi";
     
     @Override
     public String getProviderName() {
-        return "ddi";
+        return PROVIDER_NAME;
     }
 
     @Override

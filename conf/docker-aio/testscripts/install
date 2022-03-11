@@ -1,7 +1,7 @@
 #!/bin/sh
 export HOST_ADDRESS=localhost
-export GLASSFISH_ROOT=/usr/local/glassfish4
-export FILES_DIR=/usr/local/glassfish4/glassfish/domains/domain1/files
+export GLASSFISH_ROOT=/opt/payara5
+export FILES_DIR=/opt/payara5/glassfish/domains/domain1/files
 export DB_NAME=dvndb
 export DB_PORT=5432
 export DB_HOST=localhost
@@ -15,7 +15,6 @@ export SMTP_SERVER=localhost
 export MEM_HEAP_SIZE=2048
 export GLASSFISH_DOMAIN=domain1
 cd scripts/installer
-cp pgdriver/postgresql-42.2.12.jar $GLASSFISH_ROOT/glassfish/lib
 #cp ../../conf/jhove/jhove.conf $GLASSFISH_ROOT/glassfish/domains/$GLASSFISH_DOMAIN/config/jhove.conf
 cp /opt/dv/testdata/jhove.conf $GLASSFISH_ROOT/glassfish/domains/$GLASSFISH_DOMAIN/config/jhove.conf
 cp /opt/dv/testdata/jhoveConfig.xsd $GLASSFISH_ROOT/glassfish/domains/$GLASSFISH_DOMAIN/config/jhoveConfig.xsd

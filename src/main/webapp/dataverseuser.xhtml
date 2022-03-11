@@ -15,10 +15,17 @@
             <ui:param name="pageTitle" value="#{bundle.account} - #{dataverseServiceBean.findRootDataverse().name}"/>
             <ui:param name="dataverse" value="#{dataverseServiceBean.findRootDataverse()}"/>
             <ui:param name="showDataverseHeader" value="false"/>
+            <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:param name="loginRedirectPage" value="dataverseuser.xhtml"/>
             <ui:define name="body">
+                <!-- 
+                 The following script is needed to protect a user's personal data 
+                from being seen if they log out of their DV account and the next person who
+                sits at their computer hits the back button. (see ticket #3965)
+                -->
                 <script>
-                    //<![CDATA[
+
+                    //<![CDATA[                   
                     window.onpageshow = function(event) {
                         if (event.persisted) {
                             window.location.reload();
@@ -26,16 +33,18 @@
                     };
                     //]]>
                 </script>
+
                 <f:loadBundle basename="propertyFiles.Bundle" var="bundle"/>
                 <f:metadata>
                     <f:event type="preRenderView" listener="#{facesContext.externalContext.response.setHeader('Cache-Control', 'no-cache, no-store')}"/>
                     <o:viewParam name="editMode" value="#{DataverseUserPage.editMode}"/>
                     <f:viewParam name="redirectPage" value="#{DataverseUserPage.redirectPage}"/>
-                    <f:viewParam name="selectTab" value="#{DataverseUserPage.selectTab}"/>
+                    <o:viewParam name="selectTab" value="#{DataverseUserPage.selectTab}" default="dataRelatedToMe"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{DataverseUserPage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse(), (DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn'] : bundle.account))}"/>
                 </f:metadata>
+                <h1>#{pageTitle}</h1>
                 <h:form id="dataverseUserForm">
 
                     <p:focus context="dataverseUserForm"/>
@@ -97,6 +106,20 @@
                                                         </o:param>
                                                         <o:param>
                                                             <a href="#{systemConfig.guidesBaseUrl}/#{systemConfig.guidesVersion}/user/dataset-management.html" title="#{bundle['notification.dataset.management.title']}" target="_blank">#{bundle['header.guides.user']}</a>
+                                                        </o:param>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'DATASETCREATED'}">
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
+                                                    <h:outputFormat value="#{bundle['notification.datasetCreated']}" escape="false">
+                                                        <o:param>
+                                                            <a href="/dataset.xhtml?persistentId=#{item.theObject.getGlobalId()}" title="#{item.theObject.getDisplayName()}">#{item.theObject.getDisplayName()}</a>
+                                                        </o:param>
+                                                        <o:param>
+                                                            <a href="/dataverse/#{item.theObject.getOwner().getAlias()}" title="#{item.theObject.getOwner().getDisplayName()}">#{item.theObject.getOwner().getDisplayName()}</a>
+                                                        </o:param>
+                                                        <o:param>
+                                                            #{item.requestor.name}
                                                         </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
@@ -186,23 +209,6 @@
                                                     <h:outputFormat value="#{bundle['notification.rejectFileAccess']}" escape="false">
                                                         <o:param>
                                                             <a href="/dataset.xhtml?persistentId=#{item.theObject.getGlobalId()}" title="#{item.theObject.displayName}">#{item.theObject.displayName}</a>
-                                                        </o:param>
-                                                    </h:outputFormat>
-                                                </ui:fragment>
-                                                <ui:fragment rendered="#{item.type == 'MAPLAYERUPDATED'}">
-                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
-                                                    <h:outputFormat value="#{bundle['notification.worldMap.added']}" escape="false">
-                                                        <o:param>
-                                                            <a href="/dataset.xhtml?persistentId=#{item.theObject.getDataset().getGlobalId()}" title="#{item.theObject.getDataset().getDisplayName()}">#{item.theObject.getDataset().getDisplayName()}</a>
-                                                        </o:param>
-                                                    </h:outputFormat>
-                                                </ui:fragment>
-                                                <ui:fragment rendered="#{item.type == 'MAPLAYERDELETEFAILED'}">
-                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
-                                                    <h:outputFormat value="#{bundle['notification.maplayer.deletefailed']}" escape="false">
-                                                        <o:param value="#{item.theObject.getLabel()}"/>
-                                                        <o:param>
-                                                            <a href="/dataset.xhtml?persistentId=#{item.theObject.getDatasetVersion().getDataset().getGlobalId()}" title="#{item.theObject.getDatasetVersion().getDataset().getDisplayName()}">#{item.theObject.getDatasetVersion().getDataset().getDisplayName()}</a>
                                                         </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
@@ -312,6 +318,8 @@
                                                     <h:outputFormat value="#{bundle['notification.ingestCompleted']}" escape="false">
                                                         <f:param value="#{item.theObject.getGlobalId()}"/>
                                                         <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                        <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
+                                                        <f:param value="#{settingsWrapper.guidesVersion}"/>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'INGESTCOMPLETEDWITHERRORS'}">
@@ -319,8 +327,42 @@
                                                     <h:outputFormat value="#{bundle['notification.ingestCompletedWithErrors']}" escape="false">
                                                         <f:param value="#{item.theObject.getGlobalId()}"/>
                                                         <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                        <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
+                                                        <f:param value="#{settingsWrapper.guidesVersion}"/>
                                                     </h:outputFormat>
                                                 </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'WORKFLOW_FAILURE'}">
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
+                                                    <h:outputFormat value="#{bundle['notification.workflowFailed']}" escape="false">
+                                                        <o:param>
+                                                            <a href="/dataset.xhtml?persistentId=#{item.theObject.getDataset().getGlobalId()}&amp;version=DRAFT&amp;faces-redirect=true" title="#{item.theObject.getDataset().getDisplayName()}">#{item.theObject.getDataset().getDisplayName()}</a>
+                                                        </o:param>
+                                                        <o:param>
+                                                            <a href="/dataverse/#{item.theObject.getDataset().getOwner().getAlias()}" title="#{item.theObject.getDataset().getOwner().getDisplayName()}">#{item.theObject.getDataset().getOwner().getDisplayName()}</a>
+                                                        </o:param>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'WORKFLOW_SUCCESS'}">
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
+                                                    <h:outputFormat value="#{bundle['notification.workflowSucceeded']}" escape="false">
+                                                        <o:param>
+                                                            <a href="/dataset.xhtml?persistentId=#{item.theObject.getDataset().getGlobalId()}&amp;version=DRAFT&amp;faces-redirect=true" title="#{item.theObject.getDataset().getDisplayName()}">#{item.theObject.getDataset().getDisplayName()}</a>
+                                                        </o:param>
+                                                        <o:param>
+                                                            <a href="/dataverse/#{item.theObject.getDataset().getOwner().getAlias()}" title="#{item.theObject.getDataset().getOwner().getDisplayName()}">#{item.theObject.getDataset().getOwner().getDisplayName()}</a>
+                                                        </o:param>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'STATUSUPDATED'}">
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
+                                                    <h:outputFormat value="#{bundle['notification.statusUpdated']}" escape="false">
+                                                        <o:param>
+                                                            <a href="/dataset.xhtml?persistentId=#{item.theObject.getDataset().getGlobalId()}&amp;version=DRAFT&amp;faces-redirect=true" title="#{item.theObject.getDataset().getDisplayName()}">#{item.theObject.getDataset().getDisplayName()}</a>
+                                                        </o:param>
+                                                        <f:param value="#{item.theObject.externalStatusLabel}"/>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+                                                
 
                                             </ui:fragment>
                                             <h:outputText value="#{item.localeSendDate}" styleClass="text-muted small"/>
@@ -348,7 +390,7 @@
                                         </ui:fragment>
                                         <span class="caret"></span>
                                     </button>
-                                    <ul class="dropdown-menu pull-right text-left" role="menu">
+                                    <ul class="dropdown-menu pull-right text-left">
                                         <ui:fragment rendered="#{DataverseUserPage.passwordEditable or DataverseUserPage.accountDetailsEditable}">
                                             <li>
                                                 <p:commandLink id="editAccount" rendered="#{DataverseUserPage.accountDetailsEditable}"
@@ -366,123 +408,120 @@
                                     </ul>
                                 </div>
                             </div>
-                            <div class="form-horizontal" jsf:rendered="#{!empty DataverseUserPage.currentUser}">
-                                <div class="form-group" jsf:rendered="#{not DataverseUserPage.accountDetailsEditable}">
-                                    <div class="col-sm-12">
-                                        <p class="help-block">
-                                            <h:outputText value="#{bundle['user.isShibUser']}" />
-                                            <h:outputText value=" #{bundle['user.helpShibUserMigrateOffShibBeforeLink']} " />
-                                            <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
-                                                <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
-                                                <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
-                                                <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
-                                                <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
-                                            </p:commandLink>
-                                            <h:outputText value=" #{bundle['user.helpShibUserMigrateOffShibAfterLink']}" />
-                                        </p>
-                                    </div>
-                                </div>
-                                <div class="form-group" jsf:rendered="#{DataverseUserPage.userAuthProvider.OAuthProvider}">
-                                    <div class="col-sm-12">
-                                        <p class="help-block">
-                                            <h:outputFormat value="#{bundle['user.helpOAuthBeforeLink']} ">
-                                                <f:param value="#{DataverseUserPage.userAuthProvider.info.title}"/>
-                                            </h:outputFormat>
-                                            <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
-                                                <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
-                                                <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
-                                                <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
-                                                <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
-                                            </p:commandLink>
-                                            <h:outputText value=" #{bundle['user.helpOAuthAfterLink']}" />
-                                        </p>
-                                    </div>
-                                </div>
-                                <!-- Username -->
-                                <div class="form-group">
-                                    <label for="userNameEmail" class="col-sm-3 control-label">
-                                        #{bundle['user.username']}
-                                    </label>
-                                    <div class="col-sm-9">
-                                        <p class="form-control-static">#{DataverseUserPage.currentUser.identifier.replaceFirst("@", "")}</p>
-                                    </div>
-                                </div>
-                                <!-- First Name -->
-                                <div class="form-group">
-                                    <label for="firstName" class="col-sm-3 control-label">
-                                        #{bundle['user.firstName']}
-                                    </label>
-                                    <div class="col-sm-9">
-                                        <p class="form-control-static">#{DataverseUserPage.currentUser.firstName}</p>
-                                    </div>
-                                </div>
-                                <!-- Last Name -->
-                                <div class="form-group">
-                                    <label for="lastName" class="col-sm-3 control-label">
-                                        #{bundle['user.lastName']}
-                                    </label>
-                                    <div class="col-sm-9">
-                                        <p class="form-control-static">#{DataverseUserPage.currentUser.lastName}</p>
-                                    </div>
-                                </div>
-                                <!-- Email -->
-                                <div class="form-group">
-                                    <label for="email" class="col-sm-3 control-label">
-                                        #{bundle.email}
-                                    </label>
-                                    <div class="col-sm-9 form-col-container">
-                                        <div class="col-sm-4 form-col-container">
-                                            <p class="form-control-static">#{DataverseUserPage.currentUser.email}</p>
-                                        </div>
-                                        <div class="col-sm-2 form-col-container">
-                                            <p class="form-control-static #{DataverseUserPage.emailIsVerified ? 'text-success' : 'text-danger'}">
-                                                <ui:fragment rendered="#{DataverseUserPage.emailNotVerified}">
-                                                    <span class="glyphicon glyphicon-ban-circle"/> #{bundle['confirmEmail.notVerified']}
-                                                </ui:fragment>
-                                                <ui:fragment rendered="#{!DataverseUserPage.emailNotVerified}">
-                                                    <span class="glyphicon glyphicon-ok"/> #{bundle['confirmEmail.verified']}
-                                                </ui:fragment>
-                                            </p>
-                                        </div>
-                                        <div class="col-sm-1">
-                                            <h:commandLink rendered="#{DataverseUserPage.showVerifyEmailButton()}" styleClass="btn btn-default" action="#{DataverseUserPage.sendConfirmEmail()}">
-                                                <span class="glyphicon glyphicon-ok"></span> #{bundle['confirmEmail.submitRequest']}
-                                            </h:commandLink>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- ORCID iD, for example -->
-                                <div class="form-group" jsf:rendered="#{DataverseUserPage.userAuthProvider.displayIdentifier}">
-                                    <label for="userPersistentId" class="col-sm-3 control-label">
-                                        #{DataverseUserPage.userAuthProvider.persistentIdName}
-                                    </label>
-                                    <div class="col-sm-9">
-                                        <p class="form-control-static">
-                                            <h:graphicImage value="#{DataverseUserPage.userAuthProvider.logo}" height="16" width="16" alt="#{of:format1(bundle['alt.logo'], DataverseUserPage.userAuthProvider.persistentIdName)}"/>&#160;
-                                            <h:outputLink value="#{DataverseUserPage.userAuthProvider.persistentIdUrlPrefix}#{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}" title="#{DataverseUserPage.userAuthProvider.persistentIdName}" target="_blank">
-                                                <h:outputText value="#{DataverseUserPage.userAuthProvider.persistentIdUrlPrefix}#{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}"/>
-                                            </h:outputLink>
-                                        </p>
-                                    </div>
-                                </div>
-                                <!-- Affiliation -->
-                                <div class="form-group" jsf:rendered="#{!empty DataverseUserPage.currentUser.affiliation}">
-                                    <label for="affiliation" class="col-sm-3 control-label">
-                                        #{bundle.affiliation}
-                                    </label>
-                                    <div class="col-sm-9">
-                                        <p class="form-control-static">#{DataverseUserPage.currentUser.affiliation}</p>
-                                    </div>
-                                </div>
-                                <!-- Position (not populated for Shibboleth users) -->
-                                <div class="form-group" jsf:rendered="#{!empty DataverseUserPage.currentUser.position}">
-                                    <label for="position" class="col-sm-3 control-label">
-                                        #{bundle['user.position']}
-                                    </label>
-                                    <div class="col-sm-9">
-                                        <p class="form-control-static">#{DataverseUserPage.currentUser.position}</p>
-                                    </div>
-                                </div>
+                            <div class="metadata-container" jsf:rendered="#{!empty DataverseUserPage.currentUser}">
+                                <!-- Shib -->
+                                <p class="help-block" id="userShib" jsf:rendered="#{not DataverseUserPage.accountDetailsEditable}">
+                                    <h:outputText value="#{bundle['user.isShibUser']}" />
+                                    <h:outputText value=" #{bundle['user.helpShibUserMigrateOffShibBeforeLink']} " />
+                                    <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                                    </p:commandLink>
+                                    <h:outputText value=" #{bundle['user.helpShibUserMigrateOffShibAfterLink']}" />
+                                </p>
+                                <!-- OAuth -->
+                                <p class="help-block" id="userOAuth" jsf:rendered="#{DataverseUserPage.userAuthProvider.OAuthProvider}">
+                                    <h:outputFormat value="#{bundle['user.helpOAuthBeforeLink']} ">
+                                        <f:param value="#{DataverseUserPage.userAuthProvider.info.title}"/>
+                                    </h:outputFormat>
+                                    <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                                    </p:commandLink>
+                                    <h:outputText value=" #{bundle['user.helpOAuthAfterLink']}" />
+                                </p>
+                                <table class="metadata">
+                                    <tbody>
+                                        <!-- Username -->
+                                        <tr id="userIdentifier">
+                                            <th scope="row">
+                                                #{bundle['user.username']}
+                                            </th>
+                                            <td>
+                                                #{DataverseUserPage.currentUser.identifier.replaceFirst("@", "")}
+                                            </td>
+                                        </tr>
+                                        <!-- First Name -->
+                                        <tr id="userFirstName">
+                                            <th scope="row">
+                                                #{bundle['user.firstName']}
+                                            </th>
+                                            <td>
+                                                #{DataverseUserPage.currentUser.firstName}
+                                            </td>
+                                        </tr>
+                                        <!-- Last Name -->
+                                        <tr id="userLastName">
+                                            <th scope="row">
+                                                #{bundle['user.lastName']}
+                                            </th>
+                                            <td>
+                                                #{DataverseUserPage.currentUser.lastName}
+                                            </td>
+                                        </tr>
+                                        <!-- Email -->
+                                        <tr id="userEmail">
+                                            <th scope="row">
+                                                #{bundle.email}
+                                            </th>
+                                            <td>
+                                                <p class="form-control-static" style="display:inline-block;">
+                                                    <span class="form-control-static">#{DataverseUserPage.currentUser.email}</span>
+                                                    &#160;
+                                                    <span class="text-danger" jsf:rendered="#{DataverseUserPage.emailNotVerified}">
+                                                        <span class="glyphicon glyphicon-ban-circle"/> #{bundle['confirmEmail.notVerified']}
+                                                    </span>
+                                                    <span class="text-success" jsf:rendered="#{!DataverseUserPage.emailNotVerified}">
+                                                        <span class="glyphicon glyphicon-ok"/> #{bundle['confirmEmail.verified']}
+                                                    </span>
+                                                </p>
+                                                &#160;
+                                                <p:commandLink rendered="#{DataverseUserPage.showVerifyEmailButton()}" styleClass="btn btn-default" 
+                                                                id="verifyEmailButton"
+                                                                action="#{DataverseUserPage.sendConfirmEmail()}"
+                                                                update="@([id$=verifyEmailButton]), :messagePanel"
+                                                                onclick="if (!testHasEmailToken(#{DataverseUserPage.getHasActiveVerificationToken()})) return false;"
+                                                               >
+                                                    <span class="glyphicon glyphicon-ok"></span> #{bundle['confirmEmail.submitRequest']}
+                                                </p:commandLink>
+                                            </td>
+                                        </tr>
+                                        <!-- PersistentId, ORCID iD -->
+                                        <tr id="userPersistentId" jsf:rendered="#{DataverseUserPage.userAuthProvider.displayIdentifier}">
+                                            <th scope="row">
+                                                #{DataverseUserPage.userAuthProvider.persistentIdName}
+                                            </th>
+                                            <td>
+                                                <h:graphicImage value="#{DataverseUserPage.userAuthProvider.logo}" height="16" width="16" alt="#{of:format1(bundle['alt.logo'], DataverseUserPage.userAuthProvider.persistentIdName)}"/>&#160;
+                                                <h:outputLink value="#{DataverseUserPage.userAuthProvider.persistentIdUrlPrefix}#{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}" title="#{DataverseUserPage.userAuthProvider.persistentIdName}" target="_blank">
+                                                    <h:outputText value="#{DataverseUserPage.userAuthProvider.persistentIdUrlPrefix}#{DataverseUserPage.currentUser.authenticatedUserLookup.persistentUserId}"/>
+                                                </h:outputLink>
+                                            </td>
+                                        </tr>
+                                        <!-- Affiliation -->
+                                        <tr id="userAffiliation" jsf:rendered="#{!empty DataverseUserPage.currentUser.affiliation}">
+                                            <th scope="row">
+                                                #{bundle.affiliation}
+                                            </th>
+                                            <td>
+                                                #{DataverseUserPage.currentUser.affiliation}
+                                            </td>
+                                        </tr>
+                                        <!-- Position (not populated for Shibboleth users) -->
+                                        <tr id="userPosition" jsf:rendered="#{!empty DataverseUserPage.currentUser.position}">
+                                            <th scope="row">
+                                                #{bundle['user.position']}
+                                            </th>
+                                            <td>
+                                                #{DataverseUserPage.currentUser.position}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </p:tab>
                         <p:tab id="apiTokenTab" title="#{bundle['apitoken.title']}">
@@ -492,7 +531,7 @@
                                     <f:param value="&lt;/a&gt;"/>
                                 </h:outputFormat>
                             </p>
-                            <div class="metadata-container margin-bottom-half" jsf:rendered="${ApiTokenPage.apiTokenExpiration != ''}">
+                            <div class="metadata-container margin-bottom-half" jsf:rendered="#{ApiTokenPage.apiTokenExpiration != ''}">
                                 <table class="metadata">
                                     <tbody>
                                         <tr>
@@ -517,7 +556,7 @@
                             </div>
                             <div id="apiToken" class="highlight hidden">
                                 <pre>
-                                    <code class="language-html" data-lang="html">${ApiTokenPage.apiToken}</code>
+                                    <code class="language-html" data-lang="html">#{ApiTokenPage.apiToken}</code>
                                 </pre>
                             </div>
                             <!--Script removes "hidden" class from div containing API token to stop javascript browser exploits-->
@@ -533,10 +572,13 @@
                                 //]]>
                             </script>
                             <div class="btn-toolbar" role="toolbar">
+                                <button class="btn btn-default btn-copy" data-clipboard-action="copy" data-clipboard-text="#{ApiTokenPage.apiToken}" type="button" jsf:rendered="#{ApiTokenPage.checkForApiToken() and !ApiTokenPage.tokenIsExpired()}">
+                                    #{bundle['copyClipboard']}
+                                </button>
                                 <button class="btn btn-default" jsf:action="#{ApiTokenPage.generate()}">
                                     #{ApiTokenPage.checkForApiToken() ? bundle['apitoken.regenerateBtn'] : bundle['apitoken.generateBtn']}
                                 </button>
-                                <button class="btn btn-default" jsf:action="#{ApiTokenPage.revoke()}" jsf:rendered="${ApiTokenPage.apiTokenExpiration != ''}">
+                                <button class="btn btn-default" jsf:action="#{ApiTokenPage.revoke()}" jsf:rendered="#{ApiTokenPage.apiTokenExpiration != ''}">
                                     #{bundle['apitoken.revokeBtn']}
                                 </button>
                             </div>
@@ -557,21 +599,25 @@
                             </ui:fragment>
                             <div class="form-horizontal">
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
-                                <!-- Username -->
-                                    <label for="userNameEmail" class="col-sm-3 control-label">
-                                        #{bundle['user.username']} <span class="glyphicon glyphicon-asterisk text-danger"/>
+                                    <!-- Username -->                                   
+                                    <h:outputLabel value="#{bundle['user.username']}" for="userName" class="col-sm-3 control-label">
+                                        <span class="glyphicon glyphicon-asterisk text-danger"/>
                                         <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                               data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.username.illegal.tip']}"></span>
-                                    </label>
+                                    </h:outputLabel> 
+                                                                       
                                     <div class="col-sm-9">
-                                        <p class="help-block">#{bundle['user.username.valid']}</p>
+                                        <div class="help-block">
+                                            <h:outputText value="#{bundle['user.username.valid']}" escape="false">
+                                            </h:outputText>
+                                        </div>
                                     </div>
                                     <div class="col-sm-4 col-sm-offset-3">
                                         <p:inputText id="userName" styleClass="form-control"
-                                                        validator="#{DataverseUserPage.validateUserName}"
-                                                        value="#{DataverseUserPage.username}"
-                                                        disabled="#{DataverseUserPage.editMode != 'CREATE'}"
-                                                        binding="#{DataverseUserPage.usernameField}"/>
+                                                     validator="#{DataverseUserPage.validateUserName}"
+                                                     value="#{DataverseUserPage.username}"
+                                                     disabled="#{DataverseUserPage.editMode != 'CREATE'}"
+                                                     binding="#{DataverseUserPage.usernameField}"/>
                                         <p:message for="userName" display="text" />
                                     </div>
                                 </div>
@@ -589,12 +635,11 @@
                                 </div>
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == DataverseUserPage.changePasswordMode}">
                                 <!-- Password -->
-                                    <label for="inputPassword" class="col-sm-3 control-label">
-                                        <h:outputText value="#{DataverseUserPage.editMode == 'CREATE' ? bundle['user.password'] : bundle['user.newPassword']}" />
-                                        <span class="glyphicon glyphicon-asterisk text-danger"></span>
-                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.passwd.illegal.tip']}"></span>
-                                    </label>
+                                <h:outputLabel value="#{DataverseUserPage.editMode == 'CREATE' ? bundle['user.password'] : bundle['user.newPassword']}"   for="inputPassword"  class="col-sm-3 control-label" >
+                                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.passwd.illegal.tip']}"></span>
+                                </h:outputLabel>      
                                     <div class="col-sm-9">
                                         <div class="help-block">
                                             <h:outputFormat value="#{bundle['user.updatePassword.password']}" escape="false">
@@ -609,23 +654,21 @@
                                 </div>
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == DataverseUserPage.changePasswordMode}">
                                     <!-- Retype Password -->
-                                    <label for="retypePassword" class="col-sm-3 control-label">
-                                        #{bundle['user.rePasswd']} <span class="glyphicon glyphicon-asterisk text-danger"/>
+                                    <h:outputLabel value="#{bundle['user.rePasswd']}" for="retypePassword" class="col-sm-3 control-label"> <span class="glyphicon glyphicon-asterisk text-danger"/>
                                         <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                               data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.rePasswd.tip']}"></span>
-                                    </label>
+                                    </h:outputLabel>
                                     <div class="col-sm-4">
                                         <p:password id="retypePassword" label="#{bundle['user.rePasswd']}" styleClass="form-control" value="#{DataverseUserPage.inputPassword}" autocomplete="off"/><!-- browsers will in general not respect autocomplete="foo", but scanners will still flag it as a potential problem -->
                                         <p:message for="retypePassword" display="text" />
                                     </div>
                                 </div>
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
-                                <!-- First Name -->
-                                    <label for="firstName" class="col-sm-3 control-label">
-                                        #{bundle['user.firstName']} <span class="glyphicon glyphicon-asterisk text-danger"/>
-                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.firstName.tip']}"></span>
-                                    </label>
+                                <!-- First Name -->                                       
+                                <h:outputLabel value="#{bundle['user.firstName']}" for="firstName" class="col-sm-3 control-label" > <span class="glyphicon glyphicon-asterisk text-danger"/>
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.firstName.tip']}"></span>
+                                </h:outputLabel>
                                     <div class="col-sm-4">
                                         <p:inputText id="firstName" styleClass="form-control" value="#{DataverseUserPage.userDisplayInfo.firstName}" />
                                         <p:message for="firstName" display="text" />
@@ -633,11 +676,10 @@
                                 </div>
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                     <!-- Last Name -->
-                                    <label for="lastName" class="col-sm-3 control-label">
-                                        #{bundle['user.lastName']} <span class="glyphicon glyphicon-asterisk text-danger"/>
+                                    <h:outputLabel value="#{bundle['user.lastName']}" for="lastName" class="col-sm-3 control-label" >  <span class="glyphicon glyphicon-asterisk text-danger"/>
                                         <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                               data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.lastName.tip']}"></span>
-                                    </label>
+                                    </h:outputLabel>
                                     <div class="col-sm-4">
                                         <p:inputText id="lastName" styleClass="form-control" value="#{DataverseUserPage.userDisplayInfo.lastName}" />
                                         <p:message for="lastName" display="text" />
@@ -645,11 +687,10 @@
                                 </div>
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                     <!-- Email -->
-                                    <label for="email" class="col-sm-3 control-label">
-                                        #{bundle.email} <span class="glyphicon glyphicon-asterisk text-danger"/>
+                                    <h:outputLabel value="#{bundle['email']}" for="email" class="col-sm-3 control-label">   <span class="glyphicon glyphicon-asterisk text-danger"/>
                                         <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                               data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.email.tip']}"></span>
-                                    </label>
+                                    </h:outputLabel>
                                     <div class="col-sm-4">
                                         <p:inputText id="email" styleClass="form-control"
                                                      validator="#{DataverseUserPage.validateUserEmail}"
@@ -660,11 +701,10 @@
                                 <!--FIXME: refactor to remove need for EDIT? userAuthProvider is null on CREATE-->
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'EDIT' and DataverseUserPage.userAuthProvider.displayIdentifier}">
                                     <!-- ORCID iD, for example -->
-                                    <label for="userPersistentId" class="col-sm-3 control-label">
-                                        #{DataverseUserPage.userAuthProvider.persistentIdName}
+                                    <h:outputLabel value="#{DataverseUserPage.userAuthProvider.persistentIdName}" for="userPersistentId" class="col-sm-3 control-label">                     
                                         <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                               data-toggle="tooltip" data-placement="auto right" data-original-title="#{DataverseUserPage.userAuthProvider.persistentIdDescription}"></span>
-                                    </label>
+                                    </h:outputLabel>     
                                     <div class="col-sm-4">
                                         <p class="form-control-static">
                                             <h:graphicImage value="#{DataverseUserPage.userAuthProvider.logo}" height="16" width="16" alt="#{of:format1(bundle['alt.logo'], DataverseUserPage.userAuthProvider.persistentIdName)}"/>&#160;
@@ -676,11 +716,10 @@
                                 </div>
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                     <!-- Affiliation -->
-                                    <label for="affiliation" class="col-sm-3 control-label">
-                                        #{bundle.affiliation}
+                                    <h:outputLabel value="#{bundle.affiliation}" for="affiliation" class="col-sm-3 control-label">
                                         <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                               data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.affiliation.tip']}"></span>
-                                    </label>
+                                    </h:outputLabel>
                                     <div class="col-sm-4">
                                         <p:inputText id="affiliation" styleClass="form-control" value="#{DataverseUserPage.userDisplayInfo.affiliation}" />
                                         <p:message for="affiliation" display="text" />
@@ -688,11 +727,10 @@
                                 </div>
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                 <!-- Position -->
-                                    <label for="position" class="col-sm-3 control-label">
-                                        #{bundle['user.position']}
-                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.position.tip']}"></span>
-                                    </label>
+                                <h:outputLabel value="#{bundle.position}" for="position" class="col-sm-3 control-label">
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.position.tip']}"></span>
+                                </h:outputLabel>
                                     <div class="col-sm-4">
                                         <p:inputText id="position" styleClass="form-control" value="#{DataverseUserPage.userDisplayInfo.position}" />
                                         <p:message for="position" display="text" />
@@ -716,7 +754,32 @@
                             </div>
                         </p:tab>
                     </p:tabView>
+                        <p:dialog id="tokenExists" styleClass="smallPopUp"
+                                  header="#{bundle['account.emailvalidation.header']}" widgetVar="tokenExists" modal="true">
+                            
+                             <h:outputFormat value="#{bundle['account.emailvalidation.token.exists']}" escape="false">
+                                <o:param>#{DataverseUserPage.currentUser.email}</o:param>
+                            </h:outputFormat>
+                            
+                            
+                            <div class="button-block">
+                                <button class="btn btn-default" onclick="PF('tokenExists').hide();" type="button">
+                                    #{bundle.close}
+                                </button>
+                            </div>
+                        </p:dialog> 
                 </h:form>
+                <script>
+                    //<![CDATA[        
+                        function testHasEmailToken(hasActiveVerificationToken) {
+                            if (hasActiveVerificationToken) {                               
+                                PF("tokenExists").show();
+                            } else {
+                                return true;
+                            }                        
+                        }
+                    //]]>
+                </script>
             </ui:define>
         </ui:composition>
     </h:body>

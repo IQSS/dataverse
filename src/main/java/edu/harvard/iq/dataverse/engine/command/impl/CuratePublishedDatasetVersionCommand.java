@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.DatasetFieldUtil;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
@@ -59,9 +60,9 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         validateOrDie(updateVersion, isValidateLenient());
 
         // final DatasetVersion editVersion = getDataset().getEditVersion();
-        tidyUpFields(updateVersion);
+        DatasetFieldUtil.tidyUpFields(updateVersion.getDatasetFields(), true);
 
-        // Merge the new version into out JPA context
+        // Merge the new version into our JPA context
         ctxt.em().merge(updateVersion);
 
 
@@ -71,7 +72,8 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         updateVersion.setTermsOfUseAndAccess(newTerms);
         //Put old terms on version that will be deleted....
         getDataset().getEditVersion().setTermsOfUseAndAccess(oldTerms);
-        
+        //Also set the fileaccessrequest boolean on the dataset to match the new terms
+        getDataset().setFileAccessRequest(updateVersion.getTermsOfUseAndAccess().isFileAccessRequest());
         List<WorkflowComment> newComments = getDataset().getEditVersion().getWorkflowComments();
         if (newComments!=null && newComments.size() >0) {
             for(WorkflowComment wfc: newComments) {
@@ -162,7 +164,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         // Update modification time on the published version and the dataset
         updateVersion.setLastUpdateTime(getTimestamp());
         tempDataset.setModificationTime(getTimestamp());
-
+        ctxt.em().merge(updateVersion);
         Dataset savedDataset = ctxt.em().merge(tempDataset);
 
         // Flush before calling DeleteDatasetVersion which calls
@@ -184,7 +186,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         
         //And the exported metadata files
         try {
-            ExportService instance = ExportService.getInstance(ctxt.settings());
+            ExportService instance = ExportService.getInstance();
             instance.exportAllFormats(getDataset());
         } catch (ExportException ex) {
             // Just like with indexing, a failure to export is not a fatal condition.

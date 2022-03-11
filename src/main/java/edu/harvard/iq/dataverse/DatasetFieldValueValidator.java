@@ -6,19 +6,17 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.validator.routines.UrlValidator;
 
 /**
  *
@@ -167,17 +165,20 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
         // Note, length validation for FieldType.TEXT was removed to accommodate migrated data that is greater than 255 chars.
 
         if (fieldType.equals(FieldType.URL) && !lengthOnly) {
+            
+            String[] schemes = {"http","https", "ftp"};
+            UrlValidator urlValidator = new UrlValidator(schemes);
+            
             try {
-                URL url = new URL(value.getValue());
-            } catch (MalformedURLException e) {
-                try {
+                if (urlValidator.isValid(value.getValue())) {
+                } else {
                     context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + value.getValue() + "  is not a valid URL.").addConstraintViolation();
-                } catch (NullPointerException npe) {
-
+                    return false;
                 }
-
+            } catch (NullPointerException npe) {
                 return false;
             }
+            
         }
 
         if (fieldType.equals(FieldType.EMAIL) && !lengthOnly) {

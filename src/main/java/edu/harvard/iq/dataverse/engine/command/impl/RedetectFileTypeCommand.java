@@ -89,7 +89,7 @@ public class RedetectFileTypeCommand extends AbstractCommand<DataFile> {
                 logger.info("Exception while reindexing files during file type redetection: " + ex.getLocalizedMessage());
             }
             try {
-                ExportService instance = ExportService.getInstance(ctxt.settings());
+                ExportService instance = ExportService.getInstance();
                 instance.exportAllFormats(dataset);
             } catch (ExportException ex) {
                 // Just like with indexing, a failure to export is not a fatal condition.

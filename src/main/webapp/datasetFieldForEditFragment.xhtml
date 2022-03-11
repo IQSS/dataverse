@@ -1,17 +1,17 @@
 <ui:composition
-    xmlns:h="http://java.sun.com/jsf/html"
-    xmlns:f="http://java.sun.com/jsf/core"
-    xmlns:ui="http://java.sun.com/jsf/facelets"
-    xmlns:c="http://java.sun.com/jsp/jstl/core"
-    xmlns:p="http://primefaces.org/ui"
-    xmlns:pt="http://java.sun.com/jsf/passthrough"
-    xmlns:jsf="http://xmlns.jcp.org/jsf">
+        xmlns:h="http://java.sun.com/jsf/html"
+        xmlns:f="http://java.sun.com/jsf/core"
+        xmlns:ui="http://java.sun.com/jsf/facelets"
+        xmlns:c="http://java.sun.com/jsp/jstl/core"
+        xmlns:p="http://primefaces.org/ui"
+        xmlns:pt="http://java.sun.com/jsf/passthrough"
+        xmlns:jsf="http://xmlns.jcp.org/jsf">
 
     <ui:remove>
-    <!-- input text start UPDATE: UI:REMOVE applied due to duplicate ID errors, left code as reference incase test scripts complain -->
-    <span id="pre-input-#{dsf.datasetFieldType.name}" class="pre-input-tag"/></ui:remove>
-    
-    <p:inputText value="#{dsfv.valueForEdit}" id="inputText" pt:aria-required="#{dsf.required}"
+        <!-- input text start UPDATE: UI:REMOVE applied due to duplicate ID errors, left code as reference incase test scripts complain -->
+        <span id="pre-input-#{dsf.datasetFieldType.name}" class="pre-input-tag"/></ui:remove>
+    <ui:fragment rendered="#{cvoc==null}">
+        <p:inputText value="#{dsfv.valueForEdit}" id="inputText" pt:aria-required="#{dsf.required}"  pt:aria-label="#{dsfvIndex!=0 ? bundle['dataset.additionalEntry']:''}"
                  styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"
                  rendered="#{!dsfv.datasetField.datasetFieldType.controlledVocabulary
                              and (dsfv.datasetField.datasetFieldType.fieldType == 'TEXT'
@@ -19,14 +19,49 @@
                              or dsfv.datasetField.datasetFieldType.fieldType == 'FLOAT'
                              or dsfv.datasetField.datasetFieldType.fieldType == 'URL'
                              or dsfv.datasetField.datasetFieldType.fieldType == 'DATE'
-                             or dsfv.datasetField.datasetFieldType.fieldType == 'EMAIL')}"/>
-    <p:watermark for="inputText" value="#{dsfv.datasetField.datasetFieldType.localeWatermark}"></p:watermark>
-
-    <p:inputTextarea value="#{dsfv.valueForEdit}" id="description" pt:aria-required="#{dsf.required}"
+                             or dsfv.datasetField.datasetFieldType.fieldType == 'EMAIL')}">
+        </p:inputText>
+        <p:watermark for="inputText" value="#{dsfv.datasetField.datasetFieldType.localeWatermark}"></p:watermark>
+    </ui:fragment>
+    <ui:fragment rendered="#{cvoc!=null and cvoc.getString('term-uri-field').equals(dsfv.datasetField.datasetFieldType.name)}">
+        <p:inputText value="#{dsfv.valueForEdit}" id="cvocInputText" pt:aria-required="#{dsf.required}" pt:aria-label="#{dsfvIndex!=0 ? bundle['dataset.additionalEntry']:''}"
+                 styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"
+                 rendered="#{!dsfv.datasetField.datasetFieldType.controlledVocabulary
+                             and (dsfv.datasetField.datasetFieldType.fieldType == 'TEXT'
+                             or dsfv.datasetField.datasetFieldType.fieldType == 'INT'
+                             or dsfv.datasetField.datasetFieldType.fieldType == 'FLOAT'
+                             or dsfv.datasetField.datasetFieldType.fieldType == 'URL'
+                             or dsfv.datasetField.datasetFieldType.fieldType == 'DATE'
+                             or dsfv.datasetField.datasetFieldType.fieldType == 'EMAIL')}">
+            <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvoc.getString('languages'))}"/>
+            <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvoc.getString('cvoc-url','')}"/>
+            <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvoc.getString('protocol','')}"/>
+            <f:passThroughAttribute name="data-cvoc-filter" value="#{cvoc.getString('term-parent-uri','')}"/>
+            <f:passThroughAttribute name="data-cvoc-vocabs" value="#{cvoc.get('vocabs').toString()}"/>
+            <f:passThroughAttribute name="data-cvoc-allowfreetext" value="#{cvoc.getBoolean('allow-free-text', false)}"/>
+            <f:passThroughAttribute name="data-cvoc-parent" value="#{cvoc.getString('field-name','')}"/>
+            <f:passThroughAttribute name="data-cvoc-managedfields" value="#{cvoc.get('managed-fields').toString()}"/>
+        </p:inputText>
+    </ui:fragment>
+    <ui:fragment rendered="#{cvoc!=null and !cvoc.getString('term-uri-field').equals(dsfv.datasetField.datasetFieldType.name)}">
+        <p:inputText value="#{dsfv.valueForEdit}" id="cvocInputText2" pt:aria-required="#{dsf.required}" pt:aria-label="#{dsfvIndex!=0 ? bundle['dataset.additionalEntry']:''}"
+                 styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"
+                 rendered="#{!dsfv.datasetField.datasetFieldType.controlledVocabulary
+                             and (dsfv.datasetField.datasetFieldType.fieldType == 'TEXT'
+                             or dsfv.datasetField.datasetFieldType.fieldType == 'INT'
+                             or dsfv.datasetField.datasetFieldType.fieldType == 'FLOAT'
+                             or dsfv.datasetField.datasetFieldType.fieldType == 'URL'
+                             or dsfv.datasetField.datasetFieldType.fieldType == 'DATE'
+                             or dsfv.datasetField.datasetFieldType.fieldType == 'EMAIL')}">
+            <f:passThroughAttribute name="data-cvoc-managed-field" value="#{dsfv.datasetField.datasetFieldType.name}"/>
+        </p:inputText>
+    </ui:fragment>
+    
+    <p:inputTextarea value="#{dsfv.valueForEdit}" id="description" pt:aria-required="#{dsf.required}" pt:aria-label="#{dsfvIndex!=0 ? bundle['dataset.additionalEntry']:''}"
                      rows="5" cols="60" styleClass="form-control"
                      rendered="#{dsfv.datasetField.datasetFieldType.fieldType == 'TEXTBOX'}"/>
     <p:watermark for="description" value="#{dsfv.datasetField.datasetFieldType.localeWatermark}"></p:watermark>
-    
+
     <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{dsfvIndex eq 0 and !empty dsfv.datasetField.validationMessage}">
         <span class="ui-message-error-detail">#{dsfv.datasetField.validationMessage}</span>
     </div>

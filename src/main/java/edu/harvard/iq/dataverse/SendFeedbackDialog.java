@@ -130,7 +130,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
 
     public String getMessageTo() {
         if (recipient == null) {
-            return BrandingUtil.getSupportTeamName(systemAddress, dataverseService.findRootDataverse().getName());
+            return BrandingUtil.getSupportTeamName(systemAddress);
         } else if (recipient.isInstanceofDataverse()) {
             return ((Dataverse) recipient).getDisplayName() + " " + BundleUtil.getStringFromBundle("contact.contact");
         } else {
@@ -140,7 +140,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
 
     public String getFormHeader() {
         if (recipient == null) {
-            return BrandingUtil.getContactHeader(systemAddress, dataverseService.findRootDataverse().getName());
+            return BrandingUtil.getContactHeader(systemAddress);
         } else if (recipient.isInstanceofDataverse()) {
             return BundleUtil.getStringFromBundle("contact.dataverse.header");
         } else {
@@ -198,10 +198,8 @@ public class SendFeedbackDialog implements java.io.Serializable {
     }
 
     public String sendMessage() {
-        // FIXME: move dataverseService.findRootDataverse() to init
-        String rootDataverseName = dataverseService.findRootDataverse().getName();
-        String installationBrandName = BrandingUtil.getInstallationBrandName(rootDataverseName);
-        String supportTeamName = BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName);
+        String installationBrandName = BrandingUtil.getInstallationBrandName();
+        String supportTeamName = BrandingUtil.getSupportTeamName(systemAddress);
         List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(recipient, dataverseSession, messageSubject, userMessage, systemAddress, userEmail, systemConfig.getDataverseSiteUrl(), installationBrandName, supportTeamName);
         if (feedbacks.isEmpty()) {
             logger.warning("No feedback has been sent!");

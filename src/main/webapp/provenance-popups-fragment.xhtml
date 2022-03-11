@@ -94,9 +94,7 @@
                             forceSelection="true" 
                             converter="provEntityFileDataConverter"
                             styleClass="DropdownPopup" panelStyleClass="DropdownPopupPanel"
-                            onkeypress="if (event.keyCode == 13) {
-                                return false;
-                            }">
+                            onkeypress="if (event.keyCode == 13) {return false;}">
                             <p:column headerText="#{bundle['file.editProvenanceDialog.bundleEntity.nameHeader']}">
                                 <h:outputText value="#{provEntityFileData.fileName}" />
                             </p:column>
@@ -107,9 +105,6 @@
                                 <h:outputText value="#{provEntityFileData.entityName}" />
                             </p:column>
                         </p:autoComplete>
-                        <script>
-                            handle_dropdown_popup_scroll();
-                        </script>
                         <p:message for="provJsonNameDropdown" display="text"/>
                     </div>
                 </div>

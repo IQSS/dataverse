@@ -15,43 +15,41 @@ When logged in, the account name is a dropdown menu, linking the user to account
 
 .. raw:: html
 
-	<div class="panel panel-default code-example">
-	  <div class="panel-body">
-	  	
-  		<nav id="navbarFixed" class="navbar navbar-default"><!-- navbar-fixed-top -->
-            <div class="container" style="width:auto !important;">
-                <div class="navbar-header">
-                    <a href="#" onclick="return false;">
-                        <span class="navbar-brand"><i id="icon-dataverse" class="icon-dataverse"></i> Dataverse</span>
-                    </a>
+    <div class="panel panel-default code-example">
+        <div class="panel-body">
+            <nav id="navbarFixed" class="navbar navbar-default"><!-- navbar-fixed-top -->
+                <div class="container" style="width:auto !important;">
+                    <div class="navbar-header">
+                        <a href="#" onclick="return false;">
+                            <span class="navbar-brand"><i id="icon-dataverse" class="icon-dataverse"></i> Dataverse</span>
+                        </a>
+                    </div>
+                    <div class="collapse navbar-collapse" id="topNavBar">
+                        <ul class="nav navbar-nav navbar-right">
+                            <li class="dropdown">
+                                <span id="dataverseSupportLink" class="dropdown-toggle" data-toggle="dropdown">
+                                    User Name <b class="caret"></b>
+                                </span>
+                                <ul class="dropdown-menu">
+                                    <li><a href="#" onclick="return false;">My Data</a>
+                                    </li>
+                                    <li><a href="#" onclick="return false;">Notifications</a>
+                                    </li>
+                                    <li><a href="#" onclick="return false;">Account Information</a>
+                                    </li>
+                                    <li><a href="#" onclick="return false;">API Token</a>
+                                    </li>
+                                    <li class="divider"></li>
+                                    <li class="logout"><a href="#" onclick="return false;">Log Out</a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
-                <div class="collapse navbar-collapse" id="topNavBar">
-                    <ul class="nav navbar-nav navbar-right">
-                        <li class="dropdown">
-                            <span id="dataverseSupportLink" class="dropdown-toggle" data-toggle="dropdown">
-                                User Name <b class="caret"></b>
-                            </span>
-                            <ul class="dropdown-menu">
-                                <li><a href="#" onclick="return false;">My Data</a>
-                                </li>
-                                <li><a href="#" onclick="return false;">Notifications</a>
-                                </li>
-                                <li><a href="#" onclick="return false;">Account Information</a>
-                                </li>
-                                <li><a href="#" onclick="return false;">API Token</a>
-                                </li>
-                                <li class="divider"></li>
-                                <li class="logout"><a href="#" onclick="return false;">Log Out</a>
-                                </li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-  		
-	  </div>
-	</div>
+            </nav>
+        </div>
+    </div>
 
 .. code-block:: html
 
@@ -76,32 +74,30 @@ When logged in, the account name is a dropdown menu, linking the user to account
 Breadcrumbs
 ===========
 
-The breadcrumbs are displayed under the header, and provide a trail of links for users to navigate the hierarchy of containing objects, from file to dataset to dataverse. It utilizes a JSF `repeat component <http://docs.oracle.com/javaee/6/javaserverfaces/2.0/docs/pdldocs/facelets/ui/repeat.html>`_ to iterate through the breadcrumbs.
+The breadcrumbs are displayed under the header, and provide a trail of links for users to navigate the hierarchy of containing objects, from file to dataset to Dataverse collection. It utilizes a JSF `repeat component <http://docs.oracle.com/javaee/6/javaserverfaces/2.0/docs/pdldocs/facelets/ui/repeat.html>`_ to iterate through the breadcrumbs.
 
 .. raw:: html
 
-	<div class="panel panel-default code-example">
-	  <div class="panel-body">
-	  	
-  		<div id="breadcrumbNavBlock" class="container">
-            <div class="breadcrumbBlock">
-                <a id="breadcrumbLnk0" href="#" onclick="return false;">Name of a Dataverse</a>
+    <div class="panel panel-default code-example">
+	<div class="panel-body">
+            <div id="breadcrumbNavBlock" class="container" style="width:auto !important;">
+                <div class="breadcrumbBlock">
+                    <a id="breadcrumbLnk0" href="#" onclick="return false;">Name of a Dataverse collection</a>
+                </div>
+                <span class="breadcrumbCarrot"> &gt; </span>
+                <div class="breadcrumbBlock">
+                    <a id="breadcrumbLnk1" href="#" onclick="return false;">Name of Another Dataverse collection</a>
+                </div>
+                <span class="breadcrumbCarrot"> &gt; </span>
             </div>
-            <span class="breadcrumbCarrot"> &gt; </span>
-            <div class="breadcrumbBlock">
-                <a id="breadcrumbLnk1" href="#" onclick="return false;">Name of Another Dataverse</a>
-            </div>
-            <span class="breadcrumbCarrot"> &gt; </span>
-        </div>
-  		
-	  </div>
 	</div>
+    </div>
 
 .. code-block:: html
 
     <div id="breadcrumbNavBlock" class="container" jsf:rendered="#{true}">
       <ui:repeat value="#{page.breadcrumbs}" var="breadcrumb" varStatus="status">
-        <h:outputText value=" > " styleClass="breadcrumbCarrot" rendered="#{true}"/>
+        <h:outputText value=" &gt; " styleClass="breadcrumbCarrot" rendered="#{true}"/>
         <div class="breadcrumbBlock">
           ...
         </div>
@@ -195,76 +191,73 @@ Forms fulfill various functions across the site, but we try to style them consis
 
 .. raw:: html
 
-  <div class="panel panel-default code-example">
-    <div class="panel-body">
-
-        <div class="form-horizontal">
-            <div class="form-group">
-                <label for="userNameEmail" class="col-sm-3 control-label">
-                    Username 
-                </label>
-                <div class="col-sm-4">
-                    <input name="userName" type="text" value="" tabindex="1" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all ui-state-default form-control" role="textbox" aria-disabled="false" aria-readonly="false">
+    <div class="panel panel-default code-example">
+        <div class="panel-body">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label for="userNameEmail" class="col-sm-3 control-label">
+                        Username 
+                    </label>
+                    <div class="col-sm-4">
+                        <input name="userName" type="text" value="" tabindex="1" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all ui-state-default form-control" role="textbox" aria-disabled="false" aria-readonly="false">
+                    </div>
                 </div>
-            </div>
-            <div class="form-group">
-                <label for="email" class="col-sm-3 control-label">
-                    Email 
-                </label>
-                <div class="col-sm-4">
-                    <input name="email" type="text" value="" tabindex="6" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all form-control" role="textbox" aria-disabled="false" aria-readonly="false">
+                <div class="form-group">
+                    <label for="email" class="col-sm-3 control-label">
+                        Email 
+                    </label>
+                    <div class="col-sm-4">
+                        <input name="email" type="text" value="" tabindex="6" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all form-control" role="textbox" aria-disabled="false" aria-readonly="false">
+                    </div>
                 </div>
             </div>
         </div>
-
     </div>
-  </div>
 
 .. code-block:: html
 
-  <div class="form-horizontal">
-    <div class="form-group">
-      <label for="userNameEmail" class="col-sm-3 control-label">
-        #{bundle['user.username']} 
-      </label>
-      <div class="col-sm-4">
-        <p:inputText id="userName" styleClass="form-control"></p>
+    <div class="form-horizontal">
+      <div class="form-group">
+        <label for="userNameEmail" class="col-sm-3 control-label">
+          #{bundle['user.username']} 
+        </label>
+        <div class="col-sm-4">
+          <p:inputText id="userName" styleClass="form-control"></p>
+        </div>
       </div>
     </div>
-  </div>
 
 Here are additional form elements that are common across many pages, including required asterisks, icon tooltips, placeholder text, input info message with popover link, and validation error message.
 
 .. raw:: html
 
-  <div class="panel panel-default code-example">
-    <div class="panel-body">
-
-      <div class="form-group form-col-container col-sm-9 edit-compound-field">
-          <div class="form-col-container col-sm-12">
-              <p class="help-block">
-                  This field supports only certain <span class="text-info popoverHTML">HTML tags</span>.
-              </p>
-              <label class="control-label" for="metadata_dsDescriptionValue">
-                  Text <span class="glyphicon glyphicon-asterisk text-danger"></span>
-                  <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto right" data-original-title="A summary describing the purpose, nature, and scope of the Dataset."></span>
-              </label>
-              <div>
-                  <textarea id="datasetForm:description" name="datasetForm:description" cols="60" rows="5" tabindex="1" maxlength="2147483647" class="ui-inputfield ui-inputtextarea ui-widget ui-state-default ui-corner-all form-control ui-inputtextarea-resizable" role="textbox" aria-disabled="false" aria-readonly="false" aria-multiline="true" data-autosize-on="true" placeholder="" style="overflow: hidden; word-wrap: break-word; height: 114px;"></textarea>
-                  
-                  <div aria-live="polite" class="ui-message ui-message-error ui-widget ui-corner-all">
-                      <span class="ui-message-error-detail">Description Text is required.</span>
-                  </div>
-              </div>
-          </div>
-          <div class="form-col-container col-sm-6">
-               <label class="control-label" for="metadata_dsDescriptionDate">
+    <div class="panel panel-default code-example">
+        <div class="panel-body">
+            <div class="form-group form-col-container col-sm-9 edit-compound-field">
+                <div class="form-col-container col-sm-12">
+                    <p class="help-block">
+                        This field supports only certain <span class="text-info popoverHTML">HTML tags</span>.
+                    </p>
+                    <label class="control-label" for="metadata_dsDescriptionValue">
+                        Text <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                        <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto right" data-original-title="A summary describing the purpose, nature, and scope of the Dataset."></span>
+                    </label>
+                    <div>
+                        <textarea id="datasetForm:description" name="datasetForm:description" cols="60" rows="5" tabindex="1" maxlength="2147483647" class="ui-inputfield ui-inputtextarea ui-widget ui-state-default ui-corner-all form-control ui-inputtextarea-resizable" role="textbox" aria-disabled="false" aria-readonly="false" aria-multiline="true" data-autosize-on="true" placeholder="" style="overflow: hidden; word-wrap: break-word; height: 114px;"></textarea>
+                        <div aria-live="polite" class="ui-message ui-message-error ui-widget ui-corner-all">
+                            <span class="ui-message-error-detail">Description Text is required.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-col-container col-sm-6">
+                <label class="control-label" for="metadata_dsDescriptionDate">
                    Date
                    <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto right" data-original-title="In cases where a Dataset contains more than one description (for example, one might be supplied by the data producer and another prepared by the data repository where the data are deposited), the date attribute is used to distinguish between the two descriptions. The date attribute follows the ISO convention of YYYY-MM-DD."></span>
-              </label>
-              <div>
-                <input id="datasetForm:inputText" name="datasetForm:inputText" type="text" tabindex="1" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all form-control " role="textbox" aria-disabled="false" aria-readonly="false" placeholder="YYYY-MM-DD">
-              </div>
+                </label>
+                <div>
+                    <input id="datasetForm:inputText" name="datasetForm:inputText" type="text" tabindex="1" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all form-control " role="textbox" aria-disabled="false" aria-readonly="false" placeholder="YYYY-MM-DD">
+                </div>
             </div>
         </div>
     </div>
@@ -307,7 +300,6 @@ For action buttons on a page, we include an icon and text label.
 
 	<div class="panel panel-default code-example">
 	  <div class="panel-body">
-	  	
 	    <div class="btn-group">
                 <button type="button" id="editDataSet" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
                     <span class="glyphicon glyphicon-pencil"></span> Edit <span class="caret"></span>
@@ -345,7 +337,6 @@ For action buttons on a page, we include an icon and text label.
                     </li>
                 </ul>
             </div>
-
 	  </div>
 	</div>
 
@@ -385,7 +376,6 @@ The Bootstrap theme provides a ``.btn-primary`` style class to highlight the pri
 
 	<div class="panel panel-default code-example">
 	  <div class="panel-body">
-	  	
             <div class="col-xs-4">
                 <div id="actionButtonBlock">
                     <div class="btn-group btn-group-justified">
@@ -471,7 +461,6 @@ The Bootstrap theme provides a ``.btn-primary`` style class to highlight the pri
                     </div>
                 </div>
             </div>
-
 	  </div>
 	</div>
 
@@ -580,6 +569,9 @@ Another variation of icon-only buttons uses the ``.btn-link`` style class from B
 	<div class="panel panel-default code-example">
 	  <div class="panel-body">
             <div class="btn-group" role="group" aria-label="File Actions">
+                <a href="#" onclick="return false;" class="ui-commandlink ui-widget btn-preview btn btn-link bootstrap-button-tooltip" aria-label="Preview" data-original-title="Preview">
+                    <span class="glyphicon glyphicon-eye-open"></span><span class="sr-only">Preview</span>
+                </a>
                 <a href="#" onclick="return false;" class="ui-commandlink ui-widget btn-download btn btn-link bootstrap-button-tooltip" aria-label="Download" data-original-title="Download">
                     <span class="glyphicon glyphicon-download-alt"></span><span class="sr-only">Download</span>
                 </a>
@@ -595,7 +587,7 @@ Another variation of icon-only buttons uses the ``.btn-link`` style class from B
                         </li>
                         <li>
                             <a href="#" rel="noopener" class="ui-commandlink ui-widget" onclick="return false;">
-                                WorldMap
+                                Data Explorer
                             </a>
                         </li>
                     </ul>
@@ -624,6 +616,14 @@ Another variation of icon-only buttons uses the ``.btn-link`` style class from B
 .. code-block:: html
 
     <div class="btn-group" role="group" aria-label="#{bundle['file.actionsBlock']}">
+
+        <ui:fragment rendered="#{true}">
+            <a class="btn-preview btn btn-link bootstrap-button-tooltip" title="#{bundle.preview}"
+                href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(...)}">
+                <span class="glyphicon glyphicon-eye-open"/><span class="sr-only">#{bundle.preview}</span>
+            </a>
+        </ui:fragment>
+
         <p:commandLink rendered="#{true}" styleClass="btn-download btn btn-link bootstrap-button-tooltip" 
                        title="#{bundle.download}"
                        disabled="#{locked ? 'disabled' : ''}" 
@@ -816,7 +816,7 @@ Style classes can be added to ``p``, ``div``, ``span`` and other elements to add
     <div class="panel-body">
 
       <p class="help-block">
-        <span class="text-muted">Select dataverses to feature on the homepage of this dataverse.</span>
+        <span class="text-muted">Select Dataverse collections to feature on the homepage of this Dataverse collection.</span>
       </p>
 
       <p class="help-block">
@@ -824,7 +824,7 @@ Style classes can be added to ``p``, ``div``, ``span`` and other elements to add
       </p>
 
       <p class="help-block">
-        <span class="glyphicon glyphicon-asterisk text-info"></span> <span class="text-info">Permissions with an asterisk icon indicate actions that can be performed by users not logged into Dataverse.</span>
+        <span class="glyphicon glyphicon-asterisk text-info"></span> <span class="text-info">Permissions with an asterisk icon indicate actions that can be performed by users not logged into the Dataverse installation.</span>
       </p>
 
       <p class="help-block">

@@ -46,8 +46,7 @@ if (exists($ENV{'MY_POD_NAME'}))
 my $jq_exec_path = "";
 my $psql_exec_path = "";
 my $cwd;
-my $WARFILE_LOCATION = "dataverse.war"; 
-my $REFERENCE_DATA_SQL = "../database/reference_data.sql";
+my $WARFILE_LOCATION = "dataverse.war";
 
 
 my @CONFIG_VARIABLES;
@@ -317,23 +316,6 @@ unless ($postgresonly)
 # 1b. check and remember the working dir:
     chomp( $cwd = `pwd` );
 
-# 1c. check if the reference data SQL file is there:
-
-    $REFERENCE_DATA_SQL = "../database/reference_data.sql";
-
-    unless ( -f $REFERENCE_DATA_SQL ) {
-	# if it's not in ../database, then we're probably running out of the 
-	# unzipped installer bundle, so it should be right here in the current directory:
-	$REFERENCE_DATA_SQL = "reference_data.sql";
-    }
-
-    unless ( -f $REFERENCE_DATA_SQL ) {
-	print "\nWARNING: Can't find .sql data template!\n";
-	print "(are you running the installer in the right directory?)\n";
-	
-	exit 0;
-    }
-
 # 1d. jq executable: 
 
     my $sys_path = $ENV{'PATH'};
@@ -562,15 +544,6 @@ unless($pod_name eq "start-glassfish" || $pod_name eq "dataverse-glassfish-0" ||
 my $glassfish_dir = $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'};
 
 my $done = &setup_appserver();
-
-# 7. POPULATE THE DATABASE WITH REFERENCE DATA
-# TODO: move this further down
-# (in this step some pre-supplied content is inserted into the database that we have just created;
-# it is not *necessary* for the application to run in the very basic mode; but some features - certain 
-# types of metadata imports, for example - will be unavailable if it's not done. 
-
-&import_reference_data();
-
 
 # Check if the App is running: 
 
@@ -866,19 +839,6 @@ sub setup_appserver {
 # be run with the 64 bit flag set explicitly (at least that was the case
 # with the MacOS glassfish build...). Verify, and if still the case,
 # add a check.
-
-    print "\nInstalling the PostgresQL driver for Payara5... ";
-#    system( "/bin/cp", "pgdriver/" . $postgres_jdbc, $glassfish_dir . "/glassfish/lib" );
-    my $pgdriver_success = copy("pgdriver/" . $postgres_jdbc, $glassfish_dir . "/glassfish/lib" );
-
-    unless ($pgdriver_success) 
-    {
-	print "\n*********************\n";
-	print "ERROR! Failed to copy the postgres driver into " . $glassfish_dir . "/glassfish/lib - check the directory permissions!\n";
-	exit 1;
-    }
-
-    print "done!\n";
 
     print "\n*********************\n";
     print "PLEASE NOTE, SOME OF THE ASADMIN COMMANDS ARE GOING TO FAIL,\n";
@@ -1510,48 +1470,6 @@ sub setup_postgres {
 	print STDERR "running on " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . ", as user " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . ".\n\n";
 	print STDERR "Aborting the installation (sorry!)\n";
 	exit 1; 
-    }
-}
-
-sub import_reference_data {
-    print "\npopulating the database with reference data:\n\n";
-
-    # (we have already verified that the referenceData.sql file exists)
-
-    my $psql_command = $psql_exec_path . "/psql -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'}
-        . " -p " . $CONFIG_DEFAULTS{'POSTGRES_PORT'}
-        . " -U " . $CONFIG_DEFAULTS{'POSTGRES_USER'}
-        . " -d " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . " -f " . $REFERENCE_DATA_SQL;
-
-    print "EXECUTING PSQL COMMAND: $psql_command\n";
-    unless ( ( my $exitcode = system("$psql_command") ) == 0 )
-    {
-        print "WARNING: Could not pre-populate Postgres database for the Dataverse application!\n";
-        print "(command: " . $psql_command . ")\n";
-        print "(psql exit code: " . $exitcode . ")\n";
-        print "\nYou must populate the database in order for all the features of your \n";
-        print "new Dataverse to be available. \n";
-        print "\n";
-        print "You can try this again, by executing the following on the command line:\n";
-        print "   psql -U $CONFIG_DEFAULTS{'POSTGRES_USER'} -d $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} -f $REFERENCE_DATA_SQL\n";
-        print "then re-start payara  \n\n";
-        print "\n";
-        print "If it's still failing, please consult the installation manual and/or\n";
-        print "seek support from the Dataverse team.\n\n";
-        
-        print "Press any key to continue... ";
-        
-	unless ($noninteractive) 
-	{
-	    system "stty cbreak </dev/tty >/dev/tty 2>&1";
-	    my $key = getc(STDIN);
-	    system "stty -cbreak </dev/tty >/dev/tty 2>&1";
-	    print "\n";
-	}
-    }
-    else
-    {
-        print "\nOK, done!\n";
     }
 }
 

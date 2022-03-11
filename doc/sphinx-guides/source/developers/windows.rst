@@ -4,13 +4,13 @@ Windows Development
 
 Development on Windows is not well supported, unfortunately. You will have a much easier time if you develop on Mac or Linux as described under :doc:`dev-environment` section.
 
-Vagrant commands appear below and were tested on Windows 10 but the Vagrant environement is currently broken. Please see https://github.com/IQSS/dataverse/issues/6849
+Vagrant commands appear below and were tested on Windows 10 but the Vagrant environment is currently broken. Please see https://github.com/IQSS/dataverse/issues/6849
 
 .. contents:: |toctitle|
 	:local:
 
-Running Dataverse in Vagrant
-----------------------------
+Running the Dataverse Software in Vagrant
+-----------------------------------------
 
 Install Vagrant
 ~~~~~~~~~~~~~~~
@@ -69,7 +69,7 @@ The ``dataverse`` directory you changed is the one you just cloned. Vagrant will
 
 ``vagrant up``
 
-After a long while you hopefully will have Dataverse installed at http://localhost:8888
+After a long while you hopefully will have a Dataverse installation available at http://localhost:8888
 
 Improving Windows Support
 -------------------------
@@ -82,4 +82,4 @@ We have been unable to get Windows Subsystem for Linux (WSL) to work. We tried f
 Discussion and Feedback
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-For more discussion of Windows support for Dataverse development see our community list thread `"Do you want to develop on Windows?" <https://groups.google.com/d/msg/dataverse-community/Hs9j5rIxqPI/-q54751aAgAJ>`_ We would be happy to incorporate feedback from Windows developers into this page. The :doc:`documentation` section describes how.
+For more discussion of Windows support for Dataverse Software development see our community list thread `"Do you want to develop on Windows?" <https://groups.google.com/d/msg/dataverse-community/Hs9j5rIxqPI/-q54751aAgAJ>`_ We would be happy to incorporate feedback from Windows developers into this page. The :doc:`documentation` section describes how.

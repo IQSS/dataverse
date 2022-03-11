@@ -15,7 +15,7 @@ import javax.sql.DataSource;
 @TransactionManagement(value = TransactionManagementType.BEAN)
 public class StartupFlywayMigrator {
 
-    @Resource(lookup = "jdbc/VDCNetDS")
+    @Resource(lookup = "java:app/jdbc/dataverse")
     private DataSource dataSource;
 
     @PostConstruct

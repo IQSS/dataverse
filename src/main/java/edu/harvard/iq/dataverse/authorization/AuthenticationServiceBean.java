@@ -30,10 +30,13 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
+import edu.harvard.iq.dataverse.engine.command.impl.RevokeAllRolesCommand;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetData;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetServiceBean;
+import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
+import edu.harvard.iq.dataverse.workflow.PendingWorkflowInvocation;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -120,7 +123,10 @@ public class AuthenticationServiceBean {
     
     @EJB 
     ExplicitGroupServiceBean explicitGroupService;
-        
+
+    @EJB
+    SavedSearchServiceBean savedSearchService;
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
         
@@ -193,10 +199,7 @@ public class AuthenticationServiceBean {
      * 
      * Before calling this method, make sure you've deleted all the stuff tied
      * to the user, including stuff they've created, role assignments, group
-     * assignments, etc.
-     * 
-     * Longer term, the intention is to have a "disableAuthenticatedUser"
-     * method/command. See https://github.com/IQSS/dataverse/issues/2419
+     * assignments, etc. See the "removeAuthentictedUserItems" (sic) method.
      */
     public void deleteAuthenticatedUser(Object pk) {
         AuthenticatedUser user = em.find(AuthenticatedUser.class, pk);
@@ -303,7 +306,7 @@ public class AuthenticationServiceBean {
             // yay! see if we already have this user.
             AuthenticatedUser user = lookupUser(authenticationProviderId, resp.getUserId());
 
-            if (user != null){
+            if (user != null && !user.isDeactivated()) {
                 user = userService.updateLastLogin(user);
             }
             
@@ -370,42 +373,32 @@ public class AuthenticationServiceBean {
         TypedQuery<ApiToken> typedQuery = em.createNamedQuery("ApiToken.findByUser", ApiToken.class);
         typedQuery.setParameter("user", au);
         List<ApiToken> tokens = typedQuery.getResultList();
-        Timestamp latest = new Timestamp(java.time.Instant.now().getEpochSecond()*1000);
         if (tokens.isEmpty()) {
             // Normal case - no token exists
             return null;
         }
         if (tokens.size() == 1) {
             // Normal case - one token that may or may not have expired
-            ApiToken token = tokens.get(0);
-            if (token.getExpireTime().before(latest)) {
-                // Don't return an expired token which is unusable, delete it instead
-                em.remove(token);
-                return null;
-            } else {
-                return tokens.get(0);
-            }
+            return tokens.get(0);
         } else {
             // We have more than one due to https://github.com/IQSS/dataverse/issues/6389 or
-            // similar, so we should delete all but one token.
-            // Since having an expired token also makes no sense, if we only have an expired
-            // token, remove that as well
-            ApiToken goodToken = null;
+            // similar, so we should delete all but one token - pick the latest.
+            ApiToken newestToken = null;
             for (ApiToken token : tokens) {
-                Timestamp time = token.getExpireTime();
-                if (time.before(latest)) {
-                    em.remove(token);
+                if (newestToken == null) {
+                    newestToken = token;
                 } else {
-                    if(goodToken != null) {
-                      em.remove(goodToken);
-                      goodToken = null;
+                    Timestamp time = token.getExpireTime();
+                    if (time.before(newestToken.getExpireTime())) {
+                        em.remove(token);
+                    } else {
+                        em.remove(newestToken);
+                        newestToken = token;
                     }
-                    latest = time;
-                    goodToken = token;
                 }
             }
-            // Null if there are no un-expired ones
-            return goodToken;
+            // Null if there are no tokens
+            return newestToken;
         }
     }
     
@@ -447,7 +440,32 @@ public class AuthenticationServiceBean {
             }
         }
         
-        return tkn.getAuthenticatedUser();
+        AuthenticatedUser user = tkn.getAuthenticatedUser();
+        if (!user.isDeactivated()) {
+            return user;
+        } else {
+            logger.info("attempted access with token from deactivated user: " + apiToken);
+            return null;
+        }
+    }
+    
+    public AuthenticatedUser lookupUserForWorkflowInvocationID(String wfId) {
+        try {
+            PendingWorkflowInvocation pwfi = em.find(PendingWorkflowInvocation.class, wfId);
+            if (pwfi == null) {
+                return null;
+            }
+            if (pwfi.getUserId().startsWith(AuthenticatedUser.IDENTIFIER_PREFIX)) {
+                if (pwfi.getLocalData().containsKey(PendingWorkflowInvocation.AUTHORIZED)
+                        && Boolean.parseBoolean(pwfi.getLocalData().get(PendingWorkflowInvocation.AUTHORIZED))) {
+                    return getAuthenticatedUser(
+                            pwfi.getUserId().substring(AuthenticatedUser.IDENTIFIER_PREFIX.length()));
+                }
+            }
+        } catch (NoResultException ex) {
+            return null;
+        }
+        return null;
     }
     
     /*
@@ -478,6 +496,10 @@ public class AuthenticationServiceBean {
         if (!datasetVersionService.getDatasetVersionUsersByAuthenticatedUser(au).isEmpty()) {
             reasons.add(BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.versionUser"));
         }
+
+        if (!savedSearchService.findByAuthenticatedUser(au).isEmpty()) {
+            reasons.add(BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.savedSearches"));
+        }
         
         if (!reasons.isEmpty()) {
             retVal = BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.prefix", Arrays.asList(au.getIdentifier()));
@@ -496,7 +518,8 @@ public class AuthenticationServiceBean {
 
         deletePendingAccessRequests(au);
         
-        
+        deleteBannerMessages(au);
+               
         if (!explicitGroupService.findGroups(au).isEmpty()) {
             for(ExplicitGroup explicitGroup: explicitGroupService.findGroups(au)){
                 explicitGroup.removeByRoleAssgineeIdentifier(au.getIdentifier());
@@ -505,12 +528,17 @@ public class AuthenticationServiceBean {
         
     }
     
+    private void deleteBannerMessages(AuthenticatedUser  au){
+        
+       em.createNativeQuery("delete from userbannermessage where user_id  = "+au.getId()).executeUpdate();
+        
+    }
+    
     private void deletePendingAccessRequests(AuthenticatedUser  au){
         
        em.createNativeQuery("delete from fileaccessrequests where authenticated_user_id  = "+au.getId()).executeUpdate();
         
     }
-    
     
     public AuthenticatedUser save( AuthenticatedUser user ) {
         em.persist(user);

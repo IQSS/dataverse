@@ -1,7 +1,7 @@
 Data Access API
 ===============
 
-The Data Access API provides programmatic download access to the files stored under Dataverse. 
+The Data Access API provides programmatic download access to the files stored in a Dataverse installation. 
 More advanced features of the Access API include format-specific transformations (thumbnail generation/resizing for images; converting tabular data into alternative file formats) and access to the data-level metadata that describes the contents of the tabular files. 
 
 .. contents:: |toctitle|
@@ -40,13 +40,13 @@ A curl example using a DOI (no version):
   export SERVER_URL=https://demo.dataverse.org
   export PERSISTENT_ID=doi:10.70122/FK2/N2XGBJ
 
-  curl -O -J -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/access/dataset/:persistentId/?persistentId=$PERSISTENT_ID
+  curl -L -O -J -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/access/dataset/:persistentId/?persistentId=$PERSISTENT_ID
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -O -J -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/access/dataset/:persistentId/?persistentId=doi:10.70122/FK2/N2XGBJ
+  curl -L -O -J -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/access/dataset/:persistentId/?persistentId=doi:10.70122/FK2/N2XGBJ
 
 Download By Dataset By Version
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -87,7 +87,7 @@ Basic access URI:
 
   Example: Getting the file whose DOI is *10.5072/FK2/J8SJZB* ::
 
-    GET http://$SERVER/api/access/datafile/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB
+    GET http://$SERVER/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/J8SJZB
 
 
 Parameters:
@@ -130,6 +130,41 @@ Value           Description
 true            Generates a thumbnail image by rescaling to the default thumbnail size (64 pixels wide).
 ``N``           Rescales the image to ``N`` pixels wide. ``imageThumb=true`` and ``imageThumb=64`` are equivalent.
 ==============  ===========
+
+Headers:
+~~~~~~~~
+
+==============  ===========
+Header          Description
+==============  ===========
+Range           Download a specified byte range. Examples:
+
+                - ``bytes=0-9`` gets the first 10 bytes.
+                - ``bytes=10-19`` gets 10 bytes from the middle.
+                - ``bytes=-10`` gets the last 10 bytes.
+                - ``bytes=9-`` gets all bytes except the first 10.
+
+                Only a single range is supported. The "If-Range" header is not supported. For more on the "Range" header, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests
+==============  ===========
+
+Examples
+~~~~~~~~
+
+A curl example of using the ``Range`` header to download the first 10 bytes of a file using its file id (database id):
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export FILE_ID=42
+  export RANGE=0-9
+
+  curl -H "Range:bytes=$RANGE" $SERVER_URL/api/access/datafile/$FILE_ID
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "Range:bytes=0-9" https://demo.dataverse.org/api/access/datafile/42
 
 Multiple File ("bundle") download
 ---------------------------------
@@ -284,9 +319,9 @@ especially with data files with large numbers of variables. See
 Preprocessed Data
 -----------------
 
-``/api/access/datafile/$id/metadata/preprocessed``
+``/api/access/datafile/$id?format=prep``
 
-This method provides the "preprocessed data" - a summary record that describes the values of the data vectors in the tabular file, in JSON. These metadata values are used by TwoRavens, the companion data exploration utility of the Dataverse application. Please note that this format might change in the future.
+This method provides the "preprocessed data" - a summary record that describes the values of the data vectors in the tabular file, in JSON. These metadata values are used by TwoRavens, an external tool that integrates with a Dataverse installation. Please note that this format might change in the future.
 
 Authentication and Authorization
 -------------------------------- 

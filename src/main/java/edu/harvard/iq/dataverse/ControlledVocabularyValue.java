@@ -13,7 +13,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Locale;
 import java.util.Objects;
+import java.util.logging.Logger;
 import java.util.MissingResourceException;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -22,7 +24,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
-import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -34,6 +35,8 @@ import javax.persistence.Table;
 @Entity
 @Table(indexes = {@Index(columnList="datasetfieldtype_id"), @Index(columnList="displayorder")})
 public class ControlledVocabularyValue implements Serializable  {
+    
+    private static final Logger logger = Logger.getLogger(ControlledVocabularyValue.class.getCanonicalName());
     
     public static final Comparator<ControlledVocabularyValue> DisplayOrder = new Comparator<ControlledVocabularyValue>() {
         @Override
@@ -100,7 +103,7 @@ public class ControlledVocabularyValue implements Serializable  {
         this.datasetFieldType = datasetFieldType;
     }
   
-    @OneToMany(mappedBy = "controlledVocabularyValue", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToMany(mappedBy = "controlledVocabularyValue", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval=true)
     private Collection<ControlledVocabAlternate> controlledVocabAlternates = new ArrayList<>();
 
     public Collection<ControlledVocabAlternate> getControlledVocabAlternates() {
@@ -111,14 +114,42 @@ public class ControlledVocabularyValue implements Serializable  {
         this.controlledVocabAlternates = controlledVocabAlternates;
     }
 
-    public String getLocaleStrValue()
-    {
-        String key = strValue.toLowerCase().replace(" " , "_");
+    public String getLocaleStrValue() {
+        return getLocaleStrValue(null);
+    }
+    
+    public String getLocaleStrValue(String language) {
+        
+        if(language !=null && language.isBlank()) {
+            //null picks up current UI lang
+            language=null;
+        }
+        //Sword input uses a special controlled vacab value ("N/A" that does not have a datasetFieldType / is not part of any metadata block, so handle it specially
+        if(strValue.equals(DatasetField.NA_VALUE) && this.datasetFieldType == null) {
+            return strValue;
+        }
+        if(this.datasetFieldType == null) {
+            logger.warning("Null datasetFieldType for value: " + strValue);
+        }
+        return getLocaleStrValue(strValue, this.datasetFieldType.getName(),getDatasetFieldType().getMetadataBlock().getName(),language == null ? null : new Locale(language), true);
+    }
+    
+    public static String getLocaleStrValue(String strValue, String fieldTypeName, String metadataBlockName,
+            Locale locale, boolean sendDefault) {
+        String key = strValue.toLowerCase().replace(" ", "_");
         key = StringUtils.stripAccents(key);
         try {
-            return BundleUtil.getStringFromPropertyFile("controlledvocabulary." + this.datasetFieldType.getName() + "." + key, getDatasetFieldType().getMetadataBlock().getName());
-        } catch (MissingResourceException e) {
-            return strValue;
+            String val = BundleUtil.getStringFromPropertyFile("controlledvocabulary." + fieldTypeName + "." + key,
+                    metadataBlockName, locale);
+            if (!val.isBlank()) {
+                logger.fine("Found : " + val);
+                return val;
+            } else {
+                return sendDefault ? strValue : null;
+            }
+        } catch (MissingResourceException | NullPointerException e) {
+            logger.warning("Error finding" + "controlledvocabulary." + fieldTypeName + "." + key + " in " + ((locale==null)? "defaultLang" : locale.getLanguage()) + " : " + e.getLocalizedMessage());
+            return sendDefault ? strValue : null;
         }
     }
 

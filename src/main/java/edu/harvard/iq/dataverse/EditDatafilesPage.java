@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
+import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -28,13 +29,17 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
+import edu.harvard.iq.dataverse.util.FileMetadataUtil;
+
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -73,7 +78,7 @@ import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.event.FacesEvent;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.primefaces.PrimeFaces;
 
@@ -89,7 +94,11 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public enum FileEditMode {
 
-        EDIT, UPLOAD, CREATE, SINGLE, SINGLE_REPLACE
+        EDIT, UPLOAD, CREATE, REPLACE
+    };
+    
+    public enum Referrer {
+        DATASET, FILE
     };
     
     @EJB
@@ -127,6 +136,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     @Inject ProvPopupFragmentBean provPopupFragmentBean;
     @Inject
     SettingsWrapper settingsWrapper;
+    @Inject
+    LicenseServiceBean licenseServiceBean;
 
     private Dataset dataset = new Dataset();
     
@@ -135,6 +146,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     private String selectedFileIdsString = null; 
     private FileEditMode mode; 
+    private Referrer referrer = Referrer.DATASET;
     private List<Long> selectedFileIdsList = new ArrayList<>(); 
     private List<FileMetadata> fileMetadatas = new ArrayList<>();;
 
@@ -162,6 +174,9 @@ public class EditDatafilesPage implements java.io.Serializable {
     private final Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
 
     private Long maxFileUploadSizeInBytes = null;
+    private Long maxIngestSizeInBytes = null;
+    // CSV: 4.8 MB, DTA: 976.6 KB, XLSX: 5.7 MB, etc.
+    private String humanPerFormatTabularLimits = null;
     private Integer multipleUploadFilesLimit = null; 
     
     //MutableBoolean so it can be passed from DatasetPage, supporting DatasetPage.cancelCreate()
@@ -204,6 +219,16 @@ public class EditDatafilesPage implements java.io.Serializable {
     public void setMode(FileEditMode mode) {
         this.mode = mode;
     }
+
+    public Referrer getReferrer() {
+        return referrer;
+    }
+
+    public void setReferrer(Referrer referrer) {
+        this.referrer = referrer;
+    }
+    
+    
     
     public List<FileMetadata> getFileMetadatas() {
         
@@ -306,7 +331,35 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         return this.maxFileUploadSizeInBytes == null;
     }
-    
+
+    public Long getMaxIngestSizeInBytes() {
+        return maxIngestSizeInBytes;
+    }
+
+    public String getHumanMaxIngestSizeInBytes() {
+        return FileSizeChecker.bytesToHumanReadable(this.maxIngestSizeInBytes);
+    }
+
+    public String getHumanPerFormatTabularLimits() {
+        return humanPerFormatTabularLimits;
+    }
+
+    public String populateHumanPerFormatTabularLimits() {
+        String keyPrefix = ":TabularIngestSizeLimit:";
+        List<String> formatLimits = new ArrayList<>();
+        for (Setting setting : settingsService.listAll()) {
+            String name = setting.getName();
+            if (!name.startsWith(keyPrefix)) {
+                continue;
+            }
+            String tabularName = setting.getName().substring(keyPrefix.length());
+            String bytes = setting.getContent();
+            String humanReadableSize = FileSizeChecker.bytesToHumanReadable(Long.valueOf(bytes));
+            formatLimits.add(tabularName + ": " + humanReadableSize);
+        }
+        return String.join(", ", formatLimits);
+    }
+
     /*
         The number of files the GUI user is allowed to upload in one batch, 
         via drag-and-drop, or through the file select dialog. Now configurable 
@@ -434,8 +487,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         if (version == null) {
             return permissionsWrapper.notFound();
-        }
-
+        }   
+        
         workingVersion = version; 
         dataset = version.getDataset();
         mode = FileEditMode.CREATE;
@@ -445,6 +498,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         selectedFiles = selectedFileMetadatasList;
         
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
+        this.maxIngestSizeInBytes = systemConfig.getTabularIngestSizeLimit();
+        this.humanPerFormatTabularLimits = populateHumanPerFormatTabularLimits();
         this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
         
         logger.fine("done");
@@ -478,31 +533,33 @@ public class EditDatafilesPage implements java.io.Serializable {
             // that the dataset id is mandatory... But 404 will do for now.
             return permissionsWrapper.notFound();
         }
-        
-
-
-        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
-        this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
-                       
+                               
         workingVersion = dataset.getEditVersion();
-        clone = workingVersion.cloneDatasetVersion();
+        
+        //TODO: review if we we need this check; 
+        // as getEditVersion should either return the exisiting draft or create a new one      
         if (workingVersion == null || !workingVersion.isDraft()) {
             // Sorry, we couldn't find/obtain a draft version for this dataset!
             return permissionsWrapper.notFound();
         }
         
         // Check if they have permission to modify this dataset: 
-        
         if (!permissionService.on(dataset).has(Permission.EditDataset)) {
             return permissionsWrapper.notAuthorized();
         }
+        
+        clone = workingVersion.cloneDatasetVersion();
+        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
+        this.maxIngestSizeInBytes = systemConfig.getTabularIngestSizeLimit();
+        this.humanPerFormatTabularLimits = populateHumanPerFormatTabularLimits();
+        this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();        
 
         // -------------------------------------------
         //  Is this a file replacement operation?
         // -------------------------------------------
-        if (mode == FileEditMode.SINGLE_REPLACE){
+        if (mode == FileEditMode.REPLACE){
             /*
-            http://localhost:8080/editdatafiles.xhtml?mode=SINGLE_REPLACE&datasetId=26&fid=726
+            http://localhost:8080/editdatafiles.xhtml?mode=REPLACE&datasetId=26&fid=726
             */        
             DataFile fileToReplace = loadFileToReplace();
             if (fileToReplace == null){
@@ -516,7 +573,8 @@ public class EditDatafilesPage implements java.io.Serializable {
                                                 datafileService,
                                                 permissionService,
                                                 commandEngine,
-                                                systemConfig);
+                                                systemConfig,
+                                                licenseServiceBean);
                         
             fileReplacePageHelper = new FileReplacePageHelper(addReplaceFileHelper,
                                                 dataset, 
@@ -524,7 +582,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
             populateFileMetadatas();
             singleFile = getFileToReplace();
-        }else if (mode == FileEditMode.EDIT || mode == FileEditMode.SINGLE) {
+        }else if (mode == FileEditMode.EDIT) {
 
             if (selectedFileIdsString != null) {
                 String[] ids = selectedFileIdsString.split(",");
@@ -538,7 +596,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                         test = null;
                     }
                     if (test != null) {
-                        if (mode == FileEditMode.SINGLE) {
+                        if (FileEditMode.EDIT == mode && Referrer.FILE == referrer) {
                             singleFile = datafileService.find(test);
                         }
                         selectedFileIdsList.add(test);
@@ -566,7 +624,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 return permissionsWrapper.notFound();
             }
             
-            if (FileEditMode.SINGLE == mode){
+            if (FileEditMode.EDIT == mode && Referrer.FILE == referrer){
                 if (fileMetadatas.get(0).getDatasetVersion().getId() != null){
                     versionString = "DRAFT";
                 }
@@ -579,15 +637,6 @@ public class EditDatafilesPage implements java.io.Serializable {
             setUpRsync();
         }
 
-        if (mode == FileEditMode.UPLOAD) {
-            if (settingsWrapper.getUploadMethodsCount() == 1){
-                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.uploadFiles.label"), BundleUtil.getStringFromBundle("dataset.message.uploadFilesSingle.message", Arrays.asList(systemConfig.getGuidesBaseUrl(), systemConfig.getGuidesVersion())));
-            } else if (settingsWrapper.getUploadMethodsCount() > 1) {
-                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.uploadFiles.label"), BundleUtil.getStringFromBundle("dataset.message.uploadFilesMultiple.message", Arrays.asList(systemConfig.getGuidesBaseUrl(), systemConfig.getGuidesVersion())));
-            }
-            
-        }
-        
         if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)){
             JH.addMessage(FacesMessage.SEVERITY_WARN, getBundleString("dataset.message.publicInstall"));
         }   
@@ -649,108 +698,11 @@ public class EditDatafilesPage implements java.io.Serializable {
         this.versionString = versionString;
     }
     
-    /*
-    public void toggleSelectedFiles(){
-        this.selectedFiles = new ArrayList<>();
-        if(this.selectAllFiles){
-            if (mode == FileEditMode.CREATE) {
-                for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-                    this.selectedFiles.add(fmd);
-                }
-            } else {
-                for (FileMetadata fmd : fileMetadatas) {
-                    this.selectedFiles.add(fmd);
-                }
-            }
-        }
-    }
-    */
-    /*
-    public String getSelectedFilesIdsString() {        
-        String downloadIdString = "";
-        for (FileMetadata fmd : this.selectedFiles){
-            if (!StringUtil.isEmpty(downloadIdString)) {
-                downloadIdString += ",";
-            }
-            downloadIdString += fmd.getDataFile().getId();
-        }
-        return downloadIdString;
-      
-    }
-*/
-    /*
-    public void updateFileCounts(){
-        
-        setSelectedUnrestrictedFiles(new ArrayList<FileMetadata>());
-        setSelectedRestrictedFiles(new ArrayList<FileMetadata>());
-        for (FileMetadata fmd : this.selectedFiles){
-            if(fmd.isRestricted()){
-                getSelectedRestrictedFiles().add(fmd);
-            } else {
-                getSelectedUnrestrictedFiles().add(fmd);
-            }
-        }
-    }*/
-    
-    List<FileMetadata> previouslyRestrictedFiles = null;
-    
-    public boolean isShowAccessPopup() {
-        for (FileMetadata fmd : this.fileMetadatas) {
-            if (fmd.isRestricted()) {
-            
-                if (fmd.getDataFile().getId() == null) {
-                    // if this is a brand new file, it's definitely not 
-                    // of a previously restricted kind!
-                    return true; 
-                }
-            
-                if (previouslyRestrictedFiles != null) {
-                    boolean contains = false;
-                    for (FileMetadata fmp : previouslyRestrictedFiles) {
-                        // OK, we've already checked if it's a brand new file - 
-                        // above. So we can safely assume that this datafile
-                        // has a valid db id... so it is safe to use the 
-                        // equals() method:
-                        if (fmp.getDataFile().equals(fmd.getDataFile())) {
-                            contains = true;
-                            break;
-                        }
-                    }
-                    if (!contains) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-    
-    public void setShowAccessPopup(boolean showAccessPopup) {} // dummy set method
-     
-    //This function was reverted to its pre-commands state as the current command
-    //requires editDataset privlidges. If a non-admin user with only createDataset privlidges
-    //attempts to restrict a datafile before the dataset is created, the operation
-    //fails silently. This is because they are only granted editDataset permissions
-    //for that scope after the creation is completed.  -Matthew 4.7.1
     public void restrictFiles(boolean restricted) throws UnsupportedOperationException{
         
-        //First make sure they've even selected file(s) to restrict.... 
-        if (this.getSelectedFiles().isEmpty()) {
-            if (restricted) {
-                PrimeFaces.current().executeScript("PF('selectFilesForRestrictEditFilesPage').show()");
-            } else {
-                PrimeFaces.current().executeScript("PF('selectFilesForUnRestrictEditFilesPage').show()");
-            }
-            return;
-        }
-
-        // since we are restricted files, first set the previously restricted file list, so we can compare for
-        // determining whether to show the access popup
-        previouslyRestrictedFiles = new ArrayList<>();
-        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-            if (fmd.isRestricted()) {
-                previouslyRestrictedFiles.add(fmd);
-            }
+        if (restricted) { // get values from access popup
+            workingVersion.getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
+            workingVersion.getTermsOfUseAndAccess().setFileAccessRequest(fileAccessRequest);
         }
         
         String fileNames = null;
@@ -766,54 +718,12 @@ public class EditDatafilesPage implements java.io.Serializable {
                 }
             }
             fmd.setRestricted(restricted);
-            
-//            Command cmd;
-//            cmd = new RestrictFileCommand(fmd.getDataFile(), dvRequestService.getDataverseRequest(), restricted);
-//            commandEngine.submit(cmd);
-            
                                   
             if (workingVersion.isDraft() && !fmd.getDataFile().isReleased()) {
                 // We do not really need to check that the working version is 
                 // a draft here - it must be a draft, if we've gotten this
                 // far. But just in case. -- L.A. 4.2.1
                   fmd.getDataFile().setRestricted(restricted);              
-            }
-        }
-        if (fileNames != null) {
-            String successMessage = getBundleString("file.restricted.success");
-            logger.fine(successMessage);
-            successMessage = successMessage.replace("{0}", fileNames);
-            JsfHelper.addFlashMessage(successMessage);    
-        }
-    } 
-
-    public void restrictFilesDP(boolean restricted) {
-        // since we are restricted files, first set the previously restricted file list, so we can compare for
-        // determinin whether to show the access popup
-        if (previouslyRestrictedFiles == null) {
-            previouslyRestrictedFiles = new ArrayList<>();
-            for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-                if (fmd.isRestricted()) {
-                    previouslyRestrictedFiles.add(fmd);
-                }
-            }
-        }        
-        
-        String fileNames = null;       
-        for (FileMetadata fmw : workingVersion.getFileMetadatas()) {
-            for (FileMetadata fmd : this.getSelectedFiles()) {
-                if (restricted && !fmw.isRestricted()) {
-                // collect the names of the newly-restrticted files, 
-                    // to show in the success message:
-                    if (fileNames == null) {
-                        fileNames = fmd.getLabel();
-                    } else {
-                        fileNames = fileNames.concat(", " + fmd.getLabel());
-                    }
-                }
-                if (fmd.getDataFile().equals(fmw.getDataFile())) {
-                    fmw.setRestricted(restricted);
-                }
             }
         }
         if (fileNames != null) {
@@ -934,8 +844,12 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // and let the delete be handled in the command (by adding it to the
                 // filesToBeDeleted list):
 
+                // ToDo - FileMetadataUtil.removeFileMetadataFromList should handle these two
+                // removes so they could be put after this if clause and the else clause could
+                // be removed.
                 dataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
                 fileMetadatas.remove(markedForDelete);
+
                 filesToBeDeleted.add(markedForDelete);
             } else {
                 logger.fine("this is a brand-new (unsaved) filemetadata");
@@ -948,9 +862,9 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // fileMetadatas list. (but doing both just adds a no-op and won't cause an
                 // error)
                 // 1. delete the filemetadata from the local display list: 
-                removeFileMetadataFromList(fileMetadatas, markedForDelete);
+                FileMetadataUtil.removeFileMetadataFromList(fileMetadatas, markedForDelete);
                 // 2. delete the filemetadata from the version: 
-                removeFileMetadataFromList(dataset.getEditVersion().getFileMetadatas(), markedForDelete);
+                FileMetadataUtil.removeFileMetadataFromList(dataset.getEditVersion().getFileMetadatas(), markedForDelete);
             }
 
             if (markedForDelete.getDataFile().getId() == null) {
@@ -959,8 +873,8 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // removing it from the fileMetadatas lists (above), we also remove it from
                 // the newFiles list and the dataset's files, so it never gets saved.
 
-                removeDataFileFromList(dataset.getFiles(), markedForDelete.getDataFile());
-                removeDataFileFromList(newFiles, markedForDelete.getDataFile());
+                FileMetadataUtil.removeDataFileFromList(dataset.getFiles(), markedForDelete.getDataFile());
+                FileMetadataUtil.removeDataFileFromList(newFiles, markedForDelete.getDataFile());
                 FileUtil.deleteTempFile(markedForDelete.getDataFile(), dataset, ingestService);
                 // Also remove checksum from the list of newly uploaded checksums (perhaps odd
                 // to delete and then try uploading the same file again, but it seems like it
@@ -989,32 +903,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
 
-    private void removeFileMetadataFromList(List<FileMetadata> fmds, FileMetadata fmToDelete) {
-        Iterator<FileMetadata> fmit = fmds.iterator();
-        while (fmit.hasNext()) {
-            FileMetadata fmd = fmit.next();
-            if (fmToDelete.getDataFile().getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
-                fmit.remove();
-                break;
-                    }
-                }
-                }                
-                
-    private void removeDataFileFromList(List<DataFile> dfs, DataFile dfToDelete) {
-        Iterator<DataFile> dfit = dfs.iterator();
-        while (dfit.hasNext()) {
-            DataFile df = dfit.next();
-            if (dfToDelete.getStorageIdentifier().equals(df.getStorageIdentifier())) {
-                dfit.remove();
-                break;
-            }
-        }
-    }
-
-    public String saveWithTermsOfUse() {
-        logger.fine("saving terms of use, and the dataset version");
-        return save();
-    }
     
     
     /**
@@ -1054,7 +942,11 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (fileReplacePageHelper.runSaveReplacementFile_Phase2()){
             JsfHelper.addSuccessMessage(getBundleString("file.message.replaceSuccess"));
             // It worked!!!  Go to page of new file!!
-            return returnToFileLandingPageAfterReplace(fileReplacePageHelper.getFirstNewlyAddedFile());
+            if (Referrer.FILE == referrer) {
+                return returnToFileLandingPageAfterReplace(fileReplacePageHelper.getFirstNewlyAddedFile());
+            } else {
+                return returnToDraftVersion();
+            }
         }else{
             // Uh oh.
             String errMsg = fileReplacePageHelper.getErrorMessages();
@@ -1083,8 +975,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress) || lockTest.isLockedFor(DatasetLock.Reason.EditInProgress)) {
                 logger.log(Level.INFO, "Couldn''t save dataset: {0}", "It is locked."
                         + "");
-                String rootDataverseName = dataverseService.findRootDataverse().getName();
-                JH.addMessage(FacesMessage.SEVERITY_FATAL, getBundleString("dataset.locked.editInProgress.message"),BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message.details", Arrays.asList(BrandingUtil.getSupportTeamName(null, rootDataverseName))));
+                JH.addMessage(FacesMessage.SEVERITY_FATAL, getBundleString("dataset.locked.editInProgress.message"),BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message.details", Arrays.asList(BrandingUtil.getSupportTeamName(null))));
                 return null;
             }
         }
@@ -1128,7 +1019,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
                                 
             // Try to save the NEW files permanently: 
-            List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(workingVersion, newFiles, false);
+            List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(workingVersion, newFiles, null);
             
             // reset the working list of fileMetadatas, as to only include the ones
             // that have been added to the version successfully: 
@@ -1273,13 +1164,13 @@ public class EditDatafilesPage implements java.io.Serializable {
         workingVersion = dataset.getEditVersion();
         logger.fine("working version id: "+workingVersion.getId());
        
-        if (mode == FileEditMode.SINGLE){
+        if (FileEditMode.EDIT == mode && Referrer.FILE == referrer){
             JsfHelper.addSuccessMessage(getBundleString("file.message.editSuccess"));
             
         } else {
             int nFilesTotal = workingVersion.getFileMetadatas().size();
             if (nNewFiles == 0 || nFilesTotal == nExpectedFilesTotal) {
-                JsfHelper.addSuccessMessage(getBundleString("dataset.message.filesSuccess"));
+                JsfHelper.addSuccessMessage(getBundleString("dataset.message.filesSuccess").concat(" ").concat(datasetService.getReminderString(dataset, canPublishDataset())));
             } else if (nFilesTotal == nOldFiles) {
                 JsfHelper.addErrorMessage(getBundleString("dataset.message.addFiles.Failure"));
             } else {
@@ -1296,7 +1187,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             ingestService.startIngestJobsForDataset(dataset, (AuthenticatedUser) session.getUser());
         }
 
-        if (mode == FileEditMode.SINGLE && fileMetadatas.size() > 0) {
+        if (FileEditMode.EDIT == mode && Referrer.FILE == referrer && fileMetadatas.size() > 0) {
             // If this was a "single file edit", i.e. an edit request sent from 
             // the individual File Landing page, we want to redirect back to 
             // the landing page. BUT ONLY if the file still exists - i.e., if 
@@ -1307,6 +1198,10 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         logger.fine("Redirecting to the dataset page, from the edit/upload page.");
         return returnToDraftVersion();
+    }
+    
+    public boolean canPublishDataset(){
+        return permissionsWrapper.canIssuePublishDatasetCommand(dataset);
     }
     
     private void populateDatasetUpdateFailureMessage(){
@@ -1356,7 +1251,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             FileUtil.deleteTempFile(newFile, dataset, ingestService);
         }
 
-        if (mode == FileEditMode.SINGLE || mode == FileEditMode.SINGLE_REPLACE ) {
+        if (Referrer.FILE == referrer) {
             return returnToFileLandingPage();
         }
         if (workingVersion.getId() != null) {
@@ -1413,7 +1308,7 @@ public class EditDatafilesPage implements java.io.Serializable {
      * @return 
      */
     public boolean isFileReplaceOperation(){
-        return (mode == FileEditMode.SINGLE_REPLACE)&&(fileReplacePageHelper!= null);
+        return (mode == FileEditMode.REPLACE)&&(fileReplacePageHelper!= null);
     }
     
     public boolean allowMultipleFileUpload(){
@@ -1422,7 +1317,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
     
     public boolean showFileUploadFragment(){
-        return mode == FileEditMode.UPLOAD || mode == FileEditMode.CREATE || mode == FileEditMode.SINGLE_REPLACE;
+        return mode == FileEditMode.UPLOAD || mode == FileEditMode.CREATE || mode == FileEditMode.REPLACE;
     }
     
     
@@ -1663,10 +1558,22 @@ public class EditDatafilesPage implements java.io.Serializable {
                 }
             } catch (EJBException ex) {
                 logger.warning("Problem getting rsync script (EJBException): " + EjbUtil.ejbExceptionToString(ex));
+                FacesContext.getCurrentInstance().addMessage(uploadComponentId,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                "Problem getting rsync script (EJBException): " + EjbUtil.ejbExceptionToString(ex),
+                                "Problem getting rsync script (EJBException):"));
             } catch (RuntimeException ex) {
                 logger.warning("Problem getting rsync script (RuntimeException): " + ex.getLocalizedMessage());
+                FacesContext.getCurrentInstance().addMessage(uploadComponentId,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                "Problem getting rsync script (RuntimeException): " + ex.getMessage(),
+                                "Problem getting rsync script (RuntimeException):"));
             } catch (CommandException cex) {
                 logger.warning("Problem getting rsync script (Command Exception): " + cex.getLocalizedMessage());
+                FacesContext.getCurrentInstance().addMessage(uploadComponentId,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                "Problem getting rsync script (Command Exception): " + cex.getMessage(),
+                                "Problem getting rsync script (Command Exception):"));
             }
         }
     }
@@ -1821,11 +1728,12 @@ public class EditDatafilesPage implements java.io.Serializable {
                     setLabelForDeleteFilesPopup();
                     PrimeFaces.current().ajax().update("datasetForm:fileAlreadyExistsPopup");
                     PrimeFaces.current().executeScript("PF('fileAlreadyExistsPopup').show();");
+                } else {
+                    //adding back warnings in non-replace situations
+                    FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), uploadWarningMessage));                   
                 }
                 
 
-                //taking this out for now based on design feedback 7/8/2020
-               // FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), uploadWarningMessage));
 
             } else if (uploadSuccessMessage != null) {
                 FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.file.uploadWorked"), uploadSuccessMessage));
@@ -1931,6 +1839,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (fileReplacePageHelper.handleNativeFileUpload(inputStream,null,
                                     fileName,
                                     contentType, 
+                                    null, 
                                     null
                                 )){
             saveEnabled = true;
@@ -1991,12 +1900,13 @@ public class EditDatafilesPage implements java.io.Serializable {
     private void handleReplaceFileUpload(String fullStorageLocation, 
     		String fileName, 
     		String contentType, 
-    		String checkSum){
+    		String checkSumValue,
+    		ChecksumType checkSumType){
 
     	fileReplacePageHelper.resetReplaceFileHelper();
     	saveEnabled = false;
     	String storageIdentifier = DataAccess.getStorarageIdFromLocation(fullStorageLocation);
-    	if (fileReplacePageHelper.handleNativeFileUpload(null, storageIdentifier, fileName, contentType, checkSum)){
+    	if (fileReplacePageHelper.handleNativeFileUpload(null, storageIdentifier, fileName, contentType, checkSumValue, checkSumType)){
     		saveEnabled = true;
 
     		/**
@@ -2128,9 +2038,12 @@ public class EditDatafilesPage implements java.io.Serializable {
         String fullStorageIdentifier = paramMap.get("fullStorageIdentifier");
         String fileName = paramMap.get("fileName");
         String contentType = paramMap.get("contentType");
-        String checksumType = paramMap.get("checksumType");
+        String checksumTypeString = paramMap.get("checksumType");
         String checksumValue = paramMap.get("checksumValue");
-        
+        ChecksumType checksumType = null;
+        if (!checksumTypeString.isBlank()) {
+            checksumType = ChecksumType.fromString(checksumTypeString);
+        }
         int lastColon = fullStorageIdentifier.lastIndexOf(':');
         String storageLocation= fullStorageIdentifier.substring(0,lastColon) + "/" + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + fullStorageIdentifier.substring(lastColon+1);
     	if (uploadInProgress.isFalse()) {
@@ -2152,12 +2065,6 @@ public class EditDatafilesPage implements java.io.Serializable {
 				contentType = FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT;
 			}
 			
-			if(DataFile.ChecksumType.fromString(checksumType) != DataFile.ChecksumType.MD5 ) {
-				String warningMessage = "Non-MD5 checksums not yet supported in external uploads";
-				localWarningMessage = warningMessage;
-				//ToDo - methods like handleReplaceFileUpload and classes like OptionalFileParams will need to track the algorithm in addition to the value to enable this
-			}
-			
     		/* ----------------------------
                 Check file size
                 - Max size NOT specified in db: default is unlimited
@@ -2172,8 +2079,10 @@ public class EditDatafilesPage implements java.io.Serializable {
     			// Is this a FileReplaceOperation?  If so, then diverge!
     			// -----------------------------------------------------------
     			if (this.isFileReplaceOperation()){
-    				this.handleReplaceFileUpload(storageLocation, fileName, contentType, checksumValue);
-    				this.setFileMetadataSelectedForTagsPopup(fileReplacePageHelper.getNewFileMetadatasBeforeSave().get(0));
+    				this.handleReplaceFileUpload(storageLocation, fileName, contentType, checksumValue, checksumType);
+                                if (fileReplacePageHelper.getNewFileMetadatasBeforeSave() != null){
+                                    this.setFileMetadataSelectedForTagsPopup(fileReplacePageHelper.getNewFileMetadatasBeforeSave().get(0));
+                                }                               
     				return;
     			}
     			// -----------------------------------------------------------
@@ -2190,7 +2099,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     				//datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
 
 
-    				datafiles = FileUtil.createDataFiles(workingVersion, null, fileName, contentType, fullStorageIdentifier, checksumValue, systemConfig);
+    				datafiles = FileUtil.createDataFiles(workingVersion, null, fileName, contentType, fullStorageIdentifier, checksumValue, checksumType, systemConfig);
     			} catch (IOException ex) {
     				logger.log(Level.SEVERE, "Error during ingest of file {0}", new Object[]{fileName});
     			}
@@ -2595,20 +2504,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
         return false;
     }
-    
-    public boolean isThumbnailAvailable(FileMetadata fileMetadata) {
-        // new and optimized logic: 
-        // - check download permission here (should be cached - so it's free!)
-        // - only then ask the file service if the thumbnail is available/exists.
-        // the service itself no longer checks download permissions.  
-        if (!fileDownloadHelper.canDownloadFile(fileMetadata)) {
-            return false;
-        }
-
-        return datafileService.isThumbnailAvailable(fileMetadata.getDataFile());
-    }
-    
-
     
     private Boolean lockedFromEditsVar;
     
@@ -3117,8 +3012,15 @@ public class EditDatafilesPage implements java.io.Serializable {
     	// ToDo - rsync was written before multiple store support and currently is hardcoded to use the "s3" store. 
     	// When those restrictions are lifted/rsync can be configured per store, the test in the 
         // Dataset Util method should be updated
+          if(settingsWrapper.isRsyncUpload() && !DatasetUtil.isAppropriateStorageDriver(dataset) ){
+              //dataset.file.upload.setUp.rsync.failed.detail
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.upload.setUp.rsync.failed"), BundleUtil.getStringFromBundle("dataset.file.upload.setUp.rsync.failed.detail"));
+                FacesContext.getCurrentInstance().addMessage(null, message);
+          }
 
-    	return settingsWrapper.isRsyncUpload() && DatasetUtil.isAppropriateStorageDriver(dataset);
+
+          
+          return settingsWrapper.isRsyncUpload() && DatasetUtil.isAppropriateStorageDriver(dataset);
     }
     
     
@@ -3136,4 +3038,23 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
         }       
     }    
+    
+    private String termsOfAccess;
+    private boolean fileAccessRequest;
+
+    public String getTermsOfAccess() {
+        return termsOfAccess;
+    }
+
+    public void setTermsOfAccess(String termsOfAccess) {
+        this.termsOfAccess = termsOfAccess;
+    }
+
+    public boolean isFileAccessRequest() {
+        return fileAccessRequest;
+    }
+
+    public void setFileAccessRequest(boolean fileAccessRequest) {
+        this.fileAccessRequest = fileAccessRequest;
+    }
 }

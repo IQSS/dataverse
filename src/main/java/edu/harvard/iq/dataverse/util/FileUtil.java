@@ -26,6 +26,7 @@ import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.Embargo;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -38,6 +39,17 @@ import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestServiceShapefileHelper;
 import edu.harvard.iq.dataverse.ingest.IngestableDataChecker;
+import edu.harvard.iq.dataverse.license.License;
+import edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil;
+import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatDoc;
+import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.HTML_H1;
+import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.HTML_TABLE_HDR;
+import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatTitle;
+import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatTable;
+import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatTableCell;
+import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatLink;
+import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatTableCellAlignRight;
+import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatTableRow;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -60,6 +72,8 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ArrayList;
@@ -71,6 +85,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.activation.MimetypesFileTypeMap;
 import javax.ejb.EJBException;
+import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
+import javax.faces.context.FacesContext;
+import javax.faces.validator.ValidatorException;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -85,9 +106,10 @@ import org.apache.commons.io.FilenameUtils;
 import com.amazonaws.AmazonServiceException;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import java.util.Arrays;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * a 4.0 implementation of the DVN FileUtil;
@@ -210,6 +232,8 @@ public class FileUtil implements java.io.Serializable  {
         FILE_THUMBNAIL_CLASSES.put(FILE_FACET_CLASS_UNKNOWN, FILE_THUMBNAIL_CLASS_OTHER);
         FILE_THUMBNAIL_CLASSES.put(FILE_FACET_CLASS_ARCHIVE, FILE_THUMBNAIL_CLASS_PACKAGE);
     }
+    
+    private static final String FILE_LIST_DATE_FORMAT = "d-MMMM-yyyy HH:mm";
 
     /**
      * This string can be prepended to a Base64-encoded representation of a PNG
@@ -686,7 +710,7 @@ public class FileUtil implements java.io.Serializable  {
         
     }
     
-    private static String checksumDigestToString(byte[] digestBytes) {
+    public static String checksumDigestToString(byte[] digestBytes) {
         StringBuilder sb = new StringBuilder("");
         for (int i = 0; i < digestBytes.length; i++) {
             sb.append(Integer.toString((digestBytes[i] & 0xff) + 0x100, 16).substring(1));
@@ -719,8 +743,23 @@ public class FileUtil implements java.io.Serializable  {
         return "";
     }
     
-    public static List<DataFile> createDataFiles(DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, String newCheckSum, SystemConfig systemConfig) throws IOException {
+    public static List<DataFile> createDataFiles(DatasetVersion version, InputStream inputStream,
+            String fileName, String suppliedContentType, String newStorageIdentifier, String newCheckSum,
+            SystemConfig systemConfig)  throws IOException {
+        ChecksumType checkSumType = DataFile.ChecksumType.MD5;
+        if (newStorageIdentifier == null) {
+            checkSumType = systemConfig.getFileFixityChecksumAlgorithm();
+        }
+        return createDataFiles(version, inputStream, fileName, suppliedContentType, newStorageIdentifier, newCheckSum, checkSumType, systemConfig);
+    }
+    
+    public static List<DataFile> createDataFiles(DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, String newCheckSum, ChecksumType newCheckSumType, SystemConfig systemConfig) throws IOException {
         List<DataFile> datafiles = new ArrayList<>();
+
+        //When there is no checksum/checksumtype being sent (normal upload, needs to be calculated), set the type to the current default
+        if(newCheckSumType == null) {
+            newCheckSumType = systemConfig.getFileFixityChecksumAlgorithm();
+        }
 
         String warningMessage = null;
 
@@ -964,13 +1003,13 @@ public class FileUtil implements java.io.Serializable  {
                     // of the unzipped file.
                     logger.warning("Unzipping failed; rolling back to saving the file as is.");
                     if (warningMessage == null) {
-                        warningMessage = "Failed to unzip the file. Saving the file as is.";
+                        warningMessage = BundleUtil.getStringFromBundle("file.addreplace.warning.unzip.failed");
                     }
 
                     datafiles.clear();
                 } catch (FileExceedsMaxSizeException femsx) {
                     logger.warning("One of the unzipped files exceeds the size limit; resorting to saving the file as is. " + femsx.getMessage());
-                    warningMessage = femsx.getMessage() + "; saving the zip file as is, unzipped.";
+                    warningMessage =  BundleUtil.getStringFromBundle("file.addreplace.warning.unzip.failed.size", Arrays.asList(FileSizeChecker.bytesToHumanReadable(fileSizeLimit)));
                     datafiles.clear();
                 } finally {
                     if (unZippedIn != null) {
@@ -1106,12 +1145,9 @@ public class FileUtil implements java.io.Serializable  {
         if (tempFile != null) {
             newFile = tempFile.toFile();
         }
-        ChecksumType checkSumType = DataFile.ChecksumType.MD5;
-        if (newStorageIdentifier == null) {
-            checkSumType = systemConfig.getFileFixityChecksumAlgorithm();
-        }
+        
 
-        DataFile datafile = createSingleDataFile(version, newFile, newStorageIdentifier, fileName, finalType, checkSumType, newCheckSum);
+        DataFile datafile = createSingleDataFile(version, newFile, newStorageIdentifier, fileName, finalType, newCheckSumType, newCheckSum);
         File f = null;
         if (tempFile != null) {
             f = tempFile.toFile();
@@ -1448,9 +1484,9 @@ public class FileUtil implements java.io.Serializable  {
         }
         // 1. License and Terms of Use:
         if (datasetVersion.getTermsOfUseAndAccess() != null) {
-            if (!TermsOfUseAndAccess.License.CC0.equals(datasetVersion.getTermsOfUseAndAccess().getLicense())
-                    && !(datasetVersion.getTermsOfUseAndAccess().getTermsOfUse() == null
-                    || datasetVersion.getTermsOfUseAndAccess().getTermsOfUse().equals(""))) {
+            License license = datasetVersion.getTermsOfUseAndAccess().getLicense();
+            if ((license == null && StringUtils.isNotBlank(datasetVersion.getTermsOfUseAndAccess().getTermsOfUse()))
+                    || (license != null && !license.isDefault())) {
                 logger.fine("Download popup required because of license or terms of use.");
                 return true;
             }
@@ -1486,7 +1522,7 @@ public class FileUtil implements java.io.Serializable  {
         }
         // 1. License and Terms of Use:
         if (datasetVersion.getTermsOfUseAndAccess() != null) {
-            if (!TermsOfUseAndAccess.License.CC0.equals(datasetVersion.getTermsOfUseAndAccess().getLicense())
+            if (!datasetVersion.getTermsOfUseAndAccess().getLicense().isDefault()
                     && !(datasetVersion.getTermsOfUseAndAccess().getTermsOfUse() == null
                     || datasetVersion.getTermsOfUseAndAccess().getTermsOfUse().equals(""))) {
                 logger.fine("Download popup required because of license or terms of use.");
@@ -1515,6 +1551,9 @@ public class FileUtil implements java.io.Serializable  {
         if (fileMetadata.isRestricted()) {
             String msg = "Not publicly downloadable because the file is restricted.";
             logger.fine(msg);
+            return false;
+        }
+        if (isActivelyEmbargoed(fileMetadata)) {
             return false;
         }
         boolean popupReasons = isDownloadPopupRequired(fileMetadata.getDatasetVersion());
@@ -1628,7 +1667,7 @@ public class FileUtil implements java.io.Serializable  {
             return false;
         }
         
-        if (file.isHarvested() || "".equals(file.getStorageIdentifier())) {
+        if (file.isHarvested() || StringUtil.isEmpty(file.getStorageIdentifier())) {
             return false;
         }
         
@@ -1900,5 +1939,177 @@ public class FileUtil implements java.io.Serializable  {
         checksumMapNew.put(chksum, dataFile);
         return false;
     }
+    
+    public static String formatFolderListingHtml(String folderName, DatasetVersion version, String apiLocation, boolean originals) {
+        String title = formatTitle("Index of folder /" + folderName);
+        List<FileMetadata> fileMetadatas = version.getFileMetadatasFolderListing(folderName);
+        
+        if (fileMetadatas == null || fileMetadatas.isEmpty()) {
+            return "";
+        }
+        
+        String persistentId = version.getDataset().getGlobalId().asString();
+        
+        StringBuilder sb = new StringBuilder();
+        
+        String versionTag = version.getFriendlyVersionNumber();
+        versionTag = "DRAFT".equals(versionTag) ? "Draft Version" : "v. " + versionTag;
+        sb.append(HtmlFormatUtil.formatTag("Index of folder /" + folderName + 
+                " in dataset " + persistentId + 
+                " (" + versionTag + ")", HTML_H1));
+        sb.append("\n");
+        sb.append(formatFolderListingTableHtml(folderName, fileMetadatas, apiLocation, originals));
+        
+        String body = sb.toString();
+                 
+        return formatDoc(title, body);
+    }
+    
+    private static String formatFolderListingTableHtml(String folderName, List<FileMetadata> fileMetadatas, String apiLocation, boolean originals) {
+        StringBuilder sb = new StringBuilder(); 
+        
+        sb.append(formatFolderListingTableHeaderHtml());
+        
+        for (FileMetadata fileMetadata : fileMetadatas) {
+            String localFolder = fileMetadata.getDirectoryLabel() == null ? "" : fileMetadata.getDirectoryLabel(); 
+            
+            if (folderName.equals(localFolder)) {
+                String accessUrl = getFileAccessUrl(fileMetadata, apiLocation, originals);
+                sb.append(formatFileListEntryHtml(fileMetadata, accessUrl));
+                sb.append("\n");
 
+            } else if (localFolder.startsWith(folderName)){
+                String subFolder = "".equals(folderName) ? localFolder : localFolder.substring(folderName.length() + 1);
+                if (subFolder.indexOf('/') > 0) {
+                    subFolder = subFolder.substring(0, subFolder.indexOf('/'));
+                }
+                String folderAccessUrl = getFolderAccessUrl(fileMetadata.getDatasetVersion(), folderName, subFolder, apiLocation, originals);
+                sb.append(formatFileListFolderHtml(subFolder, folderAccessUrl));
+                sb.append("\n");
+            }
+        }
+        
+        return formatTable(sb.toString());
+    }
+        
+    private static String formatFolderListingTableHeaderHtml() {
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append(HtmlFormatUtil.formatTag("Name", HTML_TABLE_HDR));
+        sb.append(HtmlFormatUtil.formatTag("Last Modified", HTML_TABLE_HDR));
+        sb.append(HtmlFormatUtil.formatTag("Size", HTML_TABLE_HDR));
+        sb.append(HtmlFormatUtil.formatTag("Description", HTML_TABLE_HDR));
+        
+        String hdr = formatTableRow(sb.toString());
+        
+        // add a separator row (again, we want it to look just like Apache index)
+        return hdr.concat(formatTableRow(HtmlFormatUtil.formatTag("<hr>", HTML_TABLE_HDR,"colspan=\"4\""))); 
+        
+    }
+    
+    private static String formatFileListEntryHtml(FileMetadata fileMetadata, String accessUrl) {
+        StringBuilder sb = new StringBuilder(); 
+        
+        String fileName = fileMetadata.getLabel();
+        String dateString =  new SimpleDateFormat(FILE_LIST_DATE_FORMAT).format(fileMetadata.getDataFile().getCreateDate()); 
+        String sizeString = fileMetadata.getDataFile().getFriendlySize();
+        
+        sb.append(formatTableCell(formatLink(fileName, accessUrl))); 
+        sb.append(formatTableCellAlignRight(dateString));
+        sb.append(formatTableCellAlignRight(sizeString));
+        sb.append(formatTableCellAlignRight("&nbsp;"));
+        
+        return formatTableRow(sb.toString());
+    }
+    
+    private static String formatFileListFolderHtml(String folderName, String listApiUrl) {
+        
+        StringBuilder sb = new StringBuilder();
+        
+        sb.append(formatTableCell(formatLink(folderName+"/", listApiUrl)));
+        sb.append(formatTableCellAlignRight(" - "));
+        sb.append(formatTableCellAlignRight(" - "));
+        sb.append(formatTableCellAlignRight("&nbsp;"));
+        
+        return formatTableRow(sb.toString());
+    }
+    
+    private static String getFileAccessUrl(FileMetadata fileMetadata, String apiLocation, boolean original) {
+        String fileId = fileMetadata.getDataFile().getId().toString();
+        
+        if (StringUtil.nonEmpty(fileMetadata.getDirectoryLabel())) {
+            fileId = fileMetadata.getDirectoryLabel().concat("/").concat(fileId);
+        }
+        
+        String formatArg = fileMetadata.getDataFile().isTabularData() && original ? "?format=original" : ""; 
+        
+        return apiLocation + "/api/access/datafile/" + fileId + formatArg; 
+    }
+    
+    private static String getFolderAccessUrl(DatasetVersion version, String currentFolder, String subFolder, String apiLocation, boolean originals) {
+        String datasetId = version.getDataset().getId().toString();
+        String versionTag = version.getFriendlyVersionNumber();
+        versionTag = versionTag.replace("DRAFT", ":draft");
+        if (!"".equals(currentFolder)) {
+            subFolder = currentFolder + "/" + subFolder;
+        }
+        
+        return apiLocation + "/api/datasets/" + datasetId + 
+                "/dirindex/?version=" + versionTag + "&" +
+                "folder=" + subFolder + 
+                (originals ? "&original=true" : "");
+    }
+
+    /**
+     * This method takes a JsonArray of JsonObjects and extracts the fields of those
+     * objects corresponding to the supplied list of headers to create a rectangular
+     * CSV file (with headers) that lists the values from each object in rows. It
+     * was developed for use with the metrics API but could be useful in other calls
+     * that require the same transformation.
+     * 
+     * @param jsonArray
+     *            - the array of JsonObjects containing key/value pairs with keys
+     *            matching the headers. Keys that don't match a header are
+     *            ignored/not included.
+     * @param headers
+     *            - strings to use as CSV headers
+     * @return - the CSV file as a string, rows separated by '\n'
+     */
+    public static String jsonArrayOfObjectsToCSV(JsonArray jsonArray, String... headers) {
+        StringBuilder csvSB = new StringBuilder(String.join(",", headers));
+        jsonArray.forEach((jv) -> {
+            JsonObject jo = (JsonObject) jv;
+            String[] values = new String[headers.length];
+            for (int i = 0; i < headers.length; i++) {
+                values[i] = jo.get(headers[i]).toString();
+            }
+            csvSB.append("\n").append(String.join(",", values));
+        });
+        return csvSB.toString();
+    }
+
+    public static boolean isActivelyEmbargoed(DataFile df) {
+        Embargo e = df.getEmbargo();
+        if (e != null) {
+            LocalDate endDate = e.getDateAvailable();
+            if (endDate != null && endDate.isAfter(LocalDate.now())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isActivelyEmbargoed(FileMetadata fileMetadata) {
+        return isActivelyEmbargoed(fileMetadata.getDataFile());
+    }
+    
+    public static boolean isActivelyEmbargoed(List<FileMetadata> fmdList) {
+        for (FileMetadata fmd : fmdList) {
+            if (isActivelyEmbargoed(fmd)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
 }

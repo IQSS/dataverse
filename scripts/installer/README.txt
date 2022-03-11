@@ -20,7 +20,6 @@ from scripts/installer (this directory):
 
 install
 glassfish-setup.sh
-pgdriver (the entire directory with all its contents)
 
 from scripts/api:
 
@@ -32,17 +31,12 @@ setup-identity-providers.sh
 setup-users.sh
 data (the entire directory with all its contents)
 
-from scripts/database:
-
-reference_data.sql
-
 from conf/jhove:
 
 jhove.conf
 
-SOLR schema and config files, from conf/solr/7.7.2: 
+SOLR schema and config files, from conf/solr/8.11.1:
 
 schema.xml
-schema_dv_cmb_copies.xml
-schema_dv_cmb_fields.xml
+schema_dv_mdb_fields.xml
 solrconfig.xml

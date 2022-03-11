@@ -7,12 +7,12 @@ import edu.harvard.iq.dataverse.ValidateEmail;
 import edu.harvard.iq.dataverse.authorization.AccessRequest;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2TokenData;
 import edu.harvard.iq.dataverse.userdata.UserUtil;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
-import edu.harvard.iq.dataverse.worldmapauth.WorldMapToken;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
@@ -115,6 +115,12 @@ public class AuthenticatedUser implements User, Serializable {
     
     private boolean superuser;
 
+    @Column(nullable=false)
+    private boolean deactivated;
+
+    @Column(nullable=true)
+    private Timestamp deactivatedTime;
+
     /**
      * @todo Consider storing a hash of *all* potentially interesting Shibboleth
      * attribute key/value pairs, not just the Identity Provider (IdP).
@@ -126,18 +132,7 @@ public class AuthenticatedUser implements User, Serializable {
     public String getIdentifier() {
         return IDENTIFIER_PREFIX + userIdentifier;
     }
-    
-    @OneToMany(mappedBy = "dataverseUser", cascade={CascadeType.REMOVE})
-    private List<WorldMapToken> worldMapTokens;
 
-    public List<WorldMapToken> getWorldMapTokens() {
-        return worldMapTokens;
-    }
-
-    public void setWorldMapTokens(List<WorldMapToken> worldMapTokens) {
-        this.worldMapTokens = worldMapTokens;
-    }
-    
     @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE})
     private List<UserNotification> notifications;
 
@@ -171,7 +166,10 @@ public class AuthenticatedUser implements User, Serializable {
     public void setDatasetLocks(List<DatasetLock> datasetLocks) {
         this.datasetLocks = datasetLocks;
     }
-    
+
+    @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<OAuth2TokenData> oAuth2TokenDatas;
+
     @Override
     public AuthenticatedUserDisplayInfo getDisplayInfo() {
         return new AuthenticatedUserDisplayInfo(firstName, lastName, email, affiliation, position);
@@ -315,6 +313,23 @@ public class AuthenticatedUser implements User, Serializable {
         this.superuser = superuser;
     }
 
+    @Override
+    public boolean isDeactivated() {
+        return deactivated;
+    }
+
+    public void setDeactivated(boolean deactivated) {
+        this.deactivated = deactivated;
+    }
+
+    public Timestamp getDeactivatedTime() {
+        return deactivatedTime;
+    }
+
+    public void setDeactivatedTime(Timestamp deactivatedTime) {
+        this.deactivatedTime = deactivatedTime;
+    }
+
     @OneToOne(mappedBy = "authenticatedUser")
     private AuthenticatedUserLookup authenticatedUserLookup;
 
@@ -371,6 +386,9 @@ public class AuthenticatedUser implements User, Serializable {
         authenicatedUserJson.add("createdTime", UserUtil.getTimestampStringOrNull(this.createdTime));
         authenicatedUserJson.add("lastLoginTime", UserUtil.getTimestampStringOrNull(this.lastLoginTime));
         authenicatedUserJson.add("lastApiUseTime", UserUtil.getTimestampStringOrNull(this.lastApiUseTime));
+
+        authenicatedUserJson.add("deactivated", this.deactivated);
+        authenicatedUserJson.add("deactivatedTime", UserUtil.getTimestampStringOrNull(this.deactivatedTime));
 
         return authenicatedUserJson;
     }

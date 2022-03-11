@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.maildomain;
 
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -84,6 +84,13 @@ public class MailDomainGroupTest {
         t.setDisplayName(RandomStringUtils.randomAlphanumeric(8));
         t.setDescription(RandomStringUtils.randomAlphanumeric(8));
         t.setEmailDomains(RandomStringUtils.randomAlphanumeric(5)+".com;"+RandomStringUtils.randomAlphanumeric(5)+".co.uk");
+        return t;
+    }
+    
+    public static MailDomainGroup genRegexGroup() {
+        MailDomainGroup t = genGroup();
+        t.setEmailDomains(".+\\.com$");
+        t.setIsRegEx(true);
         return t;
     }
 }

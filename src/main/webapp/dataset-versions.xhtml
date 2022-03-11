@@ -59,11 +59,11 @@
             <ui:fragment rendered="#{versionTab.released 
                                      or ((versionTab.deaccessioned or versionTab.draft) and permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset'))}">
                 <ui:fragment rendered="#{!(versionTab.released or versionTab.deaccessioned)}">
-                    <a id="versionLink" href="/dataset.xhtml?persistentId=#{versionTab.dataset.globalIdString}&#38;version=#{versionTab.versionState}" class="ui-commandlink ui-widget">
+                    <a href="/dataset.xhtml?persistentId=#{versionTab.dataset.globalIdString}&#38;version=#{versionTab.versionState}" class="ui-commandlink ui-widget">
                         <h:outputText rendered="#{!(versionTab.released or versionTab.deaccessioned)}" value="#{versionTab.versionState}" /></a>
                 </ui:fragment>
                 <ui:fragment rendered="#{(versionTab.released or versionTab.deaccessioned)}">
-                    <a id="versionLink" href="/dataset.xhtml?persistentId=#{versionTab.dataset.globalIdString}&#38;version=#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" class="ui-commandlink ui-widget">
+                    <a href="/dataset.xhtml?persistentId=#{versionTab.dataset.globalIdString}&#38;version=#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" class="ui-commandlink ui-widget">
                         <h:outputText rendered="#{versionTab.released or versionTab.deaccessioned}" value="#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" /></a>
                 </ui:fragment>
             </ui:fragment>
@@ -132,15 +132,19 @@
 
         <!-- contributor column -->
         <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.contributors']}" class="col-sm-3">
-            <ui:fragment rendered="#{!empty(versionTab.contributorNames)}">
+            <ui:fragment rendered="#{!empty(versionTab.contributorNames) and !anonymized}">
                 <h:outputText value="#{versionTab.contributorNames}" />
             </ui:fragment>
+            <ui:fragment rendered="#{!empty(versionTab.contributorNames) and anonymized}">
+                <h:outputText value="#{bundle['file.dataFilesTab.versions.headers.contributors.withheld']}" />
+            </ui:fragment>
+            
         </p:column><!-- end: contributor column -->
 
         <!-- date column -->
         <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.published']}" class="col-sm-2">
-            <ui:fragment><!-- rendered="#{ !empty(versionTab) and !empty(versionTab.versionDate) }"-->
-                <h:outputText id="versionDate" value="#{versionTab.versionDate}" />
+            <ui:fragment><!-- rendered="#{ !empty(versionTab) and !empty(versionTab.releaseDate) }"-->
+                <h:outputText id="versionDate" value="#{versionTab.publicationDateAsString}" />
             </ui:fragment>
         </p:column><!-- end: date column -->
     </p:dataTable>

@@ -57,13 +57,13 @@ public class IngestUtil {
      *
      * @param version the dataset version
      * @param newFiles the list of new data files to add to it
+     * @param fileToReplace
      */
-    public static void checkForDuplicateFileNamesFinal(DatasetVersion version, List<DataFile> newFiles) {
+    public static void checkForDuplicateFileNamesFinal(DatasetVersion version, List<DataFile> newFiles, DataFile fileToReplace) {
 
         // Step 1: create list of existing path names from all FileMetadata in the DatasetVersion
         // unique path name: directoryLabel + file separator + fileLabel
-        Set<String> pathNamesExisting = existingPathNamesAsSet(version);
-
+        Set<String> pathNamesExisting = existingPathNamesAsSet(version, ((fileToReplace == null) ? null : fileToReplace.getFileMetadata()));
         // Step 2: check each new DataFile against the list of path names, if a duplicate create a new unique file name
         for (Iterator<DataFile> dfIt = newFiles.iterator(); dfIt.hasNext();) {
 
@@ -248,7 +248,7 @@ public class IngestUtil {
         return existingPathNamesAsSet(version, null);
     }
 
-    private static Set<String> existingPathNamesAsSet(DatasetVersion version, FileMetadata fileMetadata) {
+    public static Set<String> existingPathNamesAsSet(DatasetVersion version, FileMetadata replacedFmd) {
         Set<String> pathNamesExisting = new HashSet<>();
 
         // create list of existing path names from all FileMetadata in the DatasetVersion
@@ -257,7 +257,7 @@ public class IngestUtil {
         // #6942 added proxy for existing files to a boolean set when dataset version copy is done
         for (Iterator<FileMetadata> fmIt = version.getFileMetadatas().iterator(); fmIt.hasNext();) {
             FileMetadata fm = fmIt.next();
-            if ((fm.isInPriorVersion() || fm.getId() != null) && (fileMetadata == null || !fm.getId().equals(fileMetadata.getId()))) {
+            if((fm.isInPriorVersion() || fm.getId() != null) && (replacedFmd==null || !fm.getDataFile().equals(replacedFmd.getDataFile()))) {
                 String existingName = fm.getLabel();
                 String existingDir = fm.getDirectoryLabel();
 

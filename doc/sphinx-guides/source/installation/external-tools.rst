@@ -1,7 +1,7 @@
 External Tools
 ==============
 
-External tools can provide additional features that are not part of Dataverse itself, such as data exploration.
+External tools can provide additional features that are not part of the Dataverse Software itself, such as data exploration.
 
 .. contents:: |toctitle|
   :local:

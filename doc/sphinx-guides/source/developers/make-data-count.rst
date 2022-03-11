@@ -1,7 +1,7 @@
 Make Data Count
 ===============
 
-Support for Make Data Count is a feature of Dataverse that is described in the :doc:`/admin/make-data-count` section of the Admin Guide. In order for developers to work on the feature, they must install Counter Processor, a Python 3 application, as described below. Counter Processor can be found at https://github.com/CDLUC3/counter-processor
+Support for Make Data Count is a feature of the Dataverse Software that is described in the :doc:`/admin/make-data-count` section of the Admin Guide. In order for developers to work on the feature, they must install Counter Processor, a Python 3 application, as described below. Counter Processor can be found at https://github.com/CDLUC3/counter-processor
 
 .. contents:: |toctitle|
         :local:
@@ -9,7 +9,7 @@ Support for Make Data Count is a feature of Dataverse that is described in the :
 Architecture
 ------------
 
-There are many components involved in Dataverse's architecture for Make Data Count as shown in the diagram below.
+There are many components involved in the Dataverse Software's architecture for Make Data Count as shown in the diagram below.
 
 |makedatacount_components|
 
@@ -28,20 +28,20 @@ To insert a citation you could insert a row like below, changing "72" in the exa
 Full Setup
 ~~~~~~~~~~
 
-The recommended way to work on the Make Data Count feature is to spin up an EC2 instance that has both Dataverse and Counter Processor installed. Go to the :doc:`deployment` page for details on how to spin up an EC2 instance and make sure that your Ansible file is configured to install Counter Processor before running the "create" script.
+The recommended way to work on the Make Data Count feature is to spin up an EC2 instance that has both the Dataverse Software and Counter Processor installed. Go to the :doc:`deployment` page for details on how to spin up an EC2 instance and make sure that your Ansible file is configured to install Counter Processor before running the "create" script.
 
 (Alternatively, you can try installing Counter Processor in Vagrant. :download:`setup-counter-processor.sh <../../../../scripts/vagrant/setup-counter-processor.sh>` might help you get it installed.)
 
-After you have spun to your EC2 instance, set ``:MDCLogPath`` so that Dataverse creates a log for Counter Processor to operate on. For more on this database setting, see the :doc:`/installation/config` section of the Installation Guide.
+After you have spun to your EC2 instance, set ``:MDCLogPath`` so that the Dataverse installation creates a log for Counter Processor to operate on. For more on this database setting, see the :doc:`/installation/config` section of the Installation Guide.
 
-Next you need to have Dataverse add some entries to the log that Counter Processor will operate on. To do this, click on some published datasets and download some files.
+Next you need to have the Dataverse installation add some entries to the log that Counter Processor will operate on. To do this, click on some published datasets and download some files.
 
 Next you should run Counter Processor to convert the log into a SUSHI report, which is in JSON format. Before running Counter Processor, you need to put a configuration file into place. As a starting point use :download:`counter-processor-config.yaml <../../../../scripts/vagrant/counter-processor-config.yaml>` and edit the file, paying particular attention to the following settings:
 
 - ``log_name_pattern`` You might want something like ``/usr/local/payara5/glassfish/domains/domain1/logs/counter_(yyyy-mm-dd).log``
 - ``year_month`` You should probably set this to the current month.
 - ``output_file`` This needs to be a directory that the "dataverse" Unix user can read but that the "counter" user can write to. In dev, you can probably get away with "/tmp" as the directory.
-- ``platform`` Out of the box from Counter Processor this is set to ``Dash`` but this should be changed to match the name of your Dataverse. Examples are "Harvard Dataverse" for Harvard University or "LibraData" for the University of Virginia.
+- ``platform`` Out of the box from Counter Processor this is set to ``Dash`` but this should be changed to match the name of your Dataverse installation. Examples are "Harvard Dataverse Repository" for Harvard University or "LibraData" for the University of Virginia.
 - ``upload_to_hub`` This should be "False" unless you are testing sending SUSHI reports to the DataCite hub.
 - ``simulate_date`` You should probably set this to tomorrow.
 
@@ -73,10 +73,10 @@ If all this is working and you want to send data to the test instance of the Dat
 
 For how to put citations into your dev database and how to get them out again, see :ref:`MDC-updateCitationsForDataset` section in Make Data Count of the Admin Guide.
 
-Testing Make Data Count and Dataverse
--------------------------------------
+Testing Make Data Count and Your Dataverse Installation
+-------------------------------------------------------
 
-A developer running Counter Processor alongside Dataverse for development or testing purposes will notice that once the raw Dataverse logs have been processed, there is no straightforward way to re-test those same logs.
+A developer running Counter Processor alongside the Dataverse installation for development or testing purposes will notice that once the raw Dataverse installation logs have been processed, there is no straightforward way to re-test those same logs.
 
 The first thing to fix is to clear two files from Counter Processor ``state`` folder, ``statefile.json`` and ``counter_db_[yyyy-mm].sqlite3``
 
@@ -88,7 +88,7 @@ To get the ``REPORT_ID``, look at the logs generated in ``/usr/local/counter-pro
 
 To read more about the Make Data Count api, see https://github.com/datacite/sashimi
 
-You can compare the MDC metrics display with Dataverse's original by toggling the ``:DisplayMDCMetrics`` setting (true by default to display MDC metrics).
+You can compare the MDC metrics display with the Dataverse installation's original by toggling the ``:DisplayMDCMetrics`` setting (true by default to display MDC metrics).
 
 Resources
 ---------

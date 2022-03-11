@@ -127,21 +127,36 @@ public class DatasetFieldValueValidatorTest {
         
         //URL
         dft.setFieldType(DatasetFieldType.FieldType.URL); 
-        value.setValue("http://cnn.com");
+        value.setValue("https://www.google.com");
         result = instance.isValid(value, ctx);
         assertEquals(true, result);
+
+        value.setValue("http://google.com");
+        result = instance.isValid(value, ctx);
+        assertEquals(true, result);
+
+        value.setValue("https://do-not-exist-123-123.com/"); // does not exist
+        result = instance.isValid(value, ctx);
+        assertEquals(true, result);   
         
+        value.setValue("ftp://somesite.com");
+        result = instance.isValid(value, ctx);
+        assertEquals(true, result);   
         
-        value.setValue("espn.com");
+        value.setValue("google.com");
         result = instance.isValid(value, ctx);
         assertEquals(false, result);
         
+        value.setValue("git@github.com:IQSS/dataverse.git");
+        result = instance.isValid(value, ctx);
+        assertEquals(false, result);
+
     }
 
     @Test
     public void testIsValidAuthorIdentifierOrcid() {
         DatasetFieldValueValidator validator = new DatasetFieldValueValidator();
-        Pattern pattern = DatasetAuthor.getValidPattern(DatasetAuthor.REGEX_ORCID);
+        Pattern pattern = ExternalIdentifier.valueOf("ORCID").getPattern();
         assertTrue(validator.isValidAuthorIdentifier("0000-0002-1825-0097", pattern));
         // An "X" at the end of an ORCID is less common but still valid.
         assertTrue(validator.isValidAuthorIdentifier("0000-0002-1694-233X", pattern));
@@ -154,7 +169,7 @@ public class DatasetFieldValueValidatorTest {
     @Test
     public void testIsValidAuthorIdentifierIsni() {
         DatasetFieldValueValidator validator = new DatasetFieldValueValidator();
-        Pattern pattern = DatasetAuthor.getValidPattern(DatasetAuthor.REGEX_ISNI);
+        Pattern pattern = ExternalIdentifier.valueOf("ISNI").getPattern();
         assertTrue(validator.isValidAuthorIdentifier("0000000121032683", pattern));
         assertFalse(validator.isValidAuthorIdentifier("junk", pattern));
     }
@@ -162,7 +177,7 @@ public class DatasetFieldValueValidatorTest {
     @Test
     public void testIsValidAuthorIdentifierLcna() {
         DatasetFieldValueValidator validator = new DatasetFieldValueValidator();
-        Pattern pattern = DatasetAuthor.getValidPattern(DatasetAuthor.REGEX_LCNA);
+        Pattern pattern = ExternalIdentifier.valueOf("LCNA").getPattern();
         assertTrue(validator.isValidAuthorIdentifier("n82058243", pattern));
         assertTrue(validator.isValidAuthorIdentifier("foobar123", pattern));
         assertFalse(validator.isValidAuthorIdentifier("junk", pattern));
@@ -171,7 +186,7 @@ public class DatasetFieldValueValidatorTest {
     @Test
     public void testIsValidAuthorIdentifierViaf() {
         DatasetFieldValueValidator validator = new DatasetFieldValueValidator();
-        Pattern pattern = DatasetAuthor.getValidPattern(DatasetAuthor.REGEX_VIAF);
+        Pattern pattern = ExternalIdentifier.valueOf("VIAF").getPattern();
         assertTrue(validator.isValidAuthorIdentifier("172389567", pattern));
         assertFalse(validator.isValidAuthorIdentifier("junk", pattern));
     }
@@ -179,7 +194,7 @@ public class DatasetFieldValueValidatorTest {
     @Test
     public void testIsValidAuthorIdentifierGnd() {
         DatasetFieldValueValidator validator = new DatasetFieldValueValidator();
-        Pattern pattern = DatasetAuthor.getValidPattern(DatasetAuthor.REGEX_GND);
+        Pattern pattern = ExternalIdentifier.valueOf("GND").getPattern();
         assertTrue(validator.isValidAuthorIdentifier("4079154-3", pattern));
         assertFalse(validator.isValidAuthorIdentifier("junk", pattern));
     }

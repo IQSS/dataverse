@@ -2,7 +2,7 @@
 SQL Upgrade Scripts
 ===================
 
-The database schema for Dataverse is constantly evolving and we have adopted a tool called Flyway to help keep your development environment up to date and in working order. As you make changes to the database schema (changes to ``@Entity`` classes), you must write SQL upgrade scripts when needed and follow Flyway file naming conventions.
+The database schema for the Dataverse Software is constantly evolving and we have adopted a tool called Flyway to help keep your development environment up to date and in working order. As you make changes to the database schema (changes to ``@Entity`` classes), you must write SQL upgrade scripts when needed and follow Flyway file naming conventions.
 
 .. contents:: |toctitle|
 	:local:
@@ -30,7 +30,7 @@ Create a new file called something like ``V4.11.0.1__5565-sanitize-directory-lab
 
 The SQL migration script you wrote will be part of the war file and executed when the war file is deployed. To see a history of Flyway database migrations that have been applied, look at the ``flyway_schema_history`` table.
 
-As with any task related to Dataverse development, if you need any help writing SQL upgrade scripts, please reach out using any of the channels mentioned under "Getting Help" in the :doc:`intro` section.
+As with any task related to the development of the Dataverse Software, if you need any help writing SQL upgrade scripts, please reach out using any of the channels mentioned under "Getting Help" in the :doc:`intro` section.
 
 Troubleshooting
 ---------------
@@ -38,7 +38,7 @@ Troubleshooting
 Renaming SQL Upgrade Scripts
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Please note that if you need to rename your script (because a new version of Dataverse was released, for example), you will see the error "FlywayException: Validate failed: Detected applied migration not resolved locally" when you attempt to deploy and deployment will fail.
+Please note that if you need to rename your script (because a new version of the Dataverse Software was released, for example), you will see the error "FlywayException: Validate failed: Detected applied migration not resolved locally" when you attempt to deploy and deployment will fail.
 
 To resolve this problem, delete the old migration from the ``flyway_schema_history`` table and attempt to redeploy.
 

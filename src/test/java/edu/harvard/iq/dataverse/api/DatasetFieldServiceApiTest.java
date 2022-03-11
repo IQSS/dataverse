@@ -43,7 +43,7 @@ public class DatasetFieldServiceApiTest {
     @Test
     public void testGetArrayIndexOutOfBoundMessage() {
         DatasetFieldServiceApi api = new DatasetFieldServiceApi();
-        String message = api.getArrayIndexOutOfBoundMessage(DatasetFieldServiceApi.HeaderType.DATASETFIELD, 5, new ArrayIndexOutOfBoundsException("4"));
+        String message = api.getArrayIndexOutOfBoundMessage(DatasetFieldServiceApi.HeaderType.DATASETFIELD, 5, 4);
         assertEquals(
             "Error parsing metadata block in DATASETFIELD part, line #5: missing 'watermark' column (#5)",
             message

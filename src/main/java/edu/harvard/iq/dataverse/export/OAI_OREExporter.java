@@ -25,7 +25,7 @@ public class OAI_OREExporter implements Exporter {
     public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream)
             throws ExportException {
         try {
-            new OREMap(version, ExportService.settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false)).writeOREMap(outputStream);
+            new OREMap(version).writeOREMap(outputStream);
         } catch (Exception e) {
             logger.severe(e.getMessage());
             e.printStackTrace();

@@ -10,11 +10,13 @@
 
         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
         <p class="help-block">
-            #{bundle['file.requestAccessTermsDialog.tip']}
+            #{someActivelyEmbargoedFiles ? bundle['file.requestAccessTermsDialog.embargoed.tip'] : bundle['file.requestAccessTermsDialog.tip']}
         </p>
-        
+        <p class="help-block" jsf:rendered="#{someActivelyEmbargoedFiles}">
+            #{bundle['file.requestAccessTermsDialog.embargoed']}
+        </p>
         <div class="form-horizontal">
-            <div class="form-group" jsf:rendered="#{workingVersion.termsOfUseAndAccess.license != 'CC0' and !empty workingVersion.termsOfUseAndAccess.termsOfUse}">
+            <div class="form-group" jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.license and workingVersion.termsOfUseAndAccess.license.name != 'CC0' and !empty workingVersion.termsOfUseAndAccess.termsOfUse}">
                 <label class="col-sm-3 control-label">
                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
                 </label>
@@ -42,7 +44,7 @@
         <div class="button-block">
             <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}" 
                            action="#{fileDownloadHelper.requestAccessIndirect()}"    
-                           update="@([id$=requestAccessPopupButton])" oncomplete="PF('requestAccessPopup').hide();">
+                           update="@([id$=requestAccessConsolidated]), @([id$=requestPanel]), @([id$=messagePanel]) @([id$=filesTable])" oncomplete="PF('requestAccessPopup').hide();">
             </p:commandButton>
             <button class="btn btn-link" onclick="PF('requestAccessPopup').hide();PF('blockDatasetForm').hide();" type="button">
                 #{bundle.cancel}

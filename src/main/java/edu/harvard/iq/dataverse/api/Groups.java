@@ -29,7 +29,7 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.PathParam;
-import static org.apache.commons.lang.StringUtils.isNumeric;
+import static org.apache.commons.lang3.StringUtils.isNumeric;
 
 /**
  *
@@ -231,6 +231,7 @@ public class Groups extends AbstractApiBean {
     public Response createMailDomainGroup(JsonObject dto) throws JsonParseException {
         MailDomainGroup grp = new JsonParser().parseMailDomainGroup(dto);
         mailDomainGroupPrv.saveOrUpdate(Optional.empty(), grp);
+        mailDomainGroupPrv.updateGroups();
 
         return created("/groups/domain/" + grp.getPersistedGroupAlias(), json(grp) );
     }
@@ -254,6 +255,7 @@ public class Groups extends AbstractApiBean {
         
         MailDomainGroup grp = new JsonParser().parseMailDomainGroup(dto);
         mailDomainGroupPrv.saveOrUpdate(Optional.of(groupAlias), grp);
+        mailDomainGroupPrv.updateGroups();
         
         return created("/groups/domain/" + grp.getPersistedGroupAlias(), json(grp) );
     }
@@ -276,6 +278,7 @@ public class Groups extends AbstractApiBean {
     @Path("domain/{groupAlias}")
     public Response deleteMailDomainGroup(@PathParam("groupAlias") String groupAlias) {
         mailDomainGroupPrv.delete(groupAlias);
+        mailDomainGroupPrv.updateGroups();
         return ok("Group " + groupAlias + " deleted.");
     }
 
