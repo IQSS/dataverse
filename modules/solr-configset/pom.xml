@@ -184,6 +184,7 @@
             <properties>
                 <solr.packaging.type>docker</solr.packaging.type>
                 <solr.configsets.path>/opt/solr/server/solr/configsets</solr.configsets.path>
+                <solr.memory>1073741824</solr.memory> <!-- = 1 GiB in bytes -->
             </properties>
             <build>
                 <plugins>
@@ -193,6 +194,7 @@
                         <artifactId>docker-maven-plugin</artifactId>
                         <extensions>true</extensions>
                         <configuration>
+                            <startParallel>true</startParallel>
                             <images>
                                 <image>
                                     <alias>solr</alias>
@@ -227,8 +229,38 @@
                                             <descriptor>${project.basedir}/src/assembly/default.xml</descriptor>
                                         </assembly>
                                     </build>
+                                    <!-- Run via Maven: mvn -Pct package docker:run -->
+                                    <run>
+                                        <cmd>
+                                            <shell>solr-precreate ${solr.collection} ${solr.configsets.path}/${solr.configset}</shell>
+                                        </cmd>
+                                        <!-- Limit to 1 GiB memory by default, but allow overrides via property -->
+                                        <memory>${solr.memory}</memory>
+                                        <ports>
+                                            <port>8983:8983</port>
+                                        </ports>
+                                        <volumes>
+                                            <bind>
+                                                <volume>solr-temp-volume:/var/solr</volume>
+                                            </bind>
+                                        </volumes>
+                                    </run>
                                 </image>
                             </images>
+                            <volumes>
+                                <volume>
+                                    <name>solr-temp-volume</name>
+                                    <driver>local</driver>
+                                    <opts>
+                                        <type>tmpfs</type>
+                                        <device>tmpfs</device>
+                                        <o>size=256m,uid=8939</o>
+                                    </opts>
+                                    <labels>
+                                        <volatileData>true</volatileData>
+                                    </labels>
+                                </volume>
+                            </volumes>
                         </configuration>
                     </plugin>
                 </plugins>
