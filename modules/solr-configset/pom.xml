@@ -15,7 +15,7 @@
     <packaging>${solr.packaging.type}</packaging>
     
     <properties>
-        <solr.configset.directory>${project.build.directory}/dataverse</solr.configset.directory>
+        <solr.configset.directory>${project.build.directory}/${solr.configset}</solr.configset.directory>
         <solr.packaging.type>pom</solr.packaging.type>
     </properties>
     

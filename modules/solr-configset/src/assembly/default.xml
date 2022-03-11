@@ -9,7 +9,7 @@
     <fileSets>
         <fileSet>
             <directory>${solr.configset.directory}</directory>
-            <outputDirectory>dataverse</outputDirectory>
+            <outputDirectory>${solr.configset}</outputDirectory>
             <includes>
                 <include>**/*</include>
             </includes>

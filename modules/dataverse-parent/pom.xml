@@ -198,6 +198,7 @@
         <!-- Container related -->
         <fabric8-dmp.version>0.39.1</fabric8-dmp.version>
         <ct.registry>ghcr.io</ct.registry>
+        <solr.configset>dataverse</solr.configset> <!-- Note: container usage only for now, might be reused in code -->
     </properties>
     
     <pluginRepositories>
