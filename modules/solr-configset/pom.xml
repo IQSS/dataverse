@@ -200,6 +200,14 @@
                                     <registry>${ct.registry}</registry>
                                     <build>
                                         <from>solr:${solr.version}</from>
+                                        <!-- Tune some settings by default for Dataverse usage -->
+                                        <env>
+                                            <!-- Use 80% of RAM as heap space by default, using the JVM Container Limits support -->
+                                            <!-- Ratios taken from https://github.com/fabric8io-images/run-java-sh/blob/master/TUNING.md#recommandations -->
+                                            <SOLR_JAVA_MEM>-XX:MaxRAMPercentage=80.0 -XX:MinHeapFreeRatio=20 -XX:MaxHeapFreeRatio=40</SOLR_JAVA_MEM>
+                                            <!-- To avoid "401 - URI too long" errors we need to set a larger request size -->
+                                            <SOLR_OPTS>-Dsolr.jetty.request.header.size=65535</SOLR_OPTS>
+                                        </env>
                                         <labels>
                                             <!-- Git details are coming from the git plugin, see parent module -->
                                             <org.opencontainers.image.created>${git.build.time}</org.opencontainers.image.created>
