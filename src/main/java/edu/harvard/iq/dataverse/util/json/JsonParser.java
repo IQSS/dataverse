@@ -301,7 +301,7 @@ public class JsonParser {
         dataset.setAuthority(obj.getString("authority", null) == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Authority) : obj.getString("authority"));
         dataset.setProtocol(obj.getString("protocol", null) == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Protocol) : obj.getString("protocol"));
         dataset.setIdentifier(obj.getString("identifier",null));
-        String mdl = obj.getString("metadatalanguage",null);
+        String mdl = obj.getString("metadataLanguage",null);
         if(mdl==null || settingsService.getBaseMetadataLanguageMap(new HashMap<String,String>(), true).containsKey(mdl)) {
           dataset.setMetadataLanguage(mdl);
         }else {
