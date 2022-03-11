@@ -106,6 +106,7 @@ Here are some questions to keep in the back of your mind as you test and move in
 - Do I want to to run my app server on the standard web ports (80 and 443) or do I want to "front" my app server with a proxy such as Apache or nginx? See "Network Ports" in the :doc:`config` section.
 - How many points of failure am I willing to tolerate? How much complexity do I want?
 - How much does it cost to subscribe to a service to create persistent identifiers such as DOIs or handles?
+- What licenses should I make available to my users?
 
 Next Steps
 ----------
