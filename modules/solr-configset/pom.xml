@@ -183,6 +183,7 @@
             <id>ct</id>
             <properties>
                 <solr.packaging.type>docker</solr.packaging.type>
+                <solr.configsets.path>/opt/solr/server/solr/configsets</solr.configsets.path>
             </properties>
             <build>
                 <plugins>
@@ -214,7 +215,7 @@
                                             <org.opencontainers.image.description>This container image provides a Dataverse-ready Solr Search Index.</org.opencontainers.image.description>
                                         </labels>
                                         <assembly>
-                                            <targetDir>/opt/solr/server/solr/configsets</targetDir>
+                                            <targetDir>${solr.configsets.path}</targetDir>
                                             <descriptor>${project.basedir}/src/assembly/default.xml</descriptor>
                                         </assembly>
                                     </build>
