@@ -208,7 +208,7 @@
                                             <!-- Ratios taken from https://github.com/fabric8io-images/run-java-sh/blob/master/TUNING.md#recommandations -->
                                             <SOLR_JAVA_MEM>-XX:MaxRAMPercentage=80.0 -XX:MinHeapFreeRatio=20 -XX:MaxHeapFreeRatio=40</SOLR_JAVA_MEM>
                                             <!-- To avoid "401 - URI too long" errors we need to set a larger request size -->
-                                            <SOLR_OPTS>-Dsolr.jetty.request.header.size=65535</SOLR_OPTS>
+                                            <SOLR_OPTS>-Dsolr.jetty.request.header.size=102400</SOLR_OPTS>
                                         </env>
                                         <labels>
                                             <!-- Git details are coming from the git plugin, see parent module -->
