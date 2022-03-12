@@ -152,91 +152,164 @@ Configuring Database Access for the Dataverse Installation (and the Dataverse So
 Solr
 ----
 
-The Dataverse Software search index is powered by Solr.
+The Dataverse Software search index is powered by `Solr <https://solr.apache.org>`_.
 
 Supported Versions
 ==================
 
-The Dataverse Software has been tested with Solr version |solr_version|. Future releases in the 8.x series are likely to be compatible; however, this cannot be confirmed until they are officially tested. Major releases above 8.x (e.g. 9.x) are not supported.
+The Dataverse Software has been tested with Solr version |solr_version|. Future releases in the 8.x series are likely to
+be compatible; however, this cannot be confirmed until they are officially tested. Major releases above 8.x (e.g. 9.x)
+are not supported.
+
+- Releases up to 4.20 supported Solr 7.x.x.
+- Releases 5.0 to 5.3 supported Solr 7.7.2.
+- Releases 5.4 to 5.9 supported Solr 8.8.1.
+- Releases since 5.10 support Solr |solr_version|
+
 
 Installing Solr
 ===============
 
-You should not run Solr as root. Create a user called ``solr`` and a directory to install Solr into:
+Note: this guide describes setting up a small installation, using the Solr *standalone* mode. For larger installations or
+higher availability requirements, please take a look at `Solr Cloud <https://solr.apache.org/guide/solrcloud.html>`_ mode.
+
+Optional Step 0:
+
+- Solr launches asynchronously and attempts to use the ``lsof`` binary to watch for its own availability.
+  Installation of this package isn't required but will prevent a warning in the log at startup. (Use ``dnf``, ``yum`` or
+  ``apt-get`` to install this standard package.)
+- Solr 8.x runs on Java 11 (same as your Dataverse installation). Remember to install it when running Solr on a
+  separated machine.
+
+**Step 1**: You should **not** run Solr as ``root``! Create a user and group called ``solr`` (as root) and a directory to
+install Solr into:
 
 .. parsed-literal::
-        useradd solr
         mkdir /usr/local/solr
-        chown solr:solr /usr/local/solr
+        groupadd -r --gid 8983 solr
+        useradd -r --home-dir /usr/local/solr --uid 8983 --gid 8983 solr
+        chown solr: /usr/local/solr
 
-Become the ``solr`` user and then download and configure Solr:
+**Step 2:** Become the ``solr`` user and then download and configure Solr:
 
 .. parsed-literal::
-        su - solr
+        sudo -u solr -s
         cd /usr/local/solr
         wget https://archive.apache.org/dist/lucene/solr/|solr_version|/solr-|solr_version|.tgz
         tar xvzf solr-|solr_version|.tgz
-        cd solr-|solr_version|
-        cp -r server/solr/configsets/_default server/solr/collection1
+        exit
 
-You should already have a "dvinstall.zip" file that you downloaded from https://github.com/IQSS/dataverse/releases . Unzip it into ``/tmp``. Then copy the files into place:
-
-.. parsed-literal::
-        cp /tmp/dvinstall/schema*.xml /usr/local/solr/solr-|solr_version|/server/solr/collection1/conf
-        cp /tmp/dvinstall/solrconfig.xml /usr/local/solr/solr-|solr_version|/server/solr/collection1/conf
-
-Note: The Dataverse Project team has customized Solr to boost results that come from certain indexed elements inside the Dataverse installation, for example prioritizing results from Dataverse collections over Datasets. If you would like to remove this, edit your ``solrconfig.xml`` and remove the ``<str name="qf">`` element and its contents. If you have ideas about how this boosting could be improved, feel free to contact us through our Google Group https://groups.google.com/forum/#!forum/dataverse-dev .
-
-A Dataverse installation requires a change to the ``jetty.xml`` file that ships with Solr. Edit ``/usr/local/solr/*/server/etc/jetty.xml`` , increasing ``requestHeaderSize`` from ``8192`` to ``102400``
-
-Solr will warn about needing to increase the number of file descriptors and max processes in a production environment but will still run with defaults. We have increased these values to the recommended levels by adding ulimit -n 65000 to the init script, and the following to ``/etc/security/limits.conf``::
-
-        solr soft nproc 65000
-        solr hard nproc 65000
-        solr soft nofile 65000
-        solr hard nofile 65000
-
-On operating systems which use systemd such as RHEL/derivative, you may then add a line like LimitNOFILE=65000 for the number of open file descriptors and a line with LimitNPROC=65000 for the max processes to the systemd unit file, or adjust the limits on a running process using the prlimit tool::
-
-        # sudo prlimit --pid pid --nofile=65000:65000
-
-Solr launches asynchronously and attempts to use the ``lsof`` binary to watch for its own availability. Installation of this package isn't required but will prevent a warning in the log at startup::
-
-	# yum install lsof
-
-Finally, you need to tell Solr to create the core "collection1" on startup:
-
-.. parsed-literal::
-
-        echo "name=collection1" > /usr/local/solr/solr-|solr_version|/server/solr/collection1/core.properties
 
 Solr Init Script
 ================
 
-Please choose the right option for your underlying Linux operating system.
-It will not be necessary to execute both!
+**Step 3:** Once you installed Solr, you need to add to the init system to start on boot, stop on shutdown etc. Please choose the
+right option for your underlying Linux operating system. *It will not be necessary to execute both!*
 
-For systems running systemd (like RedHat or derivatives since 7, Debian since 9, Ubuntu since 15.04), as root, download :download:`solr.service<../_static/installation/files/etc/systemd/solr.service>` and place it in ``/tmp``. Then start Solr and configure it to start at boot with the following commands::
+SystemD based systems
+^^^^^^^^^^^^^^^^^^^^^
 
+For systems running systemd (like RedHat or derivatives since 7, Debian since 9, Ubuntu since 15.04), as root, download
+:download:`solr.service<../_static/installation/files/etc/systemd/solr.service>` and place it in ``/tmp``. Then start
+Solr and configure it to start at boot with the following commands (run as root again):
+
+.. parsed-literal::
         cp /tmp/solr.service /etc/systemd/system
         systemctl daemon-reload
         systemctl start solr.service
         systemctl enable solr.service
 
-For systems using init.d (like CentOS 6), download this :download:`Solr init script <../_static/installation/files/etc/init.d/solr>` and place it in ``/tmp``. Then start Solr and configure it to start at boot with the following commands::
+SysVinit based systems
+^^^^^^^^^^^^^^^^^^^^^^
 
+For (older) systems using init.d (like CentOS 6 or Devuan), download this :download:`Solr init script <../_static/installation/files/etc/init.d/solr>`
+and place it in ``/tmp``. Then start Solr and configure it to start at boot with the following commands (run as root again):
+
+.. parsed-literal::
         cp /tmp/solr /etc/init.d
         service start solr
         chkconfig solr on
 
+
+Creating Solr Core
+==================
+
+Solr Cores hold the actual data of your index. They get created from templates called "config sets". We provide a
+template that has been tuned carefully for usage within a Dataverse installation and is distributed as a ZIP file.
+
+Note: The Dataverse Project team has customized the cores ``solrconfig.xml`` to boost Solr search results that come from
+certain indexed elements inside the Dataverse installation, for example prioritizing results from Dataverse collections
+over Datasets. If you would like to remove this, edit this file and remove the ``<str name="qf">`` element and its
+contents. If you have ideas about how this boosting could be improved, feel free to contact us through our
+`Google Group <https://groups.google.com/forum/#!forum/dataverse-dev>`_.
+
+**Step 4:** If not already done, please download the latest release package ``dvinstall.zip`` at
+https://github.com/IQSS/dataverse/releases.
+
+**Step 5:** Extract our Solr Dataverse config set from it and unpack the configset directory:
+
+.. parsed-literal::
+        sudo -u solr -s
+        cd solr-|solr_version|/server/solr/configsets
+        unzip path/to/dvinstall.zip solr-configset.zip
+        unzip solr-configset.zip
+
+**Step 6:** Create the core within your running Solr instance:
+
+.. parsed-literal::
+        /usr/local/solr/solr-|solr_version|/bin/solr create -c collection1 -d dataverse
+
+
+Tuning Solr
+===========
+
+The next steps are mostly extracted from the recommendations for
+`"Taking Solr to Production" <https://solr.apache.org/guide/taking-solr-to-production.html>`_.
+
+They are mostly necessary for older Linux distributions using System V init systems. If you are using our
+SystemD unit file (see above), they may be skipped.
+
+1. A Dataverse installation requires a change to the ``jetty.xml`` file that ships with Solr.
+   Edit ``/usr/local/solr/*/server/etc/jetty.xml`` , increasing ``requestHeaderSize`` from ``8192`` to ``102400``.
+
+   Alternative: use ``SOLR_OPTS`` to set the system property (see Solr docs linked above).
+
+2. Solr will warn about needing to increase the number of file descriptors and max processes in a production environment
+   but will still run with defaults. We have increased these values to the recommended levels by adding ulimit -n 65000
+   to the init script, and the following to ``/etc/security/limits.conf``:
+
+   .. parsed-literal::
+        solr soft nproc 65000
+        solr hard nproc 65000
+        solr soft nofile 65000
+        solr hard nofile 65000
+
+   Note: This is not necessary with SystemD, which ignores these settings (see unit file instead)!
+   If not using our unit file, you may need to add a line like ``LimitNOFILE=65000`` for the number of open file
+   descriptors and a line with ``LimitNPROC=65000`` for the max processes to the systemd unit file.
+
+   Alternative: adjust the limits on a running process using the ``prlimit`` tool:
+
+   .. parsed-literal::
+         sudo prlimit --pid pid --nofile=65000:65000
+
 Securing Solr
 =============
 
-Our sample init script and systemd service file linked above tell Solr to only listen on localhost (127.0.0.1). We strongly recommend that you also use a firewall to block access to the Solr port (8983) from outside networks, for added redundancy.
+Our sample init script and systemd service file linked above tell Solr to only listen on localhost (127.0.0.1). We
+strongly recommend that you also use a firewall to block access to the Solr port (8983) from outside networks, for
+added redundancy.
 
-It is **very important** not to allow direct access to the Solr API from outside networks! Otherwise, any host that can reach the Solr port (8983 by default) can add or delete data, search unpublished data, and even reconfigure Solr. For more information, please see https://lucene.apache.org/solr/guide/7_3/securing-solr.html. A particularly serious security issue that has been identified recently allows a potential intruder to remotely execute arbitrary code on the system. See `RCE in Solr via Velocity Template <https://github.com/veracode-research/solr-injection#7-cve-2019-xxxx-rce-via-velocity-template-by-_s00py>`_ for more information.
+It is **very important** not to allow direct access to the Solr API from outside networks! Otherwise, any host that can
+reach the Solr port (8983 by default) can add or delete data, search unpublished data, and even reconfigure Solr. For
+more information, please see https://lucene.apache.org/solr/guide/7_3/securing-solr.html. A particularly serious
+security issue that has been identified recently allows a potential intruder to remotely execute arbitrary code on the
+system. See `RCE in Solr via Velocity Template <https://github.com/veracode-research/solr-injection#7-cve-2019-xxxx-rce-via-velocity-template-by-_s00py>`_
+for more information.
 
-If you're running your Dataverse installation across multiple service hosts you'll want to remove the jetty.host argument (``-j jetty.host=127.0.0.1``) from the startup command line, but make sure Solr is behind a firewall and only accessible by the Dataverse installation host(s), by specific ip address(es).
+If you're running your Dataverse installation across multiple service hosts you'll want to remove the jetty.host
+argument (``-j jetty.host=127.0.0.1``) from the startup command line, but make sure Solr is behind a firewall and only
+accessible by the Dataverse installation host(s), by specific ip address(es).
 
 We additionally recommend that the Solr service account's shell be disabled, as it isn't necessary for daily operation::
 
@@ -250,7 +323,10 @@ or simply prepend each command you would run as the Solr user with "sudo -u solr
 
         # sudo -u solr command
 
-Finally, we would like to reiterate that it is simply never a good idea to run Solr as root! Running the process as a non-privileged user would substantially minimize any potential damage even in the event that the instance is compromised.
+Finally, we would like to reiterate that it is simply never a good idea to run Solr as root! Running the process as
+non-privileged user would substantially minimize any potential damage even in the event that the instance is compromised.
+
+
 
 jq
 --
