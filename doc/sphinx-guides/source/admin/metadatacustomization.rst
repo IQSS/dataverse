@@ -197,11 +197,13 @@ Each of the three main sections own sets of properties:
 +---------------------------------------------------------+---------------------------------------------------------+---------------------------------------------------------+
 | required                                                | For primitive fields, specify whether or not the        | For primitive fields, TRUE                              |
 |                                                         | field is required.                                      | (required) or FALSE (optional).                         |
+|                                                         |                                                         |                                                         |
 |                                                         | For compound fields, also specify if one or more        | For compound fields:                                    |
-|                                                         | subfields are required or conditionally required. At    | \• To make one or more                                  |
-|                                                         | least one instance of a required field must be          | subfields optional, the parent                          |
-|                                                         | present. More than one instance of a field may be       | field and subfield(s) must be                           |
-|                                                         | allowed, depending on the value of allowmultiples.      | FALSE (optional).                                       |
+|                                                         | subfields are required or conditionally required. At    |                                                         |
+|                                                         | least one instance of a required field must be          | \• To make one or more                                  |
+|                                                         | present. More than one instance of a field may be       | subfields optional, the parent                          |
+|                                                         | allowed, depending on the value of allowmultiples.      | field and subfield(s) must be                           |
+|                                                         |                                                         | FALSE (optional).                                       |
 |                                                         |                                                         |                                                         |
 |                                                         |                                                         | \• To make one or more subfields                        |
 |                                                         |                                                         | required, the parent field and                          |
