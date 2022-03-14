@@ -657,7 +657,7 @@ If you prefer to start with less of a blank slate, you can review the custom hom
 
 Note that the ``custom-homepage.html`` file provided has multiple elements that assume your root Dataverse collection still has an alias of "root". While you were branding your root Dataverse collection, you may have changed the alias to "harvard" or "librascholar" or whatever and you should adjust the custom homepage code as needed.
 
-For more background on what this curl command above is doing, see the "Database Settings" section below. If you decide you'd like to remove this setting, use the following curl command:
+For more background on what this curl command above is doing, see the :ref:`database-settings` section below. If you decide you'd like to remove this setting, use the following curl command:
 
 ``curl -X DELETE http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
 
