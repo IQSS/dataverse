@@ -20,19 +20,7 @@ if [ ! -e $UNZIPPED_DIR ]; then
   unzip $ZIP_FILE
 fi
 cd $UNZIPPED_DIR
-GEOIP_DIR='maxmind_geoip'
-GEOIP_FILE='GeoLite2-Country.mmdb'
-GEOIP_PATH_TO_FILE="$GEOIP_DIR/$GEOIP_FILE"
-if [ ! -e $GEOIP_PATH_TO_FILE ]; then
-  echo "let's do this thing"
-  TARBALL='GeoLite2-Country.tar.gz'
-  wget https://geolite.maxmind.com/download/geoip/database/$TARBALL
-  tar xfz GeoLite2-Country.tar.gz
-  # Glob (*) below because of directories like "GeoLite2-Country_20181204".
-  GEOIP_UNTARRED_DIR='GeoLite2-Country_*'
-  mv $GEOIP_UNTARRED_DIR/$GEOIP_FILE $GEOIP_PATH_TO_FILE
-  rm -rf $TARBALL $GEOIP_UNTARRED_DIR
-fi
+echo Installation of the GeoLite2 country database for counter-processor can no longer be automated. See the Installation Guide for the manual installation process.
 pip3 install -r requirements.txt
 # For now, parsing sample_logs/counter_2018-05-08.log
 for i in `echo {00..31}`; do

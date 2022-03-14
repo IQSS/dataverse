@@ -422,14 +422,14 @@ As root, download and install Counter Processor::
 
         cd /usr/local
         wget https://github.com/CDLUC3/counter-processor/archive/v0.1.04.tar.gz
-        tar xvfz v0.0.1.tar.gz
+        tar xvfz v0.1.04.tar.gz
         cd /usr/local/counter-processor-0.1.04
 
 Installing GeoLite Country Database
 ===================================
 
-Counter Processor can report per country results if the optional GeoLite Country Database is installed. At present, this database is free but to use it one nust signing an agreement (EULA) with MaxMind. 
-(The primary concern appears to be that individuals can opt-out of having their location tracked via IP address and, due to various privacy laws, MaxMind needs a way to comply with that for products it has 'sold' (for no cost in this case). Their agreement requires you to either configure automatic updates to the GeoLite Country database or be responsible on your own for managing take down notices.)
+Counter Processor can report per country results if the optional GeoLite Country Database is installed. At present, this database is free but to use it one must signing an agreement (EULA) with MaxMind. 
+(The primary concern appears to be that individuals can opt-out of having their location tracked via IP address and, due to various privacy laws, MaxMind needs a way to comply with that for products it has "sold" (for no cost in this case). Their agreement requires you to either configure automatic updates to the GeoLite Country database or be responsible on your own for managing take down notices.)
 The process required to sign up, download the database, and to configure automated updating is described at https://blog.maxmind.com/2019/12/18/significant-changes-to-accessing-and-using-geolite2-databases/ and the links from that page.
 
 As root, change to the Counter Processor directory you just created, download the GeoLite2-Country tarball from MaxMind, untar it, and copy the geoip database into place::
