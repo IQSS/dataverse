@@ -20,7 +20,7 @@ if [ ! -e $UNZIPPED_DIR ]; then
   unzip $ZIP_FILE
 fi
 cd $UNZIPPED_DIR
-echo Installation of the GeoLite2 country database for counter-processor can no longer be automated. See the Installation Guide for the manual installation process.
+echo "Installation of the GeoLite2 country database for counter-processor can no longer be automated. See the Installation Guide for the manual installation process."
 pip3 install -r requirements.txt
 # For now, parsing sample_logs/counter_2018-05-08.log
 for i in `echo {00..31}`; do
