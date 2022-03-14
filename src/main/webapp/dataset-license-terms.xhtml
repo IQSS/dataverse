@@ -245,7 +245,7 @@
                <h:outputText value="#{settingsWrapper.publicInstall ? bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess'] : bundle['file.dataFilesTab.terms.list.termsOfAccess.header']}"/>
                &#160;<span class="glyphicon glyphicon-chevron-up"/>
            </div>
-           <div id="panelCollapseTOA" class="collapse in">
+           <div id="panelCollapseTOA" class="collapse">
                <div class="panel-body">
                    <ui:fragment rendered="#{empty editMode}">
                        <div class="form-group" jsf:rendered="#{!settingsWrapper.publicInstall}">
@@ -480,7 +480,7 @@
            <div data-toggle="collapse" data-target="#panelCollapseGuestbook" class="panel-heading text-info">
                #{bundle['file.dataFilesTab.terms.list.guestbook']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
            </div>
-           <div id="panelCollapseGuestbook" class="collapse in">
+           <div id="panelCollapseGuestbook" class="collapse">
                <div class="panel-body">
                    <div class="form-group">
                        <label for="datasetForm:tabView:metadata_Guestbook" class="col-sm-3 control-label">
