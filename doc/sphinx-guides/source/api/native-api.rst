@@ -552,20 +552,9 @@ The optional ``pid`` parameter holds a persistent identifier (such as a DOI or H
 
 The optional ``release`` parameter tells the Dataverse installation to immediately publish the dataset. If the parameter is changed to ``no``, the imported dataset will remain in ``DRAFT`` status.
 
-The file is a DDI xml file. A sample DDI xml file may be downloaded here: :download:`ddi_dataset.xml <../_static/api/ddi_dataset.xml>`
+The file is a DDI XML file. A sample DDI XML file may be downloaded here: :download:`ddi_dataset.xml <../_static/api/ddi_dataset.xml>`
 
-DDI xml does not have a field that would correspond to Dataverse subject field. Therefore importddi fills subject field with ``N/A``. To update subject field one will need to run :ref:`edit-dataset-metadata-api` API
-
-.. code-block:: bash
-
-  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  export SERVER_URL=https://demo.dataverse.org
-  export PERSISTENT_IDENTIFIER=doi:ZZ7/MOSEISLEYDB94
-
-  curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/editMetadata/?persistentId=$PERSISTENT_IDENTIFIER&replace=true --upload-file subject-update-metadata.json
-  
-
-A sample JSON file for edit subject metadata may be downloaded here: :download:`subject-update-metadata.json <../_static/api/subject-update-metadata.json>`
+Note that DDI XML does not have a field that corresponds to the "Subject" field in Dataverse. Therefore the "Import DDI" API endpoint populates the "Subject" field with ``N/A``. To update the "Subject" field one will need to call the :ref:`edit-dataset-metadata-api` API with a JSON file that contains an update to "Subject" such as :download:`subject-update-metadata.json <../_static/api/subject-update-metadata.json>`. Alternatively, the web interface can be used to add a subject.
 
 .. warning::
 
