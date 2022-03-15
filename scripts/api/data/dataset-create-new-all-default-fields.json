@@ -1026,9 +1026,9 @@
           },
           {
             "typeName": "collectionMode",
-            "multiple": false,
+            "multiple": true,
             "typeClass": "primitive",
-            "value": "CollectionMode"
+            "value": ["CollectionMode"]
           },
           {
             "typeName": "researchInstrument",
