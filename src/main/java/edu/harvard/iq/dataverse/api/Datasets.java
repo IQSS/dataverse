@@ -2,30 +2,6 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
-import edu.harvard.iq.dataverse.ControlledVocabularyValue;
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
-import edu.harvard.iq.dataverse.DatasetLock;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DataverseSession;
-import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.MetadataBlock;
-import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
-import edu.harvard.iq.dataverse.PermissionServiceBean;
-import edu.harvard.iq.dataverse.RoleAssignment;
-import edu.harvard.iq.dataverse.UserNotification;
-import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -34,7 +10,6 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
-import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
@@ -85,7 +60,6 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 
 import edu.harvard.iq.dataverse.S3PackageImporter;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -123,7 +97,6 @@ import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 
-import edu.harvard.iq.dataverse.globus.AccessToken;
 import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 
 import java.io.IOException;
@@ -139,7 +112,6 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -147,12 +119,9 @@ import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
-import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.json.*;
 import javax.json.stream.JsonParsingException;
-import javax.json.*;
-import javax.persistence.Query;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.BadRequestException;
@@ -174,16 +143,12 @@ import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.lang3.StringUtils;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import com.amazonaws.services.s3.model.PartETag;
-import java.util.Map.Entry;
 import com.beust.jcommander.Strings;
-
-import java.util.Map.Entry;
 
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
@@ -249,7 +214,6 @@ public class Datasets extends AbstractApiBean {
     
     @Inject
     DataverseRequestServiceBean dvRequestService;
-
 
     @Inject
     WorkflowServiceBean wfService;
@@ -2421,7 +2385,23 @@ public class Datasets extends AbstractApiBean {
             }
         } else {
             newFilename = contentDispositionHeader.getFileName();
-            newFileContentType = formDataBodyPart.getMediaType().toString();
+            // Let's see if the form data part has the mime (content) type specified.
+            // Note that we don't want to rely on formDataBodyPart.getMediaType() -
+            // because that defaults to "text/plain" when no "Content-Type:" header is
+            // present. Instead we'll go through the headers, and see if "Content-Type:"
+            // is there. If not, we'll default to "application/octet-stream" - the generic
+            // unknown type. This will prompt the application to run type detection and
+            // potentially find something more accurate.
+            // newFileContentType = formDataBodyPart.getMediaType().toString();
+
+            for (String header : formDataBodyPart.getHeaders().keySet()) {
+                if (header.equalsIgnoreCase("Content-Type")) {
+                    newFileContentType = formDataBodyPart.getHeaders().get(header).get(0);
+                }
+            }
+            if (newFileContentType == null) {
+                newFileContentType = FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT;
+            }
         }
 
 
@@ -2561,7 +2541,7 @@ public class Datasets extends AbstractApiBean {
 
     @GET
     @Path("{identifier}/locks")
-    public Response getLocks(@PathParam("identifier") String id, @QueryParam("type") DatasetLock.Reason lockType) {
+    public Response getLocksForDataset(@PathParam("identifier") String id, @QueryParam("type") DatasetLock.Reason lockType) {
 
         Dataset dataset = null;
         try {
@@ -2686,6 +2666,60 @@ public class Datasets extends AbstractApiBean {
         });
     }
 
+    @GET
+    @Path("locks")
+    public Response listLocks(@QueryParam("type") String lockType, @QueryParam("userIdentifier") String userIdentifier) { //DatasetLock.Reason lockType) {        
+        // This API is here, under /datasets, and not under /admin, because we
+        // likely want it to be accessible to admin users who may not necessarily 
+        // have localhost access, that would be required to get to /api/admin in 
+        // most installations. It is still reasonable however to limit access to
+        // this api to admin users only.
+        AuthenticatedUser apiUser;
+        try {
+            apiUser = findAuthenticatedUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.UNAUTHORIZED, "Authentication is required.");
+        }
+        if (!apiUser.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
+        
+        // Locks can be optinally filtered by type, user or both.
+        DatasetLock.Reason lockTypeValue = null;
+        AuthenticatedUser user = null; 
+        
+        // For the lock type, we use a QueryParam of type String, instead of 
+        // DatasetLock.Reason; that would be less code to write, but this way 
+        // we can check if the value passed matches a valid lock type ("reason") 
+        // and provide a helpful error message if it doesn't. If you use a 
+        // QueryParam of an Enum type, trying to pass an invalid value to it 
+        // results in a potentially confusing "404/NOT FOUND - requested 
+        // resource is not available".
+        if (lockType != null && !lockType.isEmpty()) {
+            try {
+                lockTypeValue = DatasetLock.Reason.valueOf(lockType);
+            } catch (IllegalArgumentException iax) {
+                String validValues = Strings.join(",", DatasetLock.Reason.values());
+                String errorMessage = "Invalid lock type value: " + lockType + 
+                        "; valid lock types: " + validValues;
+                return error(Response.Status.BAD_REQUEST, errorMessage);
+            }
+        }
+        
+        if (userIdentifier != null && !userIdentifier.isEmpty()) {
+            user = authSvc.getAuthenticatedUser(userIdentifier);
+            if (user == null) {
+                return error(Response.Status.BAD_REQUEST, "Unknown user identifier: "+userIdentifier);
+            }
+        }
+        
+        //List<DatasetLock> locks = datasetService.getDatasetLocksByType(lockType);
+        List<DatasetLock> locks = datasetService.listLocks(lockTypeValue, user);
+                            
+        return ok(locks.stream().map(lock -> json(lock)).collect(toJsonArray()));
+    }   
+    
+    
     @GET
     @Path("{id}/makeDataCount/citations")
     public Response getMakeDataCountCitations(@PathParam("id") String idSupplied) {

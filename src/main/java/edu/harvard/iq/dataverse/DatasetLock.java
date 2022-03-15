@@ -51,10 +51,16 @@ import javax.persistence.NamedQuery;
 @Entity
 @Table(indexes = {@Index(columnList="user_id"), @Index(columnList="dataset_id")})
 @NamedQueries({
+    @NamedQuery(name = "DatasetLock.findAll",
+            query="SELECT lock FROM DatasetLock lock ORDER BY lock.id"),
     @NamedQuery(name = "DatasetLock.getLocksByDatasetId",
             query = "SELECT lock FROM DatasetLock lock WHERE lock.dataset.id=:datasetId"),
-            @NamedQuery(name = "DatasetLock.getLocksByAuthenticatedUserId",
-            query = "SELECT lock FROM DatasetLock lock WHERE lock.user.id=:authenticatedUserId")
+    @NamedQuery(name = "DatasetLock.getLocksByType",
+            query = "SELECT lock FROM DatasetLock lock WHERE lock.reason=:lockType ORDER BY lock.id"),
+    @NamedQuery(name = "DatasetLock.getLocksByAuthenticatedUserId",
+            query = "SELECT lock FROM DatasetLock lock WHERE lock.user.id=:authenticatedUserId  ORDER BY lock.id"),
+    @NamedQuery(name = "DatasetLock.getLocksByTypeAndAuthenticatedUserId",
+            query = "SELECT lock FROM DatasetLock lock WHERE lock.reason=:lockType AND lock.user.id=:authenticatedUserId  ORDER BY lock.id")
 }
 )
 public class DatasetLock implements Serializable {

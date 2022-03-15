@@ -4,9 +4,13 @@ on:
     push:
         paths:
             - "**.java"
+            - "pom.xml"
+            - "modules/**/pom.xml"
     pull_request:
         paths:
             - "**.java"
+            - "pom.xml"
+            - "modules/**/pom.xml"
 
 jobs:
     unittest:
@@ -17,10 +21,15 @@ jobs:
                 jdk: [ '11' ]
                 experimental: [false]
                 status:  ["Stable"]
-                include:
-                    - jdk: '17'
-                      experimental: true
-                      status: "Experimental"
+                #
+                # JDK 17 builds disabled due to non-essential fails marking CI jobs as completely failed within
+                # Github Projects, PR lists etc. This was consensus on Slack #dv-tech. See issue #8094
+                # (This is a limitation of how Github is currently handling these things.)
+                #
+                #include:
+                #    - jdk: '17'
+                #      experimental: true
+                #      status: "Experimental"
         continue-on-error: ${{ matrix.experimental }}
         runs-on: ubuntu-latest
         steps:

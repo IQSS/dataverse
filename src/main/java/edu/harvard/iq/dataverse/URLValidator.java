@@ -1,10 +1,8 @@
 package edu.harvard.iq.dataverse;
-
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import java.net.MalformedURLException;
-import java.net.URL;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+import org.apache.commons.validator.routines.UrlValidator;
 
 /**
  *
@@ -31,12 +29,22 @@ public class URLValidator implements ConstraintValidator<ValidateURL, String> {
         if (value == null || value.isEmpty()) {
             return true;
         }
+        
+        String[] schemes = {"http","https", "ftp"};
+        UrlValidator urlValidator = new UrlValidator(schemes);
+            
         try {
-            URL url = new URL(value);
-        } catch (MalformedURLException e) {
+            if (urlValidator.isValid(value)) {
+            } else {
+                return false;
+            }
+        } catch (NullPointerException npe) {
             return false;
         }
+        
         return true;
+        
     }
+
 
 }

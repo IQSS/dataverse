@@ -490,7 +490,7 @@ public class SettingsWrapper implements java.io.Serializable {
 
     Map<String,String> languageMap = null;
     
-    Map<String, String> getBaseMetadataLanguageMap(boolean refresh) {
+    public Map<String, String> getBaseMetadataLanguageMap(boolean refresh) {
         if (languageMap == null || refresh) {
             languageMap = new HashMap<String, String>();
 
@@ -520,26 +520,13 @@ public class SettingsWrapper implements java.io.Serializable {
     }
     
     private String getDefaultMetadataLanguageLabel(DvObjectContainer target) {
-        String mlLabel = Locale.getDefault().getDisplayLanguage();
-        Dataverse parent = target.getOwner();
-        boolean fromAncestor=false;
-        if (parent != null) {
-            fromAncestor=true;
-            String mlCode = parent.getEffectiveMetadataLanguage();
-            // If it's 'undefined', it's the global default
-            if (mlCode.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
-                //so it's not from an ancestor
-                fromAncestor=false;
-                //and we need to lookup the global default
-                mlCode = getDefaultMetadataLanguage();
-            }
+        String mlLabel = BundleUtil.getStringFromBundle("dataverse.metadatalanguage.setatdatasetcreation");
+        String mlCode = target.getEffectiveMetadataLanguage();
+        // If it's 'undefined', it's the global default
+        if (!mlCode.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
             // Get the label for the language code found
             mlLabel = getBaseMetadataLanguageMap(false).get(mlCode);
-        }
-        if(fromAncestor) {
             mlLabel = mlLabel + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
-        } else {
-            mlLabel = mlLabel + " " + BundleUtil.getStringFromBundle("dataverse.default");
         }
         return mlLabel;
     }
@@ -551,8 +538,8 @@ public class SettingsWrapper implements java.io.Serializable {
                 //One entry - it's the default
             return (String) mdMap.keySet().toArray()[0];
             } else {
-                //More than one - :MetadataLanguages is set so we use the default
-                return DvObjectContainer.DEFAULT_METADATA_LANGUAGE_CODE;
+                //More than one - :MetadataLanguages is set and the default is undefined (users must choose if the collection doesn't override the default)
+                return DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE;
             }
         } else {
             // None - :MetadataLanguages is not set so return null to turn off the display (backward compatibility)
