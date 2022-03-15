@@ -2520,9 +2520,10 @@ Each set of labels is identified by a curationLabelSet name and a JSON Array of 
 If the Dataverse Installation supports multiple languages, the curation label translations should be added to the Bundle property files.
 Since the Curation labels are free text, while creating the key, it has to be converted to lowercase, replace space with underscore.
 
-Example:
-standard_process=Standard Process
-author_contacted=Author contacted
+Example::
+
+  standard_process=Standard Process
+  author_contacted=Author contacted
 
 .. _:AllowCustomTermsOfUse:
 
