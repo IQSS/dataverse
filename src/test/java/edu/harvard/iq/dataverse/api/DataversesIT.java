@@ -500,7 +500,8 @@ public class DataversesIT {
         Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
         assertEquals(200, publishDataverse.getStatusCode());
 
-        String xml = new String(Files.readAllBytes(Paths.get("src/test/java/edu/harvard/iq/dataverse/export/ddi/exportfull_without_pid.xml")));
+        // This XML is a full DDI export without a PID.
+        String xml = new String(Files.readAllBytes(Paths.get("doc/sphinx-guides/source/_static/api/ddi_dataset.xml")));
 
         Response importDDI = UtilIT.importDatasetDDIViaNativeApi(apiToken, dataverseAlias, xml,  null, "no");
         logger.info(importDDI.prettyPrint());
