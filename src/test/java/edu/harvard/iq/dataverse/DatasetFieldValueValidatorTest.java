@@ -127,15 +127,30 @@ public class DatasetFieldValueValidatorTest {
         
         //URL
         dft.setFieldType(DatasetFieldType.FieldType.URL); 
-        value.setValue("http://cnn.com");
+        value.setValue("https://www.google.com");
         result = instance.isValid(value, ctx);
         assertEquals(true, result);
+
+        value.setValue("http://google.com");
+        result = instance.isValid(value, ctx);
+        assertEquals(true, result);
+
+        value.setValue("https://do-not-exist-123-123.com/"); // does not exist
+        result = instance.isValid(value, ctx);
+        assertEquals(true, result);   
         
+        value.setValue("ftp://somesite.com");
+        result = instance.isValid(value, ctx);
+        assertEquals(true, result);   
         
-        value.setValue("espn.com");
+        value.setValue("google.com");
         result = instance.isValid(value, ctx);
         assertEquals(false, result);
         
+        value.setValue("git@github.com:IQSS/dataverse.git");
+        result = instance.isValid(value, ctx);
+        assertEquals(false, result);
+
     }
 
     @Test

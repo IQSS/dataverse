@@ -6,7 +6,7 @@ Now that you've successfully logged into your Dataverse installation with a supe
 
 Settings within your Dataverse installation itself are managed via JVM options or by manipulating values in the ``setting`` table directly or through API calls.
 
-Once you have finished securing and configuring your Dataverse installation, you may proceed to the :doc:`/admin/index` for more information on the ongoing administration of a Dataverse installation. Advanced configuration topics are covered in the :doc:`r-rapache-tworavens`, :doc:`shibboleth` and :doc:`oauth2` sections.
+Once you have finished securing and configuring your Dataverse installation, you may proceed to the :doc:`/admin/index` for more information on the ongoing administration of a Dataverse installation. Advanced configuration topics are covered in the :doc:`shibboleth` and :doc:`oauth2` sections.
 
 .. contents:: |toctitle|
   :local:
@@ -112,9 +112,7 @@ The need to redirect port HTTP (port 80) to HTTPS (port 443) for security has al
 
 Your decision to proxy or not should primarily be driven by which features of the Dataverse Software you'd like to use. If you'd like to use Shibboleth, the decision is easy because proxying or "fronting" Payara with Apache is required. The details are covered in the :doc:`shibboleth` section.
 
-If you'd like to use TwoRavens, you should also consider fronting with Apache because you will be required to install an Apache anyway to make use of the rApache module. For details, see the :doc:`r-rapache-tworavens` section.
-
-Even if you have no interest in Shibboleth nor TwoRavens, you may want to front your Dataverse installation with Apache or nginx to simply the process of installing SSL certificates. There are many tutorials on the Internet for adding certs to Apache, including a some `notes used by the Dataverse Project team <https://github.com/IQSS/dataverse/blob/v4.6.1/doc/shib/shib.md>`_, but the process of adding a certificate to Payara is arduous and not for the faint of heart. The Dataverse Project team cannot provide much help with adding certificates to Payara beyond linking to `tips <http://stackoverflow.com/questions/906402/importing-an-existing-x509-certificate-and-private-key-in-java-keystore-to-use-i>`_ on the web.
+Even if you have no interest in Shibboleth, you may want to front your Dataverse installation with Apache or nginx to simply the process of installing SSL certificates. There are many tutorials on the Internet for adding certs to Apache, including a some `notes used by the Dataverse Project team <https://github.com/IQSS/dataverse/blob/v4.6.1/doc/shib/shib.md>`_, but the process of adding a certificate to Payara is arduous and not for the faint of heart. The Dataverse Project team cannot provide much help with adding certificates to Payara beyond linking to `tips <http://stackoverflow.com/questions/906402/importing-an-existing-x509-certificate-and-private-key-in-java-keystore-to-use-i>`_ on the web.
 
 Still not convinced you should put Payara behind another web server? Even if you manage to get your SSL certificate into Payara, how are you going to run Payara on low ports such as 80 and 443? Are you going to run Payara as root? Bad idea. This is a security risk. Under "Additional Recommendations" under "Securing Your Installation" above you are advised to configure Payara to run as a user other than root.
 
@@ -241,7 +239,7 @@ As for the "Remote only" authentication mode, it means that:
 - The "builtin" authentication provider has been disabled (:ref:`api-toggle-auth-provider`). Note that disabling the "builtin" authentication provider means that the API endpoint for converting an account from a remote auth provider will not work. Converting directly from one remote authentication provider to another (i.e. from GitHub to Google) is not supported. Conversion from remote is always to "builtin". Then the user initiates a conversion from "builtin" to remote. Note that longer term, the plan is to permit multiple login options to the same Dataverse installation account per https://github.com/IQSS/dataverse/issues/3487 (so all this talk of conversion will be moot) but for now users can only use a single login option, as explained in the :doc:`/user/account` section of the User Guide. In short, "remote only" might work for you if you only plan to use a single remote authentication provider such that no conversion between remote authentication providers will be necessary.
 
 File Storage: Using a Local Filesystem and/or Swift and/or object stores
----------------------------------------------------------------------------
+------------------------------------------------------------------------
 
 By default, a Dataverse installation stores all data files (files uploaded by end users) on the filesystem at ``/usr/local/payara5/glassfish/domains/domain1/files``. This path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.\<id\>.directory`` JVM option described below.
 
@@ -659,7 +657,7 @@ If you prefer to start with less of a blank slate, you can review the custom hom
 
 Note that the ``custom-homepage.html`` file provided has multiple elements that assume your root Dataverse collection still has an alias of "root". While you were branding your root Dataverse collection, you may have changed the alias to "harvard" or "librascholar" or whatever and you should adjust the custom homepage code as needed.
 
-For more background on what this curl command above is doing, see the "Database Settings" section below. If you decide you'd like to remove this setting, use the following curl command:
+For more background on what this curl command above is doing, see the :ref:`database-settings` section below. If you decide you'd like to remove this setting, use the following curl command:
 
 ``curl -X DELETE http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
 
@@ -731,7 +729,8 @@ Allowing the Language Used for Dataset Metadata to be Specified
 
 Since dataset metadata can only be entered in one language, and administrators may wish to limit which languages metadata can be entered in, Dataverse also offers a separate setting defining allowed metadata languages.
 The presence of the :ref:`:MetadataLanguages` database setting identifies the available options (which can be different from those in the :Languages setting above, with fewer or more options).
-Dataverse collection admins can select from these options to indicate which language should be used for new Datasets created with that specific collection.
+
+Dataverse collection admins can select from these options to indicate which language should be used for new Datasets created with that specific collection. If they do not, users will be asked when creating a dataset to select the language they want to use when entering metadata. 
 
 When creating or editing a dataset, users will be asked to enter the metadata in that language. The metadata language selected will also be shown when dataset metadata is viewed and will be included in metadata exports (as appropriate for each format) for published datasets:
 
@@ -1216,26 +1215,27 @@ Can also be set via *MicroProfile Config API* sources, e.g. the environment vari
 dataverse.rserve.host
 +++++++++++++++++++++
 
-Configuration for :doc:`r-rapache-tworavens`.
+Host name for Rserve, used for tasks that require use of R (to ingest RData files and to save tabular data as RData frames).
 
 dataverse.rserve.port
 +++++++++++++++++++++
 
-Configuration for :doc:`r-rapache-tworavens`.
+Port number for Rserve, used for tasks that require use of R (to ingest RData files and to save tabular data as RData frames).
 
 dataverse.rserve.user
 +++++++++++++++++++++
 
-Configuration for :doc:`r-rapache-tworavens`.
-
-dataverse.rserve.tempdir
-++++++++++++++++++++++++
-Configuration for :doc:`r-rapache-tworavens`.
+Username for Rserve, used for tasks that require use of R (to ingest RData files and to save tabular data as RData frames).
 
 dataverse.rserve.password
 +++++++++++++++++++++++++
 
-Configuration for :doc:`r-rapache-tworavens`.
+Password for Rserve, used for tasks that require use of R (to ingest RData files and to save tabular data as RData frames).
+
+dataverse.rserve.tempdir
+++++++++++++++++++++++++
+
+Temporary directory used by Rserve (defaults to /tmp/Rserv). Note that this location is local to the host on which Rserv is running (specified in ``dataverse.rserve.host`` above). When talking to Rserve, Dataverse needs to know this location in order to generate absolute path names of the files on the other end. 
 
 .. _dataverse.dropbox.key:
 
@@ -1939,16 +1939,6 @@ In the example below we reduce the timeout to 4 hours:
 
 ``curl -X PUT -d 240 http://localhost:8080/api/admin/settings/:LoginSessionTimeout``
 
-:TwoRavensUrl
-+++++++++++++
-
-The ``:TwoRavensUrl`` option is no longer valid. See :doc:`r-rapache-tworavens` and the :doc:`/admin/external-tools` section of the Admin Guide.
-
-:TwoRavensTabularView
-+++++++++++++++++++++
-
-The ``:TwoRavensTabularView`` option is no longer valid. See :doc:`r-rapache-tworavens` and the :doc:`/admin/external-tools` section of the Admin Guide.
-
 .. _:DatasetPublishPopupCustomText:
 
 :DatasetPublishPopupCustomText
@@ -2380,7 +2370,10 @@ If you don’t want date facets to be sorted chronologically, set:
 :CustomZipDownloadServiceUrl
 ++++++++++++++++++++++++++++
 
-The location of the "Standalone Zipper" service. If this option is specified, the Dataverse installation will be redirecing bulk/mutli-file zip download requests to that location, instead of serving them internally. See the "Advanced" section of the Installation guide for information on how to install the external zipper. (This is still an experimental feature, as of Dataverse Software 5.0).
+The location of the "Standalone Zipper" service. If this option is specified, the Dataverse installation will be
+redirecing bulk/multi-file zip download requests to that location, instead of serving them internally.
+See :ref:`zipdownloader` of the Advanced Installation guide for information on how to install the external zipper.
+(This is still an **experimental** feature, as of Dataverse Software 5.0).
 
 To enable redirects to the zipper installed on the same server as the main Dataverse Software application: 
 
@@ -2388,7 +2381,7 @@ To enable redirects to the zipper installed on the same server as the main Datav
 
 To enable redirects to the zipper on a different server: 
 
-``curl -X PUT -d 'https://zipper.example.edu/cgi-bin/zipdownload' http://localhost:8080/api/admin/settings/:CustomZipDownloadServiceUrl`` 
+``curl -X PUT -d 'https://zipper.example.edu/cgi-bin/zipdownload' http://localhost:8080/api/admin/settings/:CustomZipDownloadServiceUrl``
 
 :ArchiverClassName
 ++++++++++++++++++
