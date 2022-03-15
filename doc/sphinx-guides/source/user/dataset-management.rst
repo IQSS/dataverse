@@ -305,7 +305,7 @@ Choosing a License
 ------------------
 
 Each Dataverse installation provides a set of license(s) data can be released under, and whether users can specify custom terms instead (see below). 
-One of the available licenses (often the `Creative Commons CC0 Public Domain Dedication <https://creativecommons.org/publicdomain/zero/1.0/>`_) serves as the default if you do not make an explicit choice.
+One of the available licenses (often the `Creative Commons CC0 Public Domain Dedication <https://creativecommons.org/publicdomain/zero/1.0>`_) serves as the default if you do not make an explicit choice.
 If you want to apply one of the other available licenses to your dataset, you can change it on the Terms tab of your Dataset page.
 
 License Selection and Professional Norms
@@ -434,8 +434,8 @@ A **Provenance Description** allows you to add more provenance information in ad
 You can return to attach provenance to your data file later on by clicking the "Add + Edit Metadata" button on the file page, and then clicking the "Edit -> Provenance" button.
 
 ..	COMMENTED OUT UNTIL PROV TAB IS ADDED: 
-..	You can also attach provenance to your data file later on by clicking the "Add Provenance" button on the file page, under the Provenance tab: 
-..
+..	You can also attach provenance to your data file later on by clicking the "Add Provenance" button on the file page, under the Provenance tab:
+................................................................................................................................................
 ..	**(Insert screenshot of Provenance Tab's "Add Provenance button" here, once that functionality is developed)**
 
 .. COMMENTED OUT UNTIL PROV GRAPH IS ADDED: 
