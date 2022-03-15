@@ -307,7 +307,7 @@
                                     </p>                                    
                                 </ui:fragment>
                                 </ui:remove>
-                                <ui:fragment rendered="#{!DatasetPage.dataset.editVersion.hasRestrictedFile or !DatasetPage.dataset.editVersion.termsOfUseAndAccess.fileAccessRequest}">     
+                                <ui:fragment rendered="#{DatasetPage.dataset.editVersion.hasRestrictedFile}">     
                                     <div class="alert alert-info">
                                         <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{bundle['messages.info']}</strong> –
                                         <h:outputText value=" #{bundle['file.dataFilesTab.terms.list.termsOfAccess.description']}"/>
