@@ -108,10 +108,6 @@ Near the bottom of ``/etc/httpd/conf.d/ssl.conf`` but before the closing ``</Vir
 
 .. code-block:: text
 
-    # don't pass paths used by rApache and TwoRavens to Payara
-    ProxyPassMatch ^/RApacheInfo$ !
-    ProxyPassMatch ^/custom !
-    ProxyPassMatch ^/dataexplore !
     # don't pass paths used by Shibboleth to Payara
     ProxyPassMatch ^/Shibboleth.sso !
     ProxyPassMatch ^/shibboleth-ds !

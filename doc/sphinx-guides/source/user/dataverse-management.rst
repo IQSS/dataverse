@@ -79,7 +79,7 @@ Supported image types for logo images and footer images are JPEG, TIFF, or PNG a
 Widgets
 --------------
 
-The Widgets feature provides you with code for you to put on your personal website to have your Dataverse collection displayed there. There are two types of Widgets for a Dataverse collection, a Dataverse collection Search Box widget and a Dataverse collection Listing widget. From the Widgets tab on the Theme + Widgets page, you can copy and paste the code snippets for the widget you would like to add to your website. If you need to adjust the height of the widget on your website, you may do so by editing the `heightPx=500` parameter in the code snippet.
+The Widgets feature provides you with code for you to put on your personal website to have your Dataverse collection displayed there. There are two types of Widgets for a Dataverse collection, a Dataverse collection Search Box widget and a Dataverse collection Listing widget. Once a Dataverse collection has been published, from the Widgets tab on the Dataverse collection's Theme + Widgets page, it is possible to copy the code snippets for the widget(s) you would like to add to your website. If you need to adjust the height of the widget on your website, you may do so by editing the `heightPx=500` parameter in the code snippet.
 
 Dataverse Collection Search Box Widget
 **************************************
