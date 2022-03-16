@@ -72,43 +72,44 @@ Once a standardized version of you Custom Terms are registered as a license, an 
 Optional Components
 -------------------
 
+.. _zipdownloader:
+
 Standalone "Zipper" Service Tool
 ++++++++++++++++++++++++++++++++
 
-As of Dataverse Software 5.0 we offer an experimental optimization for the multi-file, download-as-zip functionality. If this option
-(``:CustomZipDownloadServiceUrl``) is enabled, instead of enforcing
-the size limit on multi-file zipped downloads (as normally specified
-by the option ``:ZipDownloadLimit``), we attempt to serve all the
-files that the user requested (that they are authorized to download),
-but the request is redirected to a standalone zipper service running
-as a cgi-bin executable under Apache. Thus moving these potentially
-long-running jobs completely outside the Application Server (Payara);
-and preventing worker threads from becoming locked serving them. Since
-zipping is also a CPU-intensive task, it is possible to have this
-service running on a different host system, freeing the cycles on the
-main Application Server. (The system running the service needs to have
-access to the database as well as to the storage filesystem, and/or S3
-bucket).
+As of Dataverse Software 5.0 we offer an **experimental** optimization for the multi-file, download-as-zip functionality.
+If this option (``:CustomZipDownloadServiceUrl``) is enabled, instead of enforcing the size limit on multi-file zipped
+downloads (as normally specified by the option ``:ZipDownloadLimit``), we attempt to serve all the files that the user
+requested (that they are authorized to download), but the request is redirected to a standalone zipper service running
+as a cgi-bin executable under Apache. This moves these potentially long-running jobs completely outside the Application Server (Payara), and prevents worker threads from becoming locked serving them. Since zipping is also a CPU-intensive task, it is possible to have
+this service running on a different host system, freeing the cycles on the main Application Server. (The system running
+the service needs to have access to the database as well as to the storage filesystem, and/or S3 bucket).
 
-Please consult the scripts/zipdownload/README.md in the Dataverse Software 5.0+ source tree for more information. 
+Please consult the `README at scripts/zipdownload <https://github.com/IQSS/dataverse/tree/master/scripts/zipdownload>`_
+in the Dataverse Software 5.0+ source tree for more information.
 
-To install: You can follow the instructions in the file above to build
-``ZipDownloadService-v1.0.0.jar``. It will also be available, pre-built as part of the Dataverse Software 5.0 release on GitHub. Copy it, together with the shell
-script scripts/zipdownload/cgi-bin/zipdownload to the cgi-bin
-directory of the chosen Apache server (/var/www/cgi-bin standard). 
+To install:
 
-Make sure the shell script (zipdownload) is executable, and edit it to configure the
-database access credentials. Do note that the executable does not need
-access to the entire Dataverse installation database. A security-conscious admin
-can create a dedicated database user with access to just one table:
-``CUSTOMZIPSERVICEREQUEST``.
+1. Follow the instructions in the file above to build ``zipdownloader-0.0.1.jar``. Please note that the package name and
+   the version were changed as of the release 5.10, as part of an overall cleanup and reorganization of the project 
+   tree. In the releases 5.0-5.9 it existed under the name ``ZipDownloadService-v1.0.0``. (A pre-built jar file was
+   distributed under that name as part of the 5.0 release on GitHub. Aside from the name change, there have been no 
+   changes in the functionality of the tool). 
+2. Copy it, together with the shell script :download:`cgi-bin/zipdownload <../../../../scripts/zipdownload/cgi-bin/zipdownload>`
+   to the ``cgi-bin`` directory of the chosen Apache server (``/var/www/cgi-bin`` standard).
+3. Make sure the shell script (``zipdownload``) is executable, and edit it to configure the database access credentials.
+   Do note that the executable does not need access to the entire Dataverse installation database. A security-conscious
+   admin can create a dedicated database user with access to just one table: ``CUSTOMZIPSERVICEREQUEST``.
 
-You may need to make extra Apache configuration changes to make sure /cgi-bin/zipdownload is accessible from the outside.
-For example, if this is the same Apache that's in front of your Dataverse installation Payara instance, you will need to add another pass through statement to your configuration:
+You may need to make extra Apache configuration changes to make sure ``/cgi-bin/zipdownload`` is accessible from the outside.
+For example, if this is the same Apache that's in front of your Dataverse installation Payara instance, you will need to
+add another pass through statement to your configuration:
 
 ``ProxyPassMatch ^/cgi-bin/zipdownload !``
 
-Test this by accessing it directly at ``<SERVER URL>/cgi-bin/download``. You should get a ``404 No such download job!``. If instead you are getting an "internal server error", this may be an SELinux issue; try ``setenforce Permissive``. If you are getting a generic Dataverse collection "not found" page, review the ``ProxyPassMatch`` rule you have added. 
+Test this by accessing it directly at ``<SERVER URL>/cgi-bin/download``. You should get a ``404 No such download job!``.
+If instead you are getting an "internal server error", this may be an SELinux issue; try ``setenforce Permissive``.
+If you are getting a generic Dataverse collection "not found" page, review the ``ProxyPassMatch`` rule you have added.
 
 To activate in your Dataverse installation::
 

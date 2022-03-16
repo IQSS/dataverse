@@ -2839,4 +2839,34 @@ public class UtilIT {
                         new DatasetFieldValue(field, value)));
         return field;
     }
+
+
+    static Response importDatasetDDIViaNativeApi(String apiToken, String dataverseAlias, String xml, String pid, String release) {
+
+        String postString = "/api/dataverses/" + dataverseAlias + "/datasets/:importddi";
+        if (pid != null || release != null  ) {
+            //postString = postString + "?";
+            if (pid != null) {
+                postString = postString + "?pid=" + pid;
+                if (release != null && release.compareTo("yes") == 0) {
+                    postString = postString + "&release=" + release.toString();
+                }
+            } else {
+                if (release != null && release.compareTo("yes") == 0) {
+                    postString = postString + "?release=" + release.toString();
+                }
+            }
+        }
+        logger.info("Here importDatasetDDIViaNativeApi");
+        logger.info(postString);
+
+        RequestSpecification importDDI = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .urlEncodingEnabled(false)
+                .body(xml)
+                .contentType("application/xml");
+
+
+        return importDDI.post(postString);
+    }
 }

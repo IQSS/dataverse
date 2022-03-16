@@ -305,7 +305,7 @@ Choosing a License
 ------------------
 
 Each Dataverse installation provides a set of license(s) data can be released under, and whether users can specify custom terms instead (see below). 
-One of the available licenses (often the `Creative Commons CC0 Public Domain Dedication <https://creativecommons.org/publicdomain/zero/1.0/>`_) serves as the default if you do not make an explicit choice.
+One of the available licenses (often the `Creative Commons CC0 Public Domain Dedication <http://creativecommons.org/publicdomain/zero/1.0>`_) serves as the default if you do not make an explicit choice.
 If you want to apply one of the other available licenses to your dataset, you can change it on the Terms tab of your Dataset page.
 
 License Selection and Professional Norms

@@ -1,0 +1,11 @@
+{
+    "fields": [
+        {
+            "typeName": "subject",
+            "typeClass": "controlledVocabulary",
+            "value": ["Social Sciences"]
+        }
+    ]
+}
+
+

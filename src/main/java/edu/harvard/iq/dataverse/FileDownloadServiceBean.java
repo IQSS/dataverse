@@ -291,7 +291,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     
     /**
      * Launch an "explore" tool which is a type of ExternalTool such as
-     * TwoRavens or Data Explorer. This method may be invoked directly from the
+     * Data Explorer. This method may be invoked directly from the
      * xhtml if no popup is required (no terms of use, no guestbook, etc.).
      */
     public void explore(GuestbookResponse guestbookResponse, FileMetadata fmd, ExternalTool externalTool) {
@@ -311,7 +311,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
         String localeCode = session.getLocaleCode();
         ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd, localeCode);
-        // Back when we only had TwoRavens, the downloadType was always "Explore". Now we persist the name of the tool (i.e. "TwoRavens", "Data Explorer", etc.)
+        // Persist the name of the tool (i.e. "Data Explorer", etc.)
         guestbookResponse.setDownloadtype(externalTool.getDisplayName());
         String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
         logger.fine("Exploring with " + toolUrl);
@@ -344,10 +344,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             apiToken.setTokenString(privateUrl.getToken());
         }
         return apiToken;
-    }
-
-    public Boolean canSeeTwoRavensExploreButton(){
-        return false;
     }
 
     public void downloadDatasetCitationXML(Dataset dataset) {
