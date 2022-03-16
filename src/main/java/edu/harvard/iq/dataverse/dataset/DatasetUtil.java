@@ -570,7 +570,14 @@ public class DatasetUtil {
     }
 
     public static String getLocaleExternalStatus(String status) {
-        String localizedName = BundleUtil.getStringFromBundle(status.toLowerCase().replace(" ", "_"));
+        String localizedName =  "" ;
+        try {
+            localizedName = BundleUtil.getStringFromPropertyFile(status.toLowerCase().replace(" ", "_"), "CurationLabels");
+        }
+        catch (Exception e) {
+            localizedName = status;
+        }
+
         if (localizedName == null) {
             localizedName = status ;
         }

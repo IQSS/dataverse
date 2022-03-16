@@ -2517,7 +2517,7 @@ Each set of labels is identified by a curationLabelSet name and a JSON Array of 
 
 ``curl -X PUT -d '{"Standard Process":["Author contacted", "Privacy Review", "Awaiting paper publication", "Final Approval"], "Alternate Process":["State 1","State 2","State 3"]}' http://localhost:8080/api/admin/settings/:AllowedCurationLabels``
 
-If the Dataverse Installation supports multiple languages, the curation label translations should be added to the Bundle property files.
+If the Dataverse Installation supports multiple languages, the curation label translations should be added to the CurationLables property files.
 Since the Curation labels are free text, while creating the key, it has to be converted to lowercase, replace space with underscore.
 
 Example::
