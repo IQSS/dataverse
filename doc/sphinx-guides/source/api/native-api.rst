@@ -552,7 +552,9 @@ The optional ``pid`` parameter holds a persistent identifier (such as a DOI or H
 
 The optional ``release`` parameter tells the Dataverse installation to immediately publish the dataset. If the parameter is changed to ``no``, the imported dataset will remain in ``DRAFT`` status.
 
-The file is a DDI xml file.
+The file is a DDI XML file. A sample DDI XML file may be downloaded here: :download:`ddi_dataset.xml <../_static/api/ddi_dataset.xml>`
+
+Note that DDI XML does not have a field that corresponds to the "Subject" field in Dataverse. Therefore the "Import DDI" API endpoint populates the "Subject" field with ``N/A``. To update the "Subject" field one will need to call the :ref:`edit-dataset-metadata-api` API with a JSON file that contains an update to "Subject" such as :download:`subject-update-metadata.json <../_static/api/subject-update-metadata.json>`. Alternatively, the web interface can be used to add a subject.
 
 .. warning::
 
@@ -584,10 +586,14 @@ The fully expanded example above (without environment variables) looks like this
 
 You should expect a 200 ("OK") response and JSON output.
 
+.. _download-guestbook-api:
+
 Retrieve Guestbook Responses for a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In order to retrieve a file containing a list of Guestbook Responses in csv format for Dataverse collection, you must know either its "alias" (which the GUI calls an "identifier") or its database ID. If the Dataverse collection has more than one guestbook you may provide the id of a single guestbook as an optional parameter. If no guestbook id is provided the results returned will be the same as pressing the "Download All Responses" button on the Manage Dataset Guestbook page. If the guestbook id is provided then only those responses from that guestbook will be included in the file.  
+For more about guestbooks, see :ref:`dataset-guestbooks` in the User Guide.
+
+In order to retrieve the Guestbook Responses for a Dataverse collection, you must know either its "alias" (which the GUI calls an "identifier") or its database ID. If the Dataverse collection has more than one guestbook you may provide the id of a single guestbook as an optional parameter. If no guestbook id is provided the results returned will be the same as pressing the "Download All Responses" button on the Manage Dataset Guestbook page. If the guestbook id is provided then only those responses from that guestbook will be included.  The FILENAME parameter is optional, and if it is not included, the responses will be displayed in the console.
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
 
@@ -597,14 +603,15 @@ In order to retrieve a file containing a list of Guestbook Responses in csv form
   export SERVER_URL=https://demo.dataverse.org
   export ID=root
   export GUESTBOOK_ID=1
+  export FILENAME=myResponses.csv 
 
-  curl -O -J -f -H  X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$ID/guestbookResponses?guestbookId=$GUESTBOOK_ID
+  curl -H  X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$ID/guestbookResponses?guestbookId=$GUESTBOOK_ID -o $FILENAME
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -O -J -f -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/dataverses/root/guestbookResponses?guestbookId=1
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/dataverses/root/guestbookResponses?guestbookId=1 -o myResponses.csv
 
 Datasets
 --------
@@ -682,7 +689,7 @@ List Versions of a Dataset
   export SERVER_URL=https://demo.dataverse.org
   export ID=24
 
-  curl $SERVER_URL/api/dataverses/$ID/versions
+  curl $SERVER_URL/api/datasets/$ID/versions
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -708,8 +715,10 @@ It returns a list of versions with their metadata, and file list:
         "lastUpdateTime": "2015-04-20T09:58:35Z",
         "releaseTime": "2015-04-20T09:58:35Z",
         "createTime": "2015-04-20T09:57:32Z",
-        "license": "CC0",
-        "termsOfUse": "CC0 Waiver",
+        "license": {
+          "name": "CC0 1.0",
+          "uri": "http://creativecommons.org/publicdomain/zero/1.0"
+        },
         "termsOfAccess": "You need to request for access.",
         "fileAccessRequest": true,
         "metadataBlocks": {...},
@@ -727,8 +736,10 @@ It returns a list of versions with their metadata, and file list:
         "lastUpdateTime": "2015-04-20T09:56:34Z",
         "releaseTime": "2015-04-20T09:56:34Z",
         "createTime": "2015-04-20T09:43:45Z",
-        "license": "CC0",
-        "termsOfUse": "CC0 Waiver",
+        "license": {
+          "name": "CC0 1.0",
+          "uri": "http://creativecommons.org/publicdomain/zero/1.0"
+        },
         "termsOfAccess": "You need to request for access.",
         "fileAccessRequest": true,
         "metadataBlocks": {...},
@@ -990,6 +1001,8 @@ Now that the resulting JSON file only contains the ``metadataBlocks`` key, you c
 
 Now that you've made edits to the metadata in your JSON file, you can send it to a Dataverse installation as described above.
 
+.. _edit-dataset-metadata-api:
+
 Edit Dataset Metadata
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -1165,7 +1178,7 @@ The fully expanded example above (without environment variables) looks like this
 .. _assign-role-on-a-dataset-api:
 
 Assign a New Role on a Dataset
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Assigns a new role, based on the POSTed JSON:
 
@@ -1193,7 +1206,7 @@ POSTed JSON example (the content of ``role.json`` file)::
 .. _revoke-role-on-a-dataset-api:
 
 Delete Role Assignment from a Dataset
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Delete the assignment whose id is ``$id``:
 
@@ -1399,7 +1412,7 @@ In practice, you only need one the ``dataset_id`` or the ``persistentId``. The e
     print r.status_code
     
 Report the data (file) size of a Dataset
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Shows the combined size in bytes of all the files uploaded into the dataset ``id``.
 
@@ -1515,6 +1528,9 @@ The fully expanded example above (without environment variables) looks like this
 Dataset Locks
 ~~~~~~~~~~~~~
 
+Manage Locks on a Specific Dataset
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 To check if a dataset is locked:
 
 .. code-block:: bash
@@ -1546,7 +1562,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/datasets/24/locks?type=Ingest"
 
-Currently implemented lock types are ``Ingest``, ``Workflow``, ``InReview``, ``DcmUpload``, ``pidRegister``, and ``EditInProgress``.
+Currently implemented lock types are ``Ingest``, ``Workflow``, ``InReview``, ``DcmUpload``, ``finalizePublication``, ``EditInProgress`` and ``FileValidationFailed``.
 
 The API will output the list of locks, for example:: 
 
@@ -1555,12 +1571,14 @@ The API will output the list of locks, for example::
       {
         "lockType":"Ingest",
         "date":"Fri Aug 17 15:05:51 EDT 2018",
-        "user":"dataverseAdmin"
+        "user":"dataverseAdmin",
+        "dataset":"doi:12.34567/FK2/ABCDEF"
       },
       {
         "lockType":"Workflow",
         "date":"Fri Aug 17 15:02:00 EDT 2018",
-        "user":"dataverseAdmin"
+        "user":"dataverseAdmin",
+        "dataset":"doi:12.34567/FK2/ABCDEF"
       }
     ]
   }
@@ -1607,7 +1625,7 @@ Or, to delete a lock of the type specified only. Note that this requires “supe
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
   export ID=24
-  export LOCK_TYPE=pidRegister
+  export LOCK_TYPE=finalizePublication
 
   curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE $SERVER_URL/api/datasets/$ID/locks?type=$LOCK_TYPE
 
@@ -1615,11 +1633,34 @@ The fully expanded example above (without environment variables) looks like this
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE https://demo.dataverse.org/api/datasets/24/locks?type=pidRegister
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE https://demo.dataverse.org/api/datasets/24/locks?type=finalizePublication
 
 If the dataset is not locked (or if there is no lock of the specified type), the API will exit with a warning message.
 
 (Note that the API calls above all support both the database id and persistent identifier notation for referencing the dataset)
+
+List Locks Across All Datasets
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Note that this API requires “superuser” credentials. You must supply the ``X-Dataverse-key`` header with the api token of an admin user (as in the example below).
+
+The output of this API is formatted identically to the API that lists the locks for a specific dataset, as in one of the examples above. 
+
+Use the following API to list ALL the locks on all the datasets in your installation:
+
+  ``/api/datasets/locks``
+
+The listing can be filtered by specific lock type **and/or** user, using the following *optional* query parameters:
+
+* ``userIdentifier`` - To list the locks owned by a specific user
+* ``type`` - To list the locks of the type specified. If the supplied value does not match a known lock type, the API will return an error and a list of valid lock types. As of writing this, the implemented lock types are ``Ingest``, ``Workflow``, ``InReview``, ``DcmUpload``, ``finalizePublication``, ``EditInProgress`` and ``FileValidationFailed``.
+
+For example:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key: xxx" "http://localhost:8080/api/datasets/locks?type=Ingest&userIdentifier=davis4ever"
+
 
 .. _dataset-metrics-api:
 
@@ -1799,6 +1840,38 @@ View the Timestamps on a Dataset
 When called by a user who can view the draft version of the dataset, additional timestamps are reported: ``lastUpdateTime``, ``lastIndexTime``, ``lastPermissionUpdateTime``, and ``globalIdCreateTime``.
 
 One use case where this API call could be useful is in allowing an external application to poll and wait for changes being made by the Dataverse software or other external tool to complete prior to continuing its own processing.
+
+Set an Embargo on Files in a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``/api/datasets/$dataset-id/files/actions/:set-embargo`` can be used to set an embargo on one or more files in a dataset. Embargoes can be set on files that are only in a draft dataset version (and are not in any previously published version) by anyone who can edit the dataset. The same API call can be used by a superuser to add an embargo to files that have already been released as part of a previously published dataset version. 
+
+The API call requires a Json body that includes the embargo's end date (dateAvailable), a short reason (optional), and a list of the fileIds that the embargo should be set on. The dateAvailable must be after the current date and the duration (dateAvailable - today's date) must be less than the value specified by the :ref:`:MaxEmbargoDurationInMonths` setting. All files listed must be in the specified dataset. For example: 
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/7U7YBV
+  export JSON='{"dateAvailable":"2021-10-20", "reason":"Standard project embargo", "fileIds":[300,301,302]}'
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -H "Content-Type:application/json" "$SERVER_URL/api/datasets/:persistentId/files/actions/:set-embargo?persistentId=$PERSISTENT_IDENTIFIER" -d "$JSON"
+
+Remove an Embargo on Files in a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+/api/datasets/$dataset-id/files/actions/:unset-embargo can be used to remove an embargo on one or more files in a dataset. Embargoes can be removed from files that are only in a draft dataset version (and are not in any previously published version) by anyone who can edit the dataset. The same API call can be used by a superuser to remove embargos from files that have already been released as part of a previously published dataset version.
+
+The API call requires a Json body that includes the list of the fileIds that the embargo should be removed from. All files listed must be in the specified dataset. For example: 
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/7U7YBV
+  export JSON='{"fileIds":[300,301]}'
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -H "Content-Type:application/json" "$SERVER_URL/api/datasets/:persistentId/files/actions/:unset-embargo?persistentId=$PERSISTENT_IDENTIFIER" -d "$JSON"
 
 Files
 -----
@@ -2420,10 +2493,12 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/files/:persistentId/prov-json?persistentId=doi:10.5072/FK2/AAA000"
 
+.. _datafile-integrity:
+
 Datafile Integrity
 ~~~~~~~~~~~~~~~~~~
 
-Starting the release 4.10 the size of the saved original file (for an ingested tabular datafile) is stored in the database. The following API will retrieve and permanently store the sizes for any already existing saved originals:
+Starting with the release 4.10 the size of the saved original file (for an ingested tabular datafile) is stored in the database. The following API will retrieve and permanently store the sizes for any already existing saved originals:
 
 .. code-block:: bash
 
@@ -2476,7 +2551,7 @@ In order to obtain a new token use::
 	curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/users/token/recreate
 
 Delete a Token
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~
 
 In order to delete a token use::
 
@@ -2781,6 +2856,115 @@ Each user can get a dump of their basic information in JSON format by passing in
 
 .. _pids-api:
 
+Managing Harvesting Server and Sets
+-----------------------------------
+
+This API can be used to manage the Harvesting sets that your installation makes available over OAI-PMH. For more information, see the :doc:`/admin/harvestserver` section of the Admin Guide.
+
+List All Harvesting Sets
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Shows all Harvesting Sets defined in the installation::
+
+  GET http://$SERVER/api/harvest/server/oaisets/
+
+List A Specific Harvesting Set
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Shows a Harvesting Set with a defined specname::
+
+  GET http://$SERVER/api/harvest/server/oaisets/$specname
+
+Create a Harvesting Set
+~~~~~~~~~~~~~~~~~~~~~~~
+
+To create a harvesting set you must supply a JSON file that contains the following fields: 
+
+- Name: Alpha-numeric may also contain -, _, or %, but no spaces. Must also be unique in the installation.
+- Definition: A search query to select the datasets to be harvested. For example, a query containing authorName:YYY would include all datasets where ‘YYY’ is the authorName.
+- Description: Text that describes the harvesting set. The description appears in the Manage Harvesting Sets dashboard and in API responses. This field is optional.
+
+An example JSON file would look like this::
+
+  {
+   "name":"ffAuthor",
+   "definition":"authorName:Finch, Fiona",
+   "description":"Fiona Finch’s Datasets"
+  }
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl -H X-Dataverse-key:$API_TOKEN -X POST "$SERVER_URL/api/harvest/server/oaisets/add" --upload-file harvestset-finch.json
+
+The fully expanded example above (without the environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/harvest/server/oaisets/add" --upload-file "harvestset-finch.json"
+
+Only users with superuser permissions may create harvesting sets.
+
+Modify an Existing Harvesting Set
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To modify a harvesting set, you must supply a JSON file that contains one or both of the following fields:
+
+- Definition: A search query to select the datasets to be harvested. For example, a query containing authorName:YYY would include all datasets where ‘YYY’ is the authorName.
+- Description: Text that describes the harvesting set. The description appears in the Manage Harvesting Sets dashboard and in API responses. This field is optional.
+
+Note that you may not modify the name of an existing harvesting set.
+
+An example JSON file would look like this::
+
+  {
+   "definition":"authorName:Finch, Fiona AND subject:trees",
+   "description":"Fiona Finch’s Datasets with subject of trees"
+  }
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export SPECNAME=ffAuthor
+
+  curl -H X-Dataverse-key:$API_TOKEN -X PUT "$SERVER_URL/api/harvest/server/oaisets/$SPECNAME" --upload-file modify-harvestset-finch.json
+
+The fully expanded example above (without the environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/harvest/server/oaisets/ffAuthor" --upload-file "modify-harvestset-finch.json"
+
+Only users with superuser permissions may modify harvesting sets.
+
+Delete an Existing Harvesting Set
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To delete a harvesting set, use the set's database name. For example, to delete an existing harvesting set whose database name is "ffAuthor":
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export SPECNAME=ffAuthor
+
+  curl -H X-Dataverse-key:$API_TOKEN -X DELETE "$SERVER_URL/api/harvest/server/oaisets/$SPECNAME"
+
+The fully expanded example above (without the environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/harvest/server/oaisets/ffAuthor"
+
+Only users with superuser permissions may delete harvesting sets.
+
 PIDs
 ----
 
@@ -3009,7 +3193,7 @@ Deletes an authentication provider from the system. The command succeeds even if
   DELETE http://$SERVER/api/admin/authenticationProviders/$id/
 
 List Global Roles
-~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 List all global roles in the system. ::
 
@@ -3444,7 +3628,7 @@ Validate an existing check sum value against one newly calculated from the saved
 Physical Files Validation in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The following validates all the physical files in the dataset spcified, by recalculating the checksums and comparing them against the values saved in the database::
+The following validates all the physical files in the dataset specified, by recalculating the checksums and comparing them against the values saved in the database::
 
   $SERVER_URL/api/admin/validate/dataset/files/{datasetId}
 
@@ -3573,3 +3757,51 @@ Recursively applies the role assignments of the specified Dataverse collection, 
   GET http://$SERVER/api/admin/dataverse/{dataverse alias}/addRoleAssignmentsToChildren
   
 Note: setting ``:InheritParentRoleAssignments`` will automatically trigger inheritance of the parent Dataverse collection's role assignments for a newly created Dataverse collection. Hence this API call is intended as a way to update existing child Dataverse collections or to update children after a change in role assignments has been made on a parent Dataverse collection.
+
+.. _license-management-api:
+
+Manage Available Standard License Terms
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For more context about configuring licenses, see :ref:`license-config` in the Installation Guide.
+
+View the list of standard license terms that can be selected for a dataset:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  curl $SERVER_URL/api/licenses
+
+View the details of the standard license with the database ID specified in ``$ID``:
+
+.. code-block:: bash
+
+  export ID=1
+  curl $SERVER_URL/api/licenses/$ID
+
+
+Superusers can add a new license by posting a JSON file adapted from this example :download:`add-license.json <../_static/api/add-license.json>`. The ``name`` and ``uri`` of the new license must be unique. If you are interested in adding a Creative Commons license, you are encouarged to use the JSON files under :ref:`adding-creative-commons-licenses`:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  curl -X POST -H 'Content-Type: application/json' -H X-Dataverse-key:$API_TOKEN --data-binary @add-license.json $SERVER_URL/api/licenses
+
+Superusers can change whether an existing license is active (usable for new dataset versions) or inactive (only allowed on already-published versions) specified by the license ``$ID``:
+
+.. code-block:: bash
+
+  export STATE=true
+  curl -X PUT -H 'Content-Type: application/json' -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/licenses/$ID/:active/$STATE
+
+Superusers can set which license is the default specified by the license ``$ID``:
+
+.. code-block:: bash
+
+  curl -X PUT -H 'Content-Type: application/json' -H X-Dataverse-key:$API_TOKEN --data-binary @edit-license.json $SERVER_URL/api/licenses/default/$ID
+
+Superusers can delete a license that is not in use by the license ``$ID``:
+
+.. code-block:: bash
+
+  curl -X DELETE -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/licenses/$ID

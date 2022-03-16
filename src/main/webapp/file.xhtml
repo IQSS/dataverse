@@ -44,11 +44,14 @@
                                     <span class="file-title-label">#{FilePage.fileMetadata.label}</span>
                                     
                                     <!-- FILE LEVEL MSGs -->
-                                    <div class="bg-warning text-warning text-center margin-bottom-half" jsf:rendered="#{FilePage.fileMetadata.dataFile.ingestProblem and FilePage.canUpdateDataset()}">
+                                    <div class="bg-info text-info text-center margin-bottom-half" jsf:rendered="#{FilePage.fileMetadata.dataFile.ingestProblem and FilePage.canUpdateDataset()}">
                                         <!-- Ingest failed -->
-                                        <span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.ingestFailed.header']}&#160;
-                                        <span data-toggle="tooltip" data-trigger="hover" data-placement="top" data-title="#{bundle['file.ingestFailed.message']} #{FilePage.fileMetadata.dataFile.ingestReportMessage}">
-                                            <span class="glyphicon glyphicon-question-sign"/>
+                                        <span class="glyphicon glyphicon-info-sign"/>
+                                        <span> #{bundle['file.ingestFailed.header']}&#160;</span>
+                                        <span>
+                                            <a tabindex="0" role="button" class="glyphicon glyphicon-question-sign tooltip-icon"
+                                               data-toggle="popover" data-placement="auto top" data-trigger="focus" data-html="true"
+                                               data-content="#{FilePage.ingestMessage} #{FilePage.fileMetadata.dataFile.ingestReportMessage}"/>
                                         </span>
                                     </div>
                                     <!-- END: FILE LEVEL MSGs -->
@@ -60,14 +63,18 @@
                                     </p>
 
                                     <div id="title-label-block" class="margin-top-half">
+                                    
                                         <!-- Restricted File Icon -->
                                         <span class="glyphicon glyphicon-lock text-danger" title="#{bundle['restricted']}" data-toggle="tooltip" jsf:rendered="#{FilePage.fileMetadata.restricted and !(fileDownloadHelper.canDownloadFile(FilePage.fileMetadata))}"/>
                                         <span class="icon-unlock text-success" title="#{bundle['restrictedaccess']}" data-toggle="tooltip" jsf:rendered="#{FilePage.fileMetadata.restricted  and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata) }"/>
+                                        
                                         <!-- DATASET Publication Status -->
                                         <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{FilePage.fileMetadata.datasetVersion.draft}"/>
+                                        <h:outputText value="#{bundle['embargoed']}" styleClass="label label-primary" rendered="#{dataFileServiceBean.isActivelyEmbargoed(FilePage.fileMetadata)}"/>
                                         <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{FilePage.fileMetadata.datasetVersion.inReview}"/>
                                         <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}"/>   
                                         <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}"/>
+                                        <h:outputText value="#{FilePage.fileMetadata.datasetVersion.externalStatusLabel}" styleClass="label label-info" rendered="#{FilePage.fileMetadata.datasetVersion.externalStatusLabel!=null  and FilePage.canPublishDataset()}"/>
                                         <!-- DATASET VERSION NUMBER -->
                                         <h:outputText styleClass="label label-default" rendered="#{FilePage.fileMetadata.datasetVersion.released and !(FilePage.fileMetadata.datasetVersion.draft or FilePage.fileMetadata.datasetVersion.inReview)}"
                                                       value="#{bundle['file.DatasetVersion']} #{FilePage.fileMetadata.datasetVersion.versionNumber}.#{FilePage.fileMetadata.datasetVersion.minorVersionNumber}"/> 
@@ -333,13 +340,14 @@
                                 </ui:include>
                             </p:tab>
                             <p:tab id="previewTab" title="#{bundle['file.previewTab.header']}" 
-                                   rendered="#{FilePage.toolsWithPreviews.size() > 0 and FilePage.previewAllowed}">
+                                   rendered="#{FilePage.toolsWithPreviews.size() > 0 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
                                 <!-- PREVIEW TERMS/GUESTBOOK FORM -->
                                 <ui:fragment rendered="#{FilePage.downloadPopupRequired and !FilePage.termsMet}">
                                     <ui:include src="file-download-popup-fragment.xhtml">
                                         <ui:param name="popupContext" value="previewTab"/>
                                         <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
                                         <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
+                                        <ui:param name="hasRestrictedFile" value="#{FilePage.fileMetadata.restricted}"/>
                                         <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
                                         <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
                                         <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
@@ -350,11 +358,11 @@
                                 <ui:fragment rendered="#{(!FilePage.downloadPopupRequired) or (FilePage.downloadPopupRequired and FilePage.termsMet)}">
                                 <div class="btn-toolbar margin-bottom" role="toolbar" aria-label="#{bundle['file.previewTab.button.label']}">
                                     <!-- Preview Button Group -->
-                                    <div class="btn-group" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 1 and fileDownloadHelper.isPreviewAllowed(FilePage.fileMetadata)}">
+                                    <div class="btn-group" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 1 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
                                         <button type="button" id="selectTool" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                             <span class="glyphicon glyphicon-eye-open"/> #{bundle['file.previewTab.button.label']} <span class="caret"></span>
                                         </button>
-                                        <ul class="dropdown-menu" role="menu">
+                                        <ul class="dropdown-menu">
                                             <ui:repeat value="#{FilePage.toolsWithPreviews}" var="tool">
                                                 <li>
                                                     <h:commandLink action="#{FilePage.setSelectedTool(tool)}">
@@ -395,7 +403,7 @@
                                     </div>
                                 </div>
                                 <!-- FRAME EXTERNAL TOOL EMBED -->
-                                <div id="previewPresentation" class="embed-responsive embed-responsive-16by9" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 0 and fileDownloadHelper.isPreviewAllowed(FilePage.fileMetadata)}">
+                                <div id="previewPresentation" class="embed-responsive embed-responsive-16by9" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 0 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
                                     <iframe role="presentation" title="#{bundle['file.previewTab.presentation']}" src="#{FilePage.preview(FilePage.selectedTool)}"></iframe>
                                 </div>
                                 </ui:fragment>
@@ -510,11 +518,32 @@
                                                         </th>
                                                         <td class="checksum-block">#{FilePage.file.checksumValue}</td>
                                                     </tr>
-                                                    <tr id="filePublicationDateBlock" jsf:rendered="#{FilePage.file.released}">
+                                                    <tr id="fileDepositDateBlock">
+                                                        <th scope="row">
+                                                            #{bundle['file.metadataTab.fileMetadata.depositDate.label']}
+                                                        </th>
+                                                        <td>#{FilePage.file.createDateFormattedYYYYMMDD}</td>
+                                                    </tr>
+                                                    <tr id="metadataReleaseDateBlock" jsf:rendered="#{FilePage.file.released}">
+                                                        <th scope="row">
+                                                            #{bundle['file.metadataTab.fileMetadata.metadataReleaseDate.label']}
+                                                        </th>
+                                                        <td>#{FilePage.file.publicationDateFormattedYYYYMMDD}
+                                                        </td>
+                                                    </tr>
+                                                    <tr id="fileEPublicationDateBlock" jsf:rendered="#{FilePage.file.released or !(empty FilePage.file.embargo)}">
                                                         <th scope="row">
                                                             #{bundle['file.metadataTab.fileMetadata.publicationDate.label']}
                                                         </th>
-                                                        <td>#{FilePage.file.publicationDateFormattedYYYYMMDD}</td>
+                                                        <td>#{!(empty FilePage.file.embargo) ? FilePage.embargoPhrase: ''} #{!(empty FilePage.file.embargo) ? FilePage.file.embargo.dateAvailable : FilePage.file.publicationDateFormattedYYYYMMDD}
+                                                        </td>
+                                                    </tr>
+                                                    <tr id="fileEmbargoBlock" jsf:rendered="#{!(empty FilePage.file.embargo) and ! (empty FilePage.file.embargo.reason)}">
+                                                        <th scope="row">
+                                                            #{bundle['file.metadataTab.fileMetadata.embargoReason.label']}
+                                                        </th>
+                                                        <td>#{FilePage.file.embargo.reason}
+                                                        </td>
                                                     </tr>
                                                     <tr id="fileSizeBlock" jsf:rendered="#{!(empty FilePage.file.friendlySize)}">
                                                         <th scope="row">
@@ -552,12 +581,6 @@
                                                         </th>
                                                         <td>#{FilePage.fileMetadata.description}</td>
                                                     </tr>
-                                                    <tr id="fileDepositDateBlock">
-                                                        <th scope="row">
-                                                            #{bundle['file.metadataTab.fileMetadata.depositDate.label']}
-                                                        </th>
-                                                        <td>#{FilePage.file.createDateFormattedYYYYMMDD}</td>
-                                                    </tr>
                                                 </tbody>
                                             </table>
                                         </div>
@@ -578,6 +601,9 @@
                         <ui:param name="bean" value="#{FilePage}"/>
                         <ui:param name="restrictFileAction" value="restrictFile"/>
                         <ui:param name="deleteFileAction" value="deleteFile"/>
+                        <ui:param name="saveEmbargoAction" value="saveEmbargo"/>
+                        <ui:param name="updateElements" value=":fileForm:embargoInputs"/>
+                        
                     </ui:include> 
                     <p:dialog id="shareDialog" header="#{bundle['file.share.title']}" widgetVar="shareDialog" modal="true" rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
                         <p class="help-block">#{bundle['file.share.tip']}</p>
@@ -593,6 +619,7 @@
                             <ui:param name="popupContext" value="downloadFile"/>
                             <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
                             <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
+                            <ui:param name="hasRestrictedFile" value="#{FilePage.fileMetadata.restricted}"/>
                             <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
                             <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
                             <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
@@ -613,6 +640,7 @@
                         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                         <ui:include src="file-request-access-popup-fragment.xhtml">
                             <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
+                            <ui:param name="someActivelyEmbargoedFiles" value="#{FilePage.cantRequestDueToEmbargo}"/>
                             <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
                         </ui:include>
                     </p:dialog>                    

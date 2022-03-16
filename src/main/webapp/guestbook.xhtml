@@ -44,6 +44,14 @@
                         </div>
                     </ui:fragment>
 
+                    <div class="alert alert-info">
+                        <span class="glyphicon glyphicon-info-sign"></span>
+                        <h:outputFormat value=" #{bundle['dataset.manageGuestbooks.noGuestbooks.learnMore']}" escape="false">
+                            <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                            <f:param value="#{systemConfig.guidesVersion}"/>
+                        </h:outputFormat>
+                    </div>
+
                     <!-- Tabs -->
                     <div class="form-horizontal" jsf:rendered="#{!empty GuestbookPage.editMode}">
                         <div class="form-group">
@@ -109,6 +117,7 @@
                                                             <h:selectOneMenu id="questionOptions" styleClass="form-control" value="#{cq.questionType}"
                                                                              onchange="#{GuestbookPage.toggleQuestionType(cq)}">
                                                                 <f:selectItem itemLabel="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionType.text']}" itemValue="text" />
+                                                                <f:selectItem itemLabel="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionType.textarea']}" itemValue="textarea" />
                                                                 <f:selectItem itemLabel="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionType.multiple']}" itemValue="options" />
                                                                 <p:ajax update=":guestbookForm:customQuestions" />
                                                                 <f:param name="SKIP_VALIDATION" value="true"/>
