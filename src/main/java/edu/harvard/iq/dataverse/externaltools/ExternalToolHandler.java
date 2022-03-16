@@ -115,12 +115,12 @@ public class ExternalToolHandler {
     }
 
     // TODO: rename to handleRequest() to someday handle sending headers as well as query parameters.
-    public String getQueryParametersForUrl() {
-        return getQueryParametersForUrl(false);
+    public String handleRequest() {
+        return handleRequest(false);
     }
     
     // TODO: rename to handleRequest() to someday handle sending headers as well as query parameters.
-    public String getQueryParametersForUrl(boolean preview) {
+    public String handleRequest(boolean preview) {
         requestMethod = requestMethod();
         if (requestMethod().equals(HttpMethod.POST)){
             try {
@@ -335,12 +335,12 @@ public class ExternalToolHandler {
         return HttpMethod.GET;
     }
     public String getToolUrlWithQueryParams() {
-        String params = getQueryParametersForUrl();
+        String params = ExternalToolHandler.this.handleRequest();
         return toolContext + params;
     }
     
     public String getToolUrlForPreviewMode() {
-        return externalTool.getToolUrl() + getQueryParametersForUrl(true);
+        return externalTool.getToolUrl() + handleRequest(true);
     }
 
     public ExternalTool getExternalTool() {
