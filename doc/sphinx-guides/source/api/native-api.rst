@@ -715,8 +715,10 @@ It returns a list of versions with their metadata, and file list:
         "lastUpdateTime": "2015-04-20T09:58:35Z",
         "releaseTime": "2015-04-20T09:58:35Z",
         "createTime": "2015-04-20T09:57:32Z",
-        "license": "CC0",
-        "termsOfUse": "CC0 Waiver",
+        "license": {
+          "name": "CC0 1.0",
+          "uri": "http://creativecommons.org/publicdomain/zero/1.0"
+        },
         "termsOfAccess": "You need to request for access.",
         "fileAccessRequest": true,
         "metadataBlocks": {...},
@@ -734,8 +736,10 @@ It returns a list of versions with their metadata, and file list:
         "lastUpdateTime": "2015-04-20T09:56:34Z",
         "releaseTime": "2015-04-20T09:56:34Z",
         "createTime": "2015-04-20T09:43:45Z",
-        "license": "CC0",
-        "termsOfUse": "CC0 Waiver",
+        "license": {
+          "name": "CC0 1.0",
+          "uri": "http://creativecommons.org/publicdomain/zero/1.0"
+        },
         "termsOfAccess": "You need to request for access.",
         "fileAccessRequest": true,
         "metadataBlocks": {...},

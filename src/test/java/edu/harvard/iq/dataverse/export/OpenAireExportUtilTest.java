@@ -790,7 +790,7 @@ public class OpenAireExportUtilTest {
         //then
         assertEquals("<rightsList>"
                 + "<rights rightsURI=\"info:eu-repo/semantics/closedAccess\"/>"
-                + "<rights rightsURI=\"https://creativecommons.org/publicdomain/zero/1.0/\">"
+                + "<rights rightsURI=\"http://creativecommons.org/publicdomain/zero/1.0/\">"
                 + "CC0 1.0</rights></rightsList>",
                 stringWriter.toString());
     }
