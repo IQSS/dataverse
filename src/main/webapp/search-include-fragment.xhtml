@@ -196,9 +196,11 @@
                     <p:dataList value="#{facetCategory.facetLabel}" var="facetLabel" rows="#{DataversePage.getNumberOfFacets(facetCategory.name,5)}">
                         <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{!DataversePage.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink">
                             <h:outputText value="#{facetLabel.name}">
-                                <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvocConf.get(facetCategory.datasetFieldTypeId).getString('languages'))}" />
-                                <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(facetCategory.datasetFieldTypeId).getString('cvoc-url','')}" />
-                                <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvocConf.get(facetCategory.datasetFieldTypeId).getString('protocol','')}" />
+                                <c:if test="#{!cvocConf.isEmpty()}">
+                                    <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvocConf.get(facetCategory.datasetFieldTypeId).getString('languages'))}" />
+                                    <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(facetCategory.datasetFieldTypeId).getString('cvoc-url','')}" />
+                                    <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvocConf.get(facetCategory.datasetFieldTypeId).getString('protocol','')}" />
+                                </c:if>
                             </h:outputText>
                             <h:outputFormat value=" &#40;{0}&#41;">
                                 <f:param value="#{facetLabel.count}"/>
@@ -215,9 +217,11 @@
 
                         <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{DataversePage.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink facetSelected">
                             <h:outputText value="#{facetLabel.name}">
-                                <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvocConf.get(facetCategory.datasetFieldTypeId).getString('languages'))}" />
-                                <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(facetCategory.datasetFieldTypeId).getString('cvoc-url','')}" />
-                                <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvocConf.get(facetCategory.datasetFieldTypeId).getString('protocol','')}" />
+                                <c:if test="#{!cvocConf.isEmpty()}">
+                                    <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvocConf.get(facetCategory.datasetFieldTypeId).getString('languages'))}" />
+                                    <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(facetCategory.datasetFieldTypeId).getString('cvoc-url','')}" />
+                                    <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvocConf.get(facetCategory.datasetFieldTypeId).getString('protocol','')}" />
+                                </c:if>
                             </h:outputText>
                             <h:outputFormat value=" &#40;{0}&#41;">
                                 <f:param value="#{facetLabel.count}"/>
