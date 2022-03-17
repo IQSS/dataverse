@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<codeBook xmlns="ddi:codebook:2_5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="ddi:codebook:2_5 https://ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd" version="2.5">
+  <docDscr>
+    <citation>
+      <titlStmt>
+        <titl>Replication Data for: Title</titl>
+      </titlStmt>
+      <distStmt>
+        <distrbtr source="archive">Root</distrbtr>
+        <distDate>2020-02-19</distDate>
+      </distStmt>
+      <verStmt source="archive">
+        <version date="2020-02-19" type="RELEASED">1</version>
+      </verStmt>
+      <biblCit>LastAuthor1, FirstAuthor1; LastAuthor2, FirstAuthor2, 2020, "Replication Data for: Title", Root, V1</biblCit>
+    </citation>
+  </docDscr>
+  <stdyDscr>
+    <citation>
+      <titlStmt>
+        <titl>Replication Data for: Title</titl>
+        <subTitl>Subtitle</subTitl>
+        <altTitl>Alternative Title</altTitl>
+        <IDNo agency="OtherIDAgency1">OtherIDIdentifier1</IDNo>
+        <IDNo agency="OtherIDAgency2">OtherIDIdentifier2</IDNo>
+      </titlStmt>
+      <rspStmt>
+        <AuthEnty affiliation="AuthorAffiliation1">LastAuthor1, FirstAuthor1</AuthEnty>
+        <AuthEnty affiliation="AuthorAffiliation2">LastAuthor2, FirstAuthor2</AuthEnty>
+        <othId role="Data Collector">LastContributor1, FirstContributor1</othId>
+        <othId role="Data Curator">LastContributor2, FirstContributor2</othId>
+      </rspStmt>
+      <prodStmt>
+        <producer affiliation="ProducerAffiliation1" abbr="ProducerAbbreviation1" role="http://ProducerLogoURL1.org" URI="http://ProducerURL1.org">LastProducer1, FirstProducer1</producer>
+        <producer affiliation="ProducerAffiliation2" abbr="ProducerAbbreviation2" role="http://ProducerLogoURL2.org" URI="http://ProducerURL2.org">LastProducer2, FirstProducer2</producer>
+        <prodDate>1003-01-01</prodDate>
+        <prodPlac>ProductionPlace</prodPlac>
+        <software version="SoftwareVersion1">SoftwareName1</software>
+        <software version="SoftwareVersion2">SoftwareName2</software>
+        <grantNo agency="GrantInformationGrantAgency1">GrantInformationGrantNumber1</grantNo>
+        <grantNo agency="GrantInformationGrantAgency2">GrantInformationGrantNumber2</grantNo>
+      </prodStmt>
+      <distStmt>
+        <distrbtr source="archive">Root</distrbtr>
+        <distrbtr affiliation="DistributorAffiliation1" abbr="DistributorAbbreviation1" URI="http://DistributorURL1.org" role="http://DistributorLogoURL1.org">LastDistributor1, FirstDistributor1</distrbtr>
+        <distrbtr affiliation="DistributorAffiliation2" abbr="DistributorAbbreviation2" URI="http://DistributorURL2.org" role="http://DistributorLogoURL2.org">LastDistributor2, FirstDistributor2</distrbtr>
+        <contact affiliation="ContactAffiliation1" email="ContactEmail1@mailinator.com">LastContact1, FirstContact1</contact>
+        <contact affiliation="ContactAffiliation2" email="ContactEmail2@mailinator.com">LastContact2, FirstContact2</contact>
+        <distDate>1004-01-01</distDate>
+        <depositr>LastDepositor, FirstDepositor</depositr>
+        <depDate>1002-01-01</depDate>
+      </distStmt>
+      <serStmt>
+        <serName>SeriesName</serName>
+        <serInfo>SeriesInformation</serInfo>
+      </serStmt>
+    </citation>
+    <stdyInfo>
+      <subject>
+        <keyword xml:lang="en">Agricultural Sciences</keyword>
+        <keyword xml:lang="en">Business and Management</keyword>
+        <keyword xml:lang="en">Engineering</keyword>
+        <keyword xml:lang="en">Law</keyword>
+        <keyword vocab="KeywordVocabulary1" vocabURI="http://KeywordVocabularyURL1.org">KeywordTerm1</keyword>
+        <keyword vocab="KeywordVocabulary2" vocabURI="http://KeywordVocabularyURL2.org">KeywordTerm2</keyword>
+      </subject>
+      <abstract date="1000-01-01">DescriptionText 1</abstract>
+      <abstract date="1000-02-02">DescriptionText2</abstract>
+      <sumDscr>
+        <timePrd cycle="P1" event="start" date="1005-01-01">1005-01-01</timePrd>
+        <timePrd cycle="P1" event="end" date="1005-01-02">1005-01-02</timePrd>
+        <timePrd cycle="P2" event="start" date="1005-02-01">1005-02-01</timePrd>
+        <timePrd cycle="P2" event="end" date="1005-02-02">1005-02-02</timePrd>
+        <collDate cycle="P1" event="start" date="1006-01-01">1006-01-01</collDate>
+        <collDate cycle="P1" event="end" date="1006-01-01">1006-01-01</collDate>
+        <collDate cycle="P2" event="start" date="1006-02-01">1006-02-01</collDate>
+        <collDate cycle="P2" event="end" date="1006-02-02">1006-02-02</collDate>
+        <dataKind>KindOfData1</dataKind>
+        <dataKind>KindOfData2</dataKind>
+        <nation>Afghanistan</nation>
+        <geogCover>GeographicCoverageCity1</geogCover>
+        <geogCover>GeographicCoverageStateProvince1</geogCover>
+        <geogCover>GeographicCoverageOther1</geogCover>
+        <nation>Albania</nation>
+        <geogCover>GeographicCoverageCity2</geogCover>
+        <geogCover>GeographicCoverageStateProvince2</geogCover>
+        <geogCover>GeographicCoverageOther2</geogCover>
+        <geoBndBox>
+          <westBL>10</westBL>
+          <eastBL>20</eastBL>
+          <northBL>30</northBL>
+          <southBL>40</southBL>
+        </geoBndBox>
+        <geoBndBox>
+          <southBL>80</southBL>
+          <northBL>70</northBL>
+          <eastBL>60</eastBL>
+          <westBL>50</westBL>
+        </geoBndBox>
+        <geogUnit>GeographicUnit1</geogUnit>
+        <geogUnit>GeographicUnit2</geogUnit>
+        <anlyUnit>UnitOfAnalysis1</anlyUnit>
+        <anlyUnit>UnitOfAnalysis2</anlyUnit>
+        <universe>Universe1</universe>
+        <universe>Universe2</universe>
+      </sumDscr>
+      <notes>Notes1</notes>
+    </stdyInfo>
+    <method>
+      <dataColl>
+        <timeMeth>TimeMethod</timeMeth>
+        <dataCollector>LastDataCollector1, FirstDataCollector1</dataCollector>
+        <collectorTraining>CollectorTraining</collectorTraining>
+        <frequenc>Frequency</frequenc>
+        <sampProc>SamplingProcedure</sampProc>
+        <targetSampleSize>
+          <sampleSizeFormula>TargetSampleSizeFormula</sampleSizeFormula>
+          <sampleSize>100</sampleSize>
+        </targetSampleSize>
+        <deviat>MajorDeviationsForSampleDesign</deviat>
+        <sources>
+          <dataSrc>DataSources1</dataSrc>
+          <dataSrc>DataSources2</dataSrc>
+          <srcOrig>OriginOfSources</srcOrig>
+          <srcChar>CharacteristicOfSourcesNoted</srcChar>
+          <srcDocu>DocumentationAndAccessToSources</srcDocu>
+        </sources>
+        <collMode>CollectionMode</collMode>
+        <resInstru>TypeOfResearchInstrument</resInstru>
+        <collSitu>CharacteristicsOfDataCollectionSituation</collSitu>
+        <actMin>ActionsToMinimizeLosses</actMin>
+        <conOps>ControlOperations</conOps>
+        <weight>Weighting</weight>
+        <cleanOps>CleaningOperations</cleanOps>
+      </dataColl>
+      <anlyInfo>
+        <respRate>ResponseRate</respRate>
+        <EstSmpErr>EstimatesOfSamplingError</EstSmpErr>
+        <dataAppr>OtherFormsOfDataAppraisal</dataAppr>
+      </anlyInfo>
+      <notes type="NotesType" subject="NotesSubject">NotesText</notes>
+    </method>
+    <dataAccs>
+      <notes type="DVN:TOA" level="dv">Terms of Access</notes>
+      <setAvail>
+        <accsPlac>Data Access Place</accsPlac>
+        <origArch>Original Archive</origArch>
+        <avlStatus>Availability Status</avlStatus>
+        <collSize>Size of Collection</collSize>
+        <complete>Study Completion</complete>
+      </setAvail>
+      <useStmt>
+        <confDec>Confidentiality Declaration</confDec>
+        <specPerm>Special Permissions</specPerm>
+        <restrctn>Restrictions</restrctn>
+        <contact>Contact for Access</contact>
+        <citReq>Citation Requirements</citReq>
+        <deposReq>Depositor Requirements</deposReq>
+        <conditions>Conditions </conditions>
+        <disclaimer>Disclaimer</disclaimer>
+      </useStmt>
+    </dataAccs>
+    <othrStdyMat>
+      <relMat>RelatedMaterial1</relMat>
+      <relMat>RelatedMaterial2</relMat>
+      <relStdy>RelatedDatasets1</relStdy>
+      <relStdy>RelatedDatasets2</relStdy>
+      <relPubl>
+        <citation>
+          <titlStmt>
+            <IDNo agency="ark">RelatedPublicationIDNumber1</IDNo>
+          </titlStmt>
+          <biblCit>RelatedPublicationCitation1</biblCit>
+        </citation>
+        <ExtLink URI="http://RelatedPublicationURL1.org"/>
+      </relPubl>
+      <relPubl>
+        <citation>
+          <titlStmt>
+            <IDNo agency="arXiv">RelatedPublicationIDNumber2</IDNo>
+          </titlStmt>
+          <biblCit>RelatedPublicationCitation2</biblCit>
+        </citation>
+        <ExtLink URI="http://RelatedPublicationURL2.org"/>
+      </relPubl>
+      <othRefs>OtherReferences1</othRefs>
+      <othRefs>OtherReferences2</othRefs>
+    </othrStdyMat>
+    <notes>StudyLevelErrorNotes</notes>
+  </stdyDscr>
+</codeBook>
