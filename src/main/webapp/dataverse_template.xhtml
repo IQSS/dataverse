@@ -48,7 +48,7 @@
 	<ui:fragment rendered="#{!empty settingsWrapper.get(':StyleCustomizationFile')}">
             <style>
                 /* Custom CSS */
-                <o:resourceInclude path="/CustomizationFilesServlet?customFileType=style" />
+                <![CDATA[<o:resourceInclude path="/CustomizationFilesServlet?customFileType=style" />]]>
             </style>
         </ui:fragment>
     </h:head>

@@ -6,11 +6,10 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:c="http://java.sun.com/jsp/jstl/core"
       xmlns:o="http://omnifaces.org/ui"
-      xmlns:jsf="http://xmlns.jcp.org/jsf"
-      xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+      xmlns:jsf="http://xmlns.jcp.org/jsf">
     <h:head>
     </h:head>
-    <h:body>
+    <h:body xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
         <f:metadata>
             <f:viewParam name="id" value="#{manageFilePermissionsPage.dataset.id}"/>
             <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
