@@ -19,7 +19,8 @@
                              or dsfv.datasetField.datasetFieldType.fieldType == 'FLOAT'
                              or dsfv.datasetField.datasetFieldType.fieldType == 'URL'
                              or dsfv.datasetField.datasetFieldType.fieldType == 'DATE'
-                             or dsfv.datasetField.datasetFieldType.fieldType == 'EMAIL')}">
+                             or dsfv.datasetField.datasetFieldType.fieldType == 'EMAIL')}"
+                 onkeypress="return event.keyCode !== 13;" >
         </p:inputText>
         <p:watermark for="inputText" value="#{dsfv.datasetField.datasetFieldType.localeWatermark}"></p:watermark>
     </ui:fragment>
