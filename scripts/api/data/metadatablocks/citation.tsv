@@ -79,7 +79,7 @@
 	originOfSources	Origin of Historical Sources	For historical sources, the origin and any rules followed in establishing them as sources		textbox	75		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation	
 	characteristicOfSources	Characteristic of Sources	Characteristics not already noted elsewhere		textbox	76		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation	
 	accessToSources	Documentation and Access to Sources	1) Methods or procedures for accessing data sources and 2) any special permissions needed for access		textbox	77		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation	
-	#controlledVocabulary	DatasetField	Value	identifier	displayOrder											
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder											
 	subject	Agricultural Sciences	D01	0												
 	subject	Arts and Humanities	D0	1												
 	subject	Astronomy and Astrophysics	D1	2												
