@@ -23,7 +23,7 @@
 },
 "@id": "doi:10.33564/FK27U7YBV",
 "schema:version": "1.0",
-"schema:license": "https://creativecommons.org/publicdomain/zero/1.0/",
+"schema:license": "http://creativecommons.org/publicdomain/zero/1.0",
 "schema:datePublished": "2021-07-21",
 "dvcore:fileTermsOfAccess": {
 "dvcore:fileRequestAccess": false
