@@ -2777,6 +2777,7 @@ public class UtilIT {
     static Response setLicenseActiveById(Long id, boolean state, String apiToken) {
         Response activateLicenseResponse = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .urlEncodingEnabled(false)
                 .put("/api/licenses/"+id.toString() + "/:active/" + state);
         return activateLicenseResponse;
     }
