@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
@@ -9,6 +10,8 @@ import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -35,6 +38,8 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+
+import static com.jayway.restassured.RestAssured.put;
 import static com.jayway.restassured.path.xml.XmlPath.from;
 import static com.jayway.restassured.RestAssured.given;
 import edu.harvard.iq.dataverse.DatasetField;
@@ -2391,6 +2396,34 @@ public class UtilIT {
         return response;       
     }
     
+    static Response listAllLocks(String apiToken) {        
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .get("api/datasets/locks");
+        return response;       
+    }
+    
+    static Response listLocksByType(String lockType, String apiToken) {        
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .get("api/datasets/locks?type="+lockType);
+        return response;       
+    }
+    
+    static Response listLocksByUser(String userIdentifier, String apiToken) {        
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .get("api/datasets/locks?userIdentifier="+userIdentifier);
+        return response;       
+    }
+    
+    static Response listLocksByTypeAndUser(String lockType, String userIdentifier, String apiToken) {        
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .get("api/datasets/locks?type="+lockType+"&userIdentifier="+userIdentifier);
+        return response;       
+    }
+    
     static Response lockDataset(long datasetId, String lockType, String apiToken) {
         Response response = given()
             .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -2701,21 +2734,70 @@ public class UtilIT {
         return response;
     }
     
-    static Response updateDatasetJsonLDMetadata(Integer datasetId, String apiToken, String jsonLDBody, boolean replace) {
-        Response response = given()
+    static Response addLicense(String pathToJsonFile, String apiToken) {
+        String jsonIn = getDatasetJson(pathToJsonFile);
+
+        Response addLicenseResponse = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .contentType("application/ld+json")
-                .body(jsonLDBody.getBytes(StandardCharsets.UTF_8))
-                .put("/api/datasets/" + datasetId + "/metadata?replace=" + replace);
-        return response;
+                .body(jsonIn)
+                .contentType("application/json")
+                .post("/api/licenses");
+        return addLicenseResponse;
+    }
+
+    static Response getLicenses() {
+
+        Response getLicensesResponse = given()
+                .get("/api/licenses");
+        return getLicensesResponse;
+    }
+
+    static Response getLicenseById(Long id) {
+
+        Response getLicenseResponse = given()
+                .get("/api/licenses/"+id.toString());
+        return getLicenseResponse;
+    }
+
+    static Response deleteLicenseById(Long id, String apiToken) {
+
+        Response deleteLicenseResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/licenses/"+id.toString());
+        return deleteLicenseResponse;
+    }
+
+    static Response setDefaultLicenseById(Long id, String apiToken) {
+        Response defaultLicenseResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .put("/api/licenses/default/"+id.toString());
+        return defaultLicenseResponse;
     }
     
+    static Response setLicenseActiveById(Long id, boolean state, String apiToken) {
+        Response activateLicenseResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .urlEncodingEnabled(false)
+                .put("/api/licenses/"+id.toString() + "/:active/" + state);
+        return activateLicenseResponse;
+    }
+
+
+    static Response updateDatasetJsonLDMetadata(Integer datasetId, String apiToken, String jsonLDBody, boolean replace) {
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .contentType("application/ld+json")
+            .body(jsonLDBody.getBytes(StandardCharsets.UTF_8))
+            .put("/api/datasets/" + datasetId + "/metadata?replace=" + replace);
+        return response;
+    }
+
     static Response deleteDatasetJsonLDMetadata(Integer datasetId, String apiToken, String jsonLDBody) {
         Response response = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .contentType("application/ld+json")
-                .body(jsonLDBody.getBytes(StandardCharsets.UTF_8))
-                .put("/api/datasets/" + datasetId + "/metadata/delete");
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .contentType("application/ld+json")
+            .body(jsonLDBody.getBytes(StandardCharsets.UTF_8))
+            .put("/api/datasets/" + datasetId + "/metadata/delete");
         return response;
     }
 
@@ -2757,5 +2839,35 @@ public class UtilIT {
                 Collections.singletonList(
                         new DatasetFieldValue(field, value)));
         return field;
+    }
+
+
+    static Response importDatasetDDIViaNativeApi(String apiToken, String dataverseAlias, String xml, String pid, String release) {
+
+        String postString = "/api/dataverses/" + dataverseAlias + "/datasets/:importddi";
+        if (pid != null || release != null  ) {
+            //postString = postString + "?";
+            if (pid != null) {
+                postString = postString + "?pid=" + pid;
+                if (release != null && release.compareTo("yes") == 0) {
+                    postString = postString + "&release=" + release.toString();
+                }
+            } else {
+                if (release != null && release.compareTo("yes") == 0) {
+                    postString = postString + "?release=" + release.toString();
+                }
+            }
+        }
+        logger.info("Here importDatasetDDIViaNativeApi");
+        logger.info(postString);
+
+        RequestSpecification importDDI = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .urlEncodingEnabled(false)
+                .body(xml)
+                .contentType("application/xml");
+
+
+        return importDDI.post(postString);
     }
 }

@@ -9,6 +9,8 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -29,6 +31,8 @@ import org.junit.AfterClass;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import java.nio.file.Files;
+import com.jayway.restassured.path.json.JsonPath;
 
 public class DataversesIT {
 
@@ -479,6 +483,66 @@ public class DataversesIT {
         authorAttemptsToAddFileViaNative.then().assertThat()
                 .statusCode(OK.getStatusCode());
  
+    }
+
+    @Test
+    public void testImportDDI() throws IOException {
+
+        Response createUser = UtilIT.createRandomUser();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        assertEquals(200, makeSuperUser.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        assertEquals(200, publishDataverse.getStatusCode());
+
+        // This XML is a full DDI export without a PID.
+        String xml = new String(Files.readAllBytes(Paths.get("doc/sphinx-guides/source/_static/api/ddi_dataset.xml")));
+
+        Response importDDI = UtilIT.importDatasetDDIViaNativeApi(apiToken, dataverseAlias, xml,  null, "no");
+        logger.info(importDDI.prettyPrint());
+        assertEquals(201, importDDI.getStatusCode());
+
+        Response importDDIPid = UtilIT.importDatasetDDIViaNativeApi(apiToken, dataverseAlias, xml,  "doi:10.5072/FK2/ABCD11", "no");
+        logger.info(importDDIPid.prettyPrint());
+        assertEquals(201, importDDIPid.getStatusCode());
+
+        Response importDDIPidRel = UtilIT.importDatasetDDIViaNativeApi(apiToken, dataverseAlias, xml,  "doi:10.5072/FK2/ABCD22", "yes");
+        logger.info(importDDIPidRel.prettyPrint());
+        assertEquals(201, importDDIPidRel.getStatusCode());
+
+
+        Response importDDIRelease = UtilIT.importDatasetDDIViaNativeApi(apiToken, dataverseAlias, xml, null, "yes");
+        logger.info( importDDIRelease.prettyPrint());
+        assertEquals(201, importDDIRelease.getStatusCode());
+
+        //cleanup
+
+        Integer datasetIdInt = JsonPath.from(importDDI.body().asString()).getInt("data.id");
+        Response destroyDatasetResponse = UtilIT.destroyDataset(datasetIdInt, apiToken);
+        assertEquals(200, destroyDatasetResponse.getStatusCode());
+
+        Integer datasetIdIntPid = JsonPath.from(importDDIPid.body().asString()).getInt("data.id");
+        Response destroyDatasetResponsePid = UtilIT.destroyDataset(datasetIdIntPid, apiToken);
+        assertEquals(200, destroyDatasetResponsePid.getStatusCode());
+
+        Integer datasetIdIntPidRel = JsonPath.from(importDDIPidRel.body().asString()).getInt("data.id");
+        Response destroyDatasetResponsePidRel = UtilIT.destroyDataset(datasetIdIntPidRel, apiToken);
+        assertEquals(200, destroyDatasetResponsePidRel.getStatusCode());
+
+        Integer datasetIdIntRelease = JsonPath.from(importDDIRelease.body().asString()).getInt("data.id");
+        Response destroyDatasetResponseRelease = UtilIT.destroyDataset(datasetIdIntRelease, apiToken);
+        assertEquals(200, destroyDatasetResponseRelease.getStatusCode());
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        assertEquals(200, deleteUserResponse.getStatusCode());
     }
     
 }

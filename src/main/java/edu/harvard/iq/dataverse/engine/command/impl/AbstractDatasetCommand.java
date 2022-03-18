@@ -15,7 +15,6 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -101,6 +100,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
             if (lenient) {
                 // populate invalid fields with N/A
                 constraintViolations.stream()
+                    .filter(cv -> cv.getRootBean() instanceof DatasetField)
                     .map(cv -> ((DatasetField) cv.getRootBean()))
                     .forEach(f -> f.setSingleValue(DatasetField.NA_VALUE));
 
@@ -115,27 +115,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
         }
     }
 
-    /**
-     * Removed empty fields, sets field value display order.
-     *
-     * @param dsv the dataset version show fields we want to tidy up.
-     */
-    protected void tidyUpFields(DatasetVersion dsv) {
-        Iterator<DatasetField> dsfIt = dsv.getDatasetFields().iterator();
-        while (dsfIt.hasNext()) {
-            if (dsfIt.next().removeBlankDatasetFieldValues()) {
-                dsfIt.remove();
-            }
-        }
-        Iterator<DatasetField> dsfItSort = dsv.getDatasetFields().iterator();
-        while (dsfItSort.hasNext()) {
-            dsfItSort.next().setValueDisplayOrder();
-        }
-        Iterator<DatasetField> dsfItTrim = dsv.getDatasetFields().iterator();
-        while (dsfItTrim.hasNext()) {
-            dsfItTrim.next().trimTrailingSpaces();
-        }
-    }
+
 
     /**
      * Whether it's EZID or DataCite, if the registration is refused because the

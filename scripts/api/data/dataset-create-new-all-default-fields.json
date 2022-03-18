@@ -1,7 +1,9 @@
 {
   "datasetVersion": {
-    "license": "CC0",
-    "termsOfUse": "CC0 Waiver",
+    "license": {
+      "name": "CC0 1.0",
+      "uri": "http://creativecommons.org/publicdomain/zero/1.0"
+    },
     "metadataBlocks": {
       "citation": {
         "displayName": "Citation Metadata",
@@ -1026,9 +1028,9 @@
           },
           {
             "typeName": "collectionMode",
-            "multiple": false,
+            "multiple": true,
             "typeClass": "primitive",
-            "value": "CollectionMode"
+            "value": ["CollectionMode"]
           },
           {
             "typeName": "researchInstrument",

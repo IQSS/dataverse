@@ -1,7 +1,9 @@
-[security_shibboleth]
-name=Shibboleth (CentOS_8)
+[shibboleth]
+name=Shibboleth (rockylinux8)
+# Please report any problems to https://shibboleth.atlassian.net/jira
 type=rpm-md
-baseurl=http://download.opensuse.org/repositories/security:/shibboleth/CentOS_8/
+mirrorlist=https://shibboleth.net/cgi-bin/mirrorlist.cgi/rockylinux8
 gpgcheck=1
-gpgkey=http://download.opensuse.org/repositories/security:/shibboleth/CentOS_8/repodata/repomd.xml.key
+gpgkey=https://shibboleth.net/downloads/service-provider/RPMS/repomd.xml.key
+        https://shibboleth.net/downloads/service-provider/RPMS/cantor.repomd.xml.key
 enabled=1

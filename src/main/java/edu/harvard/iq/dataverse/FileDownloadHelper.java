@@ -11,14 +11,14 @@ import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -200,7 +200,12 @@ public class FileDownloadHelper implements java.io.Serializable {
        
         if ((fileMetadata.getId() == null) || (fileMetadata.getDataFile().getId() == null)){
             return false;
-        } 
+        }
+        
+        if (session.getUser() instanceof PrivateUrlUser) {
+             // Always allow download for PrivateUrlUser
+             return true;
+         }
         
         Long fid = fileMetadata.getId();
         //logger.info("calling candownloadfile on filemetadata "+fid);
@@ -244,19 +249,6 @@ public class FileDownloadHelper implements java.io.Serializable {
     public boolean isRestrictedOrEmbargoed(FileMetadata fileMetadata) {
         return fileMetadata.isRestricted() || FileUtil.isActivelyEmbargoed(fileMetadata);
     }
-
-     /**
-      * In Dataverse 4.19 and below file preview was determined by
-      * canDownloadFile. Now we always allow a PrivateUrlUser to preview files.
-      */
-     public boolean isPreviewAllowed(FileMetadata fileMetadata) {
-         if (session.getUser() instanceof PrivateUrlUser) {
-             // Always allow preview for PrivateUrlUser
-             return true;
-         } else {
-             return canDownloadFile(fileMetadata);
-         }
-     }
 
     public boolean doesSessionUserHavePermission(Permission permissionToCheck, FileMetadata fileMetadata){
         if (permissionToCheck == null){
@@ -330,7 +322,6 @@ public class FileDownloadHelper implements java.io.Serializable {
     
     
      private boolean processRequestAccess(DataFile file, Boolean sendNotification) {
-
          if (fileDownloadService.requestAccess(file.getId())) {
              // update the local file object so that the page properly updates
              if(file.getFileAccessRequesters() == null){
@@ -340,9 +331,11 @@ public class FileDownloadHelper implements java.io.Serializable {
              // create notification if necessary
              if (sendNotification) {
                  fileDownloadService.sendRequestFileAccessNotification(file, (AuthenticatedUser) session.getUser());
-             }
+             }           
+             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("file.accessRequested.success"));
              return true;
          }
+         JsfHelper.addWarningMessage(BundleUtil.getStringFromBundle("file.accessRequested.alreadyRequested", Arrays.asList(file.getDisplayName())));
          return false;
      } 
 
