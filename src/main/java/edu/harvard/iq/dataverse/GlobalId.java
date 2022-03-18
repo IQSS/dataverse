@@ -6,6 +6,7 @@
 
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProviderServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
@@ -157,6 +158,7 @@ public class GlobalId implements java.io.Serializable {
      * @return {@code destination}, after its fields have been updated, or
      *         {@code null} if parsing failed.
      */
+    //ToDo - move this to an ~AbstractGlobalIdentifierServiceBean that can call subclasses to get available PROTOCOLs, etc.
     private boolean parsePersistentId(String identifierString) {
 
         if (identifierString == null) {
@@ -168,7 +170,8 @@ public class GlobalId implements java.io.Serializable {
             if (index2 > 0 && (index2 + 1) < identifierString.length()) { // '/' found with one or more characters
                                                                           // between ':'
                 protocol = identifierString.substring(0, index1); // and '/' and there are characters after '/'
-                if (!"doi".equals(protocol) && !"hdl".equals(protocol)) {
+                //If not in the set of available protocols
+                if (!DOI_PROTOCOL.equals(protocol) && !HDL_PROTOCOL.equals(protocol) && !PermaLinkPidProviderServiceBean.PERMA_PROTOCOL.equals(protocol)) {
                     return false;
                 }
                 //Strip any whitespace, ; and ' from authority (should finding them cause a failure instead?)
@@ -180,7 +183,7 @@ public class GlobalId implements java.io.Serializable {
                     }
                 }
                 // Passed all checks
-                //Strip any whitespace, ; and ' from identifier (should finding them cause a failure instead?)
+                //Strip any whitespace, ; and ' from identifier (should finding them cause a failure instead? - Yes!)
                 identifier = formatIdentifierString(identifierString.substring(index2 + 1));
                 if(testforNullTerminator(identifier)) return false;               
             } else {

@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.api.imports;
 
 import com.google.gson.Gson;
+
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
@@ -13,6 +15,7 @@ import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.api.dto.*;  
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
+import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProviderServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
@@ -412,6 +415,8 @@ public class ImportGenericServiceBean {
      * protocol/authority/identifier parts that are assigned to the datasetDTO.
      * The name reflects the original purpose but it is now used in ImportDDIServiceBean as well.
      */
+    
+    //ToDo - sync with GlobalId.parsePersistentId(String) ? - that currently doesn't do URL forms, but could
     public String reassignIdentifierAsGlobalId(String identifierString, DatasetDTO datasetDTO) {
 
         int index1 = identifierString.indexOf(':');
@@ -423,13 +428,14 @@ public class ImportGenericServiceBean {
        
         String protocol = identifierString.substring(0, index1);
         
-        if (GlobalId.DOI_PROTOCOL.equals(protocol) || GlobalId.HDL_PROTOCOL.equals(protocol)) {
-            logger.fine("Processing hdl:- or doi:-style identifier : "+identifierString);        
+        if (GlobalId.DOI_PROTOCOL.equals(protocol) || GlobalId.HDL_PROTOCOL.equals(protocol) || PermaLinkPidProviderServiceBean.PERMA_PROTOCOL.equals(protocol)) {
+            logger.fine("Processing hdl:- or doi:- or perma:-style identifier : "+identifierString);        
         
         } else if ("http".equalsIgnoreCase(protocol) || "https".equalsIgnoreCase(protocol)) {
             
             // We also recognize global identifiers formatted as global resolver URLs:
-            
+            //ToDo - refactor index1 always has -1 here so that we can use index1+1 later
+            //ToDo - single map of protocol/url, are all three cases the same then?
             if (identifierString.startsWith(GlobalId.HDL_RESOLVER_URL)) {
                 logger.fine("Processing Handle identifier formatted as a resolver URL: "+identifierString);
                 protocol = GlobalId.HDL_PROTOCOL;
@@ -440,7 +446,12 @@ public class ImportGenericServiceBean {
                 protocol = GlobalId.DOI_PROTOCOL;
                 index1 = GlobalId.DOI_RESOLVER_URL.length() - 1; 
                 index2 = identifierString.indexOf("/", index1 + 1);
+            } else if (identifierString.startsWith(PermaLinkPidProviderServiceBean.PERMA_BASE_URL + Dataset.TARGET_URL)) {
+                protocol = PermaLinkPidProviderServiceBean.PERMA_PROTOCOL;
+                index1 = PermaLinkPidProviderServiceBean.PERMA_BASE_URL.length() + + Dataset.TARGET_URL.length() - 1; 
+                index2 = identifierString.indexOf("/", index1 + 1);
             } else {
+            
                 logger.warning("HTTP Url in supplied as the identifier is neither a Handle nor DOI resolver: "+identifierString);
                 return null;
             }
