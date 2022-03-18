@@ -25,7 +25,7 @@
     -->            
     </ui:remove>
     
-    <p:outputPanel id="fileInfoInclude-filesTable" styleClass="media">
+    <p:outputPanel id="fileInfoInclude-filesTable" styleClass="media" rendered="#{fileMetadata != null}">
         <div class="media-left col-file-thumb" style="padding-top:4px;">
             <div class="media-object thumbnail-block text-center">
                 <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{!fileDownloadHelper.canDownloadFile(fileMetadata) or !dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)}"/>
