@@ -35,6 +35,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 
 /**
  *
@@ -748,6 +749,11 @@ public class Dataset extends DvObjectContainer {
         this.harvestIdentifier = harvestIdentifier;
     }
 
+    public String getLocalURL() {
+        //Assumes GlobalId != null
+        return  SystemConfig.getDataverseSiteUrlStatic() + "/dataset.xhtml?persistentId=" + this.getGlobalId().asString();
+    }
+    
     public String getRemoteArchiveURL() {
         if (isHarvested()) {
             if (HarvestingClient.HARVEST_STYLE_DATAVERSE.equals(this.getHarvestedFrom().getHarvestStyle())) {
