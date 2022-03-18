@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  * @author adaybujeda
  */
 @Stateless
-public class DataFileCategoryService {
+public class DataFileCategoryServiceBean {
 
     public static final String FILE_CATEGORIES_KEY = ":FileCategories";
 

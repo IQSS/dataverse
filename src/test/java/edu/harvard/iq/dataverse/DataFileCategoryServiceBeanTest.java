@@ -20,16 +20,16 @@ import java.util.stream.Collectors;
  * @author adaybujeda
  */
 @RunWith(MockitoJUnitRunner.class)
-public class DataFileCategoryServiceTest {
+public class DataFileCategoryServiceBeanTest {
 
     @Mock
     private SettingsServiceBean settingsServiceBean;
     @InjectMocks
-    private DataFileCategoryService target;
+    private DataFileCategoryServiceBean target;
 
     @Test
     public void getFileCategories_should_return_default_file_categories_in_expected_order_when_no_override_configured() {
-        Mockito.when(settingsServiceBean.get(DataFileCategoryService.FILE_CATEGORIES_KEY)).thenReturn(null);
+        Mockito.when(settingsServiceBean.get(DataFileCategoryServiceBean.FILE_CATEGORIES_KEY)).thenReturn(null);
 
         List<String> result = target.getFileCategories();
 
@@ -41,7 +41,7 @@ public class DataFileCategoryServiceTest {
 
     @Test
     public void getFileCategories_should_return_default_file_categories_in_expected_order_when_empty_override_is_configured() {
-        Mockito.when(settingsServiceBean.get(DataFileCategoryService.FILE_CATEGORIES_KEY)).thenReturn("  ");
+        Mockito.when(settingsServiceBean.get(DataFileCategoryServiceBean.FILE_CATEGORIES_KEY)).thenReturn("  ");
 
         List<String> result = target.getFileCategories();
 
@@ -87,7 +87,7 @@ public class DataFileCategoryServiceTest {
 
     @Test
     public void mergeDatasetFileCategories_should_handle_null_datafile_categories() {
-        Mockito.when(settingsServiceBean.get(DataFileCategoryService.FILE_CATEGORIES_KEY)).thenReturn(null);
+        Mockito.when(settingsServiceBean.get(DataFileCategoryServiceBean.FILE_CATEGORIES_KEY)).thenReturn(null);
 
         List<String> result = target.mergeDatasetFileCategories(null);
 
@@ -99,7 +99,7 @@ public class DataFileCategoryServiceTest {
 
     @Test
     public void mergeDatasetFileCategories_should_add_dataset_values_first_then_default_categories() {
-        Mockito.when(settingsServiceBean.get(DataFileCategoryService.FILE_CATEGORIES_KEY)).thenReturn(null);
+        Mockito.when(settingsServiceBean.get(DataFileCategoryServiceBean.FILE_CATEGORIES_KEY)).thenReturn(null);
 
         List<String> result = target.mergeDatasetFileCategories(setup_data_file_categories("dataset01", "dataset02"));
 
@@ -126,7 +126,7 @@ public class DataFileCategoryServiceTest {
 
     @Test
     public void mergeDatasetFileCategories_should_ignore_duplicates() {
-        Mockito.when(settingsServiceBean.get(DataFileCategoryService.FILE_CATEGORIES_KEY)).thenReturn(null);
+        Mockito.when(settingsServiceBean.get(DataFileCategoryServiceBean.FILE_CATEGORIES_KEY)).thenReturn(null);
 
         List<String> result = target.mergeDatasetFileCategories(setup_data_file_categories("Code", "Data", "Custom"));
 
@@ -140,8 +140,8 @@ public class DataFileCategoryServiceTest {
     private void setup_override(String overrideValue) {
         String currentLang = BundleUtil.getCurrentLocale().getLanguage();
 
-        Mockito.when(settingsServiceBean.get(DataFileCategoryService.FILE_CATEGORIES_KEY)).thenReturn(overrideValue);
-        Mockito.when(settingsServiceBean.get(DataFileCategoryService.FILE_CATEGORIES_KEY, currentLang, overrideValue)).thenReturn(overrideValue);
+        Mockito.when(settingsServiceBean.get(DataFileCategoryServiceBean.FILE_CATEGORIES_KEY)).thenReturn(overrideValue);
+        Mockito.when(settingsServiceBean.get(DataFileCategoryServiceBean.FILE_CATEGORIES_KEY, currentLang, overrideValue)).thenReturn(overrideValue);
     }
 
     private List<DataFileCategory> setup_data_file_categories(String... names) {

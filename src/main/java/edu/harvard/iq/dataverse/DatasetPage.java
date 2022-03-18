@@ -246,7 +246,7 @@ public class DatasetPage implements java.io.Serializable {
     @Inject
     LicenseServiceBean licenseServiceBean;
     @Inject
-    DataFileCategoryService dataFileCategoryService;
+    DataFileCategoryServiceBean dataFileCategoryService;
 
     private Dataset dataset = new Dataset();
 
