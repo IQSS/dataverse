@@ -552,7 +552,9 @@ The optional ``pid`` parameter holds a persistent identifier (such as a DOI or H
 
 The optional ``release`` parameter tells the Dataverse installation to immediately publish the dataset. If the parameter is changed to ``no``, the imported dataset will remain in ``DRAFT`` status.
 
-The file is a DDI xml file.
+The file is a DDI XML file. A sample DDI XML file may be downloaded here: :download:`ddi_dataset.xml <../_static/api/ddi_dataset.xml>`
+
+Note that DDI XML does not have a field that corresponds to the "Subject" field in Dataverse. Therefore the "Import DDI" API endpoint populates the "Subject" field with ``N/A``. To update the "Subject" field one will need to call the :ref:`edit-dataset-metadata-api` API with a JSON file that contains an update to "Subject" such as :download:`subject-update-metadata.json <../_static/api/subject-update-metadata.json>`. Alternatively, the web interface can be used to add a subject.
 
 .. warning::
 
@@ -713,8 +715,10 @@ It returns a list of versions with their metadata, and file list:
         "lastUpdateTime": "2015-04-20T09:58:35Z",
         "releaseTime": "2015-04-20T09:58:35Z",
         "createTime": "2015-04-20T09:57:32Z",
-        "license": "CC0",
-        "termsOfUse": "CC0 Waiver",
+        "license": {
+          "name": "CC0 1.0",
+          "uri": "http://creativecommons.org/publicdomain/zero/1.0"
+        },
         "termsOfAccess": "You need to request for access.",
         "fileAccessRequest": true,
         "metadataBlocks": {...},
@@ -732,8 +736,10 @@ It returns a list of versions with their metadata, and file list:
         "lastUpdateTime": "2015-04-20T09:56:34Z",
         "releaseTime": "2015-04-20T09:56:34Z",
         "createTime": "2015-04-20T09:43:45Z",
-        "license": "CC0",
-        "termsOfUse": "CC0 Waiver",
+        "license": {
+          "name": "CC0 1.0",
+          "uri": "http://creativecommons.org/publicdomain/zero/1.0"
+        },
         "termsOfAccess": "You need to request for access.",
         "fileAccessRequest": true,
         "metadataBlocks": {...},
@@ -994,6 +1000,8 @@ Now that the resulting JSON file only contains the ``metadataBlocks`` key, you c
     vi dataset-update-metadata.json
 
 Now that you've made edits to the metadata in your JSON file, you can send it to a Dataverse installation as described above.
+
+.. _edit-dataset-metadata-api:
 
 Edit Dataset Metadata
 ~~~~~~~~~~~~~~~~~~~~~
