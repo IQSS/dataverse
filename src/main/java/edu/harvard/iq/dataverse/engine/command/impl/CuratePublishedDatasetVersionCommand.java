@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.DatasetFieldUtil;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
@@ -59,7 +60,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         validateOrDie(updateVersion, isValidateLenient());
 
         // final DatasetVersion editVersion = getDataset().getEditVersion();
-        tidyUpFields(updateVersion);
+        DatasetFieldUtil.tidyUpFields(updateVersion.getDatasetFields(), true);
 
         // Merge the new version into our JPA context
         ctxt.em().merge(updateVersion);

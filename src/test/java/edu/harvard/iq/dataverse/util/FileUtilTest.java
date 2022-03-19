@@ -155,7 +155,7 @@ public class FileUtilTest {
              * the popup when the are Terms of Use. This feels like a bug since the
              * Terms of Use should probably be shown.
              */
-            License license = new License("CC0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("https://creativecommons.org/publicdomain/zero/1.0/"), URI.create("/resources/images/cc0.png"), true);
+            License license = new License("CC0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0"), URI.create("/resources/images/cc0.png"), true);
             license.setDefault(true);
             termsOfUseAndAccess.setLicense(license);
             termsOfUseAndAccess.setTermsOfUse("be excellent to each other");

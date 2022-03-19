@@ -277,7 +277,7 @@ unless ($postgresonly)
 
     unless ( -f $WARFILE_LOCATION ) {
 	my $DATAVERSE_VERSION = "";
-	my $DATAVERSE_POM_FILE = "../../pom.xml";
+	my $DATAVERSE_POM_FILE = "../../modules/dataverse-parent/pom.xml";
 	if ( -f $DATAVERSE_POM_FILE ) 
 	{
 	    open DPF, $DATAVERSE_POM_FILE; 
@@ -285,7 +285,7 @@ unless ($postgresonly)
 	    while ($pom_line=<DPF>)
 	    {
 		chop $pom_line;
-		if ($pom_line =~/^[ \t]*<version>([0-9\.]+)<\/version>/)
+		if ($pom_line =~/^[ \t]*<revision>([0-9\.]+)<\/revision>/)
 		{
 		    $DATAVERSE_VERSION=$1;
 		    last;

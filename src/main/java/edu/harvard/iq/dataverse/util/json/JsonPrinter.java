@@ -28,6 +28,7 @@ import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectB
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
+import java.math.BigDecimal;
 
 import java.net.URISyntaxException;
 import java.util.*;
@@ -135,8 +136,8 @@ public class JsonPrinter {
                 .add("lockType", lock.getReason().toString())
                 .add("date", lock.getStartTime().toString())
                 .add("user", lock.getUser().getUserIdentifier())
+                .add("dataset", lock.getDataset().getGlobalId().asString())
                 .add("message", lock.getInfo());
-
     }
     
     public static JsonObjectBuilder json( RoleAssigneeDisplayInfo d ) {
@@ -797,7 +798,7 @@ public class JsonPrinter {
             .add("name", license.getName())
             .add("shortDescription", license.getShortDescription())
             .add("uri", license.getUri().toString())
-            .add("iconUrl", license.getIconUrl().toString())
+            .add("iconUrl", license.getIconUrl() == null ? null : license.getIconUrl().toString())
             .add("active", license.isActive())
             .add("isDefault", license.isDefault());
     }

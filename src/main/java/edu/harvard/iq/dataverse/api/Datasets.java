@@ -2392,30 +2392,46 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         String newFilename = null;
         String newFileContentType = null;
         String newStorageIdentifier = null;
-		if (null == contentDispositionHeader) {
-			if (optionalFileParams.hasStorageIdentifier()) {
-				newStorageIdentifier = optionalFileParams.getStorageIdentifier();
-				// ToDo - check that storageIdentifier is valid
-				if (optionalFileParams.hasFileName()) {
-					newFilename = optionalFileParams.getFileName();
-					if (optionalFileParams.hasMimetype()) {
-						newFileContentType = optionalFileParams.getMimeType();
-					}
-				}
-			} else {
-				return error(BAD_REQUEST,
-						"You must upload a file or provide a storageidentifier, filename, and mimetype.");
-			}
-		} else {
+        if (null == contentDispositionHeader) {
+            if (optionalFileParams.hasStorageIdentifier()) {
+                newStorageIdentifier = optionalFileParams.getStorageIdentifier();
+                // ToDo - check that storageIdentifier is valid
+                if (optionalFileParams.hasFileName()) {
+                    newFilename = optionalFileParams.getFileName();
+                    if (optionalFileParams.hasMimetype()) {
+                        newFileContentType = optionalFileParams.getMimeType();
+                    }
+                }
+            } else {
+                return error(BAD_REQUEST,
+                        "You must upload a file or provide a storageidentifier, filename, and mimetype.");
+            }
+        } else {
             /*
              * FWIW: This allows upload of files with utf-8 names via the API. It isn't
              * clear yet whether the base problem is with senders not properly encoding or
              * if there is an assumption of 8859_1 in the apache mime4j code being used
              * under the hood in Jersey here. So this should be considered a practical rather than final fix.
              */
-			newFilename = new String(contentDispositionHeader.getFileName().getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
-			newFileContentType = formDataBodyPart.getMediaType().toString();
-		}
+            newFilename = new String(contentDispositionHeader.getFileName().getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+            // Let's see if the form data part has the mime (content) type specified.
+            // Note that we don't want to rely on formDataBodyPart.getMediaType() -
+            // because that defaults to "text/plain" when no "Content-Type:" header is
+            // present. Instead we'll go through the headers, and see if "Content-Type:"
+            // is there. If not, we'll default to "application/octet-stream" - the generic
+            // unknown type. This will prompt the application to run type detection and
+            // potentially find something more accurate.
+            // newFileContentType = formDataBodyPart.getMediaType().toString();
+
+            for (String header : formDataBodyPart.getHeaders().keySet()) {
+                if (header.equalsIgnoreCase("Content-Type")) {
+                    newFileContentType = formDataBodyPart.getHeaders().get(header).get(0);
+                }
+            }
+            if (newFileContentType == null) {
+                newFileContentType = FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT;
+            }
+        }
 
         
         //-------------------
@@ -2546,7 +2562,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
     
     @GET
     @Path("{identifier}/locks")
-    public Response getLocks(@PathParam("identifier") String id, @QueryParam("type") DatasetLock.Reason lockType) {
+    public Response getLocksForDataset(@PathParam("identifier") String id, @QueryParam("type") DatasetLock.Reason lockType) {
 
         Dataset dataset = null;
         try {
@@ -2670,6 +2686,60 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 
         });
     }
+    
+    @GET
+    @Path("locks")
+    public Response listLocks(@QueryParam("type") String lockType, @QueryParam("userIdentifier") String userIdentifier) { //DatasetLock.Reason lockType) {        
+        // This API is here, under /datasets, and not under /admin, because we
+        // likely want it to be accessible to admin users who may not necessarily 
+        // have localhost access, that would be required to get to /api/admin in 
+        // most installations. It is still reasonable however to limit access to
+        // this api to admin users only.
+        AuthenticatedUser apiUser;
+        try {
+            apiUser = findAuthenticatedUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.UNAUTHORIZED, "Authentication is required.");
+        }
+        if (!apiUser.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
+        
+        // Locks can be optinally filtered by type, user or both.
+        DatasetLock.Reason lockTypeValue = null;
+        AuthenticatedUser user = null; 
+        
+        // For the lock type, we use a QueryParam of type String, instead of 
+        // DatasetLock.Reason; that would be less code to write, but this way 
+        // we can check if the value passed matches a valid lock type ("reason") 
+        // and provide a helpful error message if it doesn't. If you use a 
+        // QueryParam of an Enum type, trying to pass an invalid value to it 
+        // results in a potentially confusing "404/NOT FOUND - requested 
+        // resource is not available".
+        if (lockType != null && !lockType.isEmpty()) {
+            try {
+                lockTypeValue = DatasetLock.Reason.valueOf(lockType);
+            } catch (IllegalArgumentException iax) {
+                String validValues = Strings.join(",", DatasetLock.Reason.values());
+                String errorMessage = "Invalid lock type value: " + lockType + 
+                        "; valid lock types: " + validValues;
+                return error(Response.Status.BAD_REQUEST, errorMessage);
+            }
+        }
+        
+        if (userIdentifier != null && !userIdentifier.isEmpty()) {
+            user = authSvc.getAuthenticatedUser(userIdentifier);
+            if (user == null) {
+                return error(Response.Status.BAD_REQUEST, "Unknown user identifier: "+userIdentifier);
+            }
+        }
+        
+        //List<DatasetLock> locks = datasetService.getDatasetLocksByType(lockType);
+        List<DatasetLock> locks = datasetService.listLocks(lockTypeValue, user);
+                            
+        return ok(locks.stream().map(lock -> json(lock)).collect(toJsonArray()));
+    }   
+    
     
     @GET
     @Path("{id}/makeDataCount/citations")
