@@ -59,7 +59,7 @@ with the contents of the file cors.json as follows:
 
 Alternatively, you can enable CORS using the AWS S3 web interface, using json-encoded rules as in the example above. 
 
-Since the direct upload mechanism creates the final file rather than an intermediate temporary file, user actions, such as neither saving or canceling an upload session before closing the browser page, can leave an abandoned file in the store. The direct upload mechanism attempts to use S3 Tags to aid in identifying/removing such files. Upon upload, files are given a "dv-status":"temp" tag which is removed when the dataset changes are saved and the new file(s) are added in the Dataverse installation. Note that not all S3 implementations support Tags: Minio does not. WIth such stores, direct upload works, but Tags are not used. 
+Since the direct upload mechanism creates the final file rather than an intermediate temporary file, user actions, such as neither saving or canceling an upload session before closing the browser page, can leave an abandoned file in the store. The direct upload mechanism attempts to use S3 Tags to aid in identifying/removing such files. Upon upload, files are given a "dv-state":"temp" tag which is removed when the dataset changes are saved and the new file(s) are added in the Dataverse installation. Note that not all S3 implementations support Tags: Minio does not. WIth such stores, direct upload works, but Tags are not used.
 
 Data Capture Module (DCM)
 -------------------------

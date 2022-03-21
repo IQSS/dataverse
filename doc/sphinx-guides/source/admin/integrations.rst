@@ -11,6 +11,13 @@ Getting Data In
 
 A variety of integrations are oriented toward making it easier for your researchers to deposit data into your Dataverse installation.
 
+GitHub
++++++++
+
+Dataverse integration with GitHub is implemented via a Dataverse Uploader GitHub Action. It is a reusable, composite workflow for uploading a git repository or subdirectory into a dataset on a target Dataverse installation. The action is customizable, allowing users to choose to replace a dataset, add to the dataset, publish it or leave it as a draft version on Dataverse. The action provides some metadata to the dataset, such as the origin GitHub repository, and it preserves the directory tree structure. 
+
+For instructions on using Dataverse Uploader GitHub Action, visit https://github.com/marketplace/actions/dataverse-uploader-action
+
 Dropbox
 +++++++
 
@@ -50,7 +57,7 @@ their research results and retain links to imported and exported data. Users
 can organize their data in "Datasets", which can be exported to a Dataverse installation via
 the command-line interface (CLI).
 
-Renku dataset documentation: https://renku-python.readthedocs.io/en/latest/commands.html#module-renku.cli.dataset
+Renku dataset documentation: https://renku-python.readthedocs.io/en/latest/reference/commands.html#module-renku.cli.dataset
 
 Flagship deployment of the Renku platform: https://renkulab.io
 
@@ -82,13 +89,6 @@ Data Explorer
 +++++++++++++
 
 Data Explorer is a GUI which lists the variables in a tabular data file allowing searching, charting and cross tabulation analysis.
-
-For installation instructions, see the :doc:`external-tools` section.
-
-TwoRavens/Zelig
-+++++++++++++++
-
-TwoRavens is a web application for tabular data exploration and statistical analysis with Zelig.
 
 For installation instructions, see the :doc:`external-tools` section.
 

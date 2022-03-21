@@ -179,15 +179,12 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     }
 
                     if (redirectSupported) {
-                        // definitely close the (still open) S3 input stream, 
-                        // since we are not going to use it. The S3 documentation
+                        // definitely close the (potentially still open) input stream, 
+                        // since we are not going to use it. The S3 documentation in particular
                         // emphasizes that it is very important not to leave these
                         // lying around un-closed, since they are going to fill 
                         // up the S3 connection pool!
-                        try {
-                            storageIO.getInputStream().close();
-                        } catch (IOException ioex) {
-                        }
+                        storageIO.closeInputStream();
                         // [attempt to] redirect: 
                         String redirect_url_str;
                         try {
@@ -370,10 +367,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     }
                 } else if (di.getAuxiliaryFile() != null) {
                     // Make sure to close the InputStream for the main datafile: 
-                    try {
-                        storageIO.getInputStream().close();
-                    } catch (IOException ioex) {
-                    }
+                    storageIO.closeInputStream();
                     String auxTag = di.getAuxiliaryFile().getFormatTag();
                     String auxVersion = di.getAuxiliaryFile().getFormatVersion();
                     if (auxVersion != null) {
