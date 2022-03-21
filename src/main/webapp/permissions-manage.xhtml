@@ -4,11 +4,12 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:c="http://java.sun.com/jsp/jstl/core">
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
     <h:head>
     </h:head>
 
-    <h:body xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+    <h:body>
         <f:metadata>
             <f:viewParam name="id" value="#{managePermissionsPage.dvObject.id}"/>
             <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
