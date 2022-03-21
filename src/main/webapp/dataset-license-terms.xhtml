@@ -245,7 +245,7 @@
                <h:outputText value="#{settingsWrapper.publicInstall ? bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess'] : bundle['file.dataFilesTab.terms.list.termsOfAccess.header']}"/>
                &#160;<span class="glyphicon glyphicon-chevron-up"/>
            </div>
-           <div id="panelCollapseTOA" class="collapse">
+           <div id="panelCollapseTOA" jsf:class="#{!datasetPage.hasValidTermsOfAccess ? 'collapse' : ''}">
                <div class="panel-body">
                    <ui:fragment rendered="#{empty editMode}">
                        <div class="form-group" jsf:rendered="#{!settingsWrapper.publicInstall}">
@@ -293,6 +293,7 @@
                        </div>
                    </ui:fragment>
                    <ui:fragment rendered="#{!empty editMode}">
+                       #{!datasetPage.hasValidTermsOfAccess}
                         <div class="form-group" jsf:rendered="#{!settingsWrapper.publicInstall}"> 
                             <p:fragment id="termsOfAccessHelp">
                                 <ui:remove>
