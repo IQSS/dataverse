@@ -155,7 +155,9 @@
                                   fileLimit="#{EditDatafilesPage.getMaxNumberOfFiles()}" 
                                   invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}" 
                                   sequential="true"
-                                  widgetVar="fileUploadWidget"/>
+                                  widgetVar="fileUploadWidget">
+                        <f:passThroughAttribute name="aria-label" value="#{bundle['file.uploadFiles']}"/>
+                    </p:fileUpload>
                                 
                                 <div jsf:id="dropboxBlock" jsf:rendered="#{settingsWrapper.isHasDropBoxKey() and !lockedFromEdits }"  class="margin-top">
                                     <!-- Dropbox upload widget -->
@@ -598,6 +600,59 @@
         </div>
     </p:dialog>
     
+    <p:dialog id="editDeleteFileConfirmation" styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="editDeleteFileConfirmation" modal="true">
+        <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.tip']}</p>
+        <ui:fragment rendered="#{EditDatafilesPage.dataset.released}">
+            <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
+        </ui:fragment>
+        <div class="button-block">
+            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('editDeleteFileConfirmation').hide()" oncomplete="window.scrollTo(0, 0);deleteFinished();bind_bsui_components();"
+                             update=":#{p:resolveClientId('datasetForm:filesTable', view)},:messagePanel,:#{p:resolveClientId('datasetForm:fileUpload', view)},uploadMessage" action="#{EditDatafilesPage.deleteFiles()}"/>
+            <button class="btn btn-link" onclick="PF('editDeleteFileConfirmation').hide();bind_bsui_components();" type="button">                              
+                #{bundle.cancel}
+            </button>
+        </div>
+    </p:dialog>
+    <p:dialog id="editFileAccessPopup" header="#{bundle['dataset.access.accessHeader']}" widgetVar="editFileAccessPopup" modal="true">
+        <p:focus context="editFileAccessPopup"/>
+        <p class="help-block">
+            #{bundle['dataset.access.description']}
+        </p>        
+        <div class="form-horizontal">
+            <div class="form-group">
+                <label jsf:for="popup_TermsAccess" class="col-sm-3 control-label">
+                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
+                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                          data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}"></span>
+                </label>
+                <div class="col-sm-9">
+                    <p:inputTextarea id="popup_TermsAccess" styleClass="form-control"
+                                     value="#{EditDatafilesPage.termsOfAccess}" autoResize="false" rows="5"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">
+                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
+                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                          data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}"></span>
+                </label>
+                <div class="col-sm-9">
+                    <p:selectBooleanCheckbox id="editFileRequestAccess" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}" 
+                                             value="#{EditDatafilesPage.fileAccessRequest}"/>
+                </div>
+            </div>
+        </div>
+        <div class="button-block">
+            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" 
+                             onclick="PF('editFileAccessPopup').hide()" 
+                             action="#{EditDatafilesPage.restrictFiles(true)}"
+                             update="filesTable,:messagePanel"
+                             oncomplete="javascript:bind_bsui_components();" />
+            <button class="btn btn-link" onclick="PF('editFileAccessPopup').hide()" type="button">                              
+                #{bundle.cancel}
+            </button>               
+        </div>
+    </p:dialog>
     <p:dialog id="fileAdvancedOptions" styleClass="dialog-submenu smallPopUp" header="#{bundle['file.advancedIngestOptions']}" widgetVar="fileAdvancedOptions" modal="true">
         <p:focus context="fileAdvancedOptions"/>
         <div class="form-horizontal">
@@ -785,7 +840,7 @@
         <p:focus context="fileSetThumbnail"/>
         <div class="form-horizontal">
             <div class="form-group">
-                <label for="datasetThumbnailImage" class="col-sm-4 control-label">
+                <label jsf:for="datasetThumbnailImage_input" class="col-sm-4 control-label">
                     #{bundle['file.datasetThumbnail']}
                 </label>
                 <div class="col-sm-8">
