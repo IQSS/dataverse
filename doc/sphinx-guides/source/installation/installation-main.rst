@@ -100,10 +100,6 @@ The Dataverse Software uses JHOVE_ to help identify the file format (CSV, PNG, e
 
 .. _JHOVE: http://jhove.openpreservation.org
 
-**A note about Payara-5.2021.5:** as of this writing there exists a logging configuration bug in Payara-5.2021.5. Any change to the logging configuration results in the contents of ``/usr/local/payara/glassfish/domains/domain1/config/logging.properties`` getting clobbered. In the absence of a proper logging configuration, Payara logs a number of WELD INFO entries on Payara launch, then proceeds to attempt to update its logging configuration approximately twice a second. This will result in unnecessarily junked-up system logs.
-
-This bug appears to be triggered in new Payara installations during the Dataverse installation routine. As the ``default-logging.properties`` file doesn't match the ``logging.proprties`` file distributed with Payara, we are offering :download:`a copy of it here<../_static/installation/files/usr/local/payara5/glassfish/domains/domain1/config/logging.properties>`. Simply stopping Payara, replacing the file, and starting Payara should correct the issue.
-
 Logging In
 ----------
 
@@ -131,7 +127,7 @@ Next you'll want to check out the :doc:`config` section, especially the section 
 Troubleshooting
 ---------------
 
-If the following doesn't apply, please get in touch as explained in the :doc:`intro`. You may be asked to provide ``payara5/glassfish/domains/domain1/logs/server.log`` for debugging.
+If the following doesn't apply, please get in touch as explained in :ref:`support`.
 
 Dataset Cannot Be Published
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -254,3 +250,8 @@ Rerun Installer
 With all the data cleared out, you should be ready to rerun the installer per above.
 
 Related to all this is a series of scripts at https://github.com/IQSS/dataverse/blob/develop/scripts/deploy/phoenix.dataverse.org/deploy that Dataverse Project Team and Community developers use have the test server http://phoenix.dataverse.org rise from the ashes before integration tests are run against it. For more on this topic, see :ref:`rebuilding-dev-environment` section of the Developer Guide.
+
+Getting Support for Installation Trouble
+----------------------------------------
+
+See :ref:`support`.
