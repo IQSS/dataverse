@@ -44,7 +44,7 @@ On RHEL/derivative you can make Java 11 the default with the ``alternatives`` co
 Payara
 ------
 
-Payara 5.2021.5 is recommended. Newer versions might work fine, regular updates are recommended.
+Payara 5.2021.6 is recommended. Newer versions might work fine, regular updates are recommended.
 
 Installing Payara
 =================
@@ -55,8 +55,8 @@ Installing Payara
 
 - Download and install Payara (installed in ``/usr/local/payara5`` in the example commands below)::
 
-	# wget https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2021.5/payara-5.2021.5.zip
-	# unzip payara-5.2021.5.zip
+	# wget https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2021.6/payara-5.2021.6.zip
+	# unzip payara-5.2021.6.zip
 	# mv payara5 /usr/local
 
 If you intend to install and run Payara under a service account (and we hope you do), chown -R the Payara hierarchy to root to protect it but give the service account access to the below directories:
@@ -157,7 +157,7 @@ The Dataverse Software search index is powered by Solr.
 Supported Versions
 ==================
 
-The Dataverse Software has been tested with Solr version 8.8.1. Future releases in the 8.x series are likely to be compatible; however, this cannot be confirmed until they are officially tested. Major releases above 8.x (e.g. 9.x) are not supported.
+The Dataverse Software has been tested with Solr version 8.11.1. Future releases in the 8.x series are likely to be compatible; however, this cannot be confirmed until they are officially tested. Major releases above 8.x (e.g. 9.x) are not supported.
 
 Installing Solr
 ===============
@@ -172,19 +172,19 @@ Become the ``solr`` user and then download and configure Solr::
 
         su - solr
         cd /usr/local/solr
-        wget https://archive.apache.org/dist/lucene/solr/8.8.1/solr-8.8.1.tgz
-        tar xvzf solr-8.8.1.tgz
-        cd solr-8.8.1
+        wget https://archive.apache.org/dist/lucene/solr/8.11.1/solr-8.11.1.tgz
+        tar xvzf solr-8.11.1.tgz
+        cd solr-8.11.1
         cp -r server/solr/configsets/_default server/solr/collection1
 
 You should already have a "dvinstall.zip" file that you downloaded from https://github.com/IQSS/dataverse/releases . Unzip it into ``/tmp``. Then copy the files into place::
 
-        cp /tmp/dvinstall/schema*.xml /usr/local/solr/solr-8.8.1/server/solr/collection1/conf
-        cp /tmp/dvinstall/solrconfig.xml /usr/local/solr/solr-8.8.1/server/solr/collection1/conf
+        cp /tmp/dvinstall/schema*.xml /usr/local/solr/solr-8.11.1/server/solr/collection1/conf
+        cp /tmp/dvinstall/solrconfig.xml /usr/local/solr/solr-8.11.1/server/solr/collection1/conf
 
 Note: The Dataverse Project team has customized Solr to boost results that come from certain indexed elements inside the Dataverse installation, for example prioritizing results from Dataverse collections over Datasets. If you would like to remove this, edit your ``solrconfig.xml`` and remove the ``<str name="qf">`` element and its contents. If you have ideas about how this boosting could be improved, feel free to contact us through our Google Group https://groups.google.com/forum/#!forum/dataverse-dev .
 
-A Dataverse installation requires a change to the ``jetty.xml`` file that ships with Solr. Edit ``/usr/local/solr/solr-8.8.1/server/etc/jetty.xml`` , increasing ``requestHeaderSize`` from ``8192`` to ``102400``
+A Dataverse installation requires a change to the ``jetty.xml`` file that ships with Solr. Edit ``/usr/local/solr/solr-8.11.1/server/etc/jetty.xml`` , increasing ``requestHeaderSize`` from ``8192`` to ``102400``
 
 Solr will warn about needing to increase the number of file descriptors and max processes in a production environment but will still run with defaults. We have increased these values to the recommended levels by adding ulimit -n 65000 to the init script, and the following to ``/etc/security/limits.conf``::
 
@@ -203,7 +203,7 @@ Solr launches asynchronously and attempts to use the ``lsof`` binary to watch fo
 
 Finally, you need to tell Solr to create the core "collection1" on startup::
 
-        echo "name=collection1" > /usr/local/solr/solr-8.8.1/server/solr/collection1/core.properties
+        echo "name=collection1" > /usr/local/solr/solr-8.11.1/server/solr/collection1/core.properties
 
 Solr Init Script
 ================
@@ -297,11 +297,7 @@ installation. It will allow you to ingest R (.RData) files as tabular
 data and to export tabular data as .RData files.  R can be considered an optional component, meaning
 that if you don't have R installed, you will still be able to run and
 use the Dataverse Software - but the functionality specific to tabular data
-mentioned above will not be available to your users.  **Note** that if
-you choose to also install `TwoRavens
-<https://github.com/IQSS/TwoRavens>`_, it will require some extra R
-components and libraries. Please consult the instructions in the
-:doc:`/installation/r-rapache-tworavens/` section of the Installation Guide.
+mentioned above will not be available to your users.
 
 
 Installing R

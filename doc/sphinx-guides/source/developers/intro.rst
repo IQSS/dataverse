@@ -21,6 +21,8 @@ Getting Help
 
 If you have any questions at all, please reach out to other developers via the channels listed in https://github.com/IQSS/dataverse/blob/develop/CONTRIBUTING.md such as http://chat.dataverse.org, the `dataverse-dev <https://groups.google.com/forum/#!forum/dataverse-dev>`_ mailing list, `community calls <https://dataverse.org/community-calls>`_, or support@dataverse.org.
 
+.. _core-technologies:
+
 Core Technologies
 -----------------
 
@@ -65,8 +67,6 @@ As a developer, you also may be interested in these projects related to Datavers
 - Configuration management scripts - Ansible, Puppet, etc.: See :ref:`advanced` section in the Installation Guide.
 - :doc:`/developers/unf/index` (Java) -  a Universal Numerical Fingerprint: https://github.com/IQSS/UNF
 - `DataTags <https://github.com/IQSS/DataTags>`_ (Java and Scala) - tag datasets with privacy levels: https://github.com/IQSS/DataTags
-- `TwoRavens <http://2ra.vn>`_ (Javascript) - a `d3.js <http://d3js.org>`_ interface for exploring data and running Zelig models: https://github.com/IQSS/TwoRavens
-- `Zelig <http://zeligproject.org>`_ (R) - run statistical models on files uploaded to a Dataverse installation: https://github.com/IQSS/Zelig
 - `Matrix <https://github.com/rindataverse/matrix>`_ - a visualization showing the connectedness and collaboration between authors and their affiliations.
 - Third party apps - make use of Dataverse installation APIs: :doc:`/api/apps`
 - chat.dataverse.org - chat interface for Dataverse Project users and developers: https://github.com/IQSS/chat.dataverse.org
