@@ -560,7 +560,17 @@ public class DdiExportUtil {
         writeI18NElement(xmlw, "srcDocu", version, DatasetFieldConstant.accessToSources, lang);
         xmlw.writeEndElement(); //sources
 
-        writeI18NElement(xmlw, "collMode", version, DatasetFieldConstant.collectionMode, lang); 
+        FieldDTO collModeFieldDTO = dto2FieldDTO(version, DatasetFieldConstant.collectionMode, "socialscience");
+        if (collModeFieldDTO != null) {
+            // This field was made multiple as of 5.10
+            // Below is a backward compatibility check allowing export to work in 
+            // an instance where the metadata block has not been updated yet.
+            if (collModeFieldDTO.getMultiple()) {
+                writeI18NElementList(xmlw, "collMode", collModeFieldDTO.getMultipleVocab(), DatasetFieldConstant.collectionMode, collModeFieldDTO.getTypeClass(), "socialscience", lang);
+            } else {
+                writeI18NElement(xmlw, "collMode", version, DatasetFieldConstant.collectionMode, lang);
+            }
+        }
         writeI18NElement(xmlw, "resInstru", version, DatasetFieldConstant.researchInstrument, lang); 
         writeI18NElement(xmlw, "collSitu", version, DatasetFieldConstant.dataCollectionSituation, lang);
         writeI18NElement(xmlw, "actMin", version, DatasetFieldConstant.actionsToMinimizeLoss, lang);
@@ -1419,7 +1429,19 @@ public class DdiExportUtil {
         }
         return null;
     }
-
+    
+    private static FieldDTO dto2FieldDTO(DatasetVersionDTO datasetVersionDTO, String datasetFieldTypeName, String metadataBlockName) {
+        MetadataBlockDTO block = datasetVersionDTO.getMetadataBlocks().get(metadataBlockName);
+        if (block != null) {
+            for (FieldDTO fieldDTO : block.getFields()) {
+                if (datasetFieldTypeName.equals(fieldDTO.getTypeName())) {
+                    return fieldDTO;
+                }
+            }
+        }
+        return null;
+    }
+        
     private static void writeFullElementList(XMLStreamWriter xmlw, String name, List<String> values) throws XMLStreamException {
         //For the simplest Elements we can 
         if (values != null && !values.isEmpty()) {

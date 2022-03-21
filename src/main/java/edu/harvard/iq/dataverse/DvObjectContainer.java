@@ -16,8 +16,6 @@ public abstract class DvObjectContainer extends DvObject {
 	
     
     //Default to "file" is for tests only
-    public static final String DEFAULT_METADATA_LANGUAGE = Locale.getDefault().getDisplayLanguage();
-    public static final String DEFAULT_METADATA_LANGUAGE_CODE = Locale.getDefault().getLanguage();
     public static final String UNDEFINED_METADATA_LANGUAGE_CODE = "undefined"; //Used in dataverse.xhtml as a non-null selection option value (indicating inheriting the default)
     
     

@@ -732,7 +732,7 @@ public class GuestbookResponseServiceBean {
              * modifyDatafileAndFormat for TwoRavens but now we pass
              * "externalTool" for all external tools, including TwoRavens. When
              * clicking "Explore" and then the name of the tool, we want the
-             * name of the exploration tool (i.e. "TwoRavens", "Data Explorer",
+             * name of the exploration tool (i.e. "Data Explorer",
              * etc.) to be persisted as the downloadType. We execute
              * guestbookResponse.setDownloadtype(externalTool.getDisplayName())
              * over in the "explore" method of FileDownloadServiceBean just
