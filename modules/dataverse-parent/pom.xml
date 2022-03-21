@@ -129,7 +129,7 @@
  
     <properties>
         <!-- This is a special Maven property name, do not change! -->
-        <revision>5.9</revision>
+        <revision>5.10</revision>
     
         <target.java.version>11</target.java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -146,7 +146,7 @@
         <argLine>-Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
     
         <!-- Major system components and dependencies -->
-        <payara.version>5.2021.5</payara.version>
+        <payara.version>5.2021.6</payara.version>
         <postgresql.version>42.3.3</postgresql.version>
         <solr.version>8.8.1</solr.version>
         <aws.version>1.11.762</aws.version>
