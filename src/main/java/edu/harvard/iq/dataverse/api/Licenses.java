@@ -137,7 +137,7 @@ public class Licenses extends AbstractApiBean {
                     .setInfo("License " + license.getName() + "(" + license.getUri() + ") as id: " + id
                             + "has been made " + (active ? "active" : "inactive"))
                     .setUserIdentifier(authenticatedUser.getIdentifier()));
-            return ok("License ID " + id + "set to " + (active ? "active" : "inactive"));
+            return ok("License ID " + id + " set to " + (active ? "active" : "inactive"));
         } catch (WrappedResponse e) {
             if (e.getCause() instanceof IllegalArgumentException) {
                 return badRequest(e.getCause().getMessage());
