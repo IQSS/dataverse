@@ -69,7 +69,7 @@
                 <version>0.0.7</version>
                 <executions>
                     <execution>
-                        <id>compile-configset</id>
+                        <id>compile-solrconfig-xml</id>
                         <phase>process-resources</phase>
                         <goals>
                             <goal>run</goal>
@@ -82,7 +82,7 @@
                                 <arg>--solr-schemaxml-sourcepath="${project.resources[0].directory}/schema.xml"</arg>
                                 <arg>--solr-config-xsltdir="${project.resources[0].directory}/solrconfig-xslt"</arg>
                             </args>
-                            <script>${project.build.scriptSourceDirectory}/CompileSolrConfigSet.java</script>
+                            <script>${project.build.scriptSourceDirectory}/CompileSolrConfigXML.java</script>
                         </configuration>
                     </execution>
                 </executions>

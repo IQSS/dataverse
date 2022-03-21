@@ -29,11 +29,11 @@ import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Command(name = "CompileSolrConfigSet",
+@Command(name = "CompileSolrConfigXML",
         mixinStandardHelpOptions = true,
-        version = "CompileSolrConfigSet 0.1",
-        description = "CompileSolrConfigSet made with jbang")
-class CompileSolrConfigSet implements Callable<Integer> {
+        version = "CompileSolrConfigXML 0.1",
+        description = "CompileSolrConfigXML made with jbang")
+class CompileSolrConfigXML implements Callable<Integer> {
     
     /**
      * A wrapper for Throwables to create a checked exception that leads to aborting the execution
