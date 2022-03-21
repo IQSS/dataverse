@@ -552,7 +552,9 @@ The optional ``pid`` parameter holds a persistent identifier (such as a DOI or H
 
 The optional ``release`` parameter tells the Dataverse installation to immediately publish the dataset. If the parameter is changed to ``no``, the imported dataset will remain in ``DRAFT`` status.
 
-The file is a DDI xml file.
+The file is a DDI XML file. A sample DDI XML file may be downloaded here: :download:`ddi_dataset.xml <../_static/api/ddi_dataset.xml>`
+
+Note that DDI XML does not have a field that corresponds to the "Subject" field in Dataverse. Therefore the "Import DDI" API endpoint populates the "Subject" field with ``N/A``. To update the "Subject" field one will need to call the :ref:`edit-dataset-metadata-api` API with a JSON file that contains an update to "Subject" such as :download:`subject-update-metadata.json <../_static/api/subject-update-metadata.json>`. Alternatively, the web interface can be used to add a subject.
 
 .. warning::
 
@@ -998,6 +1000,8 @@ Now that the resulting JSON file only contains the ``metadataBlocks`` key, you c
     vi dataset-update-metadata.json
 
 Now that you've made edits to the metadata in your JSON file, you can send it to a Dataverse installation as described above.
+
+.. _edit-dataset-metadata-api:
 
 Edit Dataset Metadata
 ~~~~~~~~~~~~~~~~~~~~~
