@@ -206,7 +206,7 @@
                                     <!-- Primitive fields -->
                                     <p:fragment id="editPrimitiveValueFragment" rendered="#{dsf.datasetFieldType.primitive}">
                                         <p:autoUpdate/>
-                                        <h:outputLabel for="fieldvaluelist:0:#{dsf.datasetFieldType.fieldType == 'TEXTBOX' ? 'description' : 'inputText'}" styleClass="col-sm-3 control-label">
+                                        <h:outputLabel for="#{dsf.datasetFieldType.controlledVocabulary ? (!dsf.datasetFieldType.allowMultiples ? 'unique1_focus' : 'unique2_focus') : ('fieldvaluelist:0:'.concat(((dsf.datasetFieldType.fieldType == 'TEXTBOX') ? 'description' : 'inputText')))}" styleClass="col-sm-3 control-label">
                                             #{dsf.datasetFieldType.localeTitle}
                                             <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{dsf.required}"/>
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
