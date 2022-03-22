@@ -247,7 +247,7 @@
                                                     <div class="form-group dataset-field-values">
                                                         <div class="form-col-container col-sm-9 edit-field">
                                                             <p:selectOneMenu value="#{dsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;" styleClass="form-control primitive"
-                                                                             id="unique1" required="#{dsf.required and datasetPage}" rendered="#{!dsf.datasetFieldType.allowMultiples}">
+                                                                             id="unique1" required="#{dsf.required and datasetPage}" rendered="#{!dsf.datasetFieldType.allowMultiples}" filter="#{(dsf.datasetFieldType.controlledVocabularyValues.size() lt 10) ? 'false':'true'}" filterMatchMode="contains">
                                                                 <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
                                                                 <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.getLocaleStrValue(mdLangCode)}" itemValue="#{cvv}"/>
                                                             </p:selectOneMenu>
@@ -259,7 +259,7 @@
                                                             </p:outputPanel>
                                                             -->
                                                             <p:selectCheckboxMenu value="#{dsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter" styleClass="form-control"
-                                                                                  filter="true" filterMatchMode="startsWith" label="#{bundle.select}"  multiple="true" showHeader="#{(dsf.controlledVocabularyValues.size() lt 10) ? 'false':'true'}" 
+                                                                                  filter="#{(dsf.datasetFieldType.controlledVocabularyValues.size() lt 10) ? 'false':'true'}" filterMatchMode="contains" label="#{bundle.select}"  multiple="true" showHeader="#{(dsf.datasetFieldType.controlledVocabularyValues.size() lt 10) ? 'false':'true'}" 
                                                                                   id="unique2" rendered="#{dsf.datasetFieldType.allowMultiples}">
                                                                 <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.getLocaleStrValue(mdLangCode)}" itemValue="#{cvv}"/>
                                                             </p:selectCheckboxMenu>
@@ -314,7 +314,7 @@
                                                             <!-- MOVED SELECT ONE TO dataFieldForEdit -->
                                                             <div jsf:rendered="#{subdsf.datasetFieldType.controlledVocabulary}">
                                                                 <p:selectOneMenu id="cvv" value="#{subdsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;"
-                                                                                 rendered="#{!subdsf.datasetFieldType.allowMultiples}">
+                                                                                 rendered="#{!subdsf.datasetFieldType.allowMultiples}" filter="#{(subdsf.datasetFieldType.controlledVocabularyValues.size() lt 10) ? 'false':'true'}" filterMatchMode="contains" >
                                                                     <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
                                                                     <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
                                                                 </p:selectOneMenu>
@@ -332,7 +332,10 @@
                                                                 -->
                                                                 </ui:remove> 
                                                                     <p:selectCheckboxMenu value="#{subdsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
-                                                                                          rendered="#{subdsf.datasetFieldType.allowMultiples}" label="#{bundle.select}" multiple="true"  >
+                                                                                           rendered="#{subdsf.datasetFieldType.allowMultiples}" label="#{bundle.select}" multiple="true"
+                                                                                           filter="#{(subdsf.datasetFieldType.controlledVocabularyValues.size() lt 10) ? 'false':'true'}" filterMatchMode="contains" 
+                                                                                           showHeader="#{(subdsf.datasetFieldType.controlledVocabularyValues.size() lt 10) ? 'false':'true'}">
+
                                                                         <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
                                                                     </p:selectCheckboxMenu>
 
