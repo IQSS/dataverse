@@ -2576,3 +2576,18 @@ For example:
 ++++++++++++++++++++++++++++++++
 
 When set to ``true``, this setting allows a superuser to publish and/or update Dataverse collections and datasets bypassing the external validation checks (specified by the settings above). In an event where an external script is reporting validation failures that appear to be in error, this option gives an admin with superuser privileges a quick way to publish the dataset or update a collection for the user. 
+
+:FileCategories
++++++++++++++++
+
+Overrides the default list of file categories that is used in the UI when adding tags to files. The default list is Documentation, Data, and Code.
+
+This setting is a comma-separated list of the new tags.
+
+To override the default list with Docs, Data, Code, and Workflow:
+
+``curl -X PUT -d 'Docs,Data,Code,Workflow' http://localhost:8080/api/admin/settings/:FileCategories``
+
+To remove the override and go back to the default list:
+
+``curl -X PUT -d '' http://localhost:8080/api/admin/settings/:FileCategories``
