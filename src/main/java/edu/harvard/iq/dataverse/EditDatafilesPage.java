@@ -141,6 +141,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     SettingsWrapper settingsWrapper;
     @Inject
     LicenseServiceBean licenseServiceBean;
+    @Inject
+    DataFileCategoryServiceBean dataFileCategoryService;
 
     private Dataset dataset = new Dataset();
 
@@ -2743,10 +2745,11 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
         Arrays.sort(selectedTabFileTags);
     }
-
-    private void refreshCategoriesByName() {
-        categoriesByName = new ArrayList<>();
-        for (String category : dataset.getCategoriesByName()) {
+    
+    private void refreshCategoriesByName(){
+        categoriesByName= new ArrayList<>();
+        List<String> datasetFileCategories = dataFileCategoryService.mergeDatasetFileCategories(dataset.getCategories());
+        for (String category: datasetFileCategories ){
             categoriesByName.add(category);
         }
         refreshSelectedTags();
