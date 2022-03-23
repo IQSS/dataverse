@@ -191,6 +191,7 @@
             <groupId>org.primefaces</groupId>
             <artifactId>primefaces</artifactId>
             <version>11.0.0</version>
+            <classifier>jakarta</classifier>
         </dependency>
         <dependency>
             <groupId>org.primefaces.themes</groupId>
