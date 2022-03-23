@@ -5644,7 +5644,10 @@ public class DatasetPage implements java.io.Serializable {
             if (status == null || status.isEmpty()) {
                 JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("dataset.externalstatus.removed"));
             } else {
-                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.externalstatus.header"), BundleUtil.getStringFromBundle("dataset.externalstatus.info", Arrays.asList(status)));
+                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.externalstatus.header"),
+                        BundleUtil.getStringFromBundle("dataset.externalstatus.info",
+                                Arrays.asList(DatasetUtil.getLocaleExternalStatus(status))
+                        ));
             }
 
         } catch (CommandException ex) {
@@ -5653,7 +5656,7 @@ public class DatasetPage implements java.io.Serializable {
             JsfHelper.addErrorMessage(msg);
         }
     }
-    
+
     public List<String> getAllowedExternalStatuses() {
         return settingsWrapper.getAllowedExternalStatuses(dataset);
     }
