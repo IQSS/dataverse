@@ -200,7 +200,7 @@
         <dependency>
             <groupId>org.omnifaces</groupId>
             <artifactId>omnifaces</artifactId>
-            <version>3.8</version> <!-- Or 1.8-SNAPSHOT -->
+            <version>4.0-M13</version> <!-- Or 1.8-SNAPSHOT -->
         </dependency>
         
         <dependency>
