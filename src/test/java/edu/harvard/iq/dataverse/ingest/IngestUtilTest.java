@@ -17,9 +17,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.validation.ConstraintViolation;
+
+import jakarta.validation.ConstraintViolation;
 import org.dataverse.unf.UNFUtil;
 import org.dataverse.unf.UnfException;
 import org.junit.Test;

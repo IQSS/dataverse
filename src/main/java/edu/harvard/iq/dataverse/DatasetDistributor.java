@@ -7,7 +7,7 @@
 package edu.harvard.iq.dataverse;
 
 import java.util.Comparator;
-import javax.persistence.Version;
+import jakarta.persistence.Version;
 
 /**
  *

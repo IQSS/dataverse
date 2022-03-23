@@ -2,8 +2,8 @@ package edu.harvard.iq.dataverse.pidproviders;
 
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.io.IOException;
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.NotFoundException;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.ws.rs.NotFoundException;
 import org.junit.Test;
 import org.junit.Ignore;
 

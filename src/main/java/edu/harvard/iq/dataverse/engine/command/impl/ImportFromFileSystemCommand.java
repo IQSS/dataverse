@@ -17,12 +17,12 @@ import java.io.File;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.batch.operations.JobOperator;
-import javax.batch.operations.JobSecurityException;
-import javax.batch.operations.JobStartException;
-import javax.batch.runtime.BatchRuntime;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.batch.operations.JobOperator;
+import jakarta.batch.operations.JobSecurityException;
+import jakarta.batch.operations.JobStartException;
+import jakarta.batch.runtime.BatchRuntime;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 @RequiredPermissions(Permission.EditDataset)
 public class ImportFromFileSystemCommand extends AbstractCommand<JsonObject> {

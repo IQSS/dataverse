@@ -8,8 +8,8 @@ package edu.harvard.iq.dataverse.export.spi;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.ExportException;
 import java.io.OutputStream;
-import javax.json.JsonObject;
-import javax.ws.rs.core.MediaType;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.core.MediaType;
 
 /**
  *

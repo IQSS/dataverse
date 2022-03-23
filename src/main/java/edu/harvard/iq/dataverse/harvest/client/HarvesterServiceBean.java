@@ -21,13 +21,13 @@ import java.util.List;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Resource;
-import javax.ejb.Asynchronous;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.ejb.Timer;
-import javax.inject.Named;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Asynchronous;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.Timer;
+import jakarta.inject.Named;
 //import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -44,8 +44,8 @@ import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandlerException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import java.io.FileWriter;
 import java.io.PrintWriter;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 /**
  *
@@ -62,7 +62,7 @@ public class HarvesterServiceBean {
     @EJB
     DatasetServiceBean datasetService;
     @Resource
-    javax.ejb.TimerService timerService;
+    jakarta.ejb.TimerService timerService;
     @EJB
     DataverseTimerServiceBean dataverseTimerService;
     @EJB

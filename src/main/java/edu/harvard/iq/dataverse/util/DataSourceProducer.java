@@ -1,9 +1,9 @@
 package edu.harvard.iq.dataverse.util;
 
-import javax.annotation.Resource;
-import javax.annotation.sql.DataSourceDefinition;
-import javax.enterprise.inject.Produces;
-import javax.inject.Singleton;
+import jakarta.annotation.Resource;
+import jakarta.annotation.sql.DataSourceDefinition;
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Singleton;
 import javax.sql.DataSource;
 
 // Find docs here: https://javaee.github.io/javaee-spec/javadocs/javax/annotation/sql/DataSourceDefinition.html

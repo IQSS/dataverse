@@ -3,14 +3,12 @@ package edu.harvard.iq.dataverse.api;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
-import static edu.harvard.iq.dataverse.api.AccessIT.apiToken;
-import static edu.harvard.iq.dataverse.api.AccessIT.datasetId;
-import static edu.harvard.iq.dataverse.api.AccessIT.tabFile3NameRestricted;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.logging.Logger;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

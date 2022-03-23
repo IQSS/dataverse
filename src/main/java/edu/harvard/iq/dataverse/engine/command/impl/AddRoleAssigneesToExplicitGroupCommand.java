@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 
 /**
  *

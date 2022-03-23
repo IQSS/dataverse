@@ -7,15 +7,14 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Response;
+import jakarta.ejb.EJB;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Response;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.PUT;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.PUT;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAISet;
 

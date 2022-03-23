@@ -3,8 +3,8 @@ package edu.harvard.iq.dataverse.sitemap;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import java.util.List;
-import javax.ejb.Asynchronous;
-import javax.ejb.Stateless;
+import jakarta.ejb.Asynchronous;
+import jakarta.ejb.Stateless;
 
 @Stateless
 public class SiteMapServiceBean {

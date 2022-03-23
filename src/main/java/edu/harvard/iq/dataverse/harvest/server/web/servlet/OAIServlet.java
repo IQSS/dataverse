@@ -49,13 +49,13 @@ import java.io.OutputStream;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.mail.internet.InternetAddress;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.ejb.EJB;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import javax.xml.stream.XMLStreamException;
 
 /**

@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.Map;
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 /**
  *

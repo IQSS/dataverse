@@ -4,7 +4,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.InputStream;
 
-import javax.ejb.EJB;
+import jakarta.ejb.EJB;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;

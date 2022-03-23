@@ -6,10 +6,6 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.search.SolrField;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import javax.faces.model.SelectItem;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

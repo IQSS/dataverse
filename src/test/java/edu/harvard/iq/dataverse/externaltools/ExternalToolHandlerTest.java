@@ -6,7 +6,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
-import javax.json.Json;
+import jakarta.json.Json;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 

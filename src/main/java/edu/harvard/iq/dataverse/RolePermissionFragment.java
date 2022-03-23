@@ -26,14 +26,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
-import javax.faces.event.ActionEvent;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.ejb.EJB;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.event.ActionEvent;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.apache.commons.text.StringEscapeUtils;
@@ -92,7 +92,7 @@ public class RolePermissionFragment implements java.io.Serializable {
         this.inheritAssignments = inheritAssignments;
     }
 
-    public void updatePermissionRoot(javax.faces.event.AjaxBehaviorEvent event) throws javax.faces.event.AbortProcessingException {
+    public void updatePermissionRoot(jakarta.faces.event.AjaxBehaviorEvent event) throws jakarta.faces.event.AbortProcessingException {
         try {
             dvObject = commandEngine.submit(
                     new UpdatePermissionRootCommand(!inheritAssignments, 

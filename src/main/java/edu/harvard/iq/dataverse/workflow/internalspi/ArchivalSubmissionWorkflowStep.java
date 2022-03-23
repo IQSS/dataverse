@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.workflow.internalspi;
 
-import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -10,13 +9,12 @@ import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
-import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * A step that submits a BagIT bag of the newly published dataset version via a

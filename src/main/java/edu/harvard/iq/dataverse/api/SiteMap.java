@@ -2,13 +2,13 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.sitemap.SiteMapServiceBean;
 import edu.harvard.iq.dataverse.sitemap.SiteMapUtil;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 @Stateless
 @Path("admin/sitemap")

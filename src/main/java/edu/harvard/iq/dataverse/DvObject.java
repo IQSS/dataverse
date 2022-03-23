@@ -8,7 +8,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 /**
  * Base of the object hierarchy for "anything that can be inside a dataverse".

@@ -16,7 +16,7 @@ import java.net.URL;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.ejb.EJB;
+import jakarta.ejb.EJB;
 
 /**
  *

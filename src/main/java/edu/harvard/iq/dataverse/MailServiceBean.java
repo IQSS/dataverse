@@ -27,17 +27,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.mail.Address;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.mail.Address;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 
 import edu.harvard.iq.dataverse.validation.EMailValidator;
 import org.apache.commons.lang3.StringUtils;
@@ -89,7 +89,7 @@ public class MailServiceBean implements java.io.Serializable {
             String[] recipientStrings = to.split(",");
             InternetAddress[] recipients = new InternetAddress[recipientStrings.length];
             try {
-            	InternetAddress fromAddress = getSystemAddress();
+                InternetAddress fromAddress = getSystemAddress();
                 setContactDelegation(reply, fromAddress);
                 msg.setFrom(fromAddress);
                 msg.setReplyTo(new Address[] {new InternetAddress(reply, charset)});
@@ -191,7 +191,7 @@ public class MailServiceBean implements java.io.Serializable {
             }
             msg.setFrom(fromAddress);
             if (EMailValidator.isEmailValid(reply)) {
-            	// But set the reply-to address to direct replies to the requested 'from' party if it is a valid email address
+                // But set the reply-to address to direct replies to the requested 'from' party if it is a valid email address
                 msg.setReplyTo(new Address[] {new InternetAddress(reply)});
             } else {
                 // Otherwise include the invalid 'from' address in the message

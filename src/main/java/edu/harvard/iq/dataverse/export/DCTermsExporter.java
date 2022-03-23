@@ -7,7 +7,7 @@ import edu.harvard.iq.dataverse.export.dublincore.DublinCoreExportUtil;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.OutputStream;
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 import javax.xml.stream.XMLStreamException;
 
 /**

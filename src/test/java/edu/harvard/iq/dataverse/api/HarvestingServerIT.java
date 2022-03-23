@@ -8,14 +8,9 @@ import org.junit.AfterClass;
 import org.junit.Test;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import com.jayway.restassured.response.Response;
-import com.jayway.restassured.path.json.JsonPath;
-import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
-import javax.json.Json;
-import javax.json.JsonArray;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.OK;
-import static org.hamcrest.CoreMatchers.equalTo;
-import org.junit.Ignore;
+
+import static jakarta.ws.rs.core.Response.Status.OK;
+
 import java.util.List;
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

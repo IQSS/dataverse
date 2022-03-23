@@ -4,13 +4,13 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import javax.annotation.Resource;
-import javax.ejb.EJBContext;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import static javax.ejb.TransactionAttributeType.REQUIRED;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJBContext;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import static jakarta.ejb.TransactionAttributeType.REQUIRED;
 
-import javax.inject.Named;
+import jakarta.inject.Named;
 
 /**
  *

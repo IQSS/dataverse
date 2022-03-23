@@ -12,22 +12,22 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Request;
-import javax.ws.rs.core.Response;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Request;
+import jakarta.ws.rs.core.Response;
 
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.core.Variant;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import jakarta.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.Variant;
 
 /**
  * API endpoints for various metrics.

@@ -24,16 +24,16 @@ import java.util.List;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.inject.Named;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Named;
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
     
@@ -180,7 +180,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                 query.setParameter("majorVersionNumber", majorVersionNumber);
                 query.setParameter("minorVersionNumber", minorVersionNumber);
                 foundDatasetVersion = (DatasetVersion) query.getSingleResult();
-            } catch (javax.persistence.NoResultException e) {
+            } catch (jakarta.persistence.NoResultException e) {
                 logger.warning("no ds version found: " + datasetId + " " + friendlyVersionNumber);
                 // DO nothing, just return null.
             }
@@ -208,7 +208,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                     }
                 }
                 return retVal;
-            } catch (javax.persistence.NoResultException e) {
+            } catch (jakarta.persistence.NoResultException e) {
                 logger.warning("no ds version found: " + datasetId + " " + friendlyVersionNumber);
                 // DO nothing, just return null.
             }
@@ -435,7 +435,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             msg("Found: " + ds);
             return ds;
             
-        } catch (javax.persistence.NoResultException e) {
+        } catch (jakarta.persistence.NoResultException e) {
             msg("DatasetVersion not found: " + queryString);
             logger.log(Level.FINE, "DatasetVersion not found: {0}", queryString);
             return null;

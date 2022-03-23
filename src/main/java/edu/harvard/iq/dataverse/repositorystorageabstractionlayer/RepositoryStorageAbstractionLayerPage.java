@@ -6,10 +6,10 @@ import edu.harvard.iq.dataverse.locality.StorageSite;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.inject.Named;
-import javax.json.JsonArray;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Named;
+import jakarta.json.JsonArray;
 
 @Stateless
 @Named

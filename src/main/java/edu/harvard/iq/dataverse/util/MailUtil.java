@@ -8,8 +8,8 @@ import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.SystemEm
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
 
 public class MailUtil {
 

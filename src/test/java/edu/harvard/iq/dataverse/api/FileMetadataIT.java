@@ -13,7 +13,7 @@ import org.junit.Test;
 import java.util.UUID;
 
 import static com.jayway.restassured.RestAssured.given;
-import static javax.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.fail;
 import static org.hamcrest.CoreMatchers.equalTo;

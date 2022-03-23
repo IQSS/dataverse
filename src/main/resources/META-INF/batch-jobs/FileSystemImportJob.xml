@@ -34,14 +34,14 @@
             </writer>
             <skippable-exception-classes>
                 <!-- To skip all the exceptions -->
-                <include class="javax.transaction.RollbackException"/>
+                <include class="jakarta.transaction.RollbackException"/>
                 <include class="java.lang.NullPointerException"/>
                 <include class="java.lang.Exception"/>
                 <include class="java.lang.Throwable"/>
             </skippable-exception-classes>
             <no-rollback-exception-classes>
                 <!-- To skip all the exceptions -->
-                <include class="javax.transaction.RollbackException"/>
+                <include class="jakarta.transaction.RollbackException"/>
                 <include class="java.lang.NullPointerException"/>
                 <include class="java.lang.Exception"/>
                 <include class="java.lang.Throwable"/>

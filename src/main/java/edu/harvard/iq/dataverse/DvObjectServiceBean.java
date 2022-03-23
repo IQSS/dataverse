@@ -10,15 +10,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.NonUniqueResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import static jakarta.ejb.TransactionAttributeType.REQUIRES_NEW;
+import jakarta.inject.Named;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.NonUniqueResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import org.apache.commons.lang3.StringUtils;
 import org.ocpsoft.common.util.Strings;
 
@@ -103,7 +103,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
                 query.setParameter("authority", gid.getAuthority());
                 query.setParameter("dtype", typeString);
                 foundDvObject = (DvObject) query.getSingleResult();
-            } catch (javax.persistence.NoResultException e) {
+            } catch (jakarta.persistence.NoResultException e) {
                 // (set to .info, this can fill the log file with thousands of
                 // these messages during a large harvest run)
                 logger.fine("no dvObject found: " + globalIdString);

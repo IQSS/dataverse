@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.search;
 
 import java.util.List;
-import javax.inject.Named;
+import jakarta.inject.Named;
 
 @Named
 public class Highlight {

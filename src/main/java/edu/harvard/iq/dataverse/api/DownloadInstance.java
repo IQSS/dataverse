@@ -12,9 +12,8 @@ import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.GuestbookResponse;
 import java.util.List;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
-import javax.faces.context.FacesContext;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.UriInfo;
 
 /**
  *

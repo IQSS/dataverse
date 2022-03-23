@@ -2,12 +2,12 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import javax.ejb.EJB;
-import javax.json.Json;
-import javax.json.JsonValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Response;
+import jakarta.ejb.EJB;
+import jakarta.json.Json;
+import jakarta.json.JsonValue;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.Response;
 
 @Path("info")
 public class Info extends AbstractApiBean {
