@@ -39,9 +39,9 @@ import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 
-import static com.jayway.restassured.RestAssured.put;
+import static com.jayway.restassured.RestAssured.*;
 import static com.jayway.restassured.path.xml.XmlPath.from;
-import static com.jayway.restassured.RestAssured.given;
+
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldType;
@@ -637,12 +637,22 @@ public class UtilIT {
         return uploadFileViaNative(datasetId, pathToFile, jsonObject.toString(), apiToken);
     }
 
-    static Response uploadFileViaNative(String datasetId, String pathToFile, String jsonAsString, String apiToken) {
-        String nullMimeType = null;
-        return uploadFileViaNative(datasetId, pathToFile, jsonAsString, nullMimeType, apiToken);
+    static Response uploadFileViaNative(String datasetId, String pathToFile, String jsonAsString, String mimeType, String apiToken) {
+        Boolean tabIngest = null;
+        return uploadFileViaNative(datasetId, pathToFile, jsonAsString, mimeType, apiToken, tabIngest);
     }
 
-    static Response uploadFileViaNative(String datasetId, String pathToFile, String jsonAsString, String mimeType, String apiToken) {
+    static Response uploadFileViaNative(String datasetId, String pathToFile, String jsonAsString, String apiToken) {
+        String nullMimeType = null;
+        Boolean tabIngest = null;
+        return uploadFileViaNative(datasetId, pathToFile, jsonAsString, nullMimeType, apiToken, tabIngest);
+    }
+    static Response uploadFileViaNative(String datasetId, String pathToFile, String jsonAsString, String apiToken, Boolean tabIngest) {
+        String nullMimeType = null;
+        return uploadFileViaNative(datasetId, pathToFile, jsonAsString, nullMimeType, apiToken, tabIngest);
+    }
+
+    static Response uploadFileViaNative(String datasetId, String pathToFile, String jsonAsString, String mimeType, String apiToken, Boolean tabIngest) {
         RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .multiPart("datasetId", datasetId)
@@ -650,7 +660,11 @@ public class UtilIT {
         if (jsonAsString != null) {
             requestSpecification.multiPart("jsonData", jsonAsString);
         }
-        return requestSpecification.post("/api/datasets/" + datasetId + "/add");
+        String postString = "/api/datasets/" + datasetId + "/add";
+        if (tabIngest != null)
+            postString = postString + "?tabingest=" + tabIngest.toString();
+        logger.info(postString);
+        return requestSpecification.post(postString);
     }
 
     static Response uploadAuxFile(Long fileId, String pathToFile, String formatTag, String formatVersion, String mimeType, boolean isPublic, String type, String apiToken) {

@@ -334,8 +334,9 @@ public class AddReplaceFileHelper{
                                        String newFileContentType,
                                        String newStorageIdentifier,
                                        InputStream newFileInputStream,
-                                       OptionalFileParams optionalFileParams){
-        return this.runAddFileByDataset(chosenDataset,newFileName,newFileContentType,newStorageIdentifier,newFileInputStream,optionalFileParams,false);
+                                       OptionalFileParams optionalFileParams,
+                                       Boolean tabIngest){
+        return this.runAddFileByDataset(chosenDataset,newFileName,newFileContentType,newStorageIdentifier,newFileInputStream,optionalFileParams,false, tabIngest);
 
     }
 
@@ -345,7 +346,8 @@ public class AddReplaceFileHelper{
                                        String newStorageIdentifier,
                                        InputStream newFileInputStream,
                                        OptionalFileParams optionalFileParams,
-                                       boolean multipleFiles) {
+                                       boolean multipleFiles,
+                                       Boolean tabIngest) {
 
         msgt(">> runAddFileByDatasetId");
 
@@ -363,7 +365,7 @@ public class AddReplaceFileHelper{
         }
 
         //return this.runAddFile(this.dataset, newFileName, newFileContentType, newFileInputStream, optionalFileParams);
-        return this.runAddReplaceFile(dataset, newFileName, newFileContentType, newStorageIdentifier, newFileInputStream, optionalFileParams);
+        return this.runAddReplaceFile(dataset, newFileName, newFileContentType, newStorageIdentifier, newFileInputStream, optionalFileParams, tabIngest);
 
     }
     
@@ -431,7 +433,7 @@ public class AddReplaceFileHelper{
         }
 
         
-        return this.runAddReplaceFile(fileToReplace.getOwner(), newFileName, newFileContentType, newStorageIdentifier, newFileInputStream, optionalFileParams);
+        return this.runAddReplaceFile(fileToReplace.getOwner(), newFileName, newFileContentType, newStorageIdentifier, newFileInputStream, optionalFileParams, true);
     }
     
 
@@ -458,7 +460,7 @@ public class AddReplaceFileHelper{
         if (!this.step_005_loadFileToReplaceById(oldFileId)){
             return false;
         }
-        return this.runAddReplaceFile(fileToReplace.getOwner(), newFileName, newFileContentType, newStorageIdentifier, newFileInputStream, optionalFileParams);
+        return this.runAddReplaceFile(fileToReplace.getOwner(), newFileName, newFileContentType, newStorageIdentifier, newFileInputStream, optionalFileParams, true);
     }
     
     
@@ -486,7 +488,7 @@ public class AddReplaceFileHelper{
     private boolean runAddReplaceFile(Dataset owner,  
             String newFileName, String newFileContentType, 
             String newStorageIdentifier, InputStream newFileInputStream,
-            OptionalFileParams optionalFileParams){
+            OptionalFileParams optionalFileParams, Boolean tabInjest){
         
         // Run "Phase 1" - Initial ingest of file + error check
         // But don't save the dataset version yet
@@ -503,7 +505,7 @@ public class AddReplaceFileHelper{
         }
         
        
-        return runAddReplacePhase2();
+        return runAddReplacePhase2(tabInjest);
         
     }
 
@@ -653,7 +655,7 @@ public class AddReplaceFileHelper{
     
     
     public boolean runReplaceFromUI_Phase2(){
-        return runAddReplacePhase2();
+        return runAddReplacePhase2(true);
     }
     
 
@@ -744,7 +746,7 @@ public class AddReplaceFileHelper{
      * 
      * @return 
      */
-    private boolean runAddReplacePhase2(){
+    private boolean runAddReplacePhase2(Boolean tabIngest){
         
         if (this.hasError()){
             return false;   // possible to have errors already...
@@ -756,7 +758,7 @@ public class AddReplaceFileHelper{
         }
         
          msgt("step_060_addFilesViaIngestService");
-        if (!this.step_060_addFilesViaIngestService()){
+        if (!this.step_060_addFilesViaIngestService(tabIngest)){
             return false;
             
         }
@@ -1570,7 +1572,7 @@ public class AddReplaceFileHelper{
         return true;
     }
     
-    private boolean step_060_addFilesViaIngestService(){
+    private boolean step_060_addFilesViaIngestService(Boolean tabIngest){
                        
         if (this.hasError()){
             return false;
@@ -1583,7 +1585,7 @@ public class AddReplaceFileHelper{
         }
         
         int nFiles = finalFileList.size();
-        finalFileList = ingestService.saveAndAddFilesToDataset(workingVersion, finalFileList, fileToReplace);
+        finalFileList = ingestService.saveAndAddFilesToDataset(workingVersion, finalFileList, fileToReplace, tabIngest);
 
         if (nFiles != finalFileList.size()) {
             if (nFiles == 1) {
