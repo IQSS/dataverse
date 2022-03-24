@@ -48,6 +48,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
@@ -134,6 +135,11 @@ public class DataverseUserPage implements java.io.Serializable {
     private String username;
     boolean nonLocalLoginEnabled;
     private List<String> passwordErrors;
+    
+    
+    private List<UserNotification.Type> notificationTypeList;
+    private List<UserNotification.Type> mutedEmailList;
+    private List<UserNotification.Type> mutedNotificationList;
 
     public String init() {
 
@@ -161,6 +167,11 @@ public class DataverseUserPage implements java.io.Serializable {
             setCurrentUser((AuthenticatedUser) session.getUser());
             userAuthProvider = authenticationService.lookupProvider(currentUser);
             notificationsList = userNotificationService.findByUser(currentUser.getId());
+            notificationTypeList = Arrays.asList(UserNotification.Type.values()).stream()
+                    .filter(x -> x.getDescription() != null && !x.getDescription().isEmpty())
+                    .collect(Collectors.toList());
+            mutedEmailList = UserNotification.Type.fromFlag(currentUser.getMutedEmails());
+            mutedNotificationList = UserNotification.Type.fromFlag(currentUser.getMutedNotifications());
             
             switch (selectTab) {
                 case "notifications":
@@ -368,6 +379,8 @@ public class DataverseUserPage implements java.io.Serializable {
             logger.info("Redirecting");
             return permissionsWrapper.notAuthorized() + "faces-redirect=true";
         }else {
+            currentUser.setMutedEmails(UserNotification.Type.toFlag(mutedEmailList));
+            currentUser.setMutedNotifications(UserNotification.Type.toFlag(mutedNotificationList));
             String emailBeforeUpdate = currentUser.getEmail();
             AuthenticatedUser savedUser = authenticationService.updateAuthenticatedUser(currentUser, userDisplayInfo);
             String emailAfterUpdate = savedUser.getEmail();
@@ -708,4 +721,30 @@ public class DataverseUserPage implements java.io.Serializable {
         if(notification.getRequestor() == null) return BundleUtil.getStringFromBundle("notification.email.info.unavailable");;
         return notification.getRequestor().getEmail() != null ? notification.getRequestor().getEmail() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");
     }
+
+    public List<UserNotification.Type> getNotificationTypeList() {
+        return notificationTypeList;
+    }
+
+    public void setNotificationTypeList(List<UserNotification.Type> notificationTypeList) {
+        this.notificationTypeList = notificationTypeList;
+    }
+
+    public List<UserNotification.Type> getMutedEmailList() {
+        return mutedEmailList;
+    }
+
+    public void setMutedEmailList(List<UserNotification.Type> mutedEmailList) {
+        this.mutedEmailList = mutedEmailList;
+    }
+
+    public List<UserNotification.Type> getMutedNotificationList() {
+        return mutedNotificationList;
+    }
+
+    public void setMutedNotificationList(List<UserNotification.Type> mutedNotificationList) {
+        this.mutedNotificationList = mutedNotificationList;
+    }
+    
+    
 }

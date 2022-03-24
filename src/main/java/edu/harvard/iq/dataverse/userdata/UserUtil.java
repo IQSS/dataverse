@@ -5,7 +5,11 @@
  */
 package edu.harvard.iq.dataverse.userdata;
 
+import com.beust.jcommander.Strings;
+import edu.harvard.iq.dataverse.UserNotification;
 import java.sql.Timestamp;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -64,6 +68,20 @@ public class UserUtil {
             return null;
         }
         return (Timestamp)dbResult;
+    }
+    
+    /**
+     * Convenience method to format UserNotification.Type from flag value
+     * @param mutedLongFlags
+     * @return 
+     */
+    public static String getMutedStringOrNull(Long mutedLongFlags){
+        if (mutedLongFlags == null){
+            return null;
+        }
+        final List<String> types = UserNotification.Type.fromFlag(mutedLongFlags)
+                .stream().map(x -> x.name()).collect(Collectors.toList());
+        return Strings.join(",", types);
     }
 
 }

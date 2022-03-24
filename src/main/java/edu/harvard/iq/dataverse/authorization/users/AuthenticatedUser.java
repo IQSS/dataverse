@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.Cart;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.ValidateEmail;
-import edu.harvard.iq.dataverse.authorization.AccessRequest;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2TokenData;
@@ -120,6 +119,12 @@ public class AuthenticatedUser implements User, Serializable {
 
     @Column(nullable=true)
     private Timestamp deactivatedTime;
+
+    @Column(nullable=true)
+    private Long mutedEmails;
+
+    @Column(nullable=true)
+    private Long mutedNotifications;
 
     /**
      * @todo Consider storing a hash of *all* potentially interesting Shibboleth
@@ -389,6 +394,8 @@ public class AuthenticatedUser implements User, Serializable {
 
         authenicatedUserJson.add("deactivated", this.deactivated);
         authenicatedUserJson.add("deactivatedTime", UserUtil.getTimestampStringOrNull(this.deactivatedTime));
+        authenicatedUserJson.add("mutedEmails", UserUtil.getMutedStringOrNull(this.mutedEmails));
+        authenicatedUserJson.add("mutedNotifications", UserUtil.getMutedStringOrNull(this.mutedEmails));
 
         return authenicatedUserJson;
     }
@@ -491,5 +498,35 @@ public class AuthenticatedUser implements User, Serializable {
     
     public void setCart(Cart cart) {
         this.cart = cart;
+    }
+
+    public Long getMutedEmails() {
+        return mutedEmails;
+    }
+
+    public void setMutedEmails(Long mutedEmails) {
+        this.mutedEmails = mutedEmails;
+    }
+
+    public Long getMutedNotifications() {
+        return mutedNotifications;
+    }
+
+    public void setMutedNotifications(Long mutedNotifications) {
+        this.mutedNotifications = mutedNotifications;
+    }
+    
+    public boolean hasEmailMuted(UserNotification.Type type) {
+        if (this.mutedEmails == null || type == null) {
+            return false;
+        }
+        return (type.flagValue() & this.mutedEmails) > 0;
+    }
+    
+    public boolean hasNotificationMuted(UserNotification.Type type) {
+        if (this.mutedNotifications == null || type == null) {
+            return false;
+        }
+        return (type.flagValue() & this.mutedNotifications) > 0;
     }
 }

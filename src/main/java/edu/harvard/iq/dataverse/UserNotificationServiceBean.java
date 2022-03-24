@@ -110,12 +110,22 @@ public class UserNotificationServiceBean {
         userNotification.setObjectId(objectId);
         userNotification.setRequestor(requestor);
 
-        if (mailService.sendNotificationEmail(userNotification, comment, requestor, isHtmlContent)) {
+        if (!isEmailMuted(userNotification) && mailService.sendNotificationEmail(userNotification, comment, requestor, isHtmlContent)) {
             logger.fine("email was sent");
             userNotification.setEmailed(true);
         } else {
             logger.fine("email was not sent");
         }
-        save(userNotification);
+        if (!isNotificationMuted(userNotification)) {
+            save(userNotification);
+        }
+    }
+
+    public boolean isEmailMuted(UserNotification userNotification) {
+        return userNotification.getUser().hasEmailMuted(userNotification.getType());
+    }
+    
+    public boolean isNotificationMuted(UserNotification userNotification) {
+        return userNotification.getUser().hasNotificationMuted(userNotification.getType());
     }
 }

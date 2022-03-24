@@ -377,6 +377,33 @@
                                     </div>
                                 </ui:repeat>
                             </div>
+                            <div class="form-horizontal" jsf:rendered="#{bundle['notification.showMuteOptions']}" >
+                                <hr/>
+                                <div class="form-group text-left">
+                                    <label for="mutedEmails" class="col-sm-4 control-label">
+                                        #{bundle['notification.mutedEmails']}
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <p:selectCheckboxMenu id="mutedEmails" value="#{DataverseUserPage.mutedEmailList}" styleClass="form-control"
+                                                              filter="true" filterMatchMode="contains" label="#{bundle.select}" multiple="true">
+                                            <f:selectItems value="#{DataverseUserPage.notificationTypeList}" var="t" itemLabel="#{t.description}" itemValue="#{t}"/>
+                                        </p:selectCheckboxMenu>
+                                    </div>
+                                </div>
+                                <div class="form-group text-left">
+                                    <label for="mutedNotifications" class="col-sm-4 control-label">
+                                        #{bundle['notification.mutedNotifications']}
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <p:selectCheckboxMenu id="mutedNotifications" value="#{DataverseUserPage.mutedNotificationList}" styleClass="form-control"
+                                                              filter="true" filterMatchMode="contains" label="#{bundle.select}" multiple="true">
+                                            <f:selectItems value="#{DataverseUserPage.notificationTypeList}" var="t" itemLabel="#{t.description}" itemValue="#{t}"/>
+                                        </p:selectCheckboxMenu>
+                                    </div>
+                                </div>
+                                <p:commandButton id="save" styleClass="btn btn-default" value="#{bundle.saveChanges}"
+                                                             action="#{DataverseUserPage.save}" update="@form"/>
+                            </div>
                         </p:tab>
                         <p:tab id="accountInfo" title="#{bundle['header.user.selectTab.accountInfo']}">
                             <div class="button-block tab-header margin-bottom text-right" jsf:rendered="#{empty DataverseUserPage.editMode or DataverseUserPage.passwordEditable or DataverseUserPage.accountDetailsEditable}">

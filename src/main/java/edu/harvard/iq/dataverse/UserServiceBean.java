@@ -144,6 +144,9 @@ public class UserServiceBean {
         user.setDeactivated((Boolean)(dbRowValues[13]));
         user.setDeactivatedTime(UserUtil.getTimestampOrNull(dbRowValues[14]));
 
+        user.setMutedEmails((Long)(dbRowValues[15]));
+        user.setMutedNotifications((Long)(dbRowValues[16]));
+
         user.setRoles(roles);
         return user;
     }
@@ -415,7 +418,8 @@ public class UserServiceBean {
         qstr += " u.position,";
         qstr += " u.createdtime, u.lastlogintime, u.lastapiusetime, ";
         qstr += " prov.id, prov.factoryalias, ";
-        qstr += " u.deactivated, u.deactivatedtime ";
+        qstr += " u.deactivated, u.deactivatedtime, ";
+        qstr += " u.mutedEmails, u.mutedNotifications ";
         qstr += " FROM authenticateduser u,";
         qstr += " authenticateduserlookup prov_lookup,";
         qstr += " authenticationproviderrow prov";

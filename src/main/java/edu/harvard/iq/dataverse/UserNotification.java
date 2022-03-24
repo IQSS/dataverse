@@ -1,11 +1,14 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.DateUtil;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Enumerated;
@@ -30,7 +33,39 @@ public class UserNotification implements Serializable {
         ASSIGNROLE, REVOKEROLE, CREATEDV, CREATEDS, CREATEACC, SUBMITTEDDS, RETURNEDDS, 
         PUBLISHEDDS, REQUESTFILEACCESS, GRANTFILEACCESS, REJECTFILEACCESS, FILESYSTEMIMPORT, 
         CHECKSUMIMPORT, CHECKSUMFAIL, CONFIRMEMAIL, APIGENERATED, INGESTCOMPLETED, INGESTCOMPLETEDWITHERRORS, 
-        PUBLISHFAILED_PIDREG, WORKFLOW_SUCCESS, WORKFLOW_FAILURE, STATUSUPDATED, DATASETCREATED
+        PUBLISHFAILED_PIDREG, WORKFLOW_SUCCESS, WORKFLOW_FAILURE, STATUSUPDATED, DATASETCREATED;
+        
+        public String getDescription() {
+            return BundleUtil.getStringFromBundle("notification.typeDescription." + this.name());
+        }
+        
+        public long flagValue() {
+            return 1 << this.ordinal();
+        }
+        
+        public static List<Type> fromFlag(Long flag) {
+            final List<Type> types = new ArrayList();
+            if (flag == null) {
+                return types;
+            }
+            for (final Type t : values()) {
+                if ((flag & t.flagValue()) > 0) {
+                    types.add(t);
+                }
+            }
+            return types;
+        }
+        
+        public static Long toFlag(final List<Type> types) {
+            if (types == null || types.isEmpty()) {
+                return null;
+            }
+            long flag = 0;
+            for (final Type t : types) {
+                flag |= t.flagValue();
+            }
+            return flag;
+        }
     };
     
     private static final long serialVersionUID = 1L;
