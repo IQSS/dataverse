@@ -301,7 +301,7 @@
             <name>Local repository for hosting jars not available from network repositories.</name>
             <url>file://${project.basedir}/local_lib</url>
         </repository>
-        <!-- Uncomment when using snapshot releases from Maven Central
+        <!-- Uncomment when using snapshot releases from Maven Central -->
         <repository>
             <id>oss-sonatype</id>
             <name>oss-sonatype</name>
@@ -312,7 +312,7 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
-        -->
+        <!-- -->
     </repositories>
     
 </project>

@@ -173,7 +173,9 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                     // curl --insecure --data-binary "@multipart.dat" -H 'Content-Type: multipart/related; boundary="===============0670350989=="' -H "MIME-Version: 1.0" https://sword:sword@localhost:8181/dvn/api/data-deposit/v1/swordv2/collection/dataverse/sword/hdl:1902.1/12345
                     // but...
                     // "Yeah, multipart is critically broken across all implementations" -- http://www.mail-archive.com/sword-app-tech@lists.sourceforge.net/msg00327.html
-                    throw new UnsupportedOperationException("Not yet implemented");
+                    //
+                    // OB 2022-03-24 -> sword2-server v2.0 library drops support for multipart/related.
+                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Multipart/related RFC2387 type posts are not supported. Please POST an Atom entry instead.");
                 } else {
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "expected deposit types are isEntryOnly, isBinaryOnly, and isMultiPart");
                 }
