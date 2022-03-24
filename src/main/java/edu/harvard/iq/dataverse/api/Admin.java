@@ -659,7 +659,7 @@ public class Admin extends AbstractApiBean {
 		String overwriteEmail = randomUser.get("email");
 		overwriteEmail = newEmailAddressToUse;
 		logger.info("overwriteEmail: " + overwriteEmail);
-		boolean validEmail = EMailValidator.isEmailValid(overwriteEmail, null);
+		boolean validEmail = EMailValidator.isEmailValid(overwriteEmail);
 		if (!validEmail) {
 			// See https://github.com/IQSS/dataverse/issues/2998
 			return error(Response.Status.BAD_REQUEST, "invalid email: " + overwriteEmail);
@@ -816,7 +816,7 @@ public class Admin extends AbstractApiBean {
 		String overwriteEmail = randomUser.get("email");
 		overwriteEmail = newEmailAddressToUse;
 		logger.info("overwriteEmail: " + overwriteEmail);
-		boolean validEmail = EMailValidator.isEmailValid(overwriteEmail, null);
+		boolean validEmail = EMailValidator.isEmailValid(overwriteEmail);
 		if (!validEmail) {
 			// See https://github.com/IQSS/dataverse/issues/2998
 			return error(Response.Status.BAD_REQUEST, "invalid email: " + overwriteEmail);

@@ -151,7 +151,7 @@ public class ShibUtil {
                     logger.fine(ex + " parsing " + email);
                 }
             } else {
-                boolean passedValidation = EMailValidator.isEmailValid(email, null);
+                boolean passedValidation = EMailValidator.isEmailValid(email);
                 logger.fine("Odd email address. No @ sign ('" + email + "'). Passed email validation: " + passedValidation);
             }
         } else {

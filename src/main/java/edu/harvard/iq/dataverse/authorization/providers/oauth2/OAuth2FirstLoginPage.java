@@ -259,7 +259,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
      */
     public void validateUserEmail(FacesContext context, UIComponent toValidate, Object value) {
         String userEmail = (String) value;
-        boolean emailValid = EMailValidator.isEmailValid(userEmail, null);
+        boolean emailValid = EMailValidator.isEmailValid(userEmail);
         if (!emailValid) {
             ((UIInput) toValidate).setValid(false);
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("oauth2.newAccount.emailInvalid"), null);

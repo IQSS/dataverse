@@ -190,7 +190,7 @@ public class MailServiceBean implements java.io.Serializable {
                 logger.severe(ex.getMessage());
             }
             msg.setFrom(fromAddress);
-            if (EMailValidator.isEmailValid(reply, null)) {
+            if (EMailValidator.isEmailValid(reply)) {
             	// But set the reply-to address to direct replies to the requested 'from' party if it is a valid email address
                 msg.setReplyTo(new Address[] {new InternetAddress(reply)});
             } else {
