@@ -215,7 +215,7 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
                         .add("ietf:cite-as", d.getGlobalId().toURL().toExternalForm())
                         .add("sorg:name", d.getDisplayName()).add("type", "sorg:Dataset"));
         job.add("origin", Json.createObjectBuilder().add("id", SystemConfig.getDataverseSiteUrlStatic())
-                .add("name", SystemConfig.getDataverseSiteUrlStatic() + "/api/inbox").add("type", "Service"));
+                .add("inbox", SystemConfig.getDataverseSiteUrlStatic() + "/api/inbox").add("type", "Service"));
         job.add("target", target);
         job.add("type", Json.createArrayBuilder().add("Announce").add("coar-notify:ReleaseAction"));
 
