@@ -2601,19 +2601,20 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Integer datasetIdInt = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
 
         String pathToFile = "src/test/resources/sav/dct.sav";
-        String jsonAsString = "{\"description\":\"My description.\",\"directoryLabel\":\"data/subdir1\",\"categories\":[\"Data\"], \"restrict\":\"false\"}";
-        Response r = UtilIT.uploadFileViaNative(datasetIdInt.toString(), pathToFile, jsonAsString, apiToken, true);
+        String jsonAsString = "{\"description\":\"My description.\",\"directoryLabel\":\"data/subdir1\",\"categories\":[\"Data\"], \"restrict\":\"false\", \"tabIngest\":\"false\"}";
+        Response r = UtilIT.uploadFileViaNative(datasetIdInt.toString(), pathToFile, jsonAsString, apiToken);
         logger.info(r.prettyPrint());
         assertEquals(200, r.getStatusCode());
 
-        Thread.sleep(500);
+        Thread.sleep(300);
         pathToFile = "src/test/resources/sav/frequency-test.sav";
-        Response rTabIngest = UtilIT.uploadFileViaNative(datasetIdInt.toString(), pathToFile, jsonAsString, apiToken, false);
+        jsonAsString = "{\"description\":\"My description.\",\"directoryLabel\":\"data/subdir1\",\"categories\":[\"Data\"], \"restrict\":\"false\"  }";
+        Response rTabIngest = UtilIT.uploadFileViaNative(datasetIdInt.toString(), pathToFile, jsonAsString, apiToken);
         logger.info(rTabIngest.prettyPrint());
         assertEquals(200, rTabIngest.getStatusCode());
 
         //cleanup
-        Thread.sleep(500);
+        Thread.sleep(1000);
         Response destroyDatasetResponse = UtilIT.destroyDataset(datasetIdInt, apiToken);
         assertEquals(200, destroyDatasetResponse.getStatusCode());
 
