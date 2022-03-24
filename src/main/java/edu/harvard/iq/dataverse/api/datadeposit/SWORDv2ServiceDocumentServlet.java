@@ -22,7 +22,7 @@ public class SWORDv2ServiceDocumentServlet extends SwordServlet {
     SwordConfigurationImpl swordConfigurationImpl;
 
     @Override
-    public void init() {
+    public void init() throws ServletException {
         super.init();
         this.api = new ServiceDocumentAPI(serviceDocumentManagerImpl, swordConfigurationImpl);
     }
