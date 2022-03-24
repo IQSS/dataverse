@@ -13,6 +13,8 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -107,33 +109,6 @@ public class DatasetFieldValueValidatorTest {
         value.setValue("12.14");
         result = instance.isValid(value, ctx);
         assertEquals(false, result);
-        
-        //URL
-        dft.setFieldType(DatasetFieldType.FieldType.URL); 
-        value.setValue("https://www.google.com");
-        result = instance.isValid(value, ctx);
-        assertEquals(true, result);
-
-        value.setValue("http://google.com");
-        result = instance.isValid(value, ctx);
-        assertEquals(true, result);
-
-        value.setValue("https://do-not-exist-123-123.com/"); // does not exist
-        result = instance.isValid(value, ctx);
-        assertEquals(true, result);   
-        
-        value.setValue("ftp://somesite.com");
-        result = instance.isValid(value, ctx);
-        assertEquals(true, result);   
-        
-        value.setValue("google.com");
-        result = instance.isValid(value, ctx);
-        assertEquals(false, result);
-        
-        value.setValue("git@github.com:IQSS/dataverse.git");
-        result = instance.isValid(value, ctx);
-        assertEquals(false, result);
-
     }
 
     @Test
@@ -184,6 +159,38 @@ public class DatasetFieldValueValidatorTest {
 
     final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
     
+    @ParameterizedTest
+    @CsvSource(
+        {
+            "true, https://www.google.com",
+            "true, http://google.com",
+            "true, https://do-not-exist-123-123.com/",
+            "true, ftp://somesite.com",
+            "false, google.com",
+            "false, git@github.com:IQSS/dataverse.git"
+        }
+    )
+    public void testInvalidURL(boolean expected, String url) {
+        // given
+        String fieldName = "testField";
+        
+        DatasetField field = new DatasetField();
+        field.setDatasetFieldType(new DatasetFieldType(fieldName, DatasetFieldType.FieldType.URL, false));
+        DatasetFieldValue sut = new DatasetFieldValue(field);
+        sut.setValue(url);
+        
+        // when
+        Set<ConstraintViolation<DatasetFieldValue>> violations = validator.validate(sut);
+        
+        // then
+        assertEquals(expected, violations.size() < 1);
+        violations.stream().findFirst().ifPresent(c -> {
+            assertTrue(c.getMessage().startsWith(fieldName + " " + url + " "));
+            assertTrue(c.getMessage().contains("not"));
+            assertTrue(c.getMessage().contains("URL"));
+        });
+    }
+    
     @Test
     public void testInvalidEmail() {
         // given
@@ -205,7 +212,5 @@ public class DatasetFieldValueValidatorTest {
             assertTrue(c.getMessage().contains("not"));
             assertTrue(c.getMessage().contains("email"));
         });
-        
     }
-    
 }

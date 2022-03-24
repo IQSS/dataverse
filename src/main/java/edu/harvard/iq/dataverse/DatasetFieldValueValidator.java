@@ -17,6 +17,7 @@ import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
 import edu.harvard.iq.dataverse.validation.EMailValidator;
+import edu.harvard.iq.dataverse.validation.URLValidator;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
 
@@ -167,20 +168,11 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
         // Note, length validation for FieldType.TEXT was removed to accommodate migrated data that is greater than 255 chars.
 
         if (fieldType.equals(FieldType.URL) && !lengthOnly) {
-            
-            String[] schemes = {"http","https", "ftp"};
-            UrlValidator urlValidator = new UrlValidator(schemes);
-            
-            try {
-                if (urlValidator.isValid(value.getValue())) {
-                } else {
-                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + value.getValue() + "  is not a valid URL.").addConstraintViolation();
-                    return false;
-                }
-            } catch (NullPointerException npe) {
+            boolean isValidUrl = URLValidator.isURLValid(value.getValue());
+            if (!isValidUrl) {
+                context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + value.getValue() + "  {url.invalid}").addConstraintViolation();
                 return false;
             }
-            
         }
 
         if (fieldType.equals(FieldType.EMAIL) && !lengthOnly) {
