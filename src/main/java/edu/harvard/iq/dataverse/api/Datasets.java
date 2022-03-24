@@ -2299,7 +2299,6 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
     @Path("{id}/add")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response addFileToDataset(@PathParam("id") String idSupplied,
-                                     @QueryParam("tabingest") Boolean tabIngest,
                     @FormDataParam("jsonData") String jsonData,
                     @FormDataParam("file") InputStream fileInputStream,
                     @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
@@ -2308,9 +2307,6 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 
         if (!systemConfig.isHTTPUpload()) {
             return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
-        }
-        if (tabIngest == null) {
-            tabIngest = true;
         }
 
         // -------------------------------------
@@ -2431,8 +2427,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                                 newFileContentType,
                                 newStorageIdentifier,
                                 fileInputStream,
-                                optionalFileParams,
-                                tabIngest);
+                                optionalFileParams);
 
 
         if (addFileHelper.hasError()){
