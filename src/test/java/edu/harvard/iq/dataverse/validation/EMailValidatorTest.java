@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.validation;
 
 import org.apache.commons.validator.routines.EmailValidator;
 import org.junit.jupiter.params.ParameterizedTest;

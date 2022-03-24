@@ -1,11 +1,11 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
 import edu.harvard.iq.dataverse.DataverseSession;
-import edu.harvard.iq.dataverse.EMailValidator;
+import edu.harvard.iq.dataverse.validation.EMailValidator;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
-import edu.harvard.iq.dataverse.ValidateEmail;
-import edu.harvard.iq.dataverse.UserNameValidator;
+import edu.harvard.iq.dataverse.validation.ValidateEmail;
+import edu.harvard.iq.dataverse.validation.UserNameValidator;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthUtil;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;

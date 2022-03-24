@@ -13,7 +13,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.EMailValidator;
+import edu.harvard.iq.dataverse.validation.EMailValidator;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.UserServiceBean;
@@ -97,7 +97,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.rolesToJson;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;

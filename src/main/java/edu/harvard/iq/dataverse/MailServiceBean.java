@@ -38,6 +38,8 @@ import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+
+import edu.harvard.iq.dataverse.validation.EMailValidator;
 import org.apache.commons.lang3.StringUtils;
 
 /**

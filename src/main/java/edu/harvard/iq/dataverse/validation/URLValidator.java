@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.validation;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;

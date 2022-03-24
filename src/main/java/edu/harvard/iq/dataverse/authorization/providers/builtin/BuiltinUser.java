@@ -1,10 +1,9 @@
 package edu.harvard.iq.dataverse.authorization.providers.builtin;
 
-import edu.harvard.iq.dataverse.ValidateEmail;
-import edu.harvard.iq.dataverse.ValidateUserName;
+import edu.harvard.iq.dataverse.validation.ValidateUserName;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetData;
-import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
+
 import java.io.Serializable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;

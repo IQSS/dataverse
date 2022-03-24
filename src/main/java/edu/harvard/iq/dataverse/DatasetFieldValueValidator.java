@@ -15,6 +15,8 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+
+import edu.harvard.iq.dataverse.validation.EMailValidator;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
 

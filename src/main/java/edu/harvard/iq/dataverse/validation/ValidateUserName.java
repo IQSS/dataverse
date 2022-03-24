@@ -3,29 +3,31 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.harvard.iq.dataverse;
-import static java.lang.annotation.ElementType.*;
-import static java.lang.annotation.RetentionPolicy.*;
+package edu.harvard.iq.dataverse.validation;
 
 import java.lang.annotation.Documented;
+import static java.lang.annotation.ElementType.FIELD;
 import java.lang.annotation.Retention;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Target;
-
 import javax.validation.Constraint;
 import javax.validation.Payload;
+
 /**
  *
- * @author skraffmi
+ * @author sarahferry
  */
+
 @Target({FIELD})
 @Retention(RUNTIME)
-@Constraint(validatedBy = {EMailValidator.class})
+@Constraint(validatedBy = {UserNameValidator.class})
 @Documented
-public @interface  ValidateEmail {
-  String message() default "Failed Validation Email Address";
+public @interface  ValidateUserName {
+  String message() default "Failed Validation Username";
 
   Class<?>[] groups() default {};
 
   Class<? extends Payload>[] payload() default {};
     
 }
+

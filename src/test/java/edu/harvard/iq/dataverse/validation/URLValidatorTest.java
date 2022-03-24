@@ -1,10 +1,11 @@
 
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.validation;
 
 import static org.junit.Assert.assertEquals;
 
 import javax.validation.ConstraintValidatorContext;
 
+import edu.harvard.iq.dataverse.validation.URLValidator;
 import org.hibernate.validator.internal.engine.constraintvalidation.ConstraintValidatorContextImpl;
 import org.hibernate.validator.internal.engine.path.PathImpl;
 import javax.validation.Validation;
