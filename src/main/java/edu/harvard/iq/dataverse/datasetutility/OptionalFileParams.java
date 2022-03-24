@@ -177,10 +177,13 @@ public class OptionalFileParams {
         return this.restrict;
     }
 
-    public void setTabIngest(boolean tabIngest) { this.tabIngest = tabIngest; }
+    public void setTabIngest(boolean tabIngest) {
+        this.tabIngest = tabIngest;
+    }
 
-    public boolean getTabIngest() { return this.tabIngest; }
-
+    public boolean getTabIngest() {
+        return this.tabIngest;
+    }
 
     public boolean hasCategories(){
         if ((categories == null)||(this.categories.isEmpty())){
