@@ -18,6 +18,7 @@ import java.util.TreeMap;
 import java.util.logging.Logger;
 
 
+import com.apicatalog.jsonld.JsonLdError;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
@@ -45,7 +46,6 @@ import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import org.apache.commons.lang3.StringUtils;
 
 import com.apicatalog.jsonld.JsonLd;
-import com.apicatalog.jsonld.api.JsonLdError;
 import com.apicatalog.jsonld.document.JsonDocument;
 
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
