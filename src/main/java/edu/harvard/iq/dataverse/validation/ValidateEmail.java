@@ -21,8 +21,8 @@ import javax.validation.Payload;
 @Retention(RUNTIME)
 @Constraint(validatedBy = {EMailValidator.class})
 @Documented
-public @interface  ValidateEmail {
-  String message() default "Failed Validation Email Address";
+public @interface ValidateEmail {
+  String message() default "'${validatedValue}' {email.invalid}";
 
   Class<?>[] groups() default {};
 
