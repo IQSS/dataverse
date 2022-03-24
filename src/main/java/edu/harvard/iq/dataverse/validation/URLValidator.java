@@ -10,40 +10,40 @@ import org.apache.commons.validator.routines.UrlValidator;
  */
 public class URLValidator implements ConstraintValidator<ValidateURL, String> {
 
+    private String[] allowedSchemes;
     @Override
     public void initialize(ValidateURL constraintAnnotation) {
-
+        this.allowedSchemes = constraintAnnotation.schemes();
     }
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
-
-        boolean valid = isURLValid(value);
-        if (context != null && !valid) {
-            context.buildConstraintViolationWithTemplate(value + "  " + BundleUtil.getStringFromBundle("url.invalid")).addConstraintViolation();
-        }
-        return valid;
+        return isURLValid(value, this.allowedSchemes);
     }
-
+    
+    /**
+     * Check if a URL is valid in a nullsafe way. (null = valid to allow optional values).
+     * Empty values are no valid URLs. This variant allows default schemes HTTP, HTTPS and FTP.
+     *
+     * @param value The URL to validate
+     * @return true when valid (null is also valid) or false
+     */
     public static boolean isURLValid(String value) {
-        if (value == null || value.isEmpty()) {
-            return true;
-        }
-        
-        String[] schemes = {"http","https", "ftp"};
+        // default schemes == ValidateURL schemes() default
+        return isURLValid(value, new String[]{"http", "https", "ftp"});
+    }
+    
+    /**
+     * Check if a URL is valid in a nullsafe way. (null = valid to allow optional values).
+     * Empty values are no valid URLs. This variant allows any schemes you hand over.
+     *
+     * @param value The URL to validate
+     * @param schemes The list of allowed schemes
+     * @return true when valid (null is also valid) or false
+     */
+    public static boolean isURLValid(String value, String[] schemes) {
         UrlValidator urlValidator = new UrlValidator(schemes);
-            
-        try {
-            if (urlValidator.isValid(value)) {
-            } else {
-                return false;
-            }
-        } catch (NullPointerException npe) {
-            return false;
-        }
-        
-        return true;
-        
+        return value == null || urlValidator.isValid(value);
     }
 
 
