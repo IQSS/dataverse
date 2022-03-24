@@ -495,8 +495,8 @@ public class Dataverses extends AbstractApiBean {
                 throw new BadRequestException("Cannot recreate a dataset whose PID is already in use");
             }
             
-          //Verify metadatalanguage is allowed
-            if(ds.getMetadataLanguage()!= null && !settingsService.getBaseMetadataLanguageMap(new HashMap<String, String>(), true).containsKey(ds.getMetadataLanguage())) {
+            //Verify metadatalanguage is allowed
+            if(ds.getMetadataLanguage()!= DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE && !settingsService.getBaseMetadataLanguageMap(new HashMap<String, String>(), true).containsKey(ds.getMetadataLanguage())) {
                 throw new BadRequestException("Specified metadatalanguage (" + JsonLDTerm.schemaOrg("inLanguage").getUrl() + ") not allowed.");
             }
 
