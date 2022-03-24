@@ -744,7 +744,7 @@ public class AddReplaceFileHelper{
      * 
      * @return 
      */
-    private boolean runAddReplacePhase2(Boolean tabIngest){
+    private boolean runAddReplacePhase2(boolean tabIngest){
         
         if (this.hasError()){
             return false;   // possible to have errors already...
