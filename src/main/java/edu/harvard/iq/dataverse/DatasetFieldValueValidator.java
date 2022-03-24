@@ -184,12 +184,11 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
         }
 
         if (fieldType.equals(FieldType.EMAIL) && !lengthOnly) {
-            if(value.getDatasetField().isRequired() && value.getValue()==null){
+            boolean isValidMail = EMailValidator.isEmailValid(value.getValue());
+            if (!isValidMail) {
+                context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + value.getValue() + " {email.invalid}").addConstraintViolation();
                 return false;
             }
-            
-            return EMailValidator.isEmailValid(value.getValue(), context);
-
         }
 
         return true;
