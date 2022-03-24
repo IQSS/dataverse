@@ -12,6 +12,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Target;
 import javax.validation.Constraint;
 import javax.validation.Payload;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
+import javax.validation.constraints.Pattern;
 
 /**
  *
@@ -20,14 +23,19 @@ import javax.validation.Payload;
 
 @Target({FIELD})
 @Retention(RUNTIME)
-@Constraint(validatedBy = {UserNameValidator.class})
+// This is empty by intention - we are just recombining existing bean validation here.
+// The class UserNameValidator is just for convenience and historic reasons.
+@Constraint(validatedBy = {})
+
+@NotBlank(message = "{user.enterUsername}")
+@Size(min = UserNameValidator.MIN_CHARS, max = UserNameValidator.MAX_CHARS, message = "{user.usernameLength}")
+@Pattern(regexp = UserNameValidator.USERNAME_PATTERN, message = "{user.illegalCharacters}")
+
 @Documented
-public @interface  ValidateUserName {
-  String message() default "Failed Validation Username";
-
-  Class<?>[] groups() default {};
-
-  Class<? extends Payload>[] payload() default {};
+public @interface ValidateUserName {
+    String message() default "";
     
+    Class<?>[] groups() default {};
+    
+    Class<? extends Payload>[] payload() default {};
 }
-

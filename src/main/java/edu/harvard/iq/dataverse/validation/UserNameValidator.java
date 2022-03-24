@@ -1,61 +1,46 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.validation;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
 
 /**
- *
- * @author sarahferry
- * Modeled after PasswordValidator and EMailValidator
+ * This class is not implementing the ConstraintValidatorMatcher interface, as this is not necessary any more.
+ * It serves as the storage for the annotation configuration and convenient interface to a programmatic
+ * validation of usernames.
  */
-
-public class UserNameValidator implements ConstraintValidator<ValidateUserName, String> {
-    @Override
-    public void initialize(ValidateUserName constraintAnnotation) {
-
-    }
+public class UserNameValidator {
     
-    // note: while the ConstraintValidatorContext is not used in this method, 
-    // it is required in order to impelement the ConstraintValidator interface
-    @Override
-    public boolean isValid(String value, ConstraintValidatorContext context) {
-        return isUserNameValid(value);
-    }
+    public static final int MIN_CHARS = 2;
+    public static final int MAX_CHARS = 60;
+    
+    // NOTE: the size is checked by either the @Size annotation of @ValidateUserName or programmatically below!
+    public static final String USERNAME_PATTERN = "[a-zA-Z0-9\\_\\-\\.]*";
+    
+    /*
+     * If you would like to support accents or chinese characters in usernames, choose one of the below.
+     *
+     * With support for accents:
+    private static final String USERNAME_PATTERN = "[a-zA-Z0-9\\_\\-\\.À-ÿ\\u00C0-\\u017F]";
+     *
+     * With support for chinese characters:
+    private static final String USERNAME_PATTERN = "[a-zA-Z0-9\\_\\-\\.\\x{4e00}-\\x{9fa5}]";
+     */
+    
+    private static final Matcher usernameMatcher = Pattern.compile(USERNAME_PATTERN).matcher("");
 
     /**
-     * Here we will validate the username
+     * Validate a username against the pattern in {@link #USERNAME_PATTERN}
+     * and check for length: min {@link #MIN_CHARS} chars, max {@link #MAX_CHARS} chars.
+     * Nullsafe - null is considered invalid (as is empty).
      *
-     * @param username
-     * @return boolean 
+     * @param username The username to validate
+     * @return true if matching, false otherwise
      */
     public static boolean isUserNameValid(final String username) {
-        if (username == null) {
-            return false;
-        }
-        //TODO: What other characters do we need to support?
-        String validCharacters = "[a-zA-Z0-9\\_\\-\\.";
-        /*
-         * if you would like to support accents or chinese characters, uncomment this
-         *
-        //support accents
-        validCharacters += "À-ÿ\\u00C0-\\u017F";
-        //support chinese characters
-        validCharacters += "\\x{4e00}-\\x{9fa5}";
-        *
-        */
-        //end
-        validCharacters += "]";
-        validCharacters += "{2,60}"; //must be between 2 and 60 characters for user name
-        Pattern p = Pattern.compile(validCharacters);
-        Matcher m = p.matcher(username);
-        return m.matches();
+        return username != null &&
+               username.length() >= MIN_CHARS &&
+               username.length() <= MAX_CHARS &&
+               usernameMatcher.reset(username).matches();
     }
 
 }

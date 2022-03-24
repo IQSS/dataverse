@@ -17,8 +17,8 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
-import org.hibernate.validator.constraints.NotBlank;
 
 /**
  *
@@ -41,10 +41,8 @@ public class BuiltinUser implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @NotBlank(message = "{user.enterUsername}")
-    @Size(min=2, max=60, message = "{user.usernameLength}")
-    @ValidateUserName(message = "{user.illegalCharacters}")
+    
+    @ValidateUserName
     @Column(nullable = false, unique=true)  
     private String userName;
     
