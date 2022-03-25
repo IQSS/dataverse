@@ -49,7 +49,7 @@ import jakarta.jms.ObjectMessage;
     mappedName = "java:app/jms/queue/ingest",
     activationConfig =  {
         @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
-        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue")
+        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "jakarta.jms.Queue")
     }
 )
 public class IngestMessageBean implements MessageListener {

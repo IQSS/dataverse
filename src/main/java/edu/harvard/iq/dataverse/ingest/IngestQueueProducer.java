@@ -13,7 +13,7 @@ import jakarta.jms.QueueConnectionFactory;
     description = "Dataverse Ingest Queue Factory",
     name = "java:app/jms/factory/ingest",
     resourceAdapter = "jmsra",
-    interfaceName = "javax.jms.QueueConnectionFactory",
+    interfaceName = "jakarta.jms.QueueConnectionFactory",
     maxPoolSize = 250,
     minPoolSize = 1,
     properties = {
@@ -25,7 +25,7 @@ import jakarta.jms.QueueConnectionFactory;
     description = "Dataverse Ingest Queue",
     name = "java:app/jms/queue/ingest",
     resourceAdapter = "jmsra",
-    interfaceName="javax.jms.Queue",
+    interfaceName="jakarta.jms.Queue",
     destinationName = "DataverseIngest"
 )
 @Singleton
