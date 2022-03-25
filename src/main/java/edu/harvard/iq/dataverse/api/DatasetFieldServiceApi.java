@@ -206,7 +206,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
     @GET
     @Path("loadNAControlledVocabularyValue")
     public Response loadNAControlledVocabularyValue() {
-        // the find will throw a javax.persistence.NoResultException if no values are in db
+        // the find will throw a jakarta.persistence.NoResultException if no values are in db
 //            datasetFieldService.findNAControlledVocabularyValue();
         TypedQuery<ControlledVocabularyValue> naValueFinder = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabularyValue AS o WHERE o.datasetFieldType is null AND o.strValue = :strvalue", ControlledVocabularyValue.class);
         naValueFinder.setParameter("strvalue", DatasetField.NA_VALUE);
