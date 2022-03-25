@@ -78,10 +78,6 @@ public class DdiExportUtilTest {
         
         // then
         
-        // QDR Since Agriculture and Engineering are not in the QDR citation.properties
-        // file (because those fields are dropped in the custom block, the
-        // datasetDtoAsJson2ddi() method does not add an xml:lang attribute for them, so
-        // the exportfull.xml file has been altered to match
         XmlAssert.assertThat(result).and(datasetAsDdi).ignoreWhitespace().areSimilar();
     }
 
