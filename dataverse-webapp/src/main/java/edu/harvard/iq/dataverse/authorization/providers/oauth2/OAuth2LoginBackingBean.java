@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
+import edu.harvard.iq.dataverse.authorization.common.ExternalIdpUserRecord;
+import edu.harvard.iq.dataverse.authorization.providers.common.ExternalIdpFirstLoginPage;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.OAuth2TokenData;
 import edu.harvard.iq.dataverse.util.StringUtil;
@@ -44,7 +46,7 @@ public class OAuth2LoginBackingBean implements Serializable {
     private String responseBody;
     private Optional<String> redirectPage;
     private OAuth2Exception error;
-    private OAuth2UserRecord oauthUser;
+    private ExternalIdpUserRecord oauthUser;
 
     @EJB
     AuthenticationServiceBean authenticationSvc;
@@ -59,7 +61,7 @@ public class OAuth2LoginBackingBean implements Serializable {
     DataverseSession session;
 
     @Inject
-    OAuth2FirstLoginPage newAccountPage;
+    ExternalIdpFirstLoginPage newAccountPage;
 
     public String linkFor(String idpId, String redirectPage) {
         OAuth2AuthenticationProvider idp = authenticationSvc.getOAuth2Provider(idpId);
@@ -95,13 +97,13 @@ public class OAuth2LoginBackingBean implements Serializable {
                 throw new OAuth2Exception(-1, "", "Invalid 'state' parameter.");
             }
             oauthUser = idp.getUserRecord(code, state, getCallbackUrl());
-            UserRecordIdentifier idtf = oauthUser.getUserRecordIdentifier();
+            UserRecordIdentifier idtf = oauthUser.toUserRecordIdentifier();
             AuthenticatedUser dvUser = authenticationSvc.lookupUser(idtf);
 
             if (dvUser == null) {
                 // need to create the user
                 newAccountPage.setNewUser(oauthUser);
-                FacesContext.getCurrentInstance().getExternalContext().redirect("/oauth2/firstLogin.xhtml");
+                FacesContext.getCurrentInstance().getExternalContext().redirect("/firstLogin.xhtml");
 
             } else {
                 // login the user and redirect to HOME of intended page (if any).
@@ -183,7 +185,7 @@ public class OAuth2LoginBackingBean implements Serializable {
         return responseCode;
     }
 
-    public OAuth2UserRecord getUser() {
+    public ExternalIdpUserRecord getUser() {
         return oauthUser;
     }
 

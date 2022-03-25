@@ -8,6 +8,7 @@ import com.github.scribejava.core.model.Response;
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth20Service;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.common.ExternalIdpUserRecord;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.persistence.user.OAuth2TokenData;
 
@@ -115,7 +116,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements OAuth2Auth
     }
 
     @Override
-    public OAuth2UserRecord getUserRecord(String code, String state, String redirectUrl) throws IOException, OAuth2Exception {
+    public ExternalIdpUserRecord getUserRecord(String code, String state, String redirectUrl) throws IOException, OAuth2Exception {
         OAuth20Service service = getService(state, redirectUrl);
         OAuth2AccessToken accessToken = service.getAccessToken(code);
 
@@ -132,7 +133,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements OAuth2Auth
 
         if (responseCode == 200) {
             final ParsedUserResponse parsed = parseUserResponse(body);
-            return new OAuth2UserRecord(getId(), parsed.userIdInProvider,
+            return new ExternalIdpUserRecord(getId(), parsed.userIdInProvider,
                                         parsed.username,
                                         OAuth2TokenData.from(accessToken),
                                         parsed.displayInfo,

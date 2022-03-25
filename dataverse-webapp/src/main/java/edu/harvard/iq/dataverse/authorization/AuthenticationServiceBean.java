@@ -16,6 +16,8 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.OIDCAuthenticatio
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GoogleOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
+import edu.harvard.iq.dataverse.authorization.providers.saml.SamlAuthenticationProviderFactory;
+import edu.harvard.iq.dataverse.authorization.providers.saml.SamlConfigurationService;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.mail.confirmemail.ConfirmEmailServiceBean;
@@ -117,6 +119,9 @@ public class AuthenticationServiceBean {
     @Inject
     private SystemConfig systemConfig;
 
+    @Inject
+    private SamlConfigurationService samlConfigurationService;
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
@@ -139,6 +144,7 @@ public class AuthenticationServiceBean {
             registerProviderFactory(new ShibAuthenticationProviderFactory());
             registerProviderFactory(new OAuth2AuthenticationProviderFactory());
             registerProviderFactory(new OIDCAuthenticationProviderFactory());
+            registerProviderFactory(new SamlAuthenticationProviderFactory(samlConfigurationService));
 
         } catch (AuthorizationSetupException ex) {
             logger.log(Level.SEVERE, "Exception setting up the authentication provider factories: " + ex.getMessage(), ex);

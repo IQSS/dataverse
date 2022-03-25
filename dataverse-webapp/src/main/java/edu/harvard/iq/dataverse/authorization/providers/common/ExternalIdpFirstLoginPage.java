@@ -1,15 +1,18 @@
-package edu.harvard.iq.dataverse.authorization.providers.oauth2;
+package edu.harvard.iq.dataverse.authorization.providers.common;
 
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
-import edu.harvard.iq.dataverse.authorization.AuthUtil;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider;
+import edu.harvard.iq.dataverse.authorization.common.ExternalIdpUserRecord;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedException;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.DevOAuthAccountType;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2TokenDataServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.saml.SamlAuthenticationServlet;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.consent.ConsentDto;
 import edu.harvard.iq.dataverse.consent.ConsentService;
@@ -37,7 +40,9 @@ import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,16 +57,16 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
- * Backing bean for {@code oauth/welcome.xhtml}, the page that greets new users
- * when they first login through OAuth2.
+ * Backing bean for the page that greets new users
+ * when they first login through OAuth2 or SAML.
  *
  * @author michael
  */
-@Named("OAuth2FirstLoginPage")
+@Named("ExternalIdpFirstLoginPage")
 @SessionScoped
-public class OAuth2FirstLoginPage implements java.io.Serializable {
+public class ExternalIdpFirstLoginPage implements Serializable {
 
-    private static final Logger logger = Logger.getLogger(OAuth2FirstLoginPage.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(ExternalIdpFirstLoginPage.class.getCanonicalName());
 
     @EJB
     AuthenticationServiceBean authenticationSvc;
@@ -94,7 +99,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     private ConsentService consentService;
 
 
-    OAuth2UserRecord newUser;
+    ExternalIdpUserRecord newUser;
 
     @NotBlank(message = "{oauth.username}")
     String username;
@@ -129,7 +134,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         return consents;
     }
 
-    public OAuth2UserRecord getNewUser() {
+    public ExternalIdpUserRecord getNewUser() {
         return newUser;
     }
 
@@ -173,13 +178,27 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         if (!DevOAuthAccountType.PRODUCTION.equals(devMode)) {
             createRandomAuthentication(devMode);
         }
-
+        if (newUser != null && session.getUser().isAuthenticated()) {
+            // Do not show this page if user is already registered
+            // and the newUser object is somehow cached in viewscope
+            return redirectToHome();
+        }
+        if (newUser == null) {
+            // If new user tries to sign up with SAML then the user data
+            // will is stored in the http session
+            HttpSession httpSession = (HttpSession) FacesContext.getCurrentInstance()
+                    .getExternalContext()
+                    .getSession(false);
+            if (httpSession != null) {
+                newUser = (ExternalIdpUserRecord) httpSession.getAttribute(SamlAuthenticationServlet.NEW_USER_SESSION_PARAM);
+                httpSession.removeAttribute(SamlAuthenticationServlet.NEW_USER_SESSION_PARAM);
+            }
+        }
         if (newUser == null) {
             // There's no new user to welcome, so we're out of the "normal" OAuth2 flow.
             // e.g., someone might have directly accessed this page.
             // return to sanity be redirection to /index
-            FacesContext.getCurrentInstance().getExternalContext().redirect("/");
-            return StringUtils.EMPTY;
+            return redirectToHome();
         }
 
         // Suggest the best email we can.
@@ -210,7 +229,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
                 displayInfo.getFirstName(), displayInfo.getLastName(), getSelectedEmail(), displayInfo.getAffiliation(),
                 displayInfo.getPosition());
 
-        final AuthenticatedUser user = authenticationSvc.createAuthenticatedUser(newUser.getUserRecordIdentifier(),
+        final AuthenticatedUser user = authenticationSvc.createAuthenticatedUser(newUser.toUserRecordIdentifier(),
                 getUsername(), newAuthenticatedUserDisplayInfo, true, preferredNotificationsLanguage).getOrNull();
 
         session.setUser(user);
@@ -269,7 +288,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         if (!emailValid) {
             ((UIInput) toValidate).setValid(false);
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    BundleUtil.getStringFromBundle("oauth2.newAccount.emailInvalid"), null);
+                    BundleUtil.getStringFromBundle("external.newAccount.emailInvalid"), null);
             context.addMessage(toValidate.getClientId(context), message);
             return;
         }
@@ -287,14 +306,10 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     }
 
     public String getWelcomeMessage() {
-        AuthenticatedUserDisplayInfo displayInfo = newUser.getDisplayInfo();
-        String displayName = AuthUtil.getDisplayName(displayInfo.getFirstName(), displayInfo.getLastName());
-        return displayName != null
-                ? BundleUtil.getStringFromBundle("oauth2.newAccount.welcomeWithName", displayName)
-                : BundleUtil.getStringFromBundle("oauth2.newAccount.welcomeNoName");
+        return BundleUtil.getStringFromBundle("external.newAccount.welcome");
     }
 
-    public void setNewUser(OAuth2UserRecord newUser) {
+    public void setNewUser(ExternalIdpUserRecord newUser) {
         this.newUser = newUser;
         // uncomment to suggest username to user
         // setUsername(newUser.getUsername());
@@ -306,7 +321,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
             return "Unknown identity provider. Are you a developer playing with :DebugOAuthAccountType? " +
                     "Try adding this provider to the authenticationproviderrow table: " + newUser.getServiceId();
         }
-        return BundleUtil.getStringFromBundle("oauth2.newAccount.explanation", authProvider.getInfo().getTitle(), installationName);
+        return BundleUtil.getStringFromBundle("external.newAccount.explanation", authProvider.getInfo().getTitle(), installationName);
     }
 
     public boolean isConvertFromBuiltinIsPossible() {
@@ -314,7 +329,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     }
 
     public String getSuggestConvertInsteadOfCreate() {
-        return BundleUtil.getStringFromBundle("oauth2.newAccount.suggestConvertInsteadOfCreate", installationName);
+        return BundleUtil.getStringFromBundle("external.newAccount.suggestConvertInsteadOfCreate", installationName);
     }
 
     public String getConvertTip() {
@@ -363,6 +378,11 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
 
     // -------------------- PRIVATE ---------------------
 
+    private String redirectToHome() throws IOException {
+        FacesContext.getCurrentInstance().getExternalContext().redirect("/");
+        return StringUtils.EMPTY;
+    }
+
     private String getLocalizedDisplayNameForLanguage(Locale language) {
         return language.getDisplayName(session.getLocale());
     }
@@ -405,7 +425,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
             String eppn = randomUser.get("eppn");
             OAuth2TokenData accessToken = new OAuth2TokenData();
             accessToken.setAccessToken("qwe-addssd-iiiiie");
-            setNewUser(new OAuth2UserRecord(authProviderId, eppn, randomUsername, accessToken,
+            setNewUser(new ExternalIdpUserRecord(authProviderId, eppn, randomUsername, accessToken,
                     new AuthenticatedUserDisplayInfo(firstName, lastName, email, "myAffiliation", "myPosition"),
                     extraEmails));
         }

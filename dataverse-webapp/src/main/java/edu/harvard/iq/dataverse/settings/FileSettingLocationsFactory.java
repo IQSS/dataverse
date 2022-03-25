@@ -4,21 +4,28 @@ import edu.harvard.iq.dataverse.settings.FileSettingLocations.SettingLocationTyp
 
 import javax.enterprise.inject.Produces;
 
+import static edu.harvard.iq.dataverse.settings.FileSettingLocations.*;
+
 public class FileSettingLocationsFactory {
 
     // -------------------- LOGIC --------------------
-    
+
     /**
-     * Returns setting locations used in production. That is:
+     * Returns setting locations used in production. That is (at least):
      * <p>
      * 1) Properties file in classpath: {@code /config/dataverse.default.properties }<br/>
      * 2) External properties file: {@code ${user.home}/.dataverse/dataverse.properties }<br/>
      */
     @Produces
     public FileSettingLocations buildSettingLocations() {
-        FileSettingLocations settingLocations = new FileSettingLocations();
-        settingLocations.addLocation(SettingLocationType.CLASSPATH, "/config/dataverse.default.properties", false);
-        settingLocations.addLocation(SettingLocationType.FILESYSTEM, System.getProperty("user.home") + "/.dataverse/dataverse.properties", true);
-        return settingLocations;
+        return new FileSettingLocations()
+                .addLocation(1, SettingLocationType.CLASSPATH,
+                        "/config/dataverse.default.properties", PathType.DIRECT, false)
+                .addLocation(2,SettingLocationType.FILESYSTEM,
+                        System.getProperty("user.home") + "/.dataverse/dataverse.properties", PathType.DIRECT, true)
+                .addLocation(3, SettingLocationType.FILESYSTEM,
+                        ":SamlPropertiesPath", PathType.PROPERTY, false)
+                .addFallbackLocation(3, SettingLocationType.CLASSPATH,
+                        "/config/saml.properties", PathType.DIRECT);
     }
 }

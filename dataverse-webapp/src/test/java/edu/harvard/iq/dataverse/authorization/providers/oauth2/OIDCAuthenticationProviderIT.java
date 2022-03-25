@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.nimbusds.oauth2.sdk.id.Subject;
 import com.nimbusds.openid.connect.sdk.claims.IDTokenClaimsSet;
+import edu.harvard.iq.dataverse.authorization.common.ExternalIdpUserRecord;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserDisplayInfo;
 import org.apache.commons.io.IOUtils;
@@ -111,7 +112,7 @@ class OIDCAuthenticationProviderIT {
                                 "}")));
 
         // when
-        OAuth2UserRecord userData = provider.getUserRecord(code, null, redirectUri);
+        ExternalIdpUserRecord userData = provider.getUserRecord(code, null, redirectUri);
 
         // then
         assertThat(userData.getUsername()).isEqualTo("zenon.nonez");

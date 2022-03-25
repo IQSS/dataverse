@@ -9,7 +9,7 @@ import com.github.scribejava.core.oauth.OAuth20Service;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
+import edu.harvard.iq.dataverse.authorization.common.ExternalIdpUserRecord;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserLookup;
@@ -81,7 +81,7 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     }
 
     @Override
-    public OAuth2UserRecord getUserRecord(String code, String state, String redirectUrl) throws IOException, OAuth2Exception {
+    public ExternalIdpUserRecord getUserRecord(String code, String state, String redirectUrl) throws IOException, OAuth2Exception {
         OAuth20Service service = getService(state, redirectUrl);
         OAuth2AccessToken accessToken = service.getAccessToken(code);
 
@@ -109,7 +109,7 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
             parsed.displayInfo.setAffiliation(orgData.getAffiliation());
             parsed.displayInfo.setPosition(orgData.getPosition());
 
-            return new OAuth2UserRecord(getId(), orcidNumber,
+            return new ExternalIdpUserRecord(getId(), orcidNumber,
                                         parsed.username,
                                         OAuth2TokenData.from(accessToken),
                                         parsed.displayInfo,

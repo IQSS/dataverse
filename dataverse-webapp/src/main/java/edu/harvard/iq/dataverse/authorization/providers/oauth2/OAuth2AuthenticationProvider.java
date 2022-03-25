@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
+import edu.harvard.iq.dataverse.authorization.common.ExternalIdpUserRecord;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
 
 import java.io.IOException;
@@ -30,7 +31,7 @@ public interface OAuth2AuthenticationProvider extends AuthenticationProvider {
      * @param state safely generated string for securing data exchange
      * @param redirectUrl URL to follow after authorization success
      */
-    OAuth2UserRecord getUserRecord(String code, String state, String redirectUrl) throws IOException, OAuth2Exception;
+    ExternalIdpUserRecord getUserRecord(String code, String state, String redirectUrl) throws IOException, OAuth2Exception;
 
     /**
      * Additional initialization of provider that should be executed before use.

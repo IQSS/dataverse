@@ -26,7 +26,7 @@ In addition to setting up OAuth on your laptop for real (as in :doc:`/installati
 
 For a list of possible values, please find enum ``DevOAuthAccountType`` in the source code.
 
-Now when you go to http://localhost:8080/oauth2/firstLogin.xhtml you should be prompted to create a Shibboleth account.
+Now when you go to http://localhost:8080/firstLogin.xhtml you should be prompted to create a Shibboleth account.
 
 ----
 

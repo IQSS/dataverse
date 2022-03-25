@@ -1,9 +1,8 @@
 package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2LoginBackingBean;
-import org.apache.xerces.impl.dv.util.Base64;
 import org.jsoup.Jsoup;
-
+import java.util.Base64;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -152,7 +151,7 @@ public class StringUtil {
             final SecretKeySpec secretKeySpec = generateKeyFromString(password);
             aes.init(Cipher.ENCRYPT_MODE, secretKeySpec);
             byte[] encrypted = aes.doFinal(baseBytes);
-            String base64ed = Base64.encode(encrypted);
+            String base64ed = Base64.getEncoder().encodeToString(encrypted);
             return base64ed.replaceAll("\\+", ".")
                     .replaceAll("=", "-")
                     .replaceAll("/", "_");
@@ -169,7 +168,7 @@ public class StringUtil {
                 .replaceAll("-", "=")
                 .replaceAll("_", "/");
 
-        byte[] baseBytes = Base64.decode(base64);
+        byte[] baseBytes = Base64.getDecoder().decode(base64);
         try {
             Cipher aes = Cipher.getInstance("AES");
             aes.init(Cipher.DECRYPT_MODE, generateKeyFromString(password));

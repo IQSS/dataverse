@@ -10,7 +10,7 @@
 
     <h:body>
         <f:metadata>
-            <f:viewAction action="#{OAuth2FirstLoginPage.init()}"/>
+            <f:viewAction action="#{ExternalIdpFirstLoginPage.init()}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="#{bundle.account} - #{dataverseDao.findRootDataverse().name}"/>
@@ -20,7 +20,7 @@
                 <div class="row">
                     <div class="col-md-12">
                         <h1>
-                            <h:outputText value="#{OAuth2FirstLoginPage.welcomeMessage}"/>
+                            <h:outputText value="#{bundle['external.newAccount.welcome']}"/>
                         </h1>
                     </div>
                 </div>
@@ -28,7 +28,7 @@
                 <p:tabView id="tabView">
                     <p:tab id="newAccountTab" title="#{bundle['account.info']}">
                         <p class="help-block">
-                            #{OAuth2FirstLoginPage.createFromWhereTip}
+                            #{ExternalIdpFirstLoginPage.createFromWhereTip}
                         </p>
                         <h:form id="newAccountForm" styleClass="form-horizontal">
                             <div class="form-group">
@@ -39,12 +39,12 @@
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.username.illegal.tip']}"></span>
                                 </label>
                                 <div class="col-sm-4">
-                                    <p:inputText id="username" styleClass="form-control" value="#{OAuth2FirstLoginPage.username}" validator="#{OAuth2FirstLoginPage.validateUserName}"/>
+                                    <p:inputText id="username" styleClass="form-control" value="#{ExternalIdpFirstLoginPage.username}" validator="#{ExternalIdpFirstLoginPage.validateUserName}"/>
                                     <p:message for="username" display="text"/>
                                 </div>
-                                <div class="col-sm-offset-3 col-sm-9" jsf:rendered="#{OAuth2FirstLoginPage.convertFromBuiltinIsPossible}">
+                                <div class="col-sm-offset-3 col-sm-9" jsf:rendered="#{ExternalIdpFirstLoginPage.convertFromBuiltinIsPossible}">
                                     <p class="help-block">
-                                        <h:outputText value="#{OAuth2FirstLoginPage.suggestConvertInsteadOfCreate}" escape="false"/>
+                                        <h:outputText value="#{ExternalIdpFirstLoginPage.suggestConvertInsteadOfCreate}" escape="false"/>
                                     </p>
                                 </div>
                             </div>
@@ -56,7 +56,7 @@
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.firstName.tip']}"></span>
                                 </label>
                                 <div class="col-sm-4">
-                                    <p:inputText id="givenName" styleClass="form-control" value="#{OAuth2FirstLoginPage.newUser.displayInfo.firstName}"/>
+                                    <p:inputText id="givenName" styleClass="form-control" value="#{ExternalIdpFirstLoginPage.newUser.displayInfo.firstName}"/>
                                     <p:message for="givenName" display="text"/>
                                 </div>
                             </div>
@@ -68,7 +68,7 @@
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.lastName.tip']}"></span>
                                 </label>
                                 <div class="col-sm-4">
-                                    <p:inputText id="familyName" styleClass="form-control" value="#{OAuth2FirstLoginPage.newUser.displayInfo.lastName}"/>
+                                    <p:inputText id="familyName" styleClass="form-control" value="#{ExternalIdpFirstLoginPage.newUser.displayInfo.lastName}"/>
                                     <p:message for="familyName" display="text"/>
                                 </div>
                             </div>
@@ -79,33 +79,33 @@
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.email.tip']}"></span>
                                 </label>
-                                <div class="col-sm-4" jsf:rendered="#{OAuth2FirstLoginPage.getEmailsToPickFrom().size() lt 2}">
-                                    <p:inputText id="selectedEmailZeroOrOneToPickFrom" styleClass="form-control" value="#{OAuth2FirstLoginPage.selectedEmail}" validator="#{OAuth2FirstLoginPage.validateUserEmail}"/>
+                                <div class="col-sm-4" jsf:rendered="#{ExternalIdpFirstLoginPage.getEmailsToPickFrom().size() lt 2}">
+                                    <p:inputText id="selectedEmailZeroOrOneToPickFrom" styleClass="form-control" value="#{ExternalIdpFirstLoginPage.selectedEmail}" validator="#{ExternalIdpFirstLoginPage.validateUserEmail}"/>
                                     <p:message for="selectedEmailZeroOrOneToPickFrom" display="text"/>
                                 </div>
-                                <div class="col-sm-4" jsf:rendered="#{OAuth2FirstLoginPage.getEmailsToPickFrom().size() gt 1}">
+                                <div class="col-sm-4" jsf:rendered="#{ExternalIdpFirstLoginPage.getEmailsToPickFrom().size() gt 1}">
                                     <p:autoComplete id="selectedEmailMoreThanOneToPickFrom"
                                                     dropdown="true" scrollHeight="180" style="width:100%;"
                                                     minQueryLength="2" queryDelay="1000"
-                                                    value="#{OAuth2FirstLoginPage.selectedEmail}"
-                                                    completeMethod="#{OAuth2FirstLoginPage.getEmailsToPickFrom()}"
-                                                    validator="#{OAuth2FirstLoginPage.validateUserEmail}" />
+                                                    value="#{ExternalIdpFirstLoginPage.selectedEmail}"
+                                                    completeMethod="#{ExternalIdpFirstLoginPage.getEmailsToPickFrom()}"
+                                                    validator="#{ExternalIdpFirstLoginPage.validateUserEmail}" />
                                     <p:message for="selectedEmailMoreThanOneToPickFrom" display="text"/>
                                 </div>
                             </div>
-                            <div class="form-group" jsf:rendered="#{OAuth2FirstLoginPage.authProvider.displayIdentifier}">
+                            <div class="form-group" jsf:rendered="#{ExternalIdpFirstLoginPage.authProvider.displayIdentifier}">
                                 <label for="persistentUserId" class="col-sm-3 control-label">
-                                    #{OAuth2FirstLoginPage.authProvider.persistentIdName}
+                                    #{ExternalIdpFirstLoginPage.authProvider.persistentIdName}
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button"
-                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{OAuth2FirstLoginPage.authProvider.persistentIdDescription}"></span>
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{ExternalIdpFirstLoginPage.authProvider.persistentIdDescription}"></span>
                                 </label>
                                 <div class="col-sm-4">
                                     <p class="form-control-static">
-                                        <h:graphicImage value="#{OAuth2FirstLoginPage.authProvider.logo}" height="16" width="16" rendered="#{OAuth2FirstLoginPage.authProvider.logo != null}"/>&#160;
-                                        <h:outputLink value="#{OAuth2FirstLoginPage.authProvider.persistentIdUrlPrefix}#{OAuth2FirstLoginPage.newUser.idInService}" title="#{OAuth2FirstLoginPage.authProvider.persistentIdName}" target="_blank" rendered="#{OAuth2FirstLoginPage.authProvider.persistentIdUrlPrefix != null}">
-                                            <h:outputText value="#{OAuth2FirstLoginPage.authProvider.persistentIdUrlPrefix}#{OAuth2FirstLoginPage.newUser.idInService}"/>
+                                        <h:graphicImage value="#{ExternalIdpFirstLoginPage.authProvider.logo}" height="16" width="16" rendered="#{ExternalIdpFirstLoginPage.authProvider.logo != null}"/>&#160;
+                                        <h:outputLink value="#{ExternalIdpFirstLoginPage.authProvider.persistentIdUrlPrefix}#{ExternalIdpFirstLoginPage.newUser.idInService}" title="#{ExternalIdpFirstLoginPage.authProvider.persistentIdName}" target="_blank" rendered="#{ExternalIdpFirstLoginPage.authProvider.persistentIdUrlPrefix != null}">
+                                            <h:outputText value="#{ExternalIdpFirstLoginPage.authProvider.persistentIdUrlPrefix}#{ExternalIdpFirstLoginPage.newUser.idInService}"/>
                                         </h:outputLink>
-                                        <h:outputText value="#{OAuth2FirstLoginPage.authProvider.persistentIdUrlPrefix}#{OAuth2FirstLoginPage.newUser.idInService}" rendered="#{OAuth2FirstLoginPage.authProvider.persistentIdUrlPrefix == null}"/>
+                                        <h:outputText value="#{ExternalIdpFirstLoginPage.authProvider.persistentIdUrlPrefix}#{ExternalIdpFirstLoginPage.newUser.idInService}" rendered="#{ExternalIdpFirstLoginPage.authProvider.persistentIdUrlPrefix == null}"/>
                                     </p>
                                 </div>
                             </div>
@@ -117,7 +117,7 @@
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.affiliation.tip']}"></span>
                                 </label>
                                 <div class="col-sm-4">
-                                    <p:inputText id="affiliation" styleClass="form-control" value="#{OAuth2FirstLoginPage.newUser.displayInfo.affiliation}"/>
+                                    <p:inputText id="affiliation" styleClass="form-control" value="#{ExternalIdpFirstLoginPage.newUser.displayInfo.affiliation}"/>
                                 </div>
                             </div>
                             <div class="form-group">
@@ -128,10 +128,10 @@
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.position.tip']}"></span>
                                 </label>
                                 <div class="col-sm-4">
-                                    <p:inputText id="position" styleClass="form-control" value="#{OAuth2FirstLoginPage.newUser.displayInfo.position}"/>
+                                    <p:inputText id="position" styleClass="form-control" value="#{ExternalIdpFirstLoginPage.newUser.displayInfo.position}"/>
                                 </div>
                             </div>
-                            <div class="form-group" jsf:rendered="#{OAuth2FirstLoginPage.notificationLanguageSelectionEnabled}">
+                            <div class="form-group" jsf:rendered="#{ExternalIdpFirstLoginPage.notificationLanguageSelectionEnabled}">
                                 <!-- E-mail notifications language -->
                                 <label for="position" class="col-sm-3 control-label">
                                     #{bundle['user.notificationsLanguage']}
@@ -143,30 +143,30 @@
                                     <p:selectOneMenu id="preferredLanguageDropdown"
                                                      styleClass="facet-category-default"
                                                      disabled="#{false}"
-                                                     validator="#{OAuth2FirstLoginPage.validatePreferredNotificationsLanguage}"
-                                                     value="#{OAuth2FirstLoginPage.preferredNotificationsLanguage}">
+                                                     validator="#{ExternalIdpFirstLoginPage.validatePreferredNotificationsLanguage}"
+                                                     value="#{ExternalIdpFirstLoginPage.preferredNotificationsLanguage}">
                                         <f:selectItem
                                                 itemLabel="#{bundle['user.notificationsLanguage.selectItem']}"
                                                 noSelectionOption="true"
                                                 itemValue="#{null}"
                                                 itemDisabled="true"
                                         />
-                                        <f:selectItems value="#{OAuth2FirstLoginPage.getSupportedLanguages()}"
+                                        <f:selectItems value="#{ExternalIdpFirstLoginPage.getSupportedLanguages()}"
                                                        var="language"
-                                                       itemLabel="#{OAuth2FirstLoginPage.getLocalizedDisplayNameForLanguage(language)}"
+                                                       itemLabel="#{ExternalIdpFirstLoginPage.getLocalizedDisplayNameForLanguage(language)}"
                                                        itemValue="#{language}"/>
                                     </p:selectOneMenu>
                                     <p:message for="preferredLanguageDropdown" display="text" />
                                 </div>
                             </div>
-                            <ui:include src="../termsofuse.xhtml">
-                                <ui:param name="consents" value="#{OAuth2FirstLoginPage.consents}"/>
+                            <ui:include src="termsofuse.xhtml">
+                                <ui:param name="consents" value="#{ExternalIdpFirstLoginPage.consents}"/>
                             </ui:include>
                             <div class="form-group">
                                 <div class="col-sm-12 button-block">
                                     <p:commandButton id="createNewAccountButton"
                                                      styleClass="btn btn-default"
-                                                     action="#{OAuth2FirstLoginPage.createNewAccount}"
+                                                     action="#{ExternalIdpFirstLoginPage.createNewAccount}"
                                                      ajax="false"
                                                      update="@all"
                                                      value="#{bundle['user.createBtn']}"/>

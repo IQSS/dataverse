@@ -198,7 +198,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
 
     public void validateUserEmail(FacesContext context, UIComponent component, Object value) throws ValidatorException {
         if (!EmailValidator.getInstance().isValid((String) value)) {
-            FacesMessage msg = new FacesMessage(BundleUtil.getStringFromBundle("oauth2.newAccount.emailInvalid"));
+            FacesMessage msg = new FacesMessage(BundleUtil.getStringFromBundle("external.newAccount.emailInvalid"));
             msg.setSeverity(FacesMessage.SEVERITY_ERROR);
             throw new ValidatorException(msg);
         }

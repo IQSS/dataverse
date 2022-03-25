@@ -75,7 +75,7 @@
                                             </div>
                                         </div>
                                     </ui:repeat>
-                                    
+
                                     <!-- validation -->
                                     <div class="form-group" jsf:rendered="#{LoginPage.requireExtraValidation}">
                                         <div class="col-sm-offset-4 col-sm-8">
@@ -91,7 +91,7 @@
                                             <h:message for="messageSum" styleClass="bg-danger text-danger"/>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="form-group">
                                         <div class="col-sm-offset-4 col-sm-8 button-block">
                                             <p:commandButton id="login" styleClass="btn btn-default" value="#{bundle.login}" update="@all" action="#{LoginPage.login}"/>
@@ -208,7 +208,29 @@
                                     </div>
                                 </div>
                             </div>
-
+                            <div id="SAML" jsf:rendered="#{LoginPage.authProvider.id eq 'saml'}">
+                                <h:form>
+                                    <div class="form-group text-left row">
+                                        <h:outputLabel class="col-sm-4 control-label" for="credValue">
+                                            #{bundle['login.saml.idp']}
+                                        </h:outputLabel>
+                                        <div class="col-sm-8">
+                                            <p:selectOneMenu id="idpMenu" value="#{LoginPage.selectedSamlIdpId}" >
+                                                <f:selectItems value="#{LoginPage.authProvider.registeredProviders}" var="provider"
+                                                               itemLabel="#{provider.displayName}" itemValue="#{provider.id}"
+                                                               styleClass="form-control"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-sm-offset-4 col-sm-8 button-block">
+                                            <p:commandButton id="login2" styleClass="btn btn-default" value="#{bundle.login}"
+                                                             ajax="false"
+                                                             action="#{LoginPage.authProvider.startLogin(LoginPage.redirectPage, LoginPage.selectedSamlIdpId)}"/>
+                                        </div>
+                                    </div>
+                                </h:form>
+                            </div>
                             <div id="otherProviders" jsf:rendered="#{LoginPage.listAuthenticationProviders().size() > 1}">
                                 <h4>#{bundle['auth.providers.title']}</h4>
                                 <h:form>

@@ -32,6 +32,7 @@ import com.nimbusds.openid.connect.sdk.op.OIDCProviderConfigurationRequest;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.common.ExternalIdpUserRecord;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserDisplayInfo;
 
@@ -131,7 +132,7 @@ public class OIDCAuthenticationProvider implements OAuth2AuthenticationProvider 
     }
 
     @Override
-    public OAuth2UserRecord getUserRecord(String code, String _state, String redirectUrl) throws OAuth2Exception {
+    public ExternalIdpUserRecord getUserRecord(String code, String _state, String redirectUrl) throws OAuth2Exception {
         AuthorizationGrant codeGrant = new AuthorizationCodeGrant(new AuthorizationCode(code), URI.create(redirectUrl));
         TokenAndSubject tokenAndSubject = obtainTokenAndSubject(codeGrant);
         return createUserRecord(obtainUserInfo(tokenAndSubject));
@@ -198,8 +199,8 @@ public class OIDCAuthenticationProvider implements OAuth2AuthenticationProvider 
         }
     }
 
-    private OAuth2UserRecord createUserRecord(UserInfo userInfo) {
-        return new OAuth2UserRecord(
+    private ExternalIdpUserRecord createUserRecord(UserInfo userInfo) {
+        return new ExternalIdpUserRecord(
                 getId(),
                 userInfo.getSubject().getValue(),
                 userInfo.getPreferredUsername(),

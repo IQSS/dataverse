@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
@@ -819,5 +820,13 @@ public class SettingsServiceBean {
         dbSettings.forEach(s -> mergedSettings.put(s.getName(), s.getContent()));
 
         return mergedSettings;
+    }
+
+    public Map<String, String> getFileBasedSettingsForPrefix(String prefix) {
+        Map<String, String> settings = fileBasedSettingsFetcher.getAllSettings();
+        Set<String> keys = settings.keySet();
+        return keys.stream()
+                .filter(k -> k.startsWith(prefix))
+                .collect(HashMap::new, (m, k) -> m.put(k, settings.get(k)), Map::putAll);
     }
 }
