@@ -193,7 +193,7 @@ public class Index extends AbstractApiBean {
                     }
                 }
             }
-            if (sb.toString().equals("javax.ejb.EJBException: Transaction aborted javax.transaction.RollbackException java.lang.IllegalStateException ")) {
+            if (sb.toString().contains("java.lang.IllegalStateException ")) {
                 return ok("indexing went as well as can be expected... got java.lang.IllegalStateException but some indexing may have happened anyway");
             } else {
                 return error(Status.INTERNAL_SERVER_ERROR, sb.toString());
