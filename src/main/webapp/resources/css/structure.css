@@ -67,7 +67,7 @@ tr.ui-state-highlight, .ui-widget-content tr.ui-state-highlight, .ui-widget-head
 tr.ui-state-highlight label, .ui-widget-content tr.ui-state-highlight label, .ui-widget-header tr.ui-state-highlight label {color: #333333;}
 tr.ui-state-highlight a:not(.btn), .ui-widget-content tr.ui-state-highlight a:not(.btn), .ui-widget-header tr.ui-state-highlight a:not(.btn) {color: #428bca;}
 tr.ui-state-highlight .ui-icon {
-    background-image: url("/javax.faces.resource/images/ui-icons_333333_256x240.png.xhtml?ln=primefaces-bootstrap");
+    background-image: url("/jakarta.faces.resource/images/ui-icons_333333_256x240.png.xhtml?ln=primefaces-bootstrap");
 }
 td.col-select-width, th.col-select-width {width:36px;}
 
