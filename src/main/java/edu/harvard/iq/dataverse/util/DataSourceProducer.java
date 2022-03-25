@@ -6,7 +6,7 @@ import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Singleton;
 import javax.sql.DataSource;
 
-// Find docs here: https://javaee.github.io/javaee-spec/javadocs/javax/annotation/sql/DataSourceDefinition.html
+// Find docs here: https://jakarta.ee/specifications/annotations/2.1/apidocs/jakarta.annotation/jakarta/annotation/sql/datasourcedefinition
 @Singleton
 @DataSourceDefinition(
         name = "java:app/jdbc/dataverse",
