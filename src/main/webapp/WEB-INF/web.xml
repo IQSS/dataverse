@@ -27,7 +27,7 @@
         See also dev guide: https://guides.dataverse.org/en/latest/developers/debugging.html
      -->
     <context-param>
-        <param-name>javax.faces.PROJECT_STAGE</param-name>
+        <param-name>jakarta.faces.PROJECT_STAGE</param-name>
         <!-- Uses Microprofile Config to replace at runtime. Not standardized, Payara App Server specific. -->
         <param-value>${MPCONFIG=dataverse.jsf.project-stage:Production}</param-value>
     </context-param>
@@ -43,23 +43,23 @@
     <!-- /context-param -->
     <context-param>
         <param-name>
-            javax.faces.INTERPRET_EMPTY_STRING_SUBMITTED_VALUES_AS_NULL
+            jakarta.faces.INTERPRET_EMPTY_STRING_SUBMITTED_VALUES_AS_NULL
         </param-name>
         <!-- Uses Microprofile Config to replace at runtime. Not standardized, Payara App Server specific. -->
         <param-value>${MPCONFIG=dataverse.jsf.empty-string-null:true}</param-value>
     </context-param>
     <context-param>
-        <param-name>javax.faces.FACELETS_SKIP_COMMENTS</param-name>
+        <param-name>jakarta.faces.FACELETS_SKIP_COMMENTS</param-name>
         <!-- Uses Microprofile Config to replace at runtime. Not standardized, Payara App Server specific. -->
         <param-value>${MPCONFIG=dataverse.jsf.skip-comments:true}</param-value>
     </context-param>
     <context-param>
-        <param-name>javax.faces.FACELETS_BUFFER_SIZE</param-name>
+        <param-name>jakarta.faces.FACELETS_BUFFER_SIZE</param-name>
         <!-- Uses Microprofile Config to replace at runtime. Not standardized, Payara App Server specific. -->
         <param-value>${MPCONFIG=dataverse.jsf.buffer-size:102400}</param-value>
     </context-param>
     <context-param>
-        <param-name>javax.faces.FACELETS_REFRESH_PERIOD</param-name>
+        <param-name>jakarta.faces.FACELETS_REFRESH_PERIOD</param-name>
         <!-- Uses Microprofile Config to replace at runtime. Not standardized, Payara App Server specific. -->
         <param-value>${MPCONFIG=dataverse.jsf.refresh-period:-1}</param-value>
     </context-param>
@@ -86,7 +86,7 @@
     </filter-mapping>
     <servlet>
         <servlet-name>Faces Servlet</servlet-name>
-        <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
+        <servlet-class>jakarta.faces.webapp.FacesServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet>
