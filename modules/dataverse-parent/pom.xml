@@ -4,7 +4,7 @@
  
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse-parent</artifactId>
-    <version>5.10-qdr</version>
+    <version>5.10-qdr-dev</version>
     <!--version>${revision}</version-->
     <packaging>pom</packaging>
  
