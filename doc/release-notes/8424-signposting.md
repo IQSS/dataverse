@@ -14,10 +14,6 @@ config items.
 
 ```json
 {
-  "describedby": {
-    "doi": "https://doi.org/",
-    "type": "application/vnd.citationstyles.csl+json"
-  },
   "useDefaultFileType": true,
   "defaultFileTypeValue": "https://schema.org/Dataset",
   "maxItems": 5,
@@ -25,8 +21,6 @@ config items.
 }
 ```
 
- * `describedby` is required by [Signposting](https://signposting.org/). It shows the link to the metadata 
-which describes the resources that is the origin of the link.
  * `useDefaultFileType` and `defaultFileTypeValue` are used in combination to provide extra `Dataset` type to DV 
    datasets. `AboutPage` is required by `Signposting`, hence always present in the datasets. Whilst a second type 
    could be configured to better reflect the actual scholarly type of the dataset. 
