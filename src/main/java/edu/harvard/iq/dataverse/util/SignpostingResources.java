@@ -15,11 +15,7 @@ package edu.harvard.iq.dataverse.util;
   The configuration can be modified during run time by the administrator.
  */
 
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DatasetAuthor;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
@@ -43,7 +39,6 @@ public class SignpostingResources {
     private static final Logger logger = Logger.getLogger(SignpostingResources.class.getCanonicalName());
     SystemConfig systemConfig;
     DatasetVersion workingDatasetVersion;
-    JsonObject describedByJsonObj;
     Boolean useDefaultFileType;
     String defaultFileTypeValue;
     int maxAuthors;
@@ -58,7 +53,6 @@ public class SignpostingResources {
         JsonReader jsonReader = Json.createReader(new StringReader(jsonSetting));
         JsonObject spJsonSetting = jsonReader.readObject();
         jsonReader.close();
-        describedByJsonObj = spJsonSetting.getJsonObject("describedby");
         useDefaultFileType = spJsonSetting.getBoolean("useDefaultFileType", true);
         defaultFileTypeValue = spJsonSetting.getString("defaultFileTypeValue", "https://schema.org/Dataset");
         maxAuthors = spJsonSetting.getInt("maxAuthors", 5);
@@ -90,7 +84,7 @@ public class SignpostingResources {
 
             String authorURL = "";
             authorURL = getAuthorUrl(da);
-            if (!Objects.equals(authorURL, "")) {
+            if (authorURL != null && !Objects.equals(authorURL, "")) {
                 visibleAuthorCounter++;
                 // return empty if number of visible author more than max allowed
                 if (visibleAuthorCounter >= maxAuthors) return "";
@@ -117,7 +111,7 @@ public class SignpostingResources {
         Dataset ds = workingDatasetVersion.getDataset();
 
         String identifierSchema = getAuthorsAsString(workingDatasetVersion.getDatasetAuthors());
-        if (!identifierSchema.equals("")) {
+        if (identifierSchema != null && !identifierSchema.equals("")) {
             valueList.add(identifierSchema);
         }
 
@@ -132,13 +126,13 @@ public class SignpostingResources {
             valueList.add(items);
         }
 
-        String describedby = "<" + describedByJsonObj.getString(ds.getProtocol()) + ds.getAuthority() + "/"
-                + ds.getIdentifier() + ">;rel=\"describedby\"" + ";type=\"" + describedByJsonObj.getString("type") + "\"";
+        GlobalId gid = new GlobalId(ds);
+        String describedby = "<" + gid.toURL().toString() + ">;rel=\"describedby\"" + ";type=\"" + "application/vnd.citationstyles.csl+json\"";
         describedby += ",<" + systemConfig.getDataverseSiteUrl() + "/api/datasets/export?exporter=schema.org&persistentId="
                 + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier() + ">;rel=\"describedby\"" + ";type=\"application/json+ld\"";
         valueList.add(describedby);
 
-        String type = "<https://schema.org/AboutPage>;rel=\"type\"";;
+        String type = "<https://schema.org/AboutPage>;rel=\"type\"";
         if (useDefaultFileType) {
             type = "<https://schema.org/AboutPage>;rel=\"type\",<" + defaultFileTypeValue + ">;rel=\"type\"";
         }
@@ -190,9 +184,9 @@ public class SignpostingResources {
         for (FileMetadata fm : fms) {
             DataFile df = fm.getDataFile();
             if (Objects.equals(result, "")) {
-                 result = "<" + getPublicDownloadUrl(df) + ">;rel=\"item\";type=\"" + df.getContentType() + "\"";
+                result = "<" + getPublicDownloadUrl(df) + ">;rel=\"item\";type=\"" + df.getContentType() + "\"";
             } else {
-                 result = String.join(",", result, "<" + getPublicDownloadUrl(df) + ">;rel=\"item\";type=\"" + df.getContentType() + "\"");
+                result = String.join(",", result, "<" + getPublicDownloadUrl(df) + ">;rel=\"item\";type=\"" + df.getContentType() + "\"");
             }
         }
         return result;
@@ -210,6 +204,7 @@ public class SignpostingResources {
 
     public JsonArrayBuilder getJsonLinkset() {
         Dataset ds = workingDatasetVersion.getDataset();
+        GlobalId gid = new GlobalId(ds);
         String landingPage = systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier();
         JsonArrayBuilder authors = getJsonAuthors(workingDatasetVersion.getDatasetAuthors());
 
@@ -223,11 +218,10 @@ public class SignpostingResources {
         mediaTypes.add(
                 jsonObjectBuilder().add(
                         "href",
-                        describedByJsonObj.getString(ds.getProtocol()) + ds.getAuthority() + "/"
-                                + ds.getIdentifier()
+                        gid.toURL().toString()
                 ).add(
                         "type",
-                        describedByJsonObj.getString("type")
+                        "application/vnd.citationstyles.csl+json"
                 )
         );
 
@@ -312,6 +306,8 @@ public class SignpostingResources {
                 // perhaps even we could use this as the "private url"
                 fileDownloadUrl = swiftIO.getTemporarySwiftUrl();
             }
+            // close the stream
+            swiftIO.closeInputStream();
             return fileDownloadUrl;
 
         }
