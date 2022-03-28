@@ -2606,7 +2606,6 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         logger.info(r.prettyPrint());
         assertEquals(200, r.getStatusCode());
 
-        Thread.sleep(300);
         pathToFile = "src/test/resources/sav/frequency-test.sav";
         jsonAsString = "{\"description\":\"My description.\",\"directoryLabel\":\"data/subdir1\",\"categories\":[\"Data\"], \"restrict\":\"false\"  }";
         Response rTabIngest = UtilIT.uploadFileViaNative(datasetIdInt.toString(), pathToFile, jsonAsString, apiToken);
@@ -2614,7 +2613,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertEquals(200, rTabIngest.getStatusCode());
 
         //cleanup
-        Thread.sleep(1000);
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile, UtilIT.sleepForLock(datasetIdInt, "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
         Response destroyDatasetResponse = UtilIT.destroyDataset(datasetIdInt, apiToken);
         assertEquals(200, destroyDatasetResponse.getStatusCode());
 
