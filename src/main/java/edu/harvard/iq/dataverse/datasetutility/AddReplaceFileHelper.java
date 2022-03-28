@@ -501,9 +501,11 @@ public class AddReplaceFileHelper{
         if (!phase1Success){
             return false;
         }
-        
-       
-        return runAddReplacePhase2(optionalFileParams.getTabIngest());
+        boolean tabIngest = true;
+        if (optionalFileParams != null) {
+            tabIngest = optionalFileParams.getTabIngest();
+        }
+        return runAddReplacePhase2(tabIngest);
         
     }
 
