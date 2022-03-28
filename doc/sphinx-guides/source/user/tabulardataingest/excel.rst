@@ -19,9 +19,14 @@ If an Excel file has multiple sheets, only the first sheet of the file will be i
 Ingest Errors
 -------------
 
-You may encounter ingest errors after uploading an Excel file if the file is formatted in a way that can't be ingested by the Dataverse software. For example, line breaks in a cell, blank cells, single cells that span multiple rows, missing headers, or other kinds of inconsistent formatting can lead to ingest errors.
+You may encounter ingest errors after uploading an Excel file if the file is formatted in a way that can't be ingested by the Dataverse software. Ingest errors can be caused by a variety of formatting inconsistencies, including:
+
+* line breaks in a cell
+* blank cells
+* single cells that span multiple rows
+* missing headers
 
 Example Data
 ------------
 
-`An example of an Excel file that successfully ingests <https://github.com/IQSS/dataverse-sample-data/blob/master/data/dataverses/dataverseno/datasets/tabular-sample-data/files/Tabular_Sample_Data.xlsx>`_ can be found in the Dataverse Sample Data GitHub repository .
+`An example of an Excel file that successfully ingests <https://github.com/IQSS/dataverse-sample-data/blob/master/data/dataverses/dataverseno/datasets/tabular-sample-data/files/Tabular_Sample_Data.xlsx>`_ is available in the Dataverse Sample Data GitHub repository.
