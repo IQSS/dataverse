@@ -717,8 +717,8 @@ public class UtilIT {
     }
 
     static Response replaceFile(String fileIdOrPersistentId, String pathToFile, String apiToken) {
-        String jsonString = null;
-        return replaceFile(fileIdOrPersistentId, pathToFile, jsonString, apiToken);
+        String jsonAsString = null;
+        return replaceFile(fileIdOrPersistentId, pathToFile, jsonAsString, apiToken);
     }
 
     static Response replaceFile(String fileIdOrPersistentId, String pathToFile, JsonObject jsonObject, String apiToken) {
