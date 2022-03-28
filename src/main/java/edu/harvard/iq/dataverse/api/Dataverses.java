@@ -239,6 +239,9 @@ public class Dataverses extends AbstractApiBean {
                 return badRequest(BundleUtil.getStringFromBundle("dataverses.api.create.dataset.error.superuserFiles"));
             }
 
+            //Throw BadRequestException if metadataLanguage isn't compatible with setting
+            checkMetadataLangauge(ds, owner);
+
             // clean possible version metadata
             DatasetVersion version = ds.getVersions().get(0);
             version.setMinorVersionNumber(null);
@@ -308,10 +311,8 @@ public class Dataverses extends AbstractApiBean {
             ds.setProtocol(null);
             ds.setGlobalIdCreateTime(null);
             
-            //Verify metadatalanguage is allowed
-            if(ds.getMetadataLanguage()!= DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE && !settingsService.getBaseMetadataLanguageMap(new HashMap<String, String>(), true).containsKey(ds.getMetadataLanguage())) {
-                throw new BadRequestException("Specified metadatalanguage (" + JsonLDTerm.schemaOrg("inLanguage").getUrl() + ") not allowed.");
-            }
+            //Throw BadRequestException if metadataLanguage isn't compatible with setting
+            checkMetadataLangauge(ds, owner);
 
             Dataset managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u)));
             return created("/datasets/" + managedDs.getId(),
@@ -322,6 +323,19 @@ public class Dataverses extends AbstractApiBean {
 
         } catch (WrappedResponse ex) {
             return ex.getResponse();
+        }
+    }
+
+    private void checkMetadataLangauge(Dataset ds, Dataverse owner) {
+      //Verify metadatalanguage is allowed
+        Map<String, String> mLangMap = settingsService.getBaseMetadataLanguageMap(new HashMap<String, String>(), true);
+        //Anything but undefined (from no value sent in) is invalid unless the :MetadataLanguage setting is not set
+        if(!ds.getMetadataLanguage().equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE) && mLangMap.size()!=0) {
+            throw new BadRequestException("This repository is not configured to support metadataLanguage.");
+        }
+        //When :MetadataLanguage is set, the specificed language must either match the parent colelction choice, or, if that is undefined, be one of the choices allowed by the setting
+        if(!(ds.getMetadataLanguage().equals( owner.getMetadataLanguage()) || (owner.getMetadataLanguage().equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE) && mLangMap.containsKey(ds.getMetadataLanguage())))) {
+            throw new BadRequestException("Specified metadatalanguage ( metadataLanguage, " + JsonLDTerm.schemaOrg("inLanguage").getUrl() + ") not allowed in this collection.");
         }
     }
 
@@ -340,6 +354,9 @@ public class Dataverses extends AbstractApiBean {
             if (ds.getVersions().isEmpty()) {
                 return badRequest("Supplied json must contain a single dataset version.");
             }
+
+            //Throw BadRequestException if metadataLanguage isn't compatible with setting
+            checkMetadataLangauge(ds, owner);
 
             DatasetVersion version = ds.getVersions().get(0);
             if (version.getVersionState() == null) {
@@ -495,10 +512,9 @@ public class Dataverses extends AbstractApiBean {
                 throw new BadRequestException("Cannot recreate a dataset whose PID is already in use");
             }
             
-            //Verify metadatalanguage is allowed
-            if(ds.getMetadataLanguage()!= DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE && !settingsService.getBaseMetadataLanguageMap(new HashMap<String, String>(), true).containsKey(ds.getMetadataLanguage())) {
-                throw new BadRequestException("Specified metadatalanguage (" + JsonLDTerm.schemaOrg("inLanguage").getUrl() + ") not allowed.");
-            }
+            //Throw BadRequestException if metadataLanguage isn't compatible with setting
+            checkMetadataLangauge(ds, owner);
+
 
             if (ds.getVersions().isEmpty()) {
                 return badRequest("Supplied json must contain a single dataset version.");
