@@ -1301,7 +1301,7 @@ When adding a file to a dataset, you can optionally specify the following:
 - A description of the file.
 - The "File Path" of the file, indicating which folder the file should be uploaded to within the dataset.
 - Whether or not the file is restricted.
-- Wheather or not the file skips tabular ingest
+- Whether or not the file skips tabular ingest.
 
 Note that when a Dataverse instance is configured to use S3 storage with direct upload enabled, there is API support to send a file directly to S3. This is more complex and is described in the :doc:`/developers/s3-direct-upload-api` guide.
  
