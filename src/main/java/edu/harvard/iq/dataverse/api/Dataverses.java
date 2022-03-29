@@ -330,10 +330,10 @@ public class Dataverses extends AbstractApiBean {
       //Verify metadatalanguage is allowed
         Map<String, String> mLangMap = settingsService.getBaseMetadataLanguageMap(new HashMap<String, String>(), true);
         //Anything but undefined (from no value sent in) is invalid unless the :MetadataLanguage setting is not set
-        if(!ds.getMetadataLanguage().equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE) && mLangMap.size()!=0) {
+        if(!ds.getMetadataLanguage().equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE) && mLangMap.size()==0) {
             throw new BadRequestException("This repository is not configured to support metadataLanguage.");
         }
-        //When :MetadataLanguage is set, the specificed language must either match the parent colelction choice, or, if that is undefined, be one of the choices allowed by the setting
+        //When :MetadataLanguage is set, the specificed language must either match the parent collection choice, or, if that is undefined, be one of the choices allowed by the setting
         if(!((ds.getMetadataLanguage().equals( owner.getMetadataLanguage()) && !owner.getMetadataLanguage().equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) || (owner.getMetadataLanguage().equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE) && mLangMap.containsKey(ds.getMetadataLanguage())))) {
             throw new BadRequestException("Specified metadatalanguage ( metadataLanguage, " + JsonLDTerm.schemaOrg("inLanguage").getUrl() + ") not allowed in this collection.");
         }
