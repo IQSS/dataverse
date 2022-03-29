@@ -9,6 +9,10 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.Collections;
+import java.util.stream.Collectors;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Enumerated;
@@ -44,7 +48,7 @@ public class UserNotification implements Serializable {
         }
         
         public static List<Type> fromFlag(Long flag) {
-            final List<Type> types = new ArrayList();
+            final List<Type> types = new ArrayList<Type>();
             if (flag == null) {
                 return types;
             }
@@ -65,6 +69,15 @@ public class UserNotification implements Serializable {
                 flag |= t.flagValue();
             }
             return flag;
+        }
+
+        public static Set<Type> tokenizeToSet(String tokens) {
+            if (tokens == null || tokens.isEmpty()) {
+                return Collections.<Type>emptySet();
+            }
+            return Collections.list(new StringTokenizer(tokens, ",")).stream()
+                .map(token -> Type.valueOf(((String) token).trim()))
+                .collect(Collectors.toSet());
         }
     };
     

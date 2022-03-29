@@ -167,8 +167,9 @@ public class DataverseUserPage implements java.io.Serializable {
             setCurrentUser((AuthenticatedUser) session.getUser());
             userAuthProvider = authenticationService.lookupProvider(currentUser);
             notificationsList = userNotificationService.findByUser(currentUser.getId());
+            final Set<UserNotification.Type> alwaysMuted = UserNotification.Type.tokenizeToSet(BundleUtil.getStringFromBundle("notification.alwaysMuted"));
             notificationTypeList = Arrays.asList(UserNotification.Type.values()).stream()
-                    .filter(x -> x.getDescription() != null && !x.getDescription().isEmpty())
+                    .filter(x -> !alwaysMuted.contains(x) && x.getDescription() != null && !x.getDescription().isEmpty())
                     .collect(Collectors.toList());
             mutedEmailList = UserNotification.Type.fromFlag(currentUser.getMutedEmails());
             mutedNotificationList = UserNotification.Type.fromFlag(currentUser.getMutedNotifications());

@@ -8,8 +8,10 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -103,6 +105,7 @@ public class UserNotificationServiceBean {
     }
 
     public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId, String comment, AuthenticatedUser requestor, boolean isHtmlContent) {
+        final Set<Type> alwaysMuted = Type.tokenizeToSet(BundleUtil.getStringFromBundle("notification.alwaysMuted"));
         UserNotification userNotification = new UserNotification();
         userNotification.setUser(dataverseUser);
         userNotification.setSendDate(sendDate);
@@ -110,13 +113,13 @@ public class UserNotificationServiceBean {
         userNotification.setObjectId(objectId);
         userNotification.setRequestor(requestor);
 
-        if (!isEmailMuted(userNotification) && mailService.sendNotificationEmail(userNotification, comment, requestor, isHtmlContent)) {
+        if (!alwaysMuted.contains(userNotification.getType()) && !isEmailMuted(userNotification) && mailService.sendNotificationEmail(userNotification, comment, requestor, isHtmlContent)) {
             logger.fine("email was sent");
             userNotification.setEmailed(true);
         } else {
             logger.fine("email was not sent");
         }
-        if (!isNotificationMuted(userNotification)) {
+        if (!alwaysMuted.contains(userNotification.getType()) && !isNotificationMuted(userNotification)) {
             save(userNotification);
         }
     }

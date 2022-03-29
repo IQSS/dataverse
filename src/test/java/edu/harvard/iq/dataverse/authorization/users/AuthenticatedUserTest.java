@@ -14,6 +14,8 @@ import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
+
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;
@@ -375,6 +377,15 @@ public class AuthenticatedUserTest {
         assertEquals(true, testUser.hasNotificationMuted(UserNotification.Type.REVOKEROLE));
         assertEquals(false, testUser.hasNotificationMuted(UserNotification.Type.CREATEDV));
         assertEquals(false, testUser.hasNotificationMuted(null));
+    }
+
+    @Test
+    public void testTypeTokenizer() {
+        final Set<UserNotification.Type> typeSet = UserNotification.Type.tokenizeToSet(" ASSIGNROLE , CREATEDV,REVOKEROLE  ");
+        assertTrue("typeSet contains 3 elements", typeSet.size() == 3);
+        assertTrue("typeSet contains ASSIGNROLE", typeSet.contains(UserNotification.Type.ASSIGNROLE));
+        assertTrue("typeSet contains CREATEDV", typeSet.contains(UserNotification.Type.CREATEDV));
+        assertTrue("typeSet contains REVOKEROLE", typeSet.contains(UserNotification.Type.REVOKEROLE));
     }
 
     /**
