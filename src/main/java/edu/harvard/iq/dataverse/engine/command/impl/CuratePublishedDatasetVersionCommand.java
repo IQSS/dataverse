@@ -125,7 +125,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
                     ctxt.em().remove(vg);
                 }
                 publishedFmd.copyVarGroups(draftFmd.getVarGroups());
-            
+
             }
             if (metadataUpdated) {
                 dataFile.setModificationTime(getTimestamp());
