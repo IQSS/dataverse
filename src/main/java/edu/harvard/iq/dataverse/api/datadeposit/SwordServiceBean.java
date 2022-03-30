@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import java.util.ArrayList;
 
 import java.util.List;
 import java.util.Map;
@@ -186,7 +187,13 @@ public class SwordServiceBean {
             setTermsOfUse(datasetVersionToMutate, dcterms, null);
         } else {
             License licenseToSet = licenseServiceBean.getByNameOrUri(licenseProvided);
-            if (licenseToSet == null) throw new SwordError("Couldn't find an active license with: " + licenseProvided);
+            if (licenseToSet == null) {
+                List<String> licenses = new ArrayList<>();
+                for (License license : licenseServiceBean.listAllActive()) {
+                    licenses.add(license.getName());
+                }
+                throw new SwordError("Couldn't find an active license with: " + licenseProvided + ". Valid licenses: " + licenses);
+            }
             terms.setLicense(licenseToSet);
             setTermsOfUse(datasetVersionToMutate, dcterms, licenseToSet);
         }

@@ -5,6 +5,9 @@ import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
 
 import java.util.List;
 import java.util.Map;
@@ -635,6 +638,66 @@ public class SwordIT {
 
         UtilIT.deleteUser(username);
         UtilIT.deleteUser(usernameNoPrivs);
+
+    }
+
+
+    @Test
+    public void testLicenses() {
+
+        Response createUser = UtilIT.createRandomUser();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.prettyPrint();
+        createDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+
+        String title = "License to Kill";
+        String description = "Spies in 1989";
+        String license = "NONE";
+        Response failToCreateDataset1 = UtilIT.createDatasetViaSwordApi(dataverseAlias, title, description, license, apiToken);
+        failToCreateDataset1.prettyPrint();
+        // As of 5.10 and PR #7920, you cannot pass NONE as a license.
+        failToCreateDataset1.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        String rights = "Call me";
+        Response failToCreateDataset2 = UtilIT.createDatasetViaSwordApi(dataverseAlias, title, description, license, rights, apiToken);
+        failToCreateDataset2.prettyPrint();
+        // You can't pass both license and rights
+        failToCreateDataset2.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        license = "CC0 1.0";
+        Response createDataset = UtilIT.createDatasetViaSwordApi(dataverseAlias, title, description, license, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+    }
+
+    @Test
+    public void testXmlExampleInGuides() throws IOException {
+
+        Response createUser = UtilIT.createRandomUser();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.prettyPrint();
+        createDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+
+        File exampleFile = new File("doc/sphinx-guides/source/api/sword-atom-entry.xml");
+        String xmlIn = new String(java.nio.file.Files.readAllBytes(Paths.get(exampleFile.getAbsolutePath())));
+        Response createDataset = UtilIT.createDatasetViaSwordApiFromXML(dataverseAlias, xmlIn, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
 
     }
 
