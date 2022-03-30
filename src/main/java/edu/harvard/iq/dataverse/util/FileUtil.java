@@ -1507,35 +1507,34 @@ public class FileUtil implements java.io.Serializable  {
     }
     
     private static Boolean popupDueToStateOrTerms(DatasetVersion datasetVersion) {
-        Boolean answer = null;
+
         // Each of these conditions is sufficient reason to have to
         // present the user with the popup:
         if (datasetVersion == null) {
             logger.fine("Popup required because datasetVersion is null.");
-            answer = false;
+            return false;
         }
         // 0. if version is draft then Popup "not required"
         if (!datasetVersion.isReleased()) {
             logger.fine("Popup required because datasetVersion has not been released.");
-            answer = false;
+            return false;
         }
         // 1. License and Terms of Use:
         if (datasetVersion.getTermsOfUseAndAccess() != null) {
             License license = datasetVersion.getTermsOfUseAndAccess().getLicense();
-            if ((license != null && !license.isDefault())
-                    && !(datasetVersion.getTermsOfUseAndAccess().getTermsOfUse() == null
-                            || datasetVersion.getTermsOfUseAndAccess().getTermsOfUse().equals(""))) {
-                logger.fine("{opup required because of license or terms of use.");
-                answer = true;
+            if ((license == null && StringUtils.isNotBlank(datasetVersion.getTermsOfUseAndAccess().getTermsOfUse()))
+                    || (license != null && !license.isDefault())) {
+                logger.fine("Download popup required because of license or terms of use.");
+                return true;
             }
 
             // 2. Terms of Access:
             if (!(datasetVersion.getTermsOfUseAndAccess().getTermsOfAccess() == null) && !datasetVersion.getTermsOfUseAndAccess().getTermsOfAccess().equals("")) {
                 logger.fine("Popup required because of terms of access.");
-                answer = true;
+                return true;
             }
         }
-        return answer;
+        return null;
     }
 
     /**
