@@ -64,9 +64,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -78,7 +75,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Collection;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
@@ -88,7 +84,6 @@ import javax.faces.event.ValueChangeEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.json.JsonObject;
 
 import org.apache.commons.lang3.StringUtils;
 import org.primefaces.event.FileUploadEvent;
@@ -128,7 +123,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.text.StringEscapeUtils;
-import org.apache.commons.validator.routines.EmailValidator;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.io.IOUtils;
 import org.primefaces.component.selectonemenu.SelectOneMenu;
@@ -251,6 +245,8 @@ public class DatasetPage implements java.io.Serializable {
     EmbargoServiceBean embargoService;
     @Inject
     LicenseServiceBean licenseServiceBean;
+    @Inject
+    DataFileCategoryServiceBean dataFileCategoryService;
 
     private Dataset dataset = new Dataset();
 
@@ -4529,7 +4525,8 @@ public class DatasetPage implements java.io.Serializable {
 
     private void refreshCategoriesByName(){
         categoriesByName= new ArrayList<>();
-        for (String category: dataset.getCategoriesByName() ){
+        List<String> datasetFileCategories = dataFileCategoryService.mergeDatasetFileCategories(dataset.getCategories());
+        for (String category: datasetFileCategories ){
             categoriesByName.add(category);
         }
         refreshSelectedTags();
@@ -5647,7 +5644,10 @@ public class DatasetPage implements java.io.Serializable {
             if (status == null || status.isEmpty()) {
                 JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("dataset.externalstatus.removed"));
             } else {
-                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.externalstatus.header"), BundleUtil.getStringFromBundle("dataset.externalstatus.info", Arrays.asList(status)));
+                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.externalstatus.header"),
+                        BundleUtil.getStringFromBundle("dataset.externalstatus.info",
+                                Arrays.asList(DatasetUtil.getLocaleExternalStatus(status))
+                        ));
             }
 
         } catch (CommandException ex) {
@@ -5656,7 +5656,7 @@ public class DatasetPage implements java.io.Serializable {
             JsfHelper.addErrorMessage(msg);
         }
     }
-    
+
     public List<String> getAllowedExternalStatuses() {
         return settingsWrapper.getAllowedExternalStatuses(dataset);
     }
