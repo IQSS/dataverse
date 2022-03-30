@@ -1534,9 +1534,8 @@ public class FileUtil implements java.io.Serializable  {
                 logger.fine("Popup required because of terms of access.");
                 answer = true;
             }
-            return answer;
-
         }
+        return answer;
     }
 
     /**
