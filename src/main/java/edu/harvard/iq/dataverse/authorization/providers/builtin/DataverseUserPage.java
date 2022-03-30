@@ -172,8 +172,8 @@ public class DataverseUserPage implements java.io.Serializable {
             notificationTypeList = Arrays.asList(Type.values()).stream()
                     .filter(x -> !settingsWrapper.isAlwaysMuted(x) && !settingsWrapper.isAlwaysMuted(x) && x.hasDescription())
                     .collect(Collectors.toList());
-            mutedEmailList = new ArrayList<>(currentUser.getMutedEmailsSet());
-            mutedNotificationList = new ArrayList<>(currentUser.getMutedNotificationsSet());
+            mutedEmailList = currentUser.getMutedEmailsSet() == null ? new ArrayList<>() : new ArrayList<>(currentUser.getMutedEmailsSet());
+            mutedNotificationList = currentUser.getMutedNotificationsSet() == null ? new ArrayList<>() : new ArrayList<>(currentUser.getMutedNotificationsSet());
             
             switch (selectTab) {
                 case "notifications":
