@@ -1495,17 +1495,22 @@ public class FileUtil implements java.io.Serializable  {
         return false;
     }
     
+    /* Code shared by isDownloadPopupRequired and isRequestAccessPopupRequired.
+     * 
+     * Returns Boolean to allow null = no decision. This allows the isDownloadPopupRequired method to then add another check w.r.t. guestbooks before returning its value.
+     * 
+     */
     private static Boolean popupDueToStateOrTerms(DatasetVersion datasetVersion) {
 
         // Each of these conditions is sufficient reason to have to
         // present the user with the popup:
         if (datasetVersion == null) {
-            logger.fine("Popup required because datasetVersion is null.");
+            logger.fine("Popup not required because datasetVersion is null.");
             return false;
         }
         // 0. if version is draft then Popup "not required"
         if (!datasetVersion.isReleased()) {
-            logger.fine("Popup required because datasetVersion has not been released.");
+            logger.fine("Popup not required because datasetVersion has not been released.");
             return false;
         }
         // 1. License and Terms of Use:
@@ -1513,7 +1518,7 @@ public class FileUtil implements java.io.Serializable  {
             License license = datasetVersion.getTermsOfUseAndAccess().getLicense();
             if ((license == null && StringUtils.isNotBlank(datasetVersion.getTermsOfUseAndAccess().getTermsOfUse()))
                     || (license != null && !license.isDefault())) {
-                logger.fine("Download popup required because of license or terms of use.");
+                logger.fine("Popup required because of license or terms of use.");
                 return true;
             }
 
@@ -1523,6 +1528,7 @@ public class FileUtil implements java.io.Serializable  {
                 return true;
             }
         }
+        //No decision based on the criteria above
         return null;
     }
 
