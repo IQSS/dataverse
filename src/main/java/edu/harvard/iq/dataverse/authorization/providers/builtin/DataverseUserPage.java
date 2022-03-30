@@ -43,6 +43,7 @@ import java.net.URLDecoder;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -381,8 +382,8 @@ public class DataverseUserPage implements java.io.Serializable {
             logger.info("Redirecting");
             return permissionsWrapper.notAuthorized() + "faces-redirect=true";
         }else {
-            currentUser.setMutedEmailsSet(EnumSet.copyOf(mutedEmailList));
-            currentUser.setMutedNotificationsSet(EnumSet.copyOf(mutedNotificationList));
+            currentUser.setMutedEmailsSet(mutedEmailList.isEmpty() ? null : EnumSet.copyOf(mutedEmailList));
+            currentUser.setMutedNotificationsSet(mutedNotificationList.isEmpty() ? null : EnumSet.copyOf(mutedNotificationList));
             String emailBeforeUpdate = currentUser.getEmail();
             AuthenticatedUser savedUser = authenticationService.updateAuthenticatedUser(currentUser, userDisplayInfo);
             String emailAfterUpdate = savedUser.getEmail();

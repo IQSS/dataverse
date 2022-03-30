@@ -32,6 +32,8 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.PostLoad;
+import javax.persistence.PrePersist;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotBlank;
@@ -135,6 +137,18 @@ public class AuthenticatedUser implements User, Serializable {
     
     @Transient
     private Set<Type> mutedNotificationsSet;
+
+    @PrePersist
+    void prePersist() {
+        mutedNotifications = Type.toFlag(mutedNotificationsSet);
+        mutedEmails = Type.toFlag(mutedEmailsSet);
+    }
+    
+    @PostLoad
+    void postLoad() {
+        mutedNotificationsSet = Type.fromFlag(mutedNotifications);
+        mutedEmailsSet = Type.fromFlag(mutedEmails);
+    }
 
     /**
      * @todo Consider storing a hash of *all* potentially interesting Shibboleth
@@ -516,7 +530,7 @@ public class AuthenticatedUser implements User, Serializable {
 
     public void setMutedEmails(Long mutedEmails) {
         this.mutedEmails = mutedEmails;
-        this.mutedEmailsSet = EnumSet.copyOf(Type.fromFlag(mutedEmails));
+        this.mutedEmailsSet = Type.fromFlag(mutedEmails);
     }
 
     public void setMutedEmailsSet(Set<Type> mutedEmails) {
@@ -530,7 +544,7 @@ public class AuthenticatedUser implements User, Serializable {
 
     public void setMutedNotifications(Long mutedNotifications) {
         this.mutedNotifications = mutedNotifications;
-        this.mutedNotificationsSet = EnumSet.copyOf(Type.fromFlag(mutedNotifications));
+        this.mutedNotificationsSet = Type.fromFlag(mutedNotifications);
     }
 
     public void setMutedNotificationsSet(Set<Type> mutedNotifications) {

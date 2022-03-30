@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.Collection;
 import java.util.StringTokenizer;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.stream.Collectors;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -53,17 +54,17 @@ public class UserNotification implements Serializable {
             return 1 << this.ordinal();
         }
         
-        public static List<Type> fromFlag(Long flag) {
-            final List<Type> types = new ArrayList<Type>();
-            if (flag == null) {
-                return types;
+        public static Set<Type> fromFlag(Long flag) {
+            if (flag == null || flag == 0) {
+                return null;
             }
+            final List<Type> types = new ArrayList<Type>();
             for (final Type t : values()) {
                 if ((flag & t.flagValue()) > 0) {
                     types.add(t);
                 }
             }
-            return types;
+            return EnumSet.copyOf(types);
         }
         
         public static Long toFlag(final Collection<Type> types) {
