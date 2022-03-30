@@ -5,10 +5,10 @@
  */
 package edu.harvard.iq.dataverse.userdata;
 
-import com.beust.jcommander.Strings;
-import edu.harvard.iq.dataverse.UserNotification;
+import edu.harvard.iq.dataverse.UserNotification.Type;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -75,13 +75,13 @@ public class UserUtil {
      * @param mutedLongFlags
      * @return 
      */
-    public static String getMutedStringOrNull(Long mutedLongFlags){
-        if (mutedLongFlags == null){
+    public static String getMutedStringOrNull(Set<Type> muted){
+        if (muted == null){
             return null;
         }
-        final List<String> types = UserNotification.Type.fromFlag(mutedLongFlags)
+        final List<String> types = muted
                 .stream().map(x -> x.name()).collect(Collectors.toList());
-        return Strings.join(",", types);
+        return String.join(",", types);
     }
 
 }

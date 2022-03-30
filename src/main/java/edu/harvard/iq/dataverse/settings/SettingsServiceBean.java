@@ -505,7 +505,19 @@ public class SettingsServiceBean {
         /*
          * Include "Custom Terms" as an item in the license drop-down or not.
          */
-        AllowCustomTermsOfUse
+        AllowCustomTermsOfUse,
+        /*
+         * Allow users to mute notifications or not.
+         */
+        ShowMuteOptions,
+        /*
+         * List (comma separated, e.g., "ASSIGNROLE, REVOKEROLE") of always muted notifications that cannot be turned on by the users.
+         */
+        AlwaysMuted,
+        /*
+         * List (comma separated, e.g., "ASSIGNROLE, REVOKEROLE") of never muted notifications that cannot be turned off by the users.
+         */
+        NeverMuted
         ;
 
         @Override

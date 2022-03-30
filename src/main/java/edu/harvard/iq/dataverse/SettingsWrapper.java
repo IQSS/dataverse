@@ -13,18 +13,18 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.UserNotification.Type;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.Set;
 
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
@@ -34,15 +34,8 @@ import javax.faces.context.FacesContext;
 import javax.faces.validator.ValidatorException;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
-import javax.json.Json;
-import javax.json.JsonArray;
 import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonValue;
 import javax.mail.internet.InternetAddress;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  *
@@ -110,6 +103,10 @@ public class SettingsWrapper implements java.io.Serializable {
     private Boolean dataFilePIDSequentialDependent = null;
     
     private Boolean customLicenseAllowed = null;
+    
+    private Set<Type> alwaysMuted = null;
+
+    private Set<Type> neverMuted = null;
     
     public String get(String settingKey) {
         if (settingsMap == null) {
@@ -183,6 +180,42 @@ public class SettingsWrapper implements java.io.Serializable {
         for (Setting setting : settingsService.listAll()) {
             settingsMap.put(setting.getName(), setting.getContent());
         }
+    }
+
+    private void initAlwyasMuted() {
+        alwaysMuted = UserNotification.Type.tokenizeToSet(getValueForKey(Key.AlwaysMuted));
+    }
+
+    private void initNeverMuted() {
+        neverMuted = UserNotification.Type.tokenizeToSet(getValueForKey(Key.NeverMuted));
+    }
+
+    private Set<Type> getAlwaysMutedSet() {
+        if (alwaysMuted == null) {
+            initAlwyasMuted();
+        }
+        return alwaysMuted;
+    }
+
+    private Set<Type> getNeverMutedSet() {
+        if (neverMuted == null) {
+            initNeverMuted();
+        }
+        return neverMuted;
+    }
+
+    public boolean isAlwaysMuted(Type type) {
+        return getAlwaysMutedSet().contains(type);
+    }
+
+    public boolean isNeverMuted(Type type) {
+        return getNeverMutedSet().contains(type);
+    }
+
+    public String getShowMuteOptions() {
+        final boolean safeDefaultIfKeyNotFound = false;
+        final boolean doShow = isTrueForKey(Key.ShowMuteOptions, safeDefaultIfKeyNotFound);
+        return doShow ? "TRUE" : "FALSE";
     }
 
     

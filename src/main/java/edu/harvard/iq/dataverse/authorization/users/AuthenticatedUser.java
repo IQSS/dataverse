@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.authorization.users;
 import edu.harvard.iq.dataverse.Cart;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.UserNotification;
+import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.ValidateEmail;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
@@ -14,8 +15,11 @@ import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.CascadeType;
@@ -125,6 +129,12 @@ public class AuthenticatedUser implements User, Serializable {
 
     @Column(nullable=true)
     private Long mutedNotifications;
+    
+    @Transient
+    private Set<Type> mutedEmailsSet;
+    
+    @Transient
+    private Set<Type> mutedNotificationsSet;
 
     /**
      * @todo Consider storing a hash of *all* potentially interesting Shibboleth
@@ -394,8 +404,8 @@ public class AuthenticatedUser implements User, Serializable {
 
         authenicatedUserJson.add("deactivated", this.deactivated);
         authenicatedUserJson.add("deactivatedTime", UserUtil.getTimestampStringOrNull(this.deactivatedTime));
-        authenicatedUserJson.add("mutedEmails", UserUtil.getMutedStringOrNull(this.mutedEmails));
-        authenicatedUserJson.add("mutedNotifications", UserUtil.getMutedStringOrNull(this.mutedEmails));
+        authenicatedUserJson.add("mutedEmails", UserUtil.getMutedStringOrNull(this.mutedEmailsSet));
+        authenicatedUserJson.add("mutedNotifications", UserUtil.getMutedStringOrNull(this.mutedEmailsSet));
 
         return authenicatedUserJson;
     }
@@ -500,33 +510,45 @@ public class AuthenticatedUser implements User, Serializable {
         this.cart = cart;
     }
 
-    public Long getMutedEmails() {
-        return mutedEmails;
+    public Set<Type> getMutedEmailsSet() {
+        return mutedEmailsSet;
     }
 
     public void setMutedEmails(Long mutedEmails) {
         this.mutedEmails = mutedEmails;
+        this.mutedEmailsSet = EnumSet.copyOf(Type.fromFlag(mutedEmails));
     }
 
-    public Long getMutedNotifications() {
-        return mutedNotifications;
+    public void setMutedEmailsSet(Set<Type> mutedEmails) {
+        this.mutedEmailsSet = mutedEmails;
+        this.mutedEmails = Type.toFlag(mutedEmails);
+    }
+
+    public Set<Type> getMutedNotificationsSet() {
+        return mutedNotificationsSet;
     }
 
     public void setMutedNotifications(Long mutedNotifications) {
         this.mutedNotifications = mutedNotifications;
+        this.mutedNotificationsSet = EnumSet.copyOf(Type.fromFlag(mutedNotifications));
+    }
+
+    public void setMutedNotificationsSet(Set<Type> mutedNotifications) {
+        this.mutedNotificationsSet = mutedNotifications;
+        this.mutedNotifications = Type.toFlag(mutedNotifications);
     }
     
-    public boolean hasEmailMuted(UserNotification.Type type) {
-        if (this.mutedEmails == null || type == null) {
+    public boolean hasEmailMuted(Type type) {
+        if (this.mutedEmailsSet == null || type == null) {
             return false;
         }
-        return (type.flagValue() & this.mutedEmails) > 0;
+        return this.mutedEmailsSet.contains(type);
     }
     
-    public boolean hasNotificationMuted(UserNotification.Type type) {
-        if (this.mutedNotifications == null || type == null) {
+    public boolean hasNotificationMuted(Type type) {
+        if (this.mutedNotificationsSet == null || type == null) {
             return false;
         }
-        return (type.flagValue() & this.mutedNotifications) > 0;
+        return this.mutedNotificationsSet.contains(type);
     }
 }

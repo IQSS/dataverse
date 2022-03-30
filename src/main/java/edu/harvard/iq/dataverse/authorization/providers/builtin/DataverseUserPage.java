@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.UserNameValidator;
 import edu.harvard.iq.dataverse.UserNotification;
+import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthUtil;
@@ -46,6 +47,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.EnumSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -137,9 +139,9 @@ public class DataverseUserPage implements java.io.Serializable {
     private List<String> passwordErrors;
     
     
-    private List<UserNotification.Type> notificationTypeList;
-    private List<UserNotification.Type> mutedEmailList;
-    private List<UserNotification.Type> mutedNotificationList;
+    private List<Type> notificationTypeList;
+    private List<Type> mutedEmailList;
+    private List<Type> mutedNotificationList;
 
     public String init() {
 
@@ -167,12 +169,11 @@ public class DataverseUserPage implements java.io.Serializable {
             setCurrentUser((AuthenticatedUser) session.getUser());
             userAuthProvider = authenticationService.lookupProvider(currentUser);
             notificationsList = userNotificationService.findByUser(currentUser.getId());
-            final Set<UserNotification.Type> alwaysMuted = UserNotification.Type.tokenizeToSet(BundleUtil.getStringFromBundle("notification.alwaysMuted"));
-            notificationTypeList = Arrays.asList(UserNotification.Type.values()).stream()
-                    .filter(x -> !alwaysMuted.contains(x) && x.getDescription() != null && !x.getDescription().isEmpty())
+            notificationTypeList = Arrays.asList(Type.values()).stream()
+                    .filter(x -> !settingsWrapper.isAlwaysMuted(x) && !settingsWrapper.isAlwaysMuted(x) && x.hasDescription())
                     .collect(Collectors.toList());
-            mutedEmailList = UserNotification.Type.fromFlag(currentUser.getMutedEmails());
-            mutedNotificationList = UserNotification.Type.fromFlag(currentUser.getMutedNotifications());
+            mutedEmailList = new ArrayList<>(currentUser.getMutedEmailsSet());
+            mutedNotificationList = new ArrayList<>(currentUser.getMutedNotificationsSet());
             
             switch (selectTab) {
                 case "notifications":
@@ -346,7 +347,7 @@ public class DataverseUserPage implements java.io.Serializable {
              */
             userNotificationService.sendNotification(au,
                     new Timestamp(new Date().getTime()),
-                    UserNotification.Type.CREATEACC, null);
+                    Type.CREATEACC, null);
 
             // go back to where user came from
             
@@ -380,8 +381,8 @@ public class DataverseUserPage implements java.io.Serializable {
             logger.info("Redirecting");
             return permissionsWrapper.notAuthorized() + "faces-redirect=true";
         }else {
-            currentUser.setMutedEmails(UserNotification.Type.toFlag(mutedEmailList));
-            currentUser.setMutedNotifications(UserNotification.Type.toFlag(mutedNotificationList));
+            currentUser.setMutedEmailsSet(EnumSet.copyOf(mutedEmailList));
+            currentUser.setMutedNotificationsSet(EnumSet.copyOf(mutedNotificationList));
             String emailBeforeUpdate = currentUser.getEmail();
             AuthenticatedUser savedUser = authenticationService.updateAuthenticatedUser(currentUser, userDisplayInfo);
             String emailAfterUpdate = savedUser.getEmail();
@@ -723,27 +724,27 @@ public class DataverseUserPage implements java.io.Serializable {
         return notification.getRequestor().getEmail() != null ? notification.getRequestor().getEmail() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");
     }
 
-    public List<UserNotification.Type> getNotificationTypeList() {
+    public List<Type> getNotificationTypeList() {
         return notificationTypeList;
     }
 
-    public void setNotificationTypeList(List<UserNotification.Type> notificationTypeList) {
+    public void setNotificationTypeList(List<Type> notificationTypeList) {
         this.notificationTypeList = notificationTypeList;
     }
 
-    public List<UserNotification.Type> getMutedEmailList() {
+    public List<Type> getMutedEmailList() {
         return mutedEmailList;
     }
 
-    public void setMutedEmailList(List<UserNotification.Type> mutedEmailList) {
+    public void setMutedEmailList(List<Type> mutedEmailList) {
         this.mutedEmailList = mutedEmailList;
     }
 
-    public List<UserNotification.Type> getMutedNotificationList() {
+    public List<Type> getMutedNotificationList() {
         return mutedNotificationList;
     }
 
-    public void setMutedNotificationList(List<UserNotification.Type> mutedNotificationList) {
+    public void setMutedNotificationList(List<Type> mutedNotificationList) {
         this.mutedNotificationList = mutedNotificationList;
     }
     

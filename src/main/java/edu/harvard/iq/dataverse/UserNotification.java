@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.Collection;
 import java.util.StringTokenizer;
 import java.util.Collections;
 import java.util.stream.Collectors;
@@ -42,6 +43,11 @@ public class UserNotification implements Serializable {
         public String getDescription() {
             return BundleUtil.getStringFromBundle("notification.typeDescription." + this.name());
         }
+
+        public boolean hasDescription() {
+            final String description = getDescription();
+            return description != null && !description.isEmpty();
+        }
         
         public long flagValue() {
             return 1 << this.ordinal();
@@ -60,7 +66,7 @@ public class UserNotification implements Serializable {
             return types;
         }
         
-        public static Long toFlag(final List<Type> types) {
+        public static Long toFlag(final Collection<Type> types) {
             if (types == null || types.isEmpty()) {
                 return null;
             }
