@@ -8,20 +8,20 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+import edu.harvard.iq.dataverse.SettingsWrapper;
 
 /**
  *
@@ -37,6 +37,9 @@ public class UserNotificationServiceBean {
     MailServiceBean mailService;
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+
+    @Inject
+    SettingsWrapper settingsWrapper;
     
     public List<UserNotification> findByUser(Long userId) {
         TypedQuery<UserNotification> query = em.createQuery("select un from UserNotification un where un.user.id =:userId order by un.sendDate desc", UserNotification.class);
@@ -105,7 +108,6 @@ public class UserNotificationServiceBean {
     }
 
     public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId, String comment, AuthenticatedUser requestor, boolean isHtmlContent) {
-        final Set<Type> alwaysMuted = Type.tokenizeToSet(BundleUtil.getStringFromBundle("notification.alwaysMuted"));
         UserNotification userNotification = new UserNotification();
         userNotification.setUser(dataverseUser);
         userNotification.setSendDate(sendDate);
@@ -113,22 +115,26 @@ public class UserNotificationServiceBean {
         userNotification.setObjectId(objectId);
         userNotification.setRequestor(requestor);
 
-        if (!alwaysMuted.contains(userNotification.getType()) && !isEmailMuted(userNotification) && mailService.sendNotificationEmail(userNotification, comment, requestor, isHtmlContent)) {
+        if (!isEmailMuted(userNotification) && mailService.sendNotificationEmail(userNotification, comment, requestor, isHtmlContent)) {
             logger.fine("email was sent");
             userNotification.setEmailed(true);
         } else {
             logger.fine("email was not sent");
         }
-        if (!alwaysMuted.contains(userNotification.getType()) && !isNotificationMuted(userNotification)) {
+        if (!isNotificationMuted(userNotification)) {
             save(userNotification);
         }
     }
 
     public boolean isEmailMuted(UserNotification userNotification) {
-        return userNotification.getUser().hasEmailMuted(userNotification.getType());
+        final Type type = userNotification.getType();
+        final AuthenticatedUser user = userNotification.getUser();
+        return settingsWrapper.isAlwaysMuted(type) || (!settingsWrapper.isNeverMuted(type) && user.hasEmailMuted(type));
     }
     
     public boolean isNotificationMuted(UserNotification userNotification) {
-        return userNotification.getUser().hasNotificationMuted(userNotification.getType());
+        final Type type = userNotification.getType();
+        final AuthenticatedUser user = userNotification.getUser();
+        return settingsWrapper.isAlwaysMuted(type) || (!settingsWrapper.isNeverMuted(type) && user.hasNotificationMuted(type));
     }
 }
