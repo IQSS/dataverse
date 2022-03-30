@@ -1482,73 +1482,61 @@ public class FileUtil implements java.io.Serializable  {
      * elaborate on the text "This file cannot be downloaded publicly."
      */
     public static boolean isDownloadPopupRequired(DatasetVersion datasetVersion) {
-        // Each of these conditions is sufficient reason to have to 
-        // present the user with the popup: 
-        if (datasetVersion == null) {
-            logger.fine("Download popup required because datasetVersion is null.");
-            return false;
+        logger.fine("Checking if download popup is required.");
+        Boolean answer = popupDueToStateOrTerms(datasetVersion);
+        if (answer != null) {
+            return answer;
         }
-        //0. if version is draft then Popup "not required"
-        if (!datasetVersion.isReleased()) {
-            logger.fine("Download popup required because datasetVersion has not been released.");
-            return false;
-        }
-        // 1. License and Terms of Use:
-        if (datasetVersion.getTermsOfUseAndAccess() != null) {
-            License license = datasetVersion.getTermsOfUseAndAccess().getLicense();
-            if ((license == null && StringUtils.isNotBlank(datasetVersion.getTermsOfUseAndAccess().getTermsOfUse()))
-                    || (license != null && !license.isDefault())) {
-                logger.fine("Download popup required because of license or terms of use.");
-                return true;
-            }
-
-            // 2. Terms of Access:
-            if (!(datasetVersion.getTermsOfUseAndAccess().getTermsOfAccess() == null) && !datasetVersion.getTermsOfUseAndAccess().getTermsOfAccess().equals("")) {
-                logger.fine("Download popup required because of terms of access.");
-                return true;
-            }
-        }
-
         // 3. Guest Book:
         if (datasetVersion.getDataset() != null && datasetVersion.getDataset().getGuestbook() != null && datasetVersion.getDataset().getGuestbook().isEnabled() && datasetVersion.getDataset().getGuestbook().getDataverse() != null) {
             logger.fine("Download popup required because of guestbook.");
             return true;
         }
-
         logger.fine("Download popup is not required.");
         return false;
     }
 
-    public static boolean isRequestAccessPopupRequired(DatasetVersion datasetVersion){
-        // Each of these conditions is sufficient reason to have to 
-        // present the user with the popup: 
-        if (datasetVersion == null) {
-            logger.fine("Download popup required because datasetVersion is null.");
-            return false;
+    public static boolean isRequestAccessPopupRequired(DatasetVersion datasetVersion) {
+        
+        Boolean answer = popupDueToStateOrTerms(datasetVersion);
+        if (answer != null) {
+            return answer;
         }
-        //0. if version is draft then Popup "not required"
+        logger.fine("Request access popup is not required.");
+        return false;
+    }
+    
+    private static Boolean popupDueToStateOrTerms(DatasetVersion datasetVersion) {
+        Boolean answer = null;
+        // Each of these conditions is sufficient reason to have to
+        // present the user with the popup:
+        if (datasetVersion == null) {
+            logger.fine("Popup required because datasetVersion is null.");
+            answer = false;
+        }
+        // 0. if version is draft then Popup "not required"
         if (!datasetVersion.isReleased()) {
-            logger.fine("Download popup required because datasetVersion has not been released.");
-            return false;
+            logger.fine("Popup required because datasetVersion has not been released.");
+            answer = false;
         }
         // 1. License and Terms of Use:
         if (datasetVersion.getTermsOfUseAndAccess() != null) {
-            if (!datasetVersion.getTermsOfUseAndAccess().getLicense().isDefault()
+            License license = datasetVersion.getTermsOfUseAndAccess().getLicense();
+            if ((license != null && !license.isDefault())
                     && !(datasetVersion.getTermsOfUseAndAccess().getTermsOfUse() == null
-                    || datasetVersion.getTermsOfUseAndAccess().getTermsOfUse().equals(""))) {
-                logger.fine("Download popup required because of license or terms of use.");
-                return true;
+                            || datasetVersion.getTermsOfUseAndAccess().getTermsOfUse().equals(""))) {
+                logger.fine("{opup required because of license or terms of use.");
+                answer = true;
             }
 
             // 2. Terms of Access:
             if (!(datasetVersion.getTermsOfUseAndAccess().getTermsOfAccess() == null) && !datasetVersion.getTermsOfUseAndAccess().getTermsOfAccess().equals("")) {
-                logger.fine("Download popup required because of terms of access.");
-                return true;
+                logger.fine("Popup required because of terms of access.");
+                answer = true;
             }
-        }
+            return answer;
 
-        logger.fine("Download popup is not required.");
-        return false;
+        }
     }
 
     /**
