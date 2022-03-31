@@ -989,46 +989,51 @@ public class BagGenerator {
         return request;
     }
 
-    InputStreamSupplier getInputStreamSupplier(final String uri) {
+    InputStreamSupplier getInputStreamSupplier(final String uriString) {
 
         return new InputStreamSupplier() {
             public InputStream get() {
-                int tries = 0;
-                while (tries < 5) {
-                    try {
-                        logger.fine("Get # " + tries + " for " + uri);
-                        HttpGet getMap = createNewGetRequest(new URI(uri), null);
-                        logger.finest("Retrieving " + tries + ": " + uri);
-                        CloseableHttpResponse response;
-                        //Note - if we ever need to pass an HttpClientContext, we need a new one per thread.
-                        response = client.execute(getMap);
-                        if (response.getStatusLine().getStatusCode() == 200) {
-                            logger.finest("Retrieved: " + uri);
-                            return response.getEntity().getContent();
-                        }
-                        logger.fine("Status: " + response.getStatusLine().getStatusCode());
-                        tries++;
+                try {
+                    URI uri = new URI(uriString);
 
-                    } catch (ClientProtocolException e) {
-                        tries += 5;
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        // Retry if this is a potentially temporary error such
-                        // as a timeout
-                        tries++;
-                        logger.log(Level.WARNING,"Attempt# " + tries + " : Unable to retrieve file: " + uri, e);
-                        if (tries == 5) {
-                            logger.severe("Final attempt failed for " + uri);
+                    int tries = 0;
+                    while (tries < 5) {
+
+                        logger.fine("Get # " + tries + " for " + uriString);
+                        HttpGet getMap = createNewGetRequest(uri, null);
+                        logger.finest("Retrieving " + tries + ": " + uriString);
+                        try (CloseableHttpResponse response = client.execute(getMap)) {
+                            // Note - if we ever need to pass an HttpClientContext, we need a new one per
+                            // thread.
+
+                            if (response.getStatusLine().getStatusCode() == 200) {
+                                logger.finest("Retrieved: " + uri);
+                                return response.getEntity().getContent();
+                            }
+                            logger.fine("Status: " + response.getStatusLine().getStatusCode());
+                            tries++;
+
+                        } catch (ClientProtocolException e) {
+                            tries += 5;
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            // Retry if this is a potentially temporary error such
+                            // as a timeout
+                            tries++;
+                            logger.log(Level.WARNING, "Attempt# " + tries + " : Unable to retrieve file: " + uriString,
+                                    e);
+                            if (tries == 5) {
+                                logger.severe("Final attempt failed for " + uriString);
+                            }
+                            e.printStackTrace();
                         }
-                        e.printStackTrace();
-                    } catch (URISyntaxException e) {
-                        tries += 5;
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
                     }
+                } catch (URISyntaxException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
                 }
-                logger.severe("Could not read: " + uri);
+                logger.severe("Could not read: " + uriString);
                 return null;
             }
         };
