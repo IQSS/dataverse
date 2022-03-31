@@ -20,7 +20,7 @@
                              or dsfv.datasetField.datasetFieldType.fieldType == 'URL'
                              or dsfv.datasetField.datasetFieldType.fieldType == 'DATE'
                              or dsfv.datasetField.datasetFieldType.fieldType == 'EMAIL')}"
-                  onkeypress="return event.keyCode !== 13;">
+                 onkeypress="return event.keyCode !== 13;" >
             <c:if test="#{dsfvIndex!=0}">
                 <f:passThroughAttribute name="aria-label" value="#{bundle['dataset.additionalEntry']}" />
             </c:if>
