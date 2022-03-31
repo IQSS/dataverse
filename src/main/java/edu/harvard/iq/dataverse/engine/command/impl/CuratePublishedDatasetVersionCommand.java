@@ -138,11 +138,8 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
                     metadataUpdated = true;
                 }
                 
-                /*
-                Use set methods here as copy was causing detached objects
-                */
-                publishedFmd.setVariableMetadatas(draftFmd.getVariableMetadatas());
-                publishedFmd.setVarGroups(draftFmd.getVarGroups());
+                publishedFmd.copyVariableMetadata(draftFmd.getVariableMetadatas());
+                publishedFmd.copyVarGroups(draftFmd.getVarGroups());
 
             }
             if (metadataUpdated) {
