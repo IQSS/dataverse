@@ -137,13 +137,12 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
                     publishedFmd.setProvFreeForm(draftProv);
                     metadataUpdated = true;
                 }
-
-                publishedFmd.copyVariableMetadata(draftFmd.getVariableMetadatas());
-                Collection<VarGroup> vgl = publishedFmd.getVarGroups();
-                for (VarGroup vg : vgl) {
-                    ctxt.em().remove(vg);
-                }
-                publishedFmd.copyVarGroups(draftFmd.getVarGroups());
+                
+                /*
+                Use set methods here as copy was causing detached objects
+                */
+                publishedFmd.setVariableMetadatas(draftFmd.getVariableMetadatas());
+                publishedFmd.setVarGroups(draftFmd.getVarGroups());
 
             }
             if (metadataUpdated) {
