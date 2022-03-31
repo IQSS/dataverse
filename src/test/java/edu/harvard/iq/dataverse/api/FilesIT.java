@@ -1806,6 +1806,8 @@ public class FilesIT {
         logger.info(r.prettyPrint());
         assertEquals(200, r.getStatusCode());
 
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile, UtilIT.sleepForLock(datasetIdInt, "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
         Long dataFileId = JsonPath.from(r.body().asString()).getLong("data.files[0].dataFile.id");
         Response fileMeta = UtilIT.getDataFileMetadataDraft(dataFileId, apiToken);
         String label = JsonPath.from(fileMeta.body().asString()).getString("label");
