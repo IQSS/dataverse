@@ -278,7 +278,8 @@ public class BagGenerator {
             }
             createFileFromString(manifestName, sha1StringBuffer.toString());
         } else {
-            logger.warning("No Hash values sent - Bag File does not meet BagIT specification requirement");
+            logger.warning("No Hash values (no files?) sending empty manifest to nominally comply with BagIT specification requirement");
+            createFileFromString("manifest-md5.txt", "");
         }
         // bagit.txt - Required by spec
         createFileFromString("bagit.txt", "BagIt-Version: 1.0\r\nTag-File-Character-Encoding: UTF-8");
