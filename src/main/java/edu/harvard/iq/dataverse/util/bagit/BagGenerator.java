@@ -59,7 +59,7 @@ import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.ssl.SSLContextBuilder;
-
+import org.apache.http.util.EntityUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -1007,14 +1007,20 @@ public class BagGenerator {
                         try (CloseableHttpResponse response = client.execute(getMap)) {
                             // Note - if we ever need to pass an HttpClientContext, we need a new one per
                             // thread.
-
-                            if (response.getStatusLine().getStatusCode() == 200) {
+                            int statusCode= response.getStatusLine().getStatusCode();
+                            if (statusCode == 200) {
                                 logger.finest("Retrieved: " + uri);
                                 return response.getEntity().getContent();
                             }
-                            logger.fine("Status: " + response.getStatusLine().getStatusCode());
-                            tries++;
-
+                            logger.warning("Attempt: " + tries + " - Unexpected Status when retrieving " + uriString + " : " + statusCode);
+                            if(statusCode < 500) {
+                                logger.fine("Will not retry for 40x errors");
+                                tries +=5;
+                            } else {
+                                tries++;
+                            }
+                            //Shouldn't be needed - leaving until the Premature end of Content-Legnth delimited message body errors are resolved
+                            //EntityUtils.consumeQuietly(response.getEntity());
                         } catch (ClientProtocolException e) {
                             tries += 5;
                             // TODO Auto-generated catch block
