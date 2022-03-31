@@ -54,6 +54,9 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
         String host = requestedSettings.get(DURACLOUD_HOST);
         if (host != null) {
             Dataset dataset = dv.getDataset();
+            //ToDo - change after HDC 3A changes to status reporting
+            //This will make the archivalCopyLocation non-null after a failure which should stop retries
+            dv.setArchivalCopyLocation("Attempted");
             if (dataset.getLockFor(Reason.finalizePublication) == null
                     && dataset.getLockFor(Reason.FileValidationFailed) == null) {
                 // Use Duracloud client classes to login
