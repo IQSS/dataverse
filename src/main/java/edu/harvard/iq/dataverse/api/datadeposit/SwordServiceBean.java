@@ -187,7 +187,7 @@ public class SwordServiceBean {
             setTermsOfUse(datasetVersionToMutate, dcterms, null);
         } else {
             License licenseToSet = licenseServiceBean.getByNameOrUri(licenseProvided);
-            if (licenseToSet == null) {
+            if (licenseToSet == null || !licenseToSet.isActive()) {
                 List<String> licenses = new ArrayList<>();
                 for (License license : licenseServiceBean.listAllActive()) {
                     licenses.add(license.getName());
