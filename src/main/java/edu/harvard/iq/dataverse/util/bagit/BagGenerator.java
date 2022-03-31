@@ -47,6 +47,7 @@ import org.apache.commons.compress.parallel.InputStreamSupplier;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.text.WordUtils;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -89,7 +90,7 @@ public class BagGenerator {
 
     private int timeout = 60;
     private RequestConfig config = RequestConfig.custom().setConnectTimeout(timeout * 1000)
-            .setConnectionRequestTimeout(timeout * 1000).setSocketTimeout(timeout * 1000).build();
+            .setConnectionRequestTimeout(timeout * 1000).setSocketTimeout(timeout * 1000).setCookieSpec(CookieSpecs.STANDARD).build();
     protected CloseableHttpClient client;
     private PoolingHttpClientConnectionManager cm = null;
 
