@@ -65,6 +65,8 @@ Differences in Dataverse Software 4 from DVN 3.x lead to a few minor backward in
 
 - The Service Document will show a single API Terms of Use rather than root level and Dataverse collection level Deposit Terms of Use.
 
+- As of Dataverse Software 5.10, ``NONE`` is no longer supported as a license.
+
 New features as of v1.1
 -----------------------
 
@@ -145,7 +147,7 @@ Dublin Core Terms (DC Terms) Qualified Mapping - Dataverse Project DB Element Cr
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
 |dcterms:license              |                   license                    |              |  Set the license. Alternatively, use the dcterms:rights field instead.                                                                                      |
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
-|dcterms:rights               |                 termsofuse                   |              |  If not using CC0, enter any terms of use or restrictions for the Dataset.                                                                                  |
+|dcterms:rights               |                 termsofuse                   |              |  If not using dcterms:license, enter any terms of use or restrictions for the Dataset.                                                                      |
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
 |dcterms:isReferencedBy       |             publicationCitation              |              |  The publication (journal article, book, other work) that uses this dataset (include citation, permanent identifier (DOI), and permanent URL).              |
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
