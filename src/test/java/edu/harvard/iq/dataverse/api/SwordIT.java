@@ -198,6 +198,13 @@ public class SwordIT {
         String persistentId = UtilIT.getDatasetPersistentIdFromSwordResponse(createDatasetResponse);
         logger.info("persistent id: " + persistentId);
 
+        Response getJson = UtilIT.nativeGetUsingPersistentId(persistentId, apiToken);
+        getJson.prettyPrint();
+        getJson.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.latestVersion.license.name", equalTo("CC0 1.0"))
+                .body("data.latestVersion.license.uri", equalTo("http://creativecommons.org/publicdomain/zero/1.0"));
+
         Response atomEntryUnAuth = UtilIT.getSwordAtomEntry(persistentId, apiTokenNoPrivs);
         atomEntryUnAuth.prettyPrint();
         atomEntryUnAuth.then().assertThat()
@@ -677,6 +684,47 @@ public class SwordIT {
         createDataset.then().assertThat()
                 .statusCode(CREATED.getStatusCode());
 
+        String persistentId = UtilIT.getDatasetPersistentIdFromSwordResponse(createDataset);
+
+        Response getJson = UtilIT.nativeGetUsingPersistentId(persistentId, apiToken);
+        getJson.prettyPrint();
+        getJson.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.latestVersion.license.name", equalTo("CC0 1.0"))
+                .body("data.latestVersion.license.uri", equalTo("http://creativecommons.org/publicdomain/zero/1.0"))
+                .body("data.latestVersion.termsOfUse", equalTo(null));
+    }
+
+    @Test
+    public void testCustomTerms() {
+
+        Response createUser = UtilIT.createRandomUser();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.prettyPrint();
+        createDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+
+        String title = "Terms of Endearment";
+        String description = "Aurora, etc.";
+        String license = null;
+        String rights = "Call me";
+        Response createDataset = UtilIT.createDatasetViaSwordApi(dataverseAlias, title, description, license, rights, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String persistentId = UtilIT.getDatasetPersistentIdFromSwordResponse(createDataset);
+
+        Response getJson = UtilIT.nativeGetUsingPersistentId(persistentId, apiToken);
+        getJson.prettyPrint();
+        getJson.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.latestVersion.termsOfUse", equalTo("Call me"))
+                .body("data.latestVersion.license", equalTo(null));
     }
 
     @Test
