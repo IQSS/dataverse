@@ -68,14 +68,18 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                  * Aliases can contain upper case characters which are not allowed in space
                  * names. Similarly, aliases can contain '_' which isn't allowed in a space
                  * name. The line below replaces any upper case chars with lowercase and
-                 * replaces any '_' with '.' As written the replaceAll will also change any
-                 * chars not valid in a spaceName to '.' which would avoid code breaking if the
-                 * alias constraints change. That said, this line may map more than one alias to
-                 * the same spaceName, e.g. "test" and "Test" aliases both map to the "test"
-                 * space name. This does not break anything but does potentially put bags from
-                 * more than one collection in the same space.
+                 * replaces any '_' with '.-' . The '-' after the dot assures we don't break the
+                 * rule that
+                 * "The last period in a aspace may not immediately be followed by a number".
+                 * (Although we could check, it seems better to just add '.-' all the time.As
+                 * written the replaceAll will also change any chars not valid in a spaceName to
+                 * '.' which would avoid code breaking if the alias constraints change. That
+                 * said, this line may map more than one alias to the same spaceName, e.g.
+                 * "test" and "Test" aliases both map to the "test" space name. This does not
+                 * break anything but does potentially put bags from more than one collection in
+                 * the same space.
                  */
-                String spaceName=dataset.getOwner().getAlias().toLowerCase().replaceAll("[^a-z0-9-]", ".");
+                String spaceName=dataset.getOwner().getAlias().toLowerCase().replaceAll("[^a-z0-9-]", ".-");
                 String baseFileName = dataset.getGlobalId().asString().replace(':', '-').replace('/', '-')
                         .replace('.', '-').toLowerCase();
 
