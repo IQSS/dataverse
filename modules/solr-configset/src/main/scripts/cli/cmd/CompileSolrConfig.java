@@ -1,6 +1,6 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
-//DEPS info.picocli:picocli:4.6.3
 //DEPS net.sf.saxon:Saxon-HE:10.6
+package cli.cmd;
 
 import net.sf.saxon.s9api.Processor;
 import net.sf.saxon.s9api.SaxonApiException;
@@ -29,11 +29,11 @@ import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Command(name = "CompileSolrConfigXML",
+@Command(name = "CompileSolrConfig",
         mixinStandardHelpOptions = true,
-        version = "CompileSolrConfigXML 0.1",
-        description = "CompileSolrConfigXML made with jbang")
-class CompileSolrConfigXML implements Callable<Integer> {
+        version = "CompileSolrConfig 0.1",
+        description = "CompileSolrConfig made with jbang")
+public class CompileSolrConfig implements Callable<Integer> {
     
     /**
      * A wrapper for Throwables to create a checked exception that leads to aborting the execution
@@ -92,7 +92,7 @@ class CompileSolrConfigXML implements Callable<Integer> {
     private String solrConfigXSLTDir;
     
     public static void main(String... args) {
-        int exitCode = new CommandLine(new CompileSolrConfigSet()).execute(args);
+        int exitCode = new CommandLine(new CompileSolrConfig()).execute(args);
         System.exit(exitCode);
     }
     
