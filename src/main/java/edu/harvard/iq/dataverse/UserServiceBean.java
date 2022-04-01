@@ -1,4 +1,5 @@
 package edu.harvard.iq.dataverse;
+import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserUtil;
@@ -144,8 +145,8 @@ public class UserServiceBean {
         user.setDeactivated((Boolean)(dbRowValues[13]));
         user.setDeactivatedTime(UserUtil.getTimestampOrNull(dbRowValues[14]));
 
-        user.setMutedEmails((Long)(dbRowValues[15]));
-        user.setMutedNotifications((Long)(dbRowValues[16]));
+        user.setMutedEmails(Type.tokenizeToSet((String) dbRowValues[15]));
+        user.setMutedNotifications(Type.tokenizeToSet((String) dbRowValues[15]));
 
         user.setRoles(roles);
         return user;

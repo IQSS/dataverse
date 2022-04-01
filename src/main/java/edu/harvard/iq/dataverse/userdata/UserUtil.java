@@ -69,19 +69,4 @@ public class UserUtil {
         }
         return (Timestamp)dbResult;
     }
-    
-    /**
-     * Convenience method to format UserNotification.Type from flag value
-     * @param mutedLongFlags
-     * @return 
-     */
-    public static String getMutedStringOrNull(Set<Type> muted){
-        if (muted == null){
-            return null;
-        }
-        final List<String> types = muted
-                .stream().map(x -> x.name()).collect(Collectors.toList());
-        return String.join(",", types);
-    }
-
 }

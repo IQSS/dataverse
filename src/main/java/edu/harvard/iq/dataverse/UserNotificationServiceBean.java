@@ -8,6 +8,9 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
+
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.logging.Logger;
@@ -37,8 +40,8 @@ public class UserNotificationServiceBean {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
-    @Inject
-    SettingsWrapper settingsWrapper;
+    @EJB
+    SettingsServiceBean settingsService;
     
     public List<UserNotification> findByUser(Long userId) {
         TypedQuery<UserNotification> query = em.createQuery("select un from UserNotification un where un.user.id =:userId order by un.sendDate desc", UserNotification.class);
@@ -128,12 +131,22 @@ public class UserNotificationServiceBean {
     public boolean isEmailMuted(UserNotification userNotification) {
         final Type type = userNotification.getType();
         final AuthenticatedUser user = userNotification.getUser();
-        return settingsWrapper.isAlwaysMuted(type) || (!settingsWrapper.isNeverMuted(type) && user.hasEmailMuted(type));
+        final boolean alwaysMuted = settingsService.containsCommaSeparatedValueForKey(Key.AlwaysMuted, type.name());
+        final boolean neverMuted = settingsService.containsCommaSeparatedValueForKey(Key.NeverMuted, type.name());
+        if (alwaysMuted && neverMuted) {
+            logger.warning("Both; AlwaysMuted and NeverMuted are set for " + type.name() + ", email is muted");
+        }
+        return alwaysMuted || (!neverMuted && user.hasEmailMuted(type));
     }
     
     public boolean isNotificationMuted(UserNotification userNotification) {
         final Type type = userNotification.getType();
         final AuthenticatedUser user = userNotification.getUser();
-        return settingsWrapper.isAlwaysMuted(type) || (!settingsWrapper.isNeverMuted(type) && user.hasNotificationMuted(type));
+        final boolean alwaysMuted = settingsService.containsCommaSeparatedValueForKey(Key.AlwaysMuted, type.name());
+        final boolean neverMuted = settingsService.containsCommaSeparatedValueForKey(Key.NeverMuted, type.name());
+        if (alwaysMuted && neverMuted) {
+            logger.warning("Both; AlwaysMuted and NeverMuted are set for " + type.name() + ", notification is muted");
+        }
+        return alwaysMuted || (!neverMuted && user.hasNotificationMuted(type));
     }
 }

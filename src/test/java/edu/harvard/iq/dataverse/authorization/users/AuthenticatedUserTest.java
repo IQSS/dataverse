@@ -10,10 +10,9 @@ import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import java.sql.Timestamp;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.EnumSet;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.Test;
@@ -21,6 +20,7 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 
 import javax.json.JsonObject;
+import javax.json.JsonString;
 
 /**
  * Tested class: AuthenticatedUser.java
@@ -330,35 +330,39 @@ public class AuthenticatedUserTest {
 
     @Test
     public void testMutingEmails() {
-        long mutedTypesFlags = Type.toFlag(mutedTypes);
         System.out.println("setMutedEmails");
-        testUser.setMutedEmails(mutedTypesFlags);
-        assertEquals(mutedTypes, testUser.getMutedEmailsSet());
+        testUser.setMutedEmails(mutedTypes);
+        assertEquals(mutedTypes, testUser.getMutedEmails());
     }
 
     @Test
     public void testMutingNotifications() {
-        long mutedTypesFlags = Type.toFlag(mutedTypes);
         System.out.println("setMutedNotifications");
-        testUser.setMutedNotifications(mutedTypesFlags);
-        assertEquals(mutedTypes, testUser.getMutedNotificationsSet());
+        testUser.setMutedNotifications(mutedTypes);
+        assertEquals(mutedTypes, testUser.getMutedNotifications());
     }
 
     @Test
     public void testMutingInJson() {
-        long mutedTypesFlags = Type.toFlag(mutedTypes);
-        testUser.setMutedEmails(mutedTypesFlags);
-        testUser.setMutedNotifications(mutedTypesFlags);
+        testUser.setMutedEmails(mutedTypes);
+        testUser.setMutedNotifications(mutedTypes);
         System.out.println("toJson");
         JsonObject jObject = testUser.toJson().build();
-        assertEquals("ASSIGNROLE,REVOKEROLE", jObject.getString("mutedEmails"));
-        assertEquals("ASSIGNROLE,REVOKEROLE", jObject.getString("mutedNotifications"));
+
+        Set<String> mutedEmails = new HashSet<>(jObject.getJsonArray("mutedEmails").getValuesAs(JsonString::getString));
+        assertTrue("Set contains two elements", mutedEmails.size() == 2);
+        assertTrue("Set contains REVOKEROLE", mutedEmails.contains("REVOKEROLE"));
+        assertTrue("Set contains ASSIGNROLE", mutedEmails.contains("ASSIGNROLE"));
+
+        Set<String> mutedNotifications = new HashSet<>(jObject.getJsonArray("mutedNotifications").getValuesAs(JsonString::getString));
+        assertTrue("Set contains two elements", mutedNotifications.size() == 2);
+        assertTrue("Set contains REVOKEROLE", mutedNotifications.contains("REVOKEROLE"));
+        assertTrue("Set contains ASSIGNROLE", mutedNotifications.contains("ASSIGNROLE"));
     }
 
     @Test
     public void testHasEmailMuted() {
-        long mutedTypesFlags = Type.toFlag(mutedTypes);
-        testUser.setMutedEmails(mutedTypesFlags);
+        testUser.setMutedEmails(mutedTypes);
         System.out.println("hasEmailMuted");
         assertEquals(true, testUser.hasEmailMuted(Type.ASSIGNROLE));
         assertEquals(true, testUser.hasEmailMuted(Type.REVOKEROLE));
@@ -368,8 +372,7 @@ public class AuthenticatedUserTest {
 
     @Test
     public void testHasNotificationsMutedMuted() {
-        long mutedTypesFlags = Type.toFlag(mutedTypes);
-        testUser.setMutedNotifications(mutedTypesFlags);
+        testUser.setMutedNotifications(mutedTypes);
         System.out.println("hasNotificationMuted");
         assertEquals(true, testUser.hasNotificationMuted(Type.ASSIGNROLE));
         assertEquals(true, testUser.hasNotificationMuted(Type.REVOKEROLE));
@@ -379,7 +382,11 @@ public class AuthenticatedUserTest {
 
     @Test
     public void testTypeTokenizer() {
-        final Set<Type> typeSet = Type.tokenizeToSet(" ASSIGNROLE , CREATEDV,REVOKEROLE  ");
+        final Set<Type> typeSet = Type.tokenizeToSet(
+            Type.toStringValue(
+                Type.tokenizeToSet(" ASSIGNROLE , CREATEDV,REVOKEROLE  ")
+            )
+        );
         assertTrue("typeSet contains 3 elements", typeSet.size() == 3);
         assertTrue("typeSet contains ASSIGNROLE", typeSet.contains(Type.ASSIGNROLE));
         assertTrue("typeSet contains CREATEDV", typeSet.contains(Type.CREATEDV));

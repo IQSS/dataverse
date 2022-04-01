@@ -43,7 +43,6 @@ import java.net.URLDecoder;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -141,8 +140,8 @@ public class DataverseUserPage implements java.io.Serializable {
     
     
     private List<Type> notificationTypeList;
-    private List<Type> mutedEmailList;
-    private List<Type> mutedNotificationList;
+    private Set<Type> mutedEmailList;
+    private Set<Type> mutedNotificationList;
 
     public String init() {
 
@@ -171,10 +170,10 @@ public class DataverseUserPage implements java.io.Serializable {
             userAuthProvider = authenticationService.lookupProvider(currentUser);
             notificationsList = userNotificationService.findByUser(currentUser.getId());
             notificationTypeList = Arrays.asList(Type.values()).stream()
-                    .filter(x -> !settingsWrapper.isAlwaysMuted(x) && !settingsWrapper.isAlwaysMuted(x) && x.hasDescription())
+                    .filter(x -> !Type.CONFIRMEMAIL.equals(x) && !settingsWrapper.isAlwaysMuted(x) && !settingsWrapper.isNeverMuted(x) && x.hasDescription())
                     .collect(Collectors.toList());
-            mutedEmailList = currentUser.getMutedEmailsSet() == null ? new ArrayList<>() : new ArrayList<>(currentUser.getMutedEmailsSet());
-            mutedNotificationList = currentUser.getMutedNotificationsSet() == null ? new ArrayList<>() : new ArrayList<>(currentUser.getMutedNotificationsSet());
+            mutedEmailList = currentUser.getMutedEmails();
+            mutedNotificationList = currentUser.getMutedNotifications();
             
             switch (selectTab) {
                 case "notifications":
@@ -382,8 +381,8 @@ public class DataverseUserPage implements java.io.Serializable {
             logger.info("Redirecting");
             return permissionsWrapper.notAuthorized() + "faces-redirect=true";
         }else {
-            currentUser.setMutedEmailsSet(mutedEmailList.isEmpty() ? null : EnumSet.copyOf(mutedEmailList));
-            currentUser.setMutedNotificationsSet(mutedNotificationList.isEmpty() ? null : EnumSet.copyOf(mutedNotificationList));
+            currentUser.setMutedEmails(mutedEmailList);
+            currentUser.setMutedNotifications(mutedNotificationList);
             String emailBeforeUpdate = currentUser.getEmail();
             AuthenticatedUser savedUser = authenticationService.updateAuthenticatedUser(currentUser, userDisplayInfo);
             String emailAfterUpdate = savedUser.getEmail();
@@ -733,19 +732,19 @@ public class DataverseUserPage implements java.io.Serializable {
         this.notificationTypeList = notificationTypeList;
     }
 
-    public List<Type> getMutedEmailList() {
+    public Set<Type> getMutedEmailList() {
         return mutedEmailList;
     }
 
-    public void setMutedEmailList(List<Type> mutedEmailList) {
+    public void setMutedEmailList(Set<Type> mutedEmailList) {
         this.mutedEmailList = mutedEmailList;
     }
 
-    public List<Type> getMutedNotificationList() {
+    public Set<Type> getMutedNotificationList() {
         return mutedNotificationList;
     }
 
-    public void setMutedNotificationList(List<Type> mutedNotificationList) {
+    public void setMutedNotificationList(Set<Type> mutedNotificationList) {
         this.mutedNotificationList = mutedNotificationList;
     }
     

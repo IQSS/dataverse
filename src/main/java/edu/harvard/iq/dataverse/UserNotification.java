@@ -7,13 +7,10 @@ import edu.harvard.iq.dataverse.util.DateUtil;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
-import java.util.Collection;
 import java.util.StringTokenizer;
 import java.util.Collections;
-import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.stream.Collectors;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -49,42 +46,21 @@ public class UserNotification implements Serializable {
             final String description = getDescription();
             return description != null && !description.isEmpty();
         }
-        
-        public long flagValue() {
-            return 1 << this.ordinal();
-        }
-        
-        public static Set<Type> fromFlag(Long flag) {
-            if (flag == null || flag == 0) {
-                return null;
-            }
-            final List<Type> types = new ArrayList<Type>();
-            for (final Type t : values()) {
-                if ((flag & t.flagValue()) > 0) {
-                    types.add(t);
-                }
-            }
-            return EnumSet.copyOf(types);
-        }
-        
-        public static Long toFlag(final Collection<Type> types) {
-            if (types == null || types.isEmpty()) {
-                return null;
-            }
-            long flag = 0;
-            for (final Type t : types) {
-                flag |= t.flagValue();
-            }
-            return flag;
-        }
 
         public static Set<Type> tokenizeToSet(String tokens) {
             if (tokens == null || tokens.isEmpty()) {
-                return Collections.<Type>emptySet();
+                return new HashSet<>();
             }
             return Collections.list(new StringTokenizer(tokens, ",")).stream()
                 .map(token -> Type.valueOf(((String) token).trim()))
                 .collect(Collectors.toSet());
+        }
+
+        public static String toStringValue(Set<Type> typesSet) {
+            if (typesSet == null || typesSet.isEmpty()) {
+                return null;
+            }
+            return String.join(",", typesSet.stream().map(x -> x.name()).collect(Collectors.toList()));
         }
     };
     

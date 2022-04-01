@@ -11,11 +11,11 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2TokenData;
 import edu.harvard.iq.dataverse.userdata.UserUtil;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.Serializable;
 import java.sql.Timestamp;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -127,10 +127,10 @@ public class AuthenticatedUser implements User, Serializable {
     private Timestamp deactivatedTime;
 
     @Column(nullable=true)
-    private Long mutedEmails;
+    private String mutedEmails;
 
     @Column(nullable=true)
-    private Long mutedNotifications;
+    private String mutedNotifications;
     
     @Transient
     private Set<Type> mutedEmailsSet;
@@ -140,14 +140,14 @@ public class AuthenticatedUser implements User, Serializable {
 
     @PrePersist
     void prePersist() {
-        mutedNotifications = Type.toFlag(mutedNotificationsSet);
-        mutedEmails = Type.toFlag(mutedEmailsSet);
+        mutedNotifications = Type.toStringValue(mutedNotificationsSet);
+        mutedEmails = Type.toStringValue(mutedEmailsSet);
     }
     
     @PostLoad
     void postLoad() {
-        mutedNotificationsSet = Type.fromFlag(mutedNotifications);
-        mutedEmailsSet = Type.fromFlag(mutedEmails);
+        mutedNotificationsSet = Type.tokenizeToSet(mutedNotifications);
+        mutedEmailsSet = Type.tokenizeToSet(mutedEmails);
     }
 
     /**
@@ -418,8 +418,8 @@ public class AuthenticatedUser implements User, Serializable {
 
         authenicatedUserJson.add("deactivated", this.deactivated);
         authenicatedUserJson.add("deactivatedTime", UserUtil.getTimestampStringOrNull(this.deactivatedTime));
-        authenicatedUserJson.add("mutedEmails", UserUtil.getMutedStringOrNull(this.mutedEmailsSet));
-        authenicatedUserJson.add("mutedNotifications", UserUtil.getMutedStringOrNull(this.mutedEmailsSet));
+        authenicatedUserJson.add("mutedEmails", JsonPrinter.enumsToJson(this.mutedEmailsSet));
+        authenicatedUserJson.add("mutedNotifications", JsonPrinter.enumsToJson(this.mutedNotificationsSet));
 
         return authenicatedUserJson;
     }
@@ -524,32 +524,22 @@ public class AuthenticatedUser implements User, Serializable {
         this.cart = cart;
     }
 
-    public Set<Type> getMutedEmailsSet() {
+    public Set<Type> getMutedEmails() {
         return mutedEmailsSet;
     }
 
-    public void setMutedEmails(Long mutedEmails) {
-        this.mutedEmails = mutedEmails;
-        this.mutedEmailsSet = Type.fromFlag(mutedEmails);
-    }
-
-    public void setMutedEmailsSet(Set<Type> mutedEmails) {
+    public void setMutedEmails(Set<Type> mutedEmails) {
         this.mutedEmailsSet = mutedEmails;
-        this.mutedEmails = Type.toFlag(mutedEmails);
+        this.mutedEmails = Type.toStringValue(mutedEmails);
     }
 
-    public Set<Type> getMutedNotificationsSet() {
+    public Set<Type> getMutedNotifications() {
         return mutedNotificationsSet;
     }
 
-    public void setMutedNotifications(Long mutedNotifications) {
-        this.mutedNotifications = mutedNotifications;
-        this.mutedNotificationsSet = Type.fromFlag(mutedNotifications);
-    }
-
-    public void setMutedNotificationsSet(Set<Type> mutedNotifications) {
+    public void setMutedNotifications(Set<Type> mutedNotifications) {
         this.mutedNotificationsSet = mutedNotifications;
-        this.mutedNotifications = Type.toFlag(mutedNotifications);
+        this.mutedNotifications = Type.toStringValue(mutedNotifications);
     }
     
     public boolean hasEmailMuted(Type type) {

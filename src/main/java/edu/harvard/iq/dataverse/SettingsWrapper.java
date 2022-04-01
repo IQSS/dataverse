@@ -182,7 +182,7 @@ public class SettingsWrapper implements java.io.Serializable {
         }
     }
 
-    private void initAlwyasMuted() {
+    private void initAlwaysMuted() {
         alwaysMuted = UserNotification.Type.tokenizeToSet(getValueForKey(Key.AlwaysMuted));
     }
 
@@ -192,7 +192,7 @@ public class SettingsWrapper implements java.io.Serializable {
 
     private Set<Type> getAlwaysMutedSet() {
         if (alwaysMuted == null) {
-            initAlwyasMuted();
+            initAlwaysMuted();
         }
         return alwaysMuted;
     }
@@ -212,10 +212,8 @@ public class SettingsWrapper implements java.io.Serializable {
         return getNeverMutedSet().contains(type);
     }
 
-    public String getShowMuteOptions() {
-        final boolean safeDefaultIfKeyNotFound = false;
-        final boolean doShow = isTrueForKey(Key.ShowMuteOptions, safeDefaultIfKeyNotFound);
-        return doShow ? "TRUE" : "FALSE";
+    public boolean isShowMuteOptions() {
+        return isTrueForKey(Key.ShowMuteOptions, false);
     }
 
     
