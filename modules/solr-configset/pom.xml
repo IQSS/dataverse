@@ -76,13 +76,14 @@
                         </goals>
                         <configuration>
                             <args>
+                                <arg>solrconfig</arg>
                                 <arg>--solr-version="${solr.version}"</arg>
-                                <arg>--solr-zipfile="${project.build.directory}/solr-${solr.version}.zip"</arg>
-                                <arg>--solr-configset-targetdir="${solr.configset.directory}"</arg>
-                                <arg>--solr-schemaxml-sourcepath="${project.resources[0].directory}/schema.xml"</arg>
-                                <arg>--solr-config-xsltdir="${project.resources[0].directory}/solrconfig-xslt"</arg>
+                                <arg>--zip="${project.build.directory}/solr-${solr.version}.zip"</arg>
+                                <arg>--configset="${solr.configset.directory}"</arg>
+                                <arg>--xslts="${project.resources[0].directory}/solrconfig-xslt"</arg>
+                                <arg>--schemaxml="${project.resources[0].directory}/schema.xml"</arg>
                             </args>
-                            <script>${project.build.scriptSourceDirectory}/CompileSolrConfigXML.java</script>
+                            <script>${project.build.scriptSourceDirectory}/cli/solrteur.java</script>
                         </configuration>
                     </execution>
                 </executions>
