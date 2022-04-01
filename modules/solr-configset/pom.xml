@@ -198,7 +198,7 @@
                             <images>
                                 <image>
                                     <alias>solr</alias>
-                                    <name>gdcc/solr:${revision}</name>
+                                    <name>${ct.orgname}/solr:${revision}</name>
                                     <registry>${ct.registry}</registry>
                                     <build>
                                         <from>solr:${solr.version}</from>
