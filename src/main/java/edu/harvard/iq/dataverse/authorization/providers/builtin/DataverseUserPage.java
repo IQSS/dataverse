@@ -47,7 +47,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -60,9 +60,11 @@ import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.NotBlank;
 import org.primefaces.event.TabChangeEvent;
+import javax.faces.event.AjaxBehaviorEvent;
 
 /**
  *
@@ -142,6 +144,7 @@ public class DataverseUserPage implements java.io.Serializable {
     private List<Type> notificationTypeList;
     private Set<Type> mutedEmailList;
     private Set<Type> mutedNotificationList;
+    private Set<Type> disabledNotifications;
 
     public String init() {
 
@@ -170,10 +173,14 @@ public class DataverseUserPage implements java.io.Serializable {
             userAuthProvider = authenticationService.lookupProvider(currentUser);
             notificationsList = userNotificationService.findByUser(currentUser.getId());
             notificationTypeList = Arrays.asList(Type.values()).stream()
-                    .filter(x -> !Type.CONFIRMEMAIL.equals(x) && !settingsWrapper.isAlwaysMuted(x) && !settingsWrapper.isNeverMuted(x) && x.hasDescription())
+                    .filter(x -> !Type.CONFIRMEMAIL.equals(x) && x.hasDescription())
                     .collect(Collectors.toList());
-            mutedEmailList = currentUser.getMutedEmails();
-            mutedNotificationList = currentUser.getMutedNotifications();
+            mutedEmailList = new HashSet<>(currentUser.getMutedEmails());
+            mutedEmailList.addAll(settingsWrapper.getAlwaysMutedSet());
+            mutedNotificationList = new HashSet<>(currentUser.getMutedNotifications());
+            mutedNotificationList.addAll(settingsWrapper.getAlwaysMutedSet());
+            disabledNotifications = new HashSet<>(settingsWrapper.getAlwaysMutedSet());
+            disabledNotifications.addAll(settingsWrapper.getNeverMutedSet());
             
             switch (selectTab) {
                 case "notifications":
@@ -748,5 +755,8 @@ public class DataverseUserPage implements java.io.Serializable {
         this.mutedNotificationList = mutedNotificationList;
     }
     
-    
+    public boolean isDisabled(Type t) {
+        return disabledNotifications.contains(t);
+    }
+
 }

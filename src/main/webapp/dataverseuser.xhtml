@@ -384,10 +384,9 @@
                                         #{bundle['notification.mutedEmails']}
                                     </label>
                                     <div class="col-sm-8">
-                                        <p:selectCheckboxMenu id="mutedEmails" value="#{DataverseUserPage.mutedEmailList}" styleClass="form-control"
-                                                              filter="true" filterMatchMode="contains" label="#{bundle.select}" multiple="true">
-                                            <f:selectItems value="#{DataverseUserPage.notificationTypeList}" var="t" itemLabel="#{t.description}" itemValue="#{t}"/>
-                                        </p:selectCheckboxMenu>
+                                        <p:selectManyCheckbox id="mutedEmails" value="#{DataverseUserPage.mutedEmailList}" styleClass="grid-checkbox" layout="grid" columns="1" >
+                                            <f:selectItems value="#{DataverseUserPage.notificationTypeList}" var="t" itemLabel="#{t.description}" itemValue="#{t}" itemDisabled="#{DataverseUserPage.isDisabled(t)}"/>
+                                        </p:selectManyCheckbox>
                                     </div>
                                 </div>
                                 <div class="form-group text-left">
@@ -395,10 +394,9 @@
                                         #{bundle['notification.mutedNotifications']}
                                     </label>
                                     <div class="col-sm-8">
-                                        <p:selectCheckboxMenu id="mutedNotifications" value="#{DataverseUserPage.mutedNotificationList}" styleClass="form-control"
-                                                              filter="true" filterMatchMode="contains" label="#{bundle.select}" multiple="true">
-                                            <f:selectItems value="#{DataverseUserPage.notificationTypeList}" var="t" itemLabel="#{t.description}" itemValue="#{t}"/>
-                                        </p:selectCheckboxMenu>
+                                        <p:selectManyCheckbox id="mutedNotifications" value="#{DataverseUserPage.mutedNotificationList}" styleClass="grid-checkbox" layout="grid" columns="1" >
+                                            <f:selectItems value="#{DataverseUserPage.notificationTypeList}" var="t" itemLabel="#{t.description}" itemValue="#{t}" itemDisabled="#{DataverseUserPage.isDisabled(t)}"/>
+                                        </p:selectManyCheckbox>
                                     </div>
                                 </div>
                                 <p:commandButton id="save" styleClass="btn btn-default" value="#{bundle.saveChanges}"

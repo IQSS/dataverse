@@ -190,14 +190,14 @@ public class SettingsWrapper implements java.io.Serializable {
         neverMuted = UserNotification.Type.tokenizeToSet(getValueForKey(Key.NeverMuted));
     }
 
-    private Set<Type> getAlwaysMutedSet() {
+    public Set<Type> getAlwaysMutedSet() {
         if (alwaysMuted == null) {
             initAlwaysMuted();
         }
         return alwaysMuted;
     }
 
-    private Set<Type> getNeverMutedSet() {
+    public Set<Type> getNeverMutedSet() {
         if (neverMuted == null) {
             initNeverMuted();
         }
