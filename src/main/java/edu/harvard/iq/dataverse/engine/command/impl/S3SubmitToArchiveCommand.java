@@ -65,7 +65,7 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand imp
         logger.fine("Profile: " + profileName + " Config: " + configObject);
         try {
             configObject = JsonUtil.getJsonObject(requestedSettings.get(S3_CONFIG));
-            bucketName = configObject.getString("bucket-name", null);
+            bucketName = configObject.getString("s3_bucket_name", null);
         } catch (Exception e) {
             logger.warning("Unable to parse " + S3_CONFIG + " setting as a Json object");
         }
