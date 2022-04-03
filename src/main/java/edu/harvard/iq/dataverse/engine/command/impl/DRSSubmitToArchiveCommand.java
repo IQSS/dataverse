@@ -89,6 +89,8 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
 
                     String drsConfigString = JsonUtil.prettyPrint(job.build());
 
+                    
+                    //TODO - ADD code to ignore self-signed cert
                     CloseableHttpClient client = HttpClients.createDefault();
                     HttpPost ingestPost;
                     try {
