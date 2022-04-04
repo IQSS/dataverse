@@ -116,6 +116,7 @@ public class BagGenerator {
     private boolean usetemp = false;
 
     private int numConnections = 8;
+    public static final String BAG_GENERATOR_THREADS = ":BagGeneratorThreads";
 
     private OREMap oremap;
 
@@ -1091,6 +1092,10 @@ public class BagGenerator {
 
     public void setAuthenticationKey(String tokenString) {
         apiKey = tokenString;
+    }
+
+    public void setNumConnections(int numConnections) {
+        this.numConnections = numConnections;
     }
 
 }
