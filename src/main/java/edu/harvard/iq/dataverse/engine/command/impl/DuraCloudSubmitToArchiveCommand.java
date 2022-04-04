@@ -44,7 +44,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
     private static final int DEFAULT_THREADS = 2;
     
     boolean success = false;
-
+    int bagThreads =  DEFAULT_THREADS;
     public DuraCloudSubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
         super(aRequest, version);
     }
@@ -58,7 +58,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
         String dpnContext = requestedSettings.get(DURACLOUD_CONTEXT) != null ? requestedSettings.get(DURACLOUD_CONTEXT)
                 : DEFAULT_CONTEXT;
         String host = requestedSettings.get(DURACLOUD_HOST);
-        int bagThreads =  DEFAULT_THREADS;
+        
         if (requestedSettings.get(BagGenerator.BAG_GENERATOR_THREADS) != null) {
             try {
                 bagThreads=Integer.valueOf(requestedSettings.get(BagGenerator.BAG_GENERATOR_THREADS));
