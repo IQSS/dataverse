@@ -204,7 +204,7 @@
                                      jsf:rendered="#{((editMode == 'METADATA'
                                                          or dsf.datasetFieldType.displayOnCreate or !dsf.isEmpty() or dsf.required) and dsf.include)
                                                          or (!datasetPage and dsf.include)}">
-                                                         <h:outputText value="#{customInstr.getString('dsf.datasetFieldType.name')}" jsf:rendered="#{customInstr.containsKey(dsf.datasetFieldType.name')}"/>
+                                                         <h:outputText value="#{customInstr.getString('dsf.datasetFieldType.name')}" rendered="#{customInstr.containsKey('dsf.datasetFieldType.name')}"/>
                                     <!-- Primitive fields -->
                                     <p:fragment id="editPrimitiveValueFragment" rendered="#{dsf.datasetFieldType.primitive}">
                                         <p:autoUpdate/>
