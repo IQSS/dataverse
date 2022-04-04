@@ -223,7 +223,7 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
         annPost.setURI(new URI(target.getString("inbox")));
         String body = JsonUtil.prettyPrint(job.build());
         logger.fine("Body: " + body);
-        annPost.setEntity(new StringEntity(JsonUtil.prettyPrint(job.build()), "utf-8"));
+        annPost.setEntity(new StringEntity(JsonUtil.prettyPrint(body), "utf-8"));
         annPost.setHeader("Content-Type", "application/ld+json");
         return annPost;
     }
