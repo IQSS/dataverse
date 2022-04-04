@@ -498,7 +498,9 @@ public class SettingsServiceBean {
         /**
          * LDN Inbox Allowed Hosts - a comma separated list of IP addresses allowed to submit messages to the inbox
          */
-        MessageHosts
+        MessageHosts, 
+        //Temporary key for adding instructions in templates
+        TempInstructions
         ;
 
         @Override

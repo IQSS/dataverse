@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -634,5 +635,19 @@ public class SettingsWrapper implements java.io.Serializable {
         }
         return customLicenseAllowed;
     }
-}
 
+
+    JsonObject allInstructions = null;
+    
+public JsonObject getCustomInstructionsFor(String alias){
+    if(allInstructions==null) {
+        try {
+          allInstructions = JsonUtil.getJsonObject(getValueForKey(SettingsServiceBean.Key.TempInstructions, "{}"));
+        } catch (Exception e) {
+            logger.warning("Failed to read " + SettingsServiceBean.Key.TempInstructions.toString() + " : " + e.getMessage() );
+            return null;
+        }
+    }
+    return allInstructions.getJsonObject(alias);
+    }
+}
