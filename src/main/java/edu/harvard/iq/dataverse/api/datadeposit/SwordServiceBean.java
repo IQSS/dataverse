@@ -211,7 +211,7 @@ public class SwordServiceBean {
             int numRightsProvided = listOfRightsProvided.size();
             if (providedLicense != null) {
                 if (numRightsProvided > 0) {
-                    throw new SwordError("Terms of Use (dcterms:rights) can not be specified in combination with a license.");
+                    throw new SwordError("Terms of Use (dcterms:rights) cannot be specified in combination with a license.");
                 }
             } else {
                 if (numRightsProvided != 1) {
