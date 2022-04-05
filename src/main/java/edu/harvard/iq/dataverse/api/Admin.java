@@ -1830,7 +1830,7 @@ public class Admin extends AbstractApiBean {
                                         AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, request, dv);
 
                                         dv = commandEngine.submit(cmd);
-                                        if (dv.getArchivalCopyLocation() != null) {
+                                        if (!dv.getArchivalCopyLocation().equals("Attempted")) {
                                             successes++;
                                             logger.info("DatasetVersion id=" + dv.getDataset().getGlobalId().toString() + " v" + dv.getFriendlyVersionNumber() + " submitted to Archive at: "
                                                     + dv.getArchivalCopyLocation());
