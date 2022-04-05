@@ -97,7 +97,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                  */
                 String spaceName = dataset.getOwner().getAlias().toLowerCase().replaceAll("[^a-z0-9-]", ".dcsafe");
                 String baseFileName = dataset.getGlobalId().asString().replace(':', '-').replace('/', '-')
-                        .replace('.', '-').toLowerCase() + "v" + dv.getFriendlyVersionNumber();
+                        .replace('.', '-').toLowerCase() + "_v" + dv.getFriendlyVersionNumber();
 
                 ContentStore store;
                 try {
