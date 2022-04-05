@@ -50,6 +50,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
     private static final String PENDING = "pending";
     private static final String ADMIN_METADATA = "admin_metadata";
     private static final String S3_BUCKET_NAME = "s3_bucket_name";
+    private static final String S3_PATH = "s3_path";
     private static final String COLLECTIONS = "collections";
     private static final String PACKAGE_ID = "package_id";
     private static final String TRUST_CERT = "trust_cert";
@@ -70,7 +71,8 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
             logger.warning("Unable to parse " + DRS_CONFIG + " setting as a Json object");
         }
         if (drsConfigObject != null) {
-            Set<String> collections = drsConfigObject.getJsonObject(COLLECTIONS).keySet();
+            JsonObject adminMetadata = drsConfigObject.getJsonObject(ADMIN_METADATA);
+            Set<String> collections = adminMetadata.getJsonObject(COLLECTIONS).keySet();
             Dataset dataset = dv.getDataset();
             Dataverse ancestor = dataset.getOwner();
             String alias = getArchivableAncestor(ancestor, collections);
@@ -78,7 +80,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
             String packageId = spaceName + ".v" + dv.getFriendlyVersionNumber();
 
             if (alias != null) {
-                JsonObject collectionConfig = drsConfigObject.getJsonObject(COLLECTIONS).getJsonObject(alias);
+                JsonObject collectionConfig = adminMetadata.getJsonObject(COLLECTIONS).getJsonObject(alias);
 
                 WorkflowStepResult s3Result = super.performArchiveSubmission(dv, token, requestedSettings);
 
@@ -91,20 +93,20 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                     statusObject.add("message", "Bag transferred");
 
                     // Now contact DRS
-                    JsonObjectBuilder job = Json.createObjectBuilder(drsConfigObject);
-                    JsonObjectBuilder amob = Json.createObjectBuilder();
-                    if (drsConfigObject.containsKey(ADMIN_METADATA)) {
-                        amob = Json.createObjectBuilder(drsConfigObject.getJsonObject(ADMIN_METADATA));
-                    }
-
                     boolean trustCert = drsConfigObject.getBoolean(TRUST_CERT, false);
-                    job.remove(TRUST_CERT);
-                    job.remove(COLLECTIONS);
-                    job.remove(ADMIN_METADATA);
-                    job.remove("DRSendpoint");
-                    job.add(PACKAGE_ID, packageId);
+                    
+                    JsonObjectBuilder job = Json.createObjectBuilder();
+                    
+                    job.add(S3_BUCKET_NAME, adminMetadata.getString(S3_BUCKET_NAME));
 
-                    job.add("s3_path", spaceName);
+                    job.add(PACKAGE_ID, packageId);
+                    job.add(S3_PATH, spaceName);
+
+                    //We start with the default admin_metadata
+                    JsonObjectBuilder amob = Json.createObjectBuilder(adminMetadata);
+                    //Remove collections and then override any params for the given alias
+                    amob.remove(COLLECTIONS);
+                    //Allow override of bucket name
                     if (collectionConfig.containsKey(S3_BUCKET_NAME)) {
                         job.add(S3_BUCKET_NAME, collectionConfig.get(S3_BUCKET_NAME));
                     }
