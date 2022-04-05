@@ -17,6 +17,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -26,20 +29,31 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
+import javax.net.ssl.SSLContext;
 
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustAllStrategy;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
 
 @RequiredPermissions(Permission.PublishDataset)
 public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implements Command<DatasetVersion> {
 
     private static final Logger logger = Logger.getLogger(DRSSubmitToArchiveCommand.class.getName());
     private static final String DRS_CONFIG = ":DRSArchivalConfig";
-    private static String PENDING = "Pending";
+    private static final String FAILURE = "failure";
+    private static final String PENDING = "pending";
+    private static final String ADMIN_METADATA = "admin_metadata";
+    private static final String S3_BUCKET_NAME = "s3_bucket_name";
+    private static final String COLLECTIONS = "collections";
+    private static final String PACKAGE_ID = "package_id";
+    private static final String TRUST_CERT = "trust_cert";
 
     public DRSSubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
         super(aRequest, version);
@@ -57,13 +71,15 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
             logger.warning("Unable to parse " + DRS_CONFIG + " setting as a Json object");
         }
         if (drsConfigObject != null) {
-            Set<String> collections = drsConfigObject.getJsonObject("collections").keySet();
+            Set<String> collections = drsConfigObject.getJsonObject(COLLECTIONS).keySet();
             Dataset dataset = dv.getDataset();
             Dataverse ancestor = dataset.getOwner();
             String alias = getArchivableAncestor(ancestor, collections);
+            String spaceName = getSpaceName(dataset);
+            String packageId = spaceName + ".v" + dv.getFriendlyVersionNumber();
 
             if (alias != null) {
-                JsonObject collectionConfig = drsConfigObject.getJsonObject("collections").getJsonObject(alias);
+                JsonObject collectionConfig = drsConfigObject.getJsonObject(COLLECTIONS).getJsonObject(alias);
 
                 WorkflowStepResult s3Result = super.performArchiveSubmission(dv, token, requestedSettings);
 
@@ -77,21 +93,56 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
 
                     // Now contact DRS
                     JsonObjectBuilder job = Json.createObjectBuilder(drsConfigObject);
-                    job.remove("collections");
+                    JsonObjectBuilder amob = Json.createObjectBuilder();
+                    if (drsConfigObject.containsKey(ADMIN_METADATA)) {
+                        amob = Json.createObjectBuilder(drsConfigObject.getJsonObject(ADMIN_METADATA));
+                    }
+
+                    boolean trustCert = drsConfigObject.getBoolean(TRUST_CERT, false);
+                    job.remove(TRUST_CERT);
+                    job.remove(COLLECTIONS);
+                    job.remove(ADMIN_METADATA);
                     job.remove("DRSendpoint");
-                    String spaceName = getSpaceName(dataset);
-                    job.add("package_id", spaceName + ".v" + dv.getFriendlyVersionNumber());
+                    job.add(PACKAGE_ID, packageId);
 
                     job.add("s3_path", spaceName);
-                    for (Entry<String, JsonValue> entry : collectionConfig.entrySet()) {
-                        job.add(entry.getKey(), entry.getValue());
+                    if (collectionConfig.containsKey(S3_BUCKET_NAME)) {
+                        job.add(S3_BUCKET_NAME, collectionConfig.get(S3_BUCKET_NAME));
                     }
+
+                    for (Entry<String, JsonValue> entry : collectionConfig.entrySet()) {
+                        if (!entry.getKey().equals(S3_BUCKET_NAME)) {
+                            amob.add(entry.getKey(), entry.getValue());
+                        }
+                    }
+                    job.add(ADMIN_METADATA, amob);
 
                     String drsConfigString = JsonUtil.prettyPrint(job.build());
 
-                    
-                    //TODO - ADD code to ignore self-signed cert
-                    CloseableHttpClient client = HttpClients.createDefault();
+                    // TODO - ADD code to ignore self-signed cert
+                    CloseableHttpClient client = null;
+                    if (trustCert) {
+                        // use the TrustSelfSignedStrategy to allow Self Signed Certificates
+                        try {
+                            SSLContext sslContext = SSLContextBuilder
+                                    .create()
+                                    .loadTrustMaterial(new TrustAllStrategy())
+                                    .build();
+                            client = HttpClients.custom().setSSLContext(sslContext).setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+                        } catch (KeyManagementException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        } catch (NoSuchAlgorithmException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        } catch (KeyStoreException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                    } 
+                    if(client == null) {
+                        client = HttpClients.createDefault();
+                    }
                     HttpPost ingestPost;
                     try {
                         ingestPost = new HttpPost();
@@ -111,18 +162,28 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                         int code = response.getStatusLine().getStatusCode();
                         String responseBody = new String(response.getEntity().getContent().readAllBytes(),
                                 StandardCharsets.UTF_8);
-                        if (code >= 200 && code < 300) {
+                        if (code == 202) {
                             logger.fine("Status: " + code);
                             logger.fine("Response" + responseBody);
                             JsonObject responseObject = JsonUtil.getJsonObject(responseBody);
                             String status = responseObject.getString("status");
-                            if (!PENDING.equals(status)) {
-                                logger.warning("Unexpected Status: " + status);
-                            } else {
-                                logger.fine("DRS Ingest succeded: " + responseObject.toString());
+                            switch (status) {
+                            case PENDING:
+                                logger.fine("DRS Ingest successfully started for: " + packageId + " : "
+                                        + responseObject.toString());
                                 statusObject.add("status", status);
                                 statusObject.add("message", responseObject.getString("message"));
+                                break;
+                            case FAILURE:
+                                logger.severe(
+                                        "DRS Ingest Failed for: " + packageId + " : " + responseObject.toString());
+                                return new Failure("DRS Archiver fail in Ingest call");
+                            default:
+                                logger.warning("Unexpected Status: " + status);
                             }
+                        } else {
+                            logger.severe("DRS Ingest Failed for: " + packageId + " with status code: " + code);
+                            return new Failure("DRS Archiver fail in Ingest call with status cvode: " + code);
                         }
                     } catch (ClientProtocolException e2) {
                         e2.printStackTrace();
@@ -132,14 +193,12 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
 
                 } else {
 
-                    logger.warning("DRS: S3 archiving failed - will not call ingest: " + getSpaceName(dataset) + "_v"
-                            + dv.getFriendlyVersionNumber());
+                    logger.warning("DRS: S3 archiving failed - will not call ingest: " + packageId);
                     return new Failure("DRS Archiver fail in initial S3 Archiver transfer");
                 }
                 dv.setArchivalCopyLocation(statusObject.build().toString());
             } else {
-                logger.fine("DRS Archiver: No matching collection found - will not archive: " + getSpaceName(dataset)
-                        + "_v" + dv.getFriendlyVersionNumber());
+                logger.fine("DRS Archiver: No matching collection found - will not archive: " + packageId);
                 return WorkflowStepResult.OK;
             }
         } else {
@@ -174,7 +233,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
             logger.warning("Unable to parse " + DRS_CONFIG + " setting as a Json object");
         }
         if (drsConfigObject != null) {
-            Set<String> collections = drsConfigObject.getJsonObject("collections").keySet();
+            Set<String> collections = drsConfigObject.getJsonObject(COLLECTIONS).keySet();
             return getArchivableAncestor(d.getOwner(), collections) != null;
         }
         return false;
