@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.util.bagit;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -1005,23 +1006,34 @@ public class BagGenerator {
                         logger.fine("Get # " + tries + " for " + uriString);
                         HttpGet getMap = createNewGetRequest(uri, null);
                         logger.finest("Retrieving " + tries + ": " + uriString);
-                        try (CloseableHttpResponse response = client.execute(getMap)) {
+                        CloseableHttpResponse response = null;
+                        try {
+                            response = client.execute(getMap);
                             // Note - if we ever need to pass an HttpClientContext, we need a new one per
                             // thread.
-                            int statusCode= response.getStatusLine().getStatusCode();
+                            int statusCode = response.getStatusLine().getStatusCode();
                             if (statusCode == 200) {
                                 logger.finest("Retrieved: " + uri);
                                 return response.getEntity().getContent();
                             }
-                            logger.warning("Attempt: " + tries + " - Unexpected Status when retrieving " + uriString + " : " + statusCode);
-                            if(statusCode < 500) {
+                            logger.warning("Attempt: " + tries + " - Unexpected Status when retrieving " + uriString
+                                    + " : " + statusCode);
+                            if (statusCode < 500) {
                                 logger.fine("Will not retry for 40x errors");
-                                tries +=5;
+                                tries += 5;
                             } else {
                                 tries++;
                             }
-                            //Shouldn't be needed - leaving until the Premature end of Content-Legnth delimited message body errors are resolved
-                            //EntityUtils.consumeQuietly(response.getEntity());
+                            // Error handling
+                            if (response != null) {
+                                try {
+                                    EntityUtils.consumeQuietly(response.getEntity());
+                                    response.close();
+                                } catch (IOException io) {
+                                    logger.warning(
+                                            "Exception closing response after status: " + statusCode + " on " + uri);
+                                }
+                            }
                         } catch (ClientProtocolException e) {
                             tries += 5;
                             // TODO Auto-generated catch block
@@ -1037,7 +1049,9 @@ public class BagGenerator {
                             }
                             e.printStackTrace();
                         }
+
                     }
+
                 } catch (URISyntaxException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
