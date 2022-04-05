@@ -94,19 +94,19 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
 
                     // Now contact DRS
                     boolean trustCert = drsConfigObject.getBoolean(TRUST_CERT, false);
-                    
+
                     JsonObjectBuilder job = Json.createObjectBuilder();
-                    
+
                     job.add(S3_BUCKET_NAME, adminMetadata.getString(S3_BUCKET_NAME));
 
                     job.add(PACKAGE_ID, packageId);
                     job.add(S3_PATH, spaceName);
 
-                    //We start with the default admin_metadata
+                    // We start with the default admin_metadata
                     JsonObjectBuilder amob = Json.createObjectBuilder(adminMetadata);
-                    //Remove collections and then override any params for the given alias
+                    // Remove collections and then override any params for the given alias
                     amob.remove(COLLECTIONS);
-                    //Allow override of bucket name
+                    // Allow override of bucket name
                     if (collectionConfig.containsKey(S3_BUCKET_NAME)) {
                         job.add(S3_BUCKET_NAME, collectionConfig.get(S3_BUCKET_NAME));
                     }
@@ -233,8 +233,14 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
             logger.warning("Unable to parse " + DRS_CONFIG + " setting as a Json object");
         }
         if (drsConfigObject != null) {
-            Set<String> collections = drsConfigObject.getJsonObject(COLLECTIONS).keySet();
-            return getArchivableAncestor(d.getOwner(), collections) != null;
+            JsonObject adminMetadata = drsConfigObject.getJsonObject(ADMIN_METADATA);
+            if (adminMetadata != null) {
+                JsonObject collectionObj = adminMetadata.getJsonObject(COLLECTIONS);
+                if (collectionObj != null) {
+                    Set<String> collections = collectionObj.keySet();
+                    return getArchivableAncestor(d.getOwner(), collections) != null;
+                }
+            }
         }
         return false;
     }
