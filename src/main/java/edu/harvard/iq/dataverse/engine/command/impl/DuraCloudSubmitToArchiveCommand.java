@@ -97,7 +97,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                  */
                 String spaceName = dataset.getOwner().getAlias().toLowerCase().replaceAll("[^a-z0-9-]", ".dcsafe");
                 String baseFileName = dataset.getGlobalId().asString().replace(':', '-').replace('/', '-')
-                        .replace('.', '-').toLowerCase();
+                        .replace('.', '-').toLowerCase() + "v" + dv.getFriendlyVersionNumber();
 
                 ContentStore store;
                 try {
@@ -163,7 +163,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
 
                         // Store BagIt file
                         success = false;
-                        String fileName = baseFileName + "v" + dv.getFriendlyVersionNumber() + ".zip";
+                        String fileName = baseFileName + ".zip";
 
                         // Add BagIt ZIP file
                         // Although DuraCloud uses SHA-256 internally, it's API uses MD5 to verify the
