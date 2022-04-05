@@ -35,7 +35,6 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustAllStrategy;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -124,11 +123,10 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                     if (trustCert) {
                         // use the TrustSelfSignedStrategy to allow Self Signed Certificates
                         try {
-                            SSLContext sslContext = SSLContextBuilder
-                                    .create()
-                                    .loadTrustMaterial(new TrustAllStrategy())
+                            SSLContext sslContext = SSLContextBuilder.create().loadTrustMaterial(new TrustAllStrategy())
                                     .build();
-                            client = HttpClients.custom().setSSLContext(sslContext).setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+                            client = HttpClients.custom().setSSLContext(sslContext)
+                                    .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
                         } catch (KeyManagementException e) {
                             // TODO Auto-generated catch block
                             e.printStackTrace();
@@ -139,8 +137,8 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                             // TODO Auto-generated catch block
                             e.printStackTrace();
                         }
-                    } 
-                    if(client == null) {
+                    }
+                    if (client == null) {
                         client = HttpClients.createDefault();
                     }
                     HttpPost ingestPost;
