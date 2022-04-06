@@ -53,6 +53,12 @@
                     </p:selectBooleanCheckbox>
                 </div>
             </div>
+            <p:fragment>
+                <p:autoUpdate/>
+            <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{empty bean.termsOfAccess  and !bean.fileAccessRequest}">
+                           <span class="ui-message-error-detail">#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.warning.outofcompliance']}</span>          
+            </div>
+            </p:fragment>
             <div class="form-group">
                 <label for="termsAccessInput" class="col-sm-3 control-label">
                     #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
@@ -68,9 +74,6 @@
             </div>
         </div>
 
-            <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{!empty termsOfUseAndAccess.validationMessage}">
-                           <span class="ui-message-error-detail">#{termsOfUseAndAccess.validationMessage}</span>
-            </div>
         <div class="button-block">
             <p:commandLink id="restrictFileButton"  styleClass="btn btn-default" value="#{bundle.saveChanges}" 
                              action="#{bean[restrictFileAction](true)}"
