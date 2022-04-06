@@ -62,7 +62,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
     @Override
     public WorkflowStepResult performArchiveSubmission(DatasetVersion dv, ApiToken token,
             Map<String, String> requestedSettings) {
-        logger.fine("In DRSSubmitToArchiveCommand...");
+        logger.info("In DRSSubmitToArchiveCommand...");
         JsonObject drsConfigObject = null;
 
         try {
@@ -148,7 +148,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                         ingestPost = new HttpPost();
                         ingestPost.setURI(new URI(drsConfigObject.getString("DRSendpoint")));
                         String body = drsConfigString;
-                        logger.fine("Body: " + body);
+                        logger.info("Body: " + body);
                         ingestPost.setEntity(new StringEntity(body, "utf-8"));
                         ingestPost.setHeader("Content-Type", "application/json");
 
@@ -163,13 +163,13 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                         String responseBody = new String(response.getEntity().getContent().readAllBytes(),
                                 StandardCharsets.UTF_8);
                         if (code == 202) {
-                            logger.fine("Status: " + code);
-                            logger.fine("Response" + responseBody);
+                            logger.info("Status: " + code);
+                            logger.info("Response" + responseBody);
                             JsonObject responseObject = JsonUtil.getJsonObject(responseBody);
                             String status = responseObject.getString("status");
                             switch (status) {
                             case PENDING:
-                                logger.fine("DRS Ingest successfully started for: " + packageId + " : "
+                                logger.info("DRS Ingest successfully started for: " + packageId + " : "
                                         + responseObject.toString());
                                 statusObject.add("status", status);
                                 statusObject.add("message", responseObject.getString("message"));
@@ -198,7 +198,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                 }
                 dv.setArchivalCopyLocation(statusObject.build().toString());
             } else {
-                logger.fine("DRS Archiver: No matching collection found - will not archive: " + packageId);
+                logger.info("DRS Archiver: No matching collection found - will not archive: " + packageId);
                 return WorkflowStepResult.OK;
             }
         } else {
