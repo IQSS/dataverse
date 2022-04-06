@@ -448,24 +448,6 @@ public class Dataset extends DvObjectContainer {
         dataFileCategories.add(category);
     }
 
-    public Collection<String> getCategoriesByName() {
-        Collection<String> ret = getCategoryNames();
-
-        // "Documentation", "Data" and "Code" are the 3 default categories that we 
-        // present by default:
-        if (!ret.contains(BundleUtil.getStringFromBundle("dataset.category.documentation"))) {
-            ret.add(BundleUtil.getStringFromBundle("dataset.category.documentation"));
-        }
-        if (!ret.contains(BundleUtil.getStringFromBundle("dataset.category.data"))) {
-            ret.add(BundleUtil.getStringFromBundle("dataset.category.data"));
-        }
-        if (!ret.contains(BundleUtil.getStringFromBundle("dataset.category.code"))) {
-            ret.add(BundleUtil.getStringFromBundle("dataset.category.code"));
-        }
-
-        return ret;
-    }
-
     public void setCategoriesByName(List<String> newCategoryNames) {
         if (newCategoryNames != null) {
             Collection<String> oldCategoryNames = getCategoryNames();
