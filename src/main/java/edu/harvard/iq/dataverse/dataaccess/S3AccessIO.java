@@ -87,6 +87,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     private static HashMap<String, AmazonS3> driverClientMap = new HashMap<String,AmazonS3>();
     private static HashMap<String, TransferManager> driverTMMap = new HashMap<String,TransferManager>();
+    private S3Object s3Object=null;
 
     public S3AccessIO(T dvObject, DataAccessRequest req, String driverId) {
         super(dvObject, req, driverId);
@@ -276,7 +277,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     public InputStream getInputStream() throws IOException {
         if(super.getInputStream()==null) {
             try {
-                setInputStream(s3.getObject(new GetObjectRequest(bucketName, key)).getObjectContent());
+                s3Object=s3.getObject(new GetObjectRequest(bucketName, key));
+                setInputStream(s3Object.getObjectContent());
             } catch (SdkClientException sce) {
                 throw new IOException("Cannot get S3 object " + key + " ("+sce.getMessage()+")");
             }
@@ -289,6 +291,15 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         setChannel(Channels.newChannel(super.getInputStream()));
 
         return super.getInputStream();
+    }
+    
+    /*We're keeping a reference to the s3Object from which the stream comes to avoid it being garbage collected and triggering a
+     * 'Premature end of Content-Length delimited message body...' error (when GC'd the s3Object closes the connection the stream is using)
+     * So - here we get rid of our reference to the s3Object before calling the parent class closeInputStream
+    */
+    public void closeInputStream() {
+        s3Object=null;
+        super.closeInputStream();
     }
     
     @Override

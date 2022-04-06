@@ -995,10 +995,10 @@ For example:
 
 ``cp <your key file> /usr/local/payara5/glassfish/domains/domain1/files/googlecloudkey.json``
 
-.. _Archiving API Call:
+.. _Archiving API Calls:
 
-API Call
-++++++++
+API Calls
++++++++++
 
 Once this configuration is complete, you, as a user with the *PublishDataset* permission, should be able to use the API call to manually submit a DatasetVersion for processing:
 
@@ -1009,6 +1009,18 @@ where:
 ``{id}`` is the DatasetId (or ``:persistentId`` with the ``?persistentId="<DOI>"`` parameter), and
 
 ``{version}`` is the friendly version number, e.g. "1.2".
+
+A batch API call is also available that will attempt to archive any currently unarchived dataset versions:
+
+``curl -H "X-Dataverse-key: <key>" http://localhost:8080/api/admin/archiveAllUnarchivedDatasetVersions``
+
+The call supports three optional query parameters that can be used in combination:
+
+``listonly={true/false}`` default is false. Using true retrieves the list of unarchived versions but does not attempt to archive any.
+
+``latestonly={true/false}`` default is false. Using true only lists/processes the most recently published version of a given dataset (instead of all published versions).
+
+``limit={n}`` default is no limit/process all unarchived versions (subject to other parameters). Defines a maximum number of versions to attempt to archive in response to one invocation of the API call.
 
 The submitDataVersionToArchive API (and the workflow discussed below) attempt to archive the dataset version via an archive specific method. For Chronopolis, a DuraCloud space named for the dataset (it's DOI with ':' and '.' replaced with '-') is created and two files are uploaded to it: a version-specific datacite.xml metadata file and a BagIt bag containing the data and an OAI-ORE map file. (The datacite.xml file, stored outside the Bag as well as inside is intended to aid in discovery while the ORE map file is 'complete', containing all user-entered metadata and is intended as an archival record.)
 
