@@ -127,7 +127,8 @@
                                             <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{DatasetPage.workingVersion.inReview}"/>
                                             <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!DatasetPage.dataset.released}"/>
                                             <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
-                                            <h:outputText value="#{DatasetPage.workingVersion.externalStatusLabel}" styleClass="label external-status label-info" rendered="#{DatasetPage.workingVersion.externalStatusLabel!=null and DatasetPage.canPublishDataset()}"/>
+                                            <o:importFunctions type="edu.harvard.iq.dataverse.dataset.DatasetUtil" />
+                                            <h:outputText value="#{DatasetUtil:getLocaleExternalStatus(DatasetPage.workingVersion.externalStatusLabel)}" styleClass="label external-status label-info" rendered="#{DatasetPage.workingVersion.externalStatusLabel!=null and DatasetPage.canPublishDataset()}"/>
                                             <!-- DATASET VERSION NUMBER -->
                                             <h:outputText styleClass="label label-default" rendered="#{DatasetPage.workingVersion.released and !(DatasetPage.workingVersion.draft or DatasetPage.workingVersion.inReview or DatasetPage.workingVersion.deaccessioned)}"
                                                           value="#{bundle['file.DatasetVersion']} #{DatasetPage.workingVersion.versionNumber}.#{DatasetPage.workingVersion.minorVersionNumber}"/>
@@ -343,8 +344,9 @@
                                                             <ul class="dropdown-menu">
                                                                 <ui:repeat value="#{DatasetPage.allowedExternalStatuses}" var="status">
                                                                     <li>
+                                                                        <o:importFunctions type="edu.harvard.iq.dataverse.dataset.DatasetUtil" />
                                                                         <p:commandLink action="#{DatasetPage.setExternalStatus(status)}" update=":datasetForm:topDatasetBlockFragment,:messagePanel">
-                                                                          #{status}
+                                                                            #{DatasetUtil:getLocaleExternalStatus(status)}
                                                                         </p:commandLink>
                                                                     </li>
                                                                 </ui:repeat>

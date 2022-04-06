@@ -52,7 +52,7 @@ body .ui-widget .ui-widget-content:not(.ui-picklist-list, .ui-dialog, .ui-panel-
 #status-alert {margin-top:0; margin-bottom:0;}
 #status-alert div.alert {border:0; box-shadow:none;}
 
-#dvfooter {width:100%; z-index:498; height:60px; color:#666666;position:relative;}
+footer {width:100%; z-index:498; height:60px; color:#666666;position:relative;}
 #dvfooter.widget-view {position:fixed; left:0; bottom:0; margin:0; padding:4px 0 0 0; min-height:44px; height:auto; background:#fff;}
 #dvfooter .poweredbylogo {text-align:right;}
 #dvfooter .poweredbylogo span {font-size:.85em;margin-right:.3em;}
