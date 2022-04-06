@@ -1,0 +1,1 @@
+As of Dataverse 5.10, "NONE" is no longer supported as a valid license when creating a dataset using the SWORD API. The API Guide has been updated to reflect this. Additionally, if you specify an invalid license, a list of available licenses will be returned in the response.
