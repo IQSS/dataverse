@@ -80,6 +80,8 @@
                                                             <a href="https://demo.dataverse.org">#{bundle['notification.demoSite']}</a>
                                                         </o:param>
                                                     </h:outputFormat>
+                                                    <!--Only show message about an email confirmation link to non-Shib users (Shib users can't edit their accounts)-->
+                                                    <h:outputFormat value=" #{bundle['notification.welcomeConfirmEmail']}" rendered="#{DataverseUserPage.accountDetailsEditable}"/>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'CREATEDV'}">
                                                     <span class="icon-dataverse text-icon-inline text-muted"></span>

@@ -54,10 +54,16 @@ public class ConfirmEmailServiceBean {
      */
     public boolean hasVerifiedEmail(AuthenticatedUser user) {
         boolean hasTimestamp = user.getEmailConfirmed() != null;
-        boolean hasNoStaleVerificationTokens = this.findSingleConfirmEmailDataByUser(user) == null;
         boolean isVerifiedByAuthProvider = authenticationService.lookupProvider(user).isEmailVerified();
-        
-        return (hasTimestamp && hasNoStaleVerificationTokens) || isVerifiedByAuthProvider;
+        // Note: In practice, we are relying on hasTimestamp to know if an email
+        // has been confirmed/verified or not. We have switched the Shib code to automatically
+        // overwrite the "confirm email" timestamp on login. So hasTimeStamp will be enough.
+        // If we ever want to get away from using "confirmed email" timestamps for Shib users
+        // we can make use of the isVerifiedByAuthProvider boolean. Currently,
+        // isVerifiedByAuthProvider is set to false in the super class and nothing
+        // is overridden in the shib auth provider (or any auth provider) but we could override
+        // isVerifiedByAuthProvider in the Shib auth provider and have it return true.
+        return hasTimestamp || isVerifiedByAuthProvider;
     }
 
     /**
@@ -128,6 +134,11 @@ public class ConfirmEmailServiceBean {
             userNotification.setType(UserNotification.Type.CONFIRMEMAIL);
             String subject = MailUtil.getSubjectTextBasedOnNotification(userNotification, null);
             logger.fine("sending email to " + toAddress + " with this subject: " + subject);
+            if (ShibAuthenticationProvider.PROVIDER_ID.equals(aUser.getAuthenticatedUserLookup().getAuthenticationProviderId())) {
+                // Shib users have "emailconfirmed" timestamp set on login.
+                logger.info("Returning early to prevent an email confirmation link from being sent to Shib user " + aUser.getUserIdentifier() + ".");
+                return;
+            }
             mailService.sendSystemEmail(toAddress, subject, messageBody);
         } catch (Exception ex) {
             /**
