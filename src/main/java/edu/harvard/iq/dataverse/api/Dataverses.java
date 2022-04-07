@@ -30,6 +30,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataverse.DataverseUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.AddRoleAssigneesToExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
@@ -240,7 +241,7 @@ public class Dataverses extends AbstractApiBean {
             }
 
             //Throw BadRequestException if metadataLanguage isn't compatible with setting
-            checkMetadataLangauge(ds, owner);
+            DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(new HashMap<String, String>(), true));
 
             // clean possible version metadata
             DatasetVersion version = ds.getVersions().get(0);
@@ -312,7 +313,7 @@ public class Dataverses extends AbstractApiBean {
             ds.setGlobalIdCreateTime(null);
             
             //Throw BadRequestException if metadataLanguage isn't compatible with setting
-            checkMetadataLangauge(ds, owner);
+            DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(new HashMap<String, String>(), true));
 
             Dataset managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u)));
             return created("/datasets/" + managedDs.getId(),
@@ -323,19 +324,6 @@ public class Dataverses extends AbstractApiBean {
 
         } catch (WrappedResponse ex) {
             return ex.getResponse();
-        }
-    }
-
-    private void checkMetadataLangauge(Dataset ds, Dataverse owner) {
-      //Verify metadatalanguage is allowed
-        Map<String, String> mLangMap = settingsService.getBaseMetadataLanguageMap(new HashMap<String, String>(), true);
-        //Anything but undefined (from no value sent in) is invalid unless the :MetadataLanguage setting is not set
-        if(!ds.getMetadataLanguage().equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE) && mLangMap.size()==0) {
-            throw new BadRequestException("This repository is not configured to support metadataLanguage.");
-        }
-        //When :MetadataLanguage is set, the specificed language must either match the parent collection choice, or, if that is undefined, be one of the choices allowed by the setting
-        if(!((ds.getMetadataLanguage().equals( owner.getMetadataLanguage()) && !owner.getMetadataLanguage().equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) || (owner.getMetadataLanguage().equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE) && mLangMap.containsKey(ds.getMetadataLanguage())))) {
-            throw new BadRequestException("Specified metadatalanguage ( metadataLanguage, " + JsonLDTerm.schemaOrg("inLanguage").getUrl() + ") not allowed in this collection.");
         }
     }
 
@@ -356,7 +344,7 @@ public class Dataverses extends AbstractApiBean {
             }
 
             //Throw BadRequestException if metadataLanguage isn't compatible with setting
-            checkMetadataLangauge(ds, owner);
+            DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(new HashMap<String, String>(), true));
 
             DatasetVersion version = ds.getVersions().get(0);
             if (version.getVersionState() == null) {
@@ -513,7 +501,7 @@ public class Dataverses extends AbstractApiBean {
             }
             
             //Throw BadRequestException if metadataLanguage isn't compatible with setting
-            checkMetadataLangauge(ds, owner);
+            DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(new HashMap<String, String>(), true));
 
 
             if (ds.getVersions().isEmpty()) {
