@@ -401,7 +401,7 @@ public class MoveIT {
         roleAssignments.prettyPrint();
 
         /*
-        make sure the rano assigned role continues on the moved dataset
+        make sure the rando assigned role continues on the moved dataset
         */
         assertEquals(OK.getStatusCode(), roleAssignments.getStatusCode());
         List<JsonObject> assignments = with(roleAssignments.body().asString()).param("curator", "curator").getJsonObject("data.findAll { data -> data._roleAlias == curator }");
