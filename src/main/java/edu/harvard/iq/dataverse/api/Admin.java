@@ -44,6 +44,7 @@ import edu.harvard.iq.dataverse.settings.Setting;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -51,6 +52,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
@@ -99,6 +101,8 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.io.OutputStream;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.rolesToJson;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
@@ -1728,31 +1732,37 @@ public class Admin extends AbstractApiBean {
 
     }
 
-    @GET
-    @Path("/submitDataVersionToArchive/{id}/{version}")
-    public Response submitDatasetVersionToArchive(@PathParam("id") String dsid, @PathParam("version") String versionNumber) {
+    @POST
+    @Path("/submitDatasetVersionToArchive/{id}/{version}")
+    public Response submitDatasetVersionToArchive(@PathParam("id") String dsid,
+            @PathParam("version") String versionNumber) {
 
         try {
             AuthenticatedUser au = findAuthenticatedUserOrDie();
-			// Note - the user is being set in the session so it becomes part of the
-			// DataverseRequest and is sent to the back-end command where it is used to get
-			// the API Token which is then used to retrieve files (e.g. via S3 direct
-			// downloads) to create the Bag
+            if (!au.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+            // Note - the user is being set in the session so it becomes part of the
+            // DataverseRequest and is sent to the back-end command where it is used to get
+            // the API Token which is then used to retrieve files (e.g. via S3 direct
+            // downloads) to create the Bag
             session.setUser(au); // TODO: Stop using session. Use createDataverseRequest instead.
             Dataset ds = findDatasetOrDie(dsid);
 
             DatasetVersion dv = datasetversionService.findByFriendlyVersionNumber(ds.getId(), versionNumber);
             if (dv.getArchivalCopyLocation() == null) {
                 String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
-                AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), dv);
+                AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className,
+                        dvRequestService.getDataverseRequest(), dv);
                 if (cmd != null) {
                     new Thread(new Runnable() {
                         public void run() {
                             try {
                                 DatasetVersion dv = commandEngine.submit(cmd);
                                 if (dv.getArchivalCopyLocation() != null) {
-                                    logger.info("DatasetVersion id=" + ds.getGlobalId().toString() + " v" + versionNumber + " submitted to Archive at: "
-                                            + dv.getArchivalCopyLocation());
+                                    logger.info(
+                                            "DatasetVersion id=" + ds.getGlobalId().toString() + " v" + versionNumber
+                                                    + " submitted to Archive at: " + dv.getArchivalCopyLocation());
                                 } else {
                                     logger.severe("Error submitting version due to conflict/error at Archive");
                                 }
@@ -1761,7 +1771,8 @@ public class Admin extends AbstractApiBean {
                             }
                         }
                     }).start();
-                    return ok("Archive submission using " + cmd.getClass().getCanonicalName() + " started. Processing can take significant time for large datasets. View log and/or check archive for results.");
+                    return ok("Archive submission using " + cmd.getClass().getCanonicalName()
+                            + " started. Processing can take significant time for large datasets. View log and/or check archive for results.");
                 } else {
                     logger.log(Level.SEVERE, "Could not find Archiver class: " + className);
                     return error(Status.INTERNAL_SERVER_ERROR, "Could not find Archiver class: " + className);
@@ -1774,6 +1785,74 @@ public class Admin extends AbstractApiBean {
         }
     }
     
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/submitDataVersionToArchive/{id}/{version}/status")
+    public Response getDatasetVersionToArchiveStatus(@PathParam("id") String dsid,
+            @PathParam("version") String versionNumber) {
+
+        try {
+            AuthenticatedUser au = findAuthenticatedUserOrDie();
+            if (!au.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+            Dataset ds = findDatasetOrDie(dsid);
+
+            DatasetVersion dv = datasetversionService.findByFriendlyVersionNumber(ds.getId(), versionNumber);
+            if (dv.getArchivalCopyLocation() == null) {
+                return error(Status.NO_CONTENT, "This dataset version has not been archived");
+            } else {
+                JsonObject status = JsonUtil.getJsonObject(dv.getArchivalCopyLocation());
+                return ok(status);
+            }
+        } catch (WrappedResponse e1) {
+            return error(Status.UNAUTHORIZED, "api key required");
+        }
+    }
+
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/submitDataVersionToArchive/{id}/{version}/status")
+    public Response setDatasetVersionToArchiveStatus(@PathParam("id") String dsid,
+            @PathParam("version") String versionNumber, JsonObject update) {
+
+        try {
+            AuthenticatedUser au = findAuthenticatedUserOrDie();
+
+            if (!au.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse e1) {
+            return error(Status.UNAUTHORIZED, "api key required");
+        }
+        if (update.containsKey(AbstractSubmitToArchiveCommand.STATUS)
+                && update.containsKey(AbstractSubmitToArchiveCommand.MESSAGE)) {
+            String status = update.getString(AbstractSubmitToArchiveCommand.STATUS);
+            if (status.equals(AbstractSubmitToArchiveCommand.PENDING)
+                    || status.equals(AbstractSubmitToArchiveCommand.FAILURE)
+                    || status.equals(AbstractSubmitToArchiveCommand.SUCCESS)) {
+
+                try {
+                    Dataset ds;
+
+                    ds = findDatasetOrDie(dsid);
+
+                    DatasetVersion dv = datasetversionService.findByFriendlyVersionNumber(ds.getId(), versionNumber);
+                    if(dv==null) {
+                        return error(Status.NOT_FOUND, "Dataset version not found");
+                    }
+                    dv.setArchivalCopyLocation(JsonUtil.prettyPrint(update));
+
+                } catch (WrappedResponse e) {
+                    return error(Status.NOT_FOUND, "Dataset not found");
+                }
+            }
+        }
+        return error(Status.BAD_REQUEST, "Unacceptable status format");
+    }
+
+    
+    
     
     /**
      * Iteratively archives all unarchived dataset versions
@@ -1783,7 +1862,7 @@ public class Admin extends AbstractApiBean {
      * lastestonly - only archive the latest versions
      * @return
      */
-    @GET
+    @POST
     @Path("/archiveAllUnarchivedDatasetVersions")
     public Response archiveAllUnarchivedDatasetVersions(@QueryParam("listonly") boolean listonly, @QueryParam("limit") Integer limit, @QueryParam("latestonly") boolean latestonly) {
 
