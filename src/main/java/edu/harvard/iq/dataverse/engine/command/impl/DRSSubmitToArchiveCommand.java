@@ -105,11 +105,12 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                 WorkflowStepResult s3Result = super.performArchiveSubmission(dv, token, requestedSettings);
 
                 JsonObjectBuilder statusObject = Json.createObjectBuilder();
-                statusObject.add("status", "Failure");
+                statusObject.add("status", DatasetVersion.FAILURE);
                 statusObject.add("message", "Bag not transferred");
 
                 if (s3Result == WorkflowStepResult.OK) {
-                    statusObject.add("status", "Attempted");
+                    //This will be overwritten if the further steps are successful
+                    statusObject.add("status", DatasetVersion.FAILURE);
                     statusObject.add("message", "Bag transferred");
 
                     // Now contact DRS
@@ -168,7 +169,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                         ingestPost = new HttpPost();
                         ingestPost.setURI(new URI(drsConfigObject.getString("DRSendpoint")));
 
-                        byte[] encoded = Base64.getDecoder().decode(System.getProperty(RSA_KEY));
+                        byte[] encoded = Base64.getDecoder().decode(System.getProperty(RSA_KEY).replaceAll("[\\r\\n]", ""));
 
                         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
                         PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
@@ -211,6 +212,8 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                                     statusObject.add("message", responseObject.getString("message"));
                                     break;
                                 case FAILURE:
+                                    statusObject.add("status", status);
+                                    statusObject.add("message", responseObject.getString("message"));
                                     logger.severe(
                                             "DRS Ingest Failed for: " + packageId + " : " + responseObject.toString());
                                     return new Failure("DRS Archiver fail in Ingest call");
