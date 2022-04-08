@@ -23,9 +23,9 @@ import java.util.Objects;
  */
  @NamedQueries({
     @NamedQuery( name="License.findAll",
-            query="SELECT l FROM License l"),
+            query="SELECT l FROM License l ORDER BY (case when l.isDefault then 0 else 1 end), l.id asc"),
     @NamedQuery( name="License.findAllActive",
-            query="SELECT l FROM License l WHERE l.active='true'"),
+            query="SELECT l FROM License l WHERE l.active='true' ORDER BY (case when l.isDefault then 0 else 1 end), l.id asc"),
     @NamedQuery( name="License.findById",
             query = "SELECT l FROM License l WHERE l.id=:id"),
     @NamedQuery( name="License.findDefault",
