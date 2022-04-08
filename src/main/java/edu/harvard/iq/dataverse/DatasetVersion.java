@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.DateUtil;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.io.Serializable;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -92,6 +94,14 @@ public class DatasetVersion implements Serializable {
 
     public static final int ARCHIVE_NOTE_MAX_LENGTH = 1000;
     public static final int VERSION_NOTE_MAX_LENGTH = 1000;
+    
+    //Archival copies: Status message required components
+    public static final String STATUS = "status";
+    public static final String MESSAGE = "message";
+    //Archival Copies: Allowed Statuses
+    public static final String PENDING = "pending";
+    public static final String SUCCESS = "success";
+    public static final String FAILURE = "failure";
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -179,6 +189,8 @@ public class DatasetVersion implements Serializable {
     @Transient
     private DatasetVersionDifference dvd;
     
+    @Transient 
+    private JsonObject archivalStatus;
     
     public Long getId() {
         return this.id;
@@ -318,9 +330,38 @@ public class DatasetVersion implements Serializable {
     public String getArchivalCopyLocation() {
         return archivalCopyLocation;
     }
+    
+    public String getArchivalCopyLocationStatus() {
+        populateArchivalStatus();
+        
+        if(archivalStatus!=null) {
+            return archivalStatus.getString(STATUS);
+        } 
+        return null;
+    }
+    public String getArchivalCopyLocationMessage() {
+        populateArchivalStatus();
+        if(archivalStatus!=null) {
+            return archivalStatus.getString(MESSAGE);
+        } 
+        return null;
+    }
+    
+    private void populateArchivalStatus() {
+        if(archivalStatus ==null) {
+            if(archivalCopyLocation!=null) {
+                try {
+            archivalStatus = JsonUtil.getJsonObject(archivalCopyLocation);
+                } catch(Exception e) {
+                    logger.warning("DatasetVersion id: " + id + "has a non-JsonObject value, parsing error: " + e.getMessage());
+                }
+            }
+        }
+    }
 
     public void setArchivalCopyLocation(String location) {
         this.archivalCopyLocation = location;
+        populateArchivalStatus();
     }
 
     public String getDeaccessionLink() {

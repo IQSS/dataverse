@@ -1825,12 +1825,12 @@ public class Admin extends AbstractApiBean {
         } catch (WrappedResponse e1) {
             return error(Status.UNAUTHORIZED, "api key required");
         }
-        if (update.containsKey(AbstractSubmitToArchiveCommand.STATUS)
-                && update.containsKey(AbstractSubmitToArchiveCommand.MESSAGE)) {
-            String status = update.getString(AbstractSubmitToArchiveCommand.STATUS);
-            if (status.equals(AbstractSubmitToArchiveCommand.PENDING)
-                    || status.equals(AbstractSubmitToArchiveCommand.FAILURE)
-                    || status.equals(AbstractSubmitToArchiveCommand.SUCCESS)) {
+        if (update.containsKey(DatasetVersion.STATUS)
+                && update.containsKey(DatasetVersion.MESSAGE)) {
+            String status = update.getString(DatasetVersion.STATUS);
+            if (status.equals(DatasetVersion.PENDING)
+                    || status.equals(DatasetVersion.FAILURE)
+                    || status.equals(DatasetVersion.SUCCESS)) {
 
                 try {
                     Dataset ds;

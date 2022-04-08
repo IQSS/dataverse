@@ -27,15 +27,6 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
     private final Map<String, String> requestedSettings = new HashMap<String, String>();
     private static final Logger logger = Logger.getLogger(AbstractSubmitToArchiveCommand.class.getName());
     
-    //Status message required components
-    public static final String STATUS = "status";
-    public static final String MESSAGE = "message";
-    //Allowed Statuses
-    public static final String PENDING = "pending";
-    public static final String SUCCESS = "success";
-    public static final String FAILURE = "failure";
-    
-    
     public AbstractSubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
         super(aRequest, version.getDataset());
         this.version = version;
