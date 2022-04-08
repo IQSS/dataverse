@@ -182,16 +182,17 @@ public class ImportDDIServiceBean {
             throw new XMLStreamException("It doesn't start with the XML element <codeBook>");
         }
         
+        //Include metadataLanguage from an xml:lang attribute if present (null==undefined)
+        String metadataLanguage= xmlr.getAttributeValue("xml", "lang");
+        logger.info("Found metadatalanguage in ddi xml: " + metadataLanguage);
+        datasetDTO.setMetadataLanguage(metadataLanguage);
+
         // Some DDIs provide an ID in the <codeBook> section.
         // We are going to treat it as just another otherId.
         // (we've seen instances where this ID was the only ID found in
         // in a harvested DDI).
 
         String codeBookLevelId = xmlr.getAttributeValue(null, "ID");
-        
-        //Include metadataLanguage from an xml:lang attribute if present (null==undefined)
-        String metadataLanguage= xmlr.getAttributeValue("xml", "lang");
-        datasetDTO.setMetadataLanguage(metadataLanguage);
         
         // (but first we will parse and process the entire DDI - and only 
         // then add this codeBook-level id to the list of identifiers; i.e., 
