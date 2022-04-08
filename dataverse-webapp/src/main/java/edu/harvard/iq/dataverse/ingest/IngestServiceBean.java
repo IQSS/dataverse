@@ -539,9 +539,8 @@ public class IngestServiceBean {
             }
         }
 
-        String originalContentType = dataFile.getContentType();
-        String originalFileName = dataFile.getFileMetadata().getLabel();
-        long originalFileSize = dataFile.getFilesize();
+        OriginalFileData originalFileData = new OriginalFileData(dataFile.getFileMetadata().getLabel(),
+                dataFile.getContentType(), dataFile.getFilesize());
 
         File tabFile = tabDataIngest.getTabDelimitedFile();
 
@@ -561,8 +560,8 @@ public class IngestServiceBean {
         IngestUtil.modifyExistingFilename(
                 dataFile.getOwner().getLatestVersion(), dataFile.getFileMetadata(), FileUtil.replaceExtension(fileName, "tab"));
 
-        tabDataIngest.getDataTable().setOriginalFileFormat(originalContentType);
-        tabDataIngest.getDataTable().setOriginalFileSize(originalFileSize);
+
+        originalFileData.updateIngest(tabDataIngest);
 
         dataFile.setDataTable(tabDataIngest.getDataTable());
         tabDataIngest.getDataTable().setDataFile(dataFile);
@@ -577,7 +576,7 @@ public class IngestServiceBean {
             dataFile.setIngestReport(
                     IngestReport.createIngestFailureReport(dataFile, IngestError.STATS_OR_SIGNATURE_FAILURE, postIngestEx.getMessage()));
 
-            restoreIngestedDataFile(dataFile, tabDataIngest, originalFileSize, originalFileName, originalContentType);
+            originalFileData.restoreIngestedDataFile(dataFile, tabDataIngest);
             fileService.saveInNewTransaction(dataFile);
 
             logger.warning("Ingest failure: post-ingest tasks.");
@@ -585,7 +584,7 @@ public class IngestServiceBean {
         }
 
         try {
-            return finalizeIngestService.finalizeIngest(dataFile, additionalData, tabDataIngest, tabFile);
+            return finalizeIngestService.finalizeIngest(dataFile, additionalData, tabDataIngest, tabFile, originalFileData);
         } finally {
             tabFile.delete();
         }
@@ -721,16 +720,6 @@ public class IngestServiceBean {
     }
 
     // -------------------- PRIVATE --------------------
-
-    private void restoreIngestedDataFile(DataFile dataFile, TabularDataIngest tabDataIngest, long originalSize, String originalFileName, String originalContentType) {
-        dataFile.setDataTable(null);
-        if (tabDataIngest != null && tabDataIngest.getDataTable() != null) {
-            tabDataIngest.getDataTable().setDataFile(null);
-        }
-        dataFile.getFileMetadata().setLabel(originalFileName);
-        dataFile.setContentType(originalContentType);
-        dataFile.setFilesize(originalSize);
-    }
 
     private static void produceFrequencies(String[][] table, List<DataVariable> vars) {
         for (int i = 0; i < vars.size(); i++) {
@@ -1421,6 +1410,38 @@ public class IngestServiceBean {
             }
         } else {
             logger.warning("DataFile id=" + fileId + ": No such DataFile!");
+        }
+    }
+
+    public static class OriginalFileData {
+        private String fileName;
+        private String contentType;
+        private long size;
+
+        // -------------------- CONSTRUCTORS --------------------
+
+        public OriginalFileData(String fileName, String contentType, long size) {
+            this.fileName = fileName;
+            this.contentType = contentType;
+            this.size = size;
+        }
+
+        // -------------------- LOGIC --------------------
+
+        public void restoreIngestedDataFile(DataFile dataFile, TabularDataIngest tabDataIngest) {
+            dataFile.setDataTable(null);
+            if (tabDataIngest != null && tabDataIngest.getDataTable() != null) {
+                tabDataIngest.getDataTable().setDataFile(null);
+            }
+            dataFile.getFileMetadata().setLabel(fileName);
+            dataFile.setContentType(contentType);
+            dataFile.setFilesize(size);
+        }
+
+        public void updateIngest(TabularDataIngest tabDataIngest) {
+            DataTable dataTable = tabDataIngest.getDataTable();
+            dataTable.setOriginalFileFormat(contentType);
+            dataTable.setOriginalFileSize(size);
         }
     }
 }

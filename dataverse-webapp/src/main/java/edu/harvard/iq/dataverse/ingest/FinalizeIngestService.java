@@ -32,11 +32,10 @@ public class FinalizeIngestService {
      * Writes the results of ingest into DB and storage.
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public boolean finalizeIngest(DataFile dataFile, File additionalData, TabularDataIngest tabDataIngest, File tabFile) {
+    public boolean finalizeIngest(DataFile dataFile, File additionalData, TabularDataIngest tabDataIngest,
+                                  File tabFile, IngestServiceBean.OriginalFileData originalFileData) {
         long dataFileId = dataFile.getId();
-        String originalContentType = dataFile.getContentType();
-        String originalFileName = dataFile.getFileMetadata().getLabel();
-        long originalFileSize = dataFile.getFilesize();
+
         boolean databaseSaveSuccessful = false;
 
         dataFile.setIngestDone();
@@ -46,7 +45,7 @@ public class FinalizeIngestService {
             dataFile.setIngestRequest(null);
         }
         try {
-            dataFile = fileService.save(dataFile);
+            dataFile = fileService.saveInNewTransaction(dataFile);
             databaseSaveSuccessful = true;
 
             logger.fine("Ingest (" + dataFile.getFileMetadata().getLabel() + ".");
@@ -68,7 +67,7 @@ public class FinalizeIngestService {
                 dataFile.SetIngestProblem();
                 dataFile.setIngestReport(IngestReport.createIngestFailureReport(dataFile, IngestError.DB_FAIL));
 
-                restoreIngestedDataFile(dataFile, tabDataIngest, originalFileSize, originalFileName, originalContentType);
+                originalFileData.restoreIngestedDataFile(dataFile, tabDataIngest);
 
                 dataFile = fileService.save(dataFile);
             }
@@ -109,22 +108,12 @@ public class FinalizeIngestService {
                 dataFile.SetIngestProblem();
                 dataFile.setIngestReport(IngestReport.createIngestFailureReport(dataFile, IngestError.DB_FAIL));
 
-                restoreIngestedDataFile(dataFile, tabDataIngest, originalFileSize, originalFileName, originalContentType);
+                originalFileData.restoreIngestedDataFile(dataFile, tabDataIngest);
 
                 fileService.save(dataFile);
                 return false;
             }
         }
         return true;
-    }
-
-    private void restoreIngestedDataFile(DataFile dataFile, TabularDataIngest tabDataIngest, long originalSize, String originalFileName, String originalContentType) {
-        dataFile.setDataTable(null);
-        if (tabDataIngest != null && tabDataIngest.getDataTable() != null) {
-            tabDataIngest.getDataTable().setDataFile(null);
-        }
-        dataFile.getFileMetadata().setLabel(originalFileName);
-        dataFile.setContentType(originalContentType);
-        dataFile.setFilesize(originalSize);
     }
 }
