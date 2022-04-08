@@ -239,6 +239,9 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                     } catch (NoSuchAlgorithmException e) {
 // TODO Auto-generated catch block
                         e.printStackTrace();
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
                     }
                 } else {
 
@@ -259,6 +262,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
 
     public static String createJWTString(Algorithm algorithmRSA, String installationBrandName, String body, int expirationInMinutes) throws IOException {
         String canonicalBody = new JsonCanonicalizer(body).getEncodedString();
+        logger.fine("Canonical body: " + canonicalBody);
         String digest = DigestUtils.sha256Hex(canonicalBody);
         return JWT.create().withIssuer(BrandingUtil.getInstallationBrandName()).withIssuedAt(Date.from(Instant.now()))
                 .withExpiresAt(Date.from(Instant.now().plusSeconds(60 * expirationInMinutes)))
