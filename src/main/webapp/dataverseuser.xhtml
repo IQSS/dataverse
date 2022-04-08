@@ -381,14 +381,11 @@
                             </div>
                         </p:tab>
                         <p:tab id="accountInfo" title="#{bundle['header.user.selectTab.accountInfo']}">
-                            <div class="button-block tab-header margin-bottom text-right" jsf:rendered="#{empty DataverseUserPage.editMode or DataverseUserPage.passwordEditable or DataverseUserPage.accountDetailsEditable}">
+                            <div class="button-block tab-header margin-bottom text-right" jsf:rendered="#{empty DataverseUserPage.editMode and (DataverseUserPage.passwordEditable or DataverseUserPage.accountDetailsEditable)}">
                                 <div class="btn-group">
                                     <button type="button" id="editAccount" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                         <ui:fragment rendered="#{DataverseUserPage.accountDetailsEditable}">
                                             <span class="glyphicon glyphicon-pencil"/> #{bundle['account.edit']}
-                                        </ui:fragment>
-                                        <ui:fragment rendered="#{! DataverseUserPage.accountDetailsEditable}">
-                                            #{bundle['account.info']}
                                         </ui:fragment>
                                         <span class="caret"></span>
                                     </button>
