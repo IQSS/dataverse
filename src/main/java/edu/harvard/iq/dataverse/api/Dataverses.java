@@ -241,7 +241,7 @@ public class Dataverses extends AbstractApiBean {
             }
 
             //Throw BadRequestException if metadataLanguage isn't compatible with setting
-            DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(new HashMap<String, String>(), true));
+            DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
 
             // clean possible version metadata
             DatasetVersion version = ds.getVersions().get(0);
@@ -313,7 +313,7 @@ public class Dataverses extends AbstractApiBean {
             ds.setGlobalIdCreateTime(null);
             
             //Throw BadRequestException if metadataLanguage isn't compatible with setting
-            DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(new HashMap<String, String>(), true));
+            DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
 
             Dataset managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u)));
             return created("/datasets/" + managedDs.getId(),
@@ -344,7 +344,7 @@ public class Dataverses extends AbstractApiBean {
             }
 
             //Throw BadRequestException if metadataLanguage isn't compatible with setting
-            DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(new HashMap<String, String>(), true));
+            DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
 
             DatasetVersion version = ds.getVersions().get(0);
             if (version.getVersionState() == null) {
@@ -413,6 +413,7 @@ public class Dataverses extends AbstractApiBean {
             Dataset ds = null;
             try {
                 ds = jsonParser().parseDataset(importService.ddiToJson(xml));
+                DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
             } catch (JsonParseException jpe) {
                 return badRequest("Error parsing data as Json: "+jpe.getMessage());
             } catch (ImportException e) {
@@ -501,7 +502,7 @@ public class Dataverses extends AbstractApiBean {
             }
             
             //Throw BadRequestException if metadataLanguage isn't compatible with setting
-            DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(new HashMap<String, String>(), true));
+            DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
 
 
             if (ds.getVersions().isEmpty()) {

@@ -189,6 +189,10 @@ public class ImportDDIServiceBean {
 
         String codeBookLevelId = xmlr.getAttributeValue(null, "ID");
         
+        //Include metadataLanguage from an xml:lang attribute if present (null==undefined)
+        String metadataLanguage= xmlr.getAttributeValue(null, "xml:lang");
+        datasetDTO.setMetadataLanguage(metadataLanguage);
+        
         // (but first we will parse and process the entire DDI - and only 
         // then add this codeBook-level id to the list of identifiers; i.e., 
         // we don't want it to be the first on the list, if one or more
