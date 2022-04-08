@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.erdtman.jcs.JsonCanonicalizer;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -64,6 +65,32 @@ public class DRSSubmitToArchiveCommandTest {
                 + "uiGK3h/Wx+Xof2fQc4zTrNepNDpNj5kIToR2Ak933ZCqIK4kkRFTeXZR4hVe3gee"
                 + "+wIDAQAB";
 
+        String fakeBody = "{\n"
+                + "    \"s3_bucket_name\": \"dataverse-export-dev\",\n"
+                + "    \"package_id\": \"doi-10-5072-fk2-e6cmkr.v1.18\",\n"
+                + "    \"s3_path\": \"doi-10-5072-fk2-e6cmkr\",\n"
+                + "    \"admin_metadata\": {\n"
+                + "        \"accessFlag\": \"N\",\n"
+                + "        \"contentModel\": \"opaque\",\n"
+                + "        \"depositingSystem\": \"Harvard Dataverse\",\n"
+                + "        \"firstGenerationInDrs\": \"unspecified\",\n"
+                + "        \"objectRole\": \"CG:DATASET\",\n"
+                + "        \"usageClass\": \"LOWUSE\",\n"
+                + "        \"storageClass\": \"AR\",\n"
+                + "        \"s3_bucket_name\": \"dataverse-export-dev\",\n"
+                + "        \"ownerCode\": \"123\",\n"
+                + "        \"billingCode\": \"456\",\n"
+                + "        \"resourceNamePattern\": \"pattern\",\n"
+                + "        \"urnAuthorityPath\": \"path\",\n"
+                + "        \"depositAgent\": \"789\",\n"
+                + "        \"depositAgentEmail\": \"someone@mailinator.com\",\n"
+                + "        \"successEmail\": \"winner@mailinator.com\",\n"
+                + "        \"failureEmail\": \"loser@mailinator.com\",\n"
+                + "        \"successMethod\": \"method\",\n"
+                + "        \"adminCategory\": \"root\"\n"
+                + "    }\n"
+                + "}";
+        
         byte[] encoded = Base64.getDecoder().decode(privKeyString);
         try {
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
@@ -77,9 +104,14 @@ public class DRSSubmitToArchiveCommandTest {
              * keySpec = new X509EncodedKeySpec(encoded); return (RSAPublicKey)
              * keyFactory.generatePublic(keySpec); RSAPublicKey publicKey = new
              * RSAPublicKey(System.getProperty(RS256_KEY));
+             * 
+             * 
              */
+            String canonicalBody = new JsonCanonicalizer(fakeBody).getEncodedString();
+            System.out.println("Canonical form:"+ canonicalBody);
+            
             Algorithm algorithmRSA = Algorithm.RSA256(null, privKey);
-            String token1 = DRSSubmitToArchiveCommand.createJWTString(algorithmRSA, BrandingUtil.getInstallationBrandName(), "{\"stuff\":\"important\"}", 5);
+            String token1 = DRSSubmitToArchiveCommand.createJWTString(algorithmRSA, BrandingUtil.getInstallationBrandName(), fakeBody, 5);
             
             System.out.println("JWT: " + token1);
             DecodedJWT jwt = JWT.decode(token1);
