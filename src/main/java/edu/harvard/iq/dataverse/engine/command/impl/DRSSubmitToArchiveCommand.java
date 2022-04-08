@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
+import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -17,9 +18,17 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyFactory;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.time.Instant;
+import java.util.Base64;
+import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -31,6 +40,7 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 import javax.net.ssl.SSLContext;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -40,6 +50,13 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
+
+import org.erdtman.jcs.JsonCanonicalizer;
+
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTCreationException;
+import com.auth0.jwt.interfaces.DecodedJWT;
 
 @RequiredPermissions(Permission.PublishDataset)
 public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implements Command<DatasetVersion> {
@@ -53,6 +70,9 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
     private static final String S3_PATH = "s3_path";
     private static final String COLLECTIONS = "collections";
     private static final String PACKAGE_ID = "package_id";
+
+    private static final String RSA_KEY = "dataverse.archiver.drs.rsa_key";
+
     private static final String TRUST_CERT = "trust_cert";
 
     public DRSSubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
@@ -147,50 +167,79 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                     try {
                         ingestPost = new HttpPost();
                         ingestPost.setURI(new URI(drsConfigObject.getString("DRSendpoint")));
+
+                        byte[] encoded = Base64.getDecoder().decode(System.getProperty(RSA_KEY));
+
+                        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+                        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
+                        RSAPrivateKey privKey = (RSAPrivateKey) keyFactory.generatePrivate(keySpec);
+                        RSAPublicKey publicKey;
+                        /*
+                         * If public key is needed: encoded = Base64.decodeBase64(publicKeyPEM);
+                         * 
+                         * KeyFactory keyFactory = KeyFactory.getInstance("RS256"); X509EncodedKeySpec
+                         * keySpec = new X509EncodedKeySpec(encoded); return (RSAPublicKey)
+                         * keyFactory.generatePublic(keySpec); RSAPublicKey publicKey = new
+                         * RSAPublicKey(System.getProperty(RS256_KEY));
+                         */
+                        Algorithm algorithmRSA = Algorithm.RSA256(null, privKey);
+                        
                         String body = drsConfigString;
+                        String jwtString = createJWTString(algorithmRSA, BrandingUtil.getInstallationBrandName(), body, 5);
+                        logger.info("JWT: " + jwtString);
+
+                        ingestPost.setHeader("Authorization: Bearer", jwtString);
+
                         logger.info("Body: " + body);
                         ingestPost.setEntity(new StringEntity(body, "utf-8"));
                         ingestPost.setHeader("Content-Type", "application/json");
 
+                        try (CloseableHttpResponse response = client.execute(ingestPost)) {
+                            int code = response.getStatusLine().getStatusCode();
+                            String responseBody = new String(response.getEntity().getContent().readAllBytes(),
+                                    StandardCharsets.UTF_8);
+                            if (code == 202) {
+                                logger.info("Status: " + code);
+                                logger.info("Response" + responseBody);
+                                JsonObject responseObject = JsonUtil.getJsonObject(responseBody);
+                                String status = responseObject.getString("status");
+                                switch (status) {
+                                case PENDING:
+                                    logger.info("DRS Ingest successfully started for: " + packageId + " : "
+                                            + responseObject.toString());
+                                    statusObject.add("status", status);
+                                    statusObject.add("message", responseObject.getString("message"));
+                                    break;
+                                case FAILURE:
+                                    logger.severe(
+                                            "DRS Ingest Failed for: " + packageId + " : " + responseObject.toString());
+                                    return new Failure("DRS Archiver fail in Ingest call");
+                                default:
+                                    logger.warning("Unexpected Status: " + status);
+                                }
+                            } else {
+                                logger.severe("DRS Ingest Failed for: " + packageId + " with status code: " + code);
+                                return new Failure("DRS Archiver fail in Ingest call with status cvode: " + code);
+                            }
+                        } catch (ClientProtocolException e2) {
+                            e2.printStackTrace();
+                        } catch (IOException e2) {
+                            e2.printStackTrace();
+                        }
                     } catch (URISyntaxException e) {
                         return new Failure(
                                 "LDNAnnounceDatasetVersion workflow step failed: unable to parse inbox in :LDNTarget setting.");
+                    } catch (JWTCreationException exception) {
+                        // Invalid Signing configuration / Couldn't convert Claims.
                     }
                     // execute
-
-                    try (CloseableHttpResponse response = client.execute(ingestPost)) {
-                        int code = response.getStatusLine().getStatusCode();
-                        String responseBody = new String(response.getEntity().getContent().readAllBytes(),
-                                StandardCharsets.UTF_8);
-                        if (code == 202) {
-                            logger.info("Status: " + code);
-                            logger.info("Response" + responseBody);
-                            JsonObject responseObject = JsonUtil.getJsonObject(responseBody);
-                            String status = responseObject.getString("status");
-                            switch (status) {
-                            case PENDING:
-                                logger.info("DRS Ingest successfully started for: " + packageId + " : "
-                                        + responseObject.toString());
-                                statusObject.add("status", status);
-                                statusObject.add("message", responseObject.getString("message"));
-                                break;
-                            case FAILURE:
-                                logger.severe(
-                                        "DRS Ingest Failed for: " + packageId + " : " + responseObject.toString());
-                                return new Failure("DRS Archiver fail in Ingest call");
-                            default:
-                                logger.warning("Unexpected Status: " + status);
-                            }
-                        } else {
-                            logger.severe("DRS Ingest Failed for: " + packageId + " with status code: " + code);
-                            return new Failure("DRS Archiver fail in Ingest call with status cvode: " + code);
-                        }
-                    } catch (ClientProtocolException e2) {
-                        e2.printStackTrace();
-                    } catch (IOException e2) {
-                        e2.printStackTrace();
+                    catch (InvalidKeySpecException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (NoSuchAlgorithmException e) {
+// TODO Auto-generated catch block
+                        e.printStackTrace();
                     }
-
                 } else {
 
                     logger.warning("DRS: S3 archiving failed - will not call ingest: " + packageId);
@@ -206,6 +255,14 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
             return new Failure("DRS Submission not configured - no " + DRS_CONFIG + " found.");
         }
         return WorkflowStepResult.OK;
+    }
+
+    public static String createJWTString(Algorithm algorithmRSA, String installationBrandName, String body, int expirationInMinutes) throws IOException {
+        String canonicalBody = new JsonCanonicalizer(body).getEncodedString();
+        String digest = DigestUtils.sha256Hex(canonicalBody);
+        return JWT.create().withIssuer(BrandingUtil.getInstallationBrandName()).withIssuedAt(Date.from(Instant.now()))
+                .withExpiresAt(Date.from(Instant.now().plusSeconds(60 * expirationInMinutes)))
+                .withKeyId("defaultDataverse").withClaim("bodySHA256Hash", digest).sign(algorithmRSA);
     }
 
     private static String getArchivableAncestor(Dataverse ancestor, Set<String> collections) {
