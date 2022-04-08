@@ -183,7 +183,7 @@ public class ImportDDIServiceBean {
         }
         
         //Include metadataLanguage from an xml:lang attribute if present (null==undefined)
-        String metadataLanguage= xmlr.getAttributeValue("xml", "lang");
+        String metadataLanguage= xmlr.getAttributeValue("http://www.w3.org/XML/1998/namespace", "lang");
         logger.info("Found metadatalanguage in ddi xml: " + metadataLanguage);
         datasetDTO.setMetadataLanguage(metadataLanguage);
 
