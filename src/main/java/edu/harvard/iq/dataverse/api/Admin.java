@@ -45,7 +45,6 @@ import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -98,7 +97,6 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.rolesToJson;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
@@ -1830,7 +1828,9 @@ public class Admin extends AbstractApiBean {
                                         AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, request, dv);
 
                                         dv = commandEngine.submit(cmd);
-                                        if (!dv.getArchivalCopyLocation().equals("Attempted")) {
+                                        
+                                        //ToDo - Change when status PR is merged - a PENDING or SUCCESS status is a success
+                                        if (dv.getArchivalCopyLocation()!=null) {
                                             successes++;
                                             logger.info("DatasetVersion id=" + dv.getDataset().getGlobalId().toString() + " v" + dv.getFriendlyVersionNumber() + " submitted to Archive at: "
                                                     + dv.getArchivalCopyLocation());
@@ -1845,7 +1845,7 @@ public class Admin extends AbstractApiBean {
                                 }
                                 logger.fine(successes + failures + " of " + total + " archive submissions complete");
                             }
-                            logger.info("Archiving complete: " + successes + " Successes, " + failures + " Failures. See prior log messages for details.");
+                            logger.info("Archiving complete: " + successes + " Successfully started, " + failures + " Failures. See prior log messages for details.");
                         }
                     }).start();
                     return ok("Archiving all unarchived published dataset versions using " + cmd.getClass().getCanonicalName() + ". Processing can take significant time for large datasets/ large numbers of dataset versions. View log and/or check archive for results.");
