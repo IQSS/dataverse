@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.util.bagit;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
