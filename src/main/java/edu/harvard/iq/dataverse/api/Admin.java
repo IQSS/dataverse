@@ -97,6 +97,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.rolesToJson;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
@@ -1766,95 +1767,6 @@ public class Admin extends AbstractApiBean {
                 }
             } else {
                 return error(Status.BAD_REQUEST, "Version already archived at: " + dv.getArchivalCopyLocation());
-            }
-        } catch (WrappedResponse e1) {
-            return error(Status.UNAUTHORIZED, "api key required");
-        }
-    }
-    
-    
-    /**
-     * Iteratively archives all unarchived dataset versions
-     * @param
-     * listonly - don't archive, just list unarchived versions
-     * limit - max number to process
-     * lastestonly - only archive the latest versions
-     * @return
-     */
-    @POST
-    @Path("/archiveAllUnarchivedDatasetVersions")
-    public Response archiveAllUnarchivedDatasetVersions(@QueryParam("listonly") boolean listonly, @QueryParam("limit") Integer limit, @QueryParam("latestonly") boolean latestonly) {
-
-        try {
-            AuthenticatedUser au = findAuthenticatedUserOrDie();
-            // Note - the user is being set in the session so it becomes part of the
-            // DataverseRequest and is sent to the back-end command where it is used to get
-            // the API Token which is then used to retrieve files (e.g. via S3 direct
-            // downloads) to create the Bag
-            session.setUser(au);
-            List<DatasetVersion> dsl = datasetversionService.getUnarchivedDatasetVersions();
-            if (dsl != null) {
-                if (listonly) {
-                    JsonArrayBuilder jab = Json.createArrayBuilder();
-                    logger.info("Unarchived versions found: ");
-                    int current = 0;
-                    for (DatasetVersion dv : dsl) {
-                        if (limit != null && current >= limit) {
-                            break;
-                        }
-                        if (!latestonly || dv.equals(dv.getDataset().getLatestVersionForCopy())) {
-                            jab.add(dv.getDataset().getGlobalId().toString() + ", v" + dv.getFriendlyVersionNumber());
-                            logger.info("    " + dv.getDataset().getGlobalId().toString() + ", v" + dv.getFriendlyVersionNumber());
-                            current++;
-                        }
-                    }
-                    return ok(jab); 
-                }
-                String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
-                AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), dsl.get(0));
-                final DataverseRequest request = dvRequestService.getDataverseRequest();
-                if (cmd != null) {
-                    new Thread(new Runnable() {
-                        public void run() {
-                            int total = dsl.size();
-                            int successes = 0;
-                            int failures = 0;
-                            for (DatasetVersion dv : dsl) {
-                                if (limit != null && (successes + failures) >= limit) {
-                                    break;
-                                }
-                                if (!latestonly || dv.equals(dv.getDataset().getLatestVersionForCopy())) {
-                                    try {
-                                        AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, request, dv);
-
-                                        dv = commandEngine.submit(cmd);
-                                        
-                                        //ToDo - Change when status PR is merged - a PENDING or SUCCESS status is a success
-                                        if (dv.getArchivalCopyLocation()!=null) {
-                                            successes++;
-                                            logger.info("DatasetVersion id=" + dv.getDataset().getGlobalId().toString() + " v" + dv.getFriendlyVersionNumber() + " submitted to Archive at: "
-                                                    + dv.getArchivalCopyLocation());
-                                        } else {
-                                            failures++;
-                                            logger.severe("Error submitting version due to conflict/error at Archive for " + dv.getDataset().getGlobalId().toString() + " v" + dv.getFriendlyVersionNumber());
-                                        }
-                                    } catch (CommandException ex) {
-                                        failures++;
-                                        logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
-                                    }
-                                }
-                                logger.fine(successes + failures + " of " + total + " archive submissions complete");
-                            }
-                            logger.info("Archiving complete: " + successes + " Successfully started, " + failures + " Failures. See prior log messages for details.");
-                        }
-                    }).start();
-                    return ok("Archiving all unarchived published dataset versions using " + cmd.getClass().getCanonicalName() + ". Processing can take significant time for large datasets/ large numbers of dataset versions. View log and/or check archive for results.");
-                } else {
-                    logger.log(Level.SEVERE, "Could not find Archiver class: " + className);
-                    return error(Status.INTERNAL_SERVER_ERROR, "Could not find Archiver class: " + className);
-                }
-            } else {
-                return error(Status.BAD_REQUEST, "No unarchived published dataset versions found");
             }
         } catch (WrappedResponse e1) {
             return error(Status.UNAUTHORIZED, "api key required");
