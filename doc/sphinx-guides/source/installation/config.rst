@@ -1012,7 +1012,7 @@ where:
 
 A batch API call is also available that will attempt to archive any currently unarchived dataset versions:
 
-``curl -H "X-Dataverse-key: <key>" http://localhost:8080/api/admin/archiveAllUnarchivedDatasetVersions``
+``curl -X POST -H "X-Dataverse-key: <key>" http://localhost:8080/api/admin/archiveAllUnarchivedDatasetVersions``
 
 The call supports three optional query parameters that can be used in combination:
 

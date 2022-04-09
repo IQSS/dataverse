@@ -1781,7 +1781,7 @@ public class Admin extends AbstractApiBean {
      * lastestonly - only archive the latest versions
      * @return
      */
-    @GET
+    @POST
     @Path("/archiveAllUnarchivedDatasetVersions")
     public Response archiveAllUnarchivedDatasetVersions(@QueryParam("listonly") boolean listonly, @QueryParam("limit") Integer limit, @QueryParam("latestonly") boolean latestonly) {
 
