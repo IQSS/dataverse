@@ -304,7 +304,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     /**
      * A formal URI for the field used in json-ld exports
      */
-    @Column(name = "uri", columnDefinition = "TEXT", unique=true)
+    @Column(name = "uri", columnDefinition = "TEXT")
     private String uri;
 
     public String getUri() {
