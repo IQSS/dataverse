@@ -305,7 +305,7 @@ public class JsonParser {
         if(mdl==null || settingsService.getBaseMetadataLanguageMap(new HashMap<String,String>(), true).containsKey(mdl)) {
           dataset.setMetadataLanguage(mdl);
         }else {
-            throw new JsonParseException("Specified metadatalangauge not allowed.");
+            throw new JsonParseException("Specified metadatalanguage not allowed.");
         }
         
         DatasetVersion dsv = new DatasetVersion(); 
