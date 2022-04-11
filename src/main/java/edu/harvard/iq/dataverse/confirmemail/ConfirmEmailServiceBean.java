@@ -53,6 +53,8 @@ public class ConfirmEmailServiceBean {
      * @return true if verified, false otherwise
      */
     public boolean hasVerifiedEmail(AuthenticatedUser user) {
+        // Look up the user again in case the "verify email" link was clicked in another browser.
+        user = authenticationService.findByID(user.getId());
         boolean hasTimestamp = user.getEmailConfirmed() != null;
         boolean isVerifiedByAuthProvider = authenticationService.lookupProvider(user).isEmailVerified();
         // Note: In practice, we are relying on hasTimestamp to know if an email
