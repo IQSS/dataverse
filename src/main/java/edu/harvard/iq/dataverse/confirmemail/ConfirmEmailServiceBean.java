@@ -154,55 +154,59 @@ public class ConfirmEmailServiceBean {
     }
 
     /**
-     * Process the email confirmation token, allowing the user to confirm the
-     * email address or report on a invalid token.
+     * Process the email confirmation token. If all looks good, set the
+     * timestamp and delete the token/confirmEmailData.
      *
      * @param tokenQueried
+     * @return ConfirmEmailExecResponse
+     * @throws Exception with details of the problem we can show the user.
      */
-    public ConfirmEmailExecResponse processToken(String tokenQueried) {
+    public ConfirmEmailExecResponse processToken(String tokenQueried) throws Exception {
         deleteAllExpiredTokens();
-        ConfirmEmailExecResponse tokenUnusable = new ConfirmEmailExecResponse(tokenQueried, null);
-        ConfirmEmailData confirmEmailData = findSingleConfirmEmailDataByToken(tokenQueried);
-        if (confirmEmailData != null) {
-            if (confirmEmailData.isExpired()) {
-                // shouldn't reach here since tokens are being expired above
-                return tokenUnusable;
-            } else {
-                ConfirmEmailExecResponse goodTokenCanProceed = new ConfirmEmailExecResponse(tokenQueried, confirmEmailData);
-                if (confirmEmailData == null) {
-                    logger.fine("Invalid token.");
-                    return null;
-                }
-                long nowInMilliseconds = new Date().getTime();
-                Timestamp emailConfirmed = new Timestamp(nowInMilliseconds);
-                AuthenticatedUser authenticatedUser = confirmEmailData.getAuthenticatedUser();
-                if (authenticatedUser.isDeactivated()) {
-                    logger.fine("User is deactivated.");
-                    return null;
-                }
-                authenticatedUser.setEmailConfirmed(emailConfirmed);
-                em.remove(confirmEmailData);
-                return goodTokenCanProceed;
-            }
-        } else {
-            return tokenUnusable;
+        ConfirmEmailData confirmEmailData;
+        try {
+            confirmEmailData = findSingleConfirmEmailDataByToken(tokenQueried);
+        } catch (ConfirmEmailException ex) {
+            logger.info("processToken: could not find single ConfirmEmailData row using token " + tokenQueried);
+            throw new Exception(BundleUtil.getStringFromBundle("confirmEmail.details.failure.invalidToken"));
         }
+        if (confirmEmailData == null) {
+            // shouldn't reach here because "invalid token" exception should have already been thrown.
+            logger.info("processToken: ConfirmEmailData is null using token " + tokenQueried);
+            throw new Exception(BundleUtil.getStringFromBundle("confirmEmail.details.failure.lookupFailed"));
+        }
+        if (confirmEmailData.isExpired()) {
+            // shouldn't reach here since tokens are being expired above
+            logger.info("processToken: Token is expired: " + tokenQueried);
+            throw new Exception(BundleUtil.getStringFromBundle("confirmEmail.details.failure.tokenExpired"));
+        }
+        // No need for null check because confirmEmailData always has a user (a foreign key).
+        AuthenticatedUser authenticatedUser = confirmEmailData.getAuthenticatedUser();
+        if (authenticatedUser.isDeactivated()) {
+            logger.info("processToken: User is deactivated. Token was " + tokenQueried);
+            throw new Exception(BundleUtil.getStringFromBundle("confirmEmail.details.failure.userDeactivated"));
+        }
+        ConfirmEmailExecResponse response = new ConfirmEmailExecResponse(tokenQueried, confirmEmailData);
+        long nowInMilliseconds = new Date().getTime();
+        Timestamp emailConfirmed = new Timestamp(nowInMilliseconds);
+        authenticatedUser.setEmailConfirmed(emailConfirmed);
+        em.remove(confirmEmailData);
+        return response;
     }
 
     /**
      * @param token
      * @return Null or a single row of email confirmation data.
      */
-    private ConfirmEmailData findSingleConfirmEmailDataByToken(String token) {
-        ConfirmEmailData confirmEmailData = null;
+    private ConfirmEmailData findSingleConfirmEmailDataByToken(String token) throws ConfirmEmailException {
         TypedQuery<ConfirmEmailData> typedQuery = em.createNamedQuery("ConfirmEmailData.findByToken", ConfirmEmailData.class);
         typedQuery.setParameter("token", token);
         try {
-            confirmEmailData = typedQuery.getSingleResult();
+            return typedQuery.getSingleResult();
         } catch (NoResultException | NonUniqueResultException ex) {
-            logger.fine("When looking up " + token + " caught " + ex);
+            logger.info("findSingleConfirmEmailDataByToken: When looking up " + token + " caught an exception:" + ex);
+            throw new ConfirmEmailException("");
         }
-        return confirmEmailData;
     }
 
     public ConfirmEmailData findSingleConfirmEmailDataByUser(AuthenticatedUser user) {
