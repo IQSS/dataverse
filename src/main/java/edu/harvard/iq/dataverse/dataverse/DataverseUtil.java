@@ -80,8 +80,10 @@ public class DataverseUtil {
 
     public static void checkMetadataLangauge(Dataset ds, Dataverse owner, Map<String, String> mLangMap) {
         // Verify metadatalanguage is allowed
+logger.info("Dataset mdl: " + ds.getMetadataLanguage());
+logger.info("Owner mdl: " + owner.getMetadataLanguage());
+logger.info("Map langs: " + mLangMap.toString());
 
-        
         // :MetadataLanguage setting is not set
         // Must send UNDEFINED or match parent
         if (mLangMap.isEmpty()) {
