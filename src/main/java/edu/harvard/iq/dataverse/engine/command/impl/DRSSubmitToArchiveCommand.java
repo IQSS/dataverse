@@ -63,8 +63,6 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
 
     private static final Logger logger = Logger.getLogger(DRSSubmitToArchiveCommand.class.getName());
     private static final String DRS_CONFIG = ":DRSArchivalConfig";
-    private static final String FAILURE = "failure";
-    private static final String PENDING = "pending";
     private static final String ADMIN_METADATA = "admin_metadata";
     private static final String S3_BUCKET_NAME = "s3_bucket_name";
     private static final String S3_PATH = "s3_path";
@@ -111,7 +109,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                 if (s3Result == WorkflowStepResult.OK) {
                     //This will be overwritten if the further steps are successful
                     statusObject.add("status", DatasetVersion.FAILURE);
-                    statusObject.add("message", "Bag transferred");
+                    statusObject.add("message", "Bag transferred, ingest failed");
 
                     // Now contact DRS
                     boolean trustCert = drsConfigObject.getBoolean(TRUST_CERT, false);
@@ -203,26 +201,40 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                                 logger.info("Status: " + code);
                                 logger.info("Response" + responseBody);
                                 JsonObject responseObject = JsonUtil.getJsonObject(responseBody);
-                                String status = responseObject.getString("status");
-                                switch (status) {
-                                case PENDING:
-                                    logger.info("DRS Ingest successfully started for: " + packageId + " : "
-                                            + responseObject.toString());
-                                    statusObject.add("status", status);
-                                    statusObject.add("message", responseObject.getString("message"));
-                                    break;
-                                case FAILURE:
-                                    statusObject.add("status", status);
-                                    statusObject.add("message", responseObject.getString("message"));
-                                    logger.severe(
-                                            "DRS Ingest Failed for: " + packageId + " : " + responseObject.toString());
-                                    return new Failure("DRS Archiver fail in Ingest call");
-                                default:
-                                    logger.warning("Unexpected Status: " + status);
+                                if (responseObject.containsKey(DatasetVersion.STATUS)
+                                        && responseObject.containsKey(DatasetVersion.MESSAGE)) {
+                                    String status = responseObject.getString(DatasetVersion.STATUS);
+                                    if (status.equals(DatasetVersion.PENDING) || status.equals(DatasetVersion.FAILURE)
+                                            || status.equals(DatasetVersion.SUCCESS)) {
+                                        statusObject.addAll(Json.createObjectBuilder(responseObject));
+                                        switch (status) {
+                                        case DatasetVersion.PENDING:
+                                            logger.info("DRS Ingest successfully started for: " + packageId + " : "
+                                                    + responseObject.toString());
+                                            break;
+                                        case DatasetVersion.FAILURE:
+                                            logger.severe("DRS Ingest Failed for: " + packageId + " : "
+                                                    + responseObject.toString());
+                                            return new Failure("DRS Archiver fail in Ingest call");
+                                        case DatasetVersion.SUCCESS:
+                                            // We don't expect this from DRS
+                                            logger.warning("Unexpected Status: " + status);
+                                        }
+                                    } else {
+                                        logger.severe("DRS Ingest Failed for: " + packageId + " with returned status: "
+                                                + status);
+                                        return new Failure(
+                                                "DRS Archiver fail in Ingest call with returned status: " + status);
+                                    }
+                                } else {
+                                    logger.severe("DRS Ingest Failed for: " + packageId
+                                            + " - response does not include status and message");
+                                    return new Failure(
+                                            "DRS Archiver fail in Ingest call \" - response does not include status and message");
                                 }
                             } else {
                                 logger.severe("DRS Ingest Failed for: " + packageId + " with status code: " + code);
-                                return new Failure("DRS Archiver fail in Ingest call with status cvode: " + code);
+                                return new Failure("DRS Archiver fail in Ingest call with status code: " + code);
                             }
                         } catch (ClientProtocolException e2) {
                             e2.printStackTrace();
