@@ -4,7 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import edu.harvard.iq.dataverse.EMailValidator;
+import edu.harvard.iq.dataverse.validation.EMailValidator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -151,7 +151,7 @@ public class ShibUtil {
                     logger.fine(ex + " parsing " + email);
                 }
             } else {
-                boolean passedValidation = EMailValidator.isEmailValid(email, null);
+                boolean passedValidation = EMailValidator.isEmailValid(email);
                 logger.fine("Odd email address. No @ sign ('" + email + "'). Passed email validation: " + passedValidation);
             }
         } else {
