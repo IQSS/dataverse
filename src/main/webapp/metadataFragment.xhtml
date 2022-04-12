@@ -208,13 +208,18 @@
                                     <!-- Primitive fields -->
                                     <p:fragment id="editPrimitiveValueFragment" rendered="#{dsf.datasetFieldType.primitive}">
                                         <p:autoUpdate/>
-                                        <h:outputLabel for="#{dsf.datasetFieldType.controlledVocabulary ? (!dsf.datasetFieldType.allowMultiples ? 'unique1_focus' : 'unique2_focus') : ('fieldvaluelist:0:'.concat(((dsf.datasetFieldType.fieldType == 'TEXTBOX') ? 'description' : 'inputText')))}" styleClass="col-sm-3 control-label">
+                                        <div class="col-sm-12">
+                                          <h:outputLabel for="#{dsf.datasetFieldType.controlledVocabulary ? (!dsf.datasetFieldType.allowMultiples ? 'unique1_focus' : 'unique2_focus') : ('fieldvaluelist:0:'.concat(((dsf.datasetFieldType.fieldType == 'TEXTBOX') ? 'description' : 'inputText')))}" styleClass="col-sm-3 control-label">
                                             #{dsf.datasetFieldType.localeTitle}
                                             <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{dsf.required}"/>
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
-                                        </h:outputLabel>
-                                        <div class="form-group">
+                                          </h:outputLabel>
+                                          <h:outputText class="col-sm-9" value="#{customInstr.getString(dsf.datasetFieldType.name)}" rendered="#{customInstr.containsKey(dsf.datasetFieldType.name)}"/>
+                                        </div>
+                                        <div class="col-sm-3"/>
+                                        <div class="col-sm-9" style="padding-left:2px">
+                                          <div class="form-group">
                                             <div class="form-col-container col-sm-12">
                                                 <p:repeat value="#{dsf.datasetFieldValues}" var="dsfv" varStatus="valCount" id="fieldvaluelist">
                                                     <div class="form-group dataset-field-values">
@@ -272,17 +277,23 @@
                                                     </div>
                                                 </ui:fragment>
                                             </div>
+                                          </div>
                                         </div>
                                     </p:fragment>
                                     <!-- Compound fields -->
                                     <p:fragment id="editCompoundValueFragment" rendered="#{dsf.datasetFieldType.compound}">
                                         <p:autoUpdate/>
-                                        <div id="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label highlightBold">
+                                        <div>
+                                          <div id="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label highlightBold">
                                             #{dsf.datasetFieldType.localeTitle}
                                             <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{dsf.required}"/>                                           
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
-                                        </div>
+                                          </div>
+                                          <div class="col-sm-9"> <h:outputText value="#{customInstr.getString(dsf.datasetFieldType.name)}" rendered="#{customInstr.containsKey(dsf.datasetFieldType.name)}"/>
+                                          </div>
+                                        </div> 
+                                        <div class="col-sm-3"/>
                                         <div class="form-group form-col-container col-sm-9 dataset-field-values">
                                             <ui:fragment rendered="#{!dsf.required and dsf.hasRequiredChildren}">
                                                 <p class="help-block">
