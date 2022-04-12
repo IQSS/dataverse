@@ -76,9 +76,9 @@
 
         <div class="button-block">
             <p:commandLink id="restrictFileButton"  styleClass="btn btn-default" value="#{bundle.saveChanges}" 
-                             action="#{bean[restrictFileAction](true)}"
-                             disabled="#{empty bean.termsOfAccess  and !bean.fileAccessRequest}"
-                             onclick="PF('accessPopup').hide();"
+                            
+                             
+                             onclick="testTOA();"
                              update=":messagePanel" />
             <button class="btn btn-link" onclick="PF('accessPopup').hide();PF('blockDatasetForm').hide();" type="button">
                 #{bundle.cancel}
@@ -193,5 +193,22 @@
             </button>
         </div>
     </p:dialog> 
+    
+        <script>
+        //<![CDATA[
+
+        function testTOA() {
+           alert(#{empty bean.termsOfAccess}); 
+           alert(#{bean.termsOfAccess}); 
+           alert(#{!bean.fileAccessRequest});
+            if (#{empty bean.termsOfAccess  && !bean.fileAccessRequest}) {
+               alert('invalid');
+            } else {
+                alert('valid');
+            }
+        }
+        
+        //]]>
+    </script>
        
 </ui:composition>

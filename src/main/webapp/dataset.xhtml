@@ -762,12 +762,13 @@
                         <p:commandButton id="saveTop" styleClass="btn btn-default" value="#{bundle.saveChanges}"
                                          onclick="PF('blockDatasetForm').show();"
                                          update=":datasetForm,:messagePanel"
-                                         disabled="#{DatasetPage.editMode == 'LICENSE' 
-                                                     and DatasetPage.workingVersion.hasRestrictedFile 
-                                                        and !DatasetPage.workingVersion.getTermsOfUseAndAccess().isFileAccessRequest()
-                                                        and empty DatasetPage.workingVersion.getTermsOfUseAndAccess().termsOfAccess }"
                                          oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
                                          action="#{DatasetPage.save}"/>
+                                    <p:commandButton styleClass="btn btn-default" value="#{bundle.deaccession}"  
+                                                     oncomplete="if (args &amp;&amp; !args.validationFailed) PF('deaccessionConfirmation').show();">
+                                        <f:param name="DO_DEACCESSION_VALIDATION" value="true"/>
+                                    </p:commandButton>
+                        
                         <p:commandButton id="cancelTop" styleClass="btn btn-link" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" oncomplete="javascript:bind_bsui_components();">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                         </p:commandButton>
