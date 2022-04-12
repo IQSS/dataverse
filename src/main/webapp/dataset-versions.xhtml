@@ -147,7 +147,7 @@
                 <h:outputText id="versionDate" value="#{versionTab.publicationDateAsString}" />
             </ui:fragment>
         </p:column><!-- end: date column -->
-        <p:column headerText="Archived" class="col-sm-1"  rendered="#{DatasetPage.isSuperUser() and !versionTab.isDraft() and (DatasetPage.archivable or not empty(versionTab.archivalCopyLocation))}">
+        <p:column headerText="Archived" class="col-sm-1"  rendered="#{permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset') and !versionTab.isDraft() and (DatasetPage.archivable or not empty(versionTab.archivalCopyLocation))}">
             <ui:fragment>
               <ui:fragment rendered="#{'success' eq versionTab.archivalCopyLocationStatus}">
                 <h:outputLink id="archived" value="#{versionTab.archivalCopyLocationMessage}" target="_blank" rendered="#{DatasetPage.isSuperUser()}">
