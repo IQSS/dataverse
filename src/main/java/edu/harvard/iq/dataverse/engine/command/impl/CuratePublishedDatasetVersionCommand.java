@@ -120,10 +120,6 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
                 dataFile.setRestricted(draftFmd.isRestricted());
                 publishedFmd.setProvFreeForm(draftFmd.getProvFreeForm());
                 publishedFmd.copyVariableMetadata(draftFmd.getVariableMetadatas());
-                Collection<VarGroup> vgl = publishedFmd.getVarGroups();
-                for (VarGroup vg : vgl) {
-                    ctxt.em().remove(vg);
-                }
                 publishedFmd.copyVarGroups(draftFmd.getVarGroups());
 
             }
