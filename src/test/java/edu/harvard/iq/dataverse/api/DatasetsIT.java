@@ -2417,7 +2417,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Get the semantic metadata
         Response response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
         response.then().assertThat().statusCode(OK.getStatusCode());
-
+        response.prettyPeek();
         String expectedString = getData(response.getBody().asString());
         
         // Delete the dataset via native API
@@ -2425,9 +2425,12 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());
 
+        
+        logger.info("SENDING to reCreate Dataset: " + expectedString);
         // Now use the migrate API to recreate the dataset
         // Now use the migrate API to recreate the dataset
         response = UtilIT.recreateDatasetJsonLD(apiToken, dataverseAlias, expectedString);
+        response.prettyPeek();
         String body = response.getBody().asString();
         response.then().assertThat().statusCode(CREATED.getStatusCode());
 
@@ -2583,5 +2586,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data.latestVersion.files[0].directoryLabel", equalTo("code"));
         
     }
+
+
     
 }

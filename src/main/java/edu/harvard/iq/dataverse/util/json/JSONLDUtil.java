@@ -89,6 +89,9 @@ public class JSONLDUtil {
                         + "'. Make sure it is in valid form - see Dataverse Native API documentation.");
             }
         }
+        
+        //Store the metadatalanguage if sent - the caller needs to check whether it is allowed (as with any GlobalID)
+        ds.setMetadataLanguage(jsonld.getString(JsonLDTerm.schemaOrg("inLanguage").getUrl(),null));
 
         dsv = updateDatasetVersionMDFromJsonLD(dsv, jsonld, metadataBlockSvc, datasetFieldSvc, append, migrating, licenseSvc);
         dsv.setDataset(ds);

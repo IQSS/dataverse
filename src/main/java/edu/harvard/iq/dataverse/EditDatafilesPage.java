@@ -138,6 +138,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     SettingsWrapper settingsWrapper;
     @Inject
     LicenseServiceBean licenseServiceBean;
+    @Inject
+    DataFileCategoryServiceBean dataFileCategoryService;
 
     private Dataset dataset = new Dataset();
     
@@ -1019,7 +1021,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
                                 
             // Try to save the NEW files permanently: 
-            List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(workingVersion, newFiles, null);
+            List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(workingVersion, newFiles, null, true);
             
             // reset the working list of fileMetadatas, as to only include the ones
             // that have been added to the version successfully: 
@@ -2737,7 +2739,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     private void refreshCategoriesByName(){
         categoriesByName= new ArrayList<>();
-        for (String category: dataset.getCategoriesByName() ){
+        List<String> datasetFileCategories = dataFileCategoryService.mergeDatasetFileCategories(dataset.getCategories());
+        for (String category: datasetFileCategories ){
             categoriesByName.add(category);
         }
         refreshSelectedTags();
