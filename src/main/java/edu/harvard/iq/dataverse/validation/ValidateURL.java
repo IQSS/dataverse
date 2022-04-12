@@ -1,5 +1,5 @@
 
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.validation;
 
 import java.lang.annotation.Documented;
 import static java.lang.annotation.ElementType.FIELD;
@@ -14,8 +14,8 @@ import javax.validation.Payload;
 @Constraint(validatedBy = {URLValidator.class})
 @Documented
 public @interface ValidateURL {
-
-    String message() default "Failed Validation for Validate URL";
+    String message() default "'${validatedValue}' {url.invalid}";
+    String[] schemes() default {"http", "https", "ftp"};
 
     Class<?>[] groups() default {};
 
