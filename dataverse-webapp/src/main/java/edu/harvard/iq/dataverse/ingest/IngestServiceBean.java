@@ -1239,6 +1239,10 @@ public class IngestServiceBean {
         DataTable dataTable = dataFile.getDataTable();
         int numberOfCases = dataTable.getCaseQuantity().intValue();
         for (int i = 0; i < dataTable.getVarQuantity(); i++) {
+            DataVariable dataVariable = dataTable.getDataVariables().get(i);
+            if (!dataVariable.isIntervalDiscrete() || !dataVariable.isTypeNumeric()) {
+                continue;
+            }
             Long[] vector = TabularSubsetGenerator.subsetLongVector(table, i, numberOfCases);
             calculateContinuousSummaryStatistics(dataFile, i, vector);
             calculateUNF(dataFile, i, vector);
