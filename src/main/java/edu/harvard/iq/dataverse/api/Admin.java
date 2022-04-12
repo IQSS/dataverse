@@ -1787,7 +1787,7 @@ public class Admin extends AbstractApiBean {
     
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("/submitDataVersionToArchive/{id}/{version}/status")
+    @Path("/submitDatasetVersionToArchive/{id}/{version}/status")
     public Response getDatasetVersionToArchiveStatus(@PathParam("id") String dsid,
             @PathParam("version") String versionNumber) {
 
@@ -1812,7 +1812,7 @@ public class Admin extends AbstractApiBean {
 
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
-    @Path("/submitDataVersionToArchive/{id}/{version}/status")
+    @Path("/submitDatasetVersionToArchive/{id}/{version}/status")
     public Response setDatasetVersionToArchiveStatus(@PathParam("id") String dsid,
             @PathParam("version") String versionNumber, JsonObject update) {
 
@@ -1842,6 +1842,7 @@ public class Admin extends AbstractApiBean {
                         return error(Status.NOT_FOUND, "Dataset version not found");
                     }
                     dv.setArchivalCopyLocation(JsonUtil.prettyPrint(update));
+                    return ok("Status updated");
 
                 } catch (WrappedResponse e) {
                     return error(Status.NOT_FOUND, "Dataset not found");
@@ -1850,9 +1851,6 @@ public class Admin extends AbstractApiBean {
         }
         return error(Status.BAD_REQUEST, "Unacceptable status format");
     }
-
-    
-    
     
     /**
      * Iteratively archives all unarchived dataset versions
