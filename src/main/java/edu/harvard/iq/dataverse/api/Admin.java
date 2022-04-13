@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
+import edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
@@ -1784,73 +1785,7 @@ public class Admin extends AbstractApiBean {
             return error(Status.UNAUTHORIZED, "api key required");
         }
     }
-    
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("/submitDatasetVersionToArchive/{id}/{version}/status")
-    public Response getDatasetVersionToArchiveStatus(@PathParam("id") String dsid,
-            @PathParam("version") String versionNumber) {
 
-        try {
-            AuthenticatedUser au = findAuthenticatedUserOrDie();
-            if (!au.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "Superusers only.");
-            }
-            Dataset ds = findDatasetOrDie(dsid);
-
-            DatasetVersion dv = datasetversionService.findByFriendlyVersionNumber(ds.getId(), versionNumber);
-            if (dv.getArchivalCopyLocation() == null) {
-                return error(Status.NO_CONTENT, "This dataset version has not been archived");
-            } else {
-                JsonObject status = JsonUtil.getJsonObject(dv.getArchivalCopyLocation());
-                return ok(status);
-            }
-        } catch (WrappedResponse e1) {
-            return error(Status.UNAUTHORIZED, "api key required");
-        }
-    }
-
-    @PUT
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Path("/submitDatasetVersionToArchive/{id}/{version}/status")
-    public Response setDatasetVersionToArchiveStatus(@PathParam("id") String dsid,
-            @PathParam("version") String versionNumber, JsonObject update) {
-
-        try {
-            AuthenticatedUser au = findAuthenticatedUserOrDie();
-
-            if (!au.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "Superusers only.");
-            }
-        } catch (WrappedResponse e1) {
-            return error(Status.UNAUTHORIZED, "api key required");
-        }
-        if (update.containsKey(DatasetVersion.STATUS)
-                && update.containsKey(DatasetVersion.MESSAGE)) {
-            String status = update.getString(DatasetVersion.STATUS);
-            if (status.equals(DatasetVersion.PENDING)
-                    || status.equals(DatasetVersion.FAILURE)
-                    || status.equals(DatasetVersion.SUCCESS)) {
-
-                try {
-                    Dataset ds;
-
-                    ds = findDatasetOrDie(dsid);
-
-                    DatasetVersion dv = datasetversionService.findByFriendlyVersionNumber(ds.getId(), versionNumber);
-                    if(dv==null) {
-                        return error(Status.NOT_FOUND, "Dataset version not found");
-                    }
-                    dv.setArchivalCopyLocation(JsonUtil.prettyPrint(update));
-                    return ok("Status updated");
-
-                } catch (WrappedResponse e) {
-                    return error(Status.NOT_FOUND, "Dataset not found");
-                }
-            }
-        }
-        return error(Status.BAD_REQUEST, "Unacceptable status format");
-    }
     
     /**
      * Iteratively archives all unarchived dataset versions

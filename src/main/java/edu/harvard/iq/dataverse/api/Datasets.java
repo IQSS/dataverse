@@ -57,7 +57,7 @@ import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
-
+import edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -86,6 +86,7 @@ import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
@@ -217,6 +218,9 @@ public class Datasets extends AbstractApiBean {
     
     @Inject
     DataverseRoleServiceBean dataverseRoleService;
+    
+    @EJB
+    DatasetVersionServiceBean datasetversionService;
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -3278,5 +3282,79 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         }
         csvSB.append("\n");
         return ok(csvSB.toString(), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "datasets.status.csv");
+    }
+    
+    
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/submitDatasetVersionToArchive/{id}/{version}/status")
+    public Response getDatasetVersionToArchiveStatus(@PathParam("id") String dsid,
+            @PathParam("version") String versionNumber) {
+
+        try {
+            AuthenticatedUser au = findAuthenticatedUserOrDie();
+            if (!au.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+            Dataset ds = findDatasetOrDie(dsid);
+
+            DatasetVersion dv = datasetversionService.findByFriendlyVersionNumber(ds.getId(), versionNumber);
+            if (dv.getArchivalCopyLocation() == null) {
+                return error(Status.NO_CONTENT, "This dataset version has not been archived");
+            } else {
+                JsonObject status = JsonUtil.getJsonObject(dv.getArchivalCopyLocation());
+                return ok(status);
+            }
+        } catch (WrappedResponse e1) {
+            return error(Status.UNAUTHORIZED, "api key required");
+        }
+    }
+
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/submitDatasetVersionToArchive/{id}/{version}/status")
+    public Response setDatasetVersionToArchiveStatus(@PathParam("id") String dsid,
+            @PathParam("version") String versionNumber, JsonObject update) {
+
+        logger.info(JsonUtil.prettyPrint(update));
+        try {
+            AuthenticatedUser au = findAuthenticatedUserOrDie();
+
+            if (!au.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse e1) {
+            return error(Status.UNAUTHORIZED, "api key required");
+        }
+        if (update.containsKey(DatasetVersion.STATUS)
+                && update.containsKey(DatasetVersion.MESSAGE)) {
+            String status = update.getString(DatasetVersion.STATUS);
+            if (status.equals(DatasetVersion.PENDING)
+                    || status.equals(DatasetVersion.FAILURE)
+                    || status.equals(DatasetVersion.SUCCESS)) {
+
+                try {
+                    Dataset ds;
+
+                    ds = findDatasetOrDie(dsid);
+
+                    DatasetVersion dv = datasetversionService.findByFriendlyVersionNumber(ds.getId(), versionNumber);
+                    if(dv==null) {
+                        return error(Status.NOT_FOUND, "Dataset version not found");
+                    }
+                    dv.setArchivalCopyLocation(JsonUtil.prettyPrint(update));
+                    dv = datasetversionService.merge(dv);
+                    logger.info("location now: " + dv.getArchivalCopyLocation());
+                    logger.info("status now: " + dv.getArchivalCopyLocationStatus());
+                    logger.info("message now: " + dv.getArchivalCopyLocationMessage());
+                    
+                    return ok("Status updated");
+
+                } catch (WrappedResponse e) {
+                    return error(Status.NOT_FOUND, "Dataset not found");
+                }
+            }
+        }
+        return error(Status.BAD_REQUEST, "Unacceptable status format");
     }
 }

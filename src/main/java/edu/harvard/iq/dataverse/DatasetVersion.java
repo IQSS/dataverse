@@ -332,7 +332,7 @@ public class DatasetVersion implements Serializable {
     }
     
     public String getArchivalCopyLocationStatus() {
-        populateArchivalStatus();
+        populateArchivalStatus(false);
         
         if(archivalStatus!=null) {
             return archivalStatus.getString(STATUS);
@@ -340,15 +340,15 @@ public class DatasetVersion implements Serializable {
         return null;
     }
     public String getArchivalCopyLocationMessage() {
-        populateArchivalStatus();
+        populateArchivalStatus(false);
         if(archivalStatus!=null) {
             return archivalStatus.getString(MESSAGE);
         } 
         return null;
     }
     
-    private void populateArchivalStatus() {
-        if(archivalStatus ==null) {
+    private void populateArchivalStatus(boolean force) {
+        if(archivalStatus ==null || force) {
             if(archivalCopyLocation!=null) {
                 try {
             archivalStatus = JsonUtil.getJsonObject(archivalCopyLocation);
@@ -361,7 +361,7 @@ public class DatasetVersion implements Serializable {
 
     public void setArchivalCopyLocation(String location) {
         this.archivalCopyLocation = location;
-        populateArchivalStatus();
+        populateArchivalStatus(true);
     }
 
     public String getDeaccessionLink() {
