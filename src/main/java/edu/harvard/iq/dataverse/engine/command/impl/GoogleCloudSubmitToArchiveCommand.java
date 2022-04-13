@@ -33,6 +33,7 @@ import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageException;
 import com.google.cloud.storage.StorageOptions;
 
 @RequiredPermissions(Permission.PublishDataset)
@@ -41,6 +42,8 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
     private static final Logger logger = Logger.getLogger(GoogleCloudSubmitToArchiveCommand.class.getName());
     private static final String GOOGLECLOUD_BUCKET = ":GoogleCloudBucket";
     private static final String GOOGLECLOUD_PROJECT = ":GoogleCloudProject";
+
+    boolean success = false;
 
     public GoogleCloudSubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
         super(aRequest, version);
@@ -55,7 +58,7 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
         if (bucketName != null && projectName != null) {
             Storage storage;
             try {
-                FileInputStream fis = new FileInputStream(System.getProperty("dataverse.files.directory") + System.getProperty("file.separator")+ "googlecloudkey.json");
+                FileInputStream fis = new FileInputStream(System.getProperty("dataverse.files.directory") + System.getProperty("file.separator") + "googlecloudkey.json");
                 storage = StorageOptions.newBuilder()
                         .setCredentials(ServiceAccountCredentials.fromStream(fis))
                         .setProjectId(projectName)
@@ -73,42 +76,51 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                     Map<String, String> metadata = dc.getDataCiteMetadata();
                     String dataciteXml = DOIDataCiteRegisterService.getMetadataFromDvObject(
                             dv.getDataset().getGlobalId().asString(), metadata, dv.getDataset());
-                    String blobIdString = null;
                     MessageDigest messageDigest = MessageDigest.getInstance("MD5");
                     try (PipedInputStream dataciteIn = new PipedInputStream(); DigestInputStream digestInputStream = new DigestInputStream(dataciteIn, messageDigest)) {
                         // Add datacite.xml file
 
-                        new Thread(new Runnable() {
+                        Thread dcThread = new Thread(new Runnable() {
                             public void run() {
                                 try (PipedOutputStream dataciteOut = new PipedOutputStream(dataciteIn)) {
 
                                     dataciteOut.write(dataciteXml.getBytes(Charset.forName("utf-8")));
                                     dataciteOut.close();
+                                    success = true;
                                 } catch (Exception e) {
                                     logger.severe("Error creating datacite.xml: " + e.getMessage());
                                     // TODO Auto-generated catch block
                                     e.printStackTrace();
-                                    throw new RuntimeException("Error creating datacite.xml: " + e.getMessage());
+                                    // throw new RuntimeException("Error creating datacite.xml: " + e.getMessage());
                                 }
                             }
-                        }).start();
-                        //Have seen broken pipe in PostPublishDataset workflow without this delay
-                        int i=0;
-                        while(digestInputStream.available()<=0 && i<100) {
+                        });
+                        dcThread.start();
+                        // Have seen broken pipe in PostPublishDataset workflow without this delay
+                        int i = 0;
+                        while (digestInputStream.available() <= 0 && i < 100) {
                             Thread.sleep(10);
                             i++;
                         }
-                        Blob dcXml = bucket.create(spaceName + "/datacite.v" + dv.getFriendlyVersionNumber()+".xml", digestInputStream, "text/xml", Bucket.BlobWriteOption.doesNotExist());
+                        Blob dcXml = bucket.create(spaceName + "/datacite.v" + dv.getFriendlyVersionNumber() + ".xml", digestInputStream, "text/xml", Bucket.BlobWriteOption.doesNotExist());
+
+                        dcThread.join();
                         String checksum = dcXml.getMd5ToHexString();
                         logger.fine("Content: datacite.xml added with checksum: " + checksum);
                         String localchecksum = Hex.encodeHexString(digestInputStream.getMessageDigest().digest());
-                        if (!checksum.equals(localchecksum)) {
-                            logger.severe(checksum + " not equal to " + localchecksum);
+                        if (!success || !checksum.equals(localchecksum)) {
+                            logger.severe(success ? checksum + " not equal to " + localchecksum : "datacite.xml transfer did not succeed");
+                            try {
+                                dcXml.delete(Blob.BlobSourceOption.generationMatch());
+                            } catch (StorageException se) {
+                                logger.warning(se.getMessage());
+                            }
                             return new Failure("Error in transferring DataCite.xml file to GoogleCloud",
                                     "GoogleCloud Submission Failure: incomplete metadata transfer");
                         }
 
                         // Store BagIt file
+                        success = false;
                         String fileName = spaceName + ".v" + dv.getFriendlyVersionNumber() + ".zip";
 
                         // Add BagIt ZIP file
@@ -123,13 +135,14 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                                         BagGenerator bagger = new BagGenerator(new OREMap(dv, false), dataciteXml);
                                         bagger.setAuthenticationKey(token.getTokenString());
                                         bagger.generateBag(out);
+                                        success=true;
                                     } catch (Exception e) {
                                         logger.severe("Error creating bag: " + e.getMessage());
                                         // TODO Auto-generated catch block
                                         e.printStackTrace();
                                         try {
                                             digestInputStream2.close();
-                                        } catch(Exception ex) {
+                                        } catch (Exception ex) {
                                             logger.warning(ex.getLocalizedMessage());
                                         }
                                         throw new RuntimeException("Error creating bag: " + e.getMessage());
@@ -165,48 +178,46 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                              * increased, and/or a change in how archives are sent to google (e.g. as
                              * multiple blobs that get aggregated) would be required.
                              */
-                            i=0;
-                            while(digestInputStream2.available()<=90000 && i<2000 && writeThread.isAlive()) {
+                            i = 0;
+                            while (digestInputStream2.available() <= 90000 && i < 2000 && writeThread.isAlive()) {
                                 Thread.sleep(1000);
                                 logger.fine("avail: " + digestInputStream2.available() + " : " + writeThread.getState().toString());
                                 i++;
                             }
                             logger.fine("Bag: transfer started, i=" + i + ", avail = " + digestInputStream2.available());
-                            if(i==2000) {
+                            if (i == 2000) {
                                 throw new IOException("Stream not available");
                             }
                             Blob bag = bucket.create(spaceName + "/" + fileName, digestInputStream2, "application/zip", Bucket.BlobWriteOption.doesNotExist());
-                            if(bag.getSize()==0) {
+                            if (bag.getSize() == 0) {
                                 throw new IOException("Empty Bag");
                             }
-                            blobIdString = bag.getBlobId().getBucket() + "/" + bag.getBlobId().getName();
+                            writeThread.join();
+
                             checksum = bag.getMd5ToHexString();
                             logger.fine("Bag: " + fileName + " added with checksum: " + checksum);
                             localchecksum = Hex.encodeHexString(digestInputStream2.getMessageDigest().digest());
-                            if (!checksum.equals(localchecksum)) {
-                                logger.severe(checksum + " not equal to " + localchecksum);
+                            if (!success || !checksum.equals(localchecksum)) {
+                                logger.severe(success ? checksum + " not equal to " + localchecksum : "bag transfer did not succeed");
+                                try {
+                                    bag.delete(Blob.BlobSourceOption.generationMatch());
+                                } catch (StorageException se) {
+                                    logger.warning(se.getMessage());
+                                }
                                 return new Failure("Error in transferring Zip file to GoogleCloud",
                                         "GoogleCloud Submission Failure: incomplete archive transfer");
                             }
-                        } catch (RuntimeException rte) {
-                            logger.severe("Error creating Bag during GoogleCloud archiving: " + rte.getMessage());
-                            return new Failure("Error in generating Bag",
-                                    "GoogleCloud Submission Failure: archive file not created");
                         }
 
                         logger.fine("GoogleCloud Submission step: Content Transferred");
 
                         // Document the location of dataset archival copy location (actually the URL
-                        // where you can
-                        // view it as an admin)
+                        // where you can view it as an admin)
+                        // Changed to point at bucket where the zip and datacite.xml are visible
 
                         StringBuffer sb = new StringBuffer("https://console.cloud.google.com/storage/browser/");
-                        sb.append(blobIdString);
+                        sb.append(bucketName + "/" + spaceName);
                         dv.setArchivalCopyLocation(sb.toString());
-                    } catch (RuntimeException rte) {
-                        logger.severe("Error creating datacite xml file during GoogleCloud Archiving: " + rte.getMessage());
-                        return new Failure("Error in generating datacite.xml file",
-                                "GoogleCloud Submission Failure: metadata file not created");
                     }
                 } else {
                     logger.warning("GoogleCloud Submision Workflow aborted: Dataset locked for pidRegister");
