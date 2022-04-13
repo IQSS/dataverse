@@ -41,10 +41,8 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
     private static final String DURACLOUD_PORT = ":DuraCloudPort";
     private static final String DURACLOUD_HOST = ":DuraCloudHost";
     private static final String DURACLOUD_CONTEXT = ":DuraCloudContext";
-    private static final int DEFAULT_THREADS = 2;
     
     boolean success = false;
-    int bagThreads =  DEFAULT_THREADS;
     public DuraCloudSubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
         super(aRequest, version);
     }
@@ -58,14 +56,6 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
         String dpnContext = requestedSettings.get(DURACLOUD_CONTEXT) != null ? requestedSettings.get(DURACLOUD_CONTEXT)
                 : DEFAULT_CONTEXT;
         String host = requestedSettings.get(DURACLOUD_HOST);
-        
-        if (requestedSettings.get(BagGenerator.BAG_GENERATOR_THREADS) != null) {
-            try {
-                bagThreads=Integer.valueOf(requestedSettings.get(BagGenerator.BAG_GENERATOR_THREADS));
-            } catch (NumberFormatException nfe) {
-                logger.warning("Can't parse the value of setting " + BagGenerator.BAG_GENERATOR_THREADS + " as an integer - using default:" + DEFAULT_THREADS);
-            }
-        }
         
         if (host != null) {
             Dataset dataset = dv.getDataset();
@@ -177,7 +167,6 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                                     try (PipedOutputStream out = new PipedOutputStream(in)) {
                                         // Generate bag
                                         BagGenerator bagger = new BagGenerator(new OREMap(dv, false), dataciteXml);
-                                        bagger.setNumConnections(bagThreads);
                                         bagger.setAuthenticationKey(token.getTokenString());
                                         bagger.generateBag(out);
                                         success = true;
