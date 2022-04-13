@@ -13,7 +13,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.EMailValidator;
+import edu.harvard.iq.dataverse.validation.EMailValidator;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.UserServiceBean;
@@ -97,6 +97,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import java.io.IOException;
 import java.io.OutputStream;
+
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.rolesToJson;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
@@ -658,7 +659,7 @@ public class Admin extends AbstractApiBean {
 		String overwriteEmail = randomUser.get("email");
 		overwriteEmail = newEmailAddressToUse;
 		logger.info("overwriteEmail: " + overwriteEmail);
-		boolean validEmail = EMailValidator.isEmailValid(overwriteEmail, null);
+		boolean validEmail = EMailValidator.isEmailValid(overwriteEmail);
 		if (!validEmail) {
 			// See https://github.com/IQSS/dataverse/issues/2998
 			return error(Response.Status.BAD_REQUEST, "invalid email: " + overwriteEmail);
@@ -815,7 +816,7 @@ public class Admin extends AbstractApiBean {
 		String overwriteEmail = randomUser.get("email");
 		overwriteEmail = newEmailAddressToUse;
 		logger.info("overwriteEmail: " + overwriteEmail);
-		boolean validEmail = EMailValidator.isEmailValid(overwriteEmail, null);
+		boolean validEmail = EMailValidator.isEmailValid(overwriteEmail);
 		if (!validEmail) {
 			// See https://github.com/IQSS/dataverse/issues/2998
 			return error(Response.Status.BAD_REQUEST, "invalid email: " + overwriteEmail);

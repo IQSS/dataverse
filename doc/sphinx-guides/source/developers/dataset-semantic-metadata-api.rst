@@ -99,5 +99,5 @@ With curl, this is done by adding the following header:
 
   curl -H X-Dataverse-key:$API_TOKEN -H 'Content-Type: application/ld+json' -X POST $SERVER_URL/api/dataverses/$DATAVERSE_ID/datasets --upload-file dataset-create.jsonld
 
-An example jsonld file is available at :download:`dataset-create.jsonld <../_static/api/dataset-create.jsonld>` 
+An example jsonld file is available at :download:`dataset-create.jsonld <../_static/api/dataset-create.jsonld>` (:download:`dataset-create_en.jsonld <../_static/api/dataset-create.jsonld>` is a version that sets the metadata language (see :ref:`:MetadataLanguages`) to English (en).)
   
