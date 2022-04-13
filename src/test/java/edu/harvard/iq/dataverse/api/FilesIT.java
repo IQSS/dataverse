@@ -3,8 +3,9 @@ package edu.harvard.iq.dataverse.api;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
 import java.util.logging.Logger;
-import org.junit.BeforeClass;
+
 import org.junit.Test;
+import org.junit.BeforeClass;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.path.xml.XmlPath;
 import static edu.harvard.iq.dataverse.api.AccessIT.apiToken;
@@ -39,11 +40,10 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.CoreMatchers.nullValue;
 import org.hamcrest.Matchers;
-import org.junit.AfterClass;
+
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import org.junit.Ignore;
 
 public class FilesIT {
 
@@ -1781,6 +1781,60 @@ public class FilesIT {
 //        publishDataverse.then().assertThat().statusCode(OK.getStatusCode());
 //        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPid, "major", authorApiToken);
 //        publishDataset.then().assertThat().statusCode(OK.getStatusCode());
+
+    }
+
+    @Test
+    public void testAddFileToDatasetSkipTabIngest() throws IOException, InterruptedException {
+
+        Response createUser = UtilIT.createRandomUser();
+        assertEquals(200, createUser.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        assertEquals(201, createDataverseResponse.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        assertEquals(201, createDatasetResponse.getStatusCode());
+        Integer datasetIdInt = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        String pathToFile = "src/test/resources/sav/dct.sav";
+        String jsonAsString = "{\"description\":\"My description.\",\"directoryLabel\":\"data/subdir1\",\"categories\":[\"Data\"], \"restrict\":\"false\", \"tabIngest\":\"false\"}";
+        Response r = UtilIT.uploadFileViaNative(datasetIdInt.toString(), pathToFile, jsonAsString, apiToken);
+        logger.info(r.prettyPrint());
+        assertEquals(200, r.getStatusCode());
+
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile, UtilIT.sleepForLock(datasetIdInt, "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
+        Long dataFileId = JsonPath.from(r.body().asString()).getLong("data.files[0].dataFile.id");
+        Response fileMeta = UtilIT.getDataFileMetadataDraft(dataFileId, apiToken);
+        String label = JsonPath.from(fileMeta.body().asString()).getString("label");
+        assertEquals("dct.sav", label);
+
+        pathToFile = "src/test/resources/sav/frequency-test.sav";
+        jsonAsString = "{\"description\":\"My description.\",\"directoryLabel\":\"data/subdir1\",\"categories\":[\"Data\"], \"restrict\":\"false\"  }";
+        Response rTabIngest = UtilIT.uploadFileViaNative(datasetIdInt.toString(), pathToFile, jsonAsString, apiToken);
+        logger.info(rTabIngest.prettyPrint());
+        assertEquals(200, rTabIngest.getStatusCode());
+
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile, UtilIT.sleepForLock(datasetIdInt, "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
+        Long ingDataFileId = JsonPath.from(rTabIngest.body().asString()).getLong("data.files[0].dataFile.id");
+        Response ingFileMeta = UtilIT.getDataFileMetadataDraft(ingDataFileId, apiToken);
+        String ingLabel = JsonPath.from(ingFileMeta.body().asString()).getString("label");
+        assertEquals("frequency-test.tab", ingLabel);
+
+        //cleanup
+        Response destroyDatasetResponse = UtilIT.destroyDataset(datasetIdInt, apiToken);
+        assertEquals(200, destroyDatasetResponse.getStatusCode());
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        assertEquals(200, deleteUserResponse.getStatusCode());
 
     }
 
