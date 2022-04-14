@@ -154,8 +154,11 @@ public class IngestServiceBean {
     // attached to the Dataset via some cascade path (for example, via 
     // DataFileCategory objects, if any were already assigned to the files). 
     // It must be called before we attempt to permanently save the files in 
-    // the database by calling the Save command on the dataset and/or version. 
-	public List<DataFile> saveAndAddFilesToDataset(DatasetVersion version, List<DataFile> newFiles, DataFile fileToReplace) {
+    // the database by calling the Save command on the dataset and/or version.
+    public List<DataFile> saveAndAddFilesToDataset(DatasetVersion version,
+                                                   List<DataFile> newFiles,
+                                                   DataFile fileToReplace,
+                                                   boolean tabIngest) {
 		List<DataFile> ret = new ArrayList<>();
 
 		if (newFiles != null && newFiles.size() > 0) {
@@ -326,7 +329,7 @@ public class IngestServiceBean {
 					String fileName = fileMetadata.getLabel();
 
 					boolean metadataExtracted = false;
-					if (FileUtil.canIngestAsTabular(dataFile)) {
+					if (tabIngest && FileUtil.canIngestAsTabular(dataFile)) {
 						/*
 						 * Note that we don't try to ingest the file right away - instead we mark it as
 						 * "scheduled for ingest", then at the end of the save process it will be queued

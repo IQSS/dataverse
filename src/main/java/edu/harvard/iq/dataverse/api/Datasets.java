@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.DatasetLock.Reason;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -146,9 +147,6 @@ import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import com.amazonaws.services.s3.model.PartETag;
-import com.beust.jcommander.Strings;
-
-import java.util.Map.Entry;
 
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
@@ -2691,9 +2689,12 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
             try {
                 lockTypeValue = DatasetLock.Reason.valueOf(lockType);
             } catch (IllegalArgumentException iax) {
-                String validValues = Strings.join(",", DatasetLock.Reason.values());
+                StringJoiner reasonJoiner = new StringJoiner(", ");
+                for (Reason r: Reason.values()) {
+                    reasonJoiner.add(r.name());
+                };
                 String errorMessage = "Invalid lock type value: " + lockType + 
-                        "; valid lock types: " + validValues;
+                        "; valid lock types: " + reasonJoiner.toString();
                 return error(Response.Status.BAD_REQUEST, errorMessage);
             }
         }
