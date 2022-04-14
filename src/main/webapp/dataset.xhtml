@@ -1960,8 +1960,16 @@
                     }
                     
                     function testTOADatasetPage() {
-                        var termsofAccessHidden = document.getElementById("datasetForm:tabView:termsofAccessHiddenLT").value;
-                        var fileAccessRequestHidden =   document.getElementById("datasetForm:tabView:fileAccessRequestHiddenLT").value;  
+                        var termsofAccessHidden, fileAccessRequestHidden;
+                        try{
+                            termsofAccessHidden = document.getElementById("datasetForm:tabView:termsofAccessHiddenLT").value;
+                            fileAccessRequestHidden  = document.getElementById("datasetForm:tabView:fileAccessRequestHiddenLT").value;  
+                        }
+                        catch (error){
+                            //terms not present so save...
+                            PF('blockDatasetForm').show();
+                            datasetSaveCommand();                        
+                        }  
                         if (fileAccessRequestHidden === 'false' && termsofAccessHidden === '') {
                            //Not compliant show error keep page open...
                         } else {
