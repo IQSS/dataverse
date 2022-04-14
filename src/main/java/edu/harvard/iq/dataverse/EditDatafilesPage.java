@@ -1907,7 +1907,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     	fileReplacePageHelper.resetReplaceFileHelper();
     	saveEnabled = false;
-    	String storageIdentifier = DataAccess.getStorarageIdFromLocation(fullStorageLocation);
+    	String storageIdentifier = DataAccess.getStorageIdFromLocation(fullStorageLocation);
     	if (fileReplacePageHelper.handleNativeFileUpload(null, storageIdentifier, fileName, contentType, checkSumValue, checkSumType)){
     		saveEnabled = true;
 
@@ -2046,8 +2046,12 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (!checksumTypeString.isBlank()) {
             checksumType = ChecksumType.fromString(checksumTypeString);
         }
+
+        //Should only be one colon with curent design
         int lastColon = fullStorageIdentifier.lastIndexOf(':');
-        String storageLocation= fullStorageIdentifier.substring(0,lastColon) + "/" + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + fullStorageIdentifier.substring(lastColon+1);
+        String storageLocation = fullStorageIdentifier.substring(0,lastColon) + "/" + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + fullStorageIdentifier.substring(lastColon+1);
+        storageLocation = DataAccess.expandStorageIdentifierIfNeeded(storageLocation);
+
     	if (uploadInProgress.isFalse()) {
     		uploadInProgress.setValue(true);
     	}

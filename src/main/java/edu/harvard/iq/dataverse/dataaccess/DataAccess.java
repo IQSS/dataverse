@@ -22,6 +22,8 @@ package edu.harvard.iq.dataverse.dataaccess;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.util.FileUtil;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Properties;
@@ -54,40 +56,45 @@ public class DataAccess {
     }
 
     //passing DVObject instead of a datafile to accomodate for use of datafiles as well as datasets
-    public static <T extends DvObject> StorageIO<T> getStorageIO(T dvObject, DataAccessRequest req) throws IOException {
+	public static <T extends DvObject> StorageIO<T> getStorageIO(T dvObject, DataAccessRequest req) throws IOException {
 
-        if (dvObject == null
-                || dvObject.getStorageIdentifier() == null
-            || dvObject.getStorageIdentifier().isEmpty()) {
-            throw new IOException("getDataAccessObject: null or invalid datafile.");
-        }
-        String storageIdentifier = dvObject.getStorageIdentifier();
-        int separatorIndex = storageIdentifier.indexOf("://");
-    	String storageDriverId = DEFAULT_STORAGE_DRIVER_IDENTIFIER; //default
-        if(separatorIndex>0) {
-        	storageDriverId = storageIdentifier.substring(0,separatorIndex);
-        }
-        String storageType = getDriverType(storageDriverId);
-        switch(storageType) {
-        case "file":
-            return new FileAccessIO<>(dvObject, req, storageDriverId);
-        case "s3":
-            return new S3AccessIO<>(dvObject, req, storageDriverId);
-        case "swift":
-            return new SwiftAccessIO<>(dvObject, req, storageDriverId);
-        case "tmp":
-        	throw new IOException("DataAccess IO attempted on a temporary file that hasn't been permanently saved yet.");
-        }
+		if (dvObject == null || dvObject.getStorageIdentifier() == null || dvObject.getStorageIdentifier().isEmpty()) {
+			throw new IOException("getDataAccessObject: null or invalid datafile.");
+		}
+		String storageIdentifier = dvObject.getStorageIdentifier();
+		int separatorIndex = storageIdentifier.indexOf("://");
+		String storageDriverId = DEFAULT_STORAGE_DRIVER_IDENTIFIER; // default
+		if (separatorIndex > 0) {
+			storageDriverId = storageIdentifier.substring(0, separatorIndex);
+		}
+		return getStorageIO(dvObject, req, storageDriverId);
+	}
 
-        // TODO:
-        // This code will need to be extended with a system of looking up
-        // available storage plugins by the storage tag embedded in the
-        // "storage identifier".
-        // -- L.A. 4.0.2
+	protected static <T extends DvObject> StorageIO<T> getStorageIO(T dvObject, DataAccessRequest req,
+			String storageDriverId) throws IOException {
+		String storageType = getDriverType(storageDriverId);
+		switch (storageType) {
+		case "file":
+			return new FileAccessIO<>(dvObject, req, storageDriverId);
+		case "s3":
+			return new S3AccessIO<>(dvObject, req, storageDriverId);
+		case "swift":
+			return new SwiftAccessIO<>(dvObject, req, storageDriverId);
+		case "http":
+			return new HTTPOverlayAccessIO<>(dvObject, req, storageDriverId);
+		case "tmp":
+			throw new IOException(
+					"DataAccess IO attempted on a temporary file that hasn't been permanently saved yet.");
+		}
+		// TODO:
+		// This code will need to be extended with a system of looking up
+		// available storage plugins by the storage tag embedded in the
+		// "storage identifier".
+		// -- L.A. 4.0.2
 
-        logger.warning("Could not find storage driver for: " + storageIdentifier);
-        throw new IOException("getDataAccessObject: Unsupported storage method.");
-    }
+		logger.warning("Could not find storage driver for: " + storageDriverId);
+		throw new IOException("getDataAccessObject: Unsupported storage method.");
+	}
 
     // Experimental extension of the StorageIO system allowing direct access to
     // stored physical files that may not be associated with any DvObjects
@@ -122,7 +129,7 @@ public class DataAccess {
 		return new String[]{storageDriverId, storageIdentifier};
     }
     
-    public static String getStorarageIdFromLocation(String location) {
+    public static String getStorageIdFromLocation(String location) {
     	if(location.contains("://")) {
     		//It's a full location with a driverId, so strip and reapply the driver id
     		//NOte that this will strip the bucketname out (which s3 uses) but the S3IOStorage class knows to look at re-insert it
@@ -249,5 +256,31 @@ public class DataAccess {
     		}
     	}
     	return label;
+    }
+    
+    /**
+     * This method checks to see if an overlay store is being used and, if so,
+     * defines a base storage identifier for use with auxiliary files, and adds it
+     * into the returned value
+     * 
+     * @param newStorageIdentifier
+     * @return - the newStorageIdentifier (for file, S3, swift stores) - the
+     *         newStorageIdentifier with a new base store identifier inserted (for
+     *         an overlay store)
+     */
+    public static String expandStorageIdentifierIfNeeded(String newStorageIdentifier) {
+        logger.fine("found: " + newStorageIdentifier);
+        String driverType = DataAccess
+                .getDriverType(newStorageIdentifier.substring(0, newStorageIdentifier.indexOf(":")));
+        logger.fine("drivertype: " + driverType);
+        if (driverType.equals("http")) {
+            // Add a generated identifier for the aux files
+            logger.fine("in: " + newStorageIdentifier);
+            int lastColon = newStorageIdentifier.lastIndexOf("://");
+            newStorageIdentifier = newStorageIdentifier.substring(0, lastColon + 3)
+                    + FileUtil.generateStorageIdentifier() + "//" + newStorageIdentifier.substring(lastColon + 3);
+            logger.fine("out: " + newStorageIdentifier);
+        }
+        return newStorageIdentifier;
     }
 }
