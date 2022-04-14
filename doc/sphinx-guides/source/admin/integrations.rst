@@ -162,7 +162,7 @@ Sponsored by the `Ontario Council of University Libraries (OCUL) <https://ocul.o
 RDA BagIt (BagPack) Archiving
 +++++++++++++++++++++++++++++
 
-A Dataverse installation can be configured to submit a copy of published Datasets, packaged as `Research Data Alliance conformant <https://www.rd-alliance.org/system/files/Research%20Data%20Repository%20Interoperability%20WG%20-%20Final%20Recommendations_reviewed_0.pdf>`_ zipped `BagIt <https://tools.ietf.org/html/draft-kunze-bagit-17>`_ bags to the `Chronopolis <https://libraries.ucsd.edu/chronopolis/>`_ via `DuraCloud <https://duraspace.org/duracloud/>`_, to a local file system, or to `Google Cloud Storage<https://cloud.google.com/storage>`_.
+A Dataverse installation can be configured to submit a copy of published Datasets, packaged as `Research Data Alliance conformant <https://www.rd-alliance.org/system/files/Research%20Data%20Repository%20Interoperability%20WG%20-%20Final%20Recommendations_reviewed_0.pdf>`_ zipped `BagIt <https://tools.ietf.org/html/draft-kunze-bagit-17>`_ bags to the `Chronopolis <https://libraries.ucsd.edu/chronopolis/>`_ via `DuraCloud <https://duraspace.org/duracloud/>`_, to a local file system, or to `Google Cloud Storage <https://cloud.google.com/storage>`_.
 
 For details on how to configure this integration, see :ref:`:BagIt Export` in the :doc:`/installation/config` section of the Installation Guide.
 
