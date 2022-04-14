@@ -53,7 +53,7 @@ Once you are done with your configuration, you can run Counter Processor like th
 
 ``cd /usr/local/counter-processor-0.1.04``
 
-``CONFIG_FILE=counter-processor-config.yaml python36 main.py``
+``CONFIG_FILE=counter-processor-config.yaml python39 main.py``
 
 (Please note that the Counter Processor README says you can also pass in values like ``START_DATE``, ``END_DATE`` etc. at the command line if you find this to be more convenient.)
 
