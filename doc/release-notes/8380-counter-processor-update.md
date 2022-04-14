@@ -1,0 +1,1 @@
+This release includes support for counter-processor-0.1.04 for processing Make Data Count metrics. If you are running Make Data Counts support, you should reinstall/reconfigure counter-processor as described in the latest Guides.

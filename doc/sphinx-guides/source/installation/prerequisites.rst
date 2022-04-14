@@ -449,7 +449,7 @@ As root, create a "counter" user and change ownership of Counter Processor direc
 Installing Counter Processor Python Requirements
 ================================================
 
-Counter Processor requires Python 3.6.4 or higher. The following commands are intended to be run as root but we are aware that Pythonistas might prefer fancy virtualenv or similar setups. Pull requests are welcome to improve these steps!
+Counter Processor requires Python 3.7 or higher. The following commands are intended to be run as root but we are aware that Pythonistas might prefer fancy virtualenv or similar setups. Pull requests are welcome to improve these steps!
 
 Enable the EPEL repo if you haven't already::
 
