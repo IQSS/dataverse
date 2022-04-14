@@ -44,7 +44,7 @@
                                         
                                         <img class="margin-bottom-half" src="#{DatasetWidgetsPage.datasetThumbnail.base64image}" alt="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.alt']}" jsf:rendered="#{DatasetWidgetsPage.datasetThumbnail != null}"/>
                                         
-                                        <p:commandButton update="@form" value="#{bundle.remove}" action="#{DatasetWidgetsPage.flagDatasetThumbnailForRemoval()}" rendered="#{DatasetWidgetsPage.datasetThumbnail != null and DatasetWidgetsPage.datasetThumbnail.fromDataFile != true}" oncomplete="bind_bsui_components();"/>
+                                        <p:commandButton update="@form" value="#{bundle.remove}" action="#{DatasetWidgetsPage.flagDatasetThumbnailForRemoval()}" rendered="#{DatasetWidgetsPage.datasetThumbnail != null and DatasetWidgetsPage.datasetThumbnail.fromDataFile != true}"/>
                                         
                                         <div jsf:rendered="#{DatasetWidgetsPage.datasetThumbnail.fromDataFile == true}">
                                             <button class="btn btn-default" onclick="PF('confrmRemove').show()" type="button">
@@ -73,7 +73,7 @@
                                             </label>
                                             <p:fileUpload invalidFileMessage="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.upload.invalidMsg']}" id="changelogo" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update="@form" 
                                                           sizeLimit="#{systemConfig.uploadLogoSizeLimit}" 
-                                                          oncomplete="bind_bsui_components();" dragDropSupport="true" auto="true" multiple="false" 
+                                                          dragDropSupport="true" auto="true" multiple="false" 
                                                           listener="#{DatasetWidgetsPage.handleImageFileUpload}" label="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.upload']}"/>
                                         </div>
                                     </div>

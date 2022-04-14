@@ -169,7 +169,7 @@
                                                                 <!-- NORMAL DOWNLOAD BUTTON (NO TABULAR FILES) -->
                                                                 <li jsf:rendered="#{!DatasetPage.versionHasTabular}">                 
                                                                     <p:commandLink update="@form" actionListener="#{DatasetPage.startDownloadAllOriginal()}" styleClass="btn-download" 
-                                                                                   oncomplete="bind_bsui_components();showPopup();">
+                                                                                   oncomplete="showPopup();">
                                                                     #{bundle.download}
                                                                         <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
                                                                             <f:param value="#{DatasetPage.sizeOfDataset}" />
@@ -182,7 +182,7 @@
                                                                     <!-- DOWNLOAD ORIGINAL BUTTON (TABULAR FILES PRESENT) -->
                                                                     <li jsf:rendered="#{ DatasetPage.sizeOfDatasetOrig != '0 B'  and !(DatasetPage.tooLargeToDownloadOriginal) }">
                                                                         <p:commandLink update="@form" actionListener="#{DatasetPage.startDownloadAllOriginal()}" 
-                                                                                       oncomplete="bind_bsui_components();showPopup();"
+                                                                                       oncomplete="showPopup();"
                                                                                        styleClass="btn-download">
                                                                             #{bundle.downloadOriginal}
                                                                             <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
@@ -197,7 +197,7 @@
                                                                     </ui:fragment>
                                                                     <!-- DOWNLOAD ARCHIVAL FILES (TABULAR FILES PRESENT) -->
                                                                     <li jsf:rendered="#{!DatasetPage.tooLargeToDownloadArchival}">
-                                                                        <p:commandLink update="@form" oncomplete="bind_bsui_components();showPopup();" 
+                                                                        <p:commandLink update="@form" oncomplete="showPopup();" 
                                                                                        actionListener="#{DatasetPage.startDownloadAllArchival()}" styleClass="btn-download">
                                                                                 #{bundle.downloadArchival}
                                                                             <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
@@ -267,7 +267,7 @@
                                                                             <!-- List link -->
                                                                             <p:commandLink title="#{bundle['dataset.compute.computeBatchList']}"
                                                                                            value="#{bundle['dataset.compute.computeBatchList']}"
-                                                                                           oncomplete="PF('computeBatchListPopup').show();bind_bsui_components();"
+                                                                                           oncomplete="PF('computeBatchListPopup').show();"
                                                                                            update="computeBatchListPopup">
                                                                                 <h:outputText value="#{bundle['dataset.compute.computeBatchList']}"/>
                                                                             </p:commandLink>
@@ -395,7 +395,7 @@
                                                             </p:commandLink>
                                                         </li>
                                                         <li>
-                                                            <p:commandLink id="editTerms" actionListener="#{DatasetPage.edit('LICENSE')}" update="@form,:datasetForm,:messagePanel" oncomplete="javascript:bind_bsui_components();">
+                                                            <p:commandLink id="editTerms" actionListener="#{DatasetPage.edit('LICENSE')}" update="@form,:datasetForm,:messagePanel">
                                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                                 <h:outputText value="#{bundle['dataset.editBtn.itemLabel.terms']}" />
                                                             </p:commandLink>
@@ -457,7 +457,7 @@
                                                             <li>
                                                                 <p:commandLink id="deaccessionDatasetLink" 
                                                                                action="#{DatasetPage.clickDeaccessionDataset}"
-                                                                               oncomplete="PF('deaccessionBlock').show();bind_bsui_components();"
+                                                                               oncomplete="PF('deaccessionBlock').show();"
                                                                                update="deaccessionBlock">
                                                                     <h:outputText value="#{bundle['dataset.editBtn.itemLabel.deaccession']}" />
                                                                 </p:commandLink>
@@ -472,7 +472,7 @@
                                             <div class="btn-group btn-group-justified" jsf:rendered="#{dataverseSession.user.authenticated and !DatasetPage.workingVersion.deaccessioned and DatasetPage.dataset.released}">
                                                 <p:commandLink styleClass="btn btn-default btn-access btn-xs btn-block btn-link-dataset"
                                                                action="#{DatasetPage.setShowLinkingPopup(true)}"
-                                                               oncomplete="PF('linkDatasetForm').show();bind_bsui_components();"
+                                                               oncomplete="PF('linkDatasetForm').show();"
                                                                update="@form">
                                                     #{bundle['dataset.linkBtn']}
                                                 </p:commandLink>
@@ -712,8 +712,7 @@
                                                              style="display:none"
                                                              process="@this :datasetForm:hostDataverseContent"
                                                              update="@form,:breadCrumbPanel"
-                                                             action="#{DatasetPage.updateOwnerDataverse()}"
-                                                             oncomplete="bind_bsui_components();">
+                                                             action="#{DatasetPage.updateOwnerDataverse()}">
                                             </p:commandButton>
                                         </p:fragment>
                                     </div>
@@ -741,7 +740,7 @@
                                 <p:commandButton value="#{bundle['file.dataFilesTab.button.direct']}" id="updateTemplate"
                                                  style="display:none"
                                                  update=":datasetForm,accessPopup"
-                                                 action="#{DatasetPage.handleChangeButton}" oncomplete="javascript:bind_bsui_components();">
+                                                 action="#{DatasetPage.handleChangeButton}">
                                 </p:commandButton>
                             </div>
                         </div>
@@ -845,7 +844,7 @@
                         </ui:fragment>
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}"
                                    rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'LICENSE')}">
-                            <p:ajax event="tabChange" listener="#{DatasetPage.tabChanged}" oncomplete="bind_bsui_components();" update="@this" />
+                            <p:ajax event="tabChange" listener="#{DatasetPage.tabChanged}" update="@this" />
                             <p:tab id="dataFilesTab" title="#{bundle.files}" 
                                    rendered="#{(!DatasetPage.workingVersion.deaccessioned 
                                                or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset())) 
