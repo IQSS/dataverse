@@ -32,29 +32,34 @@
         <p:focus context="accessPopup"/>
         <p class="help-block">
             <h:outputText styleClass="text-muted" value="#{bundle['dataset.access.description']}"/>
+            <h:outputText  style="font-weight:bold" value="#{bundle['dataset.access.description.disable']}"/>
             <p></p>
             <h:outputFormat styleClass="text-muted"  value="#{bundle['dataset.access.description.line.2']}" escape="false">
                 <f:param value="#{systemConfig.guidesBaseUrl}"/>
                 <f:param value="#{systemConfig.guidesVersion}"/>
             </h:outputFormat>
         </p>
+        <p:fragment>
+            <p:autoUpdate/>
+            
+        </p:fragment>
         <div class="form-horizontal">
             <div class="form-group">
-                <label for="datasetForm:termsAccessInput" class="col-sm-3 control-label">
+                <label for="datasetForm:requestAccess2" class="col-sm-3 control-label">
                     #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}"></span>
                 </label>
                 <div class="col-sm-9">
-                    <p:selectBooleanCheckbox id="requestAccess2" 
+                    <p:selectBooleanCheckbox id="requestAccess2"  
                                              itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}"
                                              value="#{bean.fileAccessRequest}" widgetVar="inputfar">
                     <p:ajax event="change" update="restrictFileButton" />
                     </p:selectBooleanCheckbox>
                 </div>
             </div>
-            <p:fragment>
-                <p:autoUpdate/>
+            <p:fragment id="popupWarning">
+                
             <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{empty bean.termsOfAccess  and !bean.fileAccessRequest}">
                            <span class="ui-message-error-detail">#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.warning.outofcompliance']}</span>          
             </div>
@@ -79,7 +84,7 @@
                             
                              
                              onclick="testTOA();"
-                             update=":messagePanel" />
+                             update=":messagePanel,popupWarning" />
             <button class="btn btn-link" onclick="PF('accessPopup').hide();PF('blockDatasetForm').hide();" type="button">
                 #{bundle.cancel}
             </button> 
@@ -197,16 +202,7 @@
         <script>
         //<![CDATA[
 
-        function testTOA() {
-           alert(#{empty bean.termsOfAccess}); 
-           alert(#{bean.termsOfAccess}); 
-           alert(#{!bean.fileAccessRequest});
-            if (#{empty bean.termsOfAccess  && !bean.fileAccessRequest}) {
-               alert('invalid');
-            } else {
-                alert('valid');
-            }
-        }
+
         
         //]]>
     </script>

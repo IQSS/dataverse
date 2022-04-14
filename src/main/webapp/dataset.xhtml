@@ -111,6 +111,11 @@
                 <h:form id="datasetForm">
                     <h:inputHidden id="validateFilesOutcome" value="#{DatasetPage.validateFilesOutcome}" />
                     <h:inputHidden id="validTermsofAccess" value="#{DatasetPage.hasValidTermsOfAccess}" />
+                    <p:fragment>
+                        <p:autoUpdate/>
+                        <o:inputHidden id="termsofAccessHidden" value="#{DatasetPage.termsOfAccess}" />
+                        <o:inputHidden id="fileAccessRequestHidden" value="#{DatasetPage.fileAccessRequest}" />
+                    </p:fragment>
                     <!-- View infoMode -->
                     <!-- Top Button/Citation Blocks -->
                     <p:fragment id="topDatasetBlockFragment">
@@ -1960,7 +1965,22 @@
                         if (outcome ==='GuestbookRequired'){
                             PF('downloadPopup').show();
                         }
-                    }    
+                    } 
+                    
+                    function testTOA() {
+
+                        var termsofAccessHidden = document.getElementById("datasetForm:termsofAccessHidden").value;
+                        var fileAccessRequestHidden =   document.getElementById("datasetForm:fileAccessRequestHidden").value;
+                        
+                                                    
+
+                        if (fileAccessRequestHidden === 'false' && termsofAccessHidden === '') {
+                            alert('invalidTermsofAccessHidden');
+                        } else {
+                            PF('accessPopup').hide();
+                        }
+                    }
+                    
                     //]]>
                 </script>
             </ui:define>
