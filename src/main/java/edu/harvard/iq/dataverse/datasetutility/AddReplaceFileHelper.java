@@ -501,9 +501,11 @@ public class AddReplaceFileHelper{
         if (!phase1Success){
             return false;
         }
-        
-       
-        return runAddReplacePhase2();
+        boolean tabIngest = true;
+        if (optionalFileParams != null) {
+            tabIngest = optionalFileParams.getTabIngest();
+        }
+        return runAddReplacePhase2(tabIngest);
         
     }
 
@@ -653,7 +655,7 @@ public class AddReplaceFileHelper{
     
     
     public boolean runReplaceFromUI_Phase2(){
-        return runAddReplacePhase2();
+        return runAddReplacePhase2(true);
     }
     
 
@@ -744,7 +746,7 @@ public class AddReplaceFileHelper{
      * 
      * @return 
      */
-    private boolean runAddReplacePhase2(){
+    private boolean runAddReplacePhase2(boolean tabIngest){
         
         if (this.hasError()){
             return false;   // possible to have errors already...
@@ -756,7 +758,7 @@ public class AddReplaceFileHelper{
         }
         
          msgt("step_060_addFilesViaIngestService");
-        if (!this.step_060_addFilesViaIngestService()){
+        if (!this.step_060_addFilesViaIngestService(tabIngest)){
             return false;
             
         }
@@ -1570,7 +1572,7 @@ public class AddReplaceFileHelper{
         return true;
     }
     
-    private boolean step_060_addFilesViaIngestService(){
+    private boolean step_060_addFilesViaIngestService(boolean tabIngest){
                        
         if (this.hasError()){
             return false;
@@ -1583,7 +1585,7 @@ public class AddReplaceFileHelper{
         }
         
         int nFiles = finalFileList.size();
-        finalFileList = ingestService.saveAndAddFilesToDataset(workingVersion, finalFileList, fileToReplace);
+        finalFileList = ingestService.saveAndAddFilesToDataset(workingVersion, finalFileList, fileToReplace, tabIngest);
 
         if (nFiles != finalFileList.size()) {
             if (nFiles == 1) {
