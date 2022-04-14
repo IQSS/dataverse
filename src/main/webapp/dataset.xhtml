@@ -111,11 +111,7 @@
                 <h:form id="datasetForm">
                     <h:inputHidden id="validateFilesOutcome" value="#{DatasetPage.validateFilesOutcome}" />
                     <h:inputHidden id="validTermsofAccess" value="#{DatasetPage.hasValidTermsOfAccess}" />
-                    <p:fragment>
-                        <p:autoUpdate/>
-                        <o:inputHidden id="termsofAccessHidden" value="#{DatasetPage.termsOfAccess}" />
-                        <o:inputHidden id="fileAccessRequestHidden" value="#{DatasetPage.fileAccessRequest}" />
-                    </p:fragment>
+
                     <!-- View infoMode -->
                     <!-- Top Button/Citation Blocks -->
                     <p:fragment id="topDatasetBlockFragment">
@@ -764,16 +760,17 @@
                     </ui:fragment>
                     <!-- Create/Save Dataset Button Panel TOP editMode -->
                     <div class="button-block form-top" jsf:rendered="#{DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'LICENSE'}">
-                        <p:commandButton id="saveTop" styleClass="btn btn-default" value="#{bundle.saveChanges}"
+                        <p:commandButton id="saveTop" styleClass="btn btn-default" value="#{bundle.saveChanges}" rendered="#{DatasetPage.editMode == 'METADATA'}"
                                          onclick="PF('blockDatasetForm').show();"
                                          update=":datasetForm,:messagePanel"
                                          oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
-                                         action="#{DatasetPage.save}"/>
-                                    <p:commandButton styleClass="btn btn-default" value="#{bundle.deaccession}"  
-                                                     oncomplete="if (args &amp;&amp; !args.validationFailed) PF('deaccessionConfirmation').show();">
-                                        <f:param name="DO_DEACCESSION_VALIDATION" value="true"/>
-                                    </p:commandButton>
-                        
+                                         action="#{DatasetPage.save}"
+                                         />
+                        <p:commandButton id="saveTopTOA" styleClass="btn btn-default" value="#{bundle.saveChanges}" rendered="#{DatasetPage.editMode == 'LICENSE'}"
+                                         onclick="testTOADatasetPage();"
+                                         update=":datasetForm,:messagePanel"
+                                         oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
+                        />
                         <p:commandButton id="cancelTop" styleClass="btn btn-link" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" oncomplete="javascript:bind_bsui_components();">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                         </p:commandButton>
@@ -927,14 +924,9 @@
                     <div class="button-block" jsf:rendered="#{!empty DatasetPage.editMode}">
                         <p:commandButton id="saveBottom" styleClass="btn btn-default" 
                                          value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}" 
-                                         onclick="PF('blockDatasetForm').show();"
+                                         onclick="testTOADatasetPage();"
                                          update=":datasetForm,:messagePanel"
-                                         disabled="#{DatasetPage.editMode == 'LICENSE' 
-                                                     and DatasetPage.workingVersion.hasRestrictedFile 
-                                                        and !DatasetPage.workingVersion.getTermsOfUseAndAccess().isFileAccessRequest()
-                                                        and empty DatasetPage.workingVersion.getTermsOfUseAndAccess().termsOfAccess }"
-                                         oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
-                                         action="#{DatasetPage.save}"/>
+                                         oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"/>
                         <p:commandButton id="cancel" styleClass="btn btn-link" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" rendered="#{DatasetPage.editMode != 'CREATE'}" oncomplete="javascript:bind_bsui_components();">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                         </p:commandButton>
@@ -1876,6 +1868,7 @@
                     <p:remoteCommand name="editMedatdataCommand"   actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:datasetForm,:messagePanel"  oncomplete="javascript:bind_bsui_components();">
                         <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                     </p:remoteCommand>
+                    <p:remoteCommand name="datasetSaveCommand" action="#{DatasetPage.save()}"/>
                     <!-- END: Publish/Submit for Review Dialogs -->
                 </h:form>
                 <script>
@@ -1965,22 +1958,19 @@
                         if (outcome ==='GuestbookRequired'){
                             PF('downloadPopup').show();
                         }
-                    } 
-                    
-                    function testTOA() {
-
-                        var termsofAccessHidden = document.getElementById("datasetForm:termsofAccessHidden").value;
-                        var fileAccessRequestHidden =   document.getElementById("datasetForm:fileAccessRequestHidden").value;
-                        
-                                                    
-
-                        if (fileAccessRequestHidden === 'false' && termsofAccessHidden === '') {
-                            alert('invalidTermsofAccessHidden');
-                        } else {
-                            PF('accessPopup').hide();
-                        }
                     }
                     
+                    function testTOADatasetPage() {
+                        var termsofAccessHidden = document.getElementById("datasetForm:tabView:termsofAccessHiddenLT").value;
+                        var fileAccessRequestHidden =   document.getElementById("datasetForm:tabView:fileAccessRequestHiddenLT").value;  
+                        if (fileAccessRequestHidden === 'false' && termsofAccessHidden === '') {
+                           //Not compliant show error keep page open...
+                        } else {
+                            PF('blockDatasetForm').show();
+                            datasetSaveCommand();
+                        }
+                    }
+                                        
                     //]]>
                 </script>
             </ui:define>

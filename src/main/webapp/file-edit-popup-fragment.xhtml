@@ -3,6 +3,7 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:p="http://primefaces.org/ui"
+                xmlns:o="http://omnifaces.org/ui"
                 xmlns:jsf="http://xmlns.jcp.org/jsf">
     
     <ui:remove>
@@ -41,7 +42,8 @@
         </p>
         <p:fragment>
             <p:autoUpdate/>
-            
+            <o:inputHidden id="termsofAccessHidden" value="#{bean.termsOfAccess}" />
+            <o:inputHidden id="fileAccessRequestHidden" value="#{bean.fileAccessRequest}" />
         </p:fragment>
         <div class="form-horizontal">
             <div class="form-group">
@@ -80,9 +82,7 @@
         </div>
 
         <div class="button-block">
-            <p:commandLink id="restrictFileButton"  styleClass="btn btn-default" value="#{bundle.saveChanges}" 
-                            
-                             
+            <p:commandLink id="restrictFileButton"  styleClass="btn btn-default" value="#{bundle.saveChanges}"                             
                              onclick="testTOA();"
                              update=":messagePanel,popupWarning" />
             <button class="btn btn-link" onclick="PF('accessPopup').hide();PF('blockDatasetForm').hide();" type="button">
@@ -198,12 +198,25 @@
             </button>
         </div>
     </p:dialog> 
-    
+        <p:remoteCommand name="restrictFileCommand" action="#{bean[restrictFileAction](true)}"/>
         <script>
         //<![CDATA[
-
-
-        
+            function testTOA() {
+                var termsofAccessHidden, fileAccessRequestHidden;
+                    try{
+                        termsofAccessHidden  = document.getElementById("datasetForm:termsofAccessHidden").value;
+                        fileAccessRequestHidden  =   document.getElementById("datasetForm:fileAccessRequestHidden").value;                                                    
+                    } catch (error){
+                        termsofAccessHidden  = document.getElementById("fileForm:termsofAccessHidden").value;
+                        fileAccessRequestHidden  =   document.getElementById("fileForm:fileAccessRequestHidden").value;
+                    }
+                        if (fileAccessRequestHidden === 'false' && termsofAccessHidden === '') {
+                           //Not compliant show error keep popup open...
+                        } else {
+                            PF('accessPopup').hide();
+                            restrictFileCommand();
+                        }
+                    }                    
         //]]>
     </script>
        
