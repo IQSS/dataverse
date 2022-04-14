@@ -416,7 +416,7 @@ Counter Processor is required to enable Make Data Count metrics in a Dataverse i
 Installing Counter Processor
 ============================
 
-Counter Processor has only been tested on el7 (see "Linux" above). Please note that a scripted installation using Ansible is mentioned in the :doc:`/developers/make-data-count` section of the Developer Guide.
+A scripted installation using Ansible is mentioned in the :doc:`/developers/make-data-count` section of the Developer Guide.
 
 As root, download and install Counter Processor::
 
@@ -449,19 +449,17 @@ As root, create a "counter" user and change ownership of Counter Processor direc
 Installing Counter Processor Python Requirements
 ================================================
 
-Counter Processor requires Python 3.7 or higher. The following commands are intended to be run as root but we are aware that Pythonistas might prefer fancy virtualenv or similar setups. Pull requests are welcome to improve these steps!
+Counter Processor version 0.1.04 requires Python 3.7 or higher. This version of Python is available in many operating systems, and is purportedly available for RHEL7 or CentOS 7 via Red Hat Software Collections. Alternately, one may compile it from source.
 
-Enable the EPEL repo if you haven't already::
+The following commands are intended to be run as root but we are aware that Pythonistas might prefer fancy virtualenv or similar setups. Pull requests are welcome to improve these steps!
 
-        yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+Install Python 3.9::
 
-Install Python 3.6::
-
-        yum install python36
+        yum install python39
 
 Install Counter Processor Python requirements::
 
-        python3.6 -m ensurepip
+        python3.9 -m ensurepip
         cd /usr/local/counter-processor-0.1.04
         pip3 install -r requirements.txt
 

@@ -112,7 +112,7 @@ Soon we will be setting up a cron job to run nightly but we start with a single 
  
 * Run Counter Processor.
 
-  * ``CONFIG_FILE=counter-processor-config.yaml python36 main.py``
+  * ``CONFIG_FILE=counter-processor-config.yaml python39 main.py``
 
   * A JSON file in SUSHI format will be created in the directory you specified under "output_file" in the config file.
 
