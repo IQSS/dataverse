@@ -737,7 +737,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             String successMessage = getBundleString("file.restricted.success");
             logger.fine(successMessage);
             successMessage = successMessage.replace("{0}", fileNames);
-            JsfHelper.addFlashMessage(successMessage);
+            JsfHelper.addSuccessMessage(successMessage);
         }
     }
 

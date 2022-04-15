@@ -445,7 +445,7 @@
                                             <li>
                                                 <p:commandLink  onclick="if (!testFilesSelected2()) return false;"
                                                                 update="@([id$=accessPopup])" 
-                                                                oncomplete="PF('accessPopup').show();bind_bsui_components();">                                                               
+                                                                oncomplete="PF('accessPopup').show();">                                                               
                                                     <h:outputText value="#{bundle['file.restrict']}"/>
                                                     <f:setPropertyActionListener target="#{EditDatafilesPage.termsOfAccess}" value="#{version.termsOfUseAndAccess.termsOfAccess}" />
                                                     <f:setPropertyActionListener target="#{EditDatafilesPage.fileAccessRequest}" value="#{version.termsOfUseAndAccess.fileAccessRequest}" />                        

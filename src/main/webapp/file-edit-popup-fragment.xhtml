@@ -84,7 +84,7 @@
         <div class="button-block">
             <p:commandLink id="restrictFileButton"  styleClass="btn btn-default" value="#{bundle.saveChanges}"                             
                              onclick="testTOA();"
-                             update=":messagePanel,popupWarning" />
+                             update="popupWarning" />
             <button class="btn btn-link" onclick="PF('accessPopup').hide();PF('blockDatasetForm').hide();" type="button">
                 #{bundle.cancel}
             </button> 
@@ -198,7 +198,7 @@
             </button>
         </div>
     </p:dialog> 
-        <p:remoteCommand name="restrictFileCommand" action="#{bean[restrictFileAction](true)}"/>
+    <p:remoteCommand name="restrictFileCommand" action="#{bean[restrictFileAction](true)}" update=":messagePanel"/>
         <script>
         //<![CDATA[
             function testTOA() {
