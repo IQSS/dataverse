@@ -11,7 +11,7 @@
         jsf:rendered="#{dataverseSession.user.authenticated and empty editMode and !widgetWrapper.widgetView
                         and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)}">
        <p:commandLink styleClass="btn btn-default btn-access" actionListener="#{DatasetPage.edit('LICENSE')}" 
-                      update="@form,:messagePanel" oncomplete="javascript:bind_bsui_components();" disabled="#{DatasetPage.lockedFromEdits}">
+                      update="@form,:messagePanel" disabled="#{DatasetPage.lockedFromEdits}">
            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
            <span class="glyphicon glyphicon-briefcase"/> #{bundle['file.dataFilesTab.terms.editTermsBtn']}
        </p:commandLink>
@@ -50,7 +50,7 @@
                                        <c:if test="#{settingsWrapper.customLicenseAllowed}">
                                            <f:selectItem itemLabel="#{bundle['license.custom']}" itemValue="#{null}"/>
                                        </c:if>
-                                       <p:ajax update="touFragment" oncomplete="javascript:bind_bsui_components();" />
+                                       <p:ajax update="touFragment" />
                                    </p:selectOneMenu>
                                </ui:fragment>
                                <ui:fragment rendered="#{!empty termsOfUseAndAccess.license}">
@@ -491,7 +491,7 @@
                                            <p:commandButton styleClass="btn btn-default pull-right"
                                                           value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
                                                           action="#{DatasetPage.viewSelectedGuestbook(DatasetPage.dataset.guestbook)}"
-                                                          update=":datasetForm" oncomplete="PF('viewGuestbook').show();bind_bsui_components();"/>
+                                                          update=":datasetForm" oncomplete="PF('viewGuestbook').show();"/>
                                        </div>
                                    </div>
                                </ui:fragment>
@@ -530,7 +530,7 @@
                                            <p:commandButton styleClass="btn btn-default pull-right"
                                                           value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
                                                           action="#{DatasetPage.viewSelectedGuestbook(guestbook)}"
-                                                          update=":datasetForm" oncomplete="PF('viewGuestbook').show();bind_bsui_components();"/>
+                                                          update=":datasetForm" oncomplete="PF('viewGuestbook').show();"/>
                                        </p:column>
                                    </p:dataTable>
                                </ui:fragment>
