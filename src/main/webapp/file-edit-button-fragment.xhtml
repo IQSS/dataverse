@@ -49,7 +49,7 @@
                 <p:commandLink  onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))
                                             return false;" 
                                 update="@([id$=accessPopup])"            
-                                oncomplete="PF('accessPopup').show();bind_bsui_components();">
+                                oncomplete="PF('accessPopup').show();">
                     <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />
                     <f:setPropertyActionListener target="#{bean.termsOfAccess}" value="#{datasetVersion.termsOfUseAndAccess.termsOfAccess}" />
                     <f:setPropertyActionListener target="#{bean.fileAccessRequest}" value="#{datasetVersion.termsOfUseAndAccess.fileAccessRequest}" />                     
@@ -110,7 +110,7 @@
         <li>
             <p:commandLink
                 update="@([id$=editProvenancePopup])"
-                oncomplete="PF('editProvenancePopup').show();bind_bsui_components();">
+                oncomplete="PF('editProvenancePopup').show();">
                 <f:actionListener binding="#{provPopupFragmentBean.updatePopupState(fileMetadata, true)}" /> <!--clearProvenanceUpdates() -->
                 #{bundle['file.provenance']} 
             </p:commandLink>
