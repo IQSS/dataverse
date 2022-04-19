@@ -4,7 +4,7 @@ import edu.harvard.iq.dataverse.Cart;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotification.Type;
-import edu.harvard.iq.dataverse.ValidateEmail;
+import edu.harvard.iq.dataverse.validation.ValidateEmail;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2TokenData;
