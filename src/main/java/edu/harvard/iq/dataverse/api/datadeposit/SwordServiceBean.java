@@ -152,6 +152,8 @@ public class SwordServiceBean {
         List<String> listOfLicensesProvided = dcterms.get("license");
         TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
         datasetVersionToMutate.setTermsOfUseAndAccess(terms);
+        terms.setDatasetVersion(datasetVersionToMutate);
+        
         if (listOfLicensesProvided == null) {
             License existingLicense = datasetVersionToMutate.getTermsOfUseAndAccess().getLicense();
             if (existingLicense != null) {
