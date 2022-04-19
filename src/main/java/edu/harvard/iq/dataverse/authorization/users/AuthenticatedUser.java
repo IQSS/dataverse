@@ -2,8 +2,8 @@ package edu.harvard.iq.dataverse.authorization.users;
 
 import edu.harvard.iq.dataverse.Cart;
 import edu.harvard.iq.dataverse.DatasetLock;
-import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotification.Type;
+import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.validation.ValidateEmail;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
