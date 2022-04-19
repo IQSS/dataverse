@@ -107,7 +107,7 @@ The application has been tested with PostgreSQL versions up to 13 and version 10
 	# /usr/bin/systemctl start postgresql-13
 	# /usr/bin/systemctl enable postgresql-13
 
-For RHEL8/derivative the process would be identical, except for the very first command - you would need to install the "EL-8" yum repository configuration instead. 
+For RHEL8/derivative the process would be identical, except for the first two commands: you would need to install the "EL-8" yum repository configuration and run ``yum makecache`` instead.
 
 Configuring Database Access for the Dataverse Installation (and the Dataverse Software Installer)
 =================================================================================================
@@ -424,10 +424,11 @@ As root, download and install Counter Processor::
         wget https://github.com/CDLUC3/counter-processor/archive/v0.0.1.tar.gz
         tar xvfz v0.0.1.tar.gz
 
-As root, change to the Counter Processor directory you just created, download the GeoLite2-Country tarball, untar it, and copy the geoip database into place::
+Download the *GeoLite2-Country.tar.gz* tarball (if you haven't already, you need to create an account in `www.maxmind.com <https://www.maxmind.com/>`_) and copy it to the Counter Processor directory you just created.
+
+As root, change to the Counter Processor directory you just created, untar the *GeoLite2-Country* tarball and copy the geoip database into place::
 
         cd /usr/local/counter-processor-0.0.1
-        wget https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz
         tar xvfz GeoLite2-Country.tar.gz
         cp GeoLite2-Country_*/GeoLite2-Country.mmdb maxmind_geoip
 
