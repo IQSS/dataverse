@@ -904,7 +904,7 @@ public class IndexServiceBean {
                                 }
 
                                 // Index in all used languages (display and metadata languages
-                                if (langs.isEmpty()) {
+                                if (!dsfType.isAllowMultiples() || langs.isEmpty()) {
                                     solrInputDocument.addField(solrFieldSearchable, controlledVocabularyValue.getStrValue());
                                 } else {
                                     for(String locale: langs) {
