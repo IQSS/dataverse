@@ -256,6 +256,10 @@ public class IndexServiceBean {
                 for(String locale: langs) {
                     solrInputDocument.addField(SearchFields.DATAVERSE_SUBJECT, dataverseSubject.getLocaleStrValue(locale));
                 }
+                if (langs.isEmpty()) {
+                    solrInputDocument.addField(SearchFields.DATAVERSE_SUBJECT, dataverseSubject.getStrValue());
+                }
+
                 // collapse into shared "subject" field used as a facet
                 solrInputDocument.addField(SearchFields.SUBJECT, subject);
             }
@@ -898,10 +902,16 @@ public class IndexServiceBean {
                                 if (controlledVocabularyValue.getStrValue().equals(DatasetField.NA_VALUE)) {
                                     continue;
                                 }
+
                                 // Index in all used languages (display and metadata languages
-                                for(String locale: langs) {
-                                    solrInputDocument.addField(solrFieldSearchable, controlledVocabularyValue.getLocaleStrValue(locale));
+                                if (langs.isEmpty()) {
+                                    solrInputDocument.addField(solrFieldSearchable, controlledVocabularyValue.getStrValue());
+                                } else {
+                                    for(String locale: langs) {
+                                        solrInputDocument.addField(solrFieldSearchable, controlledVocabularyValue.getLocaleStrValue(locale));
+                                    }
                                 }
+
                                 if (dsfType.getSolrField().isFacetable()) {
                                     solrInputDocument.addField(solrFieldFacetable, controlledVocabularyValue.getStrValue());
                                 }
