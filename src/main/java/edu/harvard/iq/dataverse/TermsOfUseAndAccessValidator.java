@@ -45,10 +45,10 @@ public class TermsOfUseAndAccessValidator implements ConstraintValidator<Validat
         if (!valid) {
             try {
                 if (context != null) {
-                    context.buildConstraintViolationWithTemplate(BundleUtil.getStringFromBundle("toua.invalid")).addConstraintViolation();
+                    context.buildConstraintViolationWithTemplate(BundleUtil.getStringFromBundle("dataset.message.toua.invalid")).addConstraintViolation();
                 }
 
-               value.setValidationMessage(BundleUtil.getStringFromBundle("toua.invalid"));
+               value.setValidationMessage(BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
             } catch (NullPointerException e) {
                 return false;
             }

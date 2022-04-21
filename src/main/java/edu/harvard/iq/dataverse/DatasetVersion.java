@@ -1686,7 +1686,7 @@ public class DatasetVersion implements Serializable {
             Set<ConstraintViolation<TermsOfUseAndAccess>> constraintViolations = validator.validate(toua);
             if (constraintViolations.size() > 0) {
                 ConstraintViolation<TermsOfUseAndAccess> violation = constraintViolations.iterator().next();
-                String message = BundleUtil.getStringFromBundle("toua.invalid");
+                String message = BundleUtil.getStringFromBundle("dataset.message.toua.invalid");
                 logger.info(message);
                 this.termsOfUseAndAccess.setValidationMessage(message);
                 returnSet.add(violation);
