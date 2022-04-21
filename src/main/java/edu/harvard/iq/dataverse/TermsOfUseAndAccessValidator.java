@@ -28,7 +28,13 @@ public class TermsOfUseAndAccessValidator implements ConstraintValidator<Validat
     }
     
     public static boolean isTOUAValid(TermsOfUseAndAccess value, ConstraintValidatorContext context){
-        //If there are no restricted files then terms are valid 
+        
+        //if part of a template it is valid
+        if (value.getTemplate() != null){
+            return true;
+        }
+        
+         //If there are no restricted files then terms are valid 
         if (!value.getDatasetVersion().isHasRestrictedFile()) {
             return true;
         }
