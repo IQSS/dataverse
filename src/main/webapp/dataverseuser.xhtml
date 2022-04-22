@@ -80,6 +80,8 @@
                                                             <a href="https://demo.dataverse.org">#{bundle['notification.demoSite']}</a>
                                                         </o:param>
                                                     </h:outputFormat>
+                                                    <!--Only show message about an email confirmation link to non-Shib users (Shib users can't edit their accounts)-->
+                                                    <h:outputFormat value=" #{bundle['notification.welcomeConfirmEmail']}" rendered="#{DataverseUserPage.accountDetailsEditable}"/>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'CREATEDV'}">
                                                     <span class="icon-dataverse text-icon-inline text-muted"></span>
@@ -379,14 +381,11 @@
                             </div>
                         </p:tab>
                         <p:tab id="accountInfo" title="#{bundle['header.user.selectTab.accountInfo']}">
-                            <div class="button-block tab-header margin-bottom text-right" jsf:rendered="#{empty DataverseUserPage.editMode or DataverseUserPage.passwordEditable or DataverseUserPage.accountDetailsEditable}">
+                            <div class="button-block tab-header margin-bottom text-right" jsf:rendered="#{empty DataverseUserPage.editMode and (DataverseUserPage.passwordEditable or DataverseUserPage.accountDetailsEditable)}">
                                 <div class="btn-group">
                                     <button type="button" id="editAccount" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                         <ui:fragment rendered="#{DataverseUserPage.accountDetailsEditable}">
                                             <span class="glyphicon glyphicon-pencil"/> #{bundle['account.edit']}
-                                        </ui:fragment>
-                                        <ui:fragment rendered="#{! DataverseUserPage.accountDetailsEditable}">
-                                            #{bundle['account.info']}
                                         </ui:fragment>
                                         <span class="caret"></span>
                                     </button>
@@ -484,7 +483,6 @@
                                                                 id="verifyEmailButton"
                                                                 action="#{DataverseUserPage.sendConfirmEmail()}"
                                                                 update="@([id$=verifyEmailButton]), :messagePanel"
-                                                                onclick="if (!testHasEmailToken(#{DataverseUserPage.getHasActiveVerificationToken()})) return false;"
                                                                >
                                                     <span class="glyphicon glyphicon-ok"></span> #{bundle['confirmEmail.submitRequest']}
                                                 </p:commandLink>
@@ -754,32 +752,7 @@
                             </div>
                         </p:tab>
                     </p:tabView>
-                        <p:dialog id="tokenExists" styleClass="smallPopUp"
-                                  header="#{bundle['account.emailvalidation.header']}" widgetVar="tokenExists" modal="true">
-                            
-                             <h:outputFormat value="#{bundle['account.emailvalidation.token.exists']}" escape="false">
-                                <o:param>#{DataverseUserPage.currentUser.email}</o:param>
-                            </h:outputFormat>
-                            
-                            
-                            <div class="button-block">
-                                <button class="btn btn-default" onclick="PF('tokenExists').hide();" type="button">
-                                    #{bundle.close}
-                                </button>
-                            </div>
-                        </p:dialog> 
                 </h:form>
-                <script>
-                    //<![CDATA[        
-                        function testHasEmailToken(hasActiveVerificationToken) {
-                            if (hasActiveVerificationToken) {                               
-                                PF("tokenExists").show();
-                            } else {
-                                return true;
-                            }                        
-                        }
-                    //]]>
-                </script>
             </ui:define>
         </ui:composition>
     </h:body>
