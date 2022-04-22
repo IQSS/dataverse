@@ -628,24 +628,95 @@ Is currently documented on the :doc:`/developers/deployment` page.
 Branding Your Installation
 --------------------------
 
-The name of your root Dataverse collection is the brand of your Dataverse installation and appears in various places such as notifications and support links, as outlined in the :ref:`systemEmail` section below. To further brand your installation and make it your own, the Dataverse Software provides configurable options for easy-to-add (and maintain) custom branding for your Dataverse installation. Here are the custom branding and content options you can add:
+The name of your root Dataverse collection is the brand of your Dataverse installation and appears in various places such as notifications and support links, as outlined in the :ref:`systemEmail` section below. To further brand your installation and make it your own, the Dataverse Software provides configurable options for easily adding (and maintaining) custom branding to your Dataverse installation. Here are the custom branding and content options you can configure:
 
+- Custom header
+- Dataverse navbar settings
 - Custom welcome/homepage
-- Logo image to navbar
-- Header
-- Footer
+- Custom footer
+- Dataverse footer settings
 - CSS stylesheet
 
 Downloadable sample HTML and CSS files are provided below which you can edit as you see fit. It's up to you to create a directory in which to store these files, such as ``/var/www/dataverse`` in the examples below.
 
-You may also want to look at samples at https://github.com/shlake/LibraDataHomepage from community member Sherry Lake as well as her poster from the Dataverse Project Community Meeting 2018 called "Branding Your Local Dataverse Installation": https://github.com/IQSS/dataverse/files/2128735/UVaHomePage.pdf
+You may also want to look at samples at https://github.com/shlake/LibraDataHomepage from community member Sherry Lake.
 
 A simpler option to brand and customize your installation is to utilize the Dataverse collection theme, which each Dataverse collection has, that allows you to change colors, add a logo, tagline or website link to the Dataverse collection header section of the page. Those options are outlined in the :doc:`/user/dataverse-management` section of the User Guide.
 
-Custom Homepage
-+++++++++++++++
+Before detailing the available customization options, perhaps it is important to present the basic blocks of the Dataverse GUI layout.
+From the image below, you can see that the page layout consists of three main blocks: an header block, a content block and a footer block:
 
-The Dataverse Software allows you to use a custom homepage or welcome page in place of the default root Dataverse collection page. This allows for complete control over the look and feel of your installation's homepage.
+|dvPageBlocks|
+
+Header block
+++++++++++++
+
+Within the header block, you have a navbar (which will always be displayed) and may insert a custom header, that will be displayed **alongside** the navbar to add additional information to the header block.
+
+Navbar
+^^^^^^
+
+The navbar is the component displayed by default on the header block and will be present on every Dataverse GUI page.
+The navbar encompasses several (configurable) settings that manage user interaction with the Dataverse platform. Such settings are described below.
+
+Custom Navbar Logo
+##################
+
+The Dataverse Software allows you to replace the default Dataverse Project icon and name branding in the navbar with your own custom logo. Note that this logo is separate from the *root dataverse theme* logo.
+
+The custom logo image file is expected to be small enough to fit comfortably in the navbar, no more than 50 pixels in height and 160 pixels in width. Create a ``navbar`` directory in your Payara ``logos`` directory and place your custom logo there. By default, your logo image file will be located at ``/usr/local/payara5/glassfish/domains/domain1/docroot/logos/navbar/logo.png``.
+
+Once you have the location of your custom logo image file, run this curl command to add it to your settings:
+
+``curl -X PUT -d '/logos/navbar/logo.png' http://localhost:8080/api/admin/settings/:LogoCustomizationFile``
+
+To revert to the default configuration and have the Dataverse Project icon be displayed, run:
+
+``curl -X DELETE http://localhost:8080/api/admin/settings/:LogoCustomizationFile``
+
+About URL
+#########
+
+Refer to :ref:`:NavbarAboutUrl` for setting a fully-qualified URL which will be used for the "About" link in the navbar.
+
+User Guide URL
+##############
+
+Refer to :ref:`:NavbarGuidesUrl`, :ref:`:GuidesBaseUrl`, and :ref:`:GuidesVersion` for setting a fully-qualified URL which will be used for the "User Guide" link in the navbar.
+
+Support URL
+###########
+
+Refer to :ref:`:NavbarSupportUrl` for setting to a fully-qualified URL which will be used for the "Support" link in the navbar.
+
+Sign Up
+#######
+
+Refer to :ref:`:SignUpUrl` and :ref:`conf-allow-signup` for setting a relative path URL to which users will be sent for signup and for controlling the ability for creating local user accounts.
+
+Custom Header
+^^^^^^^^^^^^^
+
+Download this sample: :download:`custom-header.html </_static/installation/files/var/www/dataverse/branding/custom-header.html>` and place it at ``/var/www/dataverse/branding/custom-header.html``.
+
+Once you have the location of your custom header HTML file, run this curl command to add it to your settings:
+
+``curl -X PUT -d '/var/www/dataverse/branding/custom-header.html' http://localhost:8080/api/admin/settings/:HeaderCustomizationFile``
+
+If you have enabled a custom header or navbar logo, you might prefer to disable the theme of the root dataverse. You can do so by setting ``:DisableRootDataverseTheme`` to ``true`` like this:
+
+``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:DisableRootDataverseTheme``
+
+Please note: Disabling the display of the root Dataverse collection theme also disables your ability to edit it. Remember that Dataverse collection owners can set their Dataverse collections to "inherit theme" from the root. Those Dataverse collections will continue to inherit the root Dataverse collection theme (even though it no longer displays on the root). If you would like to edit the root Dataverse collection theme in the future, you will have to re-enable it first.
+
+Content block
++++++++++++++
+
+By default, the content block encloses the default root Dataverse collection page. This page contains the data available on the Dataverse installation (e.g. dataverses and datasets) and the functionalities that allow the user to interact with the platform (e.g. search, create/edit data and metadata, ...).
+The Dataverse Software allows you to use a custom homepage, that will **replace** the default collection page on the content block, and serve as a welcome page. This allows for complete control over the look and feel of your installation's homepage.
+
+Custom Homepage
+^^^^^^^^^^^^^^^
 
 Download this sample: :download:`custom-homepage.html </_static/installation/files/var/www/dataverse/branding/custom-homepage.html>` and place it at ``/var/www/dataverse/branding/custom-homepage.html``.
 
@@ -661,35 +732,24 @@ For more background on what this curl command above is doing, see the :ref:`data
 
 ``curl -X DELETE http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
 
-Custom Navbar Logo
-++++++++++++++++++
+Footer block
+++++++++++++
 
-The Dataverse Software allows you to replace the default Dataverse Project icon and name branding in the navbar with your own custom logo. Note that this logo is separate from the *root dataverse theme* logo.
+Within the footer block you have the default footer section (which will always be displayed) and may insert a custom footer, that will be displayed **alongside** the default footer to add additional information to the footer block.
 
-The custom logo image file is expected to be small enough to fit comfortably in the navbar, no more than 50 pixels in height and 160 pixels in width. Create a ``navbar`` directory in your Payara ``logos`` directory and place your custom logo there. By default, your logo image file will be located at ``/usr/local/payara5/glassfish/domains/domain1/docroot/logos/navbar/logo.png``.
+Default Footer
+^^^^^^^^^^^^^^
 
-Once you have the location of your custom logo image file, run this curl command to add it to your settings:
+The default footer is the component displayed by default on the footer block and will be present on every Dataverse GUI page.
+The default footer encompasses (configurable) settings that can be used to enhance the look and feel of the default Dataverse footer. Such settings are described below.
 
-``curl -X PUT -d '/logos/navbar/logo.png' http://localhost:8080/api/admin/settings/:LogoCustomizationFile``
+Footer Copyright
+################
 
-Custom Header
-+++++++++++++
-
-Download this sample: :download:`custom-header.html </_static/installation/files/var/www/dataverse/branding/custom-header.html>` and place it at ``/var/www/dataverse/branding/custom-header.html``.
-
-Once you have the location of your custom header HTML file, run this curl command to add it to your settings:
-
-``curl -X PUT -d '/var/www/dataverse/branding/custom-header.html' http://localhost:8080/api/admin/settings/:HeaderCustomizationFile``
-
-If you have enabled a custom header or navbar logo, you might prefer to disable the theme of the root dataverse. You can do so by setting ``:DisableRootDataverseTheme`` to ``true`` like this:
-
-``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:DisableRootDataverseTheme``
-
-Please note: Disabling the display of the root Dataverse collection theme also disables your ability to edit it. Remember that Dataverse collection owners can set their Dataverse collections to "inherit theme" from the root. Those Dataverse collections will continue to inherit the root Dataverse collection theme (even though it no longer displays on the root). If you would like to edit the root Dataverse collection theme in the future, you will have to re-enable it first.
-
+Refer to :ref:`:FooterCopyright` to add customized text to the Copyright section of the default Dataverse footer
 
 Custom Footer
-+++++++++++++
+^^^^^^^^^^^^^
 
 Download this sample: :download:`custom-footer.html </_static/installation/files/var/www/dataverse/branding/custom-footer.html>` and place it at ``/var/www/dataverse/branding/custom-footer.html``.
 
@@ -1552,6 +1612,8 @@ See :ref:`Branding Your Installation` above.
 
 See :ref:`Web-Analytics-Code` above.
 
+.. _:FooterCopyright:
+
 :FooterCopyright
 ++++++++++++++++
 
@@ -1795,14 +1857,18 @@ This will *force* a re-export of every published, local dataset, regardless of w
 
 The call returns a status message informing the administrator, that the process has been launched (``{"status":"WORKFLOW_IN_PROGRESS"}``). The administrator can check the progress of the process via log files: ``[Payara directory]/glassfish/domains/domain1/logs/export_[time stamp].log``.
 
+.. _:NavbarAboutUrl:
+
 :NavbarAboutUrl
 +++++++++++++++
 
-Set ``NavbarAboutUrl`` to a fully-qualified URL which will be used for the "About" link in the navbar.
+Set ``:NavbarAboutUrl`` to a fully-qualified URL which will be used for the "About" link in the navbar.
 
 Note: The "About" link will not appear in the navbar until this option is set.
 
 ``curl -X PUT -d http://dataverse.example.edu http://localhost:8080/api/admin/settings/:NavbarAboutUrl``
+
+.. _:NavbarGuidesUrl:
 
 :NavbarGuidesUrl
 ++++++++++++++++
@@ -1813,12 +1879,16 @@ Note: by default, the URL is composed from the settings ``:GuidesBaseUrl`` and `
 
 ``curl -X PUT -d http://example.edu/fancy-dataverse-guide http://localhost:8080/api/admin/settings/:NavbarGuidesUrl``
 
+.. _:GuidesBaseUrl:
+
 :GuidesBaseUrl
 ++++++++++++++
 
-Set ``GuidesBaseUrl`` to override the default value "http://guides.dataverse.org". If you are interested in writing your own version of the guides, you may find the :doc:`/developers/documentation` section of the Developer Guide helpful.
+Set ``:GuidesBaseUrl`` to override the default value "http://guides.dataverse.org". If you are interested in writing your own version of the guides, you may find the :doc:`/developers/documentation` section of the Developer Guide helpful.
 
 ``curl -X PUT -d http://dataverse.example.edu http://localhost:8080/api/admin/settings/:GuidesBaseUrl``
+
+.. _:GuidesVersion:
 
 :GuidesVersion
 ++++++++++++++
@@ -1826,6 +1896,8 @@ Set ``GuidesBaseUrl`` to override the default value "http://guides.dataverse.org
 Set ``:GuidesVersion`` to override the version number in the URL of guides. For example, rather than http://guides.dataverse.org/en/4.6/user/account.html the version is overriden to http://guides.dataverse.org/en/1234-new-feature/user/account.html in the example below:
 
 ``curl -X PUT -d 1234-new-feature http://localhost:8080/api/admin/settings/:GuidesVersion``
+
+.. _:NavbarSupportUrl:
 
 :NavbarSupportUrl
 +++++++++++++++++
@@ -1930,6 +2002,8 @@ If ``:SolrFullTextIndexing`` is set to true, the content of files of any size wi
 
 ``curl -X PUT -d 314572800 http://localhost:8080/api/admin/settings/:SolrMaxFileSizeForFullTextIndexing``
 
+.. _:SignUpUrl:
+
 :SignUpUrl
 ++++++++++
 
@@ -1969,7 +2043,7 @@ Set whether a user will see the custom text when publishing all versions of a da
 :SearchHighlightFragmentSize
 ++++++++++++++++++++++++++++
 
-Set ``SearchHighlightFragmentSize`` to override the default value of 100 from https://wiki.apache.org/solr/HighlightingParameters#hl.fragsize . In practice, a value of "320" seemed to fix the issue at https://github.com/IQSS/dataverse/issues/2191
+Set ``:SearchHighlightFragmentSize`` to override the default value of 100 from https://wiki.apache.org/solr/HighlightingParameters#hl.fragsize . In practice, a value of "320" seemed to fix the issue at https://github.com/IQSS/dataverse/issues/2191
 
 ``curl -X PUT -d 320 http://localhost:8080/api/admin/settings/:SearchHighlightFragmentSize``
 
@@ -2582,7 +2656,7 @@ For example:
 
 ``curl -X PUT -d /usr/local/bin/ds_validator.sh http://localhost:8080/api/admin/settings/:DatasetMetadataValidatorScript``
 
-In some ways this duplicates a workflow mechanism, since it is possible to define a workflow with additonal validation steps. But please note that the important difference is that this external validation happens *synchronously*, while the user is wating; while a workflow is performed asynchronously with a lock placed on the dataset. This can be useful to some installations, in some situations. But it also means that the script provided should be expected to always work reasonably fast - ideally, in seconds, rather than minutes, etc. 
+In some ways this duplicates a workflow mechanism, since it is possible to define a workflow with additional validation steps. But please note that the important difference is that this external validation happens *synchronously*, while the user is wating; while a workflow is performed asynchronously with a lock placed on the dataset. This can be useful to some installations, in some situations. But it also means that the script provided should be expected to always work reasonably fast - ideally, in seconds, rather than minutes, etc.
 
 :DatasetMetadataValidationFailureMsg
 ++++++++++++++++++++++++++++++++++++
@@ -2613,3 +2687,6 @@ To override the default list with Docs, Data, Code, and Workflow:
 To remove the override and go back to the default list:
 
 ``curl -X PUT -d '' http://localhost:8080/api/admin/settings/:FileCategories``
+
+.. |dvPageBlocks| image:: ./img/dvBrandingCustBlocks.png
+   :class: img-responsive
