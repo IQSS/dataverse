@@ -10,12 +10,12 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.EMailValidator;
+import edu.harvard.iq.dataverse.validation.EMailValidator;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.SettingsWrapper;
-import edu.harvard.iq.dataverse.UserNameValidator;
+import edu.harvard.iq.dataverse.validation.UserNameValidator;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
@@ -244,7 +244,7 @@ public class DataverseUserPage implements java.io.Serializable {
 
     public void validateUserEmail(FacesContext context, UIComponent toValidate, Object value) {
         String userEmail = (String) value;
-        boolean emailValid = EMailValidator.isEmailValid(userEmail, null);
+        boolean emailValid = EMailValidator.isEmailValid(userEmail);
         if (!emailValid) {
             ((UIInput) toValidate).setValid(false);
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("oauth2.newAccount.emailInvalid"), null);
