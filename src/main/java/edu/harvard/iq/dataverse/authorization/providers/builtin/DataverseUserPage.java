@@ -738,20 +738,20 @@ public class DataverseUserPage implements java.io.Serializable {
         this.notificationTypeList = notificationTypeList;
     }
 
-    public Set<Type> getMutedEmails() {
-        return mutedEmails;
+    public Set<Type> getToReceiveEmails() {
+        return notificationTypeList.stream().filter(x -> !mutedEmails.contains(x)).collect(Collectors.toSet());
     }
 
-    public void setMutedEmails(Set<Type> mutedEmails) {
-        this.mutedEmails = mutedEmails;
+    public void setToReceiveEmails(Set<Type> toReceiveEmails) {
+        this.mutedEmails = notificationTypeList.stream().filter(x -> !toReceiveEmails.contains(x)).collect(Collectors.toSet());
     }
 
-    public Set<Type> getMutedNotifications() {
-        return mutedNotifications;
+    public Set<Type> getToReceiveNotifications() {
+        return notificationTypeList.stream().filter(x -> !mutedNotifications.contains(x)).collect(Collectors.toSet());
     }
 
-    public void setMutedNotifications(Set<Type> mutedNotifications) {
-        this.mutedNotifications = mutedNotifications;
+    public void setToReceiveNotifications(Set<Type> toReceiveNotifications) {
+        this.mutedNotifications = notificationTypeList.stream().filter(x -> !toReceiveNotifications.contains(x)).collect(Collectors.toSet());
     }
     
     public boolean isDisabled(Type t) {

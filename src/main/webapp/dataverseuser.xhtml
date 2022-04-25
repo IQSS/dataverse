@@ -59,6 +59,44 @@
                             <ui:include src="mydata_fragment.xhtml"></ui:include>
                         </p:tab>
                         <p:tab id="notifications" title="#{bundle['header.user.selectTab.notifications']}">
+                            <div class="panel panel-default" jsf:rendered="#{settingsWrapper.showMuteOptions}">
+                                <div data-toggle="collapse" data-target="#muteCollapse" aria-expanded="false" class="panel-heading text-info">
+                                    #{bundle['notification.muteOptions']} <span class="glyphicon glyphicon-chevron-down" />
+                                </div>
+                                <div id="muteCollapse" class="collapse">
+                                    <div class="panel-body">
+                                        <div class="form-group text-left">
+                                            <label for="mutedEmails" class="col-sm-4 control-label">
+                                                #{bundle['notification.mutedEmails']}
+                                            </label>
+                                            <div class="col-sm-8">
+                                                <p:selectManyCheckbox id="mutedEmails" value="#{DataverseUserPage.toReceiveEmails}"
+                                                    styleClass="grid-checkbox" layout="grid" columns="1">
+                                                    <f:selectItems value="#{DataverseUserPage.notificationTypeList}" var="t"
+                                                        itemLabel="#{t.description}" itemValue="#{t}"
+                                                        itemDisabled="#{DataverseUserPage.isDisabled(t)}" />
+                                                </p:selectManyCheckbox>
+                                            </div>
+                                        </div>
+                                        <div class="form-group text-left">
+                                            <label for="mutedNotifications" class="col-sm-4 control-label">
+                                                #{bundle['notification.mutedNotifications']}
+                                            </label>
+                                            <div class="col-sm-8">
+                                                <p:selectManyCheckbox id="mutedNotifications" value="#{DataverseUserPage.toReceiveNotifications}"
+                                                    styleClass="grid-checkbox" layout="grid" columns="1">
+                                                    <f:selectItems value="#{DataverseUserPage.notificationTypeList}" var="t"
+                                                        itemLabel="#{t.description}" itemValue="#{t}"
+                                                        itemDisabled="#{DataverseUserPage.isDisabled(t)}" />
+                                                </p:selectManyCheckbox>
+                                            </div>
+                                        </div>
+                                        <p:commandButton id="save" styleClass="btn btn-default" value="#{bundle.saveChanges}"
+                                            action="#{DataverseUserPage.save}" />
+                                    </div>
+                                </div>
+                            </div>
+                            <hr/>
                             <div class="table-container">
                                 <ui:repeat value="#{DataverseUserPage.notificationsList}" var="item">
                                     <div class="notification-item #{item.displayAsRead ? '' : 'bg-warning'}">
@@ -376,31 +414,6 @@
                                         </div>
                                     </div>
                                 </ui:repeat>
-                            </div>
-                            <div class="form-horizontal" jsf:rendered="#{settingsWrapper.showMuteOptions}" >
-                                <hr/>
-                                <div class="form-group text-left">
-                                    <label for="mutedEmails" class="col-sm-4 control-label">
-                                        #{bundle['notification.mutedEmails']}
-                                    </label>
-                                    <div class="col-sm-8">
-                                        <p:selectManyCheckbox id="mutedEmails" value="#{DataverseUserPage.mutedEmails}" styleClass="grid-checkbox" layout="grid" columns="1" >
-                                            <f:selectItems value="#{DataverseUserPage.notificationTypeList}" var="t" itemLabel="#{t.description}" itemValue="#{t}" itemDisabled="#{DataverseUserPage.isDisabled(t)}"/>
-                                        </p:selectManyCheckbox>
-                                    </div>
-                                </div>
-                                <div class="form-group text-left">
-                                    <label for="mutedNotifications" class="col-sm-4 control-label">
-                                        #{bundle['notification.mutedNotifications']}
-                                    </label>
-                                    <div class="col-sm-8">
-                                        <p:selectManyCheckbox id="mutedNotifications" value="#{DataverseUserPage.mutedNotifications}" styleClass="grid-checkbox" layout="grid" columns="1" >
-                                            <f:selectItems value="#{DataverseUserPage.notificationTypeList}" var="t" itemLabel="#{t.description}" itemValue="#{t}" itemDisabled="#{DataverseUserPage.isDisabled(t)}"/>
-                                        </p:selectManyCheckbox>
-                                    </div>
-                                </div>
-                                <p:commandButton id="save" styleClass="btn btn-default" value="#{bundle.saveChanges}"
-                                                             action="#{DataverseUserPage.save}" update="@form"/>
                             </div>
                         </p:tab>
                         <p:tab id="accountInfo" title="#{bundle['header.user.selectTab.accountInfo']}">
