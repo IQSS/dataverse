@@ -175,9 +175,7 @@ public class DataverseUserPage implements java.io.Serializable {
                     .filter(x -> !Type.CONFIRMEMAIL.equals(x) && x.hasDescription())
                     .collect(Collectors.toList());
             mutedEmails = new HashSet<>(currentUser.getMutedEmails());
-            mutedEmails.addAll(settingsWrapper.getAlwaysMutedSet());
             mutedNotifications = new HashSet<>(currentUser.getMutedNotifications());
-            mutedNotifications.addAll(settingsWrapper.getAlwaysMutedSet());
             disabledNotifications = new HashSet<>(settingsWrapper.getAlwaysMutedSet());
             disabledNotifications.addAll(settingsWrapper.getNeverMutedSet());
             
@@ -739,19 +737,27 @@ public class DataverseUserPage implements java.io.Serializable {
     }
 
     public Set<Type> getToReceiveEmails() {
-        return notificationTypeList.stream().filter(x -> !mutedEmails.contains(x)).collect(Collectors.toSet());
+        return notificationTypeList.stream().filter(
+            x -> isDisabled(x) ? !settingsWrapper.isAlwaysMuted(x) && settingsWrapper.isNeverMuted(x) : !mutedEmails.contains(x)
+        ).collect(Collectors.toSet());
     }
 
     public void setToReceiveEmails(Set<Type> toReceiveEmails) {
-        this.mutedEmails = notificationTypeList.stream().filter(x -> !toReceiveEmails.contains(x)).collect(Collectors.toSet());
+        this.mutedEmails = notificationTypeList.stream().filter(
+            x -> !isDisabled(x) && !toReceiveEmails.contains(x)
+        ).collect(Collectors.toSet());
     }
 
     public Set<Type> getToReceiveNotifications() {
-        return notificationTypeList.stream().filter(x -> !mutedNotifications.contains(x)).collect(Collectors.toSet());
+        return notificationTypeList.stream().filter(
+            x -> isDisabled(x) ? !settingsWrapper.isAlwaysMuted(x) && settingsWrapper.isNeverMuted(x) : !mutedNotifications.contains(x)
+        ).collect(Collectors.toSet());
     }
 
     public void setToReceiveNotifications(Set<Type> toReceiveNotifications) {
-        this.mutedNotifications = notificationTypeList.stream().filter(x -> !toReceiveNotifications.contains(x)).collect(Collectors.toSet());
+        this.mutedNotifications = notificationTypeList.stream().filter(
+            x -> !isDisabled(x) && !toReceiveNotifications.contains(x) 
+        ).collect(Collectors.toSet());
     }
     
     public boolean isDisabled(Type t) {
