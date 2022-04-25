@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee  http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
     <display-name>Dataverse</display-name>
-    <!-- Error page -->
     <error-page>
         <error-code>404</error-code>
         <location>/404.xhtml</location>
@@ -13,6 +12,13 @@
     <error-page>
         <error-code>403</error-code>
         <location>/403.xhtml</location>
+    </error-page>
+    <!-- "Universal" error page - but the codes for which we want to -->
+    <!-- display it still need to be explicitly added. -->
+    <!-- This approach DOES NOT WORK FOR 501, for some reason (??) -->
+    <error-page>
+        <error-code>405</error-code>
+        <location>/error.xhtml</location>
     </error-page>
     <!-- Welcome page -->
     <welcome-file-list>

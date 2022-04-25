@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:o="http://omnifaces.org/ui"      
+      xmlns:jsf="http://xmlns.jcp.org/jsf">
+    <h:head>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="/dataverse_template.xhtml">
+            <ui:param name="pageTitle" value="#{bundle['error.generic.page.title']} - #{dataverseServiceBean.findRootDataverse().name}"/>
+            <ui:param name="showDataverseHeader" value="false"/>
+            <ui:param name="loginRedirectPage" value="dataverse.xhtml"/>
+            <ui:param name="showMessagePanel" value="#{true}"/>
+            <ui:define name="body">
+                <div class="alert alert-danger" role="alert" style="margin-top:3em;">
+                    <o:form useRequestURI="true">
+                        <h:outputText value="#{bundle['error.generic.message']} " escape="false"/>
+                        <h:outputFormat value="#{bundle['error.support.message']}" escape="false">
+                            <o:param>
+                                <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                                </p:commandLink>                                
+                            </o:param>
+                        </h:outputFormat>   
+                    </o:form>                  
+                </div>                   
+                <div class="row" jsf:rendered="#{!widgetWrapper.widgetView}" style="margin-top:3em;">
+                    <o:form useRequestURI="true">
+                        <p:focus for="search404"/>
+                        <div class="col-sm-6 col-sm-offset-3">
+                            <div class="input-group">
+                                <input jsf:id="search404" type="text" class="form-control" size="28" value="" placeholder="#{bundle['header.search.title']}"
+                                       style="font-size:1em;" onkeypress="if (event.keyCode == 13) {window.location = '/dataverse/#{dataverseServiceBean.findRootDataverse().alias}/?q=' + this.value; return false;}"/>
+                                <span class="input-group-btn">
+                                    <button id="search404button" class="btn btn-default" onclick="window.location = '/dataverse/#{dataverseServiceBean.findRootDataverse().alias}/?q=' + this.parentNode.previousElementSibling.value; return false;" type="button">
+                                        <span class="glyphicon glyphicon-search"/> #{bundle.find}
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                    </o:form>
+                </div>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
