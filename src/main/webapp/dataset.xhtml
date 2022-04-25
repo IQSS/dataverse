@@ -110,6 +110,8 @@
                 </f:metadata>
                 <h:form id="datasetForm">
                     <h:inputHidden id="validateFilesOutcome" value="#{DatasetPage.validateFilesOutcome}" />
+                    <h:inputHidden id="validTermsofAccess" value="#{DatasetPage.hasValidTermsOfAccess}" />
+
                     <!-- View infoMode -->
                     <!-- Top Button/Citation Blocks -->
                     <p:fragment id="topDatasetBlockFragment">
@@ -167,7 +169,7 @@
                                                                 <!-- NORMAL DOWNLOAD BUTTON (NO TABULAR FILES) -->
                                                                 <li jsf:rendered="#{!DatasetPage.versionHasTabular}">                 
                                                                     <p:commandLink update="@form" actionListener="#{DatasetPage.startDownloadAllOriginal()}" styleClass="btn-download" 
-                                                                                   oncomplete="bind_bsui_components();showPopup();">
+                                                                                   oncomplete="showPopup();">
                                                                     #{bundle.download}
                                                                         <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
                                                                             <f:param value="#{DatasetPage.sizeOfDataset}" />
@@ -180,7 +182,7 @@
                                                                     <!-- DOWNLOAD ORIGINAL BUTTON (TABULAR FILES PRESENT) -->
                                                                     <li jsf:rendered="#{ DatasetPage.sizeOfDatasetOrig != '0 B'  and !(DatasetPage.tooLargeToDownloadOriginal) }">
                                                                         <p:commandLink update="@form" actionListener="#{DatasetPage.startDownloadAllOriginal()}" 
-                                                                                       oncomplete="bind_bsui_components();showPopup();"
+                                                                                       oncomplete="showPopup();"
                                                                                        styleClass="btn-download">
                                                                             #{bundle.downloadOriginal}
                                                                             <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
@@ -195,7 +197,7 @@
                                                                     </ui:fragment>
                                                                     <!-- DOWNLOAD ARCHIVAL FILES (TABULAR FILES PRESENT) -->
                                                                     <li jsf:rendered="#{!DatasetPage.tooLargeToDownloadArchival}">
-                                                                        <p:commandLink update="@form" oncomplete="bind_bsui_components();showPopup();" 
+                                                                        <p:commandLink update="@form" oncomplete="showPopup();" 
                                                                                        actionListener="#{DatasetPage.startDownloadAllArchival()}" styleClass="btn-download">
                                                                                 #{bundle.downloadArchival}
                                                                             <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
@@ -265,7 +267,7 @@
                                                                             <!-- List link -->
                                                                             <p:commandLink title="#{bundle['dataset.compute.computeBatchList']}"
                                                                                            value="#{bundle['dataset.compute.computeBatchList']}"
-                                                                                           oncomplete="PF('computeBatchListPopup').show();bind_bsui_components();"
+                                                                                           oncomplete="PF('computeBatchListPopup').show();"
                                                                                            update="computeBatchListPopup">
                                                                                 <h:outputText value="#{bundle['dataset.compute.computeBatchList']}"/>
                                                                             </p:commandLink>
@@ -296,13 +298,13 @@
                                             <div class="btn-group btn-group-justified" jsf:rendered="#{showPublishLink or showSubmitForReviewLink}">
                                                 <div class="btn-group">
                                                     <!-- Publish BTN -->
-                                                    <h:outputLink value="#" disabled="#{DatasetPage.lockedFromPublishing}">
+                                                    <h:outputLink value="#" disabled="#{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess }">
                                                         <c:if test="#{!((showSubmitForReviewLink or showReturnToAuthorLink or not empty DatasetPage.allowedExternalStatuses) and showPublishLink)}">
-                                                            <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish #{DatasetPage.lockedFromPublishing ? 'disabled' : ''}"/>
+                                                            <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish #{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess ? 'disabled' : ''}"/>
                                                             <f:passThroughAttribute name="onclick" value="$(this).parent().find( 'li > a' ).trigger( 'click' );"/>
                                                         </c:if>
                                                         <c:if test="#{(showSubmitForReviewLink or showReturnToAuthorLink or not empty DatasetPage.allowedExternalStatuses) and showPublishLink}">
-                                                            <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish dropdown-toggle #{DatasetPage.lockedFromPublishing ? 'disabled' : ''}"/>
+                                                            <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish dropdown-toggle #{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess ? 'disabled' : ''}"/>
                                                             <f:passThroughAttribute name="data-toggle" value="dropdown"/>
                                                             <f:passThroughAttribute name="aria-haspopup" value="true"/>
                                                             <f:passThroughAttribute name="aria-expanded" value="false"/>
@@ -311,10 +313,10 @@
                                                     </h:outputLink>
                                                     <!-- Publish BTN DROPDOWN-MENU OPTIONS -->
                                                     <ul class="dropdown-menu pull-right text-left">
-                                                        <li jsf:rendered="#{showPublishLink}" class="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}">
+                                                        <li jsf:rendered="#{showPublishLink}" class="#{!DatasetPage.hasValidTermsOfAccess or ( DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview) ? 'disabled' : ''}">
                                                             <!-- Publish LINK -->
-                                                            <p:commandLink styleClass="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" 
-                                                                           disabled="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview}"
+                                                            <p:commandLink styleClass="#{!DatasetPage.hasValidTermsOfAccess or (DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview) ? 'disabled' : ''}" 
+                                                                           disabled="#{!DatasetPage.hasValidTermsOfAccess or (DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview)}"
                                                                            action="#{DatasetPage.processPublishButton()}">
                                                                 #{bundle['dataset.publish.btn']}
                                                             </p:commandLink>
@@ -371,18 +373,29 @@
                                                     </button>
                                                     <ul class="dropdown-menu pull-right text-left">
                                                         <li>
-                                                            <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD">
+                                                            <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD" rendered="#{DatasetPage.hasValidTermsOfAccess}">
                                                                 <h:outputText value="#{bundle['dataset.editBtn.itemLabel.upload']}"/>
                                                             </h:outputLink>
                                                         </li>
-                                                        <li>
-                                                            <p:commandLink id="editMetadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:datasetForm,:messagePanel" oncomplete="javascript:bind_bsui_components();">
+                                                        <li style="margin-left:20px;margin-bottom:2px;">
+                                                            <p:commandLink rendered="#{!DatasetPage.hasValidTermsOfAccess}" disabled="#{!DatasetPage.hasValidTermsOfAccess}" >
+                                                                <h:outputText  value="#{bundle['dataset.editBtn.itemLabel.upload']}" />
+                                                            </p:commandLink>
+                                                        </li>                                                    
+                                                        <li style="margin-left:20px;">
+                                                            <p:commandLink id="editMetadataDisabled" onclick="editMetadata()" rendered="#{!DatasetPage.hasValidTermsOfAccess}" disabled="#{!DatasetPage.hasValidTermsOfAccess}" >
                                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                                                <h:outputText value="#{bundle['dataset.editBtn.itemLabel.metadata']}" />
+                                                                <h:outputText value="#{bundle['dataset.editBtn.itemLabel.metadata']}"  />
+                                                            </p:commandLink>
+                                                        </li> 
+                                                        <li>
+                                                            <p:commandLink id="editMetadata" onclick="editMetadata()" rendered="#{DatasetPage.hasValidTermsOfAccess}">
+                                                                <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                                                <h:outputText value="#{bundle['dataset.editBtn.itemLabel.metadata']}"  />
                                                             </p:commandLink>
                                                         </li>
                                                         <li>
-                                                            <p:commandLink id="editTerms" actionListener="#{DatasetPage.edit('LICENSE')}" update="@form,:datasetForm,:messagePanel" oncomplete="javascript:bind_bsui_components();">
+                                                            <p:commandLink id="editTerms" actionListener="#{DatasetPage.edit('LICENSE')}" update="@form,:datasetForm,:messagePanel">
                                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                                 <h:outputText value="#{bundle['dataset.editBtn.itemLabel.terms']}" />
                                                             </p:commandLink>
@@ -444,7 +457,7 @@
                                                             <li>
                                                                 <p:commandLink id="deaccessionDatasetLink" 
                                                                                action="#{DatasetPage.clickDeaccessionDataset}"
-                                                                               oncomplete="PF('deaccessionBlock').show();bind_bsui_components();"
+                                                                               oncomplete="PF('deaccessionBlock').show();"
                                                                                update="deaccessionBlock">
                                                                     <h:outputText value="#{bundle['dataset.editBtn.itemLabel.deaccession']}" />
                                                                 </p:commandLink>
@@ -459,7 +472,7 @@
                                             <div class="btn-group btn-group-justified" jsf:rendered="#{dataverseSession.user.authenticated and !DatasetPage.workingVersion.deaccessioned and DatasetPage.dataset.released}">
                                                 <p:commandLink styleClass="btn btn-default btn-access btn-xs btn-block btn-link-dataset"
                                                                action="#{DatasetPage.setShowLinkingPopup(true)}"
-                                                               oncomplete="PF('linkDatasetForm').show();bind_bsui_components();"
+                                                               oncomplete="PF('linkDatasetForm').show();"
                                                                update="@form">
                                                     #{bundle['dataset.linkBtn']}
                                                 </p:commandLink>
@@ -699,8 +712,7 @@
                                                              style="display:none"
                                                              process="@this :datasetForm:hostDataverseContent"
                                                              update="@form,:breadCrumbPanel"
-                                                             action="#{DatasetPage.updateOwnerDataverse()}"
-                                                             oncomplete="bind_bsui_components();">
+                                                             action="#{DatasetPage.updateOwnerDataverse()}">
                                             </p:commandButton>
                                         </p:fragment>
                                     </div>
@@ -728,7 +740,7 @@
                                 <p:commandButton value="#{bundle['file.dataFilesTab.button.direct']}" id="updateTemplate"
                                                  style="display:none"
                                                  update=":datasetForm,accessPopup"
-                                                 action="#{DatasetPage.handleChangeButton}" oncomplete="javascript:bind_bsui_components();">
+                                                 action="#{DatasetPage.handleChangeButton}">
                                 </p:commandButton>
                             </div>
                         </div>
@@ -747,12 +759,18 @@
                     </ui:fragment>
                     <!-- Create/Save Dataset Button Panel TOP editMode -->
                     <div class="button-block form-top" jsf:rendered="#{DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'LICENSE'}">
-                        <p:commandButton id="saveTop" styleClass="btn btn-default" value="#{bundle.saveChanges}"
+                        <p:commandButton id="saveTop" styleClass="btn btn-default" value="#{bundle.saveChanges}" rendered="#{DatasetPage.editMode == 'METADATA'}"
                                          onclick="PF('blockDatasetForm').show();"
                                          update=":datasetForm,:messagePanel"
-                                         oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
-                                         action="#{DatasetPage.save}"/>
-                        <p:commandButton id="cancelTop" styleClass="btn btn-link" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" oncomplete="javascript:bind_bsui_components();">
+                                         oncomplete="$(document).scrollTop(0);"
+                                         action="#{DatasetPage.save}"
+                                         />
+                        <p:commandButton id="saveTopTOA" styleClass="btn btn-default" value="#{bundle.saveChanges}" rendered="#{DatasetPage.editMode == 'LICENSE'}"
+                                         onclick="testTOADatasetPage();"
+                                         update=":datasetForm,:messagePanel"
+                                         oncomplete="$(document).scrollTop(0);"
+                        />
+                        <p:commandButton id="cancelTop" styleClass="btn btn-link" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                         </p:commandButton>
                     </div>
@@ -826,7 +844,7 @@
                         </ui:fragment>
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}"
                                    rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'LICENSE')}">
-                            <p:ajax event="tabChange" listener="#{DatasetPage.tabChanged}" oncomplete="bind_bsui_components();" update="@this" />
+                            <p:ajax event="tabChange" listener="#{DatasetPage.tabChanged}" update="@this" />
                             <p:tab id="dataFilesTab" title="#{bundle.files}" 
                                    rendered="#{(!DatasetPage.workingVersion.deaccessioned 
                                                or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset())) 
@@ -839,8 +857,8 @@
                                    rendered="#{(!DatasetPage.workingVersion.deaccessioned or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset())) 
                                                and (empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA')}">
                                 <div class="button-block tab-header margin-bottom text-right" jsf:rendered="#{empty DatasetPage.editMode}">
-                                    <p:commandLink styleClass="btn btn-default btn-access" actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:messagePanel" oncomplete="javascript:bind_bsui_components();" 
-                                                   disabled="#{DatasetPage.lockedFromEdits}" 
+                                    <p:commandLink styleClass="btn btn-default btn-access" actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:messagePanel" 
+                                                   disabled="#{DatasetPage.lockedFromEdits or !DatasetPage.hasValidTermsOfAccess}" 
                                                    rendered="#{!widgetWrapper.widgetView 
                                                                and (DatasetPage.sessionUserAuthenticated 
                                                                and empty DatasetPage.editMode and !widgetWrapper.widgetView
@@ -903,12 +921,17 @@
                     </div>
                     <!-- Create/Save Dataset Button Panel BTM editMode -->
                     <div class="button-block" jsf:rendered="#{!empty DatasetPage.editMode}">
-                        <p:commandButton id="save" styleClass="btn btn-default" value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}" 
+                        <p:commandButton id="saveBottomTerms" styleClass="btn btn-default" rendered="#{DatasetPage.editMode == 'LICENSE'}"
+                                         value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}" 
+                                         onclick="testTOADatasetPage();"                                         
+                                         oncomplete="$(document).scrollTop(0);"/>
+                        <p:commandButton id="saveBottom" styleClass="btn btn-default" value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}" rendered="#{DatasetPage.editMode == 'CREATE' or DatasetPage.editMode == 'METADATA'}"
                                          onclick="PF('blockDatasetForm').show();"
                                          update=":datasetForm,:messagePanel"
-                                         oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
-                                         action="#{DatasetPage.save}"/>
-                        <p:commandButton id="cancel" styleClass="btn btn-link" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" rendered="#{DatasetPage.editMode != 'CREATE'}" oncomplete="javascript:bind_bsui_components();">
+                                         oncomplete="$(document).scrollTop(0);"
+                                         action="#{DatasetPage.save}"
+                                         />
+                        <p:commandButton id="cancel" styleClass="btn btn-link" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" rendered="#{DatasetPage.editMode != 'CREATE'}">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                         </p:commandButton>
                         <button id="cancelCreate" class="btn btn-link" value="#{bundle.cancel}" onclick="cancelDatasetCreate();return false;" jsf:rendered="#{DatasetPage.editMode == 'CREATE'}">#{bundle.cancel}</button>
@@ -917,17 +940,15 @@
                     <!-- END: Create/Save Dataset Button Panel BTM editMode -->
                     <p:blockUI block="datasetForm" widgetVar="blockDatasetForm"/>
                     <!-- POPUPS -->
-                    <ui:fragment rendered="#{empty DatasetPage.editMode}">
-                        <ui:include src="file-edit-popup-fragment.xhtml">
-                              <ui:param name="datasetVersion" value="#{DatasetPage.workingVersion}"/>   
-                              <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>
-                              <ui:param name="bean" value="#{DatasetPage}"/>
-                              <ui:param name="restrictFileAction" value="restrictFiles"/>
-                              <ui:param name="deleteFileAction" value="deleteFiles"/>
-                              <ui:param name="saveEmbargoAction" value="saveEmbargo"/> 
-                              <ui:param name="updateElements" value=":datasetForm:embargoInputs"/>
-                        </ui:include>
-                    </ui:fragment>
+                    <ui:include src="file-edit-popup-fragment.xhtml">
+                        <ui:param name="datasetVersion" value="#{DatasetPage.workingVersion}"/>   
+                        <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>
+                        <ui:param name="bean" value="#{DatasetPage}"/>
+                        <ui:param name="restrictFileAction" value="restrictFiles"/>
+                        <ui:param name="deleteFileAction" value="deleteFiles"/>
+                        <ui:param name="saveEmbargoAction" value="saveEmbargo"/> 
+                        <ui:param name="updateElements" value=":datasetForm:embargoInputs"/>
+                    </ui:include>
                     <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true" rendered="#{!DatasetPage.workingVersion.deaccessioned}">
                         <p class="help-block">#{bundle['dataset.share.datasetShare.tip']}</p>
                         <div id="sharrre-widget" data-url="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" data-text="#{bundle['dataset.share.datasetShare.shareText']}"></div>
@@ -1778,7 +1799,7 @@
                                 #{bundle.cancel}
                             </button>
                         </div>
-                    </p:dialog>                     
+                    </p:dialog>
                     <p:dialog id="mayNotRelease" header="#{bundle['dataset.publish.header']}" widgetVar="mayNotRelease" modal="true">
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-exclamation-sign"/>
@@ -1845,6 +1866,13 @@
                         </div>
                     </p:dialog>
                     <p:remoteCommand name="returnToAuthorCommand" action="#{DatasetPage.sendBackToContributor}"/>
+                    <p:remoteCommand name="linkEditTerms"   actionListener="#{DatasetPage.edit('LICENSE')}" update="@form,:datasetForm,:messagePanel">
+                        <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                    </p:remoteCommand>
+                    <p:remoteCommand name="editMedatdataCommand"   actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:datasetForm,:messagePanel">
+                        <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                    </p:remoteCommand>
+                    <p:remoteCommand name="datasetSaveCommand" action="#{DatasetPage.save()}" update=":datasetForm,:messagePanel"/>
                     <!-- END: Publish/Submit for Review Dialogs -->
                 </h:form>
                 <script>
@@ -1872,6 +1900,19 @@
                     function openCompareTwo() {
                         PF('compareTwo').show();
                     }
+                    function editTerms(){  
+                        linkEditTerms();
+                    }
+                    function editMetadata(){                         
+                        var validTOA = document.getElementById("datasetForm:validTermsofAccess").value;
+                        if (validTOA === 'false'){                            
+                            PF('blockDatasetForm').show();
+                            PF('accessPopup').show();
+                        } else {
+                            editMedatdataCommand();
+                        }                            
+                    }
+                    
                     function testCheckBoxes() {
                         var count = PF('versionsTable').getSelectedRowsCount();
                         if (count !== 2) {
@@ -1884,6 +1925,15 @@
                         var count = PF('filesTable').getSelectedRowsCount();
                         if (count == 0) {
                             PF('selectFiles').show();
+                        } else {
+                            return true;
+                        }
+                    }
+                    function testTermsOfAccess() {
+                        var valid = document.getElementById("datasetForm:validTermsofAccess").value;
+                        if (valid === false) {
+                            PF('accessPopup').show();
+                            return false;
                         } else {
                             return true;
                         }
@@ -1912,7 +1962,27 @@
                         if (outcome ==='GuestbookRequired'){
                             PF('downloadPopup').show();
                         }
-                    }    
+                    }
+                    
+                    function testTOADatasetPage() {
+                        var termsofAccessHidden, fileAccessRequestHidden;
+                        try{
+                            termsofAccessHidden = document.getElementById("datasetForm:tabView:termsofAccessHiddenLT").value;
+                            fileAccessRequestHidden  = document.getElementById("datasetForm:tabView:fileAccessRequestHiddenLT").value;  
+                        }
+                        catch (error){
+                            //terms not present so save...
+                            PF('blockDatasetForm').show();
+                            datasetSaveCommand();                        
+                        }  
+                        if (fileAccessRequestHidden === 'false' && termsofAccessHidden === '') {
+                           //Not compliant show error keep page open...
+                        } else {
+                            PF('blockDatasetForm').show();
+                            datasetSaveCommand();
+                        }
+                    }
+                                        
                     //]]>
                 </script>
             </ui:define>

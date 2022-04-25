@@ -9,12 +9,23 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonValue;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.StringReader;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -730,5 +741,53 @@ public class SettingsServiceBean {
         return new HashSet<>(em.createNamedQuery("Setting.findAll", Setting.class).getResultList());
     }
     
+    public Map<String, String> getBaseMetadataLanguageMap(Map<String,String> languageMap, boolean refresh) {
+        if (languageMap == null || refresh) {
+            languageMap = new HashMap<String, String>();
+
+            /* If MetadataLanaguages is set, use it.
+             * If not, we can't assume anything and should avoid assuming a metadata language
+             */
+            String mlString = getValueForKey(SettingsServiceBean.Key.MetadataLanguages,"");
+            
+            if(mlString.isEmpty()) {
+                mlString="[]";
+            }
+            JsonReader jsonReader = Json.createReader(new StringReader(mlString));
+            JsonArray languages = jsonReader.readArray();
+            for(JsonValue jv: languages) {
+                JsonObject lang = (JsonObject) jv;
+                languageMap.put(lang.getString("locale"), lang.getString("title"));
+            }
+        }
+        return languageMap;
+    }
     
+    public void initLocaleSettings(Map<String, String> configuredLocales) {
+        
+        try {
+            JSONArray entries = new JSONArray(getValueForKey(SettingsServiceBean.Key.Languages, "[]"));
+            for (Object obj : entries) {
+                JSONObject entry = (JSONObject) obj;
+                String locale = entry.getString("locale");
+                String title = entry.getString("title");
+
+                configuredLocales.put(locale, title);
+            }
+        } catch (JSONException e) {
+            //e.printStackTrace();
+            // do we want to know? - probably not
+        }
+    }
+    
+
+    public Set<String> getConfiguredLanguages() {
+        Set<String> langs = new HashSet<String>();
+        langs.addAll(getBaseMetadataLanguageMap(new HashMap<String, String>(), true).keySet());
+        Map<String, String> configuredLocales = new LinkedHashMap<>();
+        initLocaleSettings(configuredLocales);
+        langs.addAll(configuredLocales.keySet());
+        return langs;
+    }
+
 }
