@@ -160,9 +160,9 @@ class CompileSolrConfig implements Callable<Integer> {
     }
     
     private void applySolrConfigXSLT() throws AbortScriptException {
-        Logger.log("Starting to transform solrconfig.xml...");
+        Logger.info("Starting to transform solrconfig.xml...");
         
-        final Path solrConfig = Path.of(solrConfigSetTargetDir, "conf", "solrconfig.xml");
+        final Path solrConfig = cliParent.getTargetDir().resolve(Path.of("conf", "solrconfig.xml"));
         final Path xsltDir = Path.of(solrConfigXSLTDir);
         
         // Find all the XSLT files
@@ -177,9 +177,9 @@ class CompileSolrConfig implements Callable<Integer> {
         }
         
         // Log found XSLT files
-        Logger.log("Found XSLT files in " + solrConfigXSLTDir + ":");
+        Logger.info("Found XSLT files in " + solrConfigXSLTDir + ":");
         for (Path xsltFile : xsltFiles) {
-            Logger.log(xsltFile.toString().substring(xsltDir.toString().length()+1));
+            Logger.info(xsltFile.toString().substring(xsltDir.toString().length()+1));
         }
         
         // Setup the XSLT processor

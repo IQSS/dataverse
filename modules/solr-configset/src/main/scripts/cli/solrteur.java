@@ -43,12 +43,23 @@ public class solrteur {
      * to the Maven output where we use this from.
      */
     public static final class Logger {
-        public static void log(String message) {
+        static void log(String message) {
             System.out.println(message);
         }
-        public static void log(AbortScriptException ex) {
+        static void log(AbortScriptException ex) {
             System.out.println(ex.getMessage());
             ex.getCause().printStackTrace();
+        }
+        
+        public static void info(String message) {
+            if (!quiet) {
+                log(message);
+            }
+        }
+        public static void info(AbortScriptException ex) {
+            if (!quiet) {
+                log(ex);
+            }
         }
     }
     
