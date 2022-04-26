@@ -10,12 +10,14 @@ import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2TokenData;
 import edu.harvard.iq.dataverse.userdata.UserUtil;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
+import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -222,6 +224,13 @@ public class AuthenticatedUser implements User, Serializable {
         }
     }
 
+    // For Shib users, set "email confirmed" timestamp on login.
+    public void updateEmailConfirmedToNow() {
+        if (ShibAuthenticationProvider.PROVIDER_ID.equals(this.getAuthenticatedUserLookup().getAuthenticationProviderId())) {
+            Timestamp emailConfirmedNow = new Timestamp(new Date().getTime());
+            this.setEmailConfirmed(emailConfirmedNow);
+        }
+    }
 
     //For User List Admin dashboard
     @Transient
