@@ -6,10 +6,14 @@
 
 package cli;
 
+import cli.cmd.ExtractConfigSet;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 
 import cli.cmd.CompileSolrConfig;
+
+import java.nio.file.Path;
 
 /**
  * This class is the main entry point into the different functions of handling different aspects of
@@ -19,14 +23,44 @@ import cli.cmd.CompileSolrConfig;
  */
 @Command(name = solrteur.CLI_NAME,
     mixinStandardHelpOptions = true,
+    usageHelpAutoWidth = true,
     version = solrteur.CLI_NAME+" "+ solrteur.CLI_VERSION,
     description = "Execute different tasks around Dataverse and Solr",
     subcommands = {
+        ExtractConfigSet.class,
         CompileSolrConfig.class
-    })
+    },
+    synopsisSubcommandLabel = "COMMAND")
 public class solrteur {
     public final static String CLI_NAME = "solrteur";
     public final static String CLI_VERSION = "1.0";
+    
+    @Option(
+        required = true,
+        names = {"--solr-version", "-s"},
+        paramLabel = "<x.y.z>",
+        description = "Which version of Solr to use, e. g. 8.9 or 8.11.1")
+    private String solrVersion;
+    
+    public String getSolrVersion() {
+        return this.solrVersion;
+    }
+    
+    @Option(required = true,
+        names = {"--target", "-t"},
+        paramLabel = "<dir>",
+        description = "Path to a target directory")
+    private Path targetDir;
+    
+    public Path getTargetDir() {
+        return this.targetDir;
+    }
+    
+    @Option(
+        names = {"--quiet", "-q"},
+        description = "Decrease verbosity"
+    )
+    static boolean quiet;
     
     /**
      * A wrapper for Throwables to create a checked exception that leads to aborting the execution
