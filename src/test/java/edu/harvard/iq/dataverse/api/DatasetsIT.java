@@ -2745,4 +2745,69 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         
     }
     
+    /**
+     * In this test we are restricting a file and testing that terms of accees
+     * or request access is required
+     *
+     * Export at the dataset level is always the public version.
+     *
+     */
+    @Test
+    public void testRestrictFileTermsOfUseAndAccess() throws IOException {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String authorUsername = UtilIT.getUsernameFromResponse(createUser);
+        String authorApiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(authorApiToken);
+        createDataverse.prettyPrint();
+        createDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, authorApiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = JsonPath.from(createDataset.asString()).getString("data.persistentId");
+
+        Path pathToFile = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "data.csv");
+        String contentOfCsv = ""
+                + "name,pounds,species\n"
+                + "Marshall,40,dog\n"
+                + "Tiger,17,cat\n"
+                + "Panther,21,cat\n";
+        java.nio.file.Files.write(pathToFile, contentOfCsv.getBytes());
+
+        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile.toString(), authorApiToken);
+        uploadFile.prettyPrint();
+        uploadFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("data.csv"));
+
+        String fileId = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
+
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", authorApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
+        Response restrictFile = UtilIT.restrictFile(fileId, true, authorApiToken);
+        restrictFile.prettyPrint();
+        restrictFile.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, authorApiToken);
+        publishDataverse.then().assertThat().statusCode(OK.getStatusCode());
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPid, "major", authorApiToken);
+        publishDataset.then().assertThat().statusCode(OK.getStatusCode());
+        
+        
+        //not allowed to remove request access if there are retricted files
+        
+        Response disallowRequestAccess = UtilIT.allowAccessRequests(datasetPid, false, authorApiToken);
+        disallowRequestAccess.prettyPrint();
+        disallowRequestAccess.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        
+    }
+    
 }

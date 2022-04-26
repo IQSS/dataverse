@@ -84,7 +84,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             validateDataFiles(theDataset, ctxt);
             // (this will throw a CommandException if it fails)
         }
-
+        
+        validateOrDie(theDataset.getLatestVersion(), false);
+        
 		/*
 		 * Try to register the dataset identifier. For PID providers that have registerWhenPublished == false (all except the FAKE provider at present)
 		 * the registerExternalIdentifier command will make one try to create the identifier if needed (e.g. if reserving at dataset creation wasn't done/failed).

@@ -228,16 +228,14 @@
                                                             <p:commandLink title="#{bundle.add}"
                                                                            styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{dsf.datasetFieldType.compound ? 'compound-field-btn' : ''}"
                                                                            actionListener="#{dsf.addDatasetFieldValue(valCount.index + 1)}"
-                                                                           update=":#{p:resolveClientIds('@id(editPrimitiveValueFragment)', view)}"
-                                                                           oncomplete="javascript:bind_bsui_components();">
+                                                                           update=":#{p:resolveClientIds('@id(editPrimitiveValueFragment)', view)}">
                                                                 <span class="glyphicon glyphicon-plus no-text"/>
                                                             </p:commandLink>
                                                             <p:commandLink title="#{bundle.delete}"
                                                                            styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{dsf.datasetFieldType.compound ? 'compound-field-btn' : ''}"
                                                                            rendered="#{dsf.datasetFieldValues.size() > 1}"
                                                                            actionListener="#{dsf.removeDatasetFieldValue(valCount.index)}"
-                                                                           update=":#{p:resolveClientIds('@id(editPrimitiveValueFragment)', view)}"
-                                                                           oncomplete="javascript:bind_bsui_components();">
+                                                                           update=":#{p:resolveClientIds('@id(editPrimitiveValueFragment)', view)}">
                                                                 <span class="glyphicon glyphicon-minus no-text"/>
                                                             </p:commandLink>
                                                         </div>
@@ -349,16 +347,14 @@
                                                     <p:commandLink title="#{bundle.add}"
                                                                    styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{dsf.datasetFieldType.compound ? 'compound-field-btn' : ''}"
                                                                    actionListener="#{dsf.addDatasetFieldCompoundValue(valCount.index + 1)}"   
-                                                                   update=":#{p:resolveClientIds('@id(editCompoundValueFragment)', view)}"
-                                                                   oncomplete="javascript:bind_bsui_components();">
+                                                                   update=":#{p:resolveClientIds('@id(editCompoundValueFragment)', view)}">
                                                         <span class="glyphicon glyphicon-plus no-text"/>
                                                     </p:commandLink>
                                                     <p:commandLink title="#{bundle.delete}"
                                                                    styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{dsf.datasetFieldType.compound ? 'compound-field-btn' : ''}"
                                                                    rendered="#{dsf.datasetFieldCompoundValues.size() > 1}"
                                                                    actionListener="#{dsf.removeDatasetFieldCompoundValue(valCount.index)}"
-                                                                   update=":#{p:resolveClientIds('@id(editCompoundValueFragment)', view)}"
-                                                                   oncomplete="javascript:bind_bsui_components();">
+                                                                   update=":#{p:resolveClientIds('@id(editCompoundValueFragment)', view)}">
                                                         <span class="glyphicon glyphicon-minus no-text"/>
                                                     </p:commandLink>
                                                 </div>
