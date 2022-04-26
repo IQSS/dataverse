@@ -153,6 +153,8 @@ public class SwordServiceBean {
         List<String> listOfLicensesProvided = dcterms.get("license");
         TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
         datasetVersionToMutate.setTermsOfUseAndAccess(terms);
+        terms.setDatasetVersion(datasetVersionToMutate);
+        
         if (listOfLicensesProvided == null) {
             License existingLicense = DatasetUtil.getLicense(datasetVersionToMutate);
             if (existingLicense != null) {
@@ -171,7 +173,9 @@ public class SwordServiceBean {
                     }
                 }
                 terms.setLicense(defaultLicense);
-                setTermsOfUse(datasetVersionToMutate, dcterms, null);
+                terms.setFileAccessRequest(datasetVersionToMutate.getTermsOfUseAndAccess().isFileAccessRequest());
+                terms.setDatasetVersion(datasetVersionToMutate);
+                setTermsOfUse(datasetVersionToMutate, dcterms, defaultLicense);
             }
             return;
         }

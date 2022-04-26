@@ -35,7 +35,7 @@ import java.util.logging.Logger;
 public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand<Dataset> {
 
     private static final Logger logger = Logger.getLogger(CuratePublishedDatasetVersionCommand.class.getCanonicalName());
-    final private boolean validateLenient = true;
+    final private boolean validateLenient = false;
 
     public CuratePublishedDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest) {
         super(aRequest, theDataset);
@@ -120,10 +120,6 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
                 dataFile.setRestricted(draftFmd.isRestricted());
                 publishedFmd.setProvFreeForm(draftFmd.getProvFreeForm());
                 publishedFmd.copyVariableMetadata(draftFmd.getVariableMetadatas());
-                Collection<VarGroup> vgl = publishedFmd.getVarGroups();
-                for (VarGroup vg : vgl) {
-                    ctxt.em().remove(vg);
-                }
                 publishedFmd.copyVarGroups(draftFmd.getVarGroups());
 
             }

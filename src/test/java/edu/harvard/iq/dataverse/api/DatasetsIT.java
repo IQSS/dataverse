@@ -38,15 +38,20 @@ import static com.jayway.restassured.path.json.JsonPath.with;
 import com.jayway.restassured.path.xml.XmlPath;
 import static edu.harvard.iq.dataverse.api.UtilIT.equalToCI;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
+import edu.harvard.iq.dataverse.datavariable.VarGroup;
+import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
+import edu.harvard.iq.dataverse.datavariable.VariableMetadataDDIParser;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.json.Json;
@@ -54,6 +59,9 @@ import javax.json.JsonArray;
 import javax.json.JsonObjectBuilder;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import static org.junit.Assert.assertEquals;
 import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -61,6 +69,8 @@ import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.CoreMatchers.nullValue;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.matchers.JUnitMatchers.containsString;
@@ -2588,5 +2598,216 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
     }
 
 
+    
+    @Test
+    public void testCuratePublishedDatasetVersionCommand() throws IOException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        createUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        
+        
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.prettyPrint();
+        createDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String datasetPid = JsonPath.from(createDataset.asString()).getString("data.persistentId");
+        Integer datasetId = JsonPath.from(createDataset.asString()).getInt("data.id");
+
+        Path pathtoScript = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "run.sh");
+        java.nio.file.Files.write(pathtoScript, "#!/bin/bash\necho hello".getBytes());
+
+        JsonObjectBuilder json1 = Json.createObjectBuilder()
+                .add("description", "A script to reproduce results.")
+                .add("directoryLabel", "code");
+
+        
+        
+
+        String pathToFileThatGoesThroughIngest = "src/test/resources/sav/dct.sav";
+        Response uploadIngestableFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFileThatGoesThroughIngest, apiToken);
+        uploadIngestableFile.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        uploadIngestableFile.prettyPrint();
+
+        String origFileId = JsonPath.from(uploadIngestableFile.body().asString()).getString("data.files[0].dataFile.id");
+
+        System.out.println("Orig file id " + origFileId);
+
+        logger.fine("Orig file id: " + origFileId);
+        assertNotNull(origFileId);
+        assertNotEquals("",origFileId);
+
+        // Give file time to ingest
+        
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFileThatGoesThroughIngest , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        
+        Response origXml = UtilIT.getFileMetadata(origFileId, null, apiToken);
+        assertEquals(200, origXml.getStatusCode());
+
+
+        String stringOrigXml = origXml.getBody().prettyPrint();
+
+        InputStream variableData = origXml.body().asInputStream();
+
+        Map<Long, VariableMetadata> mapVarToVarMet = new HashMap<Long, VariableMetadata>();
+        Map<Long,VarGroup> varGroupMap = new HashMap<Long, VarGroup>();
+        try {
+            XMLInputFactory factory = XMLInputFactory.newInstance();
+            XMLStreamReader xmlr = factory.createXMLStreamReader(variableData);
+            VariableMetadataDDIParser vmdp = new VariableMetadataDDIParser();
+
+            vmdp.processDataDscr(xmlr, mapVarToVarMet, varGroupMap);
+
+        } catch (XMLStreamException e) {
+            logger.warning(e.getMessage());
+            assertEquals(0,1);
+        }
+
+
+        //Test here
+        String updatedContent = "";
+        try {
+            updatedContent = new String(Files.readAllBytes(Paths.get("src/test/resources/xml/dct.xml")));
+        } catch (IOException e) {
+            logger.warning(e.getMessage());
+            assertEquals(0,1);
+        }
+        Long replV1168 = 0L;
+        Long replV1169 = 0L;
+        Long replV1170 = 0L;
+        int numberVariables = 0;
+        for (VariableMetadata var : mapVarToVarMet.values()) {
+            if (var.getLabel().equals("gender")) {
+                replV1170 = var.getDataVariable().getId();
+                numberVariables = numberVariables +1;
+            } else if (var.getLabel().equals("weight")) {
+                replV1168 = var.getDataVariable().getId();
+                numberVariables = numberVariables +1;
+            } else if (var.getLabel().equals("age_rollup")) {
+                replV1169 = var.getDataVariable().getId();
+                numberVariables = numberVariables +1;
+            }
+        }
+        assertEquals(3, numberVariables);
+
+        updatedContent = updatedContent.replaceAll("v1168", "v" + replV1168 );
+        updatedContent = updatedContent.replaceAll("v1169", "v" + replV1169 );
+        updatedContent = updatedContent.replaceAll("v1170", "v" + replV1170 );
+
+        //edit draft vesrsion
+        Response editDDIResponse = UtilIT.editDDI(updatedContent, origFileId, apiToken);
+
+        editDDIResponse.prettyPrint();
+        assertEquals(200, editDDIResponse.getStatusCode());
+
+
+
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        Response getDatasetJsonBeforeUpdate = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJsonBeforeUpdate.prettyPrint();
+        getDatasetJsonBeforeUpdate.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.latestVersion.files[0].label", equalTo("dct.tab"));
+        
+        String pathToJsonFile = "doc/sphinx-guides/source/_static/api/dataset-update-metadata.json";
+        Response updateTitle = UtilIT.updateDatasetMetadataViaNative(datasetPid, pathToJsonFile, apiToken);
+        updateTitle.prettyPrint();
+        updateTitle.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        // shouldn't be able to update current unless you're a super user
+
+        UtilIT.publishDatasetViaNativeApi(datasetId, "updatecurrent", apiToken).then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+        
+        Response makeSuperUser = UtilIT.makeSuperUser(username);
+                
+        //should work after making super user
+        
+        UtilIT.publishDatasetViaNativeApi(datasetId, "updatecurrent", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+        
+        Response getDatasetJsonAfterUpdate = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJsonAfterUpdate.prettyPrint();
+        getDatasetJsonAfterUpdate.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+    }
+    
+    /**
+     * In this test we are restricting a file and testing that terms of accees
+     * or request access is required
+     *
+     * Export at the dataset level is always the public version.
+     *
+     */
+    @Test
+    public void testRestrictFileTermsOfUseAndAccess() throws IOException {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String authorUsername = UtilIT.getUsernameFromResponse(createUser);
+        String authorApiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(authorApiToken);
+        createDataverse.prettyPrint();
+        createDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, authorApiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = JsonPath.from(createDataset.asString()).getString("data.persistentId");
+
+        Path pathToFile = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "data.csv");
+        String contentOfCsv = ""
+                + "name,pounds,species\n"
+                + "Marshall,40,dog\n"
+                + "Tiger,17,cat\n"
+                + "Panther,21,cat\n";
+        java.nio.file.Files.write(pathToFile, contentOfCsv.getBytes());
+
+        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile.toString(), authorApiToken);
+        uploadFile.prettyPrint();
+        uploadFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("data.csv"));
+
+        String fileId = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
+
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", authorApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
+        Response restrictFile = UtilIT.restrictFile(fileId, true, authorApiToken);
+        restrictFile.prettyPrint();
+        restrictFile.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, authorApiToken);
+        publishDataverse.then().assertThat().statusCode(OK.getStatusCode());
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPid, "major", authorApiToken);
+        publishDataset.then().assertThat().statusCode(OK.getStatusCode());
+        
+        
+        //not allowed to remove request access if there are retricted files
+        
+        Response disallowRequestAccess = UtilIT.allowAccessRequests(datasetPid, false, authorApiToken);
+        disallowRequestAccess.prettyPrint();
+        disallowRequestAccess.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        
+    }
     
 }
