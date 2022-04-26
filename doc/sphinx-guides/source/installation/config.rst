@@ -932,7 +932,7 @@ The minimal configuration to support an archiver integration involves adding a m
 
 \:ArchiverSettings - the archiver class can access required settings including existing Dataverse installation settings and dynamically defined ones specific to the class. This setting is a comma-separated list of those settings. For example\:
 
-``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":DuraCloudHost, :DuraCloudPort, :DuraCloudContext"``
+``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":DuraCloudHost, :DuraCloudPort, :DuraCloudContext, :BagGeneratorThreads"``
 
 The DPN archiver defines three custom settings, one of which is required (the others have defaults):
 
@@ -941,6 +941,12 @@ The DPN archiver defines three custom settings, one of which is required (the ot
 ``curl http://localhost:8080/api/admin/settings/:DuraCloudHost -X PUT -d "qdr.duracloud.org"``
 
 :DuraCloudPort and :DuraCloudContext are also defined if you are not using the defaults ("443" and "duracloud" respectively). (Note\: these settings are only in effect if they are listed in the \:ArchiverSettings. Otherwise, they will not be passed to the DuraCloud Archiver class.)
+
+It also can use one setting that is common to all Archivers: :BagGeneratorThreads
+
+``curl http://localhost:8080/api/admin/settings/:BagGeneratorThreads -X PUT -d '8'``
+
+By default, the Bag generator zips two datafiles at a time when creating the Bag. This setting can be used to lower that to 1, i.e. to decrease system load, or to increase it, e.g. to 4 or 8, to speed processing of many small files.
 
 Archivers may require JVM options as well. For the Chronopolis archiver, the username and password associated with your organization's Chronopolis/DuraCloud account should be configured in Payara:
 
@@ -963,9 +969,9 @@ ArchiverClassName - the fully qualified class to be used for archiving. For exam
 
 \:ArchiverSettings - the archiver class can access required settings including existing Dataverse installation settings and dynamically defined ones specific to the class. This setting is a comma-separated list of those settings. For example\:
 
-``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":BagItLocalPath"``
+``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":BagItLocalPath, :BagGeneratorThreads"``
 
-:BagItLocalPath is the file path that you've set in :ArchiverSettings.
+:BagItLocalPath is the file path that you've set in :ArchiverSettings. See the DuraCloud  Configuration section for a description of :BagGeneratorThreads.
 
 .. _Google Cloud Configuration:
 
@@ -976,9 +982,9 @@ The Google Cloud Archiver can send Dataverse Project Bags to a bucket in Google'
 
 ``curl http://localhost:8080/api/admin/settings/:ArchiverClassName -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.GoogleCloudSubmitToArchiveCommand"``
 
-``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":GoogleCloudBucket, :GoogleCloudProject"``
+``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":GoogleCloudBucket, :GoogleCloudProject, :BagGeneratorThreads"``
 
-The Google Cloud Archiver defines two custom settings, both are required. The credentials for your account, in the form of a json key file, must also be obtained and stored locally (see below):
+The Google Cloud Archiver defines two custom settings, both are required. It can also use the :BagGeneratorThreads setting as described in the DuraCloud Configuration section above. The credentials for your account, in the form of a json key file, must also be obtained and stored locally (see below):
 
 In order to use the Google Cloud Archiver, you must have a Google account. You will need to create a project and bucket within that account and provide those values in the settings:
 
@@ -996,10 +1002,10 @@ For example:
 
 ``cp <your key file> /usr/local/payara5/glassfish/domains/domain1/files/googlecloudkey.json``
 
-.. _Archiving API Calls:
+.. _Archiving API Call:
 
-API Calls
-+++++++++
+API Call
+++++++++
 
 Once this configuration is complete, you, as a user with the *PublishDataset* permission, should be able to use the API call to manually submit a DatasetVersion for processing:
 
@@ -1010,18 +1016,6 @@ where:
 ``{id}`` is the DatasetId (or ``:persistentId`` with the ``?persistentId="<DOI>"`` parameter), and
 
 ``{version}`` is the friendly version number, e.g. "1.2".
-
-A batch API call is also available that will attempt to archive any currently unarchived dataset versions:
-
-``curl -H "X-Dataverse-key: <key>" http://localhost:8080/api/admin/archiveAllUnarchivedDatasetVersions``
-
-The call supports three optional query parameters that can be used in combination:
-
-``listonly={true/false}`` default is false. Using true retrieves the list of unarchived versions but does not attempt to archive any.
-
-``latestonly={true/false}`` default is false. Using true only lists/processes the most recently published version of a given dataset (instead of all published versions).
-
-``limit={n}`` default is no limit/process all unarchived versions (subject to other parameters). Defines a maximum number of versions to attempt to archive in response to one invocation of the API call.
 
 The submitDataVersionToArchive API (and the workflow discussed below) attempt to archive the dataset version via an archive specific method. For Chronopolis, a DuraCloud space named for the dataset (it's DOI with ':' and '.' replaced with '-') is created and two files are uploaded to it: a version-specific datacite.xml metadata file and a BagIt bag containing the data and an OAI-ORE map file. (The datacite.xml file, stored outside the Bag as well as inside is intended to aid in discovery while the ORE map file is 'complete', containing all user-entered metadata and is intended as an archival record.)
 
@@ -2412,6 +2406,13 @@ For example, the LocalSubmitToArchiveCommand only uses the :BagItLocalPath setti
 
 ``curl -X PUT -d ':BagItLocalPath' http://localhost:8080/api/admin/settings/:ArchiverSettings`` 
 
+:BagGeneratorThreads
+++++++++++++++++++++
+
+An archiver setting shared by several implementations (e.g. DuraCloud, Google, and Local) that can make Bag generation use fewer or more threads in zipping datafiles that the default of 2
+ 
+``curl http://localhost:8080/api/admin/settings/:BagGeneratorThreads -X PUT -d '8'``
+
 :DuraCloudHost
 ++++++++++++++
 :DuraCloudPort
@@ -2427,7 +2428,7 @@ These three settings define the host, port, and context used by the DuraCloudSub
 This is the local file system path to be used with the LocalSubmitToArchiveCommand class. It is recommended to use an absolute path. See the :ref:`Local Path Configuration` section above.
 
 :GoogleCloudBucket
-++++++++++++++++++ 
+++++++++++++++++++
 :GoogleCloudProject
 +++++++++++++++++++
 
