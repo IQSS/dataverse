@@ -1008,7 +1008,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     } // end getBasicDatasetVersionInfo
     
     
-    //Not used?
+    
     public HashMap getFileMetadataHistory(DataFile df){
         
         if (df == null){

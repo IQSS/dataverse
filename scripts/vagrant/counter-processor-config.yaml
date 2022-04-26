@@ -44,7 +44,7 @@ output_file: /dataverse/sushi_sample_logs
 output_format: json
 
 # the name of the platform that goes into your reports
-platform: Dash
+platform: Dataverse
 
 # Don't put your api token in here if you're going to commit it, but put in separate secrets.yaml in same
 # directory as the config or else set a environment variable when starting up in order to override the key.

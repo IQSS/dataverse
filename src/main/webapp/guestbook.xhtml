@@ -153,13 +153,13 @@
                                                             <div class="col-sm-4 field-add-delete">
                                                                 <p:commandLink styleClass="btn btn-default btn-sm bootstrap-button-tooltip nolabel-field-btn" 
                                                                                title="#{bundle.add}">
-                                                                    <p:ajax update=":guestbookForm:customQuestions" oncomplete="javascript:bind_bsui_components();" listener="#{GuestbookPage.addCustomQuestionValue(cq, resCount.index + 1)}" />
+                                                                    <p:ajax update=":guestbookForm:customQuestions" listener="#{GuestbookPage.addCustomQuestionValue(cq, resCount.index + 1)}" />
                                                                     <f:param name="SKIP_VALIDATION" value="true"/>
                                                                     <span class="glyphicon glyphicon-plus no-text"/>
                                                                 </p:commandLink>
                                                                 <p:commandLink styleClass="btn btn-default btn-sm bootstrap-button-tooltip nolabel-field-btn" 
                                                                                title="#{bundle.delete}" rendered="#{cq.customQuestionValues.size() > 1}">
-                                                                    <p:ajax update=":guestbookForm:customQuestions" oncomplete="javascript:bind_bsui_components();" listener="#{GuestbookPage.removeCustomQuestionValue(cq, resCount.index)}" />
+                                                                    <p:ajax update=":guestbookForm:customQuestions" listener="#{GuestbookPage.removeCustomQuestionValue(cq, resCount.index)}" />
                                                                     <f:param name="SKIP_VALIDATION" value="true"/>
                                                                     <span class="glyphicon glyphicon-minus no-text"/>
                                                                 </p:commandLink>
@@ -176,13 +176,13 @@
                                             <div class="col-sm-3 field-add-delete">
                                                 <p:commandLink styleClass="btn btn-default btn-sm bootstrap-button-tooltip compound-field-btn"
                                                                title="#{bundle.add}">
-                                                    <p:ajax update=":guestbookForm:customQuestions" oncomplete="javascript:bind_bsui_components();" listener="#{GuestbookPage.addCustomQuestion(valCount.index + 1 )}" />
+                                                    <p:ajax update=":guestbookForm:customQuestions" listener="#{GuestbookPage.addCustomQuestion(valCount.index + 1 )}" />
                                                     <f:param name="SKIP_VALIDATION" value="true"/>
                                                     <span class="glyphicon glyphicon-plus no-text"/>
                                                 </p:commandLink>
                                                 <p:commandLink styleClass="btn btn-default btn-sm bootstrap-button-tooltip compound-field-btn" rendered="#{GuestbookPage.guestbook.customQuestions.size() > 1}"
                                                                title="#{bundle.delete}">
-                                                    <p:ajax update=":guestbookForm:customQuestions" oncomplete="javascript:bind_bsui_components();" listener="#{GuestbookPage.removeCustomQuestion(valCount.index)}" />
+                                                    <p:ajax update=":guestbookForm:customQuestions" listener="#{GuestbookPage.removeCustomQuestion(valCount.index)}" />
                                                     <f:param name="SKIP_VALIDATION" value="true"/>
                                                     <span class="glyphicon glyphicon-minus no-text"/>
                                                 </p:commandLink>

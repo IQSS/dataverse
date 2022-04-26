@@ -636,9 +636,8 @@ public class AuthenticationServiceBean {
         authenticatedUser.setAuthenticatedUserLookup(auusLookup);
 
         if (ShibAuthenticationProvider.PROVIDER_ID.equals(auusLookup.getAuthenticationProviderId())) {
-            Timestamp emailConfirmedNow = new Timestamp(new Date().getTime());
             // Email addresses for Shib users are confirmed by the Identity Provider.
-            authenticatedUser.setEmailConfirmed(emailConfirmedNow);
+            authenticatedUser.updateEmailConfirmedToNow();
             authenticatedUser = save(authenticatedUser);
         } else {
             /* @todo Rather than creating a token directly here it might be
@@ -665,6 +664,7 @@ public class AuthenticationServiceBean {
     
     public AuthenticatedUser updateAuthenticatedUser(AuthenticatedUser user, AuthenticatedUserDisplayInfo userDisplayInfo) {
         user.applyDisplayInfo(userDisplayInfo);
+        user.updateEmailConfirmedToNow();
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "updateUser")
             .setInfo(user.getIdentifier()));
         return update(user);
