@@ -323,6 +323,10 @@ public class Template implements Serializable {
         TermsOfUseAndAccess terms = null;
         if(source.getTermsOfUseAndAccess() != null){
             terms = source.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
+        } else {
+            terms = new TermsOfUseAndAccess();
+           // terms.setLicense(TermsOfUseAndAccess.defaultLicense);
+            terms.setFileAccessRequest(true);
         }
         newTemplate.setTermsOfUseAndAccess(terms);
         return newTemplate;
