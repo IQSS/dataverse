@@ -3307,8 +3307,8 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                 JsonObject status = JsonUtil.getJsonObject(dv.getArchivalCopyLocation());
                 return ok(status);
             }
-        } catch (WrappedResponse e1) {
-            return error(Status.UNAUTHORIZED, "api key required");
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
         }
     }
 
@@ -3325,8 +3325,8 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
             if (!au.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
-        } catch (WrappedResponse e1) {
-            return error(Status.UNAUTHORIZED, "api key required");
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
         }
         if (update.containsKey(DatasetVersion.STATUS)
                 && update.containsKey(DatasetVersion.MESSAGE)) {
@@ -3352,8 +3352,8 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                     
                     return ok("Status updated");
 
-                } catch (WrappedResponse e) {
-                    return error(Status.NOT_FOUND, "Dataset not found");
+                } catch (WrappedResponse wr) {
+                    return wr.getResponse();
                 }
             }
         }
