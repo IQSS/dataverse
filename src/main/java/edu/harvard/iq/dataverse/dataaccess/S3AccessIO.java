@@ -84,6 +84,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     private static final Config config = ConfigProvider.getConfig();
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.S3AccessIO");
+    
+    private boolean mainDriver = true;
 
     private static HashMap<String, AmazonS3> driverClientMap = new HashMap<String,AmazonS3>();
     private static HashMap<String, TransferManager> driverTMMap = new HashMap<String,TransferManager>();
@@ -120,6 +122,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     public S3AccessIO(String storageLocation, String driverId) {
         this(null, null, driverId);
         // TODO: validate the storage location supplied
+        logger.fine("Instantiating with location: " + storageLocation);
         bucketName = storageLocation.substring(0,storageLocation.indexOf('/'));
         minPartSize = getMinPartSize(driverId);
         key = storageLocation.substring(storageLocation.indexOf('/')+1);
@@ -239,35 +242,40 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         } else if (dvObject instanceof Dataverse) {
             throw new IOException("Data Access: Storage driver does not support dvObject type Dataverse yet");
         } else {
-            // Direct access, e.g. for external upload - no associated DVobject yet, but we want to be able to get the size
-            // With small files, it looks like we may call before S3 says it exists, so try some retries before failing
-            if(key!=null) {
-                 ObjectMetadata objectMetadata = null; 
-                 int retries = 20;
-                 while(retries > 0) {
-                     try {
-                         objectMetadata = s3.getObjectMetadata(bucketName, key);
-                         if(retries != 20) {
-                           logger.warning("Success for key: " + key + " after " + ((20-retries)*3) + " seconds");
-                         }
-                         retries = 0;
-                     } catch (SdkClientException sce) {
-                         if(retries > 1) {
-                             retries--;
-                             try {
-                                 Thread.sleep(3000);
-                             } catch (InterruptedException e) {
-                                 e.printStackTrace();
-                             }
-                             logger.warning("Retrying after: " + sce.getMessage());
-                         } else {
-                             throw new IOException("Cannot get S3 object " + key + " ("+sce.getMessage()+")");
-                         }
-                     }
-                 }
-                 this.setSize(objectMetadata.getContentLength());
-            }else {
-            throw new IOException("Data Access: Invalid DvObject type");
+            if (isMainDriver()) {
+                // Direct access, e.g. for external upload - no associated DVobject yet, but we
+                // want to be able to get the size
+                // With small files, it looks like we may call before S3 says it exists, so try
+                // some retries before failing
+                if (key != null) {
+                    ObjectMetadata objectMetadata = null;
+                    int retries = 20;
+                    while (retries > 0) {
+                        try {
+                            objectMetadata = s3.getObjectMetadata(bucketName, key);
+                            if (retries != 20) {
+                                logger.warning(
+                                        "Success for key: " + key + " after " + ((20 - retries) * 3) + " seconds");
+                            }
+                            retries = 0;
+                        } catch (SdkClientException sce) {
+                            if (retries > 1) {
+                                retries--;
+                                try {
+                                    Thread.sleep(3000);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                logger.warning("Retrying after: " + sce.getMessage());
+                            } else {
+                                throw new IOException("Cannot get S3 object " + key + " (" + sce.getMessage() + ")");
+                            }
+                        }
+                    }
+                    this.setSize(objectMetadata.getContentLength());
+                } else {
+                    throw new IOException("Data Access: Invalid DvObject type");
+                }
             }
         }
     }
@@ -437,6 +445,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     @Override
     public Channel openAuxChannel(String auxItemTag, DataAccessOption... options) throws IOException {
         if (isWriteAccessRequested(options)) {
+            //Need size to write to S3
             throw new UnsupportedDataAccessOperationException("S3AccessIO: write mode openAuxChannel() not yet implemented in this storage driver.");
         }
 
@@ -834,6 +843,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         return key;
     }
 
+    @Override
     public boolean downloadRedirectEnabled() {
         String optionValue = System.getProperty("dataverse.files." + this.driverId + ".download-redirect");
         if ("true".equalsIgnoreCase(optionValue)) {
@@ -841,7 +851,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
         return false;
     }
-    
+
     /**
      * Generates a temporary URL for a direct S3 download; 
      * either for the main physical file, or (optionally) for an auxiliary. 
@@ -851,7 +861,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
      * @return redirect url
      * @throws IOException.
      */
-    public String generateTemporaryS3Url(String auxiliaryTag, String auxiliaryType, String auxiliaryFileName) throws IOException {
+    public String generateTemporaryDownloadUrl(String auxiliaryTag, String auxiliaryType, String auxiliaryFileName) throws IOException {
         //Questions:
         // Q. Should this work for private and public?
         // A. Yes! Since the URL has a limited, short life span. -- L.A. 
@@ -1251,6 +1261,14 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         String key = getMainFileKey(baseKey, storageIdentifier, driverId);
         CompleteMultipartUploadRequest req = new CompleteMultipartUploadRequest(bucketName, key, uploadId, etags);
         s3Client.completeMultipartUpload(req);
+    }
+
+    public boolean isMainDriver() {
+        return mainDriver;
+    }
+
+    public void setMainDriver(boolean mainDriver) {
+        this.mainDriver = mainDriver;
     }
 
 }

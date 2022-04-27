@@ -184,7 +184,7 @@ public abstract class StorageIO<T extends DvObject> {
     public abstract void deleteAllAuxObjects() throws IOException;
 
     private DataAccessRequest req;
-    private InputStream in;
+    private InputStream in = null;
     private OutputStream out; 
     protected Channel channel;
     protected DvObject dvObject;
@@ -566,5 +566,11 @@ public abstract class StorageIO<T extends DvObject> {
 		}
 	}
 
+    public boolean downloadRedirectEnabled() {
+        return false;
+    }
 
+    public String generateTemporaryDownloadUrl() throws IOException {
+        throw new UnsupportedDataAccessOperationException("Direct download not implemented for this storage type");
+    }
 }

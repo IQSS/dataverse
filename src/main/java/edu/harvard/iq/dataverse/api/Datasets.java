@@ -2372,7 +2372,7 @@ public class Datasets extends AbstractApiBean {
         if (null == contentDispositionHeader) {
             if (optionalFileParams.hasStorageIdentifier()) {
                 newStorageIdentifier = optionalFileParams.getStorageIdentifier();
-                // ToDo - check that storageIdentifier is valid
+                newStorageIdentifier = DataAccess.expandStorageIdentifierIfNeeded(newStorageIdentifier);
                 if (optionalFileParams.hasFileName()) {
                     newFilename = optionalFileParams.getFileName();
                     if (optionalFileParams.hasMimetype()) {

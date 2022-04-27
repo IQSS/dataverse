@@ -188,7 +188,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         // [attempt to] redirect: 
                         String redirect_url_str;
                         try {
-                            redirect_url_str = ((S3AccessIO) storageIO).generateTemporaryS3Url(auxiliaryTag, auxiliaryType, auxiliaryFileName);
+                            redirect_url_str = ((S3AccessIO) storageIO).generateTemporaryDownloadUrl(auxiliaryTag, auxiliaryType, auxiliaryFileName);
                         } catch (IOException ioex) {
                             redirect_url_str = null;
                         }
