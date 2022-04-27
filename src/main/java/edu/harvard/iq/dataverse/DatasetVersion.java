@@ -355,6 +355,7 @@ public class DatasetVersion implements Serializable {
             archivalStatus = JsonUtil.getJsonObject(archivalCopyLocation);
                 } catch(Exception e) {
                     logger.warning("DatasetVersion id: " + id + "has a non-JsonObject value, parsing error: " + e.getMessage());
+                    logger.info(archivalCopyLocation);
                 }
             }
         }
