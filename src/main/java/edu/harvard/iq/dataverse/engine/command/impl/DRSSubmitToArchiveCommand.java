@@ -109,7 +109,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                 if (s3Result == WorkflowStepResult.OK) {
                     //This will be overwritten if the further steps are successful
                     statusObject.add("status", DatasetVersion.FAILURE);
-                    statusObject.add("message", "Bag transferred, ingest failed");
+                    statusObject.add("message", "Bag transferred, DRS ingest call failed");
 
                     // Now contact DRS
                     boolean trustCert = drsConfigObject.getBoolean(TRUST_CERT, false);
@@ -187,7 +187,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                         String jwtString = createJWTString(algorithmRSA, BrandingUtil.getInstallationBrandName(), body, 5);
                         logger.info("JWT: " + jwtString);
 
-                        ingestPost.setHeader("Authorization: Bearer", jwtString);
+                        ingestPost.setHeader("Authorization", "Bearer " + jwtString);
 
                         logger.info("Body: " + body);
                         ingestPost.setEntity(new StringEntity(body, "utf-8"));
@@ -234,6 +234,8 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                                 }
                             } else {
                                 logger.severe("DRS Ingest Failed for: " + packageId + " with status code: " + code);
+                                logger.info("Status: " + code);
+                                logger.info("Response" + responseBody);
                                 return new Failure("DRS Archiver fail in Ingest call with status code: " + code);
                             }
                         } catch (ClientProtocolException e2) {
@@ -249,21 +251,21 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                     }
                     // execute
                     catch (InvalidKeySpecException e) {
-                        // TODO Auto-generated catch block
                         e.printStackTrace();
                     } catch (NoSuchAlgorithmException e) {
-// TODO Auto-generated catch block
                         e.printStackTrace();
                     } catch (IOException e) {
-                        // TODO Auto-generated catch block
                         e.printStackTrace();
+                    } finally {
+                        //Set status after success or failure
+                        dv.setArchivalCopyLocation(statusObject.build().toString());
                     }
                 } else {
-
                     logger.warning("DRS: S3 archiving failed - will not call ingest: " + packageId);
+                    dv.setArchivalCopyLocation(statusObject.build().toString());
                     return new Failure("DRS Archiver fail in initial S3 Archiver transfer");
                 }
-                dv.setArchivalCopyLocation(statusObject.build().toString());
+                
             } else {
                 logger.info("DRS Archiver: No matching collection found - will not archive: " + packageId);
                 return WorkflowStepResult.OK;
