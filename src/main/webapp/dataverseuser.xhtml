@@ -53,14 +53,14 @@
                         <h:outputText value="#{bundle['user.lostPasswdTip']}" />
                     </p:panel>
 
-                    <p:tabView id="dataRelatedToMeView" activeIndex="#{DataverseUserPage.activeIndex}" dynamic="true" rendered="#{empty DataverseUserPage.editMode}">
+                    <p:tabView id="dataRelatedToMeView" activeIndex="#{DataverseUserPage.activeIndex}" dynamic="true" cache="false" rendered="#{empty DataverseUserPage.editMode}">
                         <p:ajax event="tabChange" listener="#{DataverseUserPage.onTabChange}" update="@all"  />
                         <p:tab id="myData" title="#{bundle['user.dataRelatedToMe']}">
                             <ui:include src="mydata_fragment.xhtml"></ui:include>
                         </p:tab>
                         <p:tab id="notifications" title="#{bundle['header.user.selectTab.notifications']}">
                             <div class="panel panel-default" jsf:rendered="#{settingsWrapper.showMuteOptions}">
-                                <div data-toggle="collapse" data-target="#muteCollapse" aria-expanded="false" class="panel-heading text-info">
+                                <div data-toggle="collapse" data-target="#muteCollapse" aria-expanded="false" class="panel-heading text-info" role="button" aria-controls="muteCollapse">
                                     #{bundle['notification.muteOptions']} <span class="glyphicon glyphicon-chevron-down" />
                                 </div>
                                 <div id="muteCollapse" class="collapse">
