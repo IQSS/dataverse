@@ -103,15 +103,53 @@ public final class Field {
         }
     }
     
+    public enum Types implements Predicate<String> {
+        NONE("none"),
+        DATE("date"),
+        EMAIL("email"),
+        TEXT("text"),
+        TEXTBOX("textbox"),
+        URL("url"),
+        INT("int"),
+        FLOAT("float");
+        
+        private final String name;
+        
+        Types(final String name) {
+            this.name = name;
+        }
     
-    public static final class FieldBuilder {
-        // TODO: extend!
-        public Field build() {
-            return new Field();
+        private static final Map<String, Types> valueMap;
+        static {
+            Map<String, Types> map = new ConcurrentHashMap<>();
+            Arrays.stream(Types.values()).forEach(type -> map.put(type.toString(), type));
+            valueMap = Collections.unmodifiableMap(map);
+        }
+    
+        @Override
+        public boolean test(String sut) {
+            // we demand correct case!
+            return this.toString().equals(sut);
+        }
+        
+        public static Predicate<String> matchesTypes() {
+            Predicate<String> test = NONE;
+            for (Types type : Types.values()) {
+                test = test.or(type);
+            }
+            return test;
+        }
+        
+        public static List<String> getTypesList() {
+            return valueMap.keySet().stream().collect(Collectors.toUnmodifiableList());
+        }
+        
+        @Override
+        public String toString() {
+            return this.name;
         }
     }
     
-    private Field() {}
     
     Optional<List<ControlledVocabulary>> controlledVocabularyValues = Optional.empty();
 }
