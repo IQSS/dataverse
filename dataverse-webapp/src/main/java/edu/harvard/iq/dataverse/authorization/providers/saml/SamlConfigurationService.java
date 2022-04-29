@@ -11,10 +11,10 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import io.vavr.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -30,10 +30,12 @@ public class SamlConfigurationService {
     private SettingsServiceBean settingsService;
     private SamlIdentityProviderRepository samlIdpRepository;
     private AuthenticationServiceBean authenticationService;
+    private SamlIdpDataFetcher samlIdpDataFetcher;
 
     private BiFunction<String, String, Map<String, Object>> parser = (String idpMetadataUrl, String idpEntityId) -> {
         try {
-            return IdPMetadataParser.parseRemoteXML(new URL(idpMetadataUrl), idpEntityId);
+            Document document = samlIdpDataFetcher.fetchAndUpdateConfigurationXmlIfNeeded(idpEntityId);
+            return IdPMetadataParser.parseXML(document, idpEntityId);
         } catch (Exception e) {
             logger.warn("Error while fetching or parsing Idp settings", e);
             throw new IllegalStateException("Cannot fetch Idp settings", e);
@@ -46,15 +48,17 @@ public class SamlConfigurationService {
 
     @Inject
     public SamlConfigurationService(SettingsServiceBean settingsService, SamlIdentityProviderRepository samlIdpRepository,
-                                    AuthenticationServiceBean authenticationService) {
+                                    AuthenticationServiceBean authenticationService, SamlIdpDataFetcher samlIdpDataFetcher) {
         this.settingsService = settingsService;
         this.samlIdpRepository = samlIdpRepository;
         this.authenticationService = authenticationService;
+        this.samlIdpDataFetcher = samlIdpDataFetcher;
     }
 
-    public SamlConfigurationService(SettingsServiceBean settingsService, SamlIdentityProviderRepository samlIdpRepository,
-                                    AuthenticationServiceBean authenticationService, BiFunction<String, String, Map<String, Object>> parser) {
-        this(settingsService, samlIdpRepository, authenticationService);
+    SamlConfigurationService(SettingsServiceBean settingsService, SamlIdentityProviderRepository samlIdpRepository,
+                                    AuthenticationServiceBean authenticationService, SamlIdpDataFetcher samlIdpDataFetcher,
+                                    BiFunction<String, String, Map<String, Object>> parser) {
+        this(settingsService, samlIdpRepository, authenticationService, samlIdpDataFetcher);
         this.parser = parser;
     }
 

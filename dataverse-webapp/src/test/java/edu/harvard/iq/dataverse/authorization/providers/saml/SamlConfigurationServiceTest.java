@@ -35,6 +35,9 @@ class SamlConfigurationServiceTest {
     @Mock
     private AuthenticationServiceBean authenticationService;
 
+    @Mock
+    private SamlIdpDataFetcher samlIdpDataFetcher;
+
     private SamlConfigurationService service;
 
     private Map<String, Object> idpSettings = new HashMap<>();
@@ -42,7 +45,7 @@ class SamlConfigurationServiceTest {
     @BeforeEach
     void setUp() {
         idpSettings.clear();
-        service = new SamlConfigurationService(settingsService, samlIdpRepository, authenticationService,
+        service = new SamlConfigurationService(settingsService, samlIdpRepository, authenticationService, samlIdpDataFetcher,
                 (metadataUrl, idpEntityId) -> {
                     idpSettings.put("onelogin.saml2.idp.entityid", idpEntityId);
                     return idpSettings;

@@ -9,6 +9,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.NamedQuery;
 import java.io.Serializable;
+import java.sql.Timestamp;
 
 @Entity
 @NamedQuery(name = "SamlIdentityProvider.findByEntityId",
@@ -26,6 +27,12 @@ public class SamlIdentityProvider implements JpaEntity<Long>, Serializable {
 
     @Column(name = "displayname", nullable = false)
     private String displayName;
+
+    @Column(name = "configurationxml")
+    private String configurationXml;
+
+    @Column(name = "lasttimeofxmldownload")
+    private Timestamp lastTimeOfXmlDownload;
 
     // -------------------- CONSTRUCTORS --------------------
 
@@ -56,6 +63,14 @@ public class SamlIdentityProvider implements JpaEntity<Long>, Serializable {
         return displayName;
     }
 
+    public String getConfigurationXml() {
+        return configurationXml;
+    }
+
+    public Timestamp getLastTimeOfXmlDownload() {
+        return lastTimeOfXmlDownload;
+    }
+
     // -------------------- SETTERS --------------------
 
     public void setId(Long id) {
@@ -72,5 +87,13 @@ public class SamlIdentityProvider implements JpaEntity<Long>, Serializable {
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    public void setConfigurationXml(String configurationXml) {
+        this.configurationXml = configurationXml;
+    }
+
+    public void setLastTimeOfXmlDownload(Timestamp lastTimeOfXmlDownload) {
+        this.lastTimeOfXmlDownload = lastTimeOfXmlDownload;
     }
 }
