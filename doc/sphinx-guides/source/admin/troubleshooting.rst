@@ -16,7 +16,7 @@ See the :doc:`/api/intro` section of the API Guide for a high level overview of 
 A Dataset Is Locked And Cannot Be Edited or Published
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-There are several types of dataset locks. Locks can be managed using the locks API, or by accessing them directly in the database. Internally locks are maintained in the ``DatasetLock`` database table, with the ``field dataset_id`` linking them to specific datasets, and the column ``reason`` specifying the type of lock.
+There are several types of dataset locks. Locks can be managed using the locks API, or by accessing them directly in the database. Internally locks are maintained in the ``datasetlock`` database table, with the field ``dataset_id`` linking them to specific datasets, and the column ``reason`` specifying the type of lock.
 
 It's normal for the ingest process described in the :doc:`/user/tabulardataingest/ingestprocess` section of the User Guide to take some time but if hours or days have passed and the dataset is still locked, you might want to inspect the locks and consider deleting some or all of them. It is recommended to restart the application server if you are deleting an ingest lock, to make sure the ingest job is no longer running in the background. Ingest locks are idetified by the label ``Ingest`` in the ``reason`` column of the ``DatasetLock`` table in the database.
 

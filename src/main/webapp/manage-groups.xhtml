@@ -140,6 +140,7 @@
                         </div>
                         <p:dataTable id="groupMembers"
                                      var="groupMember"
+                                     rendered="#{manageGroupsPage.selectedGroup != null}"
                                      value="#{manageGroupsPage.getExplicitGroupMembers(manageGroupsPage.selectedGroup)}">
                             <!-- Member Name -->
                             <p:column width="31%"
