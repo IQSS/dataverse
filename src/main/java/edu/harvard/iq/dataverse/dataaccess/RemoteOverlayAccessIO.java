@@ -55,7 +55,7 @@ import javax.net.ssl.SSLContext;
  * StorageIdentifier format:
  * <httpDriverId>://<baseStorageIdentifier>//<baseUrlPath>
  */
-public class HTTPOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
+public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.HttpOverlayAccessIO");
 
@@ -73,7 +73,7 @@ public class HTTPOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
     private static boolean trustCerts = false;
     private int httpConcurrency = 4;
 
-    public HTTPOverlayAccessIO(T dvObject, DataAccessRequest req, String driverId) throws IOException {
+    public RemoteOverlayAccessIO(T dvObject, DataAccessRequest req, String driverId) throws IOException {
         super(dvObject, req, driverId);
         this.setIsLocalFile(false);
         configureStores(req, driverId, null);
@@ -83,7 +83,7 @@ public class HTTPOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         logger.fine("Base URL: " + urlPath);
     }
 
-    public HTTPOverlayAccessIO(String storageLocation, String driverId) throws IOException {
+    public RemoteOverlayAccessIO(String storageLocation, String driverId) throws IOException {
         super(null, null, driverId);
         this.setIsLocalFile(false);
         configureStores(null, driverId, storageLocation);
@@ -337,7 +337,7 @@ public class HTTPOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
     public String getStorageLocation() throws IOException {
         String fullStorageLocation = dvObject.getStorageIdentifier();
         logger.fine("storageidentifier: " + fullStorageLocation);
-        fullStorageLocation = fullStorageLocation.substring(fullStorageLocation.lastIndexOf("://") + 3);
+        fullStorageLocation = fullStorageLocation.substring(fullStorageLocation.lastIndexOf(DataAccess.SEPARATOR) + DataAccess.SEPARATOR.length());
         fullStorageLocation = fullStorageLocation.substring(0, fullStorageLocation.indexOf("//"));
         if (this.getDvObject() instanceof Dataset) {
             fullStorageLocation = this.getDataset().getAuthorityForFileStorage() + "/"
@@ -429,13 +429,13 @@ public class HTTPOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 
                     // S3 expects <id>://<bucketname>/<key>
                     switch (baseDriverType) {
-                    case "s3":
-                        fullStorageLocation = baseDriverId + "://"
+                    case DataAccess.S3:
+                        fullStorageLocation = baseDriverId + DataAccess.SEPARATOR
                                 + System.getProperty("dataverse.files." + baseDriverId + ".bucket-name") + "/"
                                 + fullStorageLocation;
                         break;
-                    case "file":
-                        fullStorageLocation = baseDriverId + "://"
+                    case DataAccess.FILE:
+                        fullStorageLocation = baseDriverId + DataAccess.SEPARATOR
                                 + System.getProperty("dataverse.files." + baseDriverId + ".directory") + "/"
                                 + fullStorageLocation;
                         break;
@@ -447,17 +447,17 @@ public class HTTPOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 
                 } else if (storageLocation != null) {
                     // <httpDriverId>://<baseStorageIdentifier>//<baseUrlPath>
-                    String storageId = storageLocation.substring(storageLocation.indexOf("://" + 3));
+                    String storageId = storageLocation.substring(storageLocation.indexOf(DataAccess.SEPARATOR + DataAccess.SEPARATOR.length()));
                     fullStorageLocation = storageId.substring(0, storageId.indexOf("//"));
 
                     switch (baseDriverType) {
-                    case "s3":
-                        fullStorageLocation = baseDriverId + "://"
+                    case DataAccess.S3:
+                        fullStorageLocation = baseDriverId + DataAccess.SEPARATOR
                                 + System.getProperty("dataverse.files." + baseDriverId + ".bucket-name") + "/"
                                 + fullStorageLocation;
                         break;
-                    case "file":
-                        fullStorageLocation = baseDriverId + "://"
+                    case DataAccess.FILE:
+                        fullStorageLocation = baseDriverId + DataAccess.SEPARATOR
                                 + System.getProperty("dataverse.files." + baseDriverId + ".directory") + "/"
                                 + fullStorageLocation;
                         break;
@@ -469,7 +469,7 @@ public class HTTPOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
                 }
                 baseStore = DataAccess.getDirectStorageIO(fullStorageLocation);
             }
-            if (baseDriverType.contentEquals("s3")) {
+            if (baseDriverType.contentEquals(DataAccess.S3)) {
                 ((S3AccessIO<?>) baseStore).setMainDriver(false);
             }
         }

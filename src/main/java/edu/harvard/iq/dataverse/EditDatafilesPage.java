@@ -1920,7 +1920,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
         fileReplacePageHelper.resetReplaceFileHelper();
         saveEnabled = false;
-        String storageIdentifier = DataAccess.getStorarageIdFromLocation(fullStorageLocation);
+        String storageIdentifier = DataAccess.getStorageIdFromLocation(fullStorageLocation);
         if (fileReplacePageHelper.handleNativeFileUpload(null, storageIdentifier, fileName, contentType, checkSumValue, checkSumType)) {
             saveEnabled = true;
 
@@ -3026,7 +3026,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     public boolean rsyncUploadSupported() {
-        // ToDo - rsync was written before multiple store support and currently is hardcoded to use the "s3" store. 
+        // ToDo - rsync was written before multiple store support and currently is hardcoded to use the DataAccess.S3 store. 
         // When those restrictions are lifted/rsync can be configured per store, the test in the 
         // Dataset Util method should be updated
         if (settingsWrapper.isRsyncUpload() && !DatasetUtil.isAppropriateStorageDriver(dataset)) {

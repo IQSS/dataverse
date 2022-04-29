@@ -66,7 +66,7 @@ public abstract class StorageIO<T extends DvObject> {
             this.req = new DataAccessRequest();
         }
         if (this.driverId == null) {
-            this.driverId = "file";
+            this.driverId = DataAccess.FILE;
         }
     }
 
