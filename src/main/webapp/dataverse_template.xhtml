@@ -39,12 +39,6 @@
         <link type="text/css" rel="stylesheet" href="#{resource['css/fontcustom.css']}?version=#{settingsWrapper.appVersion}" />
         <link type="text/css" rel="stylesheet" href="#{resource['css/socicon.css']}?version=#{settingsWrapper.appVersion}" />
         <link type="text/css" rel="stylesheet" href="#{resource['css/structure.css']}?version=#{settingsWrapper.appVersion}" />
-        <ui:fragment rendered="#{!widgetWrapper.widgetView}">
-            <script>
-                // Break out of iframe
-                if (window !== top) top.location = window.location;
-            </script>
-        </ui:fragment>
 	<ui:fragment rendered="#{!empty settingsWrapper.get(':StyleCustomizationFile')}">
             <style>
                 /* Custom CSS */
