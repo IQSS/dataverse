@@ -20,7 +20,7 @@
   "http://schema.org/version": "DRAFT",
   "http://schema.org/name": "Darwin's Finches",
     "https://dataverse.org/schema/core#fileTermsOfAccess": {
-        "https://dataverse.org/schema/core#fileRequestAccess": false
+        "https://dataverse.org/schema/core#fileRequestAccess": true
     },
     "http://schema.org/includedInDataCatalog": "Root"
 }
