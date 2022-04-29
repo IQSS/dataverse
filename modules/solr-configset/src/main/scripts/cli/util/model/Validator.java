@@ -6,7 +6,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Validator {
+public final class Validator {
     
     /**
      * Test if a given value is a valid {@link java.net.URL}
@@ -39,14 +39,14 @@ public class Validator {
      * about case (so you might use camel/pascal case variants).
      *
      * @param headerLine The textual line to analyse.
-     * @param startsWith A String which needs to be present at the start of the headerLine.
      * @param validOrderedHeaders A list of Strings with the column headers from the spec in order of appearance.
+     * @param config The configuration to use
      * @return A list of the found headers in normalized form if matching the spec
      * @throws ParserException If any validation fails. Contains sub-exceptions with validation details.
      */
     static List<String> validateHeaderLine(final String headerLine,
-                                           final String startsWith,
-                                           final List<String> validOrderedHeaders) throws ParserException {
+                                           final List<String> validOrderedHeaders,
+                                           final Configuration config) throws ParserException {
         // start a parenting parser exception to be filled with errors as subexceptions
         ParserException ex = new ParserException("contains an invalid column header");
     
@@ -55,8 +55,16 @@ public class Validator {
             throw ex;
         }
         
+        // test for trigger being present
+        if (! headerLine.startsWith(config.triggerIndicator())) {
+            ex.addSubException("Trigger sign '" + config.triggerIndicator() + "' not found");
+            throw ex;
+        }
+        
         // the actual split and validate length
-        String[] headerSplit = headerLine.split(Constants.COLUMN_SEPARATOR);
+        String[] headerSplit = headerLine
+            .substring(config.triggerIndicator().length()) // remove the trigger indicator first
+            .split(config.columnSeparator());
         // missing headers?
         if (headerSplit.length < validOrderedHeaders.size()) {
             ex.addSubException(

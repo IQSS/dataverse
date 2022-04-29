@@ -1,6 +1,5 @@
 package cli.util.model;
 
-import cli.util.TsvBlockReader;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -23,22 +22,6 @@ class ValidatorTest {
     
     @Nested
     class UtilsTest {
-        @ParameterizedTest
-        @CsvSource(nullValues = "NULL",
-            value = {
-                "NULL,NULL",
-                "hello,hello",
-                "'   hello','   hello'",
-                "'   hello   ','   hello   '",
-                "'   hello','   hello\t\t\t'",
-                "'\t\t\thello','\t\t\thello\t\t\t'",
-                "'\t\t\thello\ttest','\t\t\thello\ttest\t\t'",
-                "'\t\t\thello\ttest\t\t ','\t\t\thello\ttest\t\t '",
-            })
-        void trimming(String expected, String sut) {
-            assertEquals(expected, TsvBlockReader.rtrimColumns(sut));
-        }
-        
         @ParameterizedTest
         @CsvSource(nullValues = "NULL",
             value = {
@@ -74,7 +57,7 @@ class ValidatorTest {
             "dataverseAlias\tdisplayName\tblockURI\t#metadataBlock\tname"
         })
         void validateHeaderLine_Block_Throws(String line) {
-            ParserException exception = assertThrows(ParserException.class, () -> Validator.validateHeaderLine(line, Block.TRIGGER, blockHeaders));
+            ParserException exception = assertThrows(ParserException.class, () -> Validator.validateHeaderLine(line, blockHeaders, Configuration.defaultConfig()));
             assertTrue(exception.hasSubExceptions());
             logger.log(Level.FINE,
                 exception.getSubExceptions().stream().map(Throwable::getMessage).collect(Collectors.joining("\n"))
@@ -87,7 +70,7 @@ class ValidatorTest {
             "#metadataBlock\tNAME\tDataversealias\tDisplayname\tBlockURI"
         })
         void validateHeaderLine_Block_True(String line) throws ParserException {
-            List<String> headers = Validator.validateHeaderLine(line, Block.TRIGGER, blockHeaders);
+            List<String> headers = Validator.validateHeaderLine(line, blockHeaders, Configuration.defaultConfig());
             assertFalse(headers.isEmpty());
             // we expect the normalized form, so the arrays should match!
             assertEquals(blockHeaders, headers);
