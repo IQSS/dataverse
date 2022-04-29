@@ -2064,10 +2064,10 @@ public class EditDatafilesPage implements java.io.Serializable {
         String storageLocation = fullStorageIdentifier.substring(0,lastColon) + "/" + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + fullStorageIdentifier.substring(lastColon+1);
         storageLocation = DataAccess.expandStorageIdentifierIfNeeded(storageLocation);
 
-    	if (uploadInProgress.isFalse()) {
-    		uploadInProgress.setValue(true);
-    	}
-    	logger.fine("handleExternalUpload");
+        if (uploadInProgress.isFalse()) {
+            uploadInProgress.setValue(true);
+        }
+        logger.fine("handleExternalUpload");
 
         StorageIO<DvObject> sio;
         String localWarningMessage = null;
