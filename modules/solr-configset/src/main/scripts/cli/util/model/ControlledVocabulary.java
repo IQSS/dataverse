@@ -95,7 +95,7 @@ public final class ControlledVocabulary {
         }
     
         public boolean isValid(final String sut) {
-            return test.test(sut);
+            return sut != null && test.test(sut);
         }
     
         public String getErrorMessage() {

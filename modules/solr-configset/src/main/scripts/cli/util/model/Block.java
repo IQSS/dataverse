@@ -116,7 +116,7 @@ public final class Block {
          * @return True if matching or false in every other case.
          */
         public boolean isValid(final String sut) {
-            return test.test(sut);
+            return sut != null && test.test(sut);
         }
         
         /**
