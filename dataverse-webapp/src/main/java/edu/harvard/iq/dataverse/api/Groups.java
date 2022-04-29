@@ -2,12 +2,12 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.api.dto.IpGroupDTO;
-import edu.harvard.iq.dataverse.api.dto.ShibGroupDTO;
+import edu.harvard.iq.dataverse.api.dto.SamlGroupDTO;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
-import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupProvider;
+import edu.harvard.iq.dataverse.authorization.groups.impl.saml.SamlGroupProvider;
 import edu.harvard.iq.dataverse.persistence.group.IpGroup;
-import edu.harvard.iq.dataverse.persistence.group.ShibGroup;
+import edu.harvard.iq.dataverse.persistence.group.SamlGroup;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 
 import javax.annotation.PostConstruct;
@@ -39,7 +39,7 @@ public class Groups extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(Groups.class.getName());
 
     private IpGroupProvider ipGroupPrv;
-    private ShibGroupProvider shibGroupPrv;
+    private SamlGroupProvider samlGroupProvider;
 
     @Inject
     private GroupServiceBean groupSvc;
@@ -49,7 +49,7 @@ public class Groups extends AbstractApiBean {
     @PostConstruct
     void postConstruct() {
         ipGroupPrv = groupSvc.getIpGroupProvider();
-        shibGroupPrv = groupSvc.getShibGroupProvider();
+        samlGroupProvider = groupSvc.getSamlGroupProvider();
     }
 
     /**
@@ -122,12 +122,9 @@ public class Groups extends AbstractApiBean {
     @GET
     @Path("ip/{groupIdtf}")
     public Response getIpGroup(@PathParam("groupIdtf") String groupIdtf) {
-        IpGroup grp;
-        if (isNumeric(groupIdtf)) {
-            grp = ipGroupPrv.get(Long.parseLong(groupIdtf));
-        } else {
-            grp = ipGroupPrv.get(groupIdtf);
-        }
+        IpGroup grp = isNumeric(groupIdtf)
+                ? ipGroupPrv.get(Long.parseLong(groupIdtf))
+                : ipGroupPrv.get(groupIdtf);
 
         return (grp == null)
                 ? notFound("Group " + groupIdtf + " not found")
@@ -138,12 +135,9 @@ public class Groups extends AbstractApiBean {
     @ApiWriteOperation
     @Path("ip/{groupIdtf}")
     public Response deleteIpGroup(@PathParam("groupIdtf") String groupIdtf) {
-        IpGroup grp;
-        if (isNumeric(groupIdtf)) {
-            grp = ipGroupPrv.get(Long.parseLong(groupIdtf));
-        } else {
-            grp = ipGroupPrv.get(groupIdtf);
-        }
+        IpGroup grp = isNumeric(groupIdtf)
+                ? ipGroupPrv.get(Long.parseLong(groupIdtf))
+                : ipGroupPrv.get(groupIdtf);
 
         if (grp == null) {
             return notFound("Group " + groupIdtf + " not found");
@@ -168,62 +162,48 @@ public class Groups extends AbstractApiBean {
     }
 
     @GET
-    @Path("shib")
-    public Response listShibGroups() {
-        List<ShibGroupDTO> shibGroups = shibGroupPrv.findGlobalGroups().stream()
-                .map(g -> new ShibGroupDTO.Converter().convert(g))
+    @Path("saml")
+    public Response listSamlGroups() {
+        List<SamlGroupDTO> samlGroups = samlGroupProvider.findGlobalGroups().stream()
+                .map(g -> new SamlGroupDTO.Converter().convert(g))
                 .collect(Collectors.toList());
-        return ok(shibGroups);
+        return ok(samlGroups);
     }
 
     @POST
     @ApiWriteOperation
-    @Path("shib")
-    public Response createShibGroup(JsonObject shibGroupInput) {
+    @Path("saml")
+    public Response createSamlGroup(JsonObject samlGroupInput) {
         String expectedNameKey = "name";
-        JsonString name = shibGroupInput.getJsonString(expectedNameKey);
+        JsonString name = samlGroupInput.getJsonString(expectedNameKey);
         if (name == null) {
             return error(Response.Status.BAD_REQUEST, "required field missing: " + expectedNameKey);
         }
-        String expectedAttributeKey = "attribute";
-        JsonString attribute = shibGroupInput.getJsonString(expectedAttributeKey);
-        if (attribute == null) {
-            return error(Response.Status.BAD_REQUEST, "required field missing: " + expectedAttributeKey);
+        String expectedEntityIdKey = "entityId";
+        JsonString entityId = samlGroupInput.getJsonString(expectedEntityIdKey);
+        if (entityId == null) {
+            return error(Response.Status.BAD_REQUEST, "required field missing: " + expectedEntityIdKey);
         }
-        String expectedPatternKey = "pattern";
-        JsonString pattern = shibGroupInput.getJsonString(expectedPatternKey);
-        if (pattern == null) {
-            return error(Response.Status.BAD_REQUEST, "required field missing: " + expectedPatternKey);
-        }
-        ShibGroup shibGroupToPersist = new ShibGroup(name.getString(), attribute.getString(), pattern.getString());
-        ShibGroup persitedShibGroup = shibGroupPrv.persist(shibGroupToPersist);
-        if (persitedShibGroup != null) {
-            return ok("Shibboleth group persisted: " + persitedShibGroup);
-        } else {
-            return error(Response.Status.BAD_REQUEST, "Could not persist Shibboleth group");
-        }
+        SamlGroup persitedSamlGroup = samlGroupProvider.persist(new SamlGroup(name.getString(), entityId.getString()));
+        return persitedSamlGroup != null
+                ? ok("Saml group persisted: " + persitedSamlGroup)
+                : error(Response.Status.BAD_REQUEST, "Could not persist Saml group");
     }
 
     @DELETE
     @ApiWriteOperation
-    @Path("shib/{primaryKey}")
-    public Response deleteShibGroup(@PathParam("primaryKey") String id) {
-        ShibGroup doomed = shibGroupPrv.get(id);
+    @Path("saml/{primaryKey}")
+    public Response deleteSamlGroup(@PathParam("primaryKey") String id) {
+        SamlGroup doomed = samlGroupProvider.get(id);
         if (doomed != null) {
-            boolean deleted;
             try {
-                deleted = shibGroupPrv.delete(doomed);
-            } catch (Exception ex) {
-                return error(Response.Status.BAD_REQUEST, ex.getMessage());
-            }
-            if (deleted) {
-                return ok("Shibboleth group " + id + " deleted");
-            } else {
-                return error(Response.Status.BAD_REQUEST, "Could not delete Shibboleth group with an id of " + id);
+                samlGroupProvider.delete(doomed);
+                return ok("Saml group " + id + " deleted");
+            } catch (IllegalArgumentException iae) {
+                return error(Response.Status.BAD_REQUEST, iae.getMessage());
             }
         } else {
-            return error(Response.Status.BAD_REQUEST, "Could not find Shibboleth group with an id of " + id);
+            return notFound("Could not find Saml group with an id of " + id);
         }
     }
-
 }

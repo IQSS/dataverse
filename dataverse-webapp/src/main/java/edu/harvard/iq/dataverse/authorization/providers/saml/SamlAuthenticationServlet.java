@@ -118,7 +118,7 @@ public class SamlAuthenticationServlet extends HttpServlet {
                 AuthenticatedUser user = authenticationService.lookupUser(userRecordId);
                 if (user != null) {
                     session.setUser(user);
-                    // TODO: Shib groups (future task)
+                    user.setSamlIdPEntityId(userData.getIdpEntityId());
                     String relayState = request.getParameter("RelayState");
                     response.sendRedirect(StringUtils.isNotBlank(relayState)
                             ? relayState

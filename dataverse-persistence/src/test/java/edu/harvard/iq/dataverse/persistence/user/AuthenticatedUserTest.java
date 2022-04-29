@@ -6,9 +6,6 @@
 package edu.harvard.iq.dataverse.persistence.user;
 
 import edu.harvard.iq.dataverse.persistence.MocksFactory;
-import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
-import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserDisplayInfo;
-import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserLookup;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -200,16 +197,16 @@ public class AuthenticatedUserTest {
     @Test
     public void testGetShibIdentityProvider() {
         System.out.println("getShibIdentityProvider");
-        String expResult = testUser.getShibIdentityProvider();
-        assertEquals(expResult, testUser.getShibIdentityProvider());
+        String expResult = testUser.getSamlIdPEntityId();
+        assertEquals(expResult, testUser.getSamlIdPEntityId());
     }
 
     @Test
     public void testSetShibIdentityProvider() {
         System.out.println("setShibIdentityProvider");
         String shibIdentityProvider = "Davis";
-        testUser.setShibIdentityProvider(shibIdentityProvider);
-        String result = testUser.getShibIdentityProvider();
+        testUser.setSamlIdPEntityId(shibIdentityProvider);
+        String result = testUser.getSamlIdPEntityId();
         assertEquals("Davis", result);
     }
 

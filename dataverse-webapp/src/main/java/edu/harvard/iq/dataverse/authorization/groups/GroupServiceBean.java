@@ -9,8 +9,8 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvi
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupsServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.mail.MailDomainGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.mail.MailDomainGroupService;
-import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupProvider;
-import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.groups.impl.saml.SamlGroupProvider;
+import edu.harvard.iq.dataverse.authorization.groups.impl.saml.SamlGroupService;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.group.ExplicitGroup;
@@ -44,7 +44,7 @@ public class GroupServiceBean {
     @EJB
     IpGroupsServiceBean ipGroupsService;
     @EJB
-    ShibGroupServiceBean shibGroupService;
+    SamlGroupService samlGroupService;
     @EJB
     ExplicitGroupServiceBean explicitGroupService;
     @EJB
@@ -55,7 +55,7 @@ public class GroupServiceBean {
     private final Map<String, GroupProvider<?>> groupProviders = new HashMap<>();
 
     private IpGroupProvider ipGroupProvider;
-    private ShibGroupProvider shibGroupProvider;
+    private SamlGroupProvider samlGroupProvider;
     private ExplicitGroupProvider explicitGroupProvider;
     private MailDomainGroupProvider mailDomainGroupProvider;
 
@@ -68,8 +68,8 @@ public class GroupServiceBean {
         return ipGroupProvider;
     }
 
-    public ShibGroupProvider getShibGroupProvider() {
-        return shibGroupProvider;
+    public SamlGroupProvider getSamlGroupProvider() {
+        return samlGroupProvider;
     }
 
     public ExplicitGroupProvider getExplicitGroupProvider() {
@@ -83,7 +83,7 @@ public class GroupServiceBean {
         addGroupProvider(AllUsersGroupProvider.get());
         addGroupProvider(AuthenticatedUsersProvider.get());
         addGroupProvider(ipGroupProvider = new IpGroupProvider(ipGroupsService));
-        addGroupProvider(shibGroupProvider = new ShibGroupProvider(shibGroupService));
+        addGroupProvider(samlGroupProvider = new SamlGroupProvider(samlGroupService));
         addGroupProvider(mailDomainGroupProvider = new MailDomainGroupProvider(mailDomainGroupService));
 
         List<GroupProvider<?>> providers = new ArrayList<>(groupProviders.values());

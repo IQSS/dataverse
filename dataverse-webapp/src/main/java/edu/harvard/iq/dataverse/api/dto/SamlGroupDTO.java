@@ -1,13 +1,12 @@
 package edu.harvard.iq.dataverse.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import edu.harvard.iq.dataverse.persistence.group.ShibGroup;
+import edu.harvard.iq.dataverse.persistence.group.SamlGroup;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class ShibGroupDTO {
+public class SamlGroupDTO {
     private String name;
-    private String attribute;
-    private String pattern;
+    private String entityId;
     private Long id;
 
     // -------------------- GETTERS --------------------
@@ -16,12 +15,8 @@ public class ShibGroupDTO {
         return name;
     }
 
-    public String getAttribute() {
-        return attribute;
-    }
-
-    public String getPattern() {
-        return pattern;
+    public String getEntityId() {
+        return entityId;
     }
 
     public Long getId() {
@@ -34,12 +29,8 @@ public class ShibGroupDTO {
         this.name = name;
     }
 
-    public void setAttribute(String attribute) {
-        this.attribute = attribute;
-    }
-
-    public void setPattern(String pattern) {
-        this.pattern = pattern;
+    public void setEntityId(String entityId) {
+        this.entityId = entityId;
     }
 
     public void setId(Long id) {
@@ -49,11 +40,10 @@ public class ShibGroupDTO {
     // -------------------- INNER CLASSES --------------------
 
     public static class Converter {
-        public ShibGroupDTO convert(ShibGroup group) {
-            ShibGroupDTO converted = new ShibGroupDTO();
+        public SamlGroupDTO convert(SamlGroup group) {
+            SamlGroupDTO converted = new SamlGroupDTO();
             converted.setName(group.getName());
-            converted.setAttribute(group.getAttribute());
-            converted.setPattern(group.getPattern());
+            converted.setEntityId(group.getEntityId());
             converted.setId(group.getId());
             return converted;
         }

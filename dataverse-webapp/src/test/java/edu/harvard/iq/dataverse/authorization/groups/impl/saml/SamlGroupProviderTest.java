@@ -1,9 +1,9 @@
-package edu.harvard.iq.dataverse.authorization.groups.impl.mail;
+package edu.harvard.iq.dataverse.authorization.groups.impl.saml;
 
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.persistence.group.AllUsers;
 import edu.harvard.iq.dataverse.persistence.group.AuthenticatedUsers;
-import edu.harvard.iq.dataverse.persistence.group.MailDomainGroup;
+import edu.harvard.iq.dataverse.persistence.group.SamlGroup;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.PrivateUrlUser;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
@@ -15,22 +15,23 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class MailDomainGroupProviderTest {
+class SamlGroupProviderTest {
 
-    @Mock private MailDomainGroupService mailDomainGroupService;
+    @Mock
+    private SamlGroupService samlGroupService;
 
-    @InjectMocks MailDomainGroupProvider provider;
+    @InjectMocks
+    SamlGroupProvider provider;
 
     // -------------------- TESTS --------------------
 
@@ -41,16 +42,16 @@ class MailDomainGroupProviderTest {
         // given
         AuthenticatedUser user = mock(AuthenticatedUser.class);
         DataverseRequest request = mock(DataverseRequest.class);
-        when(request.getAuthenticatedUser()).thenReturn(user);
+        when(request.getUser()).thenReturn(user);
 
-        Set<MailDomainGroup> groups = Stream.of(
-                MailDomainGroupTestUtil.createGroup("1", new String[] {".edu.pl"}, new String[0]),
-                MailDomainGroupTestUtil.createGroup("2", new String[] {".pl"}, new String[0])
-        ).collect(Collectors.toSet());
-        when(mailDomainGroupService.getGroupsForUser(user)).thenReturn(groups);
+        Set<SamlGroup> groups = Stream.of(
+                new SamlGroup("1", "entityId1"),
+                new SamlGroup("2", "entityId2"))
+                .collect(Collectors.toSet());
+        when(samlGroupService.findFor(user)).thenReturn(groups);
 
         // when
-        Set<MailDomainGroup> groupsForRequest = provider.groupsFor(request);
+        Set<SamlGroup> groupsForRequest = provider.groupsFor(request);
 
         // then
         assertThat(groupsForRequest).containsExactlyInAnyOrderElementsOf(groups);
@@ -62,10 +63,10 @@ class MailDomainGroupProviderTest {
 
         // given
         DataverseRequest request = mock(DataverseRequest.class);
-        when(request.getAuthenticatedUser()).thenReturn(null);
+        when(request.getUser()).thenReturn(null);
 
         // when
-        Set<MailDomainGroup> groupsForRequest = provider.groupsFor(request);
+        Set<SamlGroup> groupsForRequest = provider.groupsFor(request);
 
         // then
         assertThat(groupsForRequest).isEmpty();
@@ -78,14 +79,14 @@ class MailDomainGroupProviderTest {
         // given
         AuthenticatedUser user = mock(AuthenticatedUser.class);
 
-        Set<MailDomainGroup> groups = Stream.of(
-                MailDomainGroupTestUtil.createGroup("a1", new String[] {".edu.pl"}, new String[0]),
-                MailDomainGroupTestUtil.createGroup("a2", new String[] {".pl"}, new String[0])
-        ).collect(Collectors.toSet());
-        when(mailDomainGroupService.getGroupsForUser(user)).thenReturn(groups);
+        Set<SamlGroup> groups = Stream.of(
+                new SamlGroup("a1", "entityId1"),
+                new SamlGroup("a2", "entityId2"))
+                .collect(Collectors.toSet());
+        when(samlGroupService.findFor(user)).thenReturn(groups);
 
         // when
-        Set<MailDomainGroup> groupsForRequest = provider.groupsFor(user);
+        Set<SamlGroup> groupsForRequest = provider.groupsFor(user);
 
         // then
         assertThat(groupsForRequest).containsExactlyInAnyOrderElementsOf(groups);
@@ -109,30 +110,30 @@ class MailDomainGroupProviderTest {
     }
 
     @Test
-    @DisplayName("Should find group with the given alias if exists")
+    @DisplayName("Should find group with the given alias (id) if exists")
     void get() {
 
         // given
-        String groupAlias = "abc";
-        MailDomainGroup group = MailDomainGroupTestUtil.createGroup(groupAlias, new String[] {".edu.pl"}, new String[0]);
-        when(mailDomainGroupService.getGroup(groupAlias)).thenReturn(Optional.of(group));
+        String groupAlias = "1";
+        SamlGroup group = new SamlGroup("a1", "entityId");
+        when(samlGroupService.findById(1L)).thenReturn(group);
 
         // when
-        MailDomainGroup found = provider.get(groupAlias);
+        SamlGroup found = provider.get(groupAlias);
 
         // then
         assertThat(found).isEqualTo(group);
     }
 
     @Test
-    @DisplayName("Should return null for the given alias if there is no such group")
+    @DisplayName("Should return null for the given alias (id) if there is no such group")
     void get__notFound() {
 
         // given
-        when(mailDomainGroupService.getGroup(anyString())).thenReturn(Optional.empty());
+        when(samlGroupService.findById(anyLong())).thenReturn(null);
 
         // when
-        MailDomainGroup found = provider.get("abc");
+        SamlGroup found = provider.get("123");
 
         // then
         assertThat(found).isNull();
@@ -143,14 +144,14 @@ class MailDomainGroupProviderTest {
     void findGlobalGroups() {
 
         // given
-        List<MailDomainGroup> groups = Stream.of(
-                MailDomainGroupTestUtil.createGroup("a", new String[]{".edu.co.uk"}, new String[0]),
-                MailDomainGroupTestUtil.createGroup("b", new String[]{".co.uk"}, new String[0])
-        ).collect(Collectors.toList());
-        when(mailDomainGroupService.getAllGroups()).thenReturn(groups);
+        List<SamlGroup> groups = Stream.of(
+                new SamlGroup("a", "entityIdA"),
+                new SamlGroup("b", "entityIdB"))
+                .collect(Collectors.toList());
+        when(samlGroupService.findAll()).thenReturn(groups);
 
         // when
-        Set<MailDomainGroup> globalGroups = provider.findGlobalGroups();
+        Set<SamlGroup> globalGroups = provider.findGlobalGroups();
 
         // then
         assertThat(globalGroups).containsExactlyInAnyOrderElementsOf(groups);
@@ -163,16 +164,16 @@ class MailDomainGroupProviderTest {
         // given
         AuthenticatedUser user = mock(AuthenticatedUser.class);
         DataverseRequest request = mock(DataverseRequest.class);
-        when(request.getAuthenticatedUser()).thenReturn(user);
+        when(request.getUser()).thenReturn(user);
 
-        MailDomainGroup groupX = MailDomainGroupTestUtil.createGroup("x", new String[]{".edu.pl"}, new String[0]);
-        MailDomainGroup groupZ = MailDomainGroupTestUtil.createGroup("z", new String[]{".edu.pl"}, new String[0]);
+        SamlGroup groupX = new SamlGroup("x", "entityIdX");
+        SamlGroup groupZ = new SamlGroup("z", "entityIdZ");
 
-        Set<MailDomainGroup> groups = Stream.of(
+        Set<SamlGroup> groups = Stream.of(
                 groupX,
-                MailDomainGroupTestUtil.createGroup("y", new String[]{".pl"}, new String[0])
-        ).collect(Collectors.toSet());
-        when(mailDomainGroupService.getGroupsForUser(user)).thenReturn(groups);
+                new SamlGroup("y", "entityIdY"))
+                .collect(Collectors.toSet());
+        when(samlGroupService.findFor(user)).thenReturn(groups);
 
         // when & then
         assertThat(provider.contains(request, groupX)).isTrue();

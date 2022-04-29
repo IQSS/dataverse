@@ -265,7 +265,7 @@ public class Shib implements java.io.Serializable {
             state = State.PROMPT_TO_CREATE_NEW_ACCOUNT;
             displayNameToPersist = displayInfo.getTitle();
             emailToPersist = emailAddress;
-            
+
             if (systemConfig.isReadonlyMode()) {
                 return "/403.xhtml";
             }
@@ -381,7 +381,7 @@ public class Shib implements java.io.Serializable {
     }
 
     private void logInUserAndSetShibAttributes(AuthenticatedUser au) {
-        au.setShibIdentityProvider(shibIdp);
+        au.setSamlIdPEntityId(shibIdp);
         session.setUser(au);
         logger.debug("Groups for user " + au.getId() + " (" + au.getIdentifier() + "): " + getGroups(au));
     }

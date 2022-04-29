@@ -189,7 +189,7 @@ public class AuthenticatedUser implements User, Serializable, JpaEntity<Long> {
         return authenticatedUserLookup;
     }
 
-    public String getShibIdentityProvider() {
+    public String getSamlIdPEntityId() {
         return shibIdentityProvider;
     }
 
@@ -309,7 +309,7 @@ public class AuthenticatedUser implements User, Serializable, JpaEntity<Long> {
         this.authenticatedUserLookup = authenticatedUserLookup;
     }
 
-    public void setShibIdentityProvider(String shibIdentityProvider) {
+    public void setSamlIdPEntityId(String shibIdentityProvider) {
         this.shibIdentityProvider = shibIdentityProvider;
     }
 
