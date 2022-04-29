@@ -291,16 +291,16 @@ public class MailMessageCreatorTest {
     private String getGrantFileAccessInfoMessage() {
         return "Hello, \n\n"
                 + "dataverseAdmin accepted access request to files in dataset “testDataset” "
-                + "(view at http://localhost:8080/dataset.xhtml?persistentId=doi:10.5072/FK2/TEST11). "
-                + "Current number of users awaiting file access request resolution in this dataset: 0. "
+                + "(view at http://localhost:8080/dataset.xhtml?persistentId=doi:10.5072/FK2/TEST11).\n\n"
+                + "Current number of users awaiting file access request resolution in this dataset: 0.\n\n"
                 + "You may manage access to files in this dataset at http://localhost:8080/permissions-manage-files.xhtml?id=2";
     }
 
     private String getRejectFileAccessInfoMessage() {
         return "Hello, \n\n"
                 + "dataverseAdmin rejected access request to files in dataset “testDataset” "
-                + "(view at http://localhost:8080/dataset.xhtml?persistentId=doi:10.5072/FK2/TEST11). "
-                + "Current number of users awaiting file access request resolution in this dataset: 0. "
+                + "(view at http://localhost:8080/dataset.xhtml?persistentId=doi:10.5072/FK2/TEST11).\n\n"
+                + "Current number of users awaiting file access request resolution in this dataset: 0.\n\n"
                 + "You may manage access to files in this dataset at http://localhost:8080/permissions-manage-files.xhtml?id=2";
     }
 
