@@ -24,7 +24,7 @@ class BlockTest {
         "#metadataBlock\tNAME\tDataversealias\tDisplayname\tBlockURI"
     })
     void successfulParseAndValidateHeaderLine(String headerLine) throws ParserException {
-        List<Block.Header> headers = Block.Header.parseAndValidate(headerLine);
+        List<Block.Header> headers = Block.Header.parseAndValidate(headerLine, Configuration.defaultConfig());
         assertFalse(headers.isEmpty());
         assertEquals(List.of(Block.Header.values()), headers);
     }
@@ -41,7 +41,7 @@ class BlockTest {
         "dataverseAlias\tdisplayName\tblockURI\t#metadataBlock\tname"
     })
     void failingParseAndValidateHeaderLine(String headerLine) throws ParserException {
-        ParserException exception = assertThrows(ParserException.class, () -> Block.Header.parseAndValidate(headerLine));
+        ParserException exception = assertThrows(ParserException.class, () -> Block.Header.parseAndValidate(headerLine, Configuration.defaultConfig()));
         assertTrue(exception.hasSubExceptions());
         logger.log(Level.INFO,
             exception.getSubExceptions().stream().map(Throwable::getMessage).collect(Collectors.joining("\n"))

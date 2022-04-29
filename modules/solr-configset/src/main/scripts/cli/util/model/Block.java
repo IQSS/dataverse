@@ -13,8 +13,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public final class Block {
-    public static final String TRIGGER = Constants.TRIGGER_INDICATOR + "metadataBlock";
-    
+    public static final String KEYWORD = "metadataBlock";
     public static final String NAME_PATTERN = "[a-z]+(([\\d_])|([A-Z0-9][a-z0-9]+))*([A-Z])?";
     
     /**
@@ -22,8 +21,8 @@ public final class Block {
      * on the values of a column.
      */
     public enum Header {
-        TRIGGER(
-            Block.TRIGGER,
+        KEYWORD(
+            Block.KEYWORD,
             String::isEmpty,
             "must have no value (be empty)"
         ),
@@ -87,15 +86,18 @@ public final class Block {
         
         /**
          * Parse a {@link String} as a header of a metadata block definition. Will validate the presence or absence
-         * of column headers as defined by the spec. This is a forgiving parser - the order of columns may be different
-         * from what the spec defaults to (spec isn't precise about strict ordering).
+         * of column headers as defined by the spec. This is not a lenient parser - headers need to comply with order
+         * from the spec. On the other hand, it is case-insensitive.
          *
          * @param line The textual line to parse for column headers
-         * @return A list of {@link Header} that reflects the order as given in {@see line} (order may differ from spec).
-         * @throws ParserException when presented column headers are missing, invalid or the complete line is just wrong.
+         * @param config The parser configuration to be used
+         * @return A list of {@link Header} build from the line of text
+         * @throws ParserException When presented column headers are missing, invalid or the complete line is just wrong.
+         * @throws IllegalStateException When a column header cannot be found within the enum {@link Header}.
+         *                               This should never happen, as the validation would fail before!
          */
-        public static List<Header> parseAndValidate(final String line) throws ParserException {
-            List<String> validatedColumns = Validator.validateHeaderLine(line, Block.TRIGGER, getHeaders());
+        public static List<Header> parseAndValidate(final String line, final Configuration config) throws ParserException {
+            List<String> validatedColumns = Validator.validateHeaderLine(line, getHeaders(), config);
             // the IllegalStateException shall never happen, as we already validated the header!
             return validatedColumns.stream()
                 .map(Header::getByValue)
@@ -133,13 +135,15 @@ public final class Block {
      * over an object to work with and containing a complete POJO representation of a (custom) metadata block.
      */
     public static final class BlockBuilder {
+        private final Configuration config;
         private final List<Header> header;
-        private final Map<Header,String> settings = new EnumMap<Header, String>(Header.class);
+        private final Map<Header,String> settings = new EnumMap<>(Header.class);
         private final List<Field.FieldBuilder> fieldBuilders = new ArrayList<>();
         private boolean hasErrors = false;
         private boolean hasParsedALine = false;
         
         private BlockBuilder() {
+            this.config = Configuration.defaultConfig();
             this.header = new ArrayList<>();
         }
         
@@ -150,8 +154,9 @@ public final class Block {
          * @param header The textual line with the column headers.
          * @throws ParserException
          */
-        public BlockBuilder(final String header) throws ParserException {
-            this.header = Block.Header.parseAndValidate(header);
+        public BlockBuilder(final String header, final Configuration config) throws ParserException {
+            this.config = config;
+            this.header = Block.Header.parseAndValidate(header, config);
         }
         
         /**
@@ -187,8 +192,7 @@ public final class Block {
                 this.hasParsedALine = true;
             }
             
-            String[] lineParts = line.split(Constants.COLUMN_SEPARATOR);
-            validateColumns(lineParts);
+            validateColumns(line.split(config.columnSeparator()));
         }
         
         /**
