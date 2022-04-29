@@ -10,6 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ParsingStateTest {
+    
+    static Configuration config = Configuration.defaultConfig();
 
     static Stream<Arguments> failingStateTransitionExamples() {
         return Stream.of(
@@ -28,43 +30,43 @@ class ParsingStateTest {
             Arguments.of(ParsingState.Fields, "foobar"),
             Arguments.of(ParsingState.Vocabularies, "foobar"),
     
-            Arguments.of(ParsingState.Init, Constants.TRIGGER_INDICATOR),
-            Arguments.of(ParsingState.Init, Constants.COMMENT_INDICATOR),
-            Arguments.of(ParsingState.Init, Constants.COLUMN_SEPARATOR),
+            Arguments.of(ParsingState.Init, config.triggerIndicator()),
+            Arguments.of(ParsingState.Init, config.commentIndicator()),
+            Arguments.of(ParsingState.Init, config.columnSeparator()),
             
-            Arguments.of(ParsingState.Init, Field.TRIGGER),
-            Arguments.of(ParsingState.Init, ControlledVocabulary.TRIGGER),
+            Arguments.of(ParsingState.Init, config.trigger(Field.KEYWORD)),
+            Arguments.of(ParsingState.Init, config.trigger(ControlledVocabulary.KEYWORD)),
     
-            Arguments.of(ParsingState.MetadataBlock, Constants.COMMENT_INDICATOR),
-            Arguments.of(ParsingState.MetadataBlock, ControlledVocabulary.TRIGGER),
+            Arguments.of(ParsingState.MetadataBlock, config.commentIndicator()),
+            Arguments.of(ParsingState.MetadataBlock, config.trigger(ControlledVocabulary.KEYWORD)),
     
-            Arguments.of(ParsingState.Fields, Constants.COMMENT_INDICATOR),
-            Arguments.of(ParsingState.Fields, Block.TRIGGER),
+            Arguments.of(ParsingState.Fields, config.commentIndicator()),
+            Arguments.of(ParsingState.Fields, config.trigger(Block.KEYWORD)),
     
-            Arguments.of(ParsingState.Vocabularies, Constants.COMMENT_INDICATOR),
-            Arguments.of(ParsingState.Vocabularies, Block.TRIGGER),
-            Arguments.of(ParsingState.Vocabularies, Field.TRIGGER)
+            Arguments.of(ParsingState.Vocabularies, config.commentIndicator()),
+            Arguments.of(ParsingState.Vocabularies, config.trigger(Block.KEYWORD)),
+            Arguments.of(ParsingState.Vocabularies, config.trigger(Field.KEYWORD))
         );
     }
     
     @ParameterizedTest
     @MethodSource("failingStateTransitionExamples")
-    void failingTransitions(ParsingState source, String triggerLine) throws ParserException {
-        ParserException ex = assertThrows(ParserException.class, () -> source.transitionState(triggerLine));
+    void failingTransitions(final ParsingState source, final String triggerLine) throws ParserException {
+        ParserException ex = assertThrows(ParserException.class, () -> source.transitionState(triggerLine, config));
     }
     
     static Stream<Arguments> successfulStateTransitionExamples() {
         return Stream.of(
-            Arguments.of(ParsingState.Init, Block.TRIGGER, ParsingState.MetadataBlock),
-            Arguments.of(ParsingState.MetadataBlock, Field.TRIGGER, ParsingState.Fields),
-            Arguments.of(ParsingState.Fields, ControlledVocabulary.TRIGGER, ParsingState.Vocabularies)
+            Arguments.of(ParsingState.Init, config.trigger(Block.KEYWORD), ParsingState.MetadataBlock),
+            Arguments.of(ParsingState.MetadataBlock, config.trigger(Field.KEYWORD), ParsingState.Fields),
+            Arguments.of(ParsingState.Fields, config.trigger(ControlledVocabulary.KEYWORD), ParsingState.Vocabularies)
         );
     }
     
     @ParameterizedTest
     @MethodSource("successfulStateTransitionExamples")
-    void successfulTransitions(ParsingState source, String triggerLine, ParsingState expected) throws ParserException {
-        assertEquals(expected, source.transitionState(triggerLine));
+    void successfulTransitions(final ParsingState source, final String triggerLine, final ParsingState expected) throws ParserException {
+        assertEquals(expected, source.transitionState(triggerLine, config));
     }
 
 }
