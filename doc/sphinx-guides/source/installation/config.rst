@@ -633,7 +633,6 @@ These and other available options are described in the table below.
 Remote stores can range from being a static trusted website to a sophisticated service managing access requests and logging activity
 and/or managing access to a secure enclave. For specific remote stores, consult their documentation when configuring the remote store in Dataverse.
 
-Trusted remote stores  
 .. table::
     :align: left
 
