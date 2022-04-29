@@ -384,7 +384,6 @@ public class DataverseUserPage implements java.io.Serializable {
                 } catch (ConfirmEmailException ex) {
                     logger.log(Level.INFO, "Unable to send email confirmation link to user id {0}", savedUser.getId());
                 }
-                session.setUser(currentUser);
                 JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("confirmEmail.changed", args));
             } else {
                 JsfHelper.addFlashMessage(msg.toString());
