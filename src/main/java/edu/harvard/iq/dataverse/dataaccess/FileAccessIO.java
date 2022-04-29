@@ -136,8 +136,8 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
 
                 this.setOutputStream(fout);
                 setChannel(fout.getChannel());
-                if (!storageIdentifier.startsWith(this.driverId + "://")) {
-                    dvObject.setStorageIdentifier(this.driverId + "://" + storageIdentifier);
+                if (!storageIdentifier.startsWith(this.driverId + DataAccess.SEPARATOR)) {
+                    dvObject.setStorageIdentifier(this.driverId + DataAccess.SEPARATOR + storageIdentifier);
                 }
             }
 
@@ -167,7 +167,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
                   if (datasetPath != null && !Files.exists(datasetPath)) {
                       Files.createDirectories(datasetPath);
                   }
-                dataset.setStorageIdentifier(this.driverId + "://"+dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage());
+                dataset.setStorageIdentifier(this.driverId + DataAccess.SEPARATOR + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage());
             }
 
         } else if (dvObject instanceof Dataverse) {
@@ -437,7 +437,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             Path testPath = getFileSystemPath();
             if (testPath != null) {
-                return this.driverId + "://" + testPath.toString();
+                return this.driverId + DataAccess.SEPARATOR + testPath.toString();
             }
         } catch (IOException ioex) {
             // just return null, below:
@@ -654,9 +654,9 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         return in;
     }
     private String stripDriverId(String storageIdentifier) {
-        int separatorIndex = storageIdentifier.indexOf("://");
+        int separatorIndex = storageIdentifier.indexOf(DataAccess.SEPARATOR);
         if(separatorIndex>0) {
-            return storageIdentifier.substring(separatorIndex + 3);
+            return storageIdentifier.substring(separatorIndex + DataAccess.SEPARATOR.length());
         }
         return storageIdentifier;
     }

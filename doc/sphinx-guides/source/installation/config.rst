@@ -238,12 +238,14 @@ As for the "Remote only" authentication mode, it means that:
 - ``:DefaultAuthProvider`` has been set to use the desired authentication provider
 - The "builtin" authentication provider has been disabled (:ref:`api-toggle-auth-provider`). Note that disabling the "builtin" authentication provider means that the API endpoint for converting an account from a remote auth provider will not work. Converting directly from one remote authentication provider to another (i.e. from GitHub to Google) is not supported. Conversion from remote is always to "builtin". Then the user initiates a conversion from "builtin" to remote. Note that longer term, the plan is to permit multiple login options to the same Dataverse installation account per https://github.com/IQSS/dataverse/issues/3487 (so all this talk of conversion will be moot) but for now users can only use a single login option, as explained in the :doc:`/user/account` section of the User Guide. In short, "remote only" might work for you if you only plan to use a single remote authentication provider such that no conversion between remote authentication providers will be necessary.
 
-File Storage: Using a Local Filesystem and/or Swift and/or object stores
-------------------------------------------------------------------------
+File Storage: Using a Local Filesystem and/or Swift and/or object stores and/or trusted remote services
+-------------------------------------------------------------------------------------------------------
 
 By default, a Dataverse installation stores all data files (files uploaded by end users) on the filesystem at ``/usr/local/payara5/glassfish/domains/domain1/files``. This path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.\<id\>.directory`` JVM option described below.
 
 A Dataverse installation can alternately store files in a Swift or S3-compatible object store, and can now be configured to support multiple stores at once. With a multi-store configuration, the location for new files can be controlled on a per-Dataverse collection basis.
+
+Dataverse may also be configured to reference some files (e.g. large and/or sensitive data) stored in a trusted remote web-accessible system.
 
 The following sections describe how to set up various types of stores and how to configure for multiple stores.
 
@@ -622,6 +624,34 @@ Migrating from Local Storage to S3
 
 Is currently documented on the :doc:`/developers/deployment` page.
 
+Trusted Remote Storage
+++++++++++++++++++++++
+
+In addition to having the type "remote" and requiring a label, Trusted Remote Stores are defined in terms of a baseURL - all files managed by this store must be at a path starting with this URL, and a baseStore - a file, s3, or swift store that can be used to store additional ancillary dataset files (e.g. metadata exports, thumbnails, auxiliary files, etc.).
+These and other available options are described in the table below.
+
+Remote stores can range from being a static trusted website to a sophisticated service managing access requests and logging activity
+and/or managing access to a secure enclave. For specific remote stores, consult their documentation when configuring the remote store in Dataverse.
+
+.. table::
+    :align: left
+
+    ===========================================  ==================  ==========================================================================  =============
+    JVM Option                                   Value               Description                                                                 Default value
+    ===========================================  ==================  ==========================================================================  =============
+    dataverse.files.<id>.type                    ``remote``          **Required** to mark this storage as remote.                                (none)
+    dataverse.files.<id>.label                   <?>                 **Required** label to be shown in the UI for this storage                   (none)
+    dataverse.files.<id>.baseUrl                 <?>                 **Required** All files must have URLs of the form <baseUrl>/*               (none)
+    dataverse.files.<id>.baseStore               <?>                 **Required** The id of a base store (of type file, s3, or swift)            (none)
+    dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download (should usually be true).                            ``false``
+    dataverse.files.<id>.secreteKey              <?>                 A key used to sign download requests sent to the remote store. Optional.    (none)
+    dataverse.files.<id>.url-expiration-minutes  <?>                 If direct downloads and using signing: time until links expire. Optional.   60
+    dataverse.files.<id>.remote-store-name       <?>                 A short name used in the UI to indicate where a file is located. Optional   (none)
+    dataverse.files.<id>.remote-store-url        <?>                 A url to an info page about the remote store used in the UI. Optional.      (none)
+    
+    ===========================================  ==================  ==========================================================================  =============
+
+
 
 .. _Branding Your Installation:
 
@@ -932,7 +962,7 @@ The minimal configuration to support an archiver integration involves adding a m
 
 \:ArchiverSettings - the archiver class can access required settings including existing Dataverse installation settings and dynamically defined ones specific to the class. This setting is a comma-separated list of those settings. For example\:
 
-``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":DuraCloudHost, :DuraCloudPort, :DuraCloudContext"``
+``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":DuraCloudHost, :DuraCloudPort, :DuraCloudContext, :BagGeneratorThreads"``
 
 The DPN archiver defines three custom settings, one of which is required (the others have defaults):
 
@@ -941,6 +971,12 @@ The DPN archiver defines three custom settings, one of which is required (the ot
 ``curl http://localhost:8080/api/admin/settings/:DuraCloudHost -X PUT -d "qdr.duracloud.org"``
 
 :DuraCloudPort and :DuraCloudContext are also defined if you are not using the defaults ("443" and "duracloud" respectively). (Note\: these settings are only in effect if they are listed in the \:ArchiverSettings. Otherwise, they will not be passed to the DuraCloud Archiver class.)
+
+It also can use one setting that is common to all Archivers: :BagGeneratorThreads
+
+``curl http://localhost:8080/api/admin/settings/:BagGeneratorThreads -X PUT -d '8'``
+
+By default, the Bag generator zips two datafiles at a time when creating the Bag. This setting can be used to lower that to 1, i.e. to decrease system load, or to increase it, e.g. to 4 or 8, to speed processing of many small files.
 
 Archivers may require JVM options as well. For the Chronopolis archiver, the username and password associated with your organization's Chronopolis/DuraCloud account should be configured in Payara:
 
@@ -963,9 +999,9 @@ ArchiverClassName - the fully qualified class to be used for archiving. For exam
 
 \:ArchiverSettings - the archiver class can access required settings including existing Dataverse installation settings and dynamically defined ones specific to the class. This setting is a comma-separated list of those settings. For example\:
 
-``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":BagItLocalPath"``
+``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":BagItLocalPath, :BagGeneratorThreads"``
 
-:BagItLocalPath is the file path that you've set in :ArchiverSettings.
+:BagItLocalPath is the file path that you've set in :ArchiverSettings. See the DuraCloud  Configuration section for a description of :BagGeneratorThreads.
 
 .. _Google Cloud Configuration:
 
@@ -976,9 +1012,9 @@ The Google Cloud Archiver can send Dataverse Project Bags to a bucket in Google'
 
 ``curl http://localhost:8080/api/admin/settings/:ArchiverClassName -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.GoogleCloudSubmitToArchiveCommand"``
 
-``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":GoogleCloudBucket, :GoogleCloudProject"``
+``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":GoogleCloudBucket, :GoogleCloudProject, :BagGeneratorThreads"``
 
-The Google Cloud Archiver defines two custom settings, both are required. The credentials for your account, in the form of a json key file, must also be obtained and stored locally (see below):
+The Google Cloud Archiver defines two custom settings, both are required. It can also use the :BagGeneratorThreads setting as described in the DuraCloud Configuration section above. The credentials for your account, in the form of a json key file, must also be obtained and stored locally (see below):
 
 In order to use the Google Cloud Archiver, you must have a Google account. You will need to create a project and bucket within that account and provide those values in the settings:
 
@@ -2400,6 +2436,13 @@ For example, the LocalSubmitToArchiveCommand only uses the :BagItLocalPath setti
 
 ``curl -X PUT -d ':BagItLocalPath' http://localhost:8080/api/admin/settings/:ArchiverSettings`` 
 
+:BagGeneratorThreads
+++++++++++++++++++++
+
+An archiver setting shared by several implementations (e.g. DuraCloud, Google, and Local) that can make Bag generation use fewer or more threads in zipping datafiles that the default of 2
+ 
+``curl http://localhost:8080/api/admin/settings/:BagGeneratorThreads -X PUT -d '8'``
+
 :DuraCloudHost
 ++++++++++++++
 :DuraCloudPort
@@ -2415,7 +2458,7 @@ These three settings define the host, port, and context used by the DuraCloudSub
 This is the local file system path to be used with the LocalSubmitToArchiveCommand class. It is recommended to use an absolute path. See the :ref:`Local Path Configuration` section above.
 
 :GoogleCloudBucket
-++++++++++++++++++ 
+++++++++++++++++++
 :GoogleCloudProject
 +++++++++++++++++++
 

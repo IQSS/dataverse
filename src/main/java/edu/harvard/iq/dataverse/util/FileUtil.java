@@ -1396,7 +1396,7 @@ public class FileUtil implements java.io.Serializable  {
     	String driverId = dataFile.getOwner().getEffectiveStorageDriverId();
 		
         String bucketName = System.getProperty("dataverse.files." + driverId + ".bucket-name");
-        String storageId = driverId + "://" + bucketName + ":" + dataFile.getFileMetadata().getLabel();
+        String storageId = driverId + DataAccess.SEPARATOR + bucketName + ":" + dataFile.getFileMetadata().getLabel();
         dataFile.setStorageIdentifier(storageId);
     }
     
@@ -1842,7 +1842,7 @@ public class FileUtil implements java.io.Serializable  {
     }
     
     public static String getStorageIdentifierFromLocation(String location) {
-    	int driverEnd = location.indexOf("://") + 3;
+    	int driverEnd = location.indexOf(DataAccess.SEPARATOR) + DataAccess.SEPARATOR.length();
     	int bucketEnd = driverEnd + location.substring(driverEnd).indexOf("/");
     	return location.substring(0,bucketEnd) + ":" + location.substring(location.lastIndexOf("/") + 1);
     }
@@ -1878,7 +1878,7 @@ public class FileUtil implements java.io.Serializable  {
     			}
     		}
     		String si = dataFile.getStorageIdentifier();
-    		if (si.contains("://")) {
+    		if (si.contains(DataAccess.SEPARATOR)) {
     			//Direct upload files will already have a store id in their storageidentifier
     			//but they need to be associated with a dataset for the overall storagelocation to be calculated
     			//so we temporarily set the owner
@@ -1897,7 +1897,7 @@ public class FileUtil implements java.io.Serializable  {
     	} catch (IOException ioEx) {
     		// safe to ignore - it's just a temp file. 
     		logger.warning(ioEx.getMessage());
-    		if(dataFile.getStorageIdentifier().contains("://")) {
+    		if(dataFile.getStorageIdentifier().contains(DataAccess.SEPARATOR)) {
     			logger.warning("Failed to delete temporary file " + dataFile.getStorageIdentifier());
     		} else {
     			logger.warning("Failed to delete temporary file " + FileUtil.getFilesTempDirectory() + "/"

@@ -30,6 +30,7 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.nio.channels.Channel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -67,7 +68,7 @@ public abstract class StorageIO<T extends DvObject> {
             this.req = new DataAccessRequest();
         }
         if (this.driverId == null) {
-            this.driverId = "file";
+            this.driverId = DataAccess.FILE;
         }
     }
 
@@ -223,6 +224,8 @@ public abstract class StorageIO<T extends DvObject> {
     private String swiftFileName;
 
     private String remoteUrl;
+    protected String remoteStoreName = null;
+    protected URL remoteStoreUrl = null;
     
     // For HTTP-based downloads:
     /*private GetMethod method = null;
@@ -331,6 +334,14 @@ public abstract class StorageIO<T extends DvObject> {
         return swiftContainerName;
     }
 
+    public String getRemoteStoreName() {
+        return remoteStoreName;
+    }
+
+    public URL getRemoteStoreUrl() {
+        return remoteStoreUrl;
+    }
+    
     /*public GetMethod getHTTPMethod() {
         return method;
     }
