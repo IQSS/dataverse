@@ -627,6 +627,31 @@ Is currently documented on the :doc:`/developers/deployment` page.
 Trusted Remote Storage
 ++++++++++++++++++++++
 
+In addition to having the type "remote" and requiring a label, Trusted Remote Stores are defined in terms of a baseURL - all files managed by this store must be at a path starting with this URL, and a baseStore - a file, s3, or swift store that can be used to store additional ancillary dataset files (e.g. metadata exports, thumbnails, auxiliary files, etc.).
+These and other available options are described in the table below.
+
+Remote stores can range from being a static trusted website to a sophisticated service managing access requests and logging activity
+and/or managing access to a secure enclave. For specific remote stores, consult their documentation when configuring the remote store in Dataverse.
+
+Trusted remote stores  
+.. table::
+    :align: left
+
+    ===========================================  ==================  ==========================================================================  =============
+    JVM Option                                   Value               Description                                                                 Default value
+    ===========================================  ==================  ==========================================================================  =============
+    dataverse.files.<id>.type                    ``remote``          **Required** to mark this storage as remote.                                (none)
+    dataverse.files.<id>.label                   <?>                 **Required** label to be shown in the UI for this storage                   (none)
+    dataverse.files.<id>.baseUrl                 <?>                 **Required** All files must have URLs of the form <baseUrl>/*               (none)
+    dataverse.files.<id>.baseStore               <?>                 **Required** The id of a base store (of type file, s3, or swift)            (none)
+    dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download (should usually be true).                            ``false``
+    dataverse.files.<id>.secreteKey              <?>                 A key used to sign download requests sent to the remote store. Optional.    (none)
+    dataverse.files.<id>.url-expiration-minutes  <?>                 If direct downloads and using signing: time until links expire. Optional.   60
+    dataverse.files.<id>.remote-store-name       <?>                 A short name used in the UI to indicate where a file is located. Optional   (none)
+    dataverse.files.<id>.remote-store-url        <?>                 A url to an info page about the remote store used in the UI. Optional.      (none)
+    
+    ===========================================  ==================  ==========================================================================  =============
+
 
 
 .. _Branding Your Installation:

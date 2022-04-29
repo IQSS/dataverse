@@ -475,9 +475,9 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
                 ((S3AccessIO<?>) baseStore).setMainDriver(false);
             }
         }
-        remoteStoreName = System.getProperty("dataverse.files." + this.driverId + ".remoteStoreName");
+        remoteStoreName = System.getProperty("dataverse.files." + this.driverId + ".remote-store-name");
         try {
-          remoteStoreUrl = new URL(System.getProperty("dataverse.files." + this.driverId + ".remoteStoreUrl"));
+          remoteStoreUrl = new URL(System.getProperty("dataverse.files." + this.driverId + ".remote-store-url"));
         } catch(MalformedURLException mfue) {
             logger.warning("Unable to read remoteStoreUrl for driver: " + this.driverId);
         }
