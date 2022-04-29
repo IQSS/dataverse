@@ -1,6 +1,5 @@
 package cli.util.model;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -137,15 +136,9 @@ public final class Block {
     public static final class BlockBuilder {
         private final Configuration config;
         private final List<Header> header;
-        private final Map<Header,String> settings = new EnumMap<>(Header.class);
-        private final List<Field.FieldBuilder> fieldBuilders = new ArrayList<>();
-        private boolean hasErrors = false;
-        private boolean hasParsedALine = false;
         
-        private BlockBuilder() {
-            this.config = Configuration.defaultConfig();
-            this.header = new ArrayList<>();
-        }
+        private Block block;
+        private boolean hasErrors = false;
         
         /**
          * Create a builder with a line containing the header of the metadata block definition, so the order of
@@ -182,39 +175,38 @@ public final class Block {
             }
             
             // only 1 block definition allowed as per spec
-            if (this.hasParsedALine) {
+            if (this.block != null) {
                 this.hasErrors = true;
                 throw new ParserException("must not try to add another metadata block definition");
             } else {
-                // need to set this here, even BEFORE actual parsing. If the line cannot be parsed,
-                // the exception is catched and another line is sent this way, we need to make sure
-                // we do not accept it!
-                this.hasParsedALine = true;
+                this.block = parseAndValidateColumns(line.split(config.columnSeparator()));
             }
-            
-            validateColumns(line.split(config.columnSeparator()));
         }
         
         /**
-         * Validate the columns (usually given by {@code parseAndValidateLine}).
+         * Parse and validate the columns (usually given by {@code parseAndValidateLine}).
+         * This is package private, becoming testable this way.
          *
          * @param lineParts
+         * @return A {@link Block} object (modifiable for builder internal use)
          * @throws ParserException
          */
-        void validateColumns(final String[] lineParts) throws ParserException {
+        Block parseAndValidateColumns(final String[] lineParts) throws ParserException {
             if (lineParts == null || lineParts.length != header.size()) {
                 throw new ParserException("does not match length of metadata block headline");
             }
             
+            Block block = new Block();
             ParserException parserException = new ParserException("has validation errors");
+            
             for (int i = 0; i < lineParts.length; i++) {
-                Header column = header.get(i);
+                Block.Header column = header.get(i);
                 String value = lineParts[i];
                 if( ! column.isValid(value)) {
                     parserException.addSubException(
                         "Invalid value '" + value + " for column '" + column + "', " + column.getErrorMessage());
                 } else {
-                    this.settings.put(column, value);
+                    block.set(column, value);
                 }
             }
             
@@ -222,15 +214,13 @@ public final class Block {
                 // setting this to true to ensure no block will be created accidentally via build().
                 this.hasErrors = true;
                 throw parserException;
+            } else {
+                return block;
             }
         }
         
-        public boolean hasFailed() {
-            return this.hasErrors || ! this.hasParsedALine;
-        }
-        
         public boolean hasSucceeded() {
-            return ! this.hasErrors && this.hasParsedALine;
+            return ! this.hasErrors && this.block != null;
         }
         
         /**
@@ -241,14 +231,27 @@ public final class Block {
         public Block build() {
             if (hasSucceeded()) {
                 // TODO: extend with adding the necessary bits about block properties, contained fields etc.
-                return new Block();
+                return block;
             } else {
                 throw new IllegalStateException("Trying to build a block with errors or without parsing a line first");
             }
         }
     }
     
+    /* ---- Actual Block Class starting here ---- */
+    
+    private final Map<Header,String> properties = new EnumMap<>(Header.class);
+    private Optional<List<Field>> fields = Optional.empty();
+    
     private Block() {}
     
-    Optional<List<Field>> fields = Optional.empty();
+    private void set(Header column, String value) {
+        this.properties.put(column, value);
+    }
+    public Optional<String> get(Header column) {
+        return Optional.ofNullable(this.properties.get(column));
+    }
+    public String get(Header column, String defaultValue) {
+        return this.properties.getOrDefault(column, defaultValue);
+    }
 }
