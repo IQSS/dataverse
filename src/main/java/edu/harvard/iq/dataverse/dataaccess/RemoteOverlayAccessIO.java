@@ -11,6 +11,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -472,6 +474,12 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
             if (baseDriverType.contentEquals(DataAccess.S3)) {
                 ((S3AccessIO<?>) baseStore).setMainDriver(false);
             }
+        }
+        remoteStoreName = System.getProperty("dataverse.files." + this.driverId + ".remoteStoreName");
+        try {
+          remoteStoreUrl = new URL(System.getProperty("dataverse.files." + this.driverId + ".remoteStoreUrl"));
+        } catch(MalformedURLException mfue) {
+            logger.warning("Unable to read remoteStoreUrl for driver: " + this.driverId);
         }
     }
 

@@ -771,6 +771,17 @@ div[id$="filesTable"] thead[id$="filesTable_head"] th.ui-selection-column .ui-ch
     /* Non standard for webkit */
     word-break: break-word;
 }
+/*Remote Store Branding*/
+.remote-info {
+    width: fit-content;
+    margin-left: auto;
+    margin-right: 10px;
+    display: block;
+    padding:5px;
+}
+.remote-info > a {
+    color:white;
+}
 
 /* REQUEST ACCESS DOWNLOAD OPTION LINK */
 div[id$="requestPanel"].iq-dropdown-list-item {display:list-item !important;}
