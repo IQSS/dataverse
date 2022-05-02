@@ -106,6 +106,7 @@ public class ConfigureFragmentBean implements java.io.Serializable{
         ApiToken apiToken = new ApiToken();
         User user = session.getUser();
         if (user instanceof AuthenticatedUser) {
+            toolHandler.setUser(((AuthenticatedUser) user).getUserIdentifier());
             apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
             if (apiToken == null) {
                 //No un-expired token
