@@ -129,6 +129,7 @@ public class TemplatePage implements java.io.Serializable {
 
             if (template.getTermsOfUseAndAccess() != null) {
                 TermsOfUseAndAccess terms = template.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
+                terms.setTemplate(template);
                 template.setTermsOfUseAndAccess(terms);
             }
 

@@ -573,8 +573,8 @@ Credentials via MicroProfile Config
 
 Optionally, you may provide static credentials for each S3 storage using MicroProfile Config options:
 
-- ``dataverse.files.<id>.access-key`` for this storages "access key ID"
-- ``dataverse.files.<id>.secret-key`` for this storages "secret access key"
+- ``dataverse.files.<id>.access-key`` for this storage's "access key ID"
+- ``dataverse.files.<id>.secret-key`` for this storage's "secret access key"
 
 You may provide the values for these via any of the
 `supported config sources <https://docs.payara.fish/community/docs/documentation/microprofile/config/README.html>`_.
