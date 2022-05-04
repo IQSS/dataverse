@@ -628,49 +628,74 @@ Is currently documented on the :doc:`/developers/deployment` page.
 Branding Your Installation
 --------------------------
 
-The name of your root Dataverse collection is the brand of your Dataverse installation and appears in various places such as notifications and support links, as outlined in the :ref:`systemEmail` section below. To further brand your installation and make it your own, the Dataverse Software provides configurable options for easily adding (and maintaining) custom branding to your Dataverse installation. Here are the custom branding and content options you can configure:
+A Dataverse installation can be branded in a number of ways.
 
+A simple option for branding your installation is to adjust the theme of a Dataverse collection. You can change colors, add a logo, add a tagline, or add a website link to the Dataverse collection header section of the page. These options are outlined under :ref:`theme` in the :doc:`/user/dataverse-management` section of the User Guide.
+
+More advanced customization is described below and covers the following areas.
+
+- Custom installation name/brand
 - Custom header
-- Dataverse navbar settings
+- Navbar settings
 - Custom welcome/homepage
 - Custom footer
-- Dataverse footer settings
+- Footer settings
 - CSS stylesheet
 
 Downloadable sample HTML and CSS files are provided below which you can edit as you see fit. It's up to you to create a directory in which to store these files, such as ``/var/www/dataverse`` in the examples below.
 
-You may also want to look at samples at https://github.com/shlake/LibraDataHomepage from community member Sherry Lake.
+Additional samples from community member Sherry Lake are available at https://github.com/shlake/LibraDataHomepage.
 
-A simpler option to brand and customize your installation is to utilize the Dataverse collection theme, which each Dataverse collection has, that allows you to change colors, add a logo, tagline or website link to the Dataverse collection header section of the page. Those options are outlined in the :doc:`/user/dataverse-management` section of the User Guide.
+.. _parts-of-webpage:
 
-Before detailing the available customization options, perhaps it is important to present the basic blocks of the Dataverse GUI layout.
-From the image below, you can see that the page layout consists of three main blocks: an header block, a content block and a footer block:
+Parts of a Dataverse Installation Webpage
++++++++++++++++++++++++++++++++++++++++++
+
+Before reading about the available customization options, you might want to familiarize yourself with the parts of a Dataverse installation webpage.
+
+The image below indicates that the page layout consists of three main blocks: a header block, a content block, and a footer block:
 
 |dvPageBlocks|
 
-Header block
+Installation Name/Brand Name
+++++++++++++++++++++++++++++
+
+It's common for a Dataverse installation to have some sort of installation name or brand name like "HeiDATA", "Libra Data", or "MELDATA".
+
+The installation name appears in various places such as notifications, support links, and metadata exports.
+
+Out of the box, the installation name comes from the name of root Dataverse collection ("Root" by default). You can simply change the name of this collection to set the installation name you want.
+
+Alternatively, you can have independent names for the root Dataverse collection and the installation name by having the installation name come from the :ref:`:InstallationName` setting.
+
+Note that you can use :ref:`systemEmail` to control the name that appears in the "from" address of email messages sent by a Dataverse installation. This overrides the name of the root Dataverse collection and :ref:`:InstallationName`.
+
+If you have an image for your installation name, you can use it as the "Custom Navbar Logo", described below.
+
+Header Block
 ++++++++++++
 
-Within the header block, you have a navbar (which will always be displayed) and may insert a custom header, that will be displayed **alongside** the navbar to add additional information to the header block.
+Within the header block, you have a navbar (which will always be displayed) and you may insert a custom header that will be displayed above the navbar.
 
 Navbar
 ^^^^^^
 
-The navbar is the component displayed by default on the header block and will be present on every Dataverse GUI page.
-The navbar encompasses several (configurable) settings that manage user interaction with the Dataverse platform. Such settings are described below.
+The navbar is the component displayed by default on the header block and will be present on every Dataverse webpage.
+
+The navbar encompasses several configurable settings (described below) that manage user interaction with a Dataverse installation.
 
 Custom Navbar Logo
 ##################
 
-The Dataverse Software allows you to replace the default Dataverse Project icon and name branding in the navbar with your own custom logo. Note that this logo is separate from the *root dataverse theme* logo.
+The Dataverse Software allows you to replace the default Dataverse Project icon and name branding in the navbar with your own custom logo. Note that this logo is separate from the logo used in the theme of the root Dataverse collection (see :ref:`theme`).
 
 The custom logo image file is expected to be small enough to fit comfortably in the navbar, no more than 50 pixels in height and 160 pixels in width. Create a ``navbar`` directory in your Payara ``logos`` directory and place your custom logo there. By default, your logo image file will be located at ``/usr/local/payara5/glassfish/domains/domain1/docroot/logos/navbar/logo.png``.
 
-Once you have the location of your custom logo image file, run this curl command to add it to your settings:
+Given this location for the custom logo image file, run this curl command to add it to your settings:
 
 ``curl -X PUT -d '/logos/navbar/logo.png' http://localhost:8080/api/admin/settings/:LogoCustomizationFile``
 
-To revert to the default configuration and have the Dataverse Project icon be displayed, run:
+To revert to the default configuration and have the Dataverse Project icon be displayed, run the following command:
 
 ``curl -X DELETE http://localhost:8080/api/admin/settings/:LogoCustomizationFile``
 
@@ -697,9 +722,9 @@ Refer to :ref:`:SignUpUrl` and :ref:`conf-allow-signup` for setting a relative p
 Custom Header
 ^^^^^^^^^^^^^
 
-Download this sample: :download:`custom-header.html </_static/installation/files/var/www/dataverse/branding/custom-header.html>` and place it at ``/var/www/dataverse/branding/custom-header.html``.
+As a starting point you can download :download:`custom-header.html </_static/installation/files/var/www/dataverse/branding/custom-header.html>` and place it at ``/var/www/dataverse/branding/custom-header.html``.
 
-Once you have the location of your custom header HTML file, run this curl command to add it to your settings:
+Given this location for the custom header HTML file, run this curl command to add it to your settings:
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-header.html' http://localhost:8080/api/admin/settings/:HeaderCustomizationFile``
 
@@ -709,39 +734,43 @@ If you have enabled a custom header or navbar logo, you might prefer to disable 
 
 Please note: Disabling the display of the root Dataverse collection theme also disables your ability to edit it. Remember that Dataverse collection owners can set their Dataverse collections to "inherit theme" from the root. Those Dataverse collections will continue to inherit the root Dataverse collection theme (even though it no longer displays on the root). If you would like to edit the root Dataverse collection theme in the future, you will have to re-enable it first.
 
-Content block
+Content Block
 +++++++++++++
 
-By default, the content block encloses the default root Dataverse collection page. This page contains the data available on the Dataverse installation (e.g. dataverses and datasets) and the functionalities that allow the user to interact with the platform (e.g. search, create/edit data and metadata, ...).
-The Dataverse Software allows you to use a custom homepage, that will **replace** the default collection page on the content block, and serve as a welcome page. This allows for complete control over the look and feel of your installation's homepage.
+As shown in the image under :ref:`parts-of-webpage`, the content block is the area below the header and above the footer.
+
+By default, when you view the homepage of a Dataverse installation, the content block shows the root Dataverse collection. This page contains the data available in the Dataverse installation (e.g. dataverses and datasets) and the functionalities that allow the user to interact with the platform (e.g. search, create/edit data and metadata, etc.).
+
+Rather than showing the root Dataverse collection on the homepage, the content block can show a custom homepage instead. Read on for details.
 
 Custom Homepage
 ^^^^^^^^^^^^^^^
 
-Download this sample: :download:`custom-homepage.html </_static/installation/files/var/www/dataverse/branding/custom-homepage.html>` and place it at ``/var/www/dataverse/branding/custom-homepage.html``.
+When you configure a custom homepage, it **replaces** the root Dataverse collection in the content block, serving as a welcome page. This allows for complete control over the look and feel of the content block for your installation's homepage.
 
-Once you have the location of your custom homepage HTML file, run this curl command to add it to your settings:
+As a starting point, download :download:`custom-homepage.html </_static/installation/files/var/www/dataverse/branding/custom-homepage.html>` and place it at ``/var/www/dataverse/branding/custom-homepage.html``.
+
+Given this location for the custom homepage HTML file, run this curl command to add it to your settings:
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-homepage.html' http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
 
-If you prefer to start with less of a blank slate, you can review the custom homepage used by the Harvard Dataverse Repository, which includes branding messaging, action buttons, search input, subject links, and recent dataset links. This page was built to utilize the :doc:`/api/metrics` to deliver dynamic content to the page via Javascript. The files can be found at https://github.com/IQSS/dataverse.harvard.edu
-
 Note that the ``custom-homepage.html`` file provided has multiple elements that assume your root Dataverse collection still has an alias of "root". While you were branding your root Dataverse collection, you may have changed the alias to "harvard" or "librascholar" or whatever and you should adjust the custom homepage code as needed.
 
-For more background on what this curl command above is doing, see the :ref:`database-settings` section below. If you decide you'd like to remove this setting, use the following curl command:
+Note: If you prefer to start with less of a blank slate, you can review the custom homepage used by the Harvard Dataverse Repository, which includes branding messaging, action buttons, search input, subject links, and recent dataset links. This page was built to utilize the :doc:`/api/metrics` to deliver dynamic content to the page via Javascript. The files can be found at https://github.com/IQSS/dataverse.harvard.edu
+
+If you decide you'd like to remove this setting, use the following curl command:
 
 ``curl -X DELETE http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
 
-Footer block
+Footer Block
 ++++++++++++
 
-Within the footer block you have the default footer section (which will always be displayed) and may insert a custom footer, that will be displayed **alongside** the default footer to add additional information to the footer block.
+Within the footer block you have the default footer section (which will always be displayed) and you can insert a custom footer that will be displayed below the default footer.
 
 Default Footer
 ^^^^^^^^^^^^^^
 
-The default footer is the component displayed by default on the footer block and will be present on every Dataverse GUI page.
-The default footer encompasses (configurable) settings that can be used to enhance the look and feel of the default Dataverse footer. Such settings are described below.
+The default footer is the component displayed by default on the footer block and will be present on every Dataverse webpage. Its configuration options are described below.
 
 Footer Copyright
 ################
@@ -751,20 +780,22 @@ Refer to :ref:`:FooterCopyright` to add customized text to the Copyright section
 Custom Footer
 ^^^^^^^^^^^^^
 
-Download this sample: :download:`custom-footer.html </_static/installation/files/var/www/dataverse/branding/custom-footer.html>` and place it at ``/var/www/dataverse/branding/custom-footer.html``.
+As mentioned above, the custom footer appears below the default footer.
 
-Once you have the location of your custom footer HTML file, run this curl command to add it to your settings:
+As a starting point, download :download:`custom-footer.html </_static/installation/files/var/www/dataverse/branding/custom-footer.html>` and place it at ``/var/www/dataverse/branding/custom-footer.html``.
+
+Given this location for the custom footer HTML file, run this curl command to add it to your settings:
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-footer.html' http://localhost:8080/api/admin/settings/:FooterCustomizationFile``
 
 Custom Stylesheet
 +++++++++++++++++
 
-You can style your custom homepage, footer and header content with a custom CSS file. With advanced CSS know-how, you can achieve custom branding and page layouts by utilizing ``position``, ``padding`` or ``margin`` properties.
+You can style your custom homepage, footer, and header content with a custom CSS file. With advanced CSS know-how, you can achieve custom branding and page layouts by utilizing ``position``, ``padding`` or ``margin`` properties.
 
-Download this sample: :download:`custom-stylesheet.css </_static/installation/files/var/www/dataverse/branding/custom-stylesheet.css>` and place it at ``/var/www/dataverse/branding/custom-stylesheet.css``.
+As a starting point, download :download:`custom-stylesheet.css </_static/installation/files/var/www/dataverse/branding/custom-stylesheet.css>` and place it at ``/var/www/dataverse/branding/custom-stylesheet.css``.
 
-Once you have the location of your custom CSS file, run this curl command to add it to your settings:
+Given this location for the custom CSS file, run this curl command to add it to your settings:
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-stylesheet.css' http://localhost:8080/api/admin/settings/:StyleCustomizationFile``
 
@@ -1573,7 +1604,7 @@ This is the email address that "system" emails are sent from such as password re
 
 ``curl -X PUT -d 'LibraScholar SWAT Team <support@librascholar.edu>' http://localhost:8080/api/admin/settings/:SystemEmail``
 
-Note that only the email address is required, which you can supply without the ``<`` and ``>`` signs, but if you include the text, it's the way to customize the name of your support team, which appears in the "from" address in emails as well as in help text in the UI.
+Note that only the email address is required, which you can supply without the ``<`` and ``>`` signs, but if you include the text, it's the way to customize the name of your support team, which appears in the "from" address in emails as well as in help text in the UI. If you don't include the text, the installation name (see :ref:`Branding Your Installation`) will appear in the "from" address.
 
 Please note that if you're having any trouble sending email, you can refer to "Troubleshooting" under :doc:`installation-main`.
 
@@ -2513,7 +2544,7 @@ These are the bucket and project names to be used with the GoogleCloudSubmitToAr
 :InstallationName
 +++++++++++++++++
 
-By default, the name of the root Dataverse collection is used as the 'brandname' of the repository, i.e. in emails and metadata exports. If set, :InstallationName overrides this default, allowing the root collection name and brandname to be set independently. (Note that, since metadata export files are cached, they will have to be reexported (see :doc:`/admin/metadataexport`) before they incorporate a change in this setting.)
+As explained under :ref:`Branding Your Installation`, by default, the name of the root Dataverse collection is used as the "brand name" of the installation, i.e. in emails and metadata exports. If set, ``:InstallationName`` overrides this default, allowing the root collection name and brandname to be set independently. (Note that, since metadata export files are cached, they will have to be reexported (see :doc:`/admin/metadataexport`) before they incorporate a change in this setting.)
 
 :ExportInstallationAsDistributorOnlyWhenNotSet
 ++++++++++++++++++++++++++++++++++++++++++++++
@@ -2688,5 +2719,6 @@ To remove the override and go back to the default list:
 
 ``curl -X PUT -d '' http://localhost:8080/api/admin/settings/:FileCategories``
 
+.. To edit, use dvBrandingCustBlocks.drawio with https://app.diagrams.net
 .. |dvPageBlocks| image:: ./img/dvBrandingCustBlocks.png
    :class: img-responsive
