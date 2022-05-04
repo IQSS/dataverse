@@ -144,6 +144,20 @@ public class LicensesIT {
         status = JsonPath.from(body).getString("status");
         assertEquals("OK", status);
         
+        //Fail trying to set null sort order
+        Response setSortOrderErrorResponse = UtilIT.setLicenseSortOrderById(activeLicenseId, null, adminApiToken);
+        setSortOrderErrorResponse.prettyPrint();
+        body = setSortOrderErrorResponse.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("ERROR", status);
+        
+        //Succeed in setting sort order
+        Response setSortOrderResponse = UtilIT.setLicenseSortOrderById(activeLicenseId, 2l, adminApiToken);
+        setSortOrderResponse.prettyPrint();
+        body = setSortOrderResponse.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("OK", status);
+
         //Succeed in deleting our test license
         Response deleteLicenseByIdResponse = UtilIT.deleteLicenseById(licenseId, adminApiToken);
         deleteLicenseByIdResponse.prettyPrint();

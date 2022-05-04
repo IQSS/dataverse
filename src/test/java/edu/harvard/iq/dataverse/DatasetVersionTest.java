@@ -92,7 +92,7 @@ public class DatasetVersionTest {
     @Test
     public void testGetJsonLd() throws ParseException {
         Dataset dataset = new Dataset();
-        License license = new License("CC0 1.0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0"), URI.create("/resources/images/cc0.png"), true);
+        License license = new License("CC0 1.0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0"), URI.create("/resources/images/cc0.png"), true, 1l);
         license.setDefault(true);
         dataset.setProtocol("doi");
         dataset.setAuthority("10.5072/FK2");

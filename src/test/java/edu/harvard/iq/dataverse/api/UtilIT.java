@@ -2808,7 +2808,14 @@ public class UtilIT {
                 .put("/api/licenses/"+id.toString() + "/:active/" + state);
         return activateLicenseResponse;
     }
-
+    
+    static Response setLicenseSortOrderById(Long id, Long sortOrder, String apiToken) {
+        Response setSortOrderLicenseResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .urlEncodingEnabled(false)
+                .put("/api/licenses/"+id.toString() + "/:sortOrder/" + sortOrder);
+        return setSortOrderLicenseResponse;
+    }
 
     static Response updateDatasetJsonLDMetadata(Integer datasetId, String apiToken, String jsonLDBody, boolean replace) {
         Response response = given()

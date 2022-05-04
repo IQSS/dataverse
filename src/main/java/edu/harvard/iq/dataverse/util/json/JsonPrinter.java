@@ -800,7 +800,8 @@ public class JsonPrinter {
             .add("uri", license.getUri().toString())
             .add("iconUrl", license.getIconUrl() == null ? null : license.getIconUrl().toString())
             .add("active", license.isActive())
-            .add("isDefault", license.isDefault());
+            .add("isDefault", license.isDefault())
+            .add("sortOrder", license.getSortOrder());
     }
 
     public static Collector<String, JsonArrayBuilder, JsonArrayBuilder> stringsToJsonArray() {
