@@ -172,7 +172,7 @@ public class DataverseUserPage implements java.io.Serializable {
             userAuthProvider = authenticationService.lookupProvider(currentUser);
             notificationsList = userNotificationService.findByUser(currentUser.getId());
             notificationTypeList = Arrays.asList(Type.values()).stream()
-                    .filter(x -> !Type.CONFIRMEMAIL.equals(x) && x.hasDescription())
+                    .filter(x -> !Type.CONFIRMEMAIL.equals(x) && x.hasDescription() && !settingsWrapper.isAlwaysMuted(x))
                     .collect(Collectors.toList());
             mutedEmails = new HashSet<>(currentUser.getMutedEmails());
             mutedNotifications = new HashSet<>(currentUser.getMutedNotifications());
