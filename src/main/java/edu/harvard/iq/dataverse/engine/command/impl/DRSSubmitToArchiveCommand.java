@@ -72,6 +72,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
     private static final String RSA_KEY = "dataverse.archiver.drs.rsa_key";
 
     private static final String TRUST_CERT = "trust_cert";
+    private static final String TIMEOUT = "timeout";
 
     public DRSSubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
         super(aRequest, version);
@@ -113,7 +114,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
 
                     // Now contact DRS
                     boolean trustCert = drsConfigObject.getBoolean(TRUST_CERT, false);
-
+                    int jwtTimeout = drsConfigObject.getInt(TIMEOUT, 5);
                     JsonObjectBuilder job = Json.createObjectBuilder();
 
                     job.add(S3_BUCKET_NAME, adminMetadata.getString(S3_BUCKET_NAME));
@@ -184,7 +185,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                         Algorithm algorithmRSA = Algorithm.RSA256(null, privKey);
                         
                         String body = drsConfigString;
-                        String jwtString = createJWTString(algorithmRSA, BrandingUtil.getInstallationBrandName(), body, 5);
+                        String jwtString = createJWTString(algorithmRSA, BrandingUtil.getInstallationBrandName(), body, jwtTimeout);
                         logger.info("JWT: " + jwtString);
 
                         ingestPost.setHeader("Authorization", "Bearer " + jwtString);
