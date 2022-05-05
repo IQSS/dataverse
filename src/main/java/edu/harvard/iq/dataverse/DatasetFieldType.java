@@ -543,7 +543,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
             
             boolean makeSolrFieldMultivalued;
             // http://stackoverflow.com/questions/5800762/what-is-the-use-of-multivalued-field-type-in-solr
-            if (allowMultiples || parentAllowsMultiplesBoolean) {
+            if (allowMultiples || parentAllowsMultiplesBoolean || isControlledVocabulary()) {
                 makeSolrFieldMultivalued = true;
             } else {
                 makeSolrFieldMultivalued = false;
