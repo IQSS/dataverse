@@ -156,7 +156,7 @@
                             </ul>
                         </ui:fragment>
                         <div class="button-block">
-                            <p:commandButton id="contDeleteTemplateBtn" styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{manageTemplatesPage.deleteTemplate()}" update="@all"/>
+                            <p:commandButton id="contDeleteTemplateBtn" styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{manageTemplatesPage.deleteTemplate()}" update="@form,:messagePanel"/>
                             <button class="btn btn-link" onclick="PF('deleteConfirmation').hide();" type="button">
                                 #{bundle.cancel}
                             </button>
