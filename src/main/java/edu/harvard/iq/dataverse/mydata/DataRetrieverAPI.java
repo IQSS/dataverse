@@ -89,9 +89,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
     public static final String JSON_SUCCESS_FIELD_NAME = "success";
     public static final String JSON_ERROR_MSG_FIELD_NAME = "error_message";
     public static final String JSON_DATA_FIELD_NAME = "data";
-    
-    public static final String MSG_NO_RESULTS_FOUND = BundleUtil.getStringFromBundle("dataretrieverAPI.noMsgResultsFound");
-    
+
     /**
      * Constructor
      * 
@@ -360,7 +358,8 @@ public class DataRetrieverAPI extends AbstractApiBean {
         myDataFinder = new MyDataFinder(rolePermissionHelper,
                                         roleAssigneeService,
                                         dvObjectServiceBean, 
-                                        groupService);
+                                        groupService,
+                                        noMsgResultsFound);
         this.myDataFinder.runFindDataSteps(filterParams);
         if (myDataFinder.hasError()){
             return this.getJSONErrorString(myDataFinder.getErrorMessage(), myDataFinder.getErrorMessage());
