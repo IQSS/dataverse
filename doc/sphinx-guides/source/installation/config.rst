@@ -657,6 +657,10 @@ The image below indicates that the page layout consists of three main blocks: a 
 
 |dvPageBlocks|
 
+.. To edit, use dvBrandingCustBlocks.drawio with https://app.diagrams.net
+.. |dvPageBlocks| image:: ./img/dvBrandingCustBlocks.png
+   :class: img-responsive
+
 Installation Name/Brand Name
 ++++++++++++++++++++++++++++
 
@@ -2719,75 +2723,29 @@ To remove the override and go back to the default list:
 
 ``curl -X PUT -d '' http://localhost:8080/api/admin/settings/:FileCategories``
 
+.. _:ShowMuteOptions:
+
 :ShowMuteOptions
 ++++++++++++++++
 
 Enables muting of the notifications by the users. By default, this setting is "false" and users cannot mute any notifications (this feature is not shown in the user interface).
 
-This setting is a boolean value. To turn the feature on:
+For configuration details, see :ref:`mute-notifications`.
 
-``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:ShowMuteOptions``
-
-To remove the override and turn this feature off:
-
-``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:ShowMuteOptions``
-
-The existing notification types are as follows:
-* ``ASSIGNROLE`` Role is assigned
-* ``REVOKEROLE`` Role is revoked
-* ``CREATEDV`` Dataverse is created
-* ``CREATEDS`` Your dataset is created
-* ``CREATEACC`` Account is created
-* ``SUBMITTEDDS`` Submitted for review
-* ``RETURNEDDS`` Returned from review
-* ``PUBLISHEDDS`` Dataset is published
-* ``REQUESTFILEACCESS`` Access to file is requested
-* ``GRANTFILEACCESS`` Access to file is granted
-* ``REJECTFILEACCESS`` Access to file is rejected
-* ``FILESYSTEMIMPORT`` Dataset has been successfully uploaded and verified
-* ``CHECKSUMIMPORT`` Dataset had file checksums added via a batch job
-* ``CHECKSUMFAIL`` Checksum validation failed
-* ``CONFIRMEMAIL`` Email Verification
-* ``APIGENERATED`` API token is generated
-* ``INGESTCOMPLETED`` Ingest is completed
-* ``INGESTCOMPLETEDWITHERRORS`` Ingest completed with errors
-* ``PUBLISHFAILED_PIDREG`` Publish has failed
-* ``WORKFLOW_SUCCESS`` External workflow run has succeeded
-* ``WORKFLOW_FAILURE`` External workflow run has failed
-* ``STATUSUPDATED`` Status of dataset has been updated
-* ``DATASETCREATED`` Dataset was created by user
+.. _:AlwaysMuted:
 
 :AlwaysMuted
 ++++++++++++
 
 Overrides the default empty list of always muted notifications. Always muted notifications cannot be unmuted by the users. Always muted notifications are not shown in the notification settings for the users.
 
-This setting is a comma-separated list of the notification types.
+For configuration details, see :ref:`mute-notifications`.
 
-To override the default empty list with ASSIGNROLE, REVOKEROLE:
-
-``curl -X PUT -d 'ASSIGNROLE,REVOKEROLE' http://localhost:8080/api/admin/settings/:AlwaysMuted``
-
-To remove the override and go back to the empty list:
-
-``curl -X PUT -d '' http://localhost:8080/api/admin/settings/:AlwaysMuted``
+.. _:NeverMuted:
 
 :NeverMuted
 +++++++++++
 
 Overrides the default empty list of never muted notifications. Never muted notifications cannot be muted by the users. Always muted notifications are grayed out and are not adjustable by the user.
 
-This setting is a comma-separated list of the notification types.
-
-To override the default empty list with REQUESTFILEACCESS, GRANTFILEACCESS, REJECTFILEACCESS:
-
-``curl -X PUT -d 'REQUESTFILEACCESS,GRANTFILEACCESS,REJECTFILEACCESS' http://localhost:8080/api/admin/settings/:NeverMuted``
-
-To remove the override and go back to the empty list:
-
-``curl -X PUT -d '' http://localhost:8080/api/admin/settings/:NeverMuted``
-
-.. To edit, use dvBrandingCustBlocks.drawio with https://app.diagrams.net
-.. |dvPageBlocks| image:: ./img/dvBrandingCustBlocks.png
-   :class: img-responsive
-   
+For configuration details, see :ref:`mute-notifications`.

@@ -2836,6 +2836,8 @@ Show Info About Single Metadata Block
 Notifications
 -------------
 
+See also :ref:`account-notifications` in the User Guide.
+
 Get All Notifications by User
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
