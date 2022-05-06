@@ -473,13 +473,13 @@ Next you need to figure out the alias or database id of the "parent" Dataverse c
   export PARENT=root
   export SERVER_URL=https://demo.dataverse.org
 
-  curl -H X-Dataverse-key:$API_TOKEN -X POST "$SERVER_URL/api/dataverses/$PARENT/datasets" --upload-file dataset-finch1.json
+  curl -H X-Dataverse-key:$API_TOKEN -X POST "$SERVER_URL/api/dataverses/$PARENT/datasets" --upload-file dataset-finch1.json -H 'Content-type:application/json'
 
 The fully expanded example above (without the environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/dataverses/root/datasets" --upload-file "dataset-finch1.json"
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/dataverses/root/datasets" --upload-file "dataset-finch1.json" -H 'Content-type:application/json'
 
 You should expect an HTTP 200 ("OK") response and JSON indicating the database ID and Persistent ID (PID such as DOI or Handle) that has been assigned to your newly created dataset.
 
