@@ -631,7 +631,7 @@ _`Seaweedfs <https://github.com/chrislusf/seaweedfs>`_
   {
     "identities": [
       {
-        "name": "anonymouse",
+        "name": "anonymous",
 	"credentials": [
 	  {
 	    "accessKey": "secret",
