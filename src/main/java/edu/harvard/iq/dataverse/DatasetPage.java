@@ -2816,9 +2816,9 @@ public class DatasetPage implements java.io.Serializable {
             //SEK 12/20/2019 - since we are ingesting a file we know that there is a current draft version
             lockedDueToIngestVar = null;
             if (canViewUnpublishedDataset()) {
-                return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&showIngestSuccess=true&version=DRAFT&faces-redirect=true";
+                return "/dataset.xhtml?persistentId=" + dataset.getGlobalId().asString() + "&showIngestSuccess=true&version=DRAFT&faces-redirect=true";
             } else {
-                return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&showIngestSuccess=true&faces-redirect=true";
+                return "/dataset.xhtml?persistentId=" + dataset.getGlobalId().asString() + "&showIngestSuccess=true&faces-redirect=true";
             }
         }
 
