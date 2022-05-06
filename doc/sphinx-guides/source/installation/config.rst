@@ -617,6 +617,44 @@ For Amazon AWS, see comments in the edu.harvard.iq.dataverse.dataaccess.S3Access
 `open an issue at Github <https://github.com/IQSS/dataverse/issues/new>`_ and describe your setup.
 We will be glad to add it here.
 
+_`Seaweedfs <https://github.com/chrislusf/seaweedfs>`_
+  Seaweedfs is a distributed storage system that has s3 compatibility.  Set the s3 storage options as explained above.  Make sure to set `dataverse.files.<id>.path-style-access`` to `true`.  You will need to create the bucket beforehand.  You can do this with the filer API using curl commands.  For example to create an empty bucket called `dataverse`:
+  
+  ```
+  curl -X POST "http://localhost:8888/buckets/"
+  curl -X POST "http://localhost:8888/buckets/dataverse/"
+  ```
+  
+  You will also need to set an access and secret key.  One way to do this is via a [static file](https://github.com/chrislusf/seaweedfs/wiki/Amazon-S3-API#static-configuration).  As an example your `config.json` might look like this if you're using a bucket called `dataverse`:
+  
+  ```
+  {
+    "identities": [
+      {
+        "name": "anonymouse",
+	"credentials": [
+	  {
+	    "accessKey": "secret",
+	    "secretKey": "secret"
+	  }
+	],
+	"actions": [
+	  "Read:dataverse",
+	  "List:dataverse",
+	  "Tagging:dataverse",
+	  "Write:dataverse"
+	]
+      }
+    ]
+  }
+  ```
+  
+  And lastly to start up the Seaweedfs server and various components you could use a command like this:
+  
+  ```
+  weed server -s3 -metricsPort=9327 -dir=/data -s3.config=/config.json
+  ```
+
 Migrating from Local Storage to S3
 ##################################
 
