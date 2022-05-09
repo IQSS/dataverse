@@ -613,9 +613,50 @@ For direct uploads and downloads, Dataverse redirects to the proxy-url but presi
 Additional configuration (appropriate CORS settings, proxy caching/timeout configuration, and proxy settings to pass headers to/from S3 and to avoid adding additional headers) will also be needed to enable use of a proxy with direct upload and download.
 For Amazon AWS, see comments in the edu.harvard.iq.dataverse.dataaccess.S3AccessIO class about support for AWS's bucket-specific DNS names.
  
-**HINT:** If you are successfully using an S3 storage implementation not yet listed above, please feel free to
+`SeaweedFS <https://github.com/chrislusf/seaweedfs>`_
+  SeaweedFS is a distributed storage system that has S3 compatibility. Set the S3 storage options as explained above. Make sure to set ``dataverse.files.<id>.path-style-access`` to ``true``. You will need to create the bucket beforehand. You can do this with the filer API using curl commands. For example, to create an empty bucket called ``dataverse``:
+  
+.. code-block:: bash
+
+  curl -X POST "http://localhost:8888/buckets/"
+  curl -X POST "http://localhost:8888/buckets/dataverse/"
+  
+You will also need to set an access and secret key. One way to do this is via a `static file <https://github.com/chrislusf/seaweedfs/wiki/Amazon-S3-API#static-configuration>`_. As an example, your ``config.json`` might look like this if you're using a bucket called ``dataverse``:
+  
+.. code-block:: json
+
+  {
+    "identities": [
+      {
+        "name": "anonymous",
+	"credentials": [
+	  {
+	    "accessKey": "secret",
+	    "secretKey": "secret"
+	  }
+	],
+	"actions": [
+	  "Read:dataverse",
+	  "List:dataverse",
+	  "Tagging:dataverse",
+	  "Write:dataverse"
+	]
+      }
+    ]
+  }
+
+And lastly, to start up the SeaweedFS server and various components you could use a command like this:
+  
+.. code-block:: bash
+
+  weed server -s3 -metricsPort=9327 -dir=/data -s3.config=/config.json
+
+**Additional Reported Working S3-Compatible Storage**
+
+If you are successfully using an S3 storage implementation not yet listed above, please feel free to
 `open an issue at Github <https://github.com/IQSS/dataverse/issues/new>`_ and describe your setup.
-We will be glad to add it here.
+We will be glad to add it.
+
 
 Migrating from Local Storage to S3
 ##################################
