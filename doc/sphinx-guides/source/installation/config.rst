@@ -997,6 +997,30 @@ Disabling Custom Dataset Terms
 
 See :ref:`:AllowCustomTermsOfUse` for how to disable the "Custom Dataset Terms" option.
 
+.. _ChangeLicenseSortOrder:
+
+Sorting licenses
+----------------
+
+The default order of licenses in the dropdown in the user interface is as follows:
+
+* The default license is shown first
+* Followed by the remaining installed licenses in the order of installation
+* The custom license is at the end
+
+Only the order of the installed licenses can be changed with the API calls. The default license always remains first and the custom license last.
+
+The order of licenses can be changed by setting the ``sortOrder`` property of a license. For the purpose of making sorting easier and to allow grouping of the licenses, ``sortOrder`` property does not have to be unique. Licenses with the same ``sortOrder`` are sorted by their name alfabetically. Nevertheless, you can set a unique ``sortOrder`` for every license in order to sort them fully manually.
+
+The ``sortOrder`` is an whole number and is used to sort licenses in ascending fashion. All licenses must have a sort order and initially it is set to installation order (``id`` property).
+
+Changing the sorting order of a license specified by the license ``$ID`` is done by superusers using the following API call:
+
+.. code-block:: bash
+
+  export SORT_ORDER=100
+  curl -X PUT -H 'Content-Type: application/json' -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/licenses/$ID/:sortOrder/$SORT_ORDER
+
 .. _BagIt Export:
 
 BagIt Export
