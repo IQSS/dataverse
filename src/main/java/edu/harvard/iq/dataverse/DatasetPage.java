@@ -2081,6 +2081,7 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         displayLockInfo(dataset);
+        displayPublishMessage();
 
         for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
             if (fmd.getDataFile().isTabularData()) {
@@ -2135,6 +2136,12 @@ public class DatasetPage implements java.io.Serializable {
                 datasetService.markWorkflowCommentAsRead(wfc);
             }
         }
+    }
+    
+    private void displayPublishMessage(){
+        if (workingVersion.isDraft() && workingVersion.getId() != null && canUpdateDataset()){
+            JsfHelper.addWarningMessage(datasetService.getReminderString(dataset, canPublishDataset()));
+        }               
     }
 
     private void displayLockInfo(Dataset dataset) {
@@ -3642,7 +3649,7 @@ public class DatasetPage implements java.io.Serializable {
                     }
                     if (addFilesSuccess && dataset.getFiles().size() > 0) {
                         if (nNewFiles == dataset.getFiles().size()) {
-                            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess").concat(" ").concat(datasetService.getReminderString(dataset, canPublishDataset())));
+                            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess"));
                         } else {
                             String partialSuccessMessage = BundleUtil.getStringFromBundle("dataset.message.createSuccess.partialSuccessSavingFiles");
                             partialSuccessMessage = partialSuccessMessage.replace("{0}", "" + dataset.getFiles().size() + "");
@@ -3653,25 +3660,25 @@ public class DatasetPage implements java.io.Serializable {
                         JsfHelper.addWarningMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess.failedToSaveFiles"));
                     }
                 } else {
-                    JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess").concat(" ").concat(datasetService.getReminderString(dataset, canPublishDataset())));
+                    JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess"));
                 }
             }
             if (editMode.equals(EditMode.METADATA)) {
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.metadataSuccess").concat(" ").concat(datasetService.getReminderString(dataset, canPublishDataset())));
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.metadataSuccess"));
             }
             if (editMode.equals(EditMode.LICENSE)) {
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.termsSuccess").concat(" ").concat(datasetService.getReminderString(dataset, canPublishDataset())));
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.termsSuccess"));
             }
             if (editMode.equals(EditMode.FILE)) {
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.filesSuccess").concat(" ").concat(datasetService.getReminderString(dataset, canPublishDataset())));
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.filesSuccess"));
             }
 
         } else {
             // must have been a bulk file update or delete:
             if (bulkFileDeleteInProgress) {
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileDeleteSuccess").concat(" ").concat(datasetService.getReminderString(dataset, canPublishDataset())));
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileDeleteSuccess"));
             } else {
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileUpdateSuccess").concat(" ").concat(datasetService.getReminderString(dataset, canPublishDataset())));
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileUpdateSuccess"));
             }
         }
 
