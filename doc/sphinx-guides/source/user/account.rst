@@ -155,6 +155,8 @@ The My Data section of your account page displays a listing of all the Dataverse
 
 You can use the Add Data button to create a new Dataverse collection or dataset. By default, the new Dataverse collection or dataset will be created in the root Dataverse collection, but from the create form you can use the Host Dataverse collection dropdown menu to choose a different Dataverse collection, for which you have the proper access privileges. However, you will not be able to change this selection after you create your Dataverse collection or dataset.
 
+.. _account-notifications:
+
 Notifications
 -------------
 

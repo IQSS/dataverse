@@ -76,46 +76,49 @@ Using the API token 7ae33670-be21-491d-a244-008149856437 as an example:
 
 You should expect the output ``DELETE 1`` after issuing the command above.
 
+.. _mute-notifications:
 
-Letting users manage receiving notifications
---------------------------------------------
+Letting Users Manage Notifications
+-----------------------------------
 
-You can let users manage which notification types they wish to receive by using the following setting:
+See :ref:`account-notifications` in the User Guide for how notifications are described to end users.
+
+You can let users manage which notification types they wish to receive by setting :ref:`:ShowMuteOptions` to "true":
 
 ``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:ShowMuteOptions``
 
-This enables the new feature in the notifications page. The users can then select which in-app notifications and/or e-mails they wish to receive out of the following list:
+This enables additional settings for each user in the notifications tab of their account page. The users can select which in-app notifications and/or e-mails they wish to receive out of the following list:
 
-* ``ASSIGNROLE`` Role is assigned
-* ``REVOKEROLE`` Role is revoked
-* ``CREATEDV`` Dataverse is created
-* ``CREATEDS`` Your dataset is created
-* ``CREATEACC`` Account is created
-* ``SUBMITTEDDS`` Submitted for review
-* ``RETURNEDDS`` Returned from review
-* ``PUBLISHEDDS`` Dataset is published
-* ``REQUESTFILEACCESS`` Access to file is requested
-* ``GRANTFILEACCESS`` Access to file is granted
-* ``REJECTFILEACCESS`` Access to file is rejected
-* ``FILESYSTEMIMPORT`` Dataset has been successfully uploaded and verified
-* ``CHECKSUMIMPORT`` Dataset had file checksums added via a batch job
-* ``CHECKSUMFAIL`` Checksum validation failed
-* ``CONFIRMEMAIL`` Email Verification
 * ``APIGENERATED`` API token is generated
-* ``INGESTCOMPLETED`` Ingest is completed
-* ``INGESTCOMPLETEDWITHERRORS`` Ingest completed with errors
-* ``PUBLISHFAILED_PIDREG`` Publish has failed
-* ``WORKFLOW_SUCCESS`` External workflow run has succeeded
-* ``WORKFLOW_FAILURE`` External workflow run has failed
-* ``STATUSUPDATED`` Status of dataset has been updated
+* ``ASSIGNROLE`` Role is assigned
+* ``CHECKSUMFAIL`` Checksum validation failed
+* ``CHECKSUMIMPORT`` Dataset had file checksums added via a batch job
+* ``CONFIRMEMAIL`` Email Verification
+* ``CREATEACC`` Account is created
+* ``CREATEDS`` Your dataset is created
+* ``CREATEDV`` Dataverse is created
 * ``DATASETCREATED`` Dataset was created by user
+* ``FILESYSTEMIMPORT`` Dataset has been successfully uploaded and verified
+* ``GRANTFILEACCESS`` Access to file is granted
+* ``INGESTCOMPLETEDWITHERRORS`` Ingest completed with errors
+* ``INGESTCOMPLETED`` Ingest is completed
+* ``PUBLISHEDDS`` Dataset is published
+* ``PUBLISHFAILED_PIDREG`` Publish has failed
+* ``REJECTFILEACCESS`` Access to file is rejected
+* ``REQUESTFILEACCESS`` Access to file is requested
+* ``RETURNEDDS`` Returned from review
+* ``REVOKEROLE`` Role is revoked
+* ``STATUSUPDATED`` Status of dataset has been updated
+* ``SUBMITTEDDS`` Submitted for review
+* ``WORKFLOW_FAILURE`` External workflow run has failed
+* ``WORKFLOW_SUCCESS`` External workflow run has succeeded
 
 After enabling this feature, all notifications are enabled by default, until this is changed by the user.
 
-You can then shorten this list by configuring some notification types (e.g., ``ASSIGNROLE`` and ``REVOKEROLE``) to be always muted for everyone and not manageable by users (not visible in the user interface) with the following setting:
+You can shorten this list by configuring some notification types (e.g., ``ASSIGNROLE`` and ``REVOKEROLE``) to be always muted for everyone and not manageable by users (not visible in the user interface) with the :ref:`:AlwaysMuted` setting:
 
 ``curl -X PUT -d 'ASSIGNROLE,REVOKEROLE' http://localhost:8080/api/admin/settings/:AlwaysMuted``
 
-Finally, you can set some notifications (e.g., ``REQUESTFILEACCESS``, ``GRANTFILEACCESS`` and ``REJECTFILEACCESS``) as always enabled for everyone and not manageable by users (grayed out in the user interface) with the following setting:
+Finally, you can set some notifications (e.g., ``REQUESTFILEACCESS``, ``GRANTFILEACCESS`` and ``REJECTFILEACCESS``) as always enabled for everyone and not manageable by users (grayed out in the user interface) with the :ref:`:NeverMuted` setting:
 
 ``curl -X PUT -d 'REQUESTFILEACCESS,GRANTFILEACCESS,REJECTFILEACCESS' http://localhost:8080/api/admin/settings/:NeverMuted``
