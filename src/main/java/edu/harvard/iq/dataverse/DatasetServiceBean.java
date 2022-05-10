@@ -807,20 +807,15 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
 
     //get a string to add to save success message
-    //depends on dataset state and user privleges
+    //depends on page (dataset/file) and user privleges
     public String getReminderString(Dataset dataset, boolean canPublishDataset, boolean filePage) {
-
-        /*
-                        String warningMessage = getBundleString("dataset.message.addFiles.partialSuccess");
-                warningMessage = warningMessage.replace("{0}", "" + (nFilesTotal - nOldFiles));
-        */
-        
+       
         String reminderString;
 
-        if (canPublishDataset){
-                reminderString = BundleUtil.getStringFromBundle("dataset.message.publish.warning");
-            } else {
-                reminderString = BundleUtil.getStringFromBundle("dataset.message.submit.warning");
+        if (canPublishDataset) {
+            reminderString = BundleUtil.getStringFromBundle("dataset.message.publish.warning");
+        } else {
+            reminderString = BundleUtil.getStringFromBundle("dataset.message.submit.warning");
         }
 
         if (canPublishDataset) {
