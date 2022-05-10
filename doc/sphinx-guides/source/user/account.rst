@@ -171,9 +171,9 @@ You will typically receive a notification or email when:
 - Another Dataverse installation user has requested access to restricted files in a dataset that you published. (If you submitted your dataset for review, and it was published by a curator, the curators of the Dataverse collection that contains your dataset will get a notification about requests to access your restricted files.)
 - A file in one of your datasets has finished the ingest process.
 
-There are other notification types that you can receive, e.g., notification on granted roles, API key generation… These types of notifications are less common and are not described here. Some other notifications are limited to specific roles. For example, if the installation has a curation workflow, reviewers get notified when a new dataset is submitted for review.
+There are other notification types that you can receive, e.g., notification on granted roles, API key generation, etc. These types of notifications are less common and are not described here. Some other notifications are limited to specific roles. For example, if the installation has a curation workflow, reviewers get notified when a new dataset is submitted for review.
 
-Notifications will only be emailed once, even if you haven't read the notification on the Dataverse installation.
+Notifications will only be emailed once, even if you haven't read the in-app notification.
 
 API Token
 ---------
