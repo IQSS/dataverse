@@ -154,10 +154,8 @@ public class SwordServiceBean {
         Map<String, List<String>> dcterms = swordEntry.getDublinCore();
         List<String> listOfLicensesProvided = dcterms.get("license");
         List<String> rights = dcterms.get("rights");
-        if (rights != null) {
-            if (!systemConfig.isAllowCustomTerms()) {
-                throw new SwordError("Custom Terms (dcterms:rights) are not allowed.");
-            }
+        if (rights != null && !systemConfig.isAllowCustomTerms()) {
+            throw new SwordError("Custom Terms (dcterms:rights) are not allowed.");
         }
 
         TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
