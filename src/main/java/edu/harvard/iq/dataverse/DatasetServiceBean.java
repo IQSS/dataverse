@@ -801,11 +801,20 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
 
     }
+    
+    public String getReminderString(Dataset dataset, boolean canPublishDataset) {
+        return getReminderString( dataset, canPublishDataset, false);
+    }
 
     //get a string to add to save success message
     //depends on dataset state and user privleges
-    public String getReminderString(Dataset dataset, boolean canPublishDataset) {
+    public String getReminderString(Dataset dataset, boolean canPublishDataset, boolean filePage) {
 
+        /*
+                        String warningMessage = getBundleString("dataset.message.addFiles.partialSuccess");
+                warningMessage = warningMessage.replace("{0}", "" + (nFilesTotal - nOldFiles));
+        */
+        
         String reminderString;
 
         if (canPublishDataset){
@@ -815,17 +824,37 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
         if(!dataset.isReleased() ){
             //messages for draft state.
-            if (canPublishDataset){
-                reminderString = reminderString + " " + BundleUtil.getStringFromBundle("dataset.message.publish.remind.draft");
+            if (canPublishDataset) {
+                if (!filePage) {
+                    reminderString = reminderString + " " + BundleUtil.getStringFromBundle("dataset.message.publish.remind.draft");
+                } else {
+                    reminderString = reminderString + " " + BundleUtil.getStringFromBundle("dataset.message.publish.remind.draft.filePage");
+                    reminderString = reminderString.replace("{0}", "" + (dataset.getGlobalId().asString()));
+                }
             } else {
-                reminderString = reminderString + " " + BundleUtil.getStringFromBundle("dataset.message.submit.remind.draft");
+                if (!filePage) {
+                    reminderString = reminderString + " " + BundleUtil.getStringFromBundle("dataset.message.submit.remind.draft");
+                } else {
+                    reminderString = reminderString + " " + BundleUtil.getStringFromBundle("dataset.message.submit.remind.draft.filePage");
+                    reminderString = reminderString.replace("{0}", "" + (dataset.getGlobalId().asString()));
+                }
             }
-        } else{
+        } else {
             //messages for new version - post-publish
-            if (canPublishDataset){
-                reminderString = reminderString + " " + BundleUtil.getStringFromBundle("dataset.message.publish.remind.version");
+            if (canPublishDataset) {
+                if (!filePage) {
+                    reminderString = reminderString + " " + BundleUtil.getStringFromBundle("dataset.message.publish.remind.version");
+                } else {
+                    reminderString = reminderString + " " + BundleUtil.getStringFromBundle("dataset.message.publish.remind.version.filePage");
+                    reminderString = reminderString.replace("{0}", "" + (dataset.getGlobalId().asString()));
+                }
             } else {
-                reminderString = reminderString + " " + BundleUtil.getStringFromBundle("dataset.message.submit.remind.version");
+                if (!filePage) {
+                    reminderString = reminderString + " " + BundleUtil.getStringFromBundle("dataset.message.submit.remind.version");
+                } else {
+                    reminderString = reminderString + " " + BundleUtil.getStringFromBundle("dataset.message.submit.remind.version.filePage");
+                    reminderString = reminderString.replace("{0}", "" + (dataset.getGlobalId().asString()));
+                }
             }
         }
 

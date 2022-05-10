@@ -110,6 +110,9 @@ public class FilePage implements java.io.Serializable {
     AuthenticationServiceBean authService;
     
     @EJB
+    DatasetServiceBean datasetService;
+    
+    @EJB
     SystemConfig systemConfig;
 
 
@@ -248,8 +251,15 @@ public class FilePage implements java.io.Serializable {
         if(!hasValidTermsOfAccess && canUpdateDataset() ){
             JsfHelper.addWarningMessage(BundleUtil.getStringFromBundle("dataset.message.editMetadata.invalid.TOUA.message"));
         }
-
+        
+        displayPublishMessage();
         return null;
+    }
+    
+    private void displayPublishMessage(){
+        if (fileMetadata.getDatasetVersion().isDraft()  && canUpdateDataset()){
+            JsfHelper.addWarningMessage(datasetService.getReminderString(fileMetadata.getDatasetVersion().getDataset(), canPublishDataset(), true));
+        }               
     }
     
     private boolean canViewUnpublishedDataset() {
