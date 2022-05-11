@@ -64,7 +64,7 @@ public class Groups extends AbstractApiBean {
     @Path("ip")
     public Response postIpGroup( JsonObject dto ){
         try {
-           IpGroup grp = new JsonParser().parseIpGroup(dto);
+            IpGroup grp = JsonParser.parseIpGroup(dto);
             grp.setGroupProvider( ipGroupPrv );
             grp.setPersistedGroupAlias(
                     ipGroupPrv.findAvailableName(
@@ -97,7 +97,7 @@ public class Groups extends AbstractApiBean {
             if ( ! legalGroupName.matcher(groupName).matches() ) {
                 return badRequest("Group name can contain only letters, digits, and the chars '-' and '_'");
             }
-            IpGroup grp = new JsonParser().parseIpGroup(dto);
+            IpGroup grp = JsonParser.parseIpGroup(dto);
             grp.setGroupProvider( ipGroupPrv );
             grp.setPersistedGroupAlias( groupName );
             grp = ipGroupPrv.store(grp);
@@ -229,7 +229,7 @@ public class Groups extends AbstractApiBean {
     @POST
     @Path("domain")
     public Response createMailDomainGroup(JsonObject dto) throws JsonParseException {
-        MailDomainGroup grp = new JsonParser().parseMailDomainGroup(dto);
+        MailDomainGroup grp = JsonParser.parseMailDomainGroup(dto);
         mailDomainGroupPrv.saveOrUpdate(Optional.empty(), grp);
         mailDomainGroupPrv.updateGroups();
 
@@ -253,7 +253,7 @@ public class Groups extends AbstractApiBean {
             return badRequest("Group name can contain only letters, digits, and the chars '-' and '_'");
         }
         
-        MailDomainGroup grp = new JsonParser().parseMailDomainGroup(dto);
+        MailDomainGroup grp = JsonParser.parseMailDomainGroup(dto);
         mailDomainGroupPrv.saveOrUpdate(Optional.of(groupAlias), grp);
         mailDomainGroupPrv.updateGroups();
         

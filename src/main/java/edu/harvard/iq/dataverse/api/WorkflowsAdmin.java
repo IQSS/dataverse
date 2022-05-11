@@ -38,9 +38,8 @@ public class WorkflowsAdmin extends AbstractApiBean {
     
     @POST
     public Response addWorkflow(JsonObject jsonWorkflow) {
-        JsonParser jp = new JsonParser();
         try {
-            Workflow wf = jp.parseWorkflow(jsonWorkflow);
+            Workflow wf = JsonParser.parseWorkflow(jsonWorkflow);
             Workflow managedWf = workflows.save(wf);
             
             return created("/admin/workflows/"+managedWf.getId(), json(managedWf));

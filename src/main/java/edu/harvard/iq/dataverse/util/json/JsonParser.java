@@ -89,10 +89,6 @@ public class JsonParser {
         this.licenseService = licenseService;
     }
 
-    public JsonParser() {
-        this( null,null,null );
-    }
-    
     public boolean isLenient() {
         return lenient;
     }
@@ -232,7 +228,7 @@ public class JsonParser {
         throw new JsonParseException("Field " + name + " is mandatory");
     }
 
-    public IpGroup parseIpGroup(JsonObject obj) {
+    public static IpGroup parseIpGroup(JsonObject obj) {
         IpGroup retVal = new IpGroup();
 
         if (obj.containsKey("id")) {
@@ -262,7 +258,7 @@ public class JsonParser {
         return retVal;
     }
     
-    public MailDomainGroup parseMailDomainGroup(JsonObject obj) throws JsonParseException {
+    public static MailDomainGroup parseMailDomainGroup(JsonObject obj) throws JsonParseException {
         MailDomainGroup grp = new MailDomainGroup();
         
         if (obj.containsKey("id")) {
@@ -457,7 +453,7 @@ public class JsonParser {
         
     }
     
-    public List<FileMetadata> parseFiles(JsonArray metadatasJson, DatasetVersion dsv) throws JsonParseException {
+    public static List<FileMetadata> parseFiles(JsonArray metadatasJson, DatasetVersion dsv) throws JsonParseException {
         List<FileMetadata> fileMetadatas = new LinkedList<>();
         if (metadatasJson != null) {
             for (JsonObject filemetadataJson : metadatasJson.getValuesAs(JsonObject.class)) {
@@ -492,7 +488,7 @@ public class JsonParser {
         return fileMetadatas;
     }
     
-    public DataFile parseDataFile(JsonObject datafileJson) {
+    public static DataFile parseDataFile(JsonObject datafileJson) {
         DataFile dataFile = new DataFile();
         
         Timestamp timestamp = new Timestamp(new Date().getTime());
@@ -781,7 +777,7 @@ public class JsonParser {
         return vals;
     }
     
-    public Workflow parseWorkflow(JsonObject json) throws JsonParseException {
+    public static Workflow parseWorkflow(JsonObject json) throws JsonParseException {
         Workflow retVal = new Workflow();
         validate("", json, "name", ValueType.STRING);
         validate("", json, "steps", ValueType.ARRAY);
@@ -795,7 +791,7 @@ public class JsonParser {
         return retVal;
     }
     
-    public WorkflowStepData parseStepData( JsonObject json ) throws JsonParseException {
+    public static WorkflowStepData parseStepData( JsonObject json ) throws JsonParseException {
         WorkflowStepData wsd = new WorkflowStepData();
         validate("step", json, "provider", ValueType.STRING);
         validate("step", json, "stepType", ValueType.STRING);
@@ -817,7 +813,7 @@ public class JsonParser {
         return wsd;
     }
     
-    private String jsonValueToString(JsonValue jv) {
+    private static String jsonValueToString(JsonValue jv) {
         switch ( jv.getValueType() ) {
             case STRING: return ((JsonString)jv).getString();
             default: return jv.toString();
@@ -898,7 +894,7 @@ public class JsonParser {
         return dataverseAlias;
     }
 
-    private List<DataFileCategory> getCategories(JsonObject filemetadataJson, Dataset dataset) {
+    private static List<DataFileCategory> getCategories(JsonObject filemetadataJson, Dataset dataset) {
         JsonArray categories = filemetadataJson.getJsonArray(OptionalFileParams.CATEGORIES_ATTR_NAME);
         if (categories == null || categories.isEmpty() || dataset == null) {
             return null;
@@ -929,7 +925,7 @@ public class JsonParser {
      * @param expectedValueType
      * @throws JsonParseException 
      */
-    private void validate(String objectName, JsonObject jobject, String fieldName, ValueType expectedValueType) throws JsonParseException {
+    private static void validate(String objectName, JsonObject jobject, String fieldName, ValueType expectedValueType) throws JsonParseException {
         if ( (!jobject.containsKey(fieldName)) 
               || (jobject.get(fieldName).getValueType()!=expectedValueType) ) {
             throw new JsonParseException( objectName + " missing a field named '"+fieldName+"' of type " + expectedValueType );

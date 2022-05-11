@@ -471,7 +471,7 @@ public class JsonParserTest {
         
         System.out.println( serialized.toString() );
         
-        IpGroup parsed = new JsonParser().parseIpGroup(serialized);
+        IpGroup parsed = JsonParser.parseIpGroup(serialized);
         
         assertEquals( original, parsed );
         
@@ -493,7 +493,7 @@ public class JsonParserTest {
         
         System.out.println( serialized.toString() );
         
-        IpGroup parsed = new JsonParser().parseIpGroup(serialized);
+        IpGroup parsed = JsonParser.parseIpGroup(serialized);
         
         assertEquals( original, parsed );
         assertTrue( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.1.1.1")) ));
@@ -524,7 +524,7 @@ public class JsonParserTest {
         
         System.out.println( serialized.toString() );
         
-        IpGroup parsed = new JsonParser().parseIpGroup(serialized);
+        IpGroup parsed = JsonParser.parseIpGroup(serialized);
         
         assertEquals( original, parsed );
         assertTrue( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce61")) ));
@@ -544,7 +544,7 @@ public class JsonParserTest {
         
         // when
         JsonObject serialized = JsonPrinter.json(test).build();
-        MailDomainGroup parsed = new JsonParser().parseMailDomainGroup(serialized);
+        MailDomainGroup parsed = JsonParser.parseMailDomainGroup(serialized);
         
         // then
         assertEquals(test, parsed);
@@ -558,7 +558,7 @@ public class JsonParserTest {
         
         // when
         JsonObject serialized = JsonPrinter.json(test).build();
-        MailDomainGroup parsed = new JsonParser().parseMailDomainGroup(serialized);
+        MailDomainGroup parsed = JsonParser.parseMailDomainGroup(serialized);
         
         // then
         assertEquals(test, parsed);
@@ -571,7 +571,7 @@ public class JsonParserTest {
         String noname = "{ \"id\": 1, \"alias\": \"test\", \"domains\": [] }";
         JsonObject obj = Json.createReader(new StringReader(noname)).readObject();
         // when && then
-        MailDomainGroup parsed = new JsonParser().parseMailDomainGroup(obj);
+        MailDomainGroup parsed = JsonParser.parseMailDomainGroup(obj);
     }
     
     @Test(expected = JsonParseException.class)
@@ -580,7 +580,7 @@ public class JsonParserTest {
         String noname = "{ \"name\": \"test\", \"alias\": \"test\" }";
         JsonObject obj = Json.createReader(new StringReader(noname)).readObject();
         // when && then
-        MailDomainGroup parsed = new JsonParser().parseMailDomainGroup(obj);
+        MailDomainGroup parsed = JsonParser.parseMailDomainGroup(obj);
     }
     
     @Test(expected = JsonParseException.class)
@@ -589,7 +589,7 @@ public class JsonParserTest {
         String regexNotEnabled = "{ \"id\": 1, \"alias\": \"test\", \"domains\": [\"^foobar\\\\.com\"] }";
         JsonObject obj = Json.createReader(new StringReader(regexNotEnabled)).readObject();
         // when && then
-        MailDomainGroup parsed = new JsonParser().parseMailDomainGroup(obj);
+        MailDomainGroup parsed = JsonParser.parseMailDomainGroup(obj);
     }
 
     @Test
@@ -615,12 +615,12 @@ public class JsonParserTest {
         DatasetVersion dsv = new DatasetVersion();
         Dataset dataset = new Dataset();
         dsv.setDataset(dataset);
-        List<FileMetadata> fileMetadatas = new JsonParser().parseFiles(metadatasJson, dsv);
+        List<FileMetadata> fileMetadatas = JsonParser.parseFiles(metadatasJson, dsv);
         System.out.println("fileMetadatas: " + fileMetadatas);
         assertEquals("myLabel", fileMetadatas.get(0).getLabel());
         assertEquals("Documentation", fileMetadatas.get(0).getCategories().get(0).getName());
         assertEquals(null, fileMetadatas.get(1).getCategories());
-        List<FileMetadata> codeCoverage = new JsonParser().parseFiles(Json.createArrayBuilder().add(Json.createObjectBuilder().add("label", "myLabel").add("dataFile", Json.createObjectBuilder().add("categories", JsonValue.NULL))).build(), dsv);
+        List<FileMetadata> codeCoverage = JsonParser.parseFiles(Json.createArrayBuilder().add(Json.createObjectBuilder().add("label", "myLabel").add("dataFile", Json.createObjectBuilder().add("categories", JsonValue.NULL))).build(), dsv);
         assertEquals(null, codeCoverage.get(0).getCategories());
     }
 
