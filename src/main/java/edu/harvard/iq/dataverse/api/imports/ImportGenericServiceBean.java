@@ -119,50 +119,6 @@ public class ImportGenericServiceBean {
             } catch (XMLStreamException ex) {}
         }
     }
-    
-    public void importXML(File xmlFile, String foreignFormat, DatasetVersion datasetVersion) {
-        
-        FileInputStream in = null;
-        XMLStreamReader xmlr = null;
-
-        // look up the foreign metadata mapping for this format:
-        
-        ForeignMetadataFormatMapping mappingSupported = findFormatMappingByName (foreignFormat);
-        if (mappingSupported == null) {
-            throw new EJBException("Unknown/unsupported foreign metadata format "+foreignFormat);
-        }
-        
-        try {
-            in = new FileInputStream(xmlFile);
-            XMLInputFactory xmlFactory = javax.xml.stream.XMLInputFactory.newInstance();
-            xmlr =  xmlFactory.createXMLStreamReader(in);
-            DatasetDTO datasetDTO = processXML(xmlr, mappingSupported);
-
-            Gson gson = new Gson();
-            String json = gson.toJson(datasetDTO.getDatasetVersion());
-            logger.info("Json:\n"+json);
-            JsonReader jsonReader = Json.createReader(new StringReader(json));
-            JsonObject obj = jsonReader.readObject();
-            DatasetVersion dv = new JsonParser(datasetFieldSvc, blockService, settingsService).parseDatasetVersion(obj, datasetVersion);
-        } catch (FileNotFoundException ex) {
-            //Logger.getLogger("global").log(Level.SEVERE, null, ex);
-            throw new EJBException("ERROR occurred in mapDDI: File Not Found!");
-        } catch (XMLStreamException ex) {
-            //Logger.getLogger("global").log(Level.SEVERE, null, ex);
-            throw new EJBException("ERROR occurred while parsing XML (file "+xmlFile.getAbsolutePath()+"); ", ex);
-        } catch (JsonParseException ex) {
-            Logger.getLogger(ImportGenericServiceBean.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            try {
-                if (xmlr != null) { xmlr.close(); }
-            } catch (XMLStreamException ex) {}
-
-            try {
-                if (in != null) { in.close();}
-            } catch (IOException ex) {}
-        }
-
-    }
 
     public DatasetDTO processXML( XMLStreamReader xmlr, ForeignMetadataFormatMapping foreignFormatMapping) throws XMLStreamException {
         // init - similarly to what I'm doing in the metadata extraction code? 
@@ -554,34 +510,6 @@ public class ImportGenericServiceBean {
              }*/
         }
         return datasetDTO;
-    }
-    
-     public void importDCTerms(String xmlToParse, DatasetVersion datasetVersion, DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService) {
-        DatasetDTO datasetDTO = this.initializeDataset();
-        try {
-            // Read docDescr and studyDesc into DTO objects.
-            Map<String, String> fileMap = mapDCTerms(xmlToParse, datasetDTO);
-            // 
-            // convert DTO to Json, 
-            Gson gson = new Gson();
-            String json = gson.toJson(datasetDTO.getDatasetVersion());
-            JsonReader jsonReader = Json.createReader(new StringReader(json));
-            JsonObject obj = jsonReader.readObject();
-            //and call parse Json to read it into a datasetVersion
-            DatasetVersion dv = new JsonParser(datasetFieldSvc, blockService, settingsService).parseDatasetVersion(obj, datasetVersion);
-        } catch (XMLStreamException | JsonParseException e) {
-            // EMK TODO: exception handling
-            e.printStackTrace();
-        }
-        
-        //EMK TODO:  Call methods for reading FileMetadata and related objects from xml, return list of FileMetadata objects.
-        /*try {
-            
-         Map<String, DataTable> dataTableMap = new DataTableImportDDI().processDataDscr(xmlr);
-         } catch(Exception e) {
-            
-         }*/
-        // Save Dataset and DatasetVersion in database
     }
 
     public Map<String, String> mapDCTerms(String xmlToParse, DatasetDTO datasetDTO) throws XMLStreamException {
