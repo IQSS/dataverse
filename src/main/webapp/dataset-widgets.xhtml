@@ -72,7 +72,8 @@
                                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.uploadNew.title']}"></span>
                                             </label>
                                             <p:fileUpload invalidFileMessage="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.upload.invalidMsg']}" id="changelogo" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update="@form" 
-                                                          sizeLimit="#{systemConfig.uploadLogoSizeLimit}" 
+                                                          sizeLimit="#{systemConfig.uploadLogoSizeLimit}"
+                                                          invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}"
                                                           dragDropSupport="true" auto="true" multiple="false" 
                                                           listener="#{DatasetWidgetsPage.handleImageFileUpload}" label="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.upload']}"/>
                                         </div>

@@ -16,6 +16,7 @@ If you find a typo or a small error in the documentation you can fix it using Gi
   - `api`_
   - `developers`_
   - `installation`_
+  - `style`_
   - `user`_
 
 - Find the file you want to edit under one of the folders above.
@@ -35,6 +36,7 @@ If you would like to read more about the Dataverse Project's use of GitHub, plea
 .. _api: https://github.com/IQSS/dataverse/tree/develop/doc/sphinx-guides/source/api
 .. _developers: https://github.com/IQSS/dataverse/tree/develop/doc/sphinx-guides/source/developers
 .. _installation: https://github.com/IQSS/dataverse/tree/develop/doc/sphinx-guides/source/installation
+.. _style: https://github.com/IQSS/dataverse/tree/develop/doc/sphinx-guides/source/style
 .. _user: https://github.com/IQSS/dataverse/tree/develop/doc/sphinx-guides/source/user
 
 Other Changes (Sphinx)
