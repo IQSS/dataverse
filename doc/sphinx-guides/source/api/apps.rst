@@ -32,13 +32,6 @@ File Previewers are tools that display the content of files - including audio, h
 
 https://github.com/GlobalDataverseCommunityConsortium/dataverse-previewers
 
-TwoRavens
-~~~~~~~~~
-
-TwoRavens is a system of interlocking statistical tools for data exploration, analysis, and meta-analysis.
-
-https://github.com/IQSS/TwoRavens
-
 Python
 ------
 

@@ -561,11 +561,26 @@ public class DatasetUtil {
 
     public static String getLicenseIcon(DatasetVersion dsv) {
         License license = dsv.getTermsOfUseAndAccess().getLicense();
-        return license != null ? license.getIconUrl().toString() : null;
+        return license != null && license.getIconUrl() != null ? license.getIconUrl().toString() : null;
     }
 
     public static String getLicenseDescription(DatasetVersion dsv) {
         License license = dsv.getTermsOfUseAndAccess().getLicense();
         return license != null ? license.getShortDescription() : BundleUtil.getStringFromBundle("license.custom.description");
+    }
+
+    public static String getLocaleExternalStatus(String status) {
+        String localizedName =  "" ;
+        try {
+            localizedName = BundleUtil.getStringFromPropertyFile(status.toLowerCase().replace(" ", "_"), "CurationLabels");
+        }
+        catch (Exception e) {
+            localizedName = status;
+        }
+
+        if (localizedName == null) {
+            localizedName = status ;
+        }
+        return localizedName;
     }
 }

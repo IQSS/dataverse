@@ -196,9 +196,11 @@
                     <p:dataList value="#{facetCategory.facetLabel}" var="facetLabel" rows="#{DataversePage.getNumberOfFacets(facetCategory.name,5)}">
                         <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{!DataversePage.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink">
                             <h:outputText value="#{facetLabel.name}">
-                                <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvocConf.get(facetCategory.datasetFieldTypeId).getString('languages'))}" />
-                                <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(facetCategory.datasetFieldTypeId).getString('cvoc-url','')}" />
-                                <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvocConf.get(facetCategory.datasetFieldTypeId).getString('protocol','')}" />
+                                <c:if test="#{!cvocConf.isEmpty()}">
+                                    <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvocConf.get(facetCategory.datasetFieldTypeId).getString('languages'))}" />
+                                    <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(facetCategory.datasetFieldTypeId).getString('cvoc-url','')}" />
+                                    <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvocConf.get(facetCategory.datasetFieldTypeId).getString('protocol','')}" />
+                                </c:if>
                             </h:outputText>
                             <h:outputFormat value=" &#40;{0}&#41;">
                                 <f:param value="#{facetLabel.count}"/>
@@ -215,9 +217,11 @@
 
                         <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{DataversePage.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink facetSelected">
                             <h:outputText value="#{facetLabel.name}">
-                                <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvocConf.get(facetCategory.datasetFieldTypeId).getString('languages'))}" />
-                                <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(facetCategory.datasetFieldTypeId).getString('cvoc-url','')}" />
-                                <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvocConf.get(facetCategory.datasetFieldTypeId).getString('protocol','')}" />
+                                <c:if test="#{!cvocConf.isEmpty()}">
+                                    <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvocConf.get(facetCategory.datasetFieldTypeId).getString('languages'))}" />
+                                    <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(facetCategory.datasetFieldTypeId).getString('cvoc-url','')}" />
+                                    <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvocConf.get(facetCategory.datasetFieldTypeId).getString('protocol','')}" />
+                                </c:if>
                             </h:outputText>
                             <h:outputFormat value=" &#40;{0}&#41;">
                                 <f:param value="#{facetLabel.count}"/>
@@ -535,6 +539,7 @@
                     <!--DATASET CARDS-->
                     <div class="datasetResult clearfix" jsf:rendered="#{result.type == 'datasets'}">
                         <div class="card-title-icon-block">
+                            <o:importFunctions type="edu.harvard.iq.dataverse.dataset.DatasetUtil" />
                             <span class="glyphicon glyphicon-link text-info pull-right" title="#{bundle.linked}" jsf:rendered="#{!SearchIncludeFragment.rootDv and !result.isInTree}"/>
                             <span class="glyphicon glyphicon-new-window text-info pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.harvested}"/>
                             <span class="icon-dataset text-info pull-right" title="#{bundle.dataset}"/>
@@ -548,7 +553,7 @@
                             <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
                             <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{result.deaccessionedState}"/>
                             <h:outputText value="#{bundle['embargoed']}" styleClass="label label-primary" rendered="#{SearchIncludeFragment.isActivelyEmbargoed(result)}"/>
-                            <h:outputText value="#{result.externalStatus}" styleClass="label label-info" rendered="#{!empty result.externalStatus and SearchIncludeFragment.canPublishDataset(result.entityId)}"/>
+                            <h:outputText value="#{DatasetUtil:getLocaleExternalStatus(result.externalStatus)}" styleClass="label label-info" rendered="#{!empty result.externalStatus and SearchIncludeFragment.canPublishDataset(result.entityId)}"/>
                             <h:outputText value="#{result.userRole}" styleClass="label label-primary" rendered="#{!empty result.userRole}"/>
                         </div>
                         <div class="card-preview-icon-block text-center">

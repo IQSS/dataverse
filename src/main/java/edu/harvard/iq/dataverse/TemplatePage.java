@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseTemplateCommand;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.DatasetFieldUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.sql.Timestamp;
@@ -128,6 +129,7 @@ public class TemplatePage implements java.io.Serializable {
 
             if (template.getTermsOfUseAndAccess() != null) {
                 TermsOfUseAndAccess terms = template.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
+                terms.setTemplate(template);
                 template.setTermsOfUseAndAccess(terms);
             }
 
@@ -177,6 +179,9 @@ public class TemplatePage implements java.io.Serializable {
         Long createdId = new Long(0);
         Template created;
         try {
+
+            DatasetFieldUtil.tidyUpFields( template.getDatasetFields(), false );
+
             if (editMode == EditMode.CREATE) {
                 template.setCreateTime(new Timestamp(new Date().getTime()));
                 template.setUsageCount(new Long(0));
