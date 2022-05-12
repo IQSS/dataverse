@@ -98,5 +98,11 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
 
    public static boolean isArchivable(Dataset dataset, SettingsWrapper settingsWrapper) {
         return true;
-    }
+   }
+   
+   public static boolean isSingleVersion(SettingsWrapper settingsWrapper) {
+       return false;
+  }
+   
+   
 }

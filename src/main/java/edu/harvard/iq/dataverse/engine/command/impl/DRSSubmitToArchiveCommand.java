@@ -322,4 +322,21 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
         }
         return false;
     }
+    
+    public static boolean isSingleVersion(SettingsWrapper sw) {
+        JsonObject drsConfigObject = null;
+
+        try {
+            String config = sw.get(DRS_CONFIG, null);
+            if (config != null) {
+                drsConfigObject = JsonUtil.getJsonObject(config);
+            }
+        } catch (Exception e) {
+            logger.warning("Unable to parse " + DRS_CONFIG + " setting as a Json object");
+        }
+        if (drsConfigObject != null) {
+            return drsConfigObject.getBoolean("single_version", false);
+        }
+        return false;
+    }
 }
