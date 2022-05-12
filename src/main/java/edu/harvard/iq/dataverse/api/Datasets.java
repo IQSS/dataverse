@@ -3360,4 +3360,31 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         }
         return error(Status.BAD_REQUEST, "Unacceptable status format");
     }
+    
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/submitDatasetVersionToArchive/{id}/{version}/status")
+    public Response deleteDatasetVersionToArchiveStatus(@PathParam("id") String dsid,
+            @PathParam("version") String versionNumber) {
+
+        try {
+            AuthenticatedUser au = findAuthenticatedUserOrDie();
+            if (!au.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+            Dataset ds = findDatasetOrDie(dsid);
+
+            DatasetVersion dv = datasetversionService.findByFriendlyVersionNumber(ds.getId(), versionNumber);
+            if (dv == null) {
+                return error(Status.NOT_FOUND, "Dataset version not found");
+            }
+            dv.setArchivalCopyLocation(null);
+            dv = datasetversionService.merge(dv);
+
+            return ok("Status deleted");
+
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
 }
