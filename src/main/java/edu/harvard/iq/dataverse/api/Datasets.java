@@ -100,6 +100,8 @@ import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
@@ -3300,7 +3302,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                 return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
             Dataset ds = findDatasetOrDie(dsid);
-
+           
             DatasetVersion dv = datasetversionService.findByFriendlyVersionNumber(ds.getId(), versionNumber);
             if (dv.getArchivalCopyLocation() == null) {
                 return error(Status.NO_CONTENT, "This dataset version has not been archived");
@@ -3345,6 +3347,14 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                     if(dv==null) {
                         return error(Status.NOT_FOUND, "Dataset version not found");
                     }
+                    if (isSingleVersionArchiving()) {
+                        for (DatasetVersion version : ds.getVersions()) {
+                            if ((dv != version) && version.getArchivalCopyLocation() != null) {
+                                return error(Status.CONFLICT, "Dataset already archived.");
+                            }
+                        }
+                    }
+
                     dv.setArchivalCopyLocation(JsonUtil.prettyPrint(update));
                     dv = datasetversionService.merge(dv);
                     logger.info("location now: " + dv.getArchivalCopyLocation());
@@ -3386,5 +3396,21 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
+    }
+    
+    private boolean isSingleVersionArchiving() {
+        String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName, null);
+        if (className != null) {
+            Class<? extends AbstractSubmitToArchiveCommand> clazz;
+            try {
+                clazz =  Class.forName(className).asSubclass(AbstractSubmitToArchiveCommand.class);
+                return ArchiverUtil.onlySingleVersionArchiving(clazz, settingsService);
+            } catch (ClassNotFoundException e) {
+                logger.warning(":ArchiverClassName does not refer to a known Archiver");
+            } catch (ClassCastException cce) {
+                logger.warning(":ArchiverClassName does not refer to an Archiver class");
+            }
+        }
+        return false;
     }
 }
