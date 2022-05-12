@@ -257,7 +257,8 @@ public class FilePage implements java.io.Serializable {
     }
     
     private void displayPublishMessage(){
-        if (fileMetadata.getDatasetVersion().isDraft()  && canUpdateDataset()){
+        if (fileMetadata.getDatasetVersion().isDraft()  && canUpdateDataset()
+                &&   (canPublishDataset() || !fileMetadata.getDatasetVersion().getDataset().isLockedFor(DatasetLock.Reason.InReview))){
             JsfHelper.addWarningMessage(datasetService.getReminderString(fileMetadata.getDatasetVersion().getDataset(), canPublishDataset(), true));
         }               
     }

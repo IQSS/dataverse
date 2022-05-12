@@ -2139,7 +2139,8 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     private void displayPublishMessage(){
-        if (workingVersion.isDraft() && workingVersion.getId() != null && canUpdateDataset()){
+        if (workingVersion.isDraft() && workingVersion.getId() != null && canUpdateDataset() 
+              &&   (canPublishDataset() || !dataset.isLockedFor(DatasetLock.Reason.InReview) )){
             JsfHelper.addWarningMessage(datasetService.getReminderString(dataset, canPublishDataset()));
         }               
     }
@@ -2201,6 +2202,10 @@ public class DatasetPage implements java.io.Serializable {
             JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.pidNotReserved.message"),
                     BundleUtil.getStringFromBundle("dataset.locked.pidNotReserved.message.details"));
         }
+        
+        //if necessary refresh publish message also
+        
+        displayPublishMessage();
 
     }
 
