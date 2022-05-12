@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
@@ -324,10 +325,18 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
     }
     
     public static boolean isSingleVersion(SettingsWrapper sw) {
-        JsonObject drsConfigObject = null;
-
-        try {
             String config = sw.get(DRS_CONFIG, null);
+            return isSingleVersion(config);
+    }
+
+    public static boolean isSingleVersion(SettingsServiceBean ss) {
+        String config = ss.get(DRS_CONFIG, null);
+        return isSingleVersion(config);
+    }
+
+    private static boolean isSingleVersion(String config) {
+        JsonObject drsConfigObject = null;
+        try {
             if (config != null) {
                 drsConfigObject = JsonUtil.getJsonObject(config);
             }
