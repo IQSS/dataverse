@@ -2140,6 +2140,7 @@ public class DatasetPage implements java.io.Serializable {
     
     private void displayPublishMessage(){
         if (workingVersion.isDraft() && workingVersion.getId() != null && canUpdateDataset() 
+                && !dataset.isLockedFor(DatasetLock.Reason.finalizePublication)
               &&   (canPublishDataset() || !dataset.isLockedFor(DatasetLock.Reason.InReview) )){
             JsfHelper.addWarningMessage(datasetService.getReminderString(dataset, canPublishDataset()));
         }               
