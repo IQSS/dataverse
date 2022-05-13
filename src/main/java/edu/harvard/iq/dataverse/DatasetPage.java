@@ -5569,7 +5569,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public boolean isVersionArchivable() {
-        // If this dataset isn't in an archivable collection retuyrn false
+        // If this dataset isn't in an archivable collection return false
         if (isArchivable()) {
             boolean checkForArchivalCopy = false;
             // Otherwise, we need to know if the archiver is single-version-only
@@ -5590,11 +5590,7 @@ public class DatasetPage implements java.io.Serializable {
                 if (checkForArchivalCopy) {
                     // If we have to check (single version archiving), we can't allow archiving if
                     // one version is already archived (or attempted - any non-null status)
-                    for (DatasetVersion dv : dataset.getVersions()) {
-                        if (dv.getArchivalCopyLocation() != null) {
-                            return false;
-                        }
-                    }
+                    return !isSomeVersionArchived();
                 }
                 // If we allow multiple versions or didn't find one that has had archiving run
                 // on it, we can archive, so return true
@@ -5602,6 +5598,15 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
         //not in an archivable collection
+        return false;
+    }
+    
+    public boolean isSomeVersionArchived() {
+        for (DatasetVersion dv : dataset.getVersions()) {
+            if (dv.getArchivalCopyLocation() != null) {
+                return true;
+            }
+        }
         return false;
     }
 
