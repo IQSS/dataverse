@@ -98,5 +98,17 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
 
    public static boolean isArchivable(Dataset dataset, SettingsWrapper settingsWrapper) {
         return true;
-    }
+   }
+   
+   //Check if the chosen archiver imposes single-version-only archiving - in a View context
+   public static boolean isSingleVersion(SettingsWrapper settingsWrapper) {
+       return false;
+  }
+ 
+   //Check if the chosen archiver imposes single-version-only archiving - in the API
+   public static boolean isSingleVersion(SettingsServiceBean settingsService) {
+       return false;
+  }
+   
+   
 }

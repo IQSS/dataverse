@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
@@ -320,6 +321,31 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                     return getArchivableAncestor(d.getOwner(), collections) != null;
                 }
             }
+        }
+        return false;
+    }
+    
+    public static boolean isSingleVersion(SettingsWrapper sw) {
+            String config = sw.get(DRS_CONFIG, null);
+            return isSingleVersion(config);
+    }
+
+    public static boolean isSingleVersion(SettingsServiceBean ss) {
+        String config = ss.get(DRS_CONFIG, null);
+        return isSingleVersion(config);
+    }
+
+    private static boolean isSingleVersion(String config) {
+        JsonObject drsConfigObject = null;
+        try {
+            if (config != null) {
+                drsConfigObject = JsonUtil.getJsonObject(config);
+            }
+        } catch (Exception e) {
+            logger.warning("Unable to parse " + DRS_CONFIG + " setting as a Json object");
+        }
+        if (drsConfigObject != null) {
+            return drsConfigObject.getBoolean("single_version", false);
         }
         return false;
     }

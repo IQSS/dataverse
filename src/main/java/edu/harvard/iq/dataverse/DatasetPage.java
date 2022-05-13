@@ -5567,6 +5567,43 @@ public class DatasetPage implements java.io.Serializable {
         }
         return false;
     }
+    
+    public boolean isVersionArchivable() {
+        // If this dataset isn't in an archivable collection retuyrn false
+        if (isArchivable()) {
+            boolean checkForArchivalCopy = false;
+            // Otherwise, we need to know if the archiver is single-version-only
+            // If it is, we have to check for an existing archived version to answer the
+            // question
+            String className = settingsWrapper.getValueForKey(SettingsServiceBean.Key.ArchiverClassName, null);
+            if (className != null) {
+                try {
+                    Class<?> clazz = Class.forName(className);
+                    Method m = clazz.getMethod("isSingleVersion", SettingsWrapper.class);
+                    Object[] params = { settingsWrapper };
+                    checkForArchivalCopy = (Boolean) m.invoke(null, params);
+                } catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException
+                        | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+                    logger.warning("Failed to call is Archivable on configured archiver class: " + className);
+                    e.printStackTrace();
+                }
+                if (checkForArchivalCopy) {
+                    // If we have to check (single version archiving), we can't allow archiving if
+                    // one version is already archived (or attempted - any non-null status)
+                    for (DatasetVersion dv : dataset.getVersions()) {
+                        if (dv.getArchivalCopyLocation() != null) {
+                            return false;
+                        }
+                    }
+                }
+                // If we allow multiple versions or didn't find one that has had archiving run
+                // on it, we can archive, so return true
+                return true;
+            }
+        }
+        //not in an archivable collection
+        return false;
+    }
 
     private static Date getFileDateToCompare(FileMetadata fileMetadata) {
         DataFile datafile = fileMetadata.getDataFile();
