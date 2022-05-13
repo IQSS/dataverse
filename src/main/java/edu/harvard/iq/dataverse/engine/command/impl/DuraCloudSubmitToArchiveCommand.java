@@ -25,6 +25,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
+
 import org.apache.commons.codec.binary.Hex;
 import org.duracloud.client.ContentStore;
 import org.duracloud.client.ContentStoreManager;
@@ -67,6 +70,11 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                         .replace('.', '-').toLowerCase();
 
                 ContentStore store;
+                //Set a failure status that will be updated if we succeed
+                JsonObjectBuilder statusObject = Json.createObjectBuilder();
+                statusObject.add(DatasetVersion.STATUS, DatasetVersion.FAILURE);
+                statusObject.add(DatasetVersion.MESSAGE, "Bag not transferred");
+                
                 try {
                     /*
                      * If there is a failure in creating a space, it is likely that a prior version
@@ -134,6 +142,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                                         bagger.generateBag(out);
                                     } catch (Exception e) {
                                         logger.severe("Error creating bag: " + e.getMessage());
+                                        statusObject.add(DatasetVersion.MESSAGE, "Could not create bag");
                                         // TODO Auto-generated catch block
                                         e.printStackTrace();
                                         throw new RuntimeException("Error creating bag: " + e.getMessage());
@@ -173,7 +182,9 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                         sb.append("/duradmin/spaces/sm/");
                         sb.append(store.getStoreId());
                         sb.append("/" + spaceName + "/" + fileName);
-                        dv.setArchivalCopyLocation(sb.toString());
+                        statusObject.add(DatasetVersion.STATUS, DatasetVersion.SUCCESS);
+                        statusObject.add(DatasetVersion.MESSAGE, sb.toString());
+                        
                         logger.fine("DuraCloud Submission step complete: " + sb.toString());
                     } catch (ContentStoreException | IOException e) {
                         // TODO Auto-generated catch block
@@ -199,6 +210,9 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                     return new Failure("Unable to create DuraCloud space with name: " + spaceName, mesg);
                 } catch (NoSuchAlgorithmException e) {
                     logger.severe("MD5 MessageDigest not available!");
+                }
+                finally {
+                    dv.setArchivalCopyLocation(statusObject.build().toString());
                 }
             } else {
                 logger.warning("DuraCloud Submision Workflow aborted: Dataset locked for finalizePublication, or because file validation failed");

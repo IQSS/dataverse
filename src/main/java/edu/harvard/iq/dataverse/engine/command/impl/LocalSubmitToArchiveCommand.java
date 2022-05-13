@@ -19,6 +19,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
+
 import java.io.File;
 import java.io.FileOutputStream;
 
@@ -39,6 +42,12 @@ public class LocalSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand 
         logger.fine("In LocalCloudSubmitToArchive...");
         String localPath = requestedSettings.get(":BagItLocalPath");
         String zipName = null;
+        
+        //Set a failure status that will be updated if we succeed
+        JsonObjectBuilder statusObject = Json.createObjectBuilder();
+        statusObject.add(DatasetVersion.STATUS, DatasetVersion.FAILURE);
+        statusObject.add(DatasetVersion.MESSAGE, "Bag not transferred");
+        
         try {
 
             Dataset dataset = dv.getDataset();
@@ -68,7 +77,8 @@ public class LocalSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand 
 
                 if (srcFile.renameTo(destFile)) {
                     logger.fine("Localhost Submission step: Content Transferred");
-                    dv.setArchivalCopyLocation("file://" + zipName);
+                    statusObject.add(DatasetVersion.STATUS, DatasetVersion.SUCCESS);
+                    statusObject.add(DatasetVersion.MESSAGE, "file://" + zipName);
                 } else {
                     logger.warning("Unable to move " + zipName + ".partial to " + zipName);
                 }
@@ -80,7 +90,10 @@ public class LocalSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand 
         } catch (Exception e) {
             logger.warning("Failed to archive " + zipName + " : " + e.getLocalizedMessage());
             e.printStackTrace();
+        } finally {
+            dv.setArchivalCopyLocation(statusObject.build().toString());
         }
+        
         return WorkflowStepResult.OK;
     }
 
