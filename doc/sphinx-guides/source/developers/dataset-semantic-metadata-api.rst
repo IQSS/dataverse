@@ -48,11 +48,11 @@ To add json-ld formatted metadata for a Dataset, specify the Dataset ID (DATASET
  
   Example: Change the Dataset title 
  
-    curl -X PUT -H X-Dataverse-key:$API_TOKEN -H 'Content-Type: application/ld+json' -d '{"Title": "Submit menu test", "@context":{"Title": "http://purl.org/dc/terms/title"}}' "$SERVER_URL/api/datasets/$DATASET_ID/metadata?replace=true"
+    curl -X PUT -H X-Dataverse-key:$API_TOKEN -H 'Content-Type: application/ld+json' -d '{"title": "Submit menu test", "@context":{"title": "http://purl.org/dc/terms/title"}}' "$SERVER_URL/api/datasets/$DATASET_ID/metadata?replace=true"
 
   Example 2: Add a description using the DATASET PID
 
-    curl -X PUT -H X-Dataverse-key:$API_TOKEN -H 'Content-Type: application/ld+json' -d '{"citation:Description": {"dsDescription:Text": "New description"}, "@context":{"citation": "https://dataverse.org/schema/citation/","dsDescription": "https://dataverse.org/schema/citation/dsDescription#"}}' "$SERVER_URL/api/datasets/:persistentId/metadata?persistentId=$DATASET_PID"
+    curl -X PUT -H X-Dataverse-key:$API_TOKEN -H 'Content-Type: application/ld+json' -d '{"citation:dsDescription": {"citation:dsDescriptionValue": "New description"}, "@context":{"citation": "https://dataverse.org/schema/citation/"}}' "$SERVER_URL/api/datasets/:persistentId/metadata?persistentId=$DATASET_PID"
 
 You should expect a 200 ("OK") response indicating whether a draft Dataset version was created or an existing draft was updated.
 
