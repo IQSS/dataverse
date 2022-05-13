@@ -10,8 +10,6 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import edu.harvard.iq.dataverse.util.bagit.BagGenerator;
-import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
@@ -41,9 +39,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
     private static final String DURACLOUD_PORT = ":DuraCloudPort";
     private static final String DURACLOUD_HOST = ":DuraCloudHost";
     private static final String DURACLOUD_CONTEXT = ":DuraCloudContext";
-    private static final int MAX_ZIP_WAIT = 20000;
-    
-    boolean success = false;
+
     public DuraCloudSubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
         super(aRequest, version);
     }
@@ -163,58 +159,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                         messageDigest = MessageDigest.getInstance("MD5");
                         try (PipedInputStream in = new PipedInputStream(100000);
                                 DigestInputStream digestInputStream2 = new DigestInputStream(in, messageDigest)) {
-                            Thread bagThread = new Thread(new Runnable() {
-                                public void run() {
-                                    try (PipedOutputStream out = new PipedOutputStream(in)) {
-                                        // Generate bag
-                                        BagGenerator bagger = new BagGenerator(new OREMap(dv, false), dataciteXml);
-                                        bagger.setAuthenticationKey(token.getTokenString());
-                                        bagger.generateBag(out);
-                                        success = true;
-                                    } catch (Exception e) {
-                                        logger.severe("Error creating bag: " + e.getMessage());
-                                        // TODO Auto-generated catch block
-                                        e.printStackTrace();
-                                    }
-                                }
-                            });
-                            bagThread.start();
-                            /*
-                             * The following loop handles two issues. First, with no delay, the
-                             * bucket.create() call below can get started before the piped streams are set
-                             * up, causing a failure (seen when triggered in a PostPublishDataset workflow).
-                             * A minimal initial wait, e.g. until some bytes are available, would address
-                             * this. Second, the BagGenerator class, due to it's use of parallel streaming
-                             * creation of the zip file, has the characteristic that it makes a few bytes
-                             * available - from setting up the directory structure for the zip file -
-                             * significantly earlier than it is ready to stream file content (e.g. for
-                             * thousands of files and GB of content). If, for these large datasets,
-                             * store.addContent() is called as soon as bytes are available, the call can
-                             * timeout before the bytes for all the zipped files are available. To manage
-                             * this, the loop waits until 90K bytes are available, larger than any expected
-                             * dir structure for the zip and implying that the main zipped content is
-                             * available, or until the thread terminates, with all of its content written to
-                             * the pipe. (Note the PipedInputStream buffer is set at 100K above - I didn't
-                             * want to test whether that means that exactly 100K bytes will be available()
-                             * for large datasets or not, so the test below is at 90K.)
-                             * 
-                             * An additional sanity check limits the wait to 20K (MAX_ZIP_WAIT) seconds. The BagGenerator
-                             * has been used to archive >120K files, 2K directories, and ~600GB files on the
-                             * SEAD project (streaming content to disk rather than over an internet
-                             * connection) which would take longer than 20K seconds (even 10+ hours) and might
-                             * produce an initial set of bytes for directories > 90K. If Dataverse ever
-                             * needs to support datasets of this size, the numbers here would need to be
-                             * increased, and/or a change in how archives are sent to google (e.g. as
-                             * multiple blobs that get aggregated) would be required.
-                             */
-                            i = 0;
-                            while (digestInputStream2.available() <= 90000 && i < MAX_ZIP_WAIT && bagThread.isAlive()) {
-                                Thread.sleep(1000);
-                                i++;
-                            }
-                            if(i==MAX_ZIP_WAIT) {
-                                throw new IOException("Stream not available");
-                            }
+                            Thread bagThread = startBagThread(dv, in, digestInputStream2, dataciteXml, token);
                             checksum = store.addContent(spaceName, fileName, digestInputStream2, -1l, null, null, null);
                             bagThread.join();
                             if (success) {
@@ -281,5 +226,4 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
             return new Failure("DuraCloud Submission not configured - no \":DuraCloudHost\".");
         }
     }
-
 }
