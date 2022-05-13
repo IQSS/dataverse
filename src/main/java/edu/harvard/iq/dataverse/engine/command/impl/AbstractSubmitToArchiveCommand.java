@@ -30,6 +30,7 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
     protected boolean success=false;
     private static final Logger logger = Logger.getLogger(AbstractSubmitToArchiveCommand.class.getName());
     private static final int MAX_ZIP_WAIT = 20000;
+    private static final int DEFAULT_THREADS = 2;
     
     public AbstractSubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
         super(aRequest, version.getDataset());
@@ -73,6 +74,18 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
      */
     abstract public WorkflowStepResult performArchiveSubmission(DatasetVersion version, ApiToken token, Map<String, String> requestedSetttings);
 
+    protected int getNumberOfBagGeneratorThreads() {
+        if (requestedSettings.get(BagGenerator.BAG_GENERATOR_THREADS) != null) {
+            try {
+                return Integer.valueOf(requestedSettings.get(BagGenerator.BAG_GENERATOR_THREADS));
+            } catch (NumberFormatException nfe) {
+                logger.warning("Can't parse the value of setting " + BagGenerator.BAG_GENERATOR_THREADS
+                        + " as an integer - using default:" + DEFAULT_THREADS);
+            }
+        }
+        return DEFAULT_THREADS;
+    }
+
     @Override
     public String describe() {
         return super.describe() + "DatasetVersion: [" + version.getId() + " (v"
@@ -86,6 +99,7 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
                 try (PipedOutputStream out = new PipedOutputStream(in)) {
                     // Generate bag
                     BagGenerator bagger = new BagGenerator(new OREMap(dv, false), dataciteXml);
+                    bagger.setNumConnections(getNumberOfBagGeneratorThreads());
                     bagger.setAuthenticationKey(token.getTokenString());
                     bagger.generateBag(out);
                     success = true;
