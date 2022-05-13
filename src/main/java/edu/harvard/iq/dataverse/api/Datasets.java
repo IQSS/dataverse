@@ -49,7 +49,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.RemoveLockCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SetDatasetCitationDateCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.SetExternalStatusCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SetCurationStatusCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
@@ -60,14 +59,12 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.S3PackageImporter;
-import edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetStorageSizeCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
@@ -119,7 +116,6 @@ import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
-import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.json.*;
 import javax.json.stream.JsonParsingException;
@@ -151,8 +147,6 @@ import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import com.amazonaws.services.s3.model.PartETag;
-
-import java.util.Map.Entry;
 
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
