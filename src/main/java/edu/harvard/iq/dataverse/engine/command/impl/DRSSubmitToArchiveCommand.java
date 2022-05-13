@@ -99,6 +99,15 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
             String packageId = spaceName + ".v" + dv.getFriendlyVersionNumber();
 
             if (alias != null) {
+                if (drsConfigObject.getBoolean("single_version", false)) {
+                    for (DatasetVersion version : dataset.getVersions()) {
+                        if (version.getArchivalCopyLocation() != null) {
+                            return new Failure("DRS Archiver fail: version " + version.getFriendlyVersionNumber()
+                                    + " already archived.");
+                        }
+                    }
+                }
+
                 JsonObject collectionConfig = adminMetadata.getJsonObject(COLLECTIONS).getJsonObject(alias);
 
                 WorkflowStepResult s3Result = super.performArchiveSubmission(dv, token, requestedSettings);
