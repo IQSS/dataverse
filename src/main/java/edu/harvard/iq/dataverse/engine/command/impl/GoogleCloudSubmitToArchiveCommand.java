@@ -15,16 +15,13 @@ import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
-import java.io.BufferedInputStream;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.nio.charset.Charset;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -42,6 +39,7 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
     private static final Logger logger = Logger.getLogger(GoogleCloudSubmitToArchiveCommand.class.getName());
     private static final String GOOGLECLOUD_BUCKET = ":GoogleCloudBucket";
     private static final String GOOGLECLOUD_PROJECT = ":GoogleCloudProject";
+    private static final int MAX_ZIP_WAIT = 20000;
 
     boolean success = false;
 
@@ -169,23 +167,23 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                              * want to test whether that means that exactly 100K bytes will be available()
                              * for large datasets or not, so the test below is at 90K.)
                              * 
-                             * An additional sanity check limits the wait to 2K seconds. The BagGenerator
+                             * An additional sanity check limits the wait to 20K (MAX_ZIP_WAIT) seconds. The BagGenerator
                              * has been used to archive >120K files, 2K directories, and ~600GB files on the
                              * SEAD project (streaming content to disk rather than over an internet
-                             * connection) which would take longer than 2K seconds (10+ hours) and might
+                             * connection) which would take longer than 20K seconds (10+ hours) and might
                              * produce an initial set of bytes for directories > 90K. If Dataverse ever
                              * needs to support datasets of this size, the numbers here would need to be
                              * increased, and/or a change in how archives are sent to google (e.g. as
                              * multiple blobs that get aggregated) would be required.
                              */
                             i = 0;
-                            while (digestInputStream2.available() <= 90000 && i < 2000 && writeThread.isAlive()) {
+                            while (digestInputStream2.available() <= 90000 && i < MAX_ZIP_WAIT && writeThread.isAlive()) {
                                 Thread.sleep(1000);
                                 logger.fine("avail: " + digestInputStream2.available() + " : " + writeThread.getState().toString());
                                 i++;
                             }
                             logger.fine("Bag: transfer started, i=" + i + ", avail = " + digestInputStream2.available());
-                            if (i == 2000) {
+                            if (i == MAX_ZIP_WAIT) {
                                 throw new IOException("Stream not available");
                             }
                             Blob bag = bucket.create(spaceName + "/" + fileName, digestInputStream2, "application/zip", Bucket.BlobWriteOption.doesNotExist());
