@@ -217,15 +217,22 @@ public class Admin extends AbstractApiBean {
     @Path("template/{id}")
     @DELETE
     public Response deleteTemplate(@PathParam("id") long id) {
+        
+        AuthenticatedUser superuser = authSvc.getAdminUser();
+        if (superuser == null) {
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Cannot find superuser to execute DeleteTemplateCommand.");
+        }
 
         Template doomed = templateService.find(id);
         if (doomed == null) {
             return error(Response.Status.NOT_FOUND, "Template with id " + id + " -  not found.");
         }
+
         Dataverse dv = doomed.getDataverse();
+        List <Dataverse> dataverseWDefaultTemplate = templateService.findDataversesByDefaultTemplateId(doomed.getId());
 
         try {
-            commandEngine.submit(new DeleteTemplateCommand(dvRequestService.getDataverseRequest(), dv, doomed, null));
+            commandEngine.submit(new DeleteTemplateCommand(createDataverseRequest(superuser), dv, doomed, dataverseWDefaultTemplate));
         } catch (CommandException ex) {
             Logger.getLogger(Admin.class.getName()).log(Level.SEVERE, null, ex);
             return error(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
