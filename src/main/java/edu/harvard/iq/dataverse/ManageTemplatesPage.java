@@ -118,11 +118,13 @@ public class ManageTemplatesPage implements java.io.Serializable {
         newOne.setName(name);
         newOne.setUsageCount(new Long(0));
         newOne.setCreateTime(new Timestamp(new Date().getTime()));
-        dataverse.getTemplates().add(newOne);
-        templates.add(newOne);
+        newOne.setDataverse(dataverse);
+
         Template created;
         try {
             created = engineService.submit(new CreateTemplateCommand(newOne, dvRequestService.getDataverseRequest(), dataverse));
+            dataverse.getTemplates().add(created);
+            templates.add(created);
             saveDataverse("");
             String msg =  BundleUtil.getStringFromBundle("template.clone");//"The template has been copied";
             JsfHelper.addFlashMessage(msg);

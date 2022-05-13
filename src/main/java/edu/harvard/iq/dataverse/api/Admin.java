@@ -16,6 +16,8 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.validation.EMailValidator;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.Template;
+import edu.harvard.iq.dataverse.TemplateServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
@@ -85,6 +87,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeactivateUserCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteRoleCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteTemplateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -156,6 +159,8 @@ public class Admin extends AbstractApiBean {
         ExplicitGroupServiceBean explicitGroupService;
         @EJB
         BannerMessageServiceBean bannerMessageService;
+        @EJB
+        TemplateServiceBean templateService;
 
 	// Make the session available
 	@Inject
@@ -208,6 +213,26 @@ public class Admin extends AbstractApiBean {
 		settingsSvc.delete(name, lang);
 		return ok("Setting " + name + " - " + lang + " deleted.");
 	}
+        
+    @Path("template/{id}")
+    @DELETE
+    public Response deleteTemplate(@PathParam("id") long id) {
+
+        Template doomed = templateService.find(id);
+        if (doomed == null) {
+            return error(Response.Status.NOT_FOUND, "Template with id " + id + " -  not found.");
+        }
+        Dataverse dv = doomed.getDataverse();
+
+        try {
+            commandEngine.submit(new DeleteTemplateCommand(dvRequestService.getDataverseRequest(), dv, doomed, null));
+        } catch (CommandException ex) {
+            Logger.getLogger(Admin.class.getName()).log(Level.SEVERE, null, ex);
+            return error(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
+        }
+
+        return ok("Template " + doomed.getName() + " deleted.");
+    }
 
 	@Path("authenticationProviderFactories")
 	@GET
