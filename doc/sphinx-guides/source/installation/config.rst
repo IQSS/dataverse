@@ -1051,9 +1051,9 @@ The default order of licenses in the dropdown in the user interface is as follow
 
 Only the order of the installed licenses can be changed with the API calls. The default license always remains first and the custom license last.
 
-The order of licenses can be changed by setting the ``sortOrder`` property of a license. For the purpose of making sorting easier and to allow grouping of the licenses, ``sortOrder`` property does not have to be unique. Licenses with the same ``sortOrder`` are sorted by their name alfabetically. Nevertheless, you can set a unique ``sortOrder`` for every license in order to sort them fully manually.
+The order of licenses can be changed by setting the ``sortOrder`` property of a license. For the purpose of making sorting easier and to allow grouping of the licenses, ``sortOrder`` property does not have to be unique. Licenses with the same ``sortOrder`` are sorted by their ID, i.e., first by the sortOrder, then by the ID. Nevertheless, you can set a unique ``sortOrder`` for every license in order to sort them fully manually.
 
-The ``sortOrder`` is an whole number and is used to sort licenses in ascending fashion. All licenses must have a sort order and initially it is set to installation order (``id`` property).
+The ``sortOrder`` is an whole number and is used to sort licenses in ascending fashion.
 
 Changing the sorting order of a license specified by the license ``$ID`` is done by superusers using the following API call:
 

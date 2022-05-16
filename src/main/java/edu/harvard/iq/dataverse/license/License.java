@@ -23,9 +23,9 @@ import java.util.Objects;
  */
  @NamedQueries({
     @NamedQuery( name="License.findAll",
-            query="SELECT l FROM License l ORDER BY (case when l.isDefault then 0 else 1 end), l.sortOrder, l.name asc"),
+            query="SELECT l FROM License l ORDER BY (case when l.isDefault then 0 else 1 end), l.sortOrder, l.id asc"),
     @NamedQuery( name="License.findAllActive",
-            query="SELECT l FROM License l WHERE l.active='true' ORDER BY (case when l.isDefault then 0 else 1 end), l.sortOrder, l.name asc"),
+            query="SELECT l FROM License l WHERE l.active='true' ORDER BY (case when l.isDefault then 0 else 1 end), l.sortOrder, l.id asc"),
     @NamedQuery( name="License.findById",
             query = "SELECT l FROM License l WHERE l.id=:id"),
     @NamedQuery( name="License.findDefault",
@@ -76,7 +76,7 @@ public class License {
     @Column(nullable = false)
     private boolean isDefault;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Long sortOrder;
     
     @OneToMany(mappedBy="license")
