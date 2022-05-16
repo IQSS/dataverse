@@ -32,6 +32,7 @@ import javax.persistence.Transient;
 @Table(indexes = {@Index(columnList="user_id")})
 
 public class UserNotification implements Serializable {
+    // Keep in sync with list at admin/user-administration.rst
     public enum Type {
         ASSIGNROLE, REVOKEROLE, CREATEDV, CREATEDS, CREATEACC, SUBMITTEDDS, RETURNEDDS, 
         PUBLISHEDDS, REQUESTFILEACCESS, GRANTFILEACCESS, REJECTFILEACCESS, FILESYSTEMIMPORT, 
