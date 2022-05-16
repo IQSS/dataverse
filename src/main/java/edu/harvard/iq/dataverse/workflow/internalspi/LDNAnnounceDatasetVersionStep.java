@@ -155,13 +155,13 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
                 for (DatasetFieldType cdft : childTypes) {
                     switch (cdft.getName()) {
                     case "publicationURL":
-                        publicationURL = OREMap.getTermFor(dft, cdft);
+                        publicationURL = cdft.getJsonLDTerm();
                         break;
                     case "publicationIDType":
-                        publicationIDType = OREMap.getTermFor(dft, cdft);
+                        publicationIDType = cdft.getJsonLDTerm();
                         break;
                     case "publicationIDNumber":
-                        publicationIDNumber = OREMap.getTermFor(dft, cdft);
+                        publicationIDNumber = cdft.getJsonLDTerm();
                         break;
                     }
 
@@ -188,7 +188,7 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
             default:
                 if (jv != null) {
                     includeLocalContext = true;
-                    coarContext.add(OREMap.getTermFor(dft).getLabel(), jv);
+                    coarContext.add(dft.getJsonLDTerm().getLabel(), jv);
                 }
 
             }
