@@ -2769,7 +2769,7 @@ To remove the override and go back to the default list:
 :ShowMuteOptions
 ++++++++++++++++
 
-Enables muting of the notifications by the users. By default, this setting is "false" and users cannot mute any notifications (this feature is not shown in the user interface).
+Allows users to mute notifications by showing additional configuration options in the Notifications tab of the account page (see :ref:`account-notifications` in the User Guide). By default, this setting is "false" and users cannot mute any notifications (this feature is not shown in the user interface).
 
 For configuration details, see :ref:`mute-notifications`.
 

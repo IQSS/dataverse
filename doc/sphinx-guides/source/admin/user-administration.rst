@@ -96,7 +96,7 @@ This enables additional settings for each user in the notifications tab of their
 * ``CONFIRMEMAIL`` Email Verification
 * ``CREATEACC`` Account is created
 * ``CREATEDS`` Your dataset is created
-* ``CREATEDV`` Dataverse is created
+* ``CREATEDV`` Dataverse collection is created
 * ``DATASETCREATED`` Dataset was created by user
 * ``FILESYSTEMIMPORT`` Dataset has been successfully uploaded and verified
 * ``GRANTFILEACCESS`` Access to file is granted
