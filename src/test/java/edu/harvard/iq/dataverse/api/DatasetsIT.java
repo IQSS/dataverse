@@ -2343,7 +2343,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         JSONAssert.assertEquals(expectedJsonLD, jsonLD, false);
         // Now change the title
         response = UtilIT.updateDatasetJsonLDMetadata(datasetId, apiToken,
-                "{\"Title\": \"New Title\", \"@context\":{\"Title\": \"http://purl.org/dc/terms/title\"}}", true);
+                "{\"title\": \"New Title\", \"@context\":{\"title\": \"http://purl.org/dc/terms/title\"}}", true);
         response.then().assertThat().statusCode(OK.getStatusCode());
 
         response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
@@ -2357,7 +2357,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Add an additional description (which is multi-valued and compound)
         // Also add new terms of use (single value so would fail with replace false if a
         // value existed)
-        String newDescription = "{\"citation:Description\": {\"dsDescription:Text\": \"New description\"}, \"https://dataverse.org/schema/core#termsOfUse\": \"New terms\", \"@context\":{\"citation\": \"https://dataverse.org/schema/citation/\",\"dsDescription\": \"https://dataverse.org/schema/citation/dsDescription#\"}}";
+        String newDescription = "{\"citation:dsDescription\": {\"citation:dsDescriptionValue\": \"New description\"}, \"https://dataverse.org/schema/core#termsOfUse\": \"New terms\", \"@context\":{\"citation\": \"https://dataverse.org/schema/citation/\"}}";
         response = UtilIT.updateDatasetJsonLDMetadata(datasetId, apiToken, newDescription, false);
         response.then().assertThat().statusCode(OK.getStatusCode());
 
@@ -2368,8 +2368,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         jsonLDString = getData(response.getBody().asString());
         jsonLDObject = JSONLDUtil.decontextualizeJsonLD(jsonLDString);
         assertEquals("New description",
-                ((JsonObject) jsonLDObject.getJsonArray("https://dataverse.org/schema/citation/Description").get(1))
-                        .getString("https://dataverse.org/schema/citation/dsDescription#Text"));
+                ((JsonObject) jsonLDObject.getJsonArray("https://dataverse.org/schema/citation/dsDescription").get(1))
+                        .getString("https://dataverse.org/schema/citation/dsDescriptionValue"));
 
         // Can't add terms of use with replace=false and a value already set (single
         // valued field)
