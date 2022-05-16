@@ -5,10 +5,13 @@
  */
 package edu.harvard.iq.dataverse.authorization.users;
 
+import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotification.Type;
+import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.EnumSet;
@@ -21,13 +24,23 @@ import org.junit.Before;
 
 import javax.json.JsonObject;
 import javax.json.JsonString;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 /**
  * Tested class: AuthenticatedUser.java
  *
  * @author bsilverstein
  */
+@RunWith(MockitoJUnitRunner.class)
 public class AuthenticatedUserTest {
+
+    @Mock
+    private SettingsServiceBean settingsServiceBean;
+    @InjectMocks
+    private UserNotificationServiceBean userNotificationService;
 
     public AuthenticatedUserTest() {
     }
@@ -391,6 +404,34 @@ public class AuthenticatedUserTest {
         assertTrue("typeSet contains ASSIGNROLE", typeSet.contains(Type.ASSIGNROLE));
         assertTrue("typeSet contains CREATEDV", typeSet.contains(Type.CREATEDV));
         assertTrue("typeSet contains REVOKEROLE", typeSet.contains(Type.REVOKEROLE));
+    }
+
+    @Test
+    public void testIsEmailMuted() {
+        testUser.setMutedEmails(mutedTypes);
+        UserNotification userNotification = new UserNotification();
+        userNotification.setUser(testUser);
+        userNotification.setSendDate(null);
+        userNotification.setObjectId(null);
+        userNotification.setRequestor(null);
+        userNotification.setType(Type.ASSIGNROLE); // muted
+        assertTrue(userNotificationService.isEmailMuted(userNotification));
+        userNotification.setType(Type.APIGENERATED); // not muted
+        assertFalse(userNotificationService.isEmailMuted(userNotification));
+    }
+
+    @Test
+    public void isNotificationMuted() {
+        testUser.setMutedNotifications(mutedTypes);
+        UserNotification userNotification = new UserNotification();
+        userNotification.setUser(testUser);
+        userNotification.setSendDate(null);
+        userNotification.setObjectId(null);
+        userNotification.setRequestor(null);
+        userNotification.setType(Type.ASSIGNROLE); // muted
+        assertTrue(userNotificationService.isNotificationMuted(userNotification));
+        userNotification.setType(Type.APIGENERATED); // not muted
+        assertFalse(userNotificationService.isNotificationMuted(userNotification));
     }
 
     /**
