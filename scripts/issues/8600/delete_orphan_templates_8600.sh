@@ -7,6 +7,8 @@ pg_host=localhost
 pg_port=5432
 pg_user=dvnapp
 pg_db=dvndb
+#edit this line with the server for the api call to delete orphan templates
+SERVER=http://localhost:8080/api
 # you can leave the password blank, if Postgres is configured 
 # to accept connections without auth:
 pg_pass=
@@ -55,7 +57,7 @@ ${PSQL_EXEC}  -h ${pg_host} -U ${pg_user} -d ${pg_db} -t -c "${PG_QUERY_1}" \
 	then
 		echo "nothing to do here"
         else
-            curl -X DELETE http://localhost:8080/api/admin/template/${id}
+            curl -X DELETE $SERVER/admin/template/${id}
             echo "template ${id} deleted "	
         fi
 

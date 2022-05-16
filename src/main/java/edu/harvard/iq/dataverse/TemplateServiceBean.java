@@ -46,6 +46,22 @@ public class TemplateServiceBean {
         query.setParameter("ownerId", ownerId);
         return query.getSingleResult();
     }
+    
+    public List<Template> findByOwnerId(Long ownerId) {
+        TypedQuery<Template> query = em.createQuery("select object(o) from Template as o where o.dataverse.id =:ownerId order by o.name", Template.class);
+        query.setParameter("ownerId", ownerId);
+        return query.getResultList();
+    }
+    
+    public List<Template> findAll() {
+        TypedQuery<Template> query = em.createQuery("select object(o) from Template as o order by o.name", Template.class);
+        return query.getResultList();
+    }
+    
+    public List<Template> findOrphan() {
+        TypedQuery<Template> query = em.createQuery("select object(o) from Template as o where o.dataverse.id is null order by o.name", Template.class);
+        return query.getResultList();
+    }
 
     public List<Dataverse> findDataversesByDefaultTemplateId(Long defaultTemplateId) {
         TypedQuery<Dataverse> query = em.createQuery("select object(o) from Dataverse as o where o.defaultTemplate.id =:defaultTemplateId order by o.name", Dataverse.class);

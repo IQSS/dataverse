@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.validation.EMailValidator;
@@ -104,6 +105,7 @@ import java.io.OutputStream;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.rolesToJson;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
+import java.math.BigDecimal;
 
 
 import java.util.ArrayList;
@@ -143,6 +145,8 @@ public class Admin extends AbstractApiBean {
 	DataFileServiceBean fileService;
 	@EJB
 	DatasetServiceBean datasetService;
+        @EJB
+	DataverseServiceBean dataverseService;
 	@EJB
 	DatasetVersionServiceBean datasetversionService;
         @Inject
@@ -239,6 +243,46 @@ public class Admin extends AbstractApiBean {
         }
 
         return ok("Template " + doomed.getName() + " deleted.");
+    }
+    
+    @Path("template/{alias}")
+    @GET
+    public Response findTemplates(@PathParam("alias") String alias) {
+                    List<Template> templates;
+        try {
+            if (alias.equals("orphanTemplates")) {
+                templates = templateService.findOrphan();
+            } else if (alias.equals("allTemplates")) {
+                templates = templateService.findAll();
+            } else {
+                Dataverse owner = dataverseService.findByAlias(alias);
+                if (owner == null) {
+                    return notFound("Dataverse " + alias + " not found");
+                }
+                templates = templateService.findByOwnerId(owner.getId());
+            }
+        
+
+            JsonArrayBuilder container = Json.createArrayBuilder();
+            for (Template t : templates) {
+                JsonObjectBuilder bld = Json.createObjectBuilder();
+                bld.add("templateId", t.getId());
+                bld.add("templateName", t.getName());
+                Dataverse loopowner = t.getDataverse();
+                if (loopowner != null) {
+                    bld.add("owner", loopowner.getDisplayName());
+                } else {
+                    bld.add("owner", "This an orphan template, it may be safely removed");
+                }
+                container.add(bld);
+            }
+
+            return ok(container);
+
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error while testing permissions", e);
+            return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
     }
 
 	@Path("authenticationProviderFactories")
