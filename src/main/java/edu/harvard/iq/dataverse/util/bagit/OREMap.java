@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
@@ -86,7 +87,7 @@ public class OREMap {
         localContext.putIfAbsent(JsonLDNamespace.schema.getPrefix(), JsonLDNamespace.schema.getUrl());
 
         Dataset dataset = version.getDataset();
-        String id = dataset.getGlobalId().asString();
+        String id = dataset.getGlobalId().toURL().toExternalForm();
         JsonArrayBuilder fileArray = Json.createArrayBuilder();
         // The map describes an aggregation
         JsonObjectBuilder aggBuilder = Json.createObjectBuilder();
@@ -96,7 +97,7 @@ public class OREMap {
         for (DatasetField field : fields) {
             if (!field.isEmpty()) {
                 DatasetFieldType dfType = field.getDatasetFieldType();
-                JsonLDTerm fieldName = getTermFor(dfType);
+                JsonLDTerm fieldName = dfType.getJsonLDTerm();
                 JsonValue jv = getJsonLDForField(field, excludeEmail, cvocMap, localContext);
                 if(jv!=null) {
                     aggBuilder.add(fieldName.getLabel(), jv);
@@ -112,7 +113,6 @@ public class OREMap {
                 .add(JsonLDTerm.schemaOrg("name").getLabel(), version.getTitle())
                 .add(JsonLDTerm.schemaOrg("dateModified").getLabel(), version.getLastUpdateTime().toString());
         addIfNotNull(aggBuilder, JsonLDTerm.schemaOrg("datePublished"), dataset.getPublicationDateFormattedYYYYMMDD());
-
 
         TermsOfUseAndAccess terms = version.getTermsOfUseAndAccess();
         if (terms.getLicense() != null) {
@@ -144,7 +144,9 @@ public class OREMap {
         }
 
         aggBuilder.add(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel(),
-                BrandingUtil.getRootDataverseCollectionName());
+                BrandingUtil.getInstallationBrandName());
+
+        aggBuilder.add(JsonLDTerm.schemaOrg("isPartOf").getLabel(), getDataverseDescription(dataset.getOwner()));
         String mdl = dataset.getMetadataLanguage();
         if(!mdl.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
             aggBuilder.add(JsonLDTerm.schemaOrg("inLanguage").getLabel(), mdl);
@@ -250,6 +252,17 @@ public class OREMap {
         }
     }
 
+    private JsonObjectBuilder getDataverseDescription(Dataverse dv) {
+        //Schema.org is already in local context, no updates needed as long as we only use chemaOrg and "@id" here
+        JsonObjectBuilder dvjob = Json.createObjectBuilder().add(JsonLDTerm.schemaOrg("name").getLabel(), dv.getCurrentName()).add("@id", dv.getLocalURL());
+        addIfNotNull(dvjob, JsonLDTerm.schemaOrg("description"), dv.getDescription());
+        Dataverse owner = dv.getOwner();
+        if(owner!=null) {
+            dvjob.add(JsonLDTerm.schemaOrg("isPartOf").getLabel(), getDataverseDescription(owner));
+        }
+        return dvjob;
+    }
+
     /*
      * Simple methods to only add an entry to JSON if the value of the term is
      * non-null. Methods created for string, JsonValue, boolean, and long
@@ -294,11 +307,11 @@ public class OREMap {
     }
 
     public JsonLDTerm getContactNameTerm() {
-        return getTermFor(DatasetFieldConstant.datasetContact, DatasetFieldConstant.datasetContactName);
+        return getTermFor(DatasetFieldConstant.datasetContactName);
     }
 
     public JsonLDTerm getContactEmailTerm() {
-        return getTermFor(DatasetFieldConstant.datasetContact, DatasetFieldConstant.datasetContactEmail);
+        return getTermFor(DatasetFieldConstant.datasetContactEmail);
     }
 
     public JsonLDTerm getDescriptionTerm() {
@@ -306,61 +319,15 @@ public class OREMap {
     }
 
     public JsonLDTerm getDescriptionTextTerm() {
-        return getTermFor(DatasetFieldConstant.description, DatasetFieldConstant.descriptionText);
+        return getTermFor(DatasetFieldConstant.descriptionText);
     }
 
     private JsonLDTerm getTermFor(String fieldTypeName) {
+        //Could call datasetFieldService.findByName(fieldTypeName) - is that faster/prefereable?
         for (DatasetField dsf : version.getDatasetFields()) {
             DatasetFieldType dsft = dsf.getDatasetFieldType();
             if (dsft.getName().equals(fieldTypeName)) {
-                return getTermFor(dsft);
-            }
-        }
-        return null;
-    }
-
-    public static JsonLDTerm getTermFor(DatasetFieldType dsft) {
-        if (dsft.getUri() != null) {
-            return new JsonLDTerm(dsft.getTitle(), dsft.getUri());
-        } else {
-            String namespaceUri = dsft.getMetadataBlock().getNamespaceUri();
-            if (namespaceUri == null) {
-                namespaceUri = SystemConfig.getDataverseSiteUrlStatic() + "/schema/" + dsft.getMetadataBlock().getName()
-                        + "#";
-            }
-            JsonLDNamespace blockNamespace = JsonLDNamespace.defineNamespace(dsft.getMetadataBlock().getName(), namespaceUri);
-            return new JsonLDTerm(blockNamespace, dsft.getTitle());
-        }
-    }
-
-    public static JsonLDTerm getTermFor(DatasetFieldType dfType, DatasetFieldType dsft) {
-        if (dsft.getUri() != null) {
-            return new JsonLDTerm(dsft.getTitle(), dsft.getUri());
-        } else {
-            // Use metadatablock URI or custom URI for this field based on the path
-            String subFieldNamespaceUri = dfType.getMetadataBlock().getNamespaceUri();
-            if (subFieldNamespaceUri == null) {
-                subFieldNamespaceUri = SystemConfig.getDataverseSiteUrlStatic() + "/schema/"
-                        + dfType.getMetadataBlock().getName() + "/";
-            }
-            subFieldNamespaceUri = subFieldNamespaceUri + dfType.getName() + "#";
-            JsonLDNamespace fieldNamespace = JsonLDNamespace.defineNamespace(dfType.getName(), subFieldNamespaceUri);
-            return new JsonLDTerm(fieldNamespace, dsft.getTitle());
-        }
-    }
-
-    private JsonLDTerm getTermFor(String type, String subType) {
-        for (DatasetField dsf : version.getDatasetFields()) {
-            DatasetFieldType dsft = dsf.getDatasetFieldType();
-            if (dsft.getName().equals(type)) {
-                for (DatasetFieldCompoundValue dscv : dsf.getDatasetFieldCompoundValues()) {
-                    for (DatasetField subField : dscv.getChildDatasetFields()) {
-                        DatasetFieldType subFieldType = subField.getDatasetFieldType();
-                        if (subFieldType.getName().equals(subType)) {
-                            return getTermFor(dsft, subFieldType);
-                        }
-                    }
-                }
+                return dsft.getJsonLDTerm();
             }
         }
         return null;
@@ -374,7 +341,7 @@ public class OREMap {
             return null;
         }
 
-        JsonLDTerm fieldName = getTermFor(dfType);
+        JsonLDTerm fieldName = dfType.getJsonLDTerm();
         if (fieldName.inNamespace()) {
             localContext.putIfAbsent(fieldName.getNamespace().getPrefix(), fieldName.getNamespace().getUrl());
         } else {
@@ -420,7 +387,7 @@ public class OREMap {
                     if (!dsf.isEmpty()) {
                         // Add context entry
                         // ToDo - also needs to recurse here?
-                        JsonLDTerm subFieldName = getTermFor(dfType, dsft);
+                        JsonLDTerm subFieldName = dsft.getJsonLDTerm();
                         if (subFieldName.inNamespace()) {
                             localContext.putIfAbsent(subFieldName.getNamespace().getPrefix(),
                                     subFieldName.getNamespace().getUrl());
