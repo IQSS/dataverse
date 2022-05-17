@@ -1,5 +1,5 @@
 ALTER TABLE authenticateduser
-ADD COLUMN IF NOT EXISTS mutedemails VARCHAR(1000);
+ADD COLUMN IF NOT EXISTS mutedemails TEXT;
 
 ALTER TABLE authenticateduser
-ADD COLUMN IF NOT EXISTS mutednotifications VARCHAR(1000);
+ADD COLUMN IF NOT EXISTS mutednotifications TEXT;

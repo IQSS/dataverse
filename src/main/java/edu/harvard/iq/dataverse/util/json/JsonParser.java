@@ -291,11 +291,11 @@ public class JsonParser {
         return grp;
     }
 
-    public static <E extends Enum<E>> List<E> parseEnumsFromArray(JsonArray enumsArray, Class<E> clazz) throws JsonParseException {
+    public static <E extends Enum<E>> List<E> parseEnumsFromArray(JsonArray enumsArray, Class<E> enumClass) throws JsonParseException {
         final List<E> enums = new LinkedList<>();
 
         for (String name : enumsArray.getValuesAs(JsonString::getString)) {
-            enums.add(Enum.valueOf(clazz, name));
+            enums.add(Enum.valueOf(enumClass, name));
         }
         return enums;
     }

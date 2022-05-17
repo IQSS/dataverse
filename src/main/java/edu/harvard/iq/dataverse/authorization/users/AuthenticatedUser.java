@@ -128,10 +128,10 @@ public class AuthenticatedUser implements User, Serializable {
     @Column(nullable=true)
     private Timestamp deactivatedTime;
 
-    @Column(nullable=true)
+    @Column(columnDefinition="TEXT", nullable=true)
     private String mutedEmails;
 
-    @Column(nullable=true)
+    @Column(columnDefinition="TEXT", nullable=true)
     private String mutedNotifications;
     
     @Transient
