@@ -245,24 +245,33 @@ public class Admin extends AbstractApiBean {
         return ok("Template " + doomed.getName() + " deleted.");
     }
     
-    @Path("template/{alias}")
+    @Path("orphanTemplates")
+    @GET
+    public Response findOrphanTemplates() {
+        
+        return findTemplates("9999");
+    }
+    
+    @Path("templates")
+    @GET
+    public Response findAllTemplates() {
+        return findTemplates("");
+    }
+    
+    @Path("templates/{alias}")
     @GET
     public Response findTemplates(@PathParam("alias") String alias) {
-                    List<Template> templates;
+        List<Template> templates;
         try {
-            if (alias.equals("orphanTemplates")) {
+            if (alias.equals("9999")) {
                 templates = templateService.findOrphan();
-            } else if (alias.equals("allTemplates")) {
+            } else if (alias.isEmpty()) {
                 templates = templateService.findAll();
             } else {
-                Dataverse owner = dataverseService.findByAlias(alias);
-                if (owner == null) {
-                    return notFound("Dataverse " + alias + " not found");
-                }
+                Dataverse owner = findDataverseOrDie(alias);
                 templates = templateService.findByOwnerId(owner.getId());
             }
         
-
             JsonArrayBuilder container = Json.createArrayBuilder();
             for (Template t : templates) {
                 JsonObjectBuilder bld = Json.createObjectBuilder();
