@@ -3349,7 +3349,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                     }
                     if (isSingleVersionArchiving()) {
                         for (DatasetVersion version : ds.getVersions()) {
-                            if ((dv != version) && version.getArchivalCopyLocation() != null) {
+                            if ((!dv.equals(version)) && (version.getArchivalCopyLocation() != null)) {
                                 return error(Status.CONFLICT, "Dataset already archived.");
                             }
                         }
