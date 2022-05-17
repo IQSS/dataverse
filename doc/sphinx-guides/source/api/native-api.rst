@@ -3814,10 +3814,6 @@ List all templates in the system. ::
 
     GET http://$SERVER/api/admin/templates
     
-List all orphan templates in the system. (Erroneously created templates that are invisible in the UI.) ::
-
-    GET http://$SERVER/api/admin/orphanTemplates    
-    
 List templates in a given dataverse by the dataverse's alias or id. ::
 
     GET http://$SERVER/api/admin/templates/{alias or id}
