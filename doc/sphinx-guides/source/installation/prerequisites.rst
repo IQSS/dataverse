@@ -107,7 +107,7 @@ The application has been tested with PostgreSQL versions up to 13 and version 10
 	# /usr/bin/systemctl start postgresql-13
 	# /usr/bin/systemctl enable postgresql-13
 
-For RHEL8/derivative the process would be identical, except for the very first command - you would need to install the "EL-8" yum repository configuration instead. 
+For RHEL8/derivative the process would be identical, except for the first two commands: you would need to install the "EL-8" yum repository configuration and run ``yum makecache`` instead.
 
 Configuring Database Access for the Dataverse Installation (and the Dataverse Software Installer)
 =================================================================================================
