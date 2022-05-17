@@ -574,6 +574,8 @@ The scripts required can be hosted locally or retrieved dynamically from https:/
 Tips from the Dataverse Community
 ---------------------------------
 
+When creating new metadatablocks, please review the :doc:`/style/text` section of the Style Guide, which includes guidance about naming metadata fields and writing text for metadata tooltips.
+
 If there are tips that you feel are omitted from this document, please open an issue at https://github.com/IQSS/dataverse/issues and consider making a pull request to make improvements. You can find this document at https://github.com/IQSS/dataverse/blob/develop/doc/sphinx-guides/source/admin/metadatacustomization.rst
 
 Alternatively, you are welcome to request "edit" access to this "Tips for Dataverse Software metadata blocks from the community" Google doc: https://docs.google.com/document/d/1XpblRw0v0SvV-Bq6njlN96WyHJ7tqG0WWejqBdl7hE0/edit?usp=sharing
