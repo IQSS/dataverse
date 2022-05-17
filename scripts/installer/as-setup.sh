@@ -97,8 +97,17 @@ function preliminary_setup()
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.rserve.user=${RSERVE_USER}"
   ./asadmin $ASADMIN_OPTS create-jvm-options '\-Ddataverse.rserve.password=${ALIAS=rserve_password_alias}'
   # The host and url addresses this Dataverse will be using:
-  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.fqdn=${HOST_ADDRESS}"
-  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.siteUrl=http\://\${dataverse.fqdn}\:8080"
+  # https://guides.dataverse.org/en/latest/installation/config.html#dataverse-fqdn
+  if [[ ! -z "${DATAVERSE_FQDN}" ]]; then
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.fqdn=${DATAVERSE_FQDN}"
+  else
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.fqdn=${HOST_ADDRESS}"
+  fi
+  if [[ ! -z "${DATAVERSE_SITE_URL}" ]]; then
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.siteUrl=${DATAVERSE_SITE_URL}"
+  else
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.siteUrl=http\://\${dataverse.fqdn}\:8080"
+  fi
   # password reset token timeout in minutes
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.auth.password-reset-timeout-in-minutes=60"
 

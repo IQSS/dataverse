@@ -1,0 +1,185 @@
+version: '3.5'
+services:
+
+  postgres:
+    build:
+      context: ./postgres/
+    #ports:
+    #  - 5432:5432
+    restart: unless-stopped
+    container_name: postgres
+    hostname: postgres
+    volumes:
+      - ./postgres-bind:/var/lib/postgresql/data:rw
+    environment:
+      # this user and password will have superuser privileges
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_ADMIN_PASSWORD}
+      - TZ=${TZ}
+      - LC_ALL=C.UTF-8
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      retries: 5
+
+  solr:
+    build:
+      context: ./solr/
+    restart: unless-stopped
+    container_name: solr
+    hostname: solr
+    volumes:
+      - ./solr-bind:/var/solr:rw
+    environment:
+      - TZ=${TZ}
+      - "SOLR_JAVA_MEM=-Xms1g -Xmx1g"
+      - "SOLR_OPTS=-Dlog4j2.formatMsgNoLookups=true"
+    # ports:
+    #  - 8983:8983
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8983"]
+      interval: 10s
+      timeout: 3s
+      retries: 50
+      start_period: 30s
+
+  rserve:
+    build:
+      context: ./rserve/
+    restart: unless-stopped
+    container_name: rserve
+    hostname: rserve
+    environment:
+      - TZ=${TZ}
+      - RSERVE_USER=${RSERVE_USER}
+      - RSERVE_PASSWORD=${RSERVE_PASSWORD}
+    # ports:
+    #   - 6311:6311
+    healthcheck:
+      test: ["CMD", "wait-for-it", "localhost:6311"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+  dataverse:
+    build:
+      context: ./dataverse/
+    restart: unless-stopped
+    container_name: dataverse
+    hostname: dataverse
+    environment:
+      - TZ=${TZ}
+      - HOST_DNS_ADDRESS=${HOST_DNS_ADDRESS}
+      - GLASSFISH_USER=${GLASSFISH_USER}
+      - GLASSFISH_PASSWORD=${GLASSFISH_PASSWORD}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - MAIL_SERVER=${MAIL_SERVER}
+      - POSTGRES_ADMIN_PASSWORD=${POSTGRES_ADMIN_PASSWORD}
+      - POSTGRES_SERVER=${POSTGRES_SERVER}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_DATABASE=${POSTGRES_DATABASE}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - SOLR_LOCATION=${SOLR_LOCATION}
+      - RSERVE_HOST=${RSERVE_HOST}
+      - RSERVE_PORT=${RSERVE_PORT}
+      - RSERVE_USER=${RSERVE_USER}
+      - RSERVE_PASSWORD=${RSERVE_PASSWORD}
+      - DISABLE_DOI=${DISABLE_DOI}
+      - EXCLUDE_EMAIL_EXPORTS=${EXCLUDE_EMAIL_EXPORTS}
+      - S3_ACCESS_KEY=${S3_ACCESS_KEY}
+      - S3_SECRET_KEY=${S3_SECRET_KEY}
+      - DATAVERSE_FQDN=${DATAVERSE_FQDN}
+      - DATAVERSE_SITE_URL=${DATAVERSE_SITE_URL}
+    depends_on:
+      - postgres
+      - solr
+      - rserve
+      - seaweedfs
+    # ports:
+    #   - 8080:8080 # the Dataverse web-UI
+    #   - 4848:4848 # the Payara admin web-UI
+    volumes:
+      # https://guides.dataverse.org/en/latest/installation/advanced.html
+      # logos and sitemap are initially empty on the very first startup
+      - ./dataverse-logos-bind:/usr/local/payara5/glassfish/domains/domain1/docroot/logos/
+      - ./dataverse-sitemap-bind:/usr/local/payara5/glassfish/domains/domain1/docroot/sitemap/
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dataverse.rule=Host(`localhost`)"
+      - "traefik.http.routers.dataverse.tls=true"
+      - "traefik.http.routers.dataverse.entrypoints=web-secure"
+      - "traefik.http.services.dataverse.loadbalancer.server.port=8080"
+      - "traefik.port=8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/info/version"]
+      interval: 5s
+      timeout: 3s
+      retries: 50
+      start_period: 30s
+
+  # Traefik reverse proxy
+  traefik:
+    build:
+      context: ./traefik/
+    container_name: traefik
+    hostname: traefik
+    environment:
+      - TZ=${TZ}
+    depends_on:
+      - dataverse
+    command:
+      # - "--log.level=DEBUG"
+      # - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.http.redirections.entryPoint.to=web-secure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+      # location of certs
+      - "--providers.file.directory=/configuration/"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web-secure.address=:443"
+      - "--ping"
+    ports:
+      - 80:80 # HTTP port, this gets re-routed to 443 TLS
+      - 443:443 # TLS port, needs certificate generated to use
+      # The Web UI (enabled by --api.insecure=true)
+      # - 8080:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 50
+      start_period: 30s
+
+  # S3 storage
+  # alternatives include minio and others
+  # https://github.com/chrislusf/seaweedfs/blob/master/docker/seaweedfs-compose.yml
+  seaweedfs:
+    build:
+      context: ./seaweedfs/
+    restart: unless-stopped
+    container_name: seaweedfs
+    hostname: seaweedfs
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ./seaweedfs-bind:/data:rw
+    # ports:
+      # - 8333:8333 # s3 API
+      # - 9327:9327 # metrics API
+      # - 9333:9333 # master API
+      # - 8060:8080 # volume server API
+      # - 8888:8888 # filer API, nice web-ui to look at folders and files
+    # https://github.com/chrislusf/seaweedfs/wiki/Amazon-S3-API#static-configuration
+    command: 'server -s3 -metricsPort=9327 -dir=/data -s3.config=/config.json'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9333"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 5s

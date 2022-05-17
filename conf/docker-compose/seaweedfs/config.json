@@ -1,0 +1,19 @@
+{
+    "identities": [
+      {
+        "name": "anonymous",
+        "credentials": [
+            {
+              "accessKey": "secret",
+              "secretKey": "secret"
+            }
+        ],
+        "actions": [
+            "Read:dataverse",
+            "List:dataverse",
+            "Tagging:dataverse",
+            "Write:dataverse"
+        ]
+      }
+    ]
+}

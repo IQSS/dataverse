@@ -1,0 +1,10 @@
+/dataverse/dataverse/
+/solr/*.xml
+/dataverse/.m2/
+/postgres-bind/
+/solr-bind/
+/seaweedfs-bind/
+/dataverse-docroot-bind/
+/dataverse-logos-bind/
+/traefik/traefik.key
+/traefik/traefik.crt
