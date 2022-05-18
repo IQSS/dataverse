@@ -256,12 +256,16 @@ public class Admin extends AbstractApiBean {
     @GET
     public Response findTemplates(@PathParam("alias") String alias) {
         List<Template> templates;
-        try {
+
             if (alias.isEmpty()) {
                 templates = templateService.findAll();
             } else {
-                Dataverse owner = findDataverseOrDie(alias);
-                templates = templateService.findByOwnerId(owner.getId());
+                try{
+                    Dataverse owner = findDataverseOrDie(alias);
+                    templates = templateService.findByOwnerId(owner.getId());
+                } catch (WrappedResponse r){
+                    return r.getResponse();
+                }
             }
 
             JsonArrayBuilder container = Json.createArrayBuilder();
@@ -280,10 +284,7 @@ public class Admin extends AbstractApiBean {
 
             return ok(container);
 
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error while testing permissions", e);
-            return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
-        }
+        
     }
 
 	@Path("authenticationProviderFactories")
