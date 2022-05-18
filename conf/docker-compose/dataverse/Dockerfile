@@ -53,7 +53,7 @@ RUN cp -R /home/dataverse/.aws/ /usr/local/payara5/glassfish/domains/domain1/
 
 # if you want to speed up the Maven build you can copy over
 # cached packages here
-COPY --chown=dataverse:dataverse ./.m2/ /home/dataverse/.m2/
+#COPY --chown=dataverse:dataverse ./.m2/ /home/dataverse/.m2/
 
 COPY --chown=dataverse:dataverse ./dataverse/ /dataverse/
 
