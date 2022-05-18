@@ -6,4 +6,4 @@ If you would like to remove these orphan templates you may run the follwing scri
 
 https://github.com/IQSS/dataverse/raw/develop/scripts/issues/8600/delete_orphan_templates_8600.sh
 
-In order to support the script admin APIs for finding and deleting templates have been added.
+Also, admin APIs for finding and deleting templates have been added.
