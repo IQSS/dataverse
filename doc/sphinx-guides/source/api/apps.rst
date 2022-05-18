@@ -28,9 +28,9 @@ https://github.com/scholarsportal/Dataverse-Data-Curation-Tool
 File Previewers
 ~~~~~~~~~~~~~~~
 
-File Previewers are tools that display the content of files - including audio, html, Hypothes.is annotations, images, PDF, text, video - allowing them to be viewed without downloading.
+File Previewers are tools that display the content of files - including audio, html, Hypothes.is annotations, images, PDF, text, video, GeoJSON - allowing them to be viewed without downloading.
 
-https://github.com/GlobalDataverseCommunityConsortium/dataverse-previewers
+https://github.com/gdcc/dataverse-previewers
 
 Python
 ------
