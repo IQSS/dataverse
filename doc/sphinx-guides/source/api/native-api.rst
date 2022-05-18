@@ -2836,12 +2836,12 @@ Show Info About Single Metadata Block
 Notifications
 -------------
 
-See also :ref:`account-notifications` in the User Guide.
+See :ref:`account-notifications` in the User Guide for an overview. For a list of all the notification types mentioned below (e.g. ASSIGNROLE), see :ref:`mute-notifications` in the Admin Guide.
 
 Get All Notifications by User
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Each user can get a dump of their notifications by passing in their API token::
+Each user can get a dump of their notifications by passing in their API token:
 
 .. code-block:: bash
 
@@ -2850,7 +2850,7 @@ Each user can get a dump of their notifications by passing in their API token::
 Delete Notification by User
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Each user can delete notifications by passing in their API token and specifying notification ID (e.g., 555)::
+Each user can delete notifications by passing in their API token and specifying notification ID (e.g., 555):
 
 .. code-block:: bash
 
@@ -2861,7 +2861,7 @@ Each user can delete notifications by passing in their API token and specifying 
 Get All Muted In-app Notifications by User
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Each user can get a list of their muted in-app notification types by passing in their API token::
+Each user can get a list of their muted in-app notification types by passing in their API token:
 
 .. code-block:: bash
 
@@ -2870,7 +2870,7 @@ Each user can get a list of their muted in-app notification types by passing in 
 Mute In-app Notification by User
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Each user can mute in-app notifications by passing in their API token and specifying notification type to be muted (e.g., ASSIGNROLE)::
+Each user can mute in-app notifications by passing in their API token and specifying notification type to be muted (e.g., ASSIGNROLE):
 
 .. code-block:: bash
 
@@ -2881,7 +2881,7 @@ Each user can mute in-app notifications by passing in their API token and specif
 Unmute In-app Notification by User
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Each user can unmute in-app notifications by passing in their API token and specifying notification type to be unmuted (e.g., ASSIGNROLE)::
+Each user can unmute in-app notifications by passing in their API token and specifying notification type to be unmuted (e.g., ASSIGNROLE):
 
 .. code-block:: bash
 
@@ -2889,11 +2889,10 @@ Each user can unmute in-app notifications by passing in their API token and spec
 
   curl -H X-Dataverse-key:$API_TOKEN -X DELETE "$SERVER_URL/api/notifications/mutedNotifications/$NOTIFICATION_TYPE"
 
-  
 Get All Muted In-app Notifications by User
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Each user can get a list of their muted email notification types by passing in their API token::
+Each user can get a list of their muted email notification types by passing in their API token:
 
 .. code-block:: bash
 
@@ -2902,7 +2901,7 @@ Each user can get a list of their muted email notification types by passing in t
 Mute In-app Notification by User
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Each user can mute email notifications by passing in their API token and specifying notification type to be muted (e.g., ASSIGNROLE)::
+Each user can mute email notifications by passing in their API token and specifying notification type to be muted (e.g., ASSIGNROLE):
 
 .. code-block:: bash
 
@@ -2913,14 +2912,14 @@ Each user can mute email notifications by passing in their API token and specify
 Unmute Email Notification by User
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Each user can unmute email notifications by passing in their API token and specifying notification type to be unmuted (e.g., ASSIGNROLE)::
+Each user can unmute email notifications by passing in their API token and specifying notification type to be unmuted (e.g., ASSIGNROLE):
 
 .. code-block:: bash
 
   export NOTIFICATION_TYPE=ASSIGNROLE
 
   curl -H X-Dataverse-key:$API_TOKEN -X DELETE "$SERVER_URL/api/notifications/mutedEmails/$NOTIFICATION_TYPE"
-    
+
 .. _User Information:
 
 User Information
