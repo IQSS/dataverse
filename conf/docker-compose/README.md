@@ -20,7 +20,7 @@ take place with the forward slashes using `MSYS_NO_PATHCONV=1` if you're on Wind
 MSYS_NO_PATHCONV=1 openssl req -x509 -nodes -days 4096 -newkey rsa:4096 -out traefik.crt -keyout traefik.key -subj "/C=US/ST=New Mexico/L=ABQ/O=Local/CN=127.0.0.1" -addext "subjectAltName = IP:127.0.0.1"
 ```
 
-Or grab your public/private keys from your sysadmin or provider and renamed them to `traefik.key` and `traefik.crt`.
+Or grab your public/private keys from your sysadmin or provider and rename them to `traefik.key` and `traefik.crt`.
 
 Then copy the `traefik.key` and `traefik.crt` files into the `traefik` folder.
 
