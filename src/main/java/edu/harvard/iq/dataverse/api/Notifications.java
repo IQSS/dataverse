@@ -75,6 +75,7 @@ public class Notifications extends AbstractApiBean {
                 notificationObjectBuilder.add("subjectText", subjectText);
                 notificationObjectBuilder.add("messageText", messageText);
             }
+            notificationObjectBuilder.add("sentTimestamp", notification.getSendDateTimestamp());
             jsonArrayBuilder.add(notificationObjectBuilder);
         }
         JsonObjectBuilder result = Json.createObjectBuilder().add("notifications", jsonArrayBuilder);

@@ -125,6 +125,10 @@ public class UserNotification implements Serializable {
         return new SimpleDateFormat("MMMM d, yyyy h:mm a z").format(sendDate);
     }
 
+    public Timestamp getSendDateTimestamp() {
+        return sendDate;
+    }
+
     public void setSendDate(Timestamp sendDate) {
         this.sendDate = sendDate;
     }
