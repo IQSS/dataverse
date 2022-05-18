@@ -168,6 +168,19 @@ public class SettingsWrapper implements java.io.Serializable {
         return ( val==null ) ? safeDefaultIfKeyNotFound : StringUtil.isTrue(val);
     }
 
+    public Integer getInteger(String settingKey, Integer defaultValue) {
+        String settingValue = get(settingKey);
+        if(settingValue != null) {
+            try {
+                return Integer.valueOf(settingValue);
+            } catch (Exception e) {
+                logger.warning(String.format("action=getInteger result=invalid-integer settingKey=%s settingValue=%s", settingKey, settingValue));
+            }
+        }
+
+        return defaultValue;
+    }
+
     private void initSettingsMap() {
         // initialize settings map
         settingsMap = new HashMap<>();

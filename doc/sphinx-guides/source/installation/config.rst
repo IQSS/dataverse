@@ -1038,6 +1038,22 @@ Disabling Custom Dataset Terms
 
 See :ref:`:AllowCustomTermsOfUse` for how to disable the "Custom Dataset Terms" option.
 
+.. _BagIt File Handler:
+
+BagIt File Handler
+------------------
+
+BagIt file handler detects and transforms zip files with a BagIt package format into Dataverse DataFiles. The system validates the checksums of the files in the package payload as described in the first manifest file with a hash algorithm that we support. Take a look at `BagChecksumType class <https://github.com/IQSS/dataverse/tree/develop/src/main/java/edu/harvard/iq/dataverse/util/bagit/BagChecksumType.java>`_ for the list of the currently supported hash algorithms.
+
+The checksum validation uses a thread pool to improve performance. This thread pool can be adjusted to your Dataverse installation requirements.
+
+BagIt file handler configuration settings:
+
+- :ref:`:BagItHandlerEnabled`
+- :ref:`:BagValidatorJobPoolSize`
+- :ref:`:BagValidatorMaxErrors`
+- :ref:`:BagValidatorJobWaitInterval`
+
 .. _BagIt Export:
 
 BagIt Export
@@ -2535,6 +2551,49 @@ To enable redirects to the zipper installed on the same server as the main Datav
 To enable redirects to the zipper on a different server: 
 
 ``curl -X PUT -d 'https://zipper.example.edu/cgi-bin/zipdownload' http://localhost:8080/api/admin/settings/:CustomZipDownloadServiceUrl``
+
+:CreateDataFilesMaxErrorsToDisplay
+++++++++++++++++++++++++++++++++++
+
+Number of errors to display to the user when creating DataFiles from a file upload. It defaults to 5 errors.
+
+``curl -X PUT -d '1' http://localhost:8080/api/admin/settings/:CreateDataFilesMaxErrorsToDisplay``
+
+.. _:BagItHandlerEnabled:
+
+:BagItHandlerEnabled
++++++++++++++++++++++
+
+Part of the database settings to configure the BagIt file handler. Enables the BagIt file handler. By default, the handler is disabled.
+
+``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:BagItHandlerEnabled``
+
+.. _:BagValidatorJobPoolSize:
+
+:BagValidatorJobPoolSize
+++++++++++++++++++++++++
+
+Part of the database settings to configure the BagIt file handler. The number of threads the checksum validation class uses to validate a single zip file. Defaults to 4 threads
+
+``curl -X PUT -d '10' http://localhost:8080/api/admin/settings/:BagValidatorJobPoolSize``
+
+.. _:BagValidatorMaxErrors:
+
+:BagValidatorMaxErrors
+++++++++++++++++++++++
+
+Part of the database settings to configure the BagIt file handler. The maximum number of errors allowed before the validation job aborts execution. This is to avoid processing the whole BagIt package. Defaults to 5 errors.
+
+``curl -X PUT -d '2' http://localhost:8080/api/admin/settings/:BagValidatorMaxErrors``
+
+.. _:BagValidatorJobWaitInterval:
+
+:BagValidatorJobWaitInterval
+++++++++++++++++++++++++++++
+
+Part of the database settings to configure the BagIt file handler. This is the period in seconds to check for the number of errors during validation. Defaults to 10.
+
+``curl -X PUT -d '60' http://localhost:8080/api/admin/settings/:BagValidatorJobWaitInterval``
 
 :ArchiverClassName
 ++++++++++++++++++
