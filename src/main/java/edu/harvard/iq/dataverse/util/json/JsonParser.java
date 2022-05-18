@@ -75,6 +75,7 @@ public class JsonParser {
      */
     boolean lenient = false;  
 
+    @Deprecated
     public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService) {
         this.datasetFieldSvc = datasetFieldSvc;
         this.blockService = blockService;
