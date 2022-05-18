@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-cd /opt/payara5
+cd /opt/payara6
 
 # if appropriate; reconfigure PID provider on the basis of environmental variables.
 if [ ! -z "${DoiProvider}" ]; then

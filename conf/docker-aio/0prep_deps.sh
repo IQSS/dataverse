@@ -4,9 +4,9 @@ if [ ! -d dv/deps ]; then
 fi
 wdir=`pwd`
 
-if [ ! -e dv/deps/payara-5.2021.6.zip ]; then
+if [ ! -e dv/deps/payara-6.2022.1.Alpha2.zip ]; then
 	echo "payara dependency prep"
-	wget https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2021.6/payara-5.2021.6.zip  -O dv/deps/payara-5.2021.6.zip
+	wget https://s3.eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/6.2022.1.Alpha2/payara-6.2022.1.Alpha2.zip -O dv/deps/payara-6.2022.1.Alpha2.zip
 fi
 
 if [ ! -e dv/deps/solr-8.11.1dv.tgz ]; then
