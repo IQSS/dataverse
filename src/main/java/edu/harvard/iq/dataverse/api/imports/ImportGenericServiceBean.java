@@ -67,7 +67,6 @@ public class ImportGenericServiceBean {
     
     @EJB
     SettingsServiceBean settingsService;
-    
     @EJB
     LicenseServiceBean licenseService;
 
@@ -119,7 +118,7 @@ public class ImportGenericServiceBean {
             } catch (XMLStreamException ex) {}
         }
     }
-    
+
     public DatasetDTO processXML( XMLStreamReader xmlr, ForeignMetadataFormatMapping foreignFormatMapping) throws XMLStreamException {
         // init - similarly to what I'm doing in the metadata extraction code? 
         DatasetDTO datasetDTO = this.initializeDataset();
