@@ -54,7 +54,7 @@ RUN cp -R /home/dataverse/.aws/ /usr/local/payara5/glassfish/domains/domain1/
 
 # if you want to speed up the Maven build you can copy over
 # cached packages here
-COPY --chown=dataverse:dataverse ./conf/docker-compose/dataverse/.m2/ /home/dataverse/.m2/
+# COPY --chown=dataverse:dataverse ./conf/docker-compose/dataverse/.m2/ /home/dataverse/.m2/
 
 # copy over sourcecode and build files needed to compile the .war
 # as well as installer files
