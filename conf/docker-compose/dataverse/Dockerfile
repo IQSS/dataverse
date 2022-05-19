@@ -1,6 +1,9 @@
 # https://hub.docker.com/_/ubuntu
 FROM ubuntu:22.04
 
+ARG ARCHITECTURE=amd64
+ENV ARCHITECTURE $ARCHITECTURE
+
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt-get update && \
@@ -24,7 +27,7 @@ RUN chown -R root:root /usr/local/payara5 && \
   chown dataverse /usr/local/payara5/glassfish/lib && \
   chown -R dataverse:dataverse /usr/local/payara5/glassfish/domains/domain1
 
-ENV JAVA_HOME /usr/lib/jvm/java-11-openjdk-amd64
+ENV JAVA_HOME /usr/lib/jvm/java-11-openjdk-${ARCHITECTURE}
 
 # install Counter Processor
 # https://guides.dataverse.org/en/latest/installation/prerequisites.html#counter-processor

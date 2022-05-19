@@ -86,6 +86,7 @@ services:
       - S3_SECRET_KEY=${S3_SECRET_KEY}
       - DATAVERSE_FQDN=${DATAVERSE_FQDN}
       - DATAVERSE_SITE_URL=${DATAVERSE_SITE_URL}
+      - ARCHITECTURE=${ARCHITECTURE}
     depends_on:
       - postgres
       - solr
