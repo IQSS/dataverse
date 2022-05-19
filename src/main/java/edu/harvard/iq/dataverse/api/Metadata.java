@@ -82,7 +82,6 @@ public class Metadata extends AbstractApiBean {
         if (dataset != null) {
             datasetService.reExportDatasetAsync(dataset);
             return ok("export started");
-            //return this.accepted();
         } else {
             return error(Response.Status.BAD_REQUEST, "Could not find dataset with persistent id " + persistentId);
         }

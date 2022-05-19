@@ -836,8 +836,6 @@ public class DatasetServiceBean implements java.io.Serializable {
         
     }
 
-    //get a string to add to save success message
-    //depends on dataset state and user privleges
     public String getReminderString(Dataset dataset, boolean canPublishDataset) {
         return getReminderString( dataset, canPublishDataset, false);
     }
