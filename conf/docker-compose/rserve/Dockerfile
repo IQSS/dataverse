@@ -5,7 +5,7 @@ ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    tzdata nano r-base r-base-dev libssl-dev libnlopt-dev libcurl4-openssl-dev wait-for-it ca-certificates && \
+    tzdata nano r-base r-base-dev libssl-dev libnlopt-dev libcurl4-openssl-dev ca-certificates && \
     apt-get -y upgrade && \
     rm -rf /var/lib/apt/lists/*
 

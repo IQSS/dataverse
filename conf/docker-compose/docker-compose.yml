@@ -55,12 +55,6 @@ services:
       - RSERVE_PASSWORD=${RSERVE_PASSWORD}
     # ports:
     #   - 6311:6311
-    healthcheck:
-      test: ["CMD", "wait-for-it", "localhost:6311"]
-      interval: 10s
-      timeout: 3s
-      retries: 10
-      start_period: 5s
 
   dataverse:
     build:
