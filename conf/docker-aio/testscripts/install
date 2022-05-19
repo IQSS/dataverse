@@ -1,7 +1,8 @@
 #!/bin/sh
+echo "Calling testscripts/install..."
 export HOST_ADDRESS=localhost
-export GLASSFISH_ROOT=/opt/payara5
-export FILES_DIR=/opt/payara5/glassfish/domains/domain1/files
+export GLASSFISH_ROOT=/opt/payara6
+export FILES_DIR=/opt/payara6/glassfish/domains/domain1/files
 export DB_NAME=dvndb
 export DB_PORT=5432
 export DB_HOST=localhost
