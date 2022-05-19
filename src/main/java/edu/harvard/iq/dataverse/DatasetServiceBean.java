@@ -777,7 +777,40 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
 
     }
-    
+
+    @Asynchronous
+    public void reExportDatasetAsync(Dataset dataset) {
+        exportDataset(dataset, true);
+    }
+
+    public void exportDataset(Dataset dataset, boolean forceReExport) {
+        // Note that we reExport only one dataset so we don't log in a separate export logging file here
+        if (dataset != null) {
+            // Accurate "is published?" test - ?
+            // Answer: Yes, it is! We can't trust dataset.isReleased() alone; because it is a dvobject method 
+            // that returns (publicationDate != null). And "publicationDate" is essentially
+            // "the first publication date"; that stays the same as versions get 
+            // published and/or deaccessioned. But in combination with !isDeaccessioned() 
+            // it is indeed an accurate test.
+            if (dataset.isReleased() && dataset.getReleasedVersion() != null && !dataset.isDeaccessioned()) {
+
+                // can't trust dataset.getPublicationDate(), no. 
+                Date publicationDate = dataset.getReleasedVersion().getReleaseTime(); // we know this dataset has a non-null released version! Maybe not - SEK 8/19 (We do now! :)
+                if (forceReExport || (publicationDate != null
+                        && (dataset.getLastExportTime() == null
+                        || dataset.getLastExportTime().before(publicationDate)))) {
+                    try {
+                        recordService.exportAllFormatsInNewTransaction(dataset);
+                        logger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalIdString());
+                    } catch (Exception ex) {
+                        logger.info("Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalIdString() + "; " + ex.getMessage());
+                    }
+                }
+            }
+        }
+        
+    }
+
     //get a string to add to save success message
     //depends on dataset state and user privleges
     public String getReminderString(Dataset dataset, boolean canPublishDataset) {
