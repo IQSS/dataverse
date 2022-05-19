@@ -92,7 +92,7 @@ public class DatasetVersionTest {
     @Test
     public void testGetJsonLd() throws ParseException {
         Dataset dataset = new Dataset();
-        License license = new License("CC0 1.0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("https://creativecommons.org/publicdomain/zero/1.0/"), URI.create("/resources/images/cc0.png"), true);
+        License license = new License("CC0 1.0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0"), URI.create("/resources/images/cc0.png"), true);
         license.setDefault(true);
         dataset.setProtocol("doi");
         dataset.setAuthority("10.5072/FK2");
@@ -124,7 +124,7 @@ public class DatasetVersionTest {
         assertEquals("https://doi.org/10.5072/FK2/LK0D1H", obj.getString("@id"));
         assertEquals("https://doi.org/10.5072/FK2/LK0D1H", obj.getString("identifier"));
         assertEquals(null, obj.getString("schemaVersion", null));
-        assertEquals("https://creativecommons.org/publicdomain/zero/1.0/", obj.getString("license"));
+        assertEquals("http://creativecommons.org/publicdomain/zero/1.0", obj.getString("license"));
         assertEquals("1955-11-05", obj.getString("dateModified"));
         assertEquals("1955-11-05", obj.getString("datePublished"));
         assertEquals("1", obj.getString("version"));

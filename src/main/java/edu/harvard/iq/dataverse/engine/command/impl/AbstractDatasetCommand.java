@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
 import javax.validation.ConstraintViolation;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
+import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
 
 /**
@@ -100,6 +101,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
             if (lenient) {
                 // populate invalid fields with N/A
                 constraintViolations.stream()
+                    .filter(cv -> cv.getRootBean() instanceof DatasetField)
                     .map(cv -> ((DatasetField) cv.getRootBean()))
                     .forEach(f -> f.setSingleValue(DatasetField.NA_VALUE));
 
@@ -108,6 +110,10 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
                 String validationMessage = constraintViolations.stream()
                     .map(cv -> cv.getMessage() + " (Invalid value:" + cv.getInvalidValue() + ")")
                     .collect(joining(", ", "Validation Failed: ", "."));
+                
+                validationMessage  += constraintViolations.stream()
+                    .filter(cv -> cv.getRootBean() instanceof TermsOfUseAndAccess)
+                    .map(cv -> cv.toString());
 
                 throw new IllegalCommandException(validationMessage, this);
             }

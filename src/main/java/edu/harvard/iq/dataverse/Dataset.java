@@ -294,6 +294,7 @@ public class Dataset extends DvObjectContainer {
     }
 
     private DatasetVersion createNewDatasetVersion(Template template, FileMetadata fmVarMet) {
+        
         DatasetVersion dsv = new DatasetVersion();
         dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
         dsv.setFileMetadatas(new ArrayList<>());
@@ -313,11 +314,11 @@ public class Dataset extends DvObjectContainer {
             if (latestVersion.getDatasetFields() != null && !latestVersion.getDatasetFields().isEmpty()) {
                 dsv.setDatasetFields(dsv.copyDatasetFields(latestVersion.getDatasetFields()));
             }
-            
-            if (latestVersion.getTermsOfUseAndAccess()!= null){
-                dsv.setTermsOfUseAndAccess(latestVersion.getTermsOfUseAndAccess().copyTermsOfUseAndAccess());
-            }
-
+            /*
+            adding file metadatas here and updating terms
+            because the terms need to know about the files
+            in a pre-save validation SEK 12/6/2021
+            */
             for (FileMetadata fm : latestVersion.getFileMetadatas()) {
                 FileMetadata newFm = new FileMetadata();
                 // TODO: 
@@ -347,6 +348,18 @@ public class Dataset extends DvObjectContainer {
                 }
                 
                 dsv.getFileMetadatas().add(newFm);
+            }
+            
+            if (latestVersion.getTermsOfUseAndAccess()!= null){
+                TermsOfUseAndAccess terms = latestVersion.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
+                terms.setDatasetVersion(dsv);
+                dsv.setTermsOfUseAndAccess(terms);
+            } else {
+                TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+                terms.setDatasetVersion(dsv);
+                terms.setLicense(null);
+                terms.setFileAccessRequest(true);
+                dsv.setTermsOfUseAndAccess(terms);
             }
         }
 
@@ -446,24 +459,6 @@ public class Dataset extends DvObjectContainer {
             dataFileCategories = new ArrayList<>();
         }
         dataFileCategories.add(category);
-    }
-
-    public Collection<String> getCategoriesByName() {
-        Collection<String> ret = getCategoryNames();
-
-        // "Documentation", "Data" and "Code" are the 3 default categories that we 
-        // present by default:
-        if (!ret.contains(BundleUtil.getStringFromBundle("dataset.category.documentation"))) {
-            ret.add(BundleUtil.getStringFromBundle("dataset.category.documentation"));
-        }
-        if (!ret.contains(BundleUtil.getStringFromBundle("dataset.category.data"))) {
-            ret.add(BundleUtil.getStringFromBundle("dataset.category.data"));
-        }
-        if (!ret.contains(BundleUtil.getStringFromBundle("dataset.category.code"))) {
-            ret.add(BundleUtil.getStringFromBundle("dataset.category.code"));
-        }
-
-        return ret;
     }
 
     public void setCategoriesByName(List<String> newCategoryNames) {

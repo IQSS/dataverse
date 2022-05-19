@@ -58,6 +58,7 @@ public class LocalSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand 
                         new File(localPath + "/" + spaceName + "-datacite.v" + dv.getFriendlyVersionNumber() + ".xml"),
                         dataciteXml, StandardCharsets.UTF_8);
                 BagGenerator bagger = new BagGenerator(new OREMap(dv, false), dataciteXml);
+                bagger.setNumConnections(getNumberOfBagGeneratorThreads());
                 bagger.setAuthenticationKey(token.getTokenString());
                 zipName = localPath + "/" + spaceName + "v" + dv.getFriendlyVersionNumber() + ".zip";
                 bagger.generateBag(new FileOutputStream(zipName + ".partial"));

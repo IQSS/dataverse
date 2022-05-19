@@ -38,7 +38,7 @@ import javax.sql.DataSource;
 //})
 //
 // ... but at this time we don't think we need any. The full list
-// of properties can be found at https://docs.payara.fish/community/docs/5.2021.5/documentation/payara-server/jdbc/advanced-connection-pool-properties.html#full-list-of-properties
+// of properties can be found at https://docs.payara.fish/community/docs/5.2021.6/documentation/payara-server/jdbc/advanced-connection-pool-properties.html#full-list-of-properties
 //
 // All these properties cannot be configured via MPCONFIG as Payara doesn't support this (yet). To be enhanced.
 // See also https://github.com/payara/Payara/issues/5024
