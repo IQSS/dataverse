@@ -1,4 +1,3 @@
-/dataverse/dataverse/
 /solr/*.xml
 /dataverse/.m2/
 /postgres-bind/
