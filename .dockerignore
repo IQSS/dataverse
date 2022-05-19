@@ -1,0 +1,7 @@
+/.git/
+/.github/
+/conf/docker-compose/postgres-bind/
+/conf/docker-compose/solr-bind/
+/conf/docker-compose/seaweedfs-bind/
+/conf/docker-compose/dataverse-docroot-bind/
+/conf/docker-compose/dataverse-logos-bind/

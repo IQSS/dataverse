@@ -3,14 +3,14 @@ services:
 
   postgres:
     build:
-      context: ./postgres/
+      context: ./conf/docker-compose/postgres/
     #ports:
     #  - 5432:5432
     restart: unless-stopped
     container_name: postgres
     hostname: postgres
     volumes:
-      - ./postgres-bind:/var/lib/postgresql/data:rw
+      - ./conf/docker-compose/postgres-bind:/var/lib/postgresql/data:rw
     environment:
       # this user and password will have superuser privileges
       - POSTGRES_USER=postgres
@@ -24,12 +24,12 @@ services:
 
   solr:
     build:
-      context: ./solr/
+      context: ./conf/docker-compose/solr/
     restart: unless-stopped
     container_name: solr
     hostname: solr
     volumes:
-      - ./solr-bind:/var/solr:rw
+      - ./conf/docker-compose/solr-bind:/var/solr:rw
     environment:
       - TZ=${TZ}
       - "SOLR_JAVA_MEM=-Xms1g -Xmx1g"
@@ -45,7 +45,7 @@ services:
 
   rserve:
     build:
-      context: ./rserve/
+      context: ./conf/docker-compose/rserve/
     restart: unless-stopped
     container_name: rserve
     hostname: rserve
@@ -58,7 +58,7 @@ services:
 
   dataverse:
     build:
-      context: ./dataverse/
+      context: .
     restart: unless-stopped
     container_name: dataverse
     hostname: dataverse
@@ -86,7 +86,6 @@ services:
       - S3_SECRET_KEY=${S3_SECRET_KEY}
       - DATAVERSE_FQDN=${DATAVERSE_FQDN}
       - DATAVERSE_SITE_URL=${DATAVERSE_SITE_URL}
-      - ARCHITECTURE=${ARCHITECTURE}
     depends_on:
       - postgres
       - solr
@@ -98,8 +97,8 @@ services:
     volumes:
       # https://guides.dataverse.org/en/latest/installation/advanced.html
       # logos and sitemap are initially empty on the very first startup
-      - ./dataverse-logos-bind:/usr/local/payara5/glassfish/domains/domain1/docroot/logos/
-      - ./dataverse-sitemap-bind:/usr/local/payara5/glassfish/domains/domain1/docroot/sitemap/
+      - ./conf/docker-compose/dataverse-logos-bind:/usr/local/payara5/glassfish/domains/domain1/docroot/logos/
+      - ./conf/docker-compose/dataverse-sitemap-bind:/usr/local/payara5/glassfish/domains/domain1/docroot/sitemap/
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.dataverse.rule=Host(`localhost`)"
@@ -117,7 +116,7 @@ services:
   # Traefik reverse proxy
   traefik:
     build:
-      context: ./traefik/
+      context: ./conf/docker-compose/traefik/
     container_name: traefik
     hostname: traefik
     environment:
@@ -156,14 +155,14 @@ services:
   # https://github.com/chrislusf/seaweedfs/blob/master/docker/seaweedfs-compose.yml
   seaweedfs:
     build:
-      context: ./seaweedfs/
+      context: ./conf/docker-compose/seaweedfs/
     restart: unless-stopped
     container_name: seaweedfs
     hostname: seaweedfs
     environment:
       - TZ=${TZ}
     volumes:
-      - ./seaweedfs-bind:/data:rw
+      - ./conf/docker-compose/seaweedfs-bind:/data:rw
     # ports:
       # - 8333:8333 # s3 API
       # - 9327:9327 # metrics API

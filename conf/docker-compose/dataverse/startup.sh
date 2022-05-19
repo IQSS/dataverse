@@ -1,5 +1,8 @@
 #!/bin/bash
 
+export dpkgArch="$(dpkg --print-architecture)"
+export JAVA_HOME="/usr/lib/jvm/java-11-openjdk-${dpkgArch}"
+
 # create the config file that has all our environment settings
 
 echo -e "
