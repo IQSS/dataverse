@@ -1,11 +1,11 @@
 # https://hub.docker.com/_/ubuntu
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    tzdata nano dos2unix curl wget openjdk-11-jdk maven unzip jq imagemagick python3 python3-pip python3-psycopg2 wait-for-it ca-certificates && \
+    gcc python3-dev tzdata nano dos2unix curl wget openjdk-11-jdk maven unzip jq imagemagick python3 python3-pip python3-psycopg2 wait-for-it ca-certificates && \
     apt-get -y upgrade && \
     rm -rf /var/lib/apt/lists/*
 
