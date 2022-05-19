@@ -67,7 +67,6 @@ public class ImportGenericServiceBean {
     
     @EJB
     SettingsServiceBean settingsService;
-
     @EJB
     LicenseServiceBean licenseService;
 
@@ -511,7 +510,7 @@ public class ImportGenericServiceBean {
         }
         return datasetDTO;
     }
-
+    
     public Map<String, String> mapDCTerms(String xmlToParse, DatasetDTO datasetDTO) throws XMLStreamException {
 
         Map<String, String> filesMap = new HashMap<>();
