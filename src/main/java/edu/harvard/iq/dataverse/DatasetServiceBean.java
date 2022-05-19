@@ -27,6 +27,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 
 import java.io.*;
@@ -1191,6 +1192,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             jpe.printStackTrace();
             logger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}");
         }
+        logger.fine("json: " + JsonUtil.prettyPrint(jsonObject));
 
         String taskIdentifier = jsonObject.getString("taskIdentifier");
 
@@ -1205,6 +1207,9 @@ public class DatasetServiceBean implements java.io.Serializable {
         String taskStatus = globusStatusCheck(taskIdentifier, globusLogger);
         Boolean taskSkippedFiles = taskSkippedFiles(taskIdentifier, globusLogger);
 
+        
+        
+        //ToDo - always "" from 1199
         if(ruleId.length() > 0) {
             globusServiceBean.deletePermision(ruleId, globusLogger);
         }
@@ -1454,8 +1459,8 @@ public class DatasetServiceBean implements java.io.Serializable {
         String fullPath = id.split("IDsplit")[1];
         String fileName = id.split("IDsplit")[2];
 
-        // what if the file doesnot exists in s3
-        // what if checksum calculation failed
+        //ToDo: what if the file doesnot exists in s3
+        //ToDo: what if checksum calculation failed
 
         do {
             try {
