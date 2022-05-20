@@ -3883,3 +3883,36 @@ Superusers can delete a license that is not in use by the license ``$ID``:
 .. code-block:: bash
 
   curl -X DELETE -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/licenses/$ID
+  
+List Dataset Templates
+~~~~~~~~~~~~~~~~~~~~~~
+
+List all templates in the system. ::
+
+    GET http://$SERVER/api/admin/templates
+    
+List templates in a given dataverse by the dataverse's alias or id. ::
+
+    GET http://$SERVER/api/admin/templates/{alias or id}
+
+    
+Delete Dataset Template
+~~~~~~~~~~~~~~~~~~~~~~~
+
+A curl example using an ``ID``
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+
+  curl -X DELETE $SERVER_URL/api/admin/template/$ID
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -X DELETE https://demo.dataverse.org/api/admin/template/24
+  
+  
+  
