@@ -3813,3 +3813,36 @@ Superusers can change the sorting order of a license specified by the license ``
 
   export SORT_ORDER=100
   curl -X PUT -H 'Content-Type: application/json' -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/licenses/$ID/:sortOrder/$SORT_ORDER
+  
+List Dataset Templates
+~~~~~~~~~~~~~~~~~~~~~~
+
+List all templates in the system. ::
+
+    GET http://$SERVER/api/admin/templates
+    
+List templates in a given dataverse by the dataverse's alias or id. ::
+
+    GET http://$SERVER/api/admin/templates/{alias or id}
+
+    
+Delete Dataset Template
+~~~~~~~~~~~~~~~~~~~~~~~
+
+A curl example using an ``ID``
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+
+  curl -X DELETE $SERVER_URL/api/admin/template/$ID
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -X DELETE https://demo.dataverse.org/api/admin/template/24
+  
+  
+  
