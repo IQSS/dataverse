@@ -505,7 +505,11 @@ public class SettingsServiceBean {
         /*
          * Include "Custom Terms" as an item in the license drop-down or not.
          */
-        AllowCustomTermsOfUse
+        AllowCustomTermsOfUse,
+        /*
+         * Allow a custom JavaScript to control values of specific fields.
+         */
+        ControlledVocabularyCustomJavaScript
         ;
 
         @Override
