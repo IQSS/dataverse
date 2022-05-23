@@ -175,6 +175,8 @@ There are other notification types that you can receive, e.g., notification on g
 
 Notifications will only be emailed once, even if you haven't read the in-app notification.
 
+It's possible to manage notifications via API. See :ref:`notifications` in the API Guide.
+
 API Token
 ---------
 
