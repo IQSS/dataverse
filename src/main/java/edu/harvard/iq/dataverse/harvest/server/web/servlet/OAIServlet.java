@@ -5,26 +5,27 @@
  */
 package edu.harvard.iq.dataverse.harvest.server.web.servlet;
 
-import com.lyncode.xml.exceptions.XmlWriteException;
-import com.lyncode.xoai.dataprovider.builder.OAIRequestParametersBuilder;
-import com.lyncode.xoai.dataprovider.exceptions.OAIException;
-import com.lyncode.xoai.dataprovider.repository.Repository;
-import com.lyncode.xoai.dataprovider.repository.RepositoryConfiguration;
-import com.lyncode.xoai.dataprovider.model.Context;
-import com.lyncode.xoai.dataprovider.model.MetadataFormat;
-import com.lyncode.xoai.services.impl.SimpleResumptionTokenFormat;
-import com.lyncode.xoai.dataprovider.repository.ItemRepository;
-import com.lyncode.xoai.dataprovider.repository.SetRepository;
-import com.lyncode.xoai.model.oaipmh.DeletedRecord;
-import com.lyncode.xoai.model.oaipmh.Granularity;
-import com.lyncode.xoai.model.oaipmh.OAIPMH;
-import static com.lyncode.xoai.model.oaipmh.OAIPMH.NAMESPACE_URI;
-import static com.lyncode.xoai.model.oaipmh.OAIPMH.SCHEMA_LOCATION;
-import com.lyncode.xoai.model.oaipmh.Verb;
-import com.lyncode.xoai.xml.XSISchema;
+import io.gdcc.xoai.xmlio.exceptions.XmlWriteException;
+import io.gdcc.xoai.dataprovider.DataProvider;
+import io.gdcc.xoai.dataprovider.builder.OAIRequestParametersBuilder;
+import io.gdcc.xoai.dataprovider.repository.Repository;
+import io.gdcc.xoai.dataprovider.repository.RepositoryConfiguration;
+import io.gdcc.xoai.dataprovider.model.Context;
+import io.gdcc.xoai.dataprovider.model.MetadataFormat;
+import io.gdcc.xoai.services.impl.SimpleResumptionTokenFormat;
+import io.gdcc.xoai.dataprovider.repository.ItemRepository;
+import io.gdcc.xoai.dataprovider.repository.SetRepository;
+import io.gdcc.xoai.model.oaipmh.DeletedRecord;
+import io.gdcc.xoai.model.oaipmh.Granularity;
+import io.gdcc.xoai.model.oaipmh.OAIPMH;
+import io.gdcc.xoai.model.oaipmh.GetRecord;
+import static io.gdcc.xoai.model.oaipmh.OAIPMH.NAMESPACE_URI;
+import static io.gdcc.xoai.model.oaipmh.OAIPMH.SCHEMA_LOCATION;
+import io.gdcc.xoai.model.oaipmh.Verb;
+import io.gdcc.xoai.xml.XSISchema;
 
-import com.lyncode.xoai.xml.XmlWriter;
-import static com.lyncode.xoai.xml.XmlWriter.defaultContext;
+import io.gdcc.xoai.xml.XmlWriter;
+import static io.gdcc.xoai.xml.XmlWriter.defaultContext;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.export.ExportException;
@@ -32,11 +33,8 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
-import edu.harvard.iq.dataverse.harvest.server.xoai.XdataProvider;
-import edu.harvard.iq.dataverse.harvest.server.xoai.XgetRecord;
-import edu.harvard.iq.dataverse.harvest.server.xoai.XitemRepository;
-import edu.harvard.iq.dataverse.harvest.server.xoai.XsetRepository;
-import edu.harvard.iq.dataverse.harvest.server.xoai.XlistRecords;
+import edu.harvard.iq.dataverse.harvest.server.xoai.DataverseXoaiItemRepository;
+import edu.harvard.iq.dataverse.harvest.server.xoai.DataverseXoaiSetRepository;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -62,7 +60,7 @@ import javax.xml.stream.XMLStreamException;
  *
  * @author Leonid Andreev
  * Dedicated servlet for handling OAI-PMH requests.
- * Uses lyncode XOAI data provider implementation for serving content. 
+ * Uses lyncode/Dspace/gdcc XOAI data provider implementation for serving content. 
  * The servlet itself is somewhat influenced by the older OCLC OAIcat implementation.
  */
 public class OAIServlet extends HttpServlet {
@@ -95,7 +93,7 @@ public class OAIServlet extends HttpServlet {
     private ItemRepository itemRepository;
     private RepositoryConfiguration repositoryConfiguration;
     private Repository xoaiRepository;
-    private XdataProvider dataProvider; 
+    private DataProvider dataProvider; 
 
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
@@ -106,8 +104,8 @@ public class OAIServlet extends HttpServlet {
             xoaiContext = addDataverseJsonMetadataFormat(xoaiContext);
         }
         
-        setRepository = new XsetRepository(setService);
-        itemRepository = new XitemRepository(recordService, datasetService);
+        setRepository = new DataverseXoaiSetRepository(setService);
+        itemRepository = new DataverseXoaiItemRepository(recordService, datasetService);
 
         repositoryConfiguration = createRepositoryConfiguration(); 
                         
@@ -117,7 +115,7 @@ public class OAIServlet extends HttpServlet {
             .withResumptionTokenFormatter(new SimpleResumptionTokenFormat())
             .withConfiguration(repositoryConfiguration);
         
-        dataProvider = new XdataProvider(getXoaiContext(), getXoaiRepository());
+        dataProvider = new DataProvider(getXoaiContext(), getXoaiRepository());
     }
     
     private Context createContext() {
@@ -188,7 +186,7 @@ public class OAIServlet extends HttpServlet {
                 .withMaxListIdentifiers(100)
                 .withMaxListRecords(100)
                 .withMaxListSets(100)
-                .withEarliestDate(new Date());
+                .withEarliestDate(new Date().toInstant()); // TODO:
         
         return repositoryConfiguration; 
     }
@@ -246,24 +244,24 @@ public class OAIServlet extends HttpServlet {
             OAIPMH handle = dataProvider.handle(parametersBuilder);
             response.setContentType("text/xml;charset=UTF-8");
             
-            if (isGetRecord(request) && !handle.hasErrors()) {
+            /* if (isGetRecord(request) && !handle.hasErrors()) {
                 writeGetRecord(response, handle);
             } else if (isListRecords(request) && !handle.hasErrors()) {
                 writeListRecords(response, handle);
-            } else {
+            } else { */
                 XmlWriter xmlWriter = new XmlWriter(response.getOutputStream());
                 xmlWriter.write(handle);
                 xmlWriter.flush();
                 xmlWriter.close();
-            }
+            /* } */
                        
         } catch (IOException ex) {
             logger.warning("IO exception in Get; "+ex.getMessage());
             throw new ServletException ("IO Exception in Get", ex);
-        } catch (OAIException oex) {
+        } /* catch (OAIException oex) {
             logger.warning("OAI exception in Get; "+oex.getMessage());
             throw new ServletException ("OAI Exception in Get", oex);
-        } catch (XMLStreamException xse) {
+        } */ catch (XMLStreamException xse) {
             logger.warning("XML Stream exception in Get; "+xse.getMessage());
             throw new ServletException ("XML Stream Exception in Get", xse);
         } catch (XmlWriteException xwe) {
@@ -278,7 +276,7 @@ public class OAIServlet extends HttpServlet {
     
     // Custom methods for the potentially expensive GetRecord and ListRecords requests:
     
-    private void writeListRecords(HttpServletResponse response, OAIPMH handle) throws IOException {
+    /* private void writeListRecords(HttpServletResponse response, OAIPMH handle) throws IOException {
         OutputStream outputStream = response.getOutputStream();
 
         outputStream.write(oaiPmhResponseToString(handle).getBytes());
@@ -326,7 +324,7 @@ public class OAIServlet extends HttpServlet {
 
         outputStream.flush();
 
-        ((XgetRecord) verb).writeToStream(outputStream);
+        verb.writeToStream(outputStream);
 
         outputStream.write(("</" + verb.getType().displayName() + ">").getBytes());
         outputStream.write(("</" + OAI_PMH + ">\n").getBytes());
@@ -334,7 +332,7 @@ public class OAIServlet extends HttpServlet {
         outputStream.flush();
         outputStream.close();
 
-     }
+     } */
     
     // This function produces the string representation of the top level,
     // "service" record of an OAIPMH response (i.e., the header that precedes

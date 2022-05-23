@@ -5,18 +5,19 @@
  */
 package edu.harvard.iq.dataverse.harvest.client.oai;
 
-import com.lyncode.xoai.model.oaipmh.Description;
-import com.lyncode.xoai.model.oaipmh.Granularity;
-import com.lyncode.xoai.model.oaipmh.Header;
-import com.lyncode.xoai.model.oaipmh.MetadataFormat;
-import com.lyncode.xoai.model.oaipmh.Set;
-import com.lyncode.xoai.serviceprovider.ServiceProvider;
-import com.lyncode.xoai.serviceprovider.client.HttpOAIClient;
-import com.lyncode.xoai.serviceprovider.exceptions.BadArgumentException;
-import com.lyncode.xoai.serviceprovider.exceptions.InvalidOAIResponse;
-import com.lyncode.xoai.serviceprovider.exceptions.NoSetHierarchyException;
-import com.lyncode.xoai.serviceprovider.model.Context;
-import com.lyncode.xoai.serviceprovider.parameters.ListIdentifiersParameters;
+import io.gdcc.xoai.model.oaipmh.Description;
+import io.gdcc.xoai.model.oaipmh.Granularity;
+import io.gdcc.xoai.model.oaipmh.Header;
+import io.gdcc.xoai.model.oaipmh.MetadataFormat;
+import io.gdcc.xoai.model.oaipmh.Set;
+import io.gdcc.xoai.serviceprovider.ServiceProvider;
+import io.gdcc.xoai.serviceprovider.client.JdkHttpOaiClient;  //.HttpOAIClient;
+import io.gdcc.xoai.serviceprovider.exceptions.BadArgumentException;
+import io.gdcc.xoai.serviceprovider.exceptions.InvalidOAIResponse;
+import io.gdcc.xoai.serviceprovider.exceptions.NoSetHierarchyException;
+import io.gdcc.xoai.serviceprovider.exceptions.IdDoesNotExistException;
+import io.gdcc.xoai.serviceprovider.model.Context;
+import io.gdcc.xoai.serviceprovider.parameters.ListIdentifiersParameters;
 import edu.harvard.iq.dataverse.harvest.client.FastGetRecord;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import java.io.IOException;
@@ -133,8 +134,8 @@ public class OaiHandler implements Serializable {
 
             context.withBaseUrl(baseOaiUrl);
             context.withGranularity(Granularity.Second);
-            context.withOAIClient(new HttpOAIClient(baseOaiUrl));
-
+            // builds the client with the default parameters and the JDK http client:
+            context.withOAIClient(JdkHttpOaiClient.newBuilder().withBaseUrl(baseOaiUrl).build());
             serviceProvider = new ServiceProvider(context);
         }
         
@@ -199,6 +200,11 @@ public class OaiHandler implements Serializable {
         
         try {
             mfIter = sp.listMetadataFormats();
+        } catch (IdDoesNotExistException idnee) {
+            // TODO: 
+            // not sure why this exception is now thrown by List Metadata Formats (?)
+            // but looks like it was added in xoai 4.2. 
+            throw new OaiHandlerException("Id does not exist exception");
         } catch (InvalidOAIResponse ior) {
             throw new OaiHandlerException("No valid response received from the OAI server."); 
         }
@@ -261,7 +267,7 @@ public class OaiHandler implements Serializable {
         mip.withMetadataPrefix(metadataPrefix);
 
         if (this.fromDate != null) {
-            mip.withFrom(this.fromDate);
+            mip.withFrom(this.fromDate.toInstant());
         }
 
         if (!StringUtils.isEmpty(this.setName)) {

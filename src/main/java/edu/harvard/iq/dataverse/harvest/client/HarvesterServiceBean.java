@@ -35,7 +35,7 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableLong;
 import org.xml.sax.SAXException;
 
-import com.lyncode.xoai.model.oaipmh.Header;
+import io.gdcc.xoai.model.oaipmh.Header;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -254,7 +254,7 @@ public class HarvesterServiceBean {
 
                 Header h = idIter.next();
                 String identifier = h.getIdentifier();
-                Date dateStamp = h.getDatestamp();
+                Date dateStamp = Date.from(h.getDatestamp());
                 
                 hdLogger.info("processing identifier: " + identifier + ", date: " + dateStamp);
 

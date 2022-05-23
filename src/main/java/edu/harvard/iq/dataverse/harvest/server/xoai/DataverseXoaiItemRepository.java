@@ -5,22 +5,28 @@
  */
 package edu.harvard.iq.dataverse.harvest.server.xoai;
 
-import com.lyncode.xoai.dataprovider.exceptions.IdDoesNotExistException;
-import com.lyncode.xoai.dataprovider.exceptions.OAIException;
-import com.lyncode.xoai.dataprovider.filter.ScopedFilter;
-import com.lyncode.xoai.dataprovider.handlers.results.ListItemIdentifiersResult;
-import com.lyncode.xoai.dataprovider.handlers.results.ListItemsResults;
-import com.lyncode.xoai.dataprovider.model.Item;
-import com.lyncode.xoai.dataprovider.model.ItemIdentifier;
-import com.lyncode.xoai.dataprovider.model.Set;
-import com.lyncode.xoai.dataprovider.repository.ItemRepository;
+import io.gdcc.xoai.dataprovider.exceptions.IdDoesNotExistException;
+import io.gdcc.xoai.dataprovider.exceptions.OAIException;
+import io.gdcc.xoai.dataprovider.filter.ScopedFilter;
+import io.gdcc.xoai.dataprovider.handlers.results.ListItemIdentifiersResult;
+import io.gdcc.xoai.dataprovider.handlers.results.ListItemsResults;
+import io.gdcc.xoai.dataprovider.model.Item;
+import io.gdcc.xoai.dataprovider.model.ItemIdentifier;
+import io.gdcc.xoai.dataprovider.model.Set;
+import io.gdcc.xoai.dataprovider.model.MetadataFormat;
+import io.gdcc.xoai.dataprovider.repository.ItemRepository;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.export.ExportException;
+import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecord;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import io.gdcc.xoai.model.oaipmh.Metadata;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -32,33 +38,64 @@ import java.util.logging.Logger;
  * XOAI "items". 
  */
 
-public class XitemRepository implements ItemRepository {
+public class DataverseXoaiItemRepository implements ItemRepository {
     private static Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.xoai.XitemRepository");
     
     private OAIRecordServiceBean recordService;
     private DatasetServiceBean datasetService;
 
-    public XitemRepository (OAIRecordServiceBean recordService, DatasetServiceBean datasetService) {
+    public DataverseXoaiItemRepository (OAIRecordServiceBean recordService, DatasetServiceBean datasetService) {
         super();
         this.recordService = recordService;
         this.datasetService = datasetService;
     }
     
-    private List<Xitem> list = new ArrayList<Xitem>();
+    private List<DataverseXoaiItem> list = new ArrayList<DataverseXoaiItem>();
 
 
     @Override
     public Item getItem(String identifier) throws IdDoesNotExistException, OAIException {
+        // I'm assuming we don't want to use this version of getItem 
+        // that does not specify the requested metadata format - ? 
+        throw new OAIException("Metadata Format is Required");
+    }
+    
+    @Override
+    public Item getItem(String identifier, MetadataFormat metadataFormat) throws IdDoesNotExistException, OAIException {
         logger.fine("getItem; calling findOaiRecordsByGlobalId, identifier " + identifier);
+        
+        if (metadataFormat == null) {
+            throw new OAIException("Metadata Format is Required");
+        }
+        
         List<OAIRecord> oaiRecords = recordService.findOaiRecordsByGlobalId(identifier);
         if (oaiRecords != null && !oaiRecords.isEmpty()) {
-            Xitem xoaiItem = null; 
+            DataverseXoaiItem xoaiItem = null; 
             for (OAIRecord record : oaiRecords) {
                 if (xoaiItem == null) {
                     Dataset dataset = datasetService.findByGlobalId(record.getGlobalId());
-                    if (dataset != null) {
-                        xoaiItem = new Xitem(record).withDataset(dataset);
+                    if (dataset == null) {
+                        // This should not happen - but if there are no longer datasets 
+                        // associated with this persistent identifier, we should simply 
+                        // bail out. 
+                        break;
                     }
+                    
+                    InputStream pregeneratedMetadataStream; 
+                    try {
+                        pregeneratedMetadataStream = ExportService.getInstance().getExport(dataset, metadataFormat.getPrefix());
+                    } catch (ExportException|IOException ex) {
+                        // Again, this is not supposed to happen in normal operations; 
+                        // since by design only the datasets for which the metadata
+                        // records have been pre-generated ("exported") should be 
+                        // served as "OAI Record". But, things happen. If for one
+                        // reason or another that cached metadata file is no longer there, 
+                        // we are not going to serve this record. 
+                        break; 
+                    }
+                    
+                    Metadata metadata = Metadata.copyFromStream(pregeneratedMetadataStream);
+                    xoaiItem = new DataverseXoaiItem(record).withDataset(dataset).withMetadata(metadata);
                 } else {
                     // Adding extra set specs to the XOAI Item, if this record
                     // is part of multiple sets:
@@ -81,17 +118,17 @@ public class XitemRepository implements ItemRepository {
     }
 
     @Override
-    public ListItemIdentifiersResult getItemIdentifiers(List<ScopedFilter> filters, int offset, int length, Date from) throws OAIException {
+    public ListItemIdentifiersResult getItemIdentifiers(List<ScopedFilter> filters, int offset, int length, Instant from) throws OAIException {
         return getItemIdentifiers(filters, offset, length, null, from, null);
     }
 
     @Override
-    public ListItemIdentifiersResult getItemIdentifiersUntil(List<ScopedFilter> filters, int offset, int length, Date until) throws OAIException {
+    public ListItemIdentifiersResult getItemIdentifiersUntil(List<ScopedFilter> filters, int offset, int length, Instant until) throws OAIException {
         return getItemIdentifiers(filters, offset, length, null, null, until);
     }
 
     @Override
-    public ListItemIdentifiersResult getItemIdentifiers(List<ScopedFilter> filters, int offset, int length, Date from, Date until) throws OAIException {
+    public ListItemIdentifiersResult getItemIdentifiers(List<ScopedFilter> filters, int offset, int length, Instant from, Instant until) throws OAIException {
         return getItemIdentifiers(filters, offset, length, null, from, until);
     }
 
@@ -101,17 +138,17 @@ public class XitemRepository implements ItemRepository {
     }
 
     @Override
-    public ListItemIdentifiersResult getItemIdentifiers(List<ScopedFilter> filters, int offset, int length, String setSpec, Date from) throws OAIException {
+    public ListItemIdentifiersResult getItemIdentifiers(List<ScopedFilter> filters, int offset, int length, String setSpec, Instant from) throws OAIException {
         return getItemIdentifiers(filters, offset, length, setSpec, from, null);
     }
 
     @Override
-    public ListItemIdentifiersResult getItemIdentifiersUntil(List<ScopedFilter> filters, int offset, int length, String setSpec, Date until) throws OAIException {
+    public ListItemIdentifiersResult getItemIdentifiersUntil(List<ScopedFilter> filters, int offset, int length, String setSpec, Instant until) throws OAIException {
         return getItemIdentifiers(filters, offset, length, setSpec, null, until);
     }
 
     @Override
-    public ListItemIdentifiersResult getItemIdentifiers(List<ScopedFilter> filters, int offset, int length, String setSpec, Date from, Date until) throws OAIException {
+    public ListItemIdentifiersResult getItemIdentifiers(List<ScopedFilter> filters, int offset, int length, String setSpec, Instant from, Instant until) throws OAIException {
         logger.fine("calling getItemIdentifiers; offset=" + offset
                 + ", length=" + length
                 + ", setSpec=" + setSpec
@@ -120,14 +157,14 @@ public class XitemRepository implements ItemRepository {
 
         List<OAIRecord> oaiRecords = recordService.findOaiRecordsBySetName(setSpec, from, until);
 
-        logger.fine("total " + oaiRecords.size() + " returned");
+        //logger.fine("total " + oaiRecords.size() + " returned");
 
         List<ItemIdentifier> xoaiItems = new ArrayList<>();
         if (oaiRecords != null && !oaiRecords.isEmpty()) {
 
             for (int i = offset; i < offset + length && i < oaiRecords.size(); i++) {
                 OAIRecord record = oaiRecords.get(i);
-                xoaiItems.add(new Xitem(record));
+                xoaiItems.add(new DataverseXoaiItem(record));
             }
             
             // Run a second pass, looking for records in this set that occur
@@ -150,17 +187,17 @@ public class XitemRepository implements ItemRepository {
     }
 
     @Override
-    public ListItemsResults getItems(List<ScopedFilter> filters, int offset, int length, Date from) throws OAIException {
+    public ListItemsResults getItems(List<ScopedFilter> filters, int offset, int length, Instant from) throws OAIException {
         return getItems(filters, offset, length, null, from, null);
     }
 
     @Override
-    public ListItemsResults getItemsUntil(List<ScopedFilter> filters, int offset, int length, Date until) throws OAIException {
+    public ListItemsResults getItemsUntil(List<ScopedFilter> filters, int offset, int length, Instant until) throws OAIException {
         return getItems(filters, offset, length, null, null, until);
     }
 
     @Override
-    public ListItemsResults getItems(List<ScopedFilter> filters, int offset, int length, Date from, Date until) throws OAIException {
+    public ListItemsResults getItems(List<ScopedFilter> filters, int offset, int length, Instant from, Instant until) throws OAIException {
         return getItems(filters, offset, length, null, from, until);
     }
 
@@ -170,17 +207,17 @@ public class XitemRepository implements ItemRepository {
     }
 
     @Override
-    public ListItemsResults getItems(List<ScopedFilter> filters, int offset, int length, String setSpec, Date from) throws OAIException {
+    public ListItemsResults getItems(List<ScopedFilter> filters, int offset, int length, String setSpec, Instant from) throws OAIException {
         return getItems(filters, offset, length, setSpec, from, null);
     }
 
     @Override
-    public ListItemsResults getItemsUntil(List<ScopedFilter> filters, int offset, int length, String setSpec, Date until) throws OAIException {
+    public ListItemsResults getItemsUntil(List<ScopedFilter> filters, int offset, int length, String setSpec, Instant until) throws OAIException {
         return getItems(filters, offset, length, setSpec, null, until);
     }
 
     @Override
-    public ListItemsResults getItems(List<ScopedFilter> filters, int offset, int length, String setSpec, Date from, Date until) throws OAIException {
+    public ListItemsResults getItems(List<ScopedFilter> filters, int offset, int length, String setSpec, Instant from, Instant until) throws OAIException {
         logger.fine("calling getItems; offset=" + offset
                 + ", length=" + length
                 + ", setSpec=" + setSpec
@@ -198,7 +235,33 @@ public class XitemRepository implements ItemRepository {
                 OAIRecord oaiRecord = oaiRecords.get(i);
                 Dataset dataset = datasetService.findByGlobalId(oaiRecord.getGlobalId());
                 if (dataset != null) {
-                    Xitem xItem = new Xitem(oaiRecord).withDataset(dataset);
+                    // TODO: What if it is null? - i.e., what if the dataset with this
+                    // global id no longer exists? We cannot serve it as an OAI Item; 
+                    // but skipping it, like we are doing now, is going to mess up 
+                    // the offsets and counts, if there is a Resumption Token 
+                    // involved! -- L.A. 
+                                        
+                    // TODO: we need to know the MetadataFormat requested, in 
+                    // order to look up the pre-generated metadata stream
+                    // and create a CopyElement Metadata object out of it!
+                    // (cheating/defaulting to dc for testing purposes, for now)
+                    MetadataFormat metadataFormat =  MetadataFormat.metadataFormat("oai_dc");
+                    
+                    InputStream pregeneratedMetadataStream; 
+                    try {
+                        pregeneratedMetadataStream = ExportService.getInstance().getExport(dataset, metadataFormat.getPrefix());
+                    } catch (ExportException|IOException ex) {
+                        // Again, this is not supposed to happen in normal operations; 
+                        // since by design only the datasets for which the metadata
+                        // records have been pre-generated ("exported") should be 
+                        // served as "OAI Record". But, things happen. If for one
+                        // reason or another that cached metadata file is no longer there, 
+                        // we are not going to serve this record. 
+                        continue; 
+                    }
+                    
+                    Metadata metadata = Metadata.copyFromStream(pregeneratedMetadataStream);
+                    DataverseXoaiItem xItem = new DataverseXoaiItem(oaiRecord).withDataset(dataset).withMetadata(metadata);
                     xoaiItems.add(xItem);
                 }
             }
@@ -214,9 +277,9 @@ public class XitemRepository implements ItemRepository {
         return new ListItemsResults(false, xoaiItems);
     }
     
-    private void addExtraSets(Object xoaiItemsList, String setSpec, Date from, Date until) {
+    private void addExtraSets(Object xoaiItemsList, String setSpec, Instant from, Instant until) {
         
-        List<Xitem> xoaiItems = (List<Xitem>)xoaiItemsList;
+        List<DataverseXoaiItem> xoaiItems = (List<DataverseXoaiItem>)xoaiItemsList;
         
         List<OAIRecord> oaiRecords = recordService.findOaiRecordsNotInThisSet(setSpec, from, until);
         
@@ -232,7 +295,7 @@ public class XitemRepository implements ItemRepository {
             // fast-forward the second list, until we find a record with this identifier, 
             // or until we are past this record (both lists are sorted alphabetically by
             // the identifier:
-            Xitem xitem = xoaiItems.get(i);
+            DataverseXoaiItem xitem = xoaiItems.get(i);
             
             while (j < oaiRecords.size() && xitem.getIdentifier().compareTo(oaiRecords.get(j).getGlobalId()) > 0) {
                 j++;

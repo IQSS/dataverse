@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import java.time.Instant;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -286,15 +287,15 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         return findOaiRecordsBySetName(setName, null, null);
     }    
     
-    public List<OAIRecord> findOaiRecordsBySetName(String setName, Date from, Date until) {
+    public List<OAIRecord> findOaiRecordsBySetName(String setName, Instant from, Instant until) {
         return findOaiRecordsBySetName(setName, from, until, false);
     }
     
-    public List<OAIRecord> findOaiRecordsNotInThisSet(String setName, Date from, Date until) {
+    public List<OAIRecord> findOaiRecordsNotInThisSet(String setName, Instant from, Instant until) {
         return findOaiRecordsBySetName(setName, from, until, true);
     }
     
-    public List<OAIRecord> findOaiRecordsBySetName(String setName, Date from, Date until, boolean excludeSet) {
+    public List<OAIRecord> findOaiRecordsBySetName(String setName, Instant from, Instant until, boolean excludeSet) {
                 
         if (setName == null) {
             setName = "";
@@ -314,8 +315,14 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         logger.fine("Query: "+queryString);
         
         TypedQuery<OAIRecord> query = em.createQuery(queryString, OAIRecord.class);
-        if (setName != null) { query.setParameter("setName",setName); }
-        if (from != null) { query.setParameter("from",from,TemporalType.TIMESTAMP); }
+        if (setName != null) { 
+            query.setParameter("setName",setName); 
+        }
+        // TODO: review and phase out the use of java.util.Date throughout this service.
+        
+        if (from != null) { 
+            query.setParameter("from",Date.from(from),TemporalType.TIMESTAMP); 
+        }
         // In order to achieve inclusivity on the "until" matching, we need to do 
         // the following (if the "until" parameter is supplied):
         // 1) if the supplied "until" parameter has the time portion (and is not just
@@ -332,17 +339,21 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         
         if (until != null) { 
             // 24 * 3600 * 1000 = number of milliseconds in a day. 
+                        
+            Date untilDate = Date.from(until);
             
-            if (until.getTime() % (24 * 3600 * 1000) == 0) {
+            if (untilDate.getTime() % (24 * 3600 * 1000) == 0) {
                 // The supplied "until" parameter is a date, with no time
                 // portion. 
+                // TODO: review/reimplement this!
+
                 logger.fine("plain date. incrementing by one day");
-                until.setTime(until.getTime()+(24 * 3600 * 1000));
+                untilDate.setTime(untilDate.getTime()+(24 * 3600 * 1000));
             } else {
                 logger.fine("date and time. incrementing by one second");
-                until.setTime(until.getTime()+1000);
+                untilDate.setTime(untilDate.getTime()+1000);
             }
-            query.setParameter("until",until,TemporalType.TIMESTAMP); 
+            query.setParameter("until",untilDate,TemporalType.TIMESTAMP); 
         }
                 
         try {

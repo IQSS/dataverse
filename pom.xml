@@ -393,7 +393,7 @@
         <!-- below for the immediate purpose of getting rid of the log4j library -->
         <!-- that was being added to the project via these dependencies. (L.A. - Jan. 2022) -->
         <!-- (note the reload4j explicitly added below as a replacement! -->
-        <dependency>
+        <!--dependency>
             <groupId>com.lyncode</groupId>
             <artifactId>xoai-common</artifactId>
             <version>4.1.0-header-patch</version>
@@ -419,6 +419,21 @@
                     <artifactId>log4j</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency -->
+        <dependency>
+            <groupId>io.gdcc</groupId>
+            <artifactId>xoai-common</artifactId>
+            <version>${gdcc.xoai.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.gdcc</groupId>
+            <artifactId>xoai-data-provider</artifactId>
+            <version>${gdcc.xoai.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.gdcc</groupId>
+            <artifactId>xoai-service-provider</artifactId>
+            <version>${gdcc.xoai.version}</version>
         </dependency>
         <!-- reload4j is a drop-in security patch/replacement for log4j1. -->
         <!-- it is here because the XOAI libraries above need it. -->
