@@ -2889,8 +2889,8 @@ Each user can unmute in-app notifications by passing in their API token and spec
 
   curl -H X-Dataverse-key:$API_TOKEN -X DELETE "$SERVER_URL/api/notifications/mutedNotifications/$NOTIFICATION_TYPE"
 
-Get All Muted In-app Notifications by User
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Get All Muted Email Notifications by User
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Each user can get a list of their muted email notification types by passing in their API token:
 
@@ -2898,8 +2898,8 @@ Each user can get a list of their muted email notification types by passing in t
 
   curl -H X-Dataverse-key:$API_TOKEN -X GET "$SERVER_URL/api/notifications/mutedEmails"
 
-Mute In-app Notification by User
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Mute Email Notification by User
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Each user can mute email notifications by passing in their API token and specifying notification type to be muted (e.g., ASSIGNROLE):
 
