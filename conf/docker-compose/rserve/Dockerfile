@@ -9,7 +9,8 @@ RUN apt-get update && \
     apt-get -y upgrade && \
     rm -rf /var/lib/apt/lists/*
 
-RUN R -e "install.packages(c('R2HTML', 'rjson', 'DescTools', 'Rserve', 'haven'))"
+# multi-thread the building of the libraries from source via NCPUS=X
+RUN R -e "install.packages(c('R2HTML', 'rjson', 'DescTools', 'Rserve', 'haven'), NCPUS=4)"
 
 # this is the user and password that Dataverse will connect to the Rserve server
 RUN echo "rserve rserve" > /rserve.pwd
