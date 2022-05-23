@@ -37,7 +37,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
-import org.apache.poi.xssf.model.SharedStringsTable;
+import org.apache.poi.xssf.model.SharedStrings;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -229,7 +229,7 @@ public class XLSXFileReader extends TabularDataFileReader {
         dbglog.info("entering processSheet");
         OPCPackage pkg = OPCPackage.open(inputStream);
         XSSFReader r = new XSSFReader(pkg);
-        SharedStringsTable sst = r.getSharedStringsTable();
+        SharedStrings sst = r.getSharedStringsTable();
 
         XMLReader parser = fetchSheetParser(sst, dataTable, tempOut);
 
@@ -241,7 +241,7 @@ public class XLSXFileReader extends TabularDataFileReader {
         sheet1.close();
     }
     
-    public XMLReader fetchSheetParser(SharedStringsTable sst, DataTable dataTable, PrintWriter tempOut) throws SAXException {
+    public XMLReader fetchSheetParser(SharedStrings sst, DataTable dataTable, PrintWriter tempOut) throws SAXException {
         // An attempt to use org.apache.xerces.parsers.SAXParser resulted 
         // in some weird conflict in the app; the default XMLReader obtained 
         // from the XMLReaderFactory (from xml-apis.jar) appears to be working
@@ -265,7 +265,7 @@ public class XLSXFileReader extends TabularDataFileReader {
     private static class SheetHandler extends DefaultHandler {
 
         private DataTable dataTable;
-        private SharedStringsTable sst;
+        private SharedStrings sst;
         private String cellContents;
         private boolean nextIsString;
         private boolean variableHeader;
@@ -277,11 +277,11 @@ public class XLSXFileReader extends TabularDataFileReader {
         String[] dataRow; 
         PrintWriter tempOut; 
 
-        private SheetHandler(SharedStringsTable sst) {
+        private SheetHandler(SharedStrings sst) {
             this(sst, null, null);
         }
 
-        private SheetHandler(SharedStringsTable sst, DataTable dataTable, PrintWriter tempOut) {
+        private SheetHandler(SharedStrings sst, DataTable dataTable, PrintWriter tempOut) {
             this.sst = sst;
             this.dataTable = dataTable;
             this.tempOut = tempOut; 
@@ -410,7 +410,7 @@ public class XLSXFileReader extends TabularDataFileReader {
             // Do it now, as characters() may be called more than once
             if (nextIsString) {
                 int idx = Integer.parseInt(cellContents);
-                cellContents = new XSSFRichTextString(sst.getEntryAt(idx)).toString();
+                cellContents = sst.getItemAt(idx).getString();
                 nextIsString = false;
             }
 

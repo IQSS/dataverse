@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonLDNamespace;
 
 import java.io.Serializable;
 import java.util.List;
@@ -66,8 +68,25 @@ public class MetadataBlock implements Serializable {
     public String getNamespaceUri() {
         return namespaceUri;
     }
+    
     public void setNamespaceUri(String namespaceUri) {
         this.namespaceUri = namespaceUri;
+    }
+    
+    private String getAssignedNamespaceUri() {
+        String nsUri = getNamespaceUri();
+        // Standard blocks will have a namespaceUri
+        if (nsUri == null) {
+            // Locally created/edited blocks, legacy blocks may not have a defined
+            // namespaceUri, so generate one that indicates that this is a locally defined
+            // term
+            nsUri = SystemConfig.getDataverseSiteUrlStatic() + "/schema/" + name + "#";
+        }
+        return nsUri;
+    }
+    
+    public JsonLDNamespace getJsonLDNamespace() {
+        return JsonLDNamespace.defineNamespace(name, getAssignedNamespaceUri());
     }
 
     @OneToMany(mappedBy = "metadataBlock", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})

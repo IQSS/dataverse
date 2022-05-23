@@ -63,6 +63,9 @@ public class OptionalFileParams {
     
     private boolean restrict = false;
     public static final String RESTRICT_ATTR_NAME = "restrict";
+
+    private boolean tabIngest = true;
+    public static final String TAB_INGEST_ATTR_NAME = "tabIngest";
     
     private String storageIdentifier;
     public static final String STORAGE_IDENTIFIER_ATTR_NAME = "storageIdentifier";
@@ -173,7 +176,15 @@ public class OptionalFileParams {
     public boolean getRestriction(){
         return this.restrict;
     }
-    
+
+    public void setTabIngest(boolean tabIngest) {
+        this.tabIngest = tabIngest;
+    }
+
+    public boolean getTabIngest() {
+        return this.tabIngest;
+    }
+
     public boolean hasCategories(){
         if ((categories == null)||(this.categories.isEmpty())){
             return false;
@@ -346,6 +357,14 @@ public class OptionalFileParams {
         if ((jsonObj.has(RESTRICT_ATTR_NAME)) && (!jsonObj.get(RESTRICT_ATTR_NAME).isJsonNull())){
             
             this.restrict = Boolean.valueOf(jsonObj.get(RESTRICT_ATTR_NAME).getAsString());
+        }
+
+        // -------------------------------
+        // get tabIngest as boolean
+        // -------------------------------
+        if ((jsonObj.has(TAB_INGEST_ATTR_NAME)) && (!jsonObj.get(TAB_INGEST_ATTR_NAME).isJsonNull())){
+
+            this.tabIngest = Boolean.valueOf(jsonObj.get(TAB_INGEST_ATTR_NAME).getAsString());
         }
         
         // -------------------------------
