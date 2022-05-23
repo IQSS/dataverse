@@ -78,6 +78,9 @@ public class DataverseXoaiItemRepository implements ItemRepository {
                         // This should not happen - but if there are no longer datasets 
                         // associated with this persistent identifier, we should simply 
                         // bail out. 
+                        // TODO: double-check what happens/what NEEDS to happen
+                        // when somebody tries to call GetRecord on a DELETED 
+                        // OAI Record!
                         break;
                     }
                     
@@ -235,11 +238,7 @@ public class DataverseXoaiItemRepository implements ItemRepository {
                 OAIRecord oaiRecord = oaiRecords.get(i);
                 Dataset dataset = datasetService.findByGlobalId(oaiRecord.getGlobalId());
                 if (dataset != null) {
-                    // TODO: What if it is null? - i.e., what if the dataset with this
-                    // global id no longer exists? We cannot serve it as an OAI Item; 
-                    // but skipping it, like we are doing now, is going to mess up 
-                    // the offsets and counts, if there is a Resumption Token 
-                    // involved! -- L.A. 
+                    // TODO: This needs to handle DELETED OAI records properly! -- L.A. 
                                         
                     // TODO: we need to know the MetadataFormat requested, in 
                     // order to look up the pre-generated metadata stream
