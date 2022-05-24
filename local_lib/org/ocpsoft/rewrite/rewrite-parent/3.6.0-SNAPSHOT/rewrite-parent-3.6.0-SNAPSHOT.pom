@@ -1,0 +1,467 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Copyright 2011 Lincoln Baxter, III Licensed under the Apache License, Version 2.0 (the "License"); you may not use this 
+   file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 
+   Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS 
+   IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language 
+   governing permissions and limitations under the License. -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+   <groupId>org.ocpsoft.rewrite</groupId>
+   <artifactId>rewrite-parent</artifactId>
+   <version>3.6.0-SNAPSHOT</version>
+   <packaging>pom</packaging>
+
+   <parent>
+      <groupId>org.ocpsoft</groupId>
+      <artifactId>ocpsoft-parent</artifactId>
+      <version>16</version>
+   </parent>
+
+   <properties>
+
+      <!-- Encoding -->
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+      <!-- JDK version -->
+      <maven.compiler.target>1.8</maven.compiler.target>
+      <maven.compiler.source>1.8</maven.compiler.source>
+
+      <!-- Versions -->
+      <version.junit>4.13.2</version.junit>
+      <version.common>1.0.6.Final</version.common>
+      <version.logging>1.0.5.Final</version.logging>
+      <version.arquillian>1.6.0.Final</version.arquillian>
+      <version.arquillian.drone>2.5.5</version.arquillian.drone>
+                <skipUnitTests>true</skipUnitTests>
+   </properties>
+
+   <modules>
+      <module>test-base</module>
+      <module>test-harness</module>
+      <module>api</module>
+      <module>api-tests</module>
+      <module>impl</module>
+      <module>impl-tests</module>
+      <module>annotations-api</module>
+      <module>annotations-impl</module>
+      <module>config-annotations</module>
+      <module>config-jodatime</module>
+      <module>config-prettyfaces</module>
+      <module>config-prettyfaces-tests</module>
+      <module>config-proxy</module>
+      <module>config-servlet</module>
+      <module>config-servlet-tests</module>
+      <!--module>config-tuckey</module-->
+      <module>addressbuilder</module>
+      <module>api-el</module>
+      <module>api-servlet</module>
+      <module>impl-servlet</module>
+      <module>impl-servlet-tests</module>
+      <module>transform</module>
+      <module>transform-less</module>
+      <module>transform-minify</module>
+      <module>transform-markup</module>
+      <module>integration-cdi</module>
+      <module>integration-cdi-tests</module>
+      <module>integration-faces</module>
+      <module>integration-faces-tests</module>
+      <module>integration-gwt</module>
+      <module>integration-spring</module>
+      <module>security-integration-shiro</module>
+      <module>rewrite-servlet</module>
+      <module>showcase</module>
+      <!--<module>distribution</module>-->
+      <module>examples</module>
+      <module>documentation</module>
+   </modules>
+
+   <build>
+      <plugins>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-shade-plugin</artifactId>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-release-plugin</artifactId>
+            <configuration>
+               <localCheckout>true</localCheckout>
+               <autoVersionSubmodules>true</autoVersionSubmodules>
+               <tagNameFormat>@{project.version}</tagNameFormat>
+               <pushChanges>false</pushChanges>
+               <checkModificationExcludes>
+                  <checkModificationExclude>dependency-reduced-pom.xml</checkModificationExclude>
+               </checkModificationExcludes>
+            </configuration>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>2.3.2</version>
+            <configuration>
+               <source>11</source>
+               <target>11</target>
+            </configuration>
+         </plugin>
+      </plugins>
+      <pluginManagement>
+         <plugins>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-surefire-plugin</artifactId>
+               <configuration>
+                  <argLine>-Xms256m -Xmx512m</argLine>
+                  <!--Use a fresh JVM and fresh embedded container for each test-->
+                  <forkCount>1</forkCount>
+                  <reuseForks>false</reuseForks>
+                   <skip>${skipUnitTests}</skip>
+               </configuration>
+            </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-javadoc-plugin</artifactId>
+               <configuration>
+                  <failOnError>false</failOnError>
+                  <links>
+                     <link>https://docs.oracle.com/javase/8/docs/api/</link>
+                     <link>https://jakarta.ee/specifications/platform/8/apidocs/</link>
+                  </links>
+                  <additionalparam>-Xdoclint:none</additionalparam>
+               </configuration>
+            </plugin>
+         </plugins>
+      </pluginManagement>
+
+      <!-- Workaround for: https://jira.codehaus.org/browse/MNG-5525 -->
+      <extensions>
+         <extension>
+            <groupId>org.apache.maven.wagon</groupId>
+            <artifactId>wagon-http-lightweight</artifactId>
+            <version>1.0</version>
+         </extension>
+      </extensions>
+
+   </build>
+
+   <dependencyManagement>
+      <dependencies>
+         <dependency>
+            <groupId>org.ocpsoft.common</groupId>
+            <artifactId>common-api</artifactId>
+            <version>${version.common}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.logging</groupId>
+            <artifactId>logging-api</artifactId>
+            <version>${version.logging}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.logging</groupId>
+            <artifactId>logging-adapter-slf4j</artifactId>
+            <version>${version.logging}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-api</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-api</artifactId>
+            <version>${project.version}</version>
+            <classifier>sources</classifier>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-api-el</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-api-el</artifactId>
+            <version>${project.version}</version>
+            <classifier>sources</classifier>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-impl</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-impl</artifactId>
+            <version>${project.version}</version>
+            <classifier>sources</classifier>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-config-annotations</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-config-annotations</artifactId>
+            <version>${project.version}</version>
+            <classifier>sources</classifier>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-annotations-api</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-annotations-api</artifactId>
+            <version>${project.version}</version>
+            <classifier>sources</classifier>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-annotations-impl</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-annotations-impl</artifactId>
+            <version>${project.version}</version>
+            <classifier>sources</classifier>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-config-jodatime</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-config-prettyfaces</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-config-tuckey</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-config-servlet</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-config-servlet</artifactId>
+            <version>${project.version}</version>
+            <classifier>sources</classifier>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-addressbuilder</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-addressbuilder</artifactId>
+            <version>${project.version}</version>
+            <classifier>sources</classifier>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-api-servlet</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-api-servlet</artifactId>
+            <version>${project.version}</version>
+            <classifier>sources</classifier>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-impl-servlet</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-impl-servlet</artifactId>
+            <version>${project.version}</version>
+            <classifier>sources</classifier>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-servlet</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-integration-cdi</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-integration-faces</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-security-integration-shiro</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-transform</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-transform-less</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-transform-markup</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-transform-minify</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-test-base</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+         </dependency>
+         <dependency>
+            <groupId>org.ocpsoft.rewrite</groupId>
+            <artifactId>rewrite-test-harness</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+         </dependency>
+
+         <dependency>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-bom</artifactId>
+            <version>9.1.0</version>
+            <type>pom</type>
+            <scope>import</scope>
+         </dependency>
+         
+         <dependency>
+             <groupId>jakarta.servlet</groupId>
+             <artifactId>jakarta.servlet-api</artifactId>
+             <version>5.0.0</version>
+             <scope>provided</scope>
+         </dependency>
+         
+         <!-- https://mvnrepository.com/artifact/jakarta.servlet/servlet-parent -->
+         <dependency>
+             <groupId>jakarta.servlet</groupId>
+             <artifactId>servlet-parent</artifactId>
+             <version>6.0.0.RC1-jbossorg-1</version>
+             <type>pom</type>
+         </dependency>
+
+
+    <!-- Enforce this version of Xalan, because jboss-javaee-6.0 depends on a version which isn't available in central. 
+            As this dependency is used only in 'provided' scope, this should be ok. -->
+         <dependency>
+            <groupId>xalan</groupId>
+            <artifactId>xalan</artifactId>
+            <version>2.7.1</version>
+         </dependency>
+         <dependency>
+            <groupId>org.apache.taglibs</groupId>
+            <artifactId>taglibs-standard-spec</artifactId>
+            <version>1.2.5</version>
+         </dependency>
+         <dependency>
+            <groupId>org.apache.taglibs</groupId>
+            <artifactId>taglibs-standard-impl</artifactId>
+            <version>1.2.5</version>
+         </dependency>
+
+         <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${version.junit}</version>
+            <scope>test</scope>
+         </dependency>
+
+         <dependency>
+            <groupId>org.jboss.arquillian</groupId>
+            <artifactId>arquillian-bom</artifactId>
+            <version>${version.arquillian}</version>
+            <type>pom</type>
+            <scope>import</scope>
+         </dependency>
+         <dependency>
+            <groupId>org.jboss.arquillian.extension</groupId>
+            <artifactId>arquillian-drone-bom</artifactId>
+            <version>${version.arquillian.drone}</version>
+            <type>pom</type>
+            <scope>import</scope>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
+
+   <dependencies>
+      <dependency>
+         <groupId>junit</groupId>
+         <artifactId>junit</artifactId>
+         <scope>test</scope>
+      </dependency>
+   </dependencies>
+
+   <developers>
+      <developer>
+         <id>lincolnbaxter</id>
+         <name>Lincoln Baxter, III</name>
+         <email>lincoln@ocpsoft.org</email>
+         <timezone>-5</timezone>
+      </developer>
+      <developer>
+         <id>chkalt</id>
+         <name>Christian Kaltepoth</name>
+         <email>christian@kaltepoth.de</email>
+         <url>http://chkal.blogspot.com/</url>
+         <timezone>+1</timezone>
+      </developer>
+      <developer>
+         <id>larsgrefer</id>
+         <name>Lars Grefer</name>
+         <email>github@larsgrefer.de</email>
+         <timezone>Europe/Berlin</timezone>
+      </developer>
+   </developers>
+
+   <url>https://ocpsoft.org/rewrite/</url>
+
+   <licenses>
+      <license>
+         <name>Apache License</name>
+         <url>https://www.apache.org/licenses/</url>
+         <distribution>repo</distribution>
+      </license>
+   </licenses>
+
+   <scm>
+      <connection>scm:git:git://github.com/ocpsoft/rewrite.git</connection>
+      <developerConnection>scm:git:git@github.com:ocpsoft/rewrite.git</developerConnection>
+      <url>https://github.com/ocpsoft/rewrite</url>
+      <tag>HEAD</tag>
+   </scm>
+
+   <issueManagement>
+      <system>GitHub Issues</system>
+      <url>https://github.com/ocpsoft/rewrite/issues</url>
+   </issueManagement>
+
+   <ciManagement>
+      <system>GitHub Actions</system>
+      <url>https://github.com/ocpsoft/rewrite/actions</url>
+   </ciManagement>
+
+</project>
