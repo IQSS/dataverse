@@ -182,6 +182,11 @@ public class ImportDDIServiceBean {
             throw new XMLStreamException("It doesn't start with the XML element <codeBook>");
         }
         
+        //Include metadataLanguage from an xml:lang attribute if present (null==undefined)
+        String metadataLanguage= xmlr.getAttributeValue("http://www.w3.org/XML/1998/namespace", "lang");
+        logger.fine("Found metadatalanguage in ddi xml: " + metadataLanguage);
+        datasetDTO.setMetadataLanguage(metadataLanguage);
+
         // Some DDIs provide an ID in the <codeBook> section.
         // We are going to treat it as just another otherId.
         // (we've seen instances where this ID was the only ID found in
@@ -997,7 +1002,7 @@ public class ImportDDIServiceBean {
     private void processDataColl(XMLStreamReader xmlr, DatasetVersionDTO dvDTO) throws XMLStreamException {
         MetadataBlockDTO socialScience =getSocialScience(dvDTO);
         
-        String collMode = "";
+        List<String> collMode = new ArrayList<>();
         String timeMeth = "";
         String weight = "";
         String dataCollector = "";
@@ -1035,16 +1040,12 @@ public class ImportDDIServiceBean {
                     //devationsFromSamplingDesign
                 } else if (xmlr.getLocalName().equals("deviat")) {
                    socialScience.getFields().add(FieldDTO.createPrimitiveFieldDTO("deviationsFromSampleDesign", parseText( xmlr, "deviat" )));
-                 // collectionMode
+                // collectionMode - allows multiple values, as of 5.10
                 } else if (xmlr.getLocalName().equals("collMode")) {
                     String thisValue = parseText( xmlr, "collMode" );
                     if (!StringUtil.isEmpty(thisValue)) {
-                        if (!"".equals(collMode)) {
-                            collMode = collMode.concat(", ");
-                        }
-                        collMode = collMode.concat(thisValue);
+                        collMode.add(thisValue);
                     }
-                  //socialScience.getFields().add(FieldDTO.createPrimitiveFieldDTO("collectionMode", parseText( xmlr, "collMode" )));                      
                 //researchInstrument
                 } else if (xmlr.getLocalName().equals("resInstru")) {
                    socialScience.getFields().add(FieldDTO.createPrimitiveFieldDTO("researchInstrument", parseText( xmlr, "resInstru" )));
@@ -1075,8 +1076,8 @@ public class ImportDDIServiceBean {
                     if (!StringUtil.isEmpty(timeMeth)) {
                         socialScience.getFields().add(FieldDTO.createPrimitiveFieldDTO("timeMethod", timeMeth));
                     }
-                    if (!StringUtil.isEmpty(collMode)) {
-                        socialScience.getFields().add(FieldDTO.createPrimitiveFieldDTO("collectionMode", collMode));
+                    if (collMode.size() > 0) {
+                        socialScience.getFields().add(FieldDTO.createMultiplePrimitiveFieldDTO("collectionMode", collMode));
                     }
                     if (!StringUtil.isEmpty(weight)) {
                         socialScience.getFields().add(FieldDTO.createPrimitiveFieldDTO("weighting", weight));

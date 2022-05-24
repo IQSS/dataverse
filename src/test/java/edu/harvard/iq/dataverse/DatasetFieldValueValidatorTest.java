@@ -5,42 +5,27 @@
  */
 package edu.harvard.iq.dataverse;
 
+import java.util.Set;
 import java.util.regex.Pattern;
 import javax.validation.ConstraintValidatorContext;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mockito;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
  *
  * @author skraffmi
  */
 public class DatasetFieldValueValidatorTest {
-    
-    
-    public DatasetFieldValueValidatorTest() {
-    }
-    
-    @BeforeClass
-    public static void setUpClass() {
-    }
-    
-    @AfterClass
-    public static void tearDownClass() {
-    }
-    
-    @Before
-    public void setUp() {
-    }
-    
-    @After
-    public void tearDown() {
-    }
-
 
     /**
      * Test of isValid method, of class DatasetFieldValueValidator.
@@ -124,18 +109,6 @@ public class DatasetFieldValueValidatorTest {
         value.setValue("12.14");
         result = instance.isValid(value, ctx);
         assertEquals(false, result);
-        
-        //URL
-        dft.setFieldType(DatasetFieldType.FieldType.URL); 
-        value.setValue("http://cnn.com");
-        result = instance.isValid(value, ctx);
-        assertEquals(true, result);
-        
-        
-        value.setValue("espn.com");
-        result = instance.isValid(value, ctx);
-        assertEquals(false, result);
-        
     }
 
     @Test
@@ -184,4 +157,60 @@ public class DatasetFieldValueValidatorTest {
         assertFalse(validator.isValidAuthorIdentifier("junk", pattern));
     }
 
+    final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+    
+    @ParameterizedTest
+    @CsvSource(
+        {
+            "true, https://www.google.com",
+            "true, http://google.com",
+            "true, https://do-not-exist-123-123.com/",
+            "true, ftp://somesite.com",
+            "false, google.com",
+            "false, git@github.com:IQSS/dataverse.git"
+        }
+    )
+    public void testInvalidURL(boolean expected, String url) {
+        // given
+        String fieldName = "testField";
+        
+        DatasetField field = new DatasetField();
+        field.setDatasetFieldType(new DatasetFieldType(fieldName, DatasetFieldType.FieldType.URL, false));
+        DatasetFieldValue sut = new DatasetFieldValue(field);
+        sut.setValue(url);
+        
+        // when
+        Set<ConstraintViolation<DatasetFieldValue>> violations = validator.validate(sut);
+        
+        // then
+        assertEquals(expected, violations.size() < 1);
+        violations.stream().findFirst().ifPresent(c -> {
+            assertTrue(c.getMessage().startsWith(fieldName + " " + url + " "));
+            assertTrue(c.getMessage().contains("not"));
+            assertTrue(c.getMessage().contains("URL"));
+        });
+    }
+    
+    @Test
+    public void testInvalidEmail() {
+        // given
+        String fieldName = "testField";
+        String invalidMail = "myinvalidmail";
+        
+        DatasetField field = new DatasetField();
+        field.setDatasetFieldType(new DatasetFieldType(fieldName, DatasetFieldType.FieldType.EMAIL, false));
+        DatasetFieldValue sut = new DatasetFieldValue(field);
+        sut.setValue(invalidMail);
+        
+        // when
+        Set<ConstraintViolation<DatasetFieldValue>> violations = validator.validate(sut);
+        
+        // then
+        assertTrue(violations.size() == 1);
+        violations.stream().findFirst().ifPresent(c -> {
+            assertTrue(c.getMessage().startsWith(fieldName + " " + invalidMail + " "));
+            assertTrue(c.getMessage().contains("not"));
+            assertTrue(c.getMessage().contains("email"));
+        });
+    }
 }

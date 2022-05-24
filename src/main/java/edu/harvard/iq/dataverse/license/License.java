@@ -23,9 +23,9 @@ import java.util.Objects;
  */
  @NamedQueries({
     @NamedQuery( name="License.findAll",
-            query="SELECT l FROM License l"),
+            query="SELECT l FROM License l ORDER BY (case when l.isDefault then 0 else 1 end), l.id asc"),
     @NamedQuery( name="License.findAllActive",
-            query="SELECT l FROM License l WHERE l.active='true'"),
+            query="SELECT l FROM License l WHERE l.active='true' ORDER BY (case when l.isDefault then 0 else 1 end), l.id asc"),
     @NamedQuery( name="License.findById",
             query = "SELECT l FROM License l WHERE l.id=:id"),
     @NamedQuery( name="License.findDefault",
@@ -84,7 +84,11 @@ public class License {
         this.name = name;
         this.shortDescription = shortDescription;
         this.uri = uri.toASCIIString();
-        this.iconUrl = iconUrl.toASCIIString();
+        if (iconUrl != null) {
+            this.iconUrl = iconUrl.toASCIIString();
+        } else {
+            this.iconUrl = null;
+        }
         this.active = active;
         isDefault = false;
     }
@@ -118,6 +122,9 @@ public class License {
     }
 
     public URI getIconUrl() {
+        if (iconUrl == null) {
+            return null;
+        }
         try {
             return new URI(iconUrl);
         } catch (URISyntaxException e) {
@@ -134,7 +141,11 @@ public class License {
     }
 
     public void setIconUrl(URI iconUrl) {
-        this.iconUrl = iconUrl.toASCIIString();
+        if (iconUrl != null) {
+            this.iconUrl = iconUrl.toASCIIString();
+        } else {
+            this.iconUrl = null;
+        }
     }
 
     public boolean isActive() {
@@ -166,7 +177,7 @@ public class License {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         License license = (License) o;
-        return active == license.active && id.equals(license.id) && name.equals(license.name) && shortDescription.equals(license.shortDescription) && uri.equals(license.uri) && iconUrl.equals(license.iconUrl);
+        return active == license.active && id.equals(license.id) && name.equals(license.name) && shortDescription.equals(license.shortDescription) && uri.equals(license.uri) && Objects.equals(iconUrl, license.iconUrl);
     }
 
     @Override

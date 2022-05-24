@@ -159,10 +159,11 @@ public class ManagePermissionsPage implements java.io.Serializable {
         List<RoleAssignmentRow> raList = null;
         if (dvObject != null && dvObject.getId() != null) {
             Set<RoleAssignment> ras = roleService.rolesAssignments(dvObject);
+            List<DataverseRole> availableRoles = getAvailableRoles();
             raList = new ArrayList<>(ras.size());
             for (RoleAssignment roleAssignment : ras) {
-                // for files, only show role assignments which can download
-                if (!(dvObject instanceof DataFile) || roleAssignment.getRole().permissions().contains(Permission.DownloadFile)) {
+                // only show roles that are available for this DVObject
+                if (availableRoles.contains(roleAssignment.getRole())) {
                     RoleAssignee roleAssignee = roleAssigneeService.getRoleAssignee(roleAssignment.getAssigneeIdentifier());
                     if (roleAssignee != null) {
                         raList.add(new RoleAssignmentRow(roleAssignment, roleAssignee.getDisplayInfo()));
@@ -419,7 +420,16 @@ public class ManagePermissionsPage implements java.io.Serializable {
                 }
 
             } else if (dvObject instanceof DataFile) {
-                roles.add(roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER));
+                // only show roles that have File level permissions
+                // current the available roles for a file are gotten from its parent's parent                
+                for (DataverseRole role : roleService.availableRoles(dvObject.getOwner().getOwner().getId())) {
+                    for (Permission permission : role.permissions()) {
+                        if (permission.appliesTo(DataFile.class)) {
+                            roles.add(role);
+                            break;
+                        }
+                    }
+                }
             }
 
             Collections.sort(roles, DataverseRole.CMP_BY_NAME);

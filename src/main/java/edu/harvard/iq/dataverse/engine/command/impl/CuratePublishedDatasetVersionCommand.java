@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.DatasetFieldUtil;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
@@ -17,6 +18,7 @@ import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.DataFileCategory;
+import edu.harvard.iq.dataverse.DatasetVersionDifference;
 
 import java.util.Collection;
 import java.util.List;
@@ -33,7 +35,7 @@ import java.util.logging.Logger;
 public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand<Dataset> {
 
     private static final Logger logger = Logger.getLogger(CuratePublishedDatasetVersionCommand.class.getCanonicalName());
-    final private boolean validateLenient = true;
+    final private boolean validateLenient = false;
 
     public CuratePublishedDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest) {
         super(aRequest, theDataset);
@@ -59,7 +61,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         validateOrDie(updateVersion, isValidateLenient());
 
         // final DatasetVersion editVersion = getDataset().getEditVersion();
-        tidyUpFields(updateVersion);
+        DatasetFieldUtil.tidyUpFields(updateVersion.getDatasetFields(), true);
 
         // Merge the new version into our JPA context
         ctxt.em().merge(updateVersion);
@@ -110,38 +112,14 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("datasetversion.update.failure"), this);
             } else {
 
-                if (!draftFmd.getLabel().equals(publishedFmd.getLabel())) {
-                    publishedFmd.setLabel(draftFmd.getLabel());
-                    metadataUpdated = true;
-                }
-                String draftDesc = draftFmd.getDescription();
-                String pubDesc = publishedFmd.getDescription();
-                if ((draftDesc!=null && (!draftDesc.equals(pubDesc))) || (draftDesc==null && pubDesc!=null)) {
-                    publishedFmd.setDescription(draftDesc);
-                    metadataUpdated = true;
-                }
-                if (!draftFmd.getCategories().equals(publishedFmd.getCategories())) {
-                    publishedFmd.setCategories(draftFmd.getCategories());
-                    metadataUpdated = true;
-                }
-                if (!draftFmd.isRestricted() == publishedFmd.isRestricted()) {
-                    publishedFmd.setRestricted(draftFmd.isRestricted());
-                    metadataUpdated = true;
-                    //Must also update state of file
-                    dataFile.setRestricted(draftFmd.isRestricted());
-                }
-                String draftProv = draftFmd.getProvFreeForm();
-                String pubProv = publishedFmd.getProvFreeForm();
-                if ((draftProv != null && (!draftProv.equals(pubProv)))||(draftProv==null && pubProv!=null)) {
-                    publishedFmd.setProvFreeForm(draftProv);
-                    metadataUpdated = true;
-                }
-
+                metadataUpdated = DatasetVersionDifference.compareFileMetadatas(publishedFmd, draftFmd);
+                publishedFmd.setLabel(draftFmd.getLabel());
+                publishedFmd.setDescription(draftFmd.getDescription());
+                publishedFmd.setCategories(draftFmd.getCategories());
+                publishedFmd.setRestricted(draftFmd.isRestricted());
+                dataFile.setRestricted(draftFmd.isRestricted());
+                publishedFmd.setProvFreeForm(draftFmd.getProvFreeForm());
                 publishedFmd.copyVariableMetadata(draftFmd.getVariableMetadatas());
-                Collection<VarGroup> vgl = publishedFmd.getVarGroups();
-                for (VarGroup vg : vgl) {
-                    ctxt.em().remove(vg);
-                }
                 publishedFmd.copyVarGroups(draftFmd.getVarGroups());
 
             }

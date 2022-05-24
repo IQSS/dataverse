@@ -60,7 +60,7 @@ public class LicenseServiceBean {
                     .setParameter("uri", nameOrUri)
                     .getSingleResult();
         } catch (NoResultException noResultException) {
-            logger.log(Level.WARNING, "Couldn't find a license for: {0}", nameOrUri);
+            logger.log(Level.WARNING, "Couldn't find a license for: " + nameOrUri);
             return null;
         }
     }

@@ -110,6 +110,9 @@ public class FilePage implements java.io.Serializable {
     AuthenticationServiceBean authService;
     
     @EJB
+    DatasetServiceBean datasetService;
+    
+    @EJB
     SystemConfig systemConfig;
 
 
@@ -241,8 +244,23 @@ public class FilePage implements java.io.Serializable {
 
             return permissionsWrapper.notFound();
         }
-
+        
+        hasRestrictedFiles = fileMetadata.getDatasetVersion().isHasRestrictedFile();
+        hasValidTermsOfAccess = null;
+        hasValidTermsOfAccess = isHasValidTermsOfAccess();
+        if(!hasValidTermsOfAccess && canUpdateDataset() ){
+            JsfHelper.addWarningMessage(BundleUtil.getStringFromBundle("dataset.message.editMetadata.invalid.TOUA.message"));
+        }
+        
+        displayPublishMessage();
         return null;
+    }
+    
+    private void displayPublishMessage(){
+        if (fileMetadata.getDatasetVersion().isDraft()  && canUpdateDataset()
+                &&   (canPublishDataset() || !fileMetadata.getDatasetVersion().getDataset().isLockedFor(DatasetLock.Reason.InReview))){
+            JsfHelper.addWarningMessage(datasetService.getReminderString(fileMetadata.getDatasetVersion().getDataset(), canPublishDataset(), true));
+        }               
     }
     
     private boolean canViewUnpublishedDataset() {
@@ -363,19 +381,28 @@ public class FilePage implements java.io.Serializable {
         editDataset = this.file.getOwner();
         if (restricted) { // get values from access popup
             editDataset.getEditVersion().getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
-            editDataset.getEditVersion().getTermsOfUseAndAccess().setFileAccessRequest(fileAccessRequest);        
+            editDataset.getEditVersion().getTermsOfUseAndAccess().setFileAccessRequest(fileAccessRequest);   
         }
-        
-        Command cmd;
-        for (FileMetadata fmw : editDataset.getEditVersion().getFileMetadatas()) {
-            if (fmw.getDataFile().equals(this.fileMetadata.getDataFile())) {
-                fileNames += fmw.getLabel();
-                //fmw.setRestricted(restricted);
-                cmd = new RestrictFileCommand(fmw.getDataFile(), dvRequestService.getDataverseRequest(), restricted);
-                commandEngine.submit(cmd);
+        //using this method to update the terms for datasets that are out of compliance 
+        // with Terms of Access requirement - may get her with a file that is already restricted
+        // we'll allow it 
+        try {
+            Command cmd;
+            for (FileMetadata fmw : editDataset.getEditVersion().getFileMetadatas()) {
+                if (fmw.getDataFile().equals(this.fileMetadata.getDataFile())) {
+                    fileNames += fmw.getLabel();
+                    cmd = new RestrictFileCommand(fmw.getDataFile(), dvRequestService.getDataverseRequest(), restricted);
+                    commandEngine.submit(cmd);
+                }
             }
-        }
-        
+
+        } catch (CommandException ex) {
+            if (ex.getLocalizedMessage().contains("is already restricted")) {
+                //ok we're just updating the terms here
+            } else {
+                throw ex;
+            }
+        }   
         if (fileNames != null) {
             String successMessage = BundleUtil.getStringFromBundle("file.restricted.success");
             successMessage = successMessage.replace("{0}", fileNames);
@@ -584,7 +611,7 @@ public class FilePage implements java.io.Serializable {
 
     public String save() {
         // Validate
-        Set<ConstraintViolation> constraintViolations = this.fileMetadata.getDatasetVersion().validate();
+        Set<ConstraintViolation> constraintViolations = editDataset.getEditVersion().validate();
         if (!constraintViolations.isEmpty()) {
              //JsfHelper.addFlashMessage(JH.localize("dataset.message.validationError"));
              fileDeleteInProgress = false;
@@ -732,6 +759,43 @@ public class FilePage implements java.io.Serializable {
         this.selectedTabIndex = selectedTabIndex;
     }
     
+   private Boolean hasValidTermsOfAccess = null;
+    
+    public Boolean isHasValidTermsOfAccess() {
+        //cache in page to limit processing
+        if (hasValidTermsOfAccess != null){
+            return hasValidTermsOfAccess;
+        } else {
+            if (!isHasRestrictedFiles()){
+               hasValidTermsOfAccess = true;
+               return hasValidTermsOfAccess;
+            } else {
+                hasValidTermsOfAccess = TermsOfUseAndAccessValidator.isTOUAValid(fileMetadata.getDatasetVersion().getTermsOfUseAndAccess(), null);
+                return hasValidTermsOfAccess;
+            }
+        }    
+    }
+    
+    public boolean getHasValidTermsOfAccess(){
+        return isHasValidTermsOfAccess(); //HasValidTermsOfAccess
+    }
+    
+    public void setHasValidTermsOfAccess(boolean value){
+        //dummy for ui
+    }
+    
+    private Boolean hasRestrictedFiles = null;
+    
+    public Boolean isHasRestrictedFiles(){
+        //cache in page to limit processing
+        if (hasRestrictedFiles != null){
+            return hasRestrictedFiles;
+        } else {
+            hasRestrictedFiles = fileMetadata.getDatasetVersion().isHasRestrictedFile();
+            return hasRestrictedFiles;
+        }
+    }
+    
     public boolean isSwiftStorage () {
         Boolean swiftBool = false;
         if (file.getStorageIdentifier().startsWith("swift://")){
@@ -841,6 +905,9 @@ public class FilePage implements java.io.Serializable {
             } catch (IllegalCommandException ex) {
                 lockedFromEditsVar = true;
             }
+            if (!isHasValidTermsOfAccess()){
+                lockedFromEditsVar = true;
+            }
         }
         return lockedFromEditsVar;
     }
@@ -915,14 +982,8 @@ public class FilePage implements java.io.Serializable {
     public String preview(ExternalTool externalTool) {
         ApiToken apiToken = null;
         User user = session.getUser();
-        if (user instanceof AuthenticatedUser) {
-            apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
-        } else if (user instanceof PrivateUrlUser) {
-            PrivateUrlUser privateUrlUser = (PrivateUrlUser) user;
-            PrivateUrl privateUrl = privateUrlService.getPrivateUrlFromDatasetId(privateUrlUser.getDatasetId());
-            privateUrl.getToken();
-            apiToken = new ApiToken();
-            apiToken.setTokenString(privateUrl.getToken());
+        if (fileMetadata.getDatasetVersion().isDraft() || (fileMetadata.getDataFile().isRestricted()) || (FileUtil.isActivelyEmbargoed(fileMetadata))) {
+            apiToken=fileDownloadService.getApiToken(user);
         }
         if(externalTool == null){
             return "";
