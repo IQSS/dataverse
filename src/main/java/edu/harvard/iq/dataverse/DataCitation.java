@@ -713,25 +713,39 @@ public class DataCitation {
 
     private Date getDateFrom(DatasetVersion dsv) {
         Date citationDate = null;
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
-        if (!dsv.getDataset().isHarvested()) {
-            citationDate = dsv.getCitationDate();
-            if (citationDate == null) {
-                if (dsv.getDataset().getCitationDate() != null) {
-                    citationDate = dsv.getDataset().getCitationDate();
-                } else { // for drafts
-                    citationDate = dsv.getLastUpdateTime();
-                }
-            }
-        } else {
+
+        if (dsv.getDataset().isHarvested()) {
             try {
-                citationDate= sdf.parse(dsv.getDistributionDate());
+                SimpleDateFormat sdffull = new SimpleDateFormat("yyyy-MM-dd");
+                citationDate = sdffull.parse(dsv.getProductionDate());
             } catch (ParseException ex) {
                 // ignore
             } catch (Exception ex) {
                 // ignore
             }
+
+            if (citationDate == null) {
+                try {
+                   SimpleDateFormat sdfshort = new SimpleDateFormat("yyyy");
+                    citationDate = sdfshort.parse(dsv.getDistributionDate());
+                } catch (ParseException ex) {
+                    // ignore
+                } catch (Exception ex) {
+                    // ignore
+                }
+            }
         }
+
+        if (citationDate == null) {
+            if (dsv.getCitationDate() != null) {
+                citationDate = dsv.getCitationDate();
+            } else if (dsv.getDataset().getCitationDate() != null) {
+                citationDate = dsv.getDataset().getCitationDate();
+            } else { // for drafts
+                citationDate = dsv.getLastUpdateTime();
+            }
+        }
+
         if (citationDate == null) {
             //As a last resort, pick the current date
             logger.warning("Unable to find citation date for datasetversion: " + dsv.getId());
