@@ -73,32 +73,51 @@ public class DataverseXoaiItemRepository implements ItemRepository {
             DataverseXoaiItem xoaiItem = null; 
             for (OAIRecord record : oaiRecords) {
                 if (xoaiItem == null) {
-                    Dataset dataset = datasetService.findByGlobalId(record.getGlobalId());
-                    if (dataset == null) {
-                        // This should not happen - but if there are no longer datasets 
-                        // associated with this persistent identifier, we should simply 
-                        // bail out. 
-                        // TODO: double-check what happens/what NEEDS to happen
-                        // when somebody tries to call GetRecord on a DELETED 
-                        // OAI Record!
-                        break;
-                    }
+                    xoaiItem = new DataverseXoaiItem(record); 
                     
-                    InputStream pregeneratedMetadataStream; 
-                    try {
-                        pregeneratedMetadataStream = ExportService.getInstance().getExport(dataset, metadataFormat.getPrefix());
-                    } catch (ExportException|IOException ex) {
-                        // Again, this is not supposed to happen in normal operations; 
-                        // since by design only the datasets for which the metadata
-                        // records have been pre-generated ("exported") should be 
-                        // served as "OAI Record". But, things happen. If for one
-                        // reason or another that cached metadata file is no longer there, 
-                        // we are not going to serve this record. 
-                        break; 
-                    }
+                    // If this is a "deleted" OAI record - i.e., if someone
+                    // has called GetRecord on a deleted record (??), our 
+                    // job here is done. If it's a live record, let's try to 
+                    // look up the dataset and open the pre-generated metadata 
+                    // stream. 
                     
-                    Metadata metadata = Metadata.copyFromStream(pregeneratedMetadataStream);
-                    xoaiItem = new DataverseXoaiItem(record).withDataset(dataset).withMetadata(metadata);
+                    if (!record.isRemoved()) {
+                        Dataset dataset = datasetService.findByGlobalId(record.getGlobalId());
+                        if (dataset == null) {
+                            // This should not happen - but if there are no longer datasets 
+                            // associated with this persistent identifier, we should simply 
+                            // bail out. 
+                            // TODO: Consider an alternative - instead of throwing 
+                            // an IdDoesNotExist exception, mark the record as 
+                            // "deleted" and serve it to the client (?). For all practical
+                            // purposes, this is what this record represents - it's 
+                            // still in the database as part of an OAI set; but the 
+                            // corresponding dataset no longer exists, because it 
+                            // must have been deleted. 
+                            // i.e.
+                            // xoaiItem.getOaiRecord().setRemoved(true);
+                            break;
+                        }
+
+                        InputStream pregeneratedMetadataStream;
+                        try {
+                            pregeneratedMetadataStream = ExportService.getInstance().getExport(dataset, metadataFormat.getPrefix());
+                        } catch (ExportException | IOException ex) {
+                            // Again, this is not supposed to happen in normal operations; 
+                            // since by design only the datasets for which the metadata
+                            // records have been pre-generated ("exported") should be 
+                            // served as "OAI Record". But, things happen. If for one
+                            // reason or another that cached metadata file is no longer there, 
+                            // we are not going to serve this record. 
+                            // TODO: see the comment above; and consider
+                            // xoaiItem.getOaiRecord().setRemoved(true);
+                            // instead. 
+                            break;
+                        }
+
+                        Metadata metadata = Metadata.copyFromStream(pregeneratedMetadataStream);
+                        xoaiItem.withDataset(dataset).withMetadata(metadata);
+                    }
                 } else {
                     // Adding extra set specs to the XOAI Item, if this record
                     // is part of multiple sets:
@@ -236,33 +255,55 @@ public class DataverseXoaiItemRepository implements ItemRepository {
 
             for (int i = offset; i < offset + length && i < oaiRecords.size(); i++) {
                 OAIRecord oaiRecord = oaiRecords.get(i);
-                Dataset dataset = datasetService.findByGlobalId(oaiRecord.getGlobalId());
-                if (dataset != null) {
-                    // TODO: This needs to handle DELETED OAI records properly! -- L.A. 
-                                        
-                    // TODO: we need to know the MetadataFormat requested, in 
-                    // order to look up the pre-generated metadata stream
-                    // and create a CopyElement Metadata object out of it!
-                    // (cheating/defaulting to dc for testing purposes, for now)
-                    MetadataFormat metadataFormat =  MetadataFormat.metadataFormat("oai_dc");
+                
+                DataverseXoaiItem xoaiItem = new DataverseXoaiItem(oaiRecord); 
+                
+                // This may be a "deleted" OAI record - i.e., a record kept in 
+                // the OAI set for a dataset that's no longer in this Dataverse. 
+                // (it serves to tell the remote client to delete it from their 
+                // holdings too). 
+                // If this is the case here, our job is done with this record.
+                // If not, if it's a live record, let's try to 
+                // look up the dataset and open the pre-generated metadata 
+                // stream.
+                
+                if (!oaiRecord.isRemoved()) {
+                    Dataset dataset = datasetService.findByGlobalId(oaiRecord.getGlobalId());
+                    if (dataset != null) {
+                        // TODO: we need to know the MetadataFormat requested, in 
+                        // order to look up the pre-generated metadata stream
+                        // and create a CopyElement Metadata object out of it!
+                        // (cheating/defaulting to dc for testing purposes, for now)
+                        MetadataFormat metadataFormat =  MetadataFormat.metadataFormat("oai_dc");
                     
-                    InputStream pregeneratedMetadataStream; 
-                    try {
-                        pregeneratedMetadataStream = ExportService.getInstance().getExport(dataset, metadataFormat.getPrefix());
-                    } catch (ExportException|IOException ex) {
-                        // Again, this is not supposed to happen in normal operations; 
-                        // since by design only the datasets for which the metadata
-                        // records have been pre-generated ("exported") should be 
-                        // served as "OAI Record". But, things happen. If for one
-                        // reason or another that cached metadata file is no longer there, 
-                        // we are not going to serve this record. 
-                        continue; 
+                        InputStream pregeneratedMetadataStream; 
+                        try {
+                            pregeneratedMetadataStream = ExportService.getInstance().getExport(dataset, metadataFormat.getPrefix());
+                            
+                            Metadata metadata = Metadata.copyFromStream(pregeneratedMetadataStream);
+                            xoaiItem.withDataset(dataset).withMetadata(metadata);
+                        } catch (ExportException|IOException ex) {
+                            // Again, this is not supposed to happen in normal operations; 
+                            // since by design only the datasets for which the metadata
+                            // records have been pre-generated ("exported") should be 
+                            // served as "OAI Record". But, things happen. If for one
+                            // reason or another that cached metadata file is no longer there, 
+                            // we are not going to serve any metadata for this record, 
+                            // BUT we are going to include it marked as "deleted"
+                            // (because skipping it could potentially mess up the
+                            // counts and offsets, in a resumption token scenario.
+                            xoaiItem.getOaiRecord().setRemoved(true);
+                        }
+                    } else {
+                        // If dataset (somehow) no longer exists (again, this is 
+                        // not supposed to happen), we will serve the record, 
+                        // marked as "deleted" and without any metadata. 
+                        // We can't just skip it, because that could mess up the
+                        // counts and offsets, in a resumption token scenario.
+                        xoaiItem.getOaiRecord().setRemoved(true);
                     }
-                    
-                    Metadata metadata = Metadata.copyFromStream(pregeneratedMetadataStream);
-                    DataverseXoaiItem xItem = new DataverseXoaiItem(oaiRecord).withDataset(dataset).withMetadata(metadata);
-                    xoaiItems.add(xItem);
                 }
+                xoaiItems.add(xoaiItem);
             }
             
             addExtraSets(xoaiItems, setSpec, from, until);
@@ -305,6 +346,5 @@ public class DataverseXoaiItemRepository implements ItemRepository {
                 j++;
             }
         }
-                
     }
 }
