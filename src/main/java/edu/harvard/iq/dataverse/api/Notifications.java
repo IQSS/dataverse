@@ -159,17 +159,18 @@ public class Notifications extends AbstractApiBean {
             return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
         }
 
-        UserNotification.Type notificationType = UserNotification.Type.valueOf(typeName);
-        if (notificationType != null) {
-            AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
-            Set<UserNotification.Type> mutedEmails = authenticatedUser.getMutedEmails();
-            mutedEmails.add(notificationType);
-            authenticatedUser.setMutedEmails(mutedEmails);
-            authSvc.update(authenticatedUser);
-            return ok("Notification emails of type " + typeName + " muted.");
+        UserNotification.Type notificationType;
+        try {
+            notificationType = UserNotification.Type.valueOf(typeName);
+        } catch (Exception ignore) {
+            return notFound("Notification type " + typeName + " not found.");
         }
-        
-        return notFound("Notification type " + typeName + " not found.");
+        AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
+        Set<UserNotification.Type> mutedEmails = authenticatedUser.getMutedEmails();
+        mutedEmails.add(notificationType);
+        authenticatedUser.setMutedEmails(mutedEmails);
+        authSvc.update(authenticatedUser);
+        return ok("Notification emails of type " + typeName + " muted.");
     }
 
     @DELETE
@@ -189,17 +190,18 @@ public class Notifications extends AbstractApiBean {
             return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
         }
 
-        UserNotification.Type notificationType = UserNotification.Type.valueOf(typeName);
-        if (notificationType != null) {
-            AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
-            Set<UserNotification.Type> mutedEmails = authenticatedUser.getMutedEmails();
-            mutedEmails.remove(notificationType);
-            authenticatedUser.setMutedEmails(mutedEmails);
-            authSvc.update(authenticatedUser);
-            return ok("Notification emails of type " + typeName + " unmuted.");
+        UserNotification.Type notificationType;
+        try {
+            notificationType = UserNotification.Type.valueOf(typeName);
+        } catch (Exception ignore) {
+            return notFound("Notification type " + typeName + " not found.");
         }
-        
-        return notFound("Notification type " + typeName + " not found.");
+        AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
+        Set<UserNotification.Type> mutedEmails = authenticatedUser.getMutedEmails();
+        mutedEmails.remove(notificationType);
+        authenticatedUser.setMutedEmails(mutedEmails);
+        authSvc.update(authenticatedUser);
+        return ok("Notification emails of type " + typeName + " unmuted.");
     }
 
     @GET
@@ -245,17 +247,18 @@ public class Notifications extends AbstractApiBean {
             return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
         }
 
-        UserNotification.Type notificationType = UserNotification.Type.valueOf(typeName);
-        if (notificationType != null) {
-            AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
-            Set<UserNotification.Type> mutedNotifications = authenticatedUser.getMutedNotifications();
-            mutedNotifications.add(notificationType);
-            authenticatedUser.setMutedNotifications(mutedNotifications);
-            authSvc.update(authenticatedUser);
-            return ok("Notification of type " + typeName + " muted.");
+        UserNotification.Type notificationType;
+        try {
+            notificationType = UserNotification.Type.valueOf(typeName);
+        } catch (Exception ignore) {
+            return notFound("Notification type " + typeName + " not found.");
         }
-        
-        return notFound("Notification type " + typeName + " not found.");
+        AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
+        Set<UserNotification.Type> mutedNotifications = authenticatedUser.getMutedNotifications();
+        mutedNotifications.add(notificationType);
+        authenticatedUser.setMutedNotifications(mutedNotifications);
+        authSvc.update(authenticatedUser);
+        return ok("Notification of type " + typeName + " muted.");
     }
 
     @DELETE
@@ -275,16 +278,17 @@ public class Notifications extends AbstractApiBean {
             return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
         }
 
-        UserNotification.Type notificationType = UserNotification.Type.valueOf(typeName);
-        if (notificationType != null) {
-            AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
-            Set<UserNotification.Type> mutedNotifications = authenticatedUser.getMutedNotifications();
-            mutedNotifications.remove(notificationType);
-            authenticatedUser.setMutedNotifications(mutedNotifications);
-            authSvc.update(authenticatedUser);
-            return ok("Notification of type " + typeName + " unmuted.");
+        UserNotification.Type notificationType;
+        try {
+            notificationType = UserNotification.Type.valueOf(typeName);
+        } catch (Exception ignore) {
+            return notFound("Notification type " + typeName + " not found.");
         }
-        
-        return notFound("Notification type " + typeName + " not found.");
+        AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
+        Set<UserNotification.Type> mutedNotifications = authenticatedUser.getMutedNotifications();
+        mutedNotifications.remove(notificationType);
+        authenticatedUser.setMutedNotifications(mutedNotifications);
+        authSvc.update(authenticatedUser);
+        return ok("Notification of type " + typeName + " unmuted.");
     }
 }
