@@ -1668,6 +1668,12 @@ public class DatasetPage implements java.io.Serializable {
             workingVersion.initDefaultValues(licenseServiceBean.getDefault());
             updateDatasetFieldInputLevels();
         }
+        /*
+        Issue 8646: necessary for the access popup which is shared by the dataset page and the file page
+        */
+        setFileAccessRequest(workingVersion.getTermsOfUseAndAccess().isFileAccessRequest());
+        setTermsOfAccess(workingVersion.getTermsOfUseAndAccess().getTermsOfAccess());
+        
         resetVersionUI();
     }
 
