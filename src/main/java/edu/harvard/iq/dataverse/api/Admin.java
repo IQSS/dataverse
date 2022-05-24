@@ -11,11 +11,14 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.validation.EMailValidator;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.Template;
+import edu.harvard.iq.dataverse.TemplateServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
@@ -85,6 +88,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeactivateUserCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteRoleCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteTemplateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -101,6 +105,7 @@ import java.io.OutputStream;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.rolesToJson;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
+import java.math.BigDecimal;
 
 
 import java.util.ArrayList;
@@ -140,6 +145,8 @@ public class Admin extends AbstractApiBean {
 	DataFileServiceBean fileService;
 	@EJB
 	DatasetServiceBean datasetService;
+        @EJB
+	DataverseServiceBean dataverseService;
 	@EJB
 	DatasetVersionServiceBean datasetversionService;
         @Inject
@@ -156,6 +163,8 @@ public class Admin extends AbstractApiBean {
         ExplicitGroupServiceBean explicitGroupService;
         @EJB
         BannerMessageServiceBean bannerMessageService;
+        @EJB
+        TemplateServiceBean templateService;
 
 	// Make the session available
 	@Inject
@@ -208,6 +217,75 @@ public class Admin extends AbstractApiBean {
 		settingsSvc.delete(name, lang);
 		return ok("Setting " + name + " - " + lang + " deleted.");
 	}
+        
+    @Path("template/{id}")
+    @DELETE
+    public Response deleteTemplate(@PathParam("id") long id) {
+        
+        AuthenticatedUser superuser = authSvc.getAdminUser();
+        if (superuser == null) {
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Cannot find superuser to execute DeleteTemplateCommand.");
+        }
+
+        Template doomed = templateService.find(id);
+        if (doomed == null) {
+            return error(Response.Status.NOT_FOUND, "Template with id " + id + " -  not found.");
+        }
+
+        Dataverse dv = doomed.getDataverse();
+        List <Dataverse> dataverseWDefaultTemplate = templateService.findDataversesByDefaultTemplateId(doomed.getId());
+
+        try {
+            commandEngine.submit(new DeleteTemplateCommand(createDataverseRequest(superuser), dv, doomed, dataverseWDefaultTemplate));
+        } catch (CommandException ex) {
+            Logger.getLogger(Admin.class.getName()).log(Level.SEVERE, null, ex);
+            return error(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
+        }
+
+        return ok("Template " + doomed.getName() + " deleted.");
+    }
+    
+    
+    @Path("templates")
+    @GET
+    public Response findAllTemplates() {
+        return findTemplates("");
+    }
+    
+    @Path("templates/{alias}")
+    @GET
+    public Response findTemplates(@PathParam("alias") String alias) {
+        List<Template> templates;
+
+            if (alias.isEmpty()) {
+                templates = templateService.findAll();
+            } else {
+                try{
+                    Dataverse owner = findDataverseOrDie(alias);
+                    templates = templateService.findByOwnerId(owner.getId());
+                } catch (WrappedResponse r){
+                    return r.getResponse();
+                }
+            }
+
+            JsonArrayBuilder container = Json.createArrayBuilder();
+            for (Template t : templates) {
+                JsonObjectBuilder bld = Json.createObjectBuilder();
+                bld.add("templateId", t.getId());
+                bld.add("templateName", t.getName());
+                Dataverse loopowner = t.getDataverse();
+                if (loopowner != null) {
+                    bld.add("owner", loopowner.getDisplayName());
+                } else {
+                    bld.add("owner", "This an orphan template, it may be safely removed");
+                }
+                container.add(bld);
+            }
+
+            return ok(container);
+
+        
+    }
 
 	@Path("authenticationProviderFactories")
 	@GET
@@ -1767,95 +1845,6 @@ public class Admin extends AbstractApiBean {
                 }
             } else {
                 return error(Status.BAD_REQUEST, "Version already archived at: " + dv.getArchivalCopyLocation());
-            }
-        } catch (WrappedResponse e1) {
-            return error(Status.UNAUTHORIZED, "api key required");
-        }
-    }
-    
-    
-    /**
-     * Iteratively archives all unarchived dataset versions
-     * @param
-     * listonly - don't archive, just list unarchived versions
-     * limit - max number to process
-     * lastestonly - only archive the latest versions
-     * @return
-     */
-    @POST
-    @Path("/archiveAllUnarchivedDatasetVersions")
-    public Response archiveAllUnarchivedDatasetVersions(@QueryParam("listonly") boolean listonly, @QueryParam("limit") Integer limit, @QueryParam("latestonly") boolean latestonly) {
-
-        try {
-            AuthenticatedUser au = findAuthenticatedUserOrDie();
-            // Note - the user is being set in the session so it becomes part of the
-            // DataverseRequest and is sent to the back-end command where it is used to get
-            // the API Token which is then used to retrieve files (e.g. via S3 direct
-            // downloads) to create the Bag
-            session.setUser(au);
-            List<DatasetVersion> dsl = datasetversionService.getUnarchivedDatasetVersions();
-            if (dsl != null) {
-                if (listonly) {
-                    JsonArrayBuilder jab = Json.createArrayBuilder();
-                    logger.info("Unarchived versions found: ");
-                    int current = 0;
-                    for (DatasetVersion dv : dsl) {
-                        if (limit != null && current >= limit) {
-                            break;
-                        }
-                        if (!latestonly || dv.equals(dv.getDataset().getLatestVersionForCopy())) {
-                            jab.add(dv.getDataset().getGlobalId().toString() + ", v" + dv.getFriendlyVersionNumber());
-                            logger.info("    " + dv.getDataset().getGlobalId().toString() + ", v" + dv.getFriendlyVersionNumber());
-                            current++;
-                        }
-                    }
-                    return ok(jab); 
-                }
-                String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
-                AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), dsl.get(0));
-                final DataverseRequest request = dvRequestService.getDataverseRequest();
-                if (cmd != null) {
-                    new Thread(new Runnable() {
-                        public void run() {
-                            int total = dsl.size();
-                            int successes = 0;
-                            int failures = 0;
-                            for (DatasetVersion dv : dsl) {
-                                if (limit != null && (successes + failures) >= limit) {
-                                    break;
-                                }
-                                if (!latestonly || dv.equals(dv.getDataset().getLatestVersionForCopy())) {
-                                    try {
-                                        AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, request, dv);
-
-                                        dv = commandEngine.submit(cmd);
-                                        
-                                        //ToDo - Change when status PR is merged - a PENDING or SUCCESS status is a success
-                                        if (dv.getArchivalCopyLocation()!=null) {
-                                            successes++;
-                                            logger.info("DatasetVersion id=" + dv.getDataset().getGlobalId().toString() + " v" + dv.getFriendlyVersionNumber() + " submitted to Archive at: "
-                                                    + dv.getArchivalCopyLocation());
-                                        } else {
-                                            failures++;
-                                            logger.severe("Error submitting version due to conflict/error at Archive for " + dv.getDataset().getGlobalId().toString() + " v" + dv.getFriendlyVersionNumber());
-                                        }
-                                    } catch (CommandException ex) {
-                                        failures++;
-                                        logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
-                                    }
-                                }
-                                logger.fine(successes + failures + " of " + total + " archive submissions complete");
-                            }
-                            logger.info("Archiving complete: " + successes + " Successfully started, " + failures + " Failures. See prior log messages for details.");
-                        }
-                    }).start();
-                    return ok("Archiving all unarchived published dataset versions using " + cmd.getClass().getCanonicalName() + ". Processing can take significant time for large datasets/ large numbers of dataset versions. View log and/or check archive for results.");
-                } else {
-                    logger.log(Level.SEVERE, "Could not find Archiver class: " + className);
-                    return error(Status.INTERNAL_SERVER_ERROR, "Could not find Archiver class: " + className);
-                }
-            } else {
-                return error(Status.BAD_REQUEST, "No unarchived published dataset versions found");
             }
         } catch (WrappedResponse e1) {
             return error(Status.UNAUTHORIZED, "api key required");

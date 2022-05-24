@@ -1,0 +1,1 @@
+Information about the license selection (or custom terms) is now available in the confirmation popup when contributors click "Submit for Review". Previously, this was only available in the confirmation popup for the "Publish" button, which contributors do not see.

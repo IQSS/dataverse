@@ -75,6 +75,7 @@ public class JsonParser {
      */
     boolean lenient = false;  
 
+    @Deprecated
     public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService) {
         this.datasetFieldSvc = datasetFieldSvc;
         this.blockService = blockService;
@@ -374,7 +375,7 @@ public class JsonParser {
             terms.setStudyCompletion(obj.getString("studyCompletion", null));
             terms.setFileAccessRequest(obj.getBoolean("fileAccessRequest", false));
             dsv.setTermsOfUseAndAccess(terms);
-            
+            terms.setDatasetVersion(dsv);
             dsv.setDatasetFields(parseMetadataBlocks(obj.getJsonObject("metadataBlocks")));
 
             JsonArray filesJson = obj.getJsonArray("files");

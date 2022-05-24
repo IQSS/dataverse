@@ -128,6 +128,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                                     try (PipedOutputStream out = new PipedOutputStream(in)){
                                         // Generate bag
                                         BagGenerator bagger = new BagGenerator(new OREMap(dv, false), dataciteXml);
+                                        bagger.setNumConnections(getNumberOfBagGeneratorThreads());
                                         bagger.setAuthenticationKey(token.getTokenString());
                                         bagger.generateBag(out);
                                     } catch (Exception e) {
