@@ -30,22 +30,17 @@ public class TemplateServiceBean {
     }
 
     public Template save(Template template) {
-        /*
-                if (template.getId() == null) {
-            em.persist(template);
-            return template;
-        } else {
-            return em.merge(template);
-        } */
         return em.merge(template);
     }
-
-    public Template findByDeafultTemplateOwnerId(Long ownerId) {
-        TypedQuery<Template> query = em.createQuery("select object(o.defaultTemplate) from Dataverse as o where o.owner.id =:ownerId order by o.name", Template.class);
-        query.setParameter("ownerId", ownerId);
-        return query.getSingleResult();
+    
+    public List<Template> findByOwnerId(Long ownerId) {              
+        return em.createNamedQuery("Template.findByOwnerId", Template.class).setParameter("ownerId", ownerId).getResultList();
     }
-
+    
+    public List<Template> findAll() {
+        return em.createNamedQuery("Template.findAll", Template.class).getResultList();
+    }
+    
     public List<Dataverse> findDataversesByDefaultTemplateId(Long defaultTemplateId) {
         TypedQuery<Dataverse> query = em.createQuery("select object(o) from Dataverse as o where o.defaultTemplate.id =:defaultTemplateId order by o.name", Dataverse.class);
         query.setParameter("defaultTemplateId", defaultTemplateId);

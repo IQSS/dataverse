@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateTemplateCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteTemplateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseTemplateCommand;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
@@ -18,6 +19,7 @@ import jakarta.faces.application.FacesMessage;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import java.util.List;
 
 /**
  *
@@ -53,7 +55,7 @@ public class TemplatePage implements java.io.Serializable {
 
     public enum EditMode {
 
-        CREATE, METADATA, LICENSE, LICENSEADD
+        CREATE, METADATA, LICENSE, LICENSEADD, CLONE
     };
 
     private Template template;
@@ -235,6 +237,21 @@ public class TemplatePage implements java.io.Serializable {
 
     public void cancel() {
         editMode = null;
+    }
+    
+    public String deleteTemplate(Long templateId) {
+        List <Dataverse> dataverseWDefaultTemplate = null;
+        Template doomed = templateService.find(templateId);
+        dataverse.getTemplates().remove(doomed);  
+        dataverseWDefaultTemplate = templateService.findDataversesByDefaultTemplateId(doomed.getId());
+        try {
+            commandEngine.submit(new DeleteTemplateCommand(dvRequestService.getDataverseRequest(), getDataverse(), doomed, dataverseWDefaultTemplate  ));
+            JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("template.delete"));//("The template has been deleted");
+        } catch (CommandException ex) {
+            String failMessage = BundleUtil.getStringFromBundle("template.delete.error");//"The dataset template cannot be deleted.";
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
+        }
+        return "/manage-templates.xhtml?dataverseId=" + dataverse.getId() + "&faces-redirect=true"; 
     }
 
 }

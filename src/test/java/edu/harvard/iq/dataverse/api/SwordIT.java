@@ -5,6 +5,7 @@ import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -725,6 +726,19 @@ public class SwordIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.latestVersion.termsOfUse", equalTo("Call me"))
                 .body("data.latestVersion.license", equalTo(null));
+
+        UtilIT.setSetting(SettingsServiceBean.Key.AllowCustomTermsOfUse, "false")
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        Response createDatasetCustomTermsDisabled = UtilIT.createDatasetViaSwordApi(dataverseAlias, title, description, license, rights, apiToken);
+        createDatasetCustomTermsDisabled.prettyPrint();
+        createDatasetCustomTermsDisabled.then().assertThat()
+                //  <summary>Custom Terms (dcterms:rights) are not allowed.</summary>
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        // cleanup, allow custom terms again (delete because it defaults to true)
+        UtilIT.deleteSetting(SettingsServiceBean.Key.AllowCustomTermsOfUse);
+
     }
 
     @Test
@@ -958,6 +972,8 @@ public class SwordIT {
 
     @AfterClass
     public static void tearDownClass() {
+        // cleanup, allow custom terms again (delete because it defaults to true)
+        UtilIT.deleteSetting(SettingsServiceBean.Key.AllowCustomTermsOfUse);
         UtilIT.deleteUser(superuser);
     }
 

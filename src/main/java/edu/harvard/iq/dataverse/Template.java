@@ -27,12 +27,22 @@ import jakarta.persistence.Transient;
 import jakarta.validation.constraints.Size;
 
 import edu.harvard.iq.dataverse.util.DateUtil;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**
  *
  * @author skraffmiller
  */
+
+@NamedQueries({
+    @NamedQuery(name = "Template.findByOwnerId",
+               query = "select object(o) from Template as o where o.dataverse.id =:ownerId"),
+    @NamedQuery(name = "Template.findAll",
+               query = "select object(o) from Template as o")
+})
+
 @Entity
 @Table(indexes = {@Index(columnList="dataverse_id")})
 public class Template implements Serializable {
