@@ -243,16 +243,16 @@ public class OAIServlet extends HttpServlet {
             
             OAIPMH handle = dataProvider.handle(parametersBuilder);
             response.setContentType("text/xml;charset=UTF-8");
-            
+
             /* if (isGetRecord(request) && !handle.hasErrors()) {
                 writeGetRecord(response, handle);
             } else if (isListRecords(request) && !handle.hasErrors()) {
                 writeListRecords(response, handle);
             } else { */
-                XmlWriter xmlWriter = new XmlWriter(response.getOutputStream());
-                xmlWriter.write(handle);
-                xmlWriter.flush();
-                xmlWriter.close();
+            XmlWriter xmlWriter = new XmlWriter(response.getOutputStream());
+            xmlWriter.write(handle);
+            xmlWriter.flush();
+            xmlWriter.close();
             /* } */
                        
         } catch (IOException ex) {
