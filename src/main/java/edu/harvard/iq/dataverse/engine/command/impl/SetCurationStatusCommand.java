@@ -29,7 +29,6 @@ import java.util.regex.Pattern;
 
 import org.apache.solr.client.solrj.SolrServerException;
 
-import com.beust.jcommander.Strings;
 import com.google.api.LabelDescriptor;
 
 @RequiredPermissions(Permission.PublishDataset)

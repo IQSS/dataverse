@@ -2,7 +2,9 @@ name: "Guides Build Status"
 on: 
   pull_request:
     paths:
-      - 'doc/sphinx-guides/**/*.rst'
+      - "doc/sphinx-guides/**/*.rst"
+      - "doc/sphinx-guides/**/requirements.txt"
+      - "doc/sphinx-guides/**/conf.py"
 
 jobs:
   docs:

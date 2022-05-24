@@ -16,13 +16,11 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -34,15 +32,8 @@ import javax.faces.context.FacesContext;
 import javax.faces.validator.ValidatorException;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
-import javax.json.Json;
-import javax.json.JsonArray;
 import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonValue;
 import javax.mail.internet.InternetAddress;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  *
@@ -331,37 +322,20 @@ public class SettingsWrapper implements java.io.Serializable {
     
     public boolean isLocalesConfigured() {
         if (configuredLocales == null) {
-            initLocaleSettings();
+            configuredLocales = new LinkedHashMap<>();
+            settingsService.initLocaleSettings(configuredLocales);
         }
         return configuredLocales.size() > 1;
     }
 
     public Map<String, String> getConfiguredLocales() {
         if (configuredLocales == null) {
-            initLocaleSettings(); 
+            configuredLocales = new LinkedHashMap<>();
+            settingsService.initLocaleSettings(configuredLocales); 
         }
         return configuredLocales;
     }
     
-    private void initLocaleSettings() {
-        
-        configuredLocales = new LinkedHashMap<>();
-        
-        try {
-            JSONArray entries = new JSONArray(getValueForKey(SettingsServiceBean.Key.Languages, "[]"));
-            for (Object obj : entries) {
-                JSONObject entry = (JSONObject) obj;
-                String locale = entry.getString("locale");
-                String title = entry.getString("title");
-
-                configuredLocales.put(locale, title);
-            }
-        } catch (JSONException e) {
-            //e.printStackTrace();
-            // do we want to know? - probably not
-        }
-    }
-
     public boolean isDoiInstallation() {
         String protocol = getValueForKey(SettingsServiceBean.Key.Protocol);
         if ("doi".equals(protocol)) {
@@ -490,31 +464,16 @@ public class SettingsWrapper implements java.io.Serializable {
     
     public Map<String, String> getBaseMetadataLanguageMap(boolean refresh) {
         if (languageMap == null || refresh) {
-            languageMap = new HashMap<String, String>();
-
-            /* If MetadataLanaguages is set, use it.
-             * If not, we can't assume anything and should avoid assuming a metadata language
-             */
-            String mlString = getValueForKey(SettingsServiceBean.Key.MetadataLanguages,"");
-            
-            if(mlString.isEmpty()) {
-                mlString="[]";
-            }
-            JsonReader jsonReader = Json.createReader(new StringReader(mlString));
-            JsonArray languages = jsonReader.readArray();
-            for(JsonValue jv: languages) {
-                JsonObject lang = (JsonObject) jv;
-                languageMap.put(lang.getString("locale"), lang.getString("title"));
-            }
+           languageMap = settingsService.getBaseMetadataLanguageMap(languageMap, true);
         }
         return languageMap;
     }
     
     public Map<String, String> getMetadataLanguages(DvObjectContainer target) {
         Map<String,String> currentMap = new HashMap<String,String>();
-        currentMap.putAll(getBaseMetadataLanguageMap(true));
-        languageMap.put(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE, getDefaultMetadataLanguageLabel(target));
-        return languageMap;
+        currentMap.putAll(getBaseMetadataLanguageMap(false));
+        currentMap.put(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE, getDefaultMetadataLanguageLabel(target));
+        return currentMap;
     }
     
     private String getDefaultMetadataLanguageLabel(DvObjectContainer target) {

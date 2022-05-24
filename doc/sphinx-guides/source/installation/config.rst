@@ -573,8 +573,8 @@ Credentials via MicroProfile Config
 
 Optionally, you may provide static credentials for each S3 storage using MicroProfile Config options:
 
-- ``dataverse.files.<id>.access-key`` for this storages "access key ID"
-- ``dataverse.files.<id>.secret-key`` for this storages "secret access key"
+- ``dataverse.files.<id>.access-key`` for this storage's "access key ID"
+- ``dataverse.files.<id>.secret-key`` for this storage's "secret access key"
 
 You may provide the values for these via any of the
 `supported config sources <https://docs.payara.fish/community/docs/documentation/microprofile/config/README.html>`_.
@@ -613,9 +613,50 @@ For direct uploads and downloads, Dataverse redirects to the proxy-url but presi
 Additional configuration (appropriate CORS settings, proxy caching/timeout configuration, and proxy settings to pass headers to/from S3 and to avoid adding additional headers) will also be needed to enable use of a proxy with direct upload and download.
 For Amazon AWS, see comments in the edu.harvard.iq.dataverse.dataaccess.S3AccessIO class about support for AWS's bucket-specific DNS names.
  
-**HINT:** If you are successfully using an S3 storage implementation not yet listed above, please feel free to
+`SeaweedFS <https://github.com/chrislusf/seaweedfs>`_
+  SeaweedFS is a distributed storage system that has S3 compatibility. Set the S3 storage options as explained above. Make sure to set ``dataverse.files.<id>.path-style-access`` to ``true``. You will need to create the bucket beforehand. You can do this with the filer API using curl commands. For example, to create an empty bucket called ``dataverse``:
+  
+.. code-block:: bash
+
+  curl -X POST "http://localhost:8888/buckets/"
+  curl -X POST "http://localhost:8888/buckets/dataverse/"
+  
+You will also need to set an access and secret key. One way to do this is via a `static file <https://github.com/chrislusf/seaweedfs/wiki/Amazon-S3-API#static-configuration>`_. As an example, your ``config.json`` might look like this if you're using a bucket called ``dataverse``:
+  
+.. code-block:: json
+
+  {
+    "identities": [
+      {
+        "name": "anonymous",
+	"credentials": [
+	  {
+	    "accessKey": "secret",
+	    "secretKey": "secret"
+	  }
+	],
+	"actions": [
+	  "Read:dataverse",
+	  "List:dataverse",
+	  "Tagging:dataverse",
+	  "Write:dataverse"
+	]
+      }
+    ]
+  }
+
+And lastly, to start up the SeaweedFS server and various components you could use a command like this:
+  
+.. code-block:: bash
+
+  weed server -s3 -metricsPort=9327 -dir=/data -s3.config=/config.json
+
+**Additional Reported Working S3-Compatible Storage**
+
+If you are successfully using an S3 storage implementation not yet listed above, please feel free to
 `open an issue at Github <https://github.com/IQSS/dataverse/issues/new>`_ and describe your setup.
-We will be glad to add it here.
+We will be glad to add it.
+
 
 Migrating from Local Storage to S3
 ##################################
@@ -628,56 +669,103 @@ Is currently documented on the :doc:`/developers/deployment` page.
 Branding Your Installation
 --------------------------
 
-The name of your root Dataverse collection is the brand of your Dataverse installation and appears in various places such as notifications and support links, as outlined in the :ref:`systemEmail` section below. To further brand your installation and make it your own, the Dataverse Software provides configurable options for easy-to-add (and maintain) custom branding for your Dataverse installation. Here are the custom branding and content options you can add:
+A Dataverse installation can be branded in a number of ways.
 
+A simple option for branding your installation is to adjust the theme of a Dataverse collection. You can change colors, add a logo, add a tagline, or add a website link to the Dataverse collection header section of the page. These options are outlined under :ref:`theme` in the :doc:`/user/dataverse-management` section of the User Guide.
+
+More advanced customization is described below and covers the following areas.
+
+- Custom installation name/brand
+- Custom header
+- Navbar settings
 - Custom welcome/homepage
-- Logo image to navbar
-- Header
-- Footer
+- Custom footer
+- Footer settings
 - CSS stylesheet
 
 Downloadable sample HTML and CSS files are provided below which you can edit as you see fit. It's up to you to create a directory in which to store these files, such as ``/var/www/dataverse`` in the examples below.
 
-You may also want to look at samples at https://github.com/shlake/LibraDataHomepage from community member Sherry Lake as well as her poster from the Dataverse Project Community Meeting 2018 called "Branding Your Local Dataverse Installation": https://github.com/IQSS/dataverse/files/2128735/UVaHomePage.pdf
+Additional samples from community member Sherry Lake are available at https://github.com/shlake/LibraDataHomepage.
 
-A simpler option to brand and customize your installation is to utilize the Dataverse collection theme, which each Dataverse collection has, that allows you to change colors, add a logo, tagline or website link to the Dataverse collection header section of the page. Those options are outlined in the :doc:`/user/dataverse-management` section of the User Guide.
+.. _parts-of-webpage:
 
-Custom Homepage
-+++++++++++++++
+Parts of a Dataverse Installation Webpage
++++++++++++++++++++++++++++++++++++++++++
 
-The Dataverse Software allows you to use a custom homepage or welcome page in place of the default root Dataverse collection page. This allows for complete control over the look and feel of your installation's homepage.
+Before reading about the available customization options, you might want to familiarize yourself with the parts of a Dataverse installation webpage.
 
-Download this sample: :download:`custom-homepage.html </_static/installation/files/var/www/dataverse/branding/custom-homepage.html>` and place it at ``/var/www/dataverse/branding/custom-homepage.html``.
+The image below indicates that the page layout consists of three main blocks: a header block, a content block, and a footer block:
 
-Once you have the location of your custom homepage HTML file, run this curl command to add it to your settings:
+|dvPageBlocks|
 
-``curl -X PUT -d '/var/www/dataverse/branding/custom-homepage.html' http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
+Installation Name/Brand Name
+++++++++++++++++++++++++++++
 
-If you prefer to start with less of a blank slate, you can review the custom homepage used by the Harvard Dataverse Repository, which includes branding messaging, action buttons, search input, subject links, and recent dataset links. This page was built to utilize the :doc:`/api/metrics` to deliver dynamic content to the page via Javascript. The files can be found at https://github.com/IQSS/dataverse.harvard.edu
+It's common for a Dataverse installation to have some sort of installation name or brand name like "HeiDATA", "Libra Data", or "MELDATA".
 
-Note that the ``custom-homepage.html`` file provided has multiple elements that assume your root Dataverse collection still has an alias of "root". While you were branding your root Dataverse collection, you may have changed the alias to "harvard" or "librascholar" or whatever and you should adjust the custom homepage code as needed.
+The installation name appears in various places such as notifications, support links, and metadata exports.
 
-For more background on what this curl command above is doing, see the :ref:`database-settings` section below. If you decide you'd like to remove this setting, use the following curl command:
+Out of the box, the installation name comes from the name of root Dataverse collection ("Root" by default). You can simply change the name of this collection to set the installation name you want.
 
-``curl -X DELETE http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
+Alternatively, you can have independent names for the root Dataverse collection and the installation name by having the installation name come from the :ref:`:InstallationName` setting.
+
+Note that you can use :ref:`systemEmail` to control the name that appears in the "from" address of email messages sent by a Dataverse installation. This overrides the name of the root Dataverse collection and :ref:`:InstallationName`.
+
+If you have an image for your installation name, you can use it as the "Custom Navbar Logo", described below.
+
+Header Block
+++++++++++++
+
+Within the header block, you have a navbar (which will always be displayed) and you may insert a custom header that will be displayed above the navbar.
+
+Navbar
+^^^^^^
+
+The navbar is the component displayed by default on the header block and will be present on every Dataverse webpage.
+
+The navbar encompasses several configurable settings (described below) that manage user interaction with a Dataverse installation.
 
 Custom Navbar Logo
-++++++++++++++++++
+##################
 
-The Dataverse Software allows you to replace the default Dataverse Project icon and name branding in the navbar with your own custom logo. Note that this logo is separate from the *root dataverse theme* logo.
+The Dataverse Software allows you to replace the default Dataverse Project icon and name branding in the navbar with your own custom logo. Note that this logo is separate from the logo used in the theme of the root Dataverse collection (see :ref:`theme`).
 
 The custom logo image file is expected to be small enough to fit comfortably in the navbar, no more than 50 pixels in height and 160 pixels in width. Create a ``navbar`` directory in your Payara ``logos`` directory and place your custom logo there. By default, your logo image file will be located at ``/usr/local/payara5/glassfish/domains/domain1/docroot/logos/navbar/logo.png``.
 
-Once you have the location of your custom logo image file, run this curl command to add it to your settings:
+Given this location for the custom logo image file, run this curl command to add it to your settings:
 
 ``curl -X PUT -d '/logos/navbar/logo.png' http://localhost:8080/api/admin/settings/:LogoCustomizationFile``
 
+To revert to the default configuration and have the Dataverse Project icon be displayed, run the following command:
+
+``curl -X DELETE http://localhost:8080/api/admin/settings/:LogoCustomizationFile``
+
+About URL
+#########
+
+Refer to :ref:`:NavbarAboutUrl` for setting a fully-qualified URL which will be used for the "About" link in the navbar.
+
+User Guide URL
+##############
+
+Refer to :ref:`:NavbarGuidesUrl`, :ref:`:GuidesBaseUrl`, and :ref:`:GuidesVersion` for setting a fully-qualified URL which will be used for the "User Guide" link in the navbar.
+
+Support URL
+###########
+
+Refer to :ref:`:NavbarSupportUrl` for setting to a fully-qualified URL which will be used for the "Support" link in the navbar.
+
+Sign Up
+#######
+
+Refer to :ref:`:SignUpUrl` and :ref:`conf-allow-signup` for setting a relative path URL to which users will be sent for signup and for controlling the ability for creating local user accounts.
+
 Custom Header
-+++++++++++++
+^^^^^^^^^^^^^
 
-Download this sample: :download:`custom-header.html </_static/installation/files/var/www/dataverse/branding/custom-header.html>` and place it at ``/var/www/dataverse/branding/custom-header.html``.
+As a starting point you can download :download:`custom-header.html </_static/installation/files/var/www/dataverse/branding/custom-header.html>` and place it at ``/var/www/dataverse/branding/custom-header.html``.
 
-Once you have the location of your custom header HTML file, run this curl command to add it to your settings:
+Given this location for the custom header HTML file, run this curl command to add it to your settings:
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-header.html' http://localhost:8080/api/admin/settings/:HeaderCustomizationFile``
 
@@ -687,24 +775,68 @@ If you have enabled a custom header or navbar logo, you might prefer to disable 
 
 Please note: Disabling the display of the root Dataverse collection theme also disables your ability to edit it. Remember that Dataverse collection owners can set their Dataverse collections to "inherit theme" from the root. Those Dataverse collections will continue to inherit the root Dataverse collection theme (even though it no longer displays on the root). If you would like to edit the root Dataverse collection theme in the future, you will have to re-enable it first.
 
-
-Custom Footer
+Content Block
 +++++++++++++
 
-Download this sample: :download:`custom-footer.html </_static/installation/files/var/www/dataverse/branding/custom-footer.html>` and place it at ``/var/www/dataverse/branding/custom-footer.html``.
+As shown in the image under :ref:`parts-of-webpage`, the content block is the area below the header and above the footer.
 
-Once you have the location of your custom footer HTML file, run this curl command to add it to your settings:
+By default, when you view the homepage of a Dataverse installation, the content block shows the root Dataverse collection. This page contains the data available in the Dataverse installation (e.g. dataverses and datasets) and the functionalities that allow the user to interact with the platform (e.g. search, create/edit data and metadata, etc.).
+
+Rather than showing the root Dataverse collection on the homepage, the content block can show a custom homepage instead. Read on for details.
+
+Custom Homepage
+^^^^^^^^^^^^^^^
+
+When you configure a custom homepage, it **replaces** the root Dataverse collection in the content block, serving as a welcome page. This allows for complete control over the look and feel of the content block for your installation's homepage.
+
+As a starting point, download :download:`custom-homepage.html </_static/installation/files/var/www/dataverse/branding/custom-homepage.html>` and place it at ``/var/www/dataverse/branding/custom-homepage.html``.
+
+Given this location for the custom homepage HTML file, run this curl command to add it to your settings:
+
+``curl -X PUT -d '/var/www/dataverse/branding/custom-homepage.html' http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
+
+Note that the ``custom-homepage.html`` file provided has multiple elements that assume your root Dataverse collection still has an alias of "root". While you were branding your root Dataverse collection, you may have changed the alias to "harvard" or "librascholar" or whatever and you should adjust the custom homepage code as needed.
+
+Note: If you prefer to start with less of a blank slate, you can review the custom homepage used by the Harvard Dataverse Repository, which includes branding messaging, action buttons, search input, subject links, and recent dataset links. This page was built to utilize the :doc:`/api/metrics` to deliver dynamic content to the page via Javascript. The files can be found at https://github.com/IQSS/dataverse.harvard.edu
+
+If you decide you'd like to remove this setting, use the following curl command:
+
+``curl -X DELETE http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
+
+Footer Block
+++++++++++++
+
+Within the footer block you have the default footer section (which will always be displayed) and you can insert a custom footer that will be displayed below the default footer.
+
+Default Footer
+^^^^^^^^^^^^^^
+
+The default footer is the component displayed by default on the footer block and will be present on every Dataverse webpage. Its configuration options are described below.
+
+Footer Copyright
+################
+
+Refer to :ref:`:FooterCopyright` to add customized text to the Copyright section of the default Dataverse footer
+
+Custom Footer
+^^^^^^^^^^^^^
+
+As mentioned above, the custom footer appears below the default footer.
+
+As a starting point, download :download:`custom-footer.html </_static/installation/files/var/www/dataverse/branding/custom-footer.html>` and place it at ``/var/www/dataverse/branding/custom-footer.html``.
+
+Given this location for the custom footer HTML file, run this curl command to add it to your settings:
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-footer.html' http://localhost:8080/api/admin/settings/:FooterCustomizationFile``
 
 Custom Stylesheet
 +++++++++++++++++
 
-You can style your custom homepage, footer and header content with a custom CSS file. With advanced CSS know-how, you can achieve custom branding and page layouts by utilizing ``position``, ``padding`` or ``margin`` properties.
+You can style your custom homepage, footer, and header content with a custom CSS file. With advanced CSS know-how, you can achieve custom branding and page layouts by utilizing ``position``, ``padding`` or ``margin`` properties.
 
-Download this sample: :download:`custom-stylesheet.css </_static/installation/files/var/www/dataverse/branding/custom-stylesheet.css>` and place it at ``/var/www/dataverse/branding/custom-stylesheet.css``.
+As a starting point, download :download:`custom-stylesheet.css </_static/installation/files/var/www/dataverse/branding/custom-stylesheet.css>` and place it at ``/var/www/dataverse/branding/custom-stylesheet.css``.
 
-Once you have the location of your custom CSS file, run this curl command to add it to your settings:
+Given this location for the custom CSS file, run this curl command to add it to your settings:
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-stylesheet.css' http://localhost:8080/api/admin/settings/:StyleCustomizationFile``
 
@@ -730,7 +862,8 @@ Allowing the Language Used for Dataset Metadata to be Specified
 Since dataset metadata can only be entered in one language, and administrators may wish to limit which languages metadata can be entered in, Dataverse also offers a separate setting defining allowed metadata languages.
 The presence of the :ref:`:MetadataLanguages` database setting identifies the available options (which can be different from those in the :Languages setting above, with fewer or more options).
 
-Dataverse collection admins can select from these options to indicate which language should be used for new Datasets created with that specific collection. If they do not, users will be asked when creating a dataset to select the language they want to use when entering metadata. 
+Dataverse collection admins can select from these options to indicate which language should be used for new Datasets created with that specific collection. If they do not, users will be asked when creating a dataset to select the language they want to use when entering metadata.
+Similarly, when this setting is defined, Datasets created/imported/migrated are required to specify a metadataLanguage compatible with the collection's requirement.
 
 When creating or editing a dataset, users will be asked to enter the metadata in that language. The metadata language selected will also be shown when dataset metadata is viewed and will be included in metadata exports (as appropriate for each format) for published datasets:
 
@@ -931,7 +1064,7 @@ The minimal configuration to support an archiver integration involves adding a m
 
 \:ArchiverSettings - the archiver class can access required settings including existing Dataverse installation settings and dynamically defined ones specific to the class. This setting is a comma-separated list of those settings. For example\:
 
-``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":DuraCloudHost, :DuraCloudPort, :DuraCloudContext"``
+``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":DuraCloudHost, :DuraCloudPort, :DuraCloudContext, :BagGeneratorThreads"``
 
 The DPN archiver defines three custom settings, one of which is required (the others have defaults):
 
@@ -940,6 +1073,12 @@ The DPN archiver defines three custom settings, one of which is required (the ot
 ``curl http://localhost:8080/api/admin/settings/:DuraCloudHost -X PUT -d "qdr.duracloud.org"``
 
 :DuraCloudPort and :DuraCloudContext are also defined if you are not using the defaults ("443" and "duracloud" respectively). (Note\: these settings are only in effect if they are listed in the \:ArchiverSettings. Otherwise, they will not be passed to the DuraCloud Archiver class.)
+
+It also can use one setting that is common to all Archivers: :BagGeneratorThreads
+
+``curl http://localhost:8080/api/admin/settings/:BagGeneratorThreads -X PUT -d '8'``
+
+By default, the Bag generator zips two datafiles at a time when creating the Bag. This setting can be used to lower that to 1, i.e. to decrease system load, or to increase it, e.g. to 4 or 8, to speed processing of many small files.
 
 Archivers may require JVM options as well. For the Chronopolis archiver, the username and password associated with your organization's Chronopolis/DuraCloud account should be configured in Payara:
 
@@ -962,9 +1101,9 @@ ArchiverClassName - the fully qualified class to be used for archiving. For exam
 
 \:ArchiverSettings - the archiver class can access required settings including existing Dataverse installation settings and dynamically defined ones specific to the class. This setting is a comma-separated list of those settings. For example\:
 
-``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":BagItLocalPath"``
+``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":BagItLocalPath, :BagGeneratorThreads"``
 
-:BagItLocalPath is the file path that you've set in :ArchiverSettings.
+:BagItLocalPath is the file path that you've set in :ArchiverSettings. See the DuraCloud  Configuration section for a description of :BagGeneratorThreads.
 
 .. _Google Cloud Configuration:
 
@@ -975,9 +1114,9 @@ The Google Cloud Archiver can send Dataverse Project Bags to a bucket in Google'
 
 ``curl http://localhost:8080/api/admin/settings/:ArchiverClassName -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.GoogleCloudSubmitToArchiveCommand"``
 
-``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":GoogleCloudBucket, :GoogleCloudProject"``
+``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":GoogleCloudBucket, :GoogleCloudProject, :BagGeneratorThreads"``
 
-The Google Cloud Archiver defines two custom settings, both are required. The credentials for your account, in the form of a json key file, must also be obtained and stored locally (see below):
+The Google Cloud Archiver defines two custom settings, both are required. It can also use the :BagGeneratorThreads setting as described in the DuraCloud Configuration section above. The credentials for your account, in the form of a json key file, must also be obtained and stored locally (see below):
 
 In order to use the Google Cloud Archiver, you must have a Google account. You will need to create a project and bucket within that account and provide those values in the settings:
 
@@ -1506,7 +1645,7 @@ This is the email address that "system" emails are sent from such as password re
 
 ``curl -X PUT -d 'LibraScholar SWAT Team <support@librascholar.edu>' http://localhost:8080/api/admin/settings/:SystemEmail``
 
-Note that only the email address is required, which you can supply without the ``<`` and ``>`` signs, but if you include the text, it's the way to customize the name of your support team, which appears in the "from" address in emails as well as in help text in the UI.
+Note that only the email address is required, which you can supply without the ``<`` and ``>`` signs, but if you include the text, it's the way to customize the name of your support team, which appears in the "from" address in emails as well as in help text in the UI. If you don't include the text, the installation name (see :ref:`Branding Your Installation`) will appear in the "from" address.
 
 Please note that if you're having any trouble sending email, you can refer to "Troubleshooting" under :doc:`installation-main`.
 
@@ -1544,6 +1683,8 @@ See :ref:`Branding Your Installation` above.
 +++++++++++++++++
 
 See :ref:`Web-Analytics-Code` above.
+
+.. _:FooterCopyright:
 
 :FooterCopyright
 ++++++++++++++++
@@ -1788,14 +1929,18 @@ This will *force* a re-export of every published, local dataset, regardless of w
 
 The call returns a status message informing the administrator, that the process has been launched (``{"status":"WORKFLOW_IN_PROGRESS"}``). The administrator can check the progress of the process via log files: ``[Payara directory]/glassfish/domains/domain1/logs/export_[time stamp].log``.
 
+.. _:NavbarAboutUrl:
+
 :NavbarAboutUrl
 +++++++++++++++
 
-Set ``NavbarAboutUrl`` to a fully-qualified URL which will be used for the "About" link in the navbar.
+Set ``:NavbarAboutUrl`` to a fully-qualified URL which will be used for the "About" link in the navbar.
 
 Note: The "About" link will not appear in the navbar until this option is set.
 
 ``curl -X PUT -d http://dataverse.example.edu http://localhost:8080/api/admin/settings/:NavbarAboutUrl``
+
+.. _:NavbarGuidesUrl:
 
 :NavbarGuidesUrl
 ++++++++++++++++
@@ -1806,12 +1951,16 @@ Note: by default, the URL is composed from the settings ``:GuidesBaseUrl`` and `
 
 ``curl -X PUT -d http://example.edu/fancy-dataverse-guide http://localhost:8080/api/admin/settings/:NavbarGuidesUrl``
 
+.. _:GuidesBaseUrl:
+
 :GuidesBaseUrl
 ++++++++++++++
 
-Set ``GuidesBaseUrl`` to override the default value "http://guides.dataverse.org". If you are interested in writing your own version of the guides, you may find the :doc:`/developers/documentation` section of the Developer Guide helpful.
+Set ``:GuidesBaseUrl`` to override the default value "http://guides.dataverse.org". If you are interested in writing your own version of the guides, you may find the :doc:`/developers/documentation` section of the Developer Guide helpful.
 
 ``curl -X PUT -d http://dataverse.example.edu http://localhost:8080/api/admin/settings/:GuidesBaseUrl``
+
+.. _:GuidesVersion:
 
 :GuidesVersion
 ++++++++++++++
@@ -1819,6 +1968,8 @@ Set ``GuidesBaseUrl`` to override the default value "http://guides.dataverse.org
 Set ``:GuidesVersion`` to override the version number in the URL of guides. For example, rather than http://guides.dataverse.org/en/4.6/user/account.html the version is overriden to http://guides.dataverse.org/en/1234-new-feature/user/account.html in the example below:
 
 ``curl -X PUT -d 1234-new-feature http://localhost:8080/api/admin/settings/:GuidesVersion``
+
+.. _:NavbarSupportUrl:
 
 :NavbarSupportUrl
 +++++++++++++++++
@@ -1923,6 +2074,8 @@ If ``:SolrFullTextIndexing`` is set to true, the content of files of any size wi
 
 ``curl -X PUT -d 314572800 http://localhost:8080/api/admin/settings/:SolrMaxFileSizeForFullTextIndexing``
 
+.. _:SignUpUrl:
+
 :SignUpUrl
 ++++++++++
 
@@ -1962,7 +2115,7 @@ Set whether a user will see the custom text when publishing all versions of a da
 :SearchHighlightFragmentSize
 ++++++++++++++++++++++++++++
 
-Set ``SearchHighlightFragmentSize`` to override the default value of 100 from https://wiki.apache.org/solr/HighlightingParameters#hl.fragsize . In practice, a value of "320" seemed to fix the issue at https://github.com/IQSS/dataverse/issues/2191
+Set ``:SearchHighlightFragmentSize`` to override the default value of 100 from https://wiki.apache.org/solr/HighlightingParameters#hl.fragsize . In practice, a value of "320" seemed to fix the issue at https://github.com/IQSS/dataverse/issues/2191
 
 ``curl -X PUT -d 320 http://localhost:8080/api/admin/settings/:SearchHighlightFragmentSize``
 
@@ -2399,6 +2552,13 @@ For example, the LocalSubmitToArchiveCommand only uses the :BagItLocalPath setti
 
 ``curl -X PUT -d ':BagItLocalPath' http://localhost:8080/api/admin/settings/:ArchiverSettings`` 
 
+:BagGeneratorThreads
+++++++++++++++++++++
+
+An archiver setting shared by several implementations (e.g. DuraCloud, Google, and Local) that can make Bag generation use fewer or more threads in zipping datafiles that the default of 2
+ 
+``curl http://localhost:8080/api/admin/settings/:BagGeneratorThreads -X PUT -d '8'``
+
 :DuraCloudHost
 ++++++++++++++
 :DuraCloudPort
@@ -2414,7 +2574,7 @@ These three settings define the host, port, and context used by the DuraCloudSub
 This is the local file system path to be used with the LocalSubmitToArchiveCommand class. It is recommended to use an absolute path. See the :ref:`Local Path Configuration` section above.
 
 :GoogleCloudBucket
-++++++++++++++++++ 
+++++++++++++++++++
 :GoogleCloudProject
 +++++++++++++++++++
 
@@ -2425,7 +2585,7 @@ These are the bucket and project names to be used with the GoogleCloudSubmitToAr
 :InstallationName
 +++++++++++++++++
 
-By default, the name of the root Dataverse collection is used as the 'brandname' of the repository, i.e. in emails and metadata exports. If set, :InstallationName overrides this default, allowing the root collection name and brandname to be set independently. (Note that, since metadata export files are cached, they will have to be reexported (see :doc:`/admin/metadataexport`) before they incorporate a change in this setting.)
+As explained under :ref:`Branding Your Installation`, by default, the name of the root Dataverse collection is used as the "brand name" of the installation, i.e. in emails and metadata exports. If set, ``:InstallationName`` overrides this default, allowing the root collection name and brandname to be set independently. (Note that, since metadata export files are cached, they will have to be reexported (see :doc:`/admin/metadataexport`) before they incorporate a change in this setting.)
 
 :ExportInstallationAsDistributorOnlyWhenNotSet
 ++++++++++++++++++++++++++++++++++++++++++++++
@@ -2506,6 +2666,14 @@ Each set of labels is identified by a curationLabelSet name and a JSON Array of 
 
 ``curl -X PUT -d '{"Standard Process":["Author contacted", "Privacy Review", "Awaiting paper publication", "Final Approval"], "Alternate Process":["State 1","State 2","State 3"]}' http://localhost:8080/api/admin/settings/:AllowedCurationLabels``
 
+If the Dataverse Installation supports multiple languages, the curation label translations should be added to the ``CurationLabels`` properties files. (See :ref:`i18n` for more on properties files and internationalization in general.)
+Since the Curation labels are free text, while creating the key, it has to be converted to lowercase, replace space with underscore.
+
+Example::
+
+  standard_process=Standard Process
+  author_contacted=Author contacted
+
 .. _:AllowCustomTermsOfUse:
 
 :AllowCustomTermsOfUse
@@ -2560,7 +2728,7 @@ For example:
 
 ``curl -X PUT -d /usr/local/bin/ds_validator.sh http://localhost:8080/api/admin/settings/:DatasetMetadataValidatorScript``
 
-In some ways this duplicates a workflow mechanism, since it is possible to define a workflow with additonal validation steps. But please note that the important difference is that this external validation happens *synchronously*, while the user is wating; while a workflow is performed asynchronously with a lock placed on the dataset. This can be useful to some installations, in some situations. But it also means that the script provided should be expected to always work reasonably fast - ideally, in seconds, rather than minutes, etc. 
+In some ways this duplicates a workflow mechanism, since it is possible to define a workflow with additional validation steps. But please note that the important difference is that this external validation happens *synchronously*, while the user is wating; while a workflow is performed asynchronously with a lock placed on the dataset. This can be useful to some installations, in some situations. But it also means that the script provided should be expected to always work reasonably fast - ideally, in seconds, rather than minutes, etc.
 
 :DatasetMetadataValidationFailureMsg
 ++++++++++++++++++++++++++++++++++++
@@ -2576,3 +2744,22 @@ For example:
 ++++++++++++++++++++++++++++++++
 
 When set to ``true``, this setting allows a superuser to publish and/or update Dataverse collections and datasets bypassing the external validation checks (specified by the settings above). In an event where an external script is reporting validation failures that appear to be in error, this option gives an admin with superuser privileges a quick way to publish the dataset or update a collection for the user. 
+
+:FileCategories
++++++++++++++++
+
+Overrides the default list of file categories that is used in the UI when adding tags to files. The default list is Documentation, Data, and Code.
+
+This setting is a comma-separated list of the new tags.
+
+To override the default list with Docs, Data, Code, and Workflow:
+
+``curl -X PUT -d 'Docs,Data,Code,Workflow' http://localhost:8080/api/admin/settings/:FileCategories``
+
+To remove the override and go back to the default list:
+
+``curl -X PUT -d '' http://localhost:8080/api/admin/settings/:FileCategories``
+
+.. To edit, use dvBrandingCustBlocks.drawio with https://app.diagrams.net
+.. |dvPageBlocks| image:: ./img/dvBrandingCustBlocks.png
+   :class: img-responsive

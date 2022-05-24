@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
@@ -98,7 +99,7 @@ public class OREMap {
                 if (excludeEmail && DatasetFieldType.FieldType.EMAIL.equals(dfType.getFieldType())) {
                     continue;
                 }
-                JsonLDTerm fieldName = getTermFor(dfType);
+                JsonLDTerm fieldName = dfType.getJsonLDTerm();
                 if (fieldName.inNamespace()) {
                     localContext.putIfAbsent(fieldName.getNamespace().getPrefix(), fieldName.getNamespace().getUrl());
                 } else {
@@ -144,7 +145,7 @@ public class OREMap {
                             if (!dsf.isEmpty()) {
                                 // Add context entry
                                 // ToDo - also needs to recurse here?
-                                JsonLDTerm subFieldName = getTermFor(dfType, dsft);
+                                JsonLDTerm subFieldName = dsft.getJsonLDTerm();
                                 if (subFieldName.inNamespace()) {
                                     localContext.putIfAbsent(subFieldName.getNamespace().getPrefix(),
                                             subFieldName.getNamespace().getUrl());
@@ -214,7 +215,11 @@ public class OREMap {
 
         aggBuilder.add(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel(),
                 BrandingUtil.getRootDataverseCollectionName());
-
+        String mdl = dataset.getMetadataLanguage();
+        if(!mdl.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
+            aggBuilder.add(JsonLDTerm.schemaOrg("inLanguage").getLabel(), mdl);
+        }
+        
         // The aggregation aggregates aggregatedresources (Datafiles) which each have
         // their own entry and metadata
         JsonArrayBuilder aggResArrayBuilder = Json.createArrayBuilder();
@@ -359,11 +364,11 @@ public class OREMap {
     }
 
     public JsonLDTerm getContactNameTerm() {
-        return getTermFor(DatasetFieldConstant.datasetContact, DatasetFieldConstant.datasetContactName);
+        return getTermFor(DatasetFieldConstant.datasetContactName);
     }
 
     public JsonLDTerm getContactEmailTerm() {
-        return getTermFor(DatasetFieldConstant.datasetContact, DatasetFieldConstant.datasetContactEmail);
+        return getTermFor(DatasetFieldConstant.datasetContactEmail);
     }
 
     public JsonLDTerm getDescriptionTerm() {
@@ -371,61 +376,15 @@ public class OREMap {
     }
 
     public JsonLDTerm getDescriptionTextTerm() {
-        return getTermFor(DatasetFieldConstant.description, DatasetFieldConstant.descriptionText);
+        return getTermFor(DatasetFieldConstant.descriptionText);
     }
 
     private JsonLDTerm getTermFor(String fieldTypeName) {
+        //Could call datasetFieldService.findByName(fieldTypeName) - is that faster/prefereable?
         for (DatasetField dsf : version.getDatasetFields()) {
             DatasetFieldType dsft = dsf.getDatasetFieldType();
             if (dsft.getName().equals(fieldTypeName)) {
-                return getTermFor(dsft);
-            }
-        }
-        return null;
-    }
-
-    private JsonLDTerm getTermFor(DatasetFieldType dsft) {
-        if (dsft.getUri() != null) {
-            return new JsonLDTerm(dsft.getTitle(), dsft.getUri());
-        } else {
-            String namespaceUri = dsft.getMetadataBlock().getNamespaceUri();
-            if (namespaceUri == null) {
-                namespaceUri = SystemConfig.getDataverseSiteUrlStatic() + "/schema/" + dsft.getMetadataBlock().getName()
-                        + "#";
-            }
-            JsonLDNamespace blockNamespace = JsonLDNamespace.defineNamespace(dsft.getMetadataBlock().getName(), namespaceUri);
-            return new JsonLDTerm(blockNamespace, dsft.getTitle());
-        }
-    }
-
-    private JsonLDTerm getTermFor(DatasetFieldType dfType, DatasetFieldType dsft) {
-        if (dsft.getUri() != null) {
-            return new JsonLDTerm(dsft.getTitle(), dsft.getUri());
-        } else {
-            // Use metadatablock URI or custom URI for this field based on the path
-            String subFieldNamespaceUri = dfType.getMetadataBlock().getNamespaceUri();
-            if (subFieldNamespaceUri == null) {
-                subFieldNamespaceUri = SystemConfig.getDataverseSiteUrlStatic() + "/schema/"
-                        + dfType.getMetadataBlock().getName() + "/";
-            }
-            subFieldNamespaceUri = subFieldNamespaceUri + dfType.getName() + "#";
-            JsonLDNamespace fieldNamespace = JsonLDNamespace.defineNamespace(dfType.getName(), subFieldNamespaceUri);
-            return new JsonLDTerm(fieldNamespace, dsft.getTitle());
-        }
-    }
-
-    private JsonLDTerm getTermFor(String type, String subType) {
-        for (DatasetField dsf : version.getDatasetFields()) {
-            DatasetFieldType dsft = dsf.getDatasetFieldType();
-            if (dsft.getName().equals(type)) {
-                for (DatasetFieldCompoundValue dscv : dsf.getDatasetFieldCompoundValues()) {
-                    for (DatasetField subField : dscv.getChildDatasetFields()) {
-                        DatasetFieldType subFieldType = subField.getDatasetFieldType();
-                        if (subFieldType.getName().equals(subType)) {
-                            return getTermFor(dsft, subFieldType);
-                        }
-                    }
-                }
+                return dsft.getJsonLDTerm();
             }
         }
         return null;
