@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.license.License;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -566,6 +567,13 @@ public class DatasetVersion implements Serializable {
         // The presence of any non-package file means that HTTP Upload was used (no mixing allowed) so we just check the first file.
         return !this.fileMetadatas.get(0).getDataFile().getContentType().equals(DataFileServiceBean.MIME_TYPE_PACKAGE_FILE);
     }
+    
+    public boolean isHasRestrictedFile(){
+        if (this.fileMetadatas == null || this.fileMetadatas.isEmpty()){
+            return false;
+        }
+        return this.fileMetadatas.stream().anyMatch(fm -> (fm.isRestricted()));
+    }
 
     public void updateDefaultValuesFromTemplate(Template template) {
         if (!template.getDatasetFields().isEmpty()) {
@@ -591,10 +599,12 @@ public class DatasetVersion implements Serializable {
                 dsv.setDatasetFields(dsv.copyDatasetFields(this.getDatasetFields()));
             }
             
-            if (this.getTermsOfUseAndAccess()!= null){
-                dsv.setTermsOfUseAndAccess(this.getTermsOfUseAndAccess().copyTermsOfUseAndAccess());
-            }
-
+            /*
+            adding file metadatas here and updating terms
+            because the terms need to know about the files
+            in a pre-save validation SEK 12/6/2021
+            */
+            
             for (FileMetadata fm : this.getFileMetadatas()) {
                 FileMetadata newFm = new FileMetadata();
                 // TODO: 
@@ -614,6 +624,17 @@ public class DatasetVersion implements Serializable {
                 
                 dsv.getFileMetadatas().add(newFm);
             }
+            
+            if (this.getTermsOfUseAndAccess()!= null){
+                TermsOfUseAndAccess terms = this.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
+                terms.setDatasetVersion(dsv);
+                dsv.setTermsOfUseAndAccess(terms);
+            } else {
+                TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+                terms.setDatasetVersion(dsv);
+               // terms.setLicense(TermsOfUseAndAccess.License.CC0);
+                dsv.setTermsOfUseAndAccess(terms);
+            }
 
         dsv.setDataset(this.getDataset());
         return dsv;
@@ -627,6 +648,7 @@ public class DatasetVersion implements Serializable {
         TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
         terms.setDatasetVersion(this);
         terms.setLicense(license);
+        terms.setFileAccessRequest(true);
         this.setTermsOfUseAndAccess(terms);
 
     }
@@ -1656,7 +1678,22 @@ public class DatasetVersion implements Serializable {
                 }
             }
         }
+        
+        
+        TermsOfUseAndAccess toua = this.termsOfUseAndAccess;
+        //Only need to test Terms of Use and Access if there are restricted files  
+        if (toua != null && this.isHasRestrictedFile()) {
+            Set<ConstraintViolation<TermsOfUseAndAccess>> constraintViolations = validator.validate(toua);
+            if (constraintViolations.size() > 0) {
+                ConstraintViolation<TermsOfUseAndAccess> violation = constraintViolations.iterator().next();
+                String message = BundleUtil.getStringFromBundle("dataset.message.toua.invalid");
+                logger.info(message);
+                this.termsOfUseAndAccess.setValidationMessage(message);
+                returnSet.add(violation);
+            }
+        }
 
+        
         return returnSet;
     }
     

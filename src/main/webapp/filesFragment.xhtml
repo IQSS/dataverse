@@ -32,13 +32,13 @@
                     <f:selectItem itemLabel="#{bundle['file.display.tree']}" itemValue="Tree" />
 
                     <!-- AJAX UPDATES TO TOGGLE p:dataTable widgetVar="filesTable" AND p:tree widgetVar="filesTree" COMPONENTS BELOW -->
-                    <p:ajax update=":datasetForm" process="@this" oncomplete="bind_bsui_components();"/> 
+                    <p:ajax update=":datasetForm" process="@this"/> 
                 </p:selectOneButton>
             </div>
         </div>
     </div>
 
-    <p:remoteCommand name="rebindCommand" process="@this" update="filesTable" oncomplete="javascript:bind_bsui_components();"/>
+    <p:remoteCommand name="rebindCommand" process="@this" update="filesTable"/>
 
     <!-- Files Table -->
     <!-- TABLESTYLE + WIDTH:AUTO FIX COL WIDTH OVERFLOW HIDDEN, MIN-WIDTH 100% ADDED FOR TABLE CONTENT LESS THAN 100% https://stackoverflow.com/a/38582318 -->
@@ -105,10 +105,10 @@
                             <f:passThroughAttribute name="aria-labelledby" value="searchLabel"/>
                         </p:inputText>
                         <p:watermark for="searchFiles" value="#{bundle['file.search.placeholder']}"/>
-                        <p:remoteCommand name="submitsearch" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" oncomplete="bind_bsui_components();" partialSubmit="true"/>
+                        <p:remoteCommand name="submitsearch" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true"/>
 
                         <span class="input-group-btn">
-                            <p:commandLink title="#{bundle['dataverse.search.btn.find']}" styleClass="btn btn-default bootstrap-button-tooltip" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" oncomplete="bind_bsui_components();" partialSubmit="true">
+                            <p:commandLink title="#{bundle['dataverse.search.btn.find']}" styleClass="btn btn-default bootstrap-button-tooltip" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
                                 <span class="glyphicon glyphicon-search no-text"/>
                             </p:commandLink>
                         </span>
@@ -124,7 +124,7 @@
                         </h:commandLink>
                         <!-- UPLOAD FILES BUTTON -->
                         <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD"
-                                      type="button" styleClass="btn btn-default btn-access #{DatasetPage.lockedFromEdits ? 'disabled' : ''}"
+                                      type="button" styleClass="btn btn-default btn-access #{DatasetPage.lockedFromEdits or !DatasetPage.hasValidTermsOfAccess ? 'disabled' : ''}"
                                       disabled="#{DatasetPage.lockedFromEdits}">
                             <span class="glyphicon glyphicon-plus"/> <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
                         </h:outputLink>
@@ -324,14 +324,14 @@
                         </h:outputFormat>
                         <ui:fragment rendered="#{DatasetPage.selectedFiles.size() lt DatasetPage.workingVersion.fileMetadatas.size()}">
                             &#160;
-                            <p:commandLink action="#{DatasetPage.selectAllFiles}" update="@form" oncomplete="bind_bsui_components();">
+                            <p:commandLink action="#{DatasetPage.selectAllFiles}" update="@form">
                                 <h:outputFormat value="#{bundle['file.selectAllFiles']}">
                                     <f:param value="#{DatasetPage.fileMetadatasSearch.size()}"/>
                                 </h:outputFormat>
                             </p:commandLink>
                         </ui:fragment>
                         &#160;
-                        <p:commandLink value="#{bundle['file.clearSelection']}" action="#{DatasetPage.clearSelection}" update="@form" oncomplete="bind_bsui_components();"/>
+                        <p:commandLink value="#{bundle['file.clearSelection']}" action="#{DatasetPage.clearSelection}" update="@form"/>
                     </p>
                 </div>
             </div>
@@ -381,7 +381,7 @@
                 <div style="margin-right:14px;" class="btn-group" jsf:rendered="#{DatasetPage.sessionUserAuthenticated
                                                                                   and DatasetPage.canUpdateDataset() and !widgetWrapper.widgetView and (DatasetPage.fileMetadatasSearch.size() gt 0)}">
                     <button type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown"
-                            disabled="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
+                            disabled="#{DatasetPage.lockedFromEdits or !DatasetPage.hasValidTermsOfAccess ? 'disabled' : ''}">
                         <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFiles']} <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu multi-level pull-right text-left">
@@ -412,7 +412,7 @@
                                    disabled="#{false and DatasetPage.lockedFromDownload}"
                                    onclick="if (!testFilesSelected()) return false;" 
                                    action="#{DatasetPage.startDownloadSelectedOriginal()}"
-                                   update="@form" oncomplete="bind_bsui_components();showPopup();">
+                                   update="@form" oncomplete="showPopup();">
                         <f:setPropertyActionListener target="#{DatasetPage.fileMetadataForAction}" value="#{null}"/>
                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
                     </p:commandLink>
@@ -428,7 +428,7 @@
                         <li >
                             <p:commandLink
                                            disabled="#{false and DatasetPage.lockedFromDownload}"
-                                           update="@form" oncomplete="bind_bsui_components();showPopup();"
+                                           update="@form" oncomplete="showPopup();"
                                            onclick="if (!testFilesSelected()) return false;" 
                                            actionListener="#{DatasetPage.startDownloadSelectedOriginal()}">
                                 <f:setPropertyActionListener target="#{DatasetPage.fileMetadataForAction}" value="#{null}"/>
@@ -438,7 +438,7 @@
                         <li> 
                             <p:commandLink
                                            disabled="#{false and DatasetPage.lockedFromDownload}"
-                                           update="@form" oncomplete="bind_bsui_components();showPopup();"
+                                           update="@form" oncomplete="showPopup();"
                                            onclick="if (!testFilesSelected()) return false;" 
                                            actionListener="#{DatasetPage.startDownloadSelectedArchival()}">
                             <f:setPropertyActionListener target="#{DatasetPage.fileMetadataForAction}" value="#{null}"/>
@@ -451,7 +451,7 @@
                 <p:commandLink rendered="#{DatasetPage.fileAccessRequestMultiButtonRequired}"
                                styleClass="btn btn-default btn-request"                                   
                                action="#{DatasetPage.requestAccessMultipleFiles()}"
-                               update="@form, @([id$=messagePanel])" oncomplete="bind_bsui_components();"
+                               update="@form, @([id$=messagePanel])"
                                disabled="#{DatasetPage.locked}">
                     <span class="glyphicon glyphicon-bullhorn"/> #{bundle['file.requestAccess']}
                 </p:commandLink>
