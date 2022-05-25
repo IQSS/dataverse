@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.harvest.server.xoai;
 
 import io.gdcc.xoai.model.xoai.Element;
@@ -76,11 +71,8 @@ public class DataverseXoaiSetRepository implements SetRepository {
 
     @Override
     public boolean exists(String setSpec) {
-        //for (Set s : this.sets)
-        //    if (s.getSpec().equals(setSpec))
-        //        return true;
-
-        return false;
+        // return true;
+        return setService.setExists(setSpec);
     }
     
 }
