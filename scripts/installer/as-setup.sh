@@ -61,7 +61,7 @@ function preliminary_setup()
   #./asadmin $ASADMIN_OPTS delete-jvm-options "-XX\:MaxPermSize=192m"
   #./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:MaxPermSize=512m"
   #./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:PermSize=256m"
-  # payara5 ships with the "-server" option already in domain.xml, so no need:
+  # payara6 ships with the "-server" option already in domain.xml, so no need:
   #./asadmin $ASADMIN_OPTS delete-jvm-options -client
 
   # new Payara5 options: (thanks to donsizemore@unc.edu)
@@ -155,18 +155,18 @@ function final_setup(){
 
 if [ "$DOCKER_BUILD" = "true" ]
   then
-    FILES_DIR="/usr/local/payara5/glassfish/domains/domain1/files"
+    FILES_DIR="/usr/local/payara6/glassfish/domains/domain1/files"
     RSERVE_HOST="localhost"
     RSERVE_PORT="6311"
     RSERVE_USER="rserve"
     RSERVE_PASS="rserve"
     HOST_ADDRESS="localhost\:8080"
-    pushd /usr/local/payara5/glassfish/bin/
+    pushd /usr/local/payara6/glassfish/bin/
     ./asadmin start-domain domain1
     preliminary_setup
-    chmod -R 777 /usr/local/payara5/
-    rm -rf /usr/local/payara5/glassfish/domains/domain1/generated 
-    rm -rf /usr/local/payara5/glassfish/domains/domain1/applications
+    chmod -R 777 /usr/local/payara6/
+    rm -rf /usr/local/payara6/glassfish/domains/domain1/generated
+    rm -rf /usr/local/payara6/glassfish/domains/domain1/applications
     popd
     exit 0
 fi

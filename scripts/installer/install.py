@@ -511,12 +511,12 @@ print("\nInstalling additional configuration files (Jhove)... ")
 try: 
    copy2(jhoveConfigSchemaDist, gfConfigDir)
    # The JHOVE conf file has an absolute PATH of the JHOVE config schema file (uh, yeah...)
-   # and may need to be adjusted, if Payara is installed anywhere other than /usr/local/payara5:
-   if gfDir == "/usr/local/payara5":
+   # and may need to be adjusted, if Payara is installed anywhere other than /usr/local/payara6:
+   if gfDir == "/usr/local/payara6":
       copy2(jhoveConfigDist, gfConfigDir)
    else:
-      # use sed to replace /usr/local/payara5 in the distribution copy with the real gfDir:
-      sedCommand = "sed 's:/usr/local/payara5:"+gfDir+":g' < " + jhoveConfigDist + " > " + gfConfigDir + "/" + jhoveConfig
+      # use sed to replace /usr/local/payara6 in the distribution copy with the real gfDir:
+      sedCommand = "sed 's:/usr/local/payara6:"+gfDir+":g' < " + jhoveConfigDist + " > " + gfConfigDir + "/" + jhoveConfig
       subprocess.call(sedCommand, shell=True)
 
    print("done.")
