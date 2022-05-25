@@ -1,7 +1,7 @@
 #!/bin/bash
 echo "Installing dependencies for Dataverse"
 
-# wget seems to be missing in box 'bento/centos-8.2'
+# ensure wget
 dnf install -qy wget
 
 # python3 and psycopg2 for the Dataverse installer
@@ -51,7 +51,7 @@ SOLR_USER=solr
 echo "Ensuring Unix user '$SOLR_USER' exists"
 useradd $SOLR_USER || :
 DOWNLOAD_DIR='/dataverse/downloads'
-PAYARA_ZIP="$DOWNLOAD_DIR/payara-5.2021.6.zip"
+PAYARA_ZIP="$DOWNLOAD_DIR/payara-6.2022.1.Alpha2.zip"
 SOLR_TGZ="$DOWNLOAD_DIR/solr-8.11.1.tgz"
 if [ ! -f $PAYARA_ZIP ] || [ ! -f $SOLR_TGZ ]; then
     echo "Couldn't find $PAYARA_ZIP or $SOLR_TGZ! Running download script...."
@@ -59,13 +59,13 @@ if [ ! -f $PAYARA_ZIP ] || [ ! -f $SOLR_TGZ ]; then
     echo "Done running download script."
 fi
 PAYARA_USER_HOME=~dataverse
-PAYARA_ROOT=/usr/local/payara5
+PAYARA_ROOT=/usr/local/payara6
 if [ ! -d $PAYARA_ROOT ]; then
   echo "Copying $PAYARA_ZIP to $PAYARA_USER_HOME and unzipping"
   su $PAYARA_USER -s /bin/sh -c "cp $PAYARA_ZIP $PAYARA_USER_HOME"
   su $PAYARA_USER -s /bin/sh -c "cd $PAYARA_USER_HOME && unzip -q $PAYARA_ZIP"
-  # default.config defaults to /usr/local/payara5 so let's go with that
-  rsync -a $PAYARA_USER_HOME/payara5/ $PAYARA_ROOT/
+  # default.config defaults to /usr/local/payara6 so let's go with that
+  rsync -a $PAYARA_USER_HOME/payara6/ $PAYARA_ROOT/
 else
   echo "$PAYARA_ROOT already exists"
 fi
