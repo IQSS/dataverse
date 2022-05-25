@@ -314,7 +314,7 @@ else:
                   gfDir = config.get('glassfish', 'GLASSFISH_DIRECTORY')
                   while not test_appserver_directory(gfDir):
                      print("\nInvalid Payara directory!")
-                     gfDir = read_user_input("Enter the root directory of your Payara5 installation:\n(Or ctrl-C to exit the installer): ")
+                     gfDir = read_user_input("Enter the root directory of your Payara installation:\n(Or ctrl-C to exit the installer): ")
                   config.set('glassfish', 'GLASSFISH_DIRECTORY', gfDir)
                elif option == "mail_server":
                   mailServer = config.get('system', 'MAIL_SERVER')

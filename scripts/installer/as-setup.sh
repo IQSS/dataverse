@@ -56,7 +56,7 @@ function preliminary_setup()
 
   # avoid OutOfMemoryError: PermGen per http://eugenedvorkin.com/java-lang-outofmemoryerror-permgen-space-error-during-deployment-to-glassfish/
   #./asadmin $ASADMIN_OPTS list-jvm-options
-  # Note that these JVM options are different for Payara5 and Glassfish4:
+  # Note that these JVM options are different for Payara and Glassfish4:
   # old Glassfish4 options: (commented out)
   #./asadmin $ASADMIN_OPTS delete-jvm-options "-XX\:MaxPermSize=192m"
   #./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:MaxPermSize=512m"
@@ -64,7 +64,7 @@ function preliminary_setup()
   # payara6 ships with the "-server" option already in domain.xml, so no need:
   #./asadmin $ASADMIN_OPTS delete-jvm-options -client
 
-  # new Payara5 options: (thanks to donsizemore@unc.edu)
+  # new Payara options: (thanks to donsizemore@unc.edu)
   ./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:MaxMetaspaceSize=512m"
   ./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:MetaspaceSize=256m"
   ./asadmin $ASADMIN_OPTS create-jvm-options "-Dfish.payara.classloading.delegate=false"
@@ -276,7 +276,7 @@ if [ ! -d "$DOMAIN_DIR" ]
     exit 2
 fi
 
-echo "Setting up your app. server (Payara5) to support Dataverse"
+echo "Setting up your app. server (Payara) to support Dataverse"
 echo "Payara directory: "$GLASSFISH_ROOT
 echo "Domain directory:    "$DOMAIN_DIR
 

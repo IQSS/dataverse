@@ -85,11 +85,11 @@ To install Payara, run the following commands:
 
 ``cd /usr/local``
 
-``sudo curl -O -L https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2021.6/payara-5.2021.6.zip``
+``sudo curl -O -L https://s3.eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/6.2022.1.Alpha2/payara-6.2022.1.Alpha2.zip``
 
-``sudo unzip payara-5.2021.6.zip``
+``sudo unzip payara-6.2022.1.Alpha2.zip``
 
-``sudo chown -R $USER /usr/local/payara5``
+``sudo chown -R $USER /usr/local/payara6``
 
 Install PostgreSQL
 ~~~~~~~~~~~~~~~~~~
