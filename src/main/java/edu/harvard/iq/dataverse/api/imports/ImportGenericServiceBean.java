@@ -348,7 +348,10 @@ public class ImportGenericServiceBean {
         if (!otherIds.isEmpty()) {
             // We prefer doi or hdl identifiers like "doi:10.7910/DVN/1HE30F"
             for (String otherId : otherIds) {
-                if (otherId.startsWith(GlobalId.DOI_PROTOCOL) || otherId.startsWith(GlobalId.HDL_PROTOCOL) || otherId.startsWith(GlobalId.DOI_RESOLVER_URL) || otherId.startsWith(GlobalId.HDL_RESOLVER_URL)) {
+                if (otherId.startsWith(GlobalId.DOI_PROTOCOL) || otherId.startsWith(GlobalId.HDL_PROTOCOL) ||
+                    otherId.startsWith(GlobalId.DOI_RESOLVER_URL) || otherId.startsWith(GlobalId.HDL_RESOLVER_URL) || otherId.startsWith(GlobalId.DXDOI_RESOLVER_URL) ||
+                    otherId.startsWith(GlobalId.DOI_RESOLVER_URL.replace("https","http")) || otherId.startsWith(GlobalId.HDL_RESOLVER_URL.replace("https","http")) || otherId.startsWith(GlobalId.DXDOI_RESOLVER_URL.replace("https","http"))
+                    ) {
                     return otherId;
                 }
             }
@@ -389,15 +392,32 @@ public class ImportGenericServiceBean {
             
             // We also recognize global identifiers formatted as global resolver URLs:
             
-            if (identifierString.startsWith(GlobalId.HDL_RESOLVER_URL)) {
+            if (identifierString.startsWith(GlobalId.HDL_RESOLVER_URL) || identifierString.startsWith(GlobalId.HDL_RESOLVER_URL.replace("https", "http"))) {
                 logger.fine("Processing Handle identifier formatted as a resolver URL: "+identifierString);
                 protocol = GlobalId.HDL_PROTOCOL;
                 index1 = GlobalId.HDL_RESOLVER_URL.length() - 1;
+                if (!identifierString.startsWith("https")){
+                    // http
+                    index1--;
+                }
                 index2 = identifierString.indexOf("/", index1 + 1);
-            } else if (identifierString.startsWith(GlobalId.DOI_RESOLVER_URL)) {
+            } else if (identifierString.startsWith(GlobalId.DOI_RESOLVER_URL) || identifierString.startsWith(GlobalId.DOI_RESOLVER_URL.replace("https", "http"))) {
                 logger.fine("Processing DOI identifier formatted as a resolver URL: "+identifierString);
                 protocol = GlobalId.DOI_PROTOCOL;
                 index1 = GlobalId.DOI_RESOLVER_URL.length() - 1; 
+                if (!identifierString.startsWith("https")){
+                    // http
+                    index1--;
+                }
+                index2 = identifierString.indexOf("/", index1 + 1);
+            } else if (identifierString.startsWith(GlobalId.DXDOI_RESOLVER_URL) || identifierString.startsWith(GlobalId.DXDOI_RESOLVER_URL.replace("https", "http"))) {
+                logger.fine("Processing DOI identifier formatted as a resolver URL: "+identifierString);
+                protocol = GlobalId.DOI_PROTOCOL;
+                index1 = GlobalId.DXDOI_RESOLVER_URL.length() - 1; 
+                if (!identifierString.startsWith("https")){
+                    // http
+                    index1--;
+                }
                 index2 = identifierString.indexOf("/", index1 + 1);
             } else {
                 logger.warning("HTTP Url in supplied as the identifier is neither a Handle nor DOI resolver: "+identifierString);
