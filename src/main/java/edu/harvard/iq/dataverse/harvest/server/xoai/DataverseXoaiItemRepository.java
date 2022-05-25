@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.harvest.server.xoai;
 
 import io.gdcc.xoai.dataprovider.exceptions.IdDoesNotExistException;
@@ -21,7 +16,10 @@ import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecord;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
+import edu.harvard.iq.dataverse.harvest.server.xoai.conditions.UsePregeneratedMetadataFormat;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import io.gdcc.xoai.dataprovider.filter.Scope;
+import io.gdcc.xoai.dataprovider.model.conditions.Condition;
 import io.gdcc.xoai.model.oaipmh.Metadata;
 import java.io.IOException;
 import java.io.InputStream;
@@ -240,15 +238,47 @@ public class DataverseXoaiItemRepository implements ItemRepository {
 
     @Override
     public ListItemsResults getItems(List<ScopedFilter> filters, int offset, int length, String setSpec, Instant from, Instant until) throws OAIException {
-        logger.fine("calling getItems; offset=" + offset
+        logger.info("calling getItems; offset=" + offset
                 + ", length=" + length
                 + ", setSpec=" + setSpec
                 + ", from=" + from
                 + ", until=" + until);
 
+        // TODO:?/WORKINPROGRESS:
+        // we need to know the MetadataFormat requested, in 
+        // order to look up the pre-generated metadata stream
+        // and create a CopyElement Metadata object out of it.
+        // In the current implementation this is solved by encoding the 
+        // MetadataFormat in a custom Condition, which results in it being 
+        // passed to the getItems() method as a ScopedFilter. 
+        // (or should we simply offer versions of all these methods,
+        // with the extra MetadataFormat argument, on the gdcc.xoai side, 
+        // like it was done with getItem() above?
+        
+        MetadataFormat metadataFormat = null; 
+        
+        for (ScopedFilter f : filters) {
+            
+            if (f.getScope().equals(Scope.MetadataFormat)) {
+                logger.fine("found metadata-scoped filter");
+                Condition condition = f.getCondition();
+                if (condition instanceof UsePregeneratedMetadataFormat) {
+                    logger.fine("found pregenerated metadata condition");
+                    metadataFormat = ((UsePregeneratedMetadataFormat) condition).getMetadataFormat();
+                    break;
+                }
+            }
+        }
+        
+        if (metadataFormat == null) {
+            // we should throw a "cannot dissiminate format" (?) exception here; 
+            // but let's do this for now: 
+            metadataFormat =  MetadataFormat.metadataFormat("oai_dc");
+        }
+        
         List<OAIRecord> oaiRecords = recordService.findOaiRecordsBySetName(setSpec, from, until);
 
-        logger.fine("total " + oaiRecords.size() + " returned");
+        logger.info("total " + oaiRecords.size() + " returned");
 
         List<Item> xoaiItems = new ArrayList<>();
         if (oaiRecords != null && !oaiRecords.isEmpty()) {
@@ -270,16 +300,6 @@ public class DataverseXoaiItemRepository implements ItemRepository {
                 if (!oaiRecord.isRemoved()) {
                     Dataset dataset = datasetService.findByGlobalId(oaiRecord.getGlobalId());
                     if (dataset != null) {
-                        // TODO: (on the GDCC side?)
-                        // (do we simply offer versions of each of all these methods 
-                        // with the extra MetadataFormat argument, like we did with getItem()?
-                        // or do we define a condition/filter indicating "stream 
-                        // pre-generated" and encoding the format name?)
-                        // we need to know the MetadataFormat requested, in 
-                        // order to look up the pre-generated metadata stream
-                        // and create a CopyElement Metadata object out of it!
-                        // (cheating/defaulting to dc for testing purposes, for now)
-                        MetadataFormat metadataFormat =  MetadataFormat.metadataFormat("oai_dc");
                     
                         InputStream pregeneratedMetadataStream; 
                         try {

@@ -35,6 +35,7 @@ import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.xoai.DataverseXoaiItemRepository;
 import edu.harvard.iq.dataverse.harvest.server.xoai.DataverseXoaiSetRepository;
+import edu.harvard.iq.dataverse.harvest.server.xoai.conditions.UsePregeneratedMetadataFormat;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -143,6 +144,10 @@ public class OAIServlet extends HttpServlet {
                     metadataFormat = MetadataFormat.metadataFormat(formatName);
                     metadataFormat.withNamespace(exporter.getXMLNameSpace());
                     metadataFormat.withSchemaLocation(exporter.getXMLSchemaLocation());
+                    
+                    UsePregeneratedMetadataFormat condition = new UsePregeneratedMetadataFormat(); 
+                    condition.withMetadataFormat(metadataFormat);
+                    metadataFormat.withCondition(condition);
                 } catch (ExportException ex) {
                     metadataFormat = null;
                 }

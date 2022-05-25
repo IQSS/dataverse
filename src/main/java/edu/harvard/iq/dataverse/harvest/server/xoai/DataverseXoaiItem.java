@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.harvest.server.xoai;
 
 import io.gdcc.xoai.dataprovider.model.Item;
@@ -34,6 +29,7 @@ public class DataverseXoaiItem implements Item {
         if (!StringUtil.isEmpty(oaiRecord.getSetName())) {
             oaisets.add(new Set(oaiRecord.getSetName()));
         }
+        about = new ArrayList<>();
     }
    
     private OAIRecord oaiRecord;
@@ -57,9 +53,11 @@ public class DataverseXoaiItem implements Item {
         return this; 
     }
     
+    private List<About> about;
+    
     @Override
     public List<About> getAbout() {
-        return null;
+        return about;
     }
 
     private Metadata metadata;

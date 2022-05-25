@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.harvest.client.oai;
 
 import io.gdcc.xoai.model.oaipmh.Description;
@@ -204,6 +199,11 @@ public class OaiHandler implements Serializable {
             // TODO: 
             // not sure why this exception is now thrown by List Metadata Formats (?)
             // but looks like it was added in xoai 4.2. 
+            // It appears that the answer is, they added it because you can 
+            // call ListMetadataFormats on a specific identifier, optionally, 
+            // and therefore it is possible to get back that response. Of course 
+            // it will never be the case when calling it on an entire repository. 
+            // But it's ok. 
             throw new OaiHandlerException("Id does not exist exception");
         } catch (InvalidOAIResponse ior) {
             throw new OaiHandlerException("No valid response received from the OAI server."); 
