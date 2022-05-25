@@ -238,7 +238,7 @@ public class DataverseXoaiItemRepository implements ItemRepository {
 
     @Override
     public ListItemsResults getItems(List<ScopedFilter> filters, int offset, int length, String setSpec, Instant from, Instant until) throws OAIException {
-        logger.info("calling getItems; offset=" + offset
+        logger.fine("calling getItems; offset=" + offset
                 + ", length=" + length
                 + ", setSpec=" + setSpec
                 + ", from=" + from
@@ -258,12 +258,10 @@ public class DataverseXoaiItemRepository implements ItemRepository {
         MetadataFormat metadataFormat = null; 
         
         for (ScopedFilter f : filters) {
-            
+
             if (f.getScope().equals(Scope.MetadataFormat)) {
-                logger.fine("found metadata-scoped filter");
                 Condition condition = f.getCondition();
                 if (condition instanceof UsePregeneratedMetadataFormat) {
-                    logger.fine("found pregenerated metadata condition");
                     metadataFormat = ((UsePregeneratedMetadataFormat) condition).getMetadataFormat();
                     break;
                 }
@@ -271,14 +269,12 @@ public class DataverseXoaiItemRepository implements ItemRepository {
         }
         
         if (metadataFormat == null) {
-            // we should throw a "cannot dissiminate format" (?) exception here; 
-            // but let's do this for now: 
-            metadataFormat =  MetadataFormat.metadataFormat("oai_dc");
+            throw new OAIException("Metadata Format is Required");
         }
         
         List<OAIRecord> oaiRecords = recordService.findOaiRecordsBySetName(setSpec, from, until);
 
-        logger.info("total " + oaiRecords.size() + " returned");
+        logger.fine("total " + oaiRecords.size() + " records returned");
 
         List<Item> xoaiItems = new ArrayList<>();
         if (oaiRecords != null && !oaiRecords.isEmpty()) {
