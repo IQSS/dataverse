@@ -1067,7 +1067,9 @@ Your Dataverse installation may be configured to submit a copy of published Data
 
 The Dataverse Software offers an internal archive workflow which may be configured as a PostPublication workflow via an admin API call to manually submit previously published Datasets and prior versions to a configured archive such as Chronopolis. The workflow creates a `JSON-LD <http://www.openarchives.org/ore/0.9/jsonld>`_ serialized `OAI-ORE <https://www.openarchives.org/ore/>`_ map file, which is also available as a metadata export format in the Dataverse Software web interface.
 
-At present, the DPNSubmitToArchiveCommand, LocalSubmitToArchiveCommand, and GoogleCloudSubmitToArchive are the only implementations extending the AbstractSubmitToArchiveCommand and using the configurable mechanisms discussed below.
+At present, archiving classes include the DuraCloudSubmitToArchiveCommand, LocalSubmitToArchiveCommand, GoogleCloudSubmitToArchive, and S3SubmitToArchiveCommand , which all extend the AbstractSubmitToArchiveCommand and using the configurable mechanisms discussed below.
+
+All current options support the archival status APIs and the same status is available in the dataset page version table (for contributors/those who could view the unpublished dataset, with more detail available to superusers).
 
 .. _Duracloud Configuration:
 
@@ -1130,7 +1132,7 @@ ArchiverClassName - the fully qualified class to be used for archiving. For exam
 Google Cloud Configuration
 ++++++++++++++++++++++++++
 
-The Google Cloud Archiver can send Dataverse Project Bags to a bucket in Google's cloud, including those in the 'Coldline' storage class (cheaper, with slower access) 
+The Google Cloud Archiver can send Dataverse Archival Bags to a bucket in Google's cloud, including those in the 'Coldline' storage class (cheaper, with slower access) 
 
 ``curl http://localhost:8080/api/admin/settings/:ArchiverClassName -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.GoogleCloudSubmitToArchiveCommand"``
 
@@ -1153,6 +1155,31 @@ The Google Cloud Archiver also requires a key file that must be renamed to 'goog
 For example:
 
 ``cp <your key file> /usr/local/payara5/glassfish/domains/domain1/files/googlecloudkey.json``
+
+.. _S3 Archiver Configuration:
+
+S3 Configuration
+++++++++++++++++
+
+The S3 Archiver can send Dataverse Archival Bag to a bucket at any S3 endpoint. The configuration for the S3 Archiver is independent of any S3 store that may be configured in Dataverse and may, for example, leverage colder (cheaper, slower access) storage. 
+
+``curl http://localhost:8080/api/admin/settings/:ArchiverClassName -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.S3SubmitToArchiveCommand"``
+
+``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":S3ArchiverConfig, :S3ArchiverProfile, :BagGeneratorThreads"``
+
+The S3 Archiver defines two custom settings, a required :S3ArchiverConfig and optional :S3ArchiverProfile. It can also use the :BagGeneratorThreads setting as described in the DuraCloud Configuration section above.
+
+The credentials for your S3 account, can be stored in a profile in a standard credentials file (e.g. ~/.aws/credentials) referenced via the :S3ArchiverProfile setting (will default to the default entry), or can via MicroProfile settings as described for S3 stores (dataverse.s3archiver.access-key and dataverse.s3archiver.secret-key)
+
+The :S3ArchiverConfig setting is a json object that must include an "s3_bucket_name" and may include additional S3-related parameters as described for S3 Stores, including "connection-pool-size","custom-endpoint-url", "custom-endpoint-region", "path-style-access", "payload-signing", and "chunked-encoding".
+
+\:S3ArchiverConfig - minimally includes the name of the bucket to use. For example:
+
+``curl http://localhost:8080/api/admin/settings/:S3ArchiverConfig -X PUT -d "{"s3_bucket_name":"archival-bucket"}``
+
+\:S3ArchiverProfile - the name of an S3 profile to use. For example:
+
+``curl http://localhost:8080/api/admin/settings/:S3ArchiverProfile -X PUT -d "archiver"``
 
 .. _Archiving API Call:
 
@@ -2566,7 +2593,7 @@ Number of errors to display to the user when creating DataFiles from a file uplo
 .. _:BagItHandlerEnabled:
 
 :BagItHandlerEnabled
-+++++++++++++++++++++
+++++++++++++++++++++
 
 Part of the database settings to configure the BagIt file handler. Enables the BagIt file handler. By default, the handler is disabled.
 
@@ -2642,6 +2669,14 @@ This is the local file system path to be used with the LocalSubmitToArchiveComma
 +++++++++++++++++++
 
 These are the bucket and project names to be used with the GoogleCloudSubmitToArchiveCommand class. Further information is in the :ref:`Google Cloud Configuration` section above.
+
+:S3ArchiverConfig
++++++++++++++++++
+:S3ArchiverProfile
+++++++++++++++++++
+
+These are the json configuration object and S3 profile settings to be used with the S3SubmitToArchiveCommand class. Further information is in the :ref:`S3 Archiver Configuration` section above.
+
 
 .. _:InstallationName:
 

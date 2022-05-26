@@ -42,8 +42,8 @@ import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand implements Command<DatasetVersion> {
 
     private static final Logger logger = Logger.getLogger(S3SubmitToArchiveCommand.class.getName());
-    private static final String S3_CONFIG = ":S3ArchivalConfig";
-    private static final String S3_PROFILE = ":S3ArchivalProfile";
+    private static final String S3_CONFIG = ":S3ArchiverConfig";
+    private static final String S3_PROFILE = ":S3ArchiverProfile";
 
     private static final Config config = ConfigProvider.getConfig();
     protected AmazonS3 s3 = null;
@@ -62,14 +62,14 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand imp
         JsonObject configObject = null;
         String profileName = requestedSettings.get(S3_PROFILE);
 
-        logger.fine("Profile: " + profileName + " Config: " + configObject);
         try {
             configObject = JsonUtil.getJsonObject(requestedSettings.get(S3_CONFIG));
+            logger.fine("Profile: " + profileName + " Config: " + configObject);
             bucketName = configObject.getString("s3_bucket_name", null);
         } catch (Exception e) {
             logger.warning("Unable to parse " + S3_CONFIG + " setting as a Json object");
         }
-        if (configObject != null && profileName != null && bucketName != null) {
+        if (configObject != null && bucketName != null) {
 
             s3 = createClient(configObject, profileName);
             tm = TransferManagerBuilder.standard().withS3Client(s3).build();
@@ -224,7 +224,7 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand imp
         s3CB.setChunkedEncodingDisabled(!s3chunkedEncoding);
 
         /**
-         * Pass in a string value if this storage driver should use a non-default AWS S3
+         * Pass in a string value if this archiver should use a non-default AWS S3
          * profile. The default is "default" which should work when only one profile
          * exists.
          */
