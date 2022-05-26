@@ -1,0 +1,3 @@
+Controlled vocabulary fields that do not allow multiple entries are not indexed properly in Dataverse instances configured to support multiple languages. This release fixes the schema.xml file for the one field affected in the standard metadata blocks (journalArticleType) and updates the api/admin/index/solr/schema to provide the correct information for use with the update-fields.sh script described in the [Metadata Customization section of the Admin Guide](https://guides.dataverse.org/en/latest/admin/metadatacustomization.html#updating-the-solr-schema).
+
+The release should include updating the schema.xml file for solr or running the update-fields.sh script and reindexing (whatever standard instructions we give for schema changes.)

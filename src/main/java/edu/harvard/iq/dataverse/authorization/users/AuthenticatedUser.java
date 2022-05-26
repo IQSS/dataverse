@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.authorization.users;
 
 import edu.harvard.iq.dataverse.Cart;
 import edu.harvard.iq.dataverse.DatasetLock;
+import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.validation.ValidateEmail;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
@@ -9,13 +10,18 @@ import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2TokenData;
 import edu.harvard.iq.dataverse.userdata.UserUtil;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
+import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.CascadeType;
@@ -28,6 +34,8 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.PostLoad;
+import javax.persistence.PrePersist;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotBlank;
@@ -120,6 +128,30 @@ public class AuthenticatedUser implements User, Serializable {
     @Column(nullable=true)
     private Timestamp deactivatedTime;
 
+    @Column(columnDefinition="TEXT", nullable=true)
+    private String mutedEmails;
+
+    @Column(columnDefinition="TEXT", nullable=true)
+    private String mutedNotifications;
+    
+    @Transient
+    private Set<Type> mutedEmailsSet;
+    
+    @Transient
+    private Set<Type> mutedNotificationsSet;
+
+    @PrePersist
+    void prePersist() {
+        mutedNotifications = Type.toStringValue(mutedNotificationsSet);
+        mutedEmails = Type.toStringValue(mutedEmailsSet);
+    }
+    
+    @PostLoad
+    void postLoad() {
+        mutedNotificationsSet = Type.tokenizeToSet(mutedNotifications);
+        mutedEmailsSet = Type.tokenizeToSet(mutedEmails);
+    }
+
     /**
      * @todo Consider storing a hash of *all* potentially interesting Shibboleth
      * attribute key/value pairs, not just the Identity Provider (IdP).
@@ -192,6 +224,13 @@ public class AuthenticatedUser implements User, Serializable {
         }
     }
 
+    // For Shib users, set "email confirmed" timestamp on login.
+    public void updateEmailConfirmedToNow() {
+        if (ShibAuthenticationProvider.PROVIDER_ID.equals(this.getAuthenticatedUserLookup().getAuthenticationProviderId())) {
+            Timestamp emailConfirmedNow = new Timestamp(new Date().getTime());
+            this.setEmailConfirmed(emailConfirmedNow);
+        }
+    }
 
     //For User List Admin dashboard
     @Transient
@@ -388,6 +427,8 @@ public class AuthenticatedUser implements User, Serializable {
 
         authenicatedUserJson.add("deactivated", this.deactivated);
         authenicatedUserJson.add("deactivatedTime", UserUtil.getTimestampStringOrNull(this.deactivatedTime));
+        authenicatedUserJson.add("mutedEmails", JsonPrinter.enumsToJson(this.mutedEmailsSet));
+        authenicatedUserJson.add("mutedNotifications", JsonPrinter.enumsToJson(this.mutedNotificationsSet));
 
         return authenicatedUserJson;
     }
@@ -490,5 +531,37 @@ public class AuthenticatedUser implements User, Serializable {
     
     public void setCart(Cart cart) {
         this.cart = cart;
+    }
+
+    public Set<Type> getMutedEmails() {
+        return mutedEmailsSet;
+    }
+
+    public void setMutedEmails(Set<Type> mutedEmails) {
+        this.mutedEmailsSet = mutedEmails;
+        this.mutedEmails = Type.toStringValue(mutedEmails);
+    }
+
+    public Set<Type> getMutedNotifications() {
+        return mutedNotificationsSet;
+    }
+
+    public void setMutedNotifications(Set<Type> mutedNotifications) {
+        this.mutedNotificationsSet = mutedNotifications;
+        this.mutedNotifications = Type.toStringValue(mutedNotifications);
+    }
+    
+    public boolean hasEmailMuted(Type type) {
+        if (this.mutedEmailsSet == null || type == null) {
+            return false;
+        }
+        return this.mutedEmailsSet.contains(type);
+    }
+    
+    public boolean hasNotificationMuted(Type type) {
+        if (this.mutedNotificationsSet == null || type == null) {
+            return false;
+        }
+        return this.mutedNotificationsSet.contains(type);
     }
 }
