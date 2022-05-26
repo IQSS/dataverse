@@ -698,6 +698,10 @@ The image below indicates that the page layout consists of three main blocks: a 
 
 |dvPageBlocks|
 
+.. To edit, use dvBrandingCustBlocks.drawio with https://app.diagrams.net
+.. |dvPageBlocks| image:: ./img/dvBrandingCustBlocks.png
+   :class: img-responsive
+
 Installation Name/Brand Name
 ++++++++++++++++++++++++++++
 
@@ -2760,6 +2764,29 @@ To remove the override and go back to the default list:
 
 ``curl -X PUT -d '' http://localhost:8080/api/admin/settings/:FileCategories``
 
-.. To edit, use dvBrandingCustBlocks.drawio with https://app.diagrams.net
-.. |dvPageBlocks| image:: ./img/dvBrandingCustBlocks.png
-   :class: img-responsive
+.. _:ShowMuteOptions:
+
+:ShowMuteOptions
+++++++++++++++++
+
+Allows users to mute notifications by showing additional configuration options in the Notifications tab of the account page (see :ref:`account-notifications` in the User Guide). By default, this setting is "false" and users cannot mute any notifications (this feature is not shown in the user interface).
+
+For configuration details, see :ref:`mute-notifications`.
+
+.. _:AlwaysMuted:
+
+:AlwaysMuted
+++++++++++++
+
+Overrides the default empty list of always muted notifications. Always muted notifications cannot be unmuted by the users. Always muted notifications are not shown in the notification settings for the users.
+
+For configuration details, see :ref:`mute-notifications`.
+
+.. _:NeverMuted:
+
+:NeverMuted
++++++++++++
+
+Overrides the default empty list of never muted notifications. Never muted notifications cannot be muted by the users. Always muted notifications are grayed out and are not adjustable by the user.
+
+For configuration details, see :ref:`mute-notifications`.
