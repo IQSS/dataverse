@@ -1196,7 +1196,7 @@ This Archiver adds a :DRSArchiverConfig setting that is a JSON object containing
 - "single_version":true - whether to limit Dataverse to archiving one version of a dataset
 - "timeout":600 - DRS uses JWT for authentication and this key sets the timeout (in seconds) of the token provided
 - "admin_metadata" - a sub-object containing many DRS-specific keys and
-   - "collections" - a sub-object containing keys that identify specific collections in Dataverse by their alias. If there is an alias entry for a given collection, a) the DRS Archiver will submit any Dataverse within that collection or its subcollection for archiving, and b) will use any keys in the object supplied for that alias as overrides for the admin_metadata provided in the parent object. The latter allows, for example, different billing codes and contacts to be assigned for different collections.
+  * "collections" - a sub-object containing keys that identify specific collections in Dataverse by their alias. If there is an alias entry for a given collection, a) the DRS Archiver will submit any Dataverse within that collection or its subcollection for archiving, and b) will use any keys in the object supplied for that alias as overrides for the admin_metadata provided in the parent object. The latter allows, for example, different billing codes and contacts to be assigned for different collections.
 
 ``curl http://localhost:8080/api/admin/settings/:ArchiverClassName -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.DRSSubmitToArchiveCommand"``
 
