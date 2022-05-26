@@ -1660,21 +1660,7 @@ public class DatasetPage implements java.io.Serializable {
     public void updateSelectedTemplate(ValueChangeEvent event) {
 
         selectedTemplate = (Template) event.getNewValue();
-        if (selectedTemplate != null) {
-            //then create new working version from the selected template
-            workingVersion.updateDefaultValuesFromTemplate(selectedTemplate);
-            updateDatasetFieldInputLevels();
-        } else {
-            workingVersion.initDefaultValues(licenseServiceBean.getDefault());
-            updateDatasetFieldInputLevels();
-        }
-        /*
-        Issue 8646: necessary for the access popup which is shared by the dataset page and the file page
-        */
-        setFileAccessRequest(workingVersion.getTermsOfUseAndAccess().isFileAccessRequest());
-        setTermsOfAccess(workingVersion.getTermsOfUseAndAccess().getTermsOfAccess());
-        
-        resetVersionUI();
+
     }
 
     /*
@@ -1768,6 +1754,21 @@ public class DatasetPage implements java.io.Serializable {
 
     public void handleChangeButton() {
 
+        if (selectedTemplate != null) {
+            //then create new working version from the selected template
+            workingVersion.updateDefaultValuesFromTemplate(selectedTemplate);
+            updateDatasetFieldInputLevels();
+        } else {
+            workingVersion.initDefaultValues(licenseServiceBean.getDefault());
+            updateDatasetFieldInputLevels();
+        }
+        /*
+        Issue 8646: necessary for the access popup which is shared by the dataset page and the file page
+        */
+        setFileAccessRequest(workingVersion.getTermsOfUseAndAccess().isFileAccessRequest());
+        setTermsOfAccess(workingVersion.getTermsOfUseAndAccess().getTermsOfAccess());
+        
+        resetVersionUI();
     }
 
     public boolean isShapefileType(FileMetadata fm) {
