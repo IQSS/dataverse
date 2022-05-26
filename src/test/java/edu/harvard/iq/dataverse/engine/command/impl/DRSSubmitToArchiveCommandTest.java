@@ -26,16 +26,6 @@ import java.util.Base64;
  */
 public class DRSSubmitToArchiveCommandTest {
 
-    
-    @BeforeAll
-    private static void setUpAll() {
-        BrandingUtilTest.setupMocks();
-    }
-    @AfterAll
-    private static void tearDownAll() {
-        BrandingUtilTest.tearDownMocks();
-    }
-    
     @Test
     public void createJWT() throws CommandException {
 
@@ -121,7 +111,7 @@ public class DRSSubmitToArchiveCommandTest {
             System.out.println("Canonical form:"+ canonicalBody);
             
             Algorithm algorithmRSA = Algorithm.RSA256(null, privKey);
-            String token1 = DRSSubmitToArchiveCommand.createJWTString(algorithmRSA, BrandingUtil.getInstallationBrandName(), fakeBody, 5);
+            String token1 = DRSSubmitToArchiveCommand.createJWTString(algorithmRSA, "InstallationBrandName", fakeBody, 5);
             
             System.out.println("JWT: " + token1);
             DecodedJWT jwt = JWT.decode(token1);
