@@ -20,6 +20,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.util.List;
@@ -66,10 +68,11 @@ public class FileIntegrityChecker {
         this.dataverseDao = dataverseDao;
         this.dataAccess = dataAccess;
     }
-    
-    
+
+
     // -------------------- LOGIC --------------------
 
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public FilesIntegrityReport checkFilesIntegrity() {
         List<DataFile> dataFiles = dataFileService.findAll();
 
@@ -113,7 +116,7 @@ public class FileIntegrityChecker {
             if (!haveSameFilesize(dataFile, storageIO)) {
                 return FileIntegrityCheckResult.DIFFERENT_SIZE;
             }
-            
+
             boolean withMd5Compare = storageIO.isMD5CheckSupported() && dataFile.getChecksumType() == ChecksumType.MD5;
 
             if (withMd5Compare && !haveSameMd5(dataFile, storageIO)) {
@@ -121,7 +124,7 @@ public class FileIntegrityChecker {
             }
 
             return withMd5Compare ? FileIntegrityCheckResult.OK : FileIntegrityCheckResult.OK_SKIPPED_CHECKSUM_VERIFICATION;
-            
+
         } catch (IOException e) {
             logger.info(e.getMessage());
             return FileIntegrityCheckResult.STORAGE_ERROR;
@@ -154,7 +157,7 @@ public class FileIntegrityChecker {
 
     private EmailContent buildReportEmailContent(FilesIntegrityReport report) {
         StringBuilder messageBodyBuilder = new StringBuilder();
-        
+
         messageBodyBuilder.append("Datafiles integrity check summary: ")
                           .append(NEW_LINE)
                           .append("Files checked: ")
