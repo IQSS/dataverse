@@ -155,19 +155,27 @@ The My Data section of your account page displays a listing of all the Dataverse
 
 You can use the Add Data button to create a new Dataverse collection or dataset. By default, the new Dataverse collection or dataset will be created in the root Dataverse collection, but from the create form you can use the Host Dataverse collection dropdown menu to choose a different Dataverse collection, for which you have the proper access privileges. However, you will not be able to change this selection after you create your Dataverse collection or dataset.
 
+.. _account-notifications:
+
 Notifications
 -------------
 
-Notifications appear in the notifications tab on your account page and are also displayed as a number next to your account name.
+Notifications appear in the notifications tab on your account page and are also displayed as a number next to your account name. You also receive notifications via email.
 
-You will receive a notification when:
+If your admin has enabled the option to change the notification settings, you will find an overview of the notification and email settings in the notifications tab. There, you can select which notifications and/or emails you wish to receive. If certain notification or email options are greyed out, you can’t change the setting for this notification because the admin has set these as never to be muted by the user. You control the in-app and the email notifications separately in the two lists.
+
+You will typically receive a notification or email when:
 
 - You've created your account.
 - You've created a Dataverse collection or added a dataset.
-- Another Dataverse installation user has requested access to restricted files in a dataset that you published. (If you submitted your dataset for review and it was published by a curator, the curators of the Dataverse collection that contains your dataset will get a notification about requests to access your restricted files.)
+- Another Dataverse installation user has requested access to restricted files in a dataset that you published. (If you submitted your dataset for review, and it was published by a curator, the curators of the Dataverse collection that contains your dataset will get a notification about requests to access your restricted files.)
 - A file in one of your datasets has finished the ingest process.
 
-Notifications will only be emailed one time even if you haven't read the notification on the Dataverse installation.
+There are other notification types that you can receive, e.g., notification on granted roles, API key generation, etc. These types of notifications are less common and are not described here. Some other notifications are limited to specific roles. For example, if the installation has a curation workflow, reviewers get notified when a new dataset is submitted for review.
+
+Notifications will only be emailed once, even if you haven't read the in-app notification.
+
+It's possible to manage notifications via API. See :ref:`notifications` in the API Guide.
 
 API Token
 ---------
