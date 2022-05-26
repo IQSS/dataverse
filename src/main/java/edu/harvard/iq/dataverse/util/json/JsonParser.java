@@ -75,6 +75,7 @@ public class JsonParser {
      */
     boolean lenient = false;  
 
+    @Deprecated
     public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService) {
         this.datasetFieldSvc = datasetFieldSvc;
         this.blockService = blockService;
@@ -289,6 +290,15 @@ public class JsonParser {
         }
         
         return grp;
+    }
+
+    public static <E extends Enum<E>> List<E> parseEnumsFromArray(JsonArray enumsArray, Class<E> enumClass) throws JsonParseException {
+        final List<E> enums = new LinkedList<>();
+
+        for (String name : enumsArray.getValuesAs(JsonString::getString)) {
+            enums.add(Enum.valueOf(enumClass, name));
+        }
+        return enums;
     }
 
     public DatasetVersion parseDatasetVersion(JsonObject obj) throws JsonParseException {
