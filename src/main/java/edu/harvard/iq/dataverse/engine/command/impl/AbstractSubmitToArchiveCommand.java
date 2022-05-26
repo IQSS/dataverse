@@ -1,6 +1,9 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DOIDataCiteRegisterService;
+import edu.harvard.iq.dataverse.DataCitation;
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.SettingsWrapper;
@@ -87,6 +90,13 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
     public String describe() {
         return super.describe() + "DatasetVersion: [" + version.getId() + " (v"
                 + version.getFriendlyVersionNumber()+")]";
+    }
+    
+    String getDataCiteXml(DatasetVersion dv) {
+        DataCitation dc = new DataCitation(dv);
+        Map<String, String> metadata = dc.getDataCiteMetadata();
+        return DOIDataCiteRegisterService.getMetadataFromDvObject(dv.getDataset().getGlobalId().asString(), metadata,
+                dv.getDataset());
     }
 
    public static boolean isArchivable(Dataset dataset, SettingsWrapper settingsWrapper) {

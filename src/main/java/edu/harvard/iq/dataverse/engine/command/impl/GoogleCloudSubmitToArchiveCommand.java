@@ -1,7 +1,5 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.DOIDataCiteRegisterService;
-import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetLock.Reason;
@@ -15,16 +13,13 @@ import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
-import java.io.BufferedInputStream;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.nio.charset.Charset;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -76,11 +71,8 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
 
                     String spaceName = dataset.getGlobalId().asString().replace(':', '-').replace('/', '-')
                             .replace('.', '-').toLowerCase();
-                    
-                    DataCitation dc = new DataCitation(dv);
-                    Map<String, String> metadata = dc.getDataCiteMetadata();
-                    String dataciteXml = DOIDataCiteRegisterService.getMetadataFromDvObject(
-                            dv.getDataset().getGlobalId().asString(), metadata, dv.getDataset());
+
+                    String dataciteXml = getDataCiteXml(dv);
                     String blobIdString = null;
                     MessageDigest messageDigest = MessageDigest.getInstance("MD5");
                     try (PipedInputStream dataciteIn = new PipedInputStream(); DigestInputStream digestInputStream = new DigestInputStream(dataciteIn, messageDigest)) {

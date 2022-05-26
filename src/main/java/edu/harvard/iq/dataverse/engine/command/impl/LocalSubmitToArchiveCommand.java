@@ -1,7 +1,5 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.DOIDataCiteRegisterService;
-import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetLock.Reason;
@@ -58,11 +56,8 @@ public class LocalSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand 
                 String spaceName = dataset.getGlobalId().asString().replace(':', '-').replace('/', '-')
                         .replace('.', '-').toLowerCase();
 
-                DataCitation dc = new DataCitation(dv);
-                Map<String, String> metadata = dc.getDataCiteMetadata();
-                String dataciteXml = DOIDataCiteRegisterService
-                        .getMetadataFromDvObject(dv.getDataset().getGlobalId().asString(), metadata, dv.getDataset());
-
+                String dataciteXml = getDataCiteXml(dv);
+                
                 FileUtils.writeStringToFile(
                         new File(localPath + "/" + spaceName + "-datacite.v" + dv.getFriendlyVersionNumber() + ".xml"),
                         dataciteXml, StandardCharsets.UTF_8);
@@ -70,6 +65,7 @@ public class LocalSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand 
                 bagger.setNumConnections(getNumberOfBagGeneratorThreads());
                 bagger.setAuthenticationKey(token.getTokenString());
                 zipName = localPath + "/" + spaceName + "v" + dv.getFriendlyVersionNumber() + ".zip";
+                //ToDo: generateBag(File f, true) seems to do the same thing (with a .tmp extension) - since we don't have to use a stream here, could probably just reuse the existing code? 
                 bagger.generateBag(new FileOutputStream(zipName + ".partial"));
 
                 File srcFile = new File(zipName + ".partial");
