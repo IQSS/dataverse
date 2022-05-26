@@ -1067,7 +1067,7 @@ Your Dataverse installation may be configured to submit a copy of published Data
 
 The Dataverse Software offers an internal archive workflow which may be configured as a PostPublication workflow via an admin API call to manually submit previously published Datasets and prior versions to a configured archive such as Chronopolis. The workflow creates a `JSON-LD <http://www.openarchives.org/ore/0.9/jsonld>`_ serialized `OAI-ORE <https://www.openarchives.org/ore/>`_ map file, which is also available as a metadata export format in the Dataverse Software web interface.
 
-At present, archiving classes include the DuraCloudSubmitToArchiveCommand, LocalSubmitToArchiveCommand, GoogleCloudSubmitToArchive, and S3SubmitToArchiveCommand , which all extend the AbstractSubmitToArchiveCommand and using the configurable mechanisms discussed below.
+At present, archiving classes include the DuraCloudSubmitToArchiveCommand, LocalSubmitToArchiveCommand, GoogleCloudSubmitToArchive, and S3SubmitToArchiveCommand , which all extend the AbstractSubmitToArchiveCommand and using the configurable mechanisms discussed below. A DRSSubmitToArchiveCommand, which works with Harvard's DRS also exists and, while specific to DRS, is a useful example of how Archivers can support single-version-only semantics and support archiving only from specified collections (and with collection specific parameters). 
 
 All current options support the archival status APIs and the same status is available in the dataset page version table (for contributors/those who could view the unpublished dataset, with more detail available to superusers).
 
@@ -1171,7 +1171,7 @@ The S3 Archiver defines two custom settings, a required :S3ArchiverConfig and op
 
 The credentials for your S3 account, can be stored in a profile in a standard credentials file (e.g. ~/.aws/credentials) referenced via the :S3ArchiverProfile setting (will default to the default entry), or can via MicroProfile settings as described for S3 stores (dataverse.s3archiver.access-key and dataverse.s3archiver.secret-key)
 
-The :S3ArchiverConfig setting is a json object that must include an "s3_bucket_name" and may include additional S3-related parameters as described for S3 Stores, including "connection-pool-size","custom-endpoint-url", "custom-endpoint-region", "path-style-access", "payload-signing", and "chunked-encoding".
+The :S3ArchiverConfig setting is a JSON object that must include an "s3_bucket_name" and may include additional S3-related parameters as described for S3 Stores, including "connection-pool-size","custom-endpoint-url", "custom-endpoint-region", "path-style-access", "payload-signing", and "chunked-encoding".
 
 \:S3ArchiverConfig - minimally includes the name of the bucket to use. For example:
 
@@ -1180,6 +1180,29 @@ The :S3ArchiverConfig setting is a json object that must include an "s3_bucket_n
 \:S3ArchiverProfile - the name of an S3 profile to use. For example:
 
 ``curl http://localhost:8080/api/admin/settings/:S3ArchiverProfile -X PUT -d "archiver"``
+
+.. _Harvard DRS Archiver Configuration:
+
+Harvard DRS Configuration
++++++++++++++++++++++++++
+
+The Harvard DRS Archiver can send Dataverse Archival Bag to the Harvard DRS. It extends the S3 Archiver and uses all of the settings of that Archiver.
+
+As this Archiver is specific to Harvard and the DRS, a full description of the required configuration is out-of-scope for this guide. However, the basics will be described to support management and to indicate how similar future Archivers might leverage its flexible configuration.
+ 
+This Archiver adds a :DRSArchiverConfig setting that is a JSON object containing several keys and sub-objects:
+- "DRSendpoint":"https://somewhere.org/drsingest" - the URI for the DRS Ingest Management Service (DIMS)
+- "trust_cert":true - whether to trust a self-signed cert from the DIMS
+- "single_version":true - whether to limit Dataverse to archiving one version of a dataset
+- "timeout":600 - DRS uses JWT for authentication and this key sets the timeout (in seconds) of the token provided
+- "admin_metadata" - a sub-object containing many DRS-specific keys and
+  - "collections" - a sub-object containing keys that identify specific collections in Dataverse by their alias. If there is an alias entry for a given collection, a) the DRS Archiver will submit any Dataverse within that collection or its subcollection for archiving, and b) will use any keys in the object supplied for that alias as overrides for the admin_metadata provided in the parent object. The latter allows, for example, different billing codes and contacts to be assigned for different collections.
+
+``curl http://localhost:8080/api/admin/settings/:ArchiverClassName -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.DRSSubmitToArchiveCommand"``
+
+``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":DRSArchiverConfig, :S3ArchiverConfig, :S3ArchiverProfile, :BagGeneratorThreads"``
+
+The :DRSArchiverConfig is required as is the :S3ArchiverConfig setting. The :S3ArchiverProfile setting is optional and the DRSArchiver can also use the :BagGeneratorThreads setting as described in the DuraCloud Configuration section above.
 
 .. _Archiving API Call:
 
@@ -2677,6 +2700,10 @@ These are the bucket and project names to be used with the GoogleCloudSubmitToAr
 
 These are the json configuration object and S3 profile settings to be used with the S3SubmitToArchiveCommand class. Further information is in the :ref:`S3 Archiver Configuration` section above.
 
+:DRSArchiverConfig
+++++++++++++++++++
+
+This is the json configuration object required by the DRSSubmitToArchiveCommand class. Further information is in the :ref:`DRS Archiver Configuration` section above.
 
 .. _:InstallationName:
 
