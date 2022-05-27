@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.authorization.providers.saml.SamlAuthenticationS
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.consent.ConsentDto;
 import edu.harvard.iq.dataverse.consent.ConsentService;
+import edu.harvard.iq.dataverse.notification.NotificationObjectType;
 import edu.harvard.iq.dataverse.notification.UserNotificationService;
 import edu.harvard.iq.dataverse.persistence.config.EMailValidator;
 import edu.harvard.iq.dataverse.persistence.config.ValidateEmail;
@@ -233,7 +234,8 @@ public class ExternalIdpFirstLoginPage implements Serializable {
                 getUsername(), newAuthenticatedUserDisplayInfo, true, preferredNotificationsLanguage).getOrNull();
 
         session.setUser(user);
-        userNotificationService.sendNotification(user, new Timestamp(new Date().getTime()), NotificationType.CREATEACC);
+        userNotificationService.sendNotificationWithEmail(user, new Timestamp(new Date().getTime()), NotificationType.CREATEACC,
+                null, NotificationObjectType.AUTHENTICATED_USER);
         consentService.executeActionsAndSaveAcceptedConsents(consents, user);
         final OAuth2TokenData tokenData = newUser.getTokenData();
         if (tokenData != null) {
