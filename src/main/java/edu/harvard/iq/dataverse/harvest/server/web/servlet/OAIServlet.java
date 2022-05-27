@@ -104,9 +104,10 @@ public class OAIServlet extends HttpServlet {
         if (isDataverseOaiExtensionsSupported()) {
             xoaiContext = addDataverseJsonMetadataFormat(xoaiContext);
         }
+        addMetadataFormatConditions(xoaiContext); 
         
         setRepository = new DataverseXoaiSetRepository(setService);
-        itemRepository = new DataverseXoaiItemRepository(recordService, datasetService);
+        itemRepository = new DataverseXoaiItemRepository(recordService, datasetService, systemConfig.getDataverseSiteUrl()+"/oai");
 
         repositoryConfiguration = createRepositoryConfiguration(); 
                         
@@ -145,9 +146,9 @@ public class OAIServlet extends HttpServlet {
                     metadataFormat.withNamespace(exporter.getXMLNameSpace());
                     metadataFormat.withSchemaLocation(exporter.getXMLSchemaLocation());
                     
-                    UsePregeneratedMetadataFormat condition = new UsePregeneratedMetadataFormat(); 
-                    condition.withMetadataFormat(metadataFormat);
-                    metadataFormat.withCondition(condition);
+                    //UsePregeneratedMetadataFormat condition = new UsePregeneratedMetadataFormat(); 
+                    //condition.withMetadataFormat(metadataFormat);
+                    //metadataFormat.withCondition(condition);
                 } catch (ExportException ex) {
                     metadataFormat = null;
                 }
@@ -165,6 +166,14 @@ public class OAIServlet extends HttpServlet {
         metadataFormat.withSchemaLocation(DATAVERSE_EXTENDED_METADATA_SCHEMA);
         context.withMetadataFormat(metadataFormat);
         return context;
+    }
+    
+    private void addMetadataFormatConditions(Context context) {
+        for (MetadataFormat metadataFormat : context.getMetadataFormats()) {
+            UsePregeneratedMetadataFormat condition = new UsePregeneratedMetadataFormat(); 
+            condition.withMetadataFormat(metadataFormat);
+            metadataFormat.withCondition(condition);
+        }
     }
     
     private boolean isDataverseOaiExtensionsSupported() {

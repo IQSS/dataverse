@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import io.gdcc.xoai.dataprovider.filter.Scope;
 import io.gdcc.xoai.dataprovider.model.conditions.Condition;
 import io.gdcc.xoai.model.oaipmh.Metadata;
+import io.gdcc.xoai.xml.EchoElement;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -41,11 +42,13 @@ public class DataverseXoaiItemRepository implements ItemRepository {
     
     private OAIRecordServiceBean recordService;
     private DatasetServiceBean datasetService;
+    private String serverUrl; 
 
-    public DataverseXoaiItemRepository (OAIRecordServiceBean recordService, DatasetServiceBean datasetService) {
+    public DataverseXoaiItemRepository (OAIRecordServiceBean recordService, DatasetServiceBean datasetService, String serverUrl) {
         super();
         this.recordService = recordService;
         this.datasetService = datasetService;
+        this.serverUrl = serverUrl; 
     }
     
     private List<DataverseXoaiItem> list = new ArrayList<DataverseXoaiItem>();
@@ -54,7 +57,8 @@ public class DataverseXoaiItemRepository implements ItemRepository {
     @Override
     public Item getItem(String identifier) throws IdDoesNotExistException, OAIException {
         // I'm assuming we don't want to use this version of getItem 
-        // that does not specify the requested metadata format - ? 
+        // that does not specify the requested metadata format, ever
+        // in our implementation - ? 
         throw new OAIException("Metadata Format is Required");
     }
     
@@ -96,10 +100,11 @@ public class DataverseXoaiItemRepository implements ItemRepository {
                             // xoaiItem.getOaiRecord().setRemoved(true);
                             break;
                         }
-
-                        InputStream pregeneratedMetadataStream;
+                        
+                        Metadata metadata;
+                        
                         try {
-                            pregeneratedMetadataStream = ExportService.getInstance().getExport(dataset, metadataFormat.getPrefix());
+                            metadata = getDatasetMetadata(dataset, metadataFormat.getPrefix());
                         } catch (ExportException | IOException ex) {
                             // Again, this is not supposed to happen in normal operations; 
                             // since by design only the datasets for which the metadata
@@ -112,8 +117,6 @@ public class DataverseXoaiItemRepository implements ItemRepository {
                             // instead. 
                             break;
                         }
-
-                        Metadata metadata = Metadata.copyFromStream(pregeneratedMetadataStream);
                         xoaiItem.withDataset(dataset).withMetadata(metadata);
                     }
                 } else {
@@ -296,12 +299,8 @@ public class DataverseXoaiItemRepository implements ItemRepository {
                 if (!oaiRecord.isRemoved()) {
                     Dataset dataset = datasetService.findByGlobalId(oaiRecord.getGlobalId());
                     if (dataset != null) {
-                    
-                        InputStream pregeneratedMetadataStream; 
                         try {
-                            pregeneratedMetadataStream = ExportService.getInstance().getExport(dataset, metadataFormat.getPrefix());
-                            
-                            Metadata metadata = Metadata.copyFromStream(pregeneratedMetadataStream);
+                            Metadata metadata = getDatasetMetadata(dataset, metadataFormat.getPrefix());
                             xoaiItem.withDataset(dataset).withMetadata(metadata);
                         } catch (ExportException|IOException ex) {
                             // Again, this is not supposed to happen in normal operations; 
@@ -367,5 +366,29 @@ public class DataverseXoaiItemRepository implements ItemRepository {
                 j++;
             }
         }
+    }
+    
+    private Metadata getDatasetMetadata(Dataset dataset, String metadataPrefix) throws ExportException, IOException {
+        Metadata metadata;
+
+        if ("dataverse_json".equals(metadataPrefix)) {
+            // Slightly modified version of the old proprietary Json harvesting hack:
+            String apiUrl = customDataverseJsonApiUri(dataset.getGlobalId().asString());
+            metadata = new Metadata(new EchoElement("<dataverseCustom directApiCall=\"" + apiUrl + "\"/>"));
+        } else {
+            InputStream pregeneratedMetadataStream;
+            pregeneratedMetadataStream = ExportService.getInstance().getExport(dataset, metadataPrefix);
+
+            metadata = Metadata.copyFromStream(pregeneratedMetadataStream);
+        }
+        return metadata;
+    }
+    
+    private String customDataverseJsonApiUri(String identifier) {
+        String ret = serverUrl  
+                + "/api/datasets/export?exporter=dataverse_json&amp;persistentId="
+                + identifier;
+        
+        return ret;
     }
 }
