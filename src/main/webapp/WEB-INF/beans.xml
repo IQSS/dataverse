@@ -2,5 +2,6 @@
 <beans xmlns="https://jakarta.ee/xml/ns/jakartaee"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_3_0.xsd"
-       bean-discovery-mode="annotated">
+       bean-discovery-mode="all">
+    <!--Note that if you change bean-discovery-mode from "all" to "allocated", SWORD APIs do not work.-->
 </beans>
