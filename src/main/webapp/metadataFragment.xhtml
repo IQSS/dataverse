@@ -159,7 +159,7 @@
         <div class="panel-group">
                 <p>
                     <h:outputFormat
-                        rendered="#{(mdLangCode!='undefined') and ((editMode == 'CREATE') or (editMode == 'METADATA'))}"
+                        rendered="#{(!empty(mdLang) and mdLangCode!='undefined') and ((editMode == 'CREATE') or (editMode == 'METADATA'))}"
                         value="#{bundle['dataset.metadatalanguage.create.guidance']}"
                         escape="false">
                         <f:param value="#{mdLang}" />

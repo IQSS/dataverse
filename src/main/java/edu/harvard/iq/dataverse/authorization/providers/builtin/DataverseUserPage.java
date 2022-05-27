@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.validation.UserNameValidator;
 import edu.harvard.iq.dataverse.UserNotification;
+import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthUtil;
@@ -46,8 +47,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
@@ -57,6 +60,7 @@ import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.NotBlank;
 import org.primefaces.event.TabChangeEvent;
@@ -134,6 +138,12 @@ public class DataverseUserPage implements java.io.Serializable {
     private String username;
     boolean nonLocalLoginEnabled;
     private List<String> passwordErrors;
+    
+    
+    private List<Type> notificationTypeList;
+    private Set<Type> mutedEmails;
+    private Set<Type> mutedNotifications;
+    private Set<Type> disabledNotifications;
 
     public String init() {
 
@@ -161,6 +171,13 @@ public class DataverseUserPage implements java.io.Serializable {
             setCurrentUser((AuthenticatedUser) session.getUser());
             userAuthProvider = authenticationService.lookupProvider(currentUser);
             notificationsList = userNotificationService.findByUser(currentUser.getId());
+            notificationTypeList = Arrays.asList(Type.values()).stream()
+                    .filter(x -> !Type.CONFIRMEMAIL.equals(x) && x.hasDescription() && !settingsWrapper.isAlwaysMuted(x))
+                    .collect(Collectors.toList());
+            mutedEmails = new HashSet<>(currentUser.getMutedEmails());
+            mutedNotifications = new HashSet<>(currentUser.getMutedNotifications());
+            disabledNotifications = new HashSet<>(settingsWrapper.getAlwaysMutedSet());
+            disabledNotifications.addAll(settingsWrapper.getNeverMutedSet());
             
             switch (selectTab) {
                 case "notifications":
@@ -334,7 +351,7 @@ public class DataverseUserPage implements java.io.Serializable {
              */
             userNotificationService.sendNotification(au,
                     new Timestamp(new Date().getTime()),
-                    UserNotification.Type.CREATEACC, null);
+                    Type.CREATEACC, null);
 
             // go back to where user came from
             
@@ -368,6 +385,8 @@ public class DataverseUserPage implements java.io.Serializable {
             logger.info("Redirecting");
             return permissionsWrapper.notAuthorized() + "faces-redirect=true";
         }else {
+            currentUser.setMutedEmails(mutedEmails);
+            currentUser.setMutedNotifications(mutedNotifications);
             String emailBeforeUpdate = currentUser.getEmail();
             AuthenticatedUser savedUser = authenticationService.updateAuthenticatedUser(currentUser, userDisplayInfo);
             String emailAfterUpdate = savedUser.getEmail();
@@ -703,4 +722,41 @@ public class DataverseUserPage implements java.io.Serializable {
         if(notification.getRequestor() == null) return BundleUtil.getStringFromBundle("notification.email.info.unavailable");;
         return notification.getRequestor().getEmail() != null ? notification.getRequestor().getEmail() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");
     }
+
+    public List<Type> getNotificationTypeList() {
+        return notificationTypeList;
+    }
+
+    public void setNotificationTypeList(List<Type> notificationTypeList) {
+        this.notificationTypeList = notificationTypeList;
+    }
+
+    public Set<Type> getToReceiveEmails() {
+        return notificationTypeList.stream().filter(
+            x -> isDisabled(x) ? !settingsWrapper.isAlwaysMuted(x) && settingsWrapper.isNeverMuted(x) : !mutedEmails.contains(x)
+        ).collect(Collectors.toSet());
+    }
+
+    public void setToReceiveEmails(Set<Type> toReceiveEmails) {
+        this.mutedEmails = notificationTypeList.stream().filter(
+            x -> !isDisabled(x) && !toReceiveEmails.contains(x)
+        ).collect(Collectors.toSet());
+    }
+
+    public Set<Type> getToReceiveNotifications() {
+        return notificationTypeList.stream().filter(
+            x -> isDisabled(x) ? !settingsWrapper.isAlwaysMuted(x) && settingsWrapper.isNeverMuted(x) : !mutedNotifications.contains(x)
+        ).collect(Collectors.toSet());
+    }
+
+    public void setToReceiveNotifications(Set<Type> toReceiveNotifications) {
+        this.mutedNotifications = notificationTypeList.stream().filter(
+            x -> !isDisabled(x) && !toReceiveNotifications.contains(x) 
+        ).collect(Collectors.toSet());
+    }
+    
+    public boolean isDisabled(Type t) {
+        return disabledNotifications.contains(t);
+    }
+
 }

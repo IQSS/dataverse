@@ -1294,6 +1294,15 @@ public class UtilIT {
         return requestSpecification.get("/api/notifications/all");
     }
 
+    static Response deleteNotification(long id, String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.delete("/api/notifications/" + id);
+    }
+
     static Response nativeGetUsingPersistentId(String persistentId, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)

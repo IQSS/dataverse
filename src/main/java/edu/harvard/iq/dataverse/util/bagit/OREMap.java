@@ -324,7 +324,7 @@ public class OREMap {
 
     private JsonLDTerm getTermFor(String fieldTypeName) {
         //Could call datasetFieldService.findByName(fieldTypeName) - is that faster/prefereable?
-        for (DatasetField dsf : version.getDatasetFields()) {
+        for (DatasetField dsf : version.getFlatDatasetFields()) {
             DatasetFieldType dsft = dsf.getDatasetFieldType();
             if (dsft.getName().equals(fieldTypeName)) {
                 return dsft.getJsonLDTerm();

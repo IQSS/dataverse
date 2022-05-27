@@ -635,7 +635,7 @@ public class MailServiceBean implements java.io.Serializable {
         return "";
     }
 
-    private Object getObjectOfNotification (UserNotification userNotification){
+    public Object getObjectOfNotification (UserNotification userNotification){
         switch (userNotification.getType()) {
             case ASSIGNROLE:
             case REVOKEROLE:
