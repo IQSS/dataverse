@@ -385,7 +385,11 @@ public class JsonParser {
             terms.setFileAccessRequest(obj.getBoolean("fileAccessRequest", false));
             dsv.setTermsOfUseAndAccess(terms);
             terms.setDatasetVersion(dsv);
-            dsv.setDatasetFields(parseMetadataBlocks(obj.getJsonObject("metadataBlocks")));
+            JsonObject metadataBlocks = obj.getJsonObject("metadataBlocks");
+            if (metadataBlocks == null){
+                throw new JsonParseException("Invalid json object: metadata blocks not found." );
+            }
+            dsv.setDatasetFields(parseMetadataBlocks(metadataBlocks));
 
             JsonArray filesJson = obj.getJsonArray("files");
             if (filesJson == null) {
@@ -395,7 +399,6 @@ public class JsonParser {
                 dsv.setFileMetadatas(parseFiles(filesJson, dsv));
             }
             return dsv;
-
         } catch (ParseException ex) {
             throw new JsonParseException("Error parsing date:" + ex.getMessage(), ex);
         } catch (NumberFormatException ex) {
