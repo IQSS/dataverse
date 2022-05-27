@@ -61,6 +61,10 @@ public class SWORDv2MediaResourceServlet extends SwordServlet {
         try {
             lock.lock();
             mediaResourceManagerImpl.setHttpRequest(req);
+            // Under Payara 5 we could send "Content-Disposition: filename=example.zip"
+            // Under Payara 6 now must send "Content-Disposition: attachment; filename=example.zip"
+            // Otherwise we get "Filename could not be extracted from Content-Disposition: Expected separator ';' instead of '='"
+            // Use req.getHeader("Content-Disposition") to see what the client is sending.
             this.api.post(req, resp);
             mediaResourceManagerImpl.setHttpRequest(null);
         } finally {

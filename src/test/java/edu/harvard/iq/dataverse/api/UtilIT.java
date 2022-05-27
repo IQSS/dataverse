@@ -604,7 +604,7 @@ public class UtilIT {
         Response swordStatementResponse = given()
                 .body(bytes)
                 .header("Packaging", "http://purl.org/net/sword/package/SimpleZip")
-                .header("Content-Disposition", "filename=" + zipfilename)
+                .header("Content-Disposition", "attachment; filename=" + zipfilename)
                 /**
                  * It's unclear why we need to add "preemptive" to auth but
                  * without it we can't use send bytes using the body/content
@@ -631,7 +631,7 @@ public class UtilIT {
         Response swordStatementResponse = given()
                 .body(bytes)
                 .header("Packaging", "http://purl.org/net/sword/package/SimpleZip")
-                .header("Content-Disposition", "filename=" + zipfilename)
+                .header("Content-Disposition", "attachment; filename=" + zipfilename)
                 /**
                  * It's unclear why we need to add "preemptive" to auth but
                  * without it we can't use send bytes using the body/content

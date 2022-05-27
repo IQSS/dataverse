@@ -67,6 +67,8 @@ Differences in Dataverse Software 4 from DVN 3.x lead to a few minor backward in
 
 - As of Dataverse Software 5.10, ``NONE`` is no longer supported as a license.
 
+- As of Dataverse Software 5.11, when uploading files, you must supply "Content-Disposition: attachment; filename=example.zip" rather than "Content-Disposition: filename=example.zip". See :ref:`sword-add-files`.
+
 New features as of v1.1
 -----------------------
 
@@ -161,6 +163,8 @@ You must have permission to add datasets in a Dataverse collection (the Datavers
 
   curl -u $API_TOKEN: https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/$DATAVERSE_ALIAS
 
+.. _sword-add-files:
+
 Add files to a dataset with a zip file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -168,7 +172,7 @@ You must have ``EditDataset`` permission (Contributor role or above such as Cura
 
 .. code-block:: bash
 
-  curl -u $API_TOKEN: --data-binary @path/to/example.zip -H "Content-Disposition: filename=example.zip" -H "Content-Type: application/zip" -H "Packaging: http://purl.org/net/sword/package/SimpleZip" https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit-media/study/doi:TEST/12345
+  curl -u $API_TOKEN: --data-binary @path/to/example.zip -H "Content-Disposition: attachment; filename=example.zip" -H "Content-Type: application/zip" -H "Packaging: http://purl.org/net/sword/package/SimpleZip" https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit-media/study/doi:TEST/12345
 
 Display a dataset atom entry
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
