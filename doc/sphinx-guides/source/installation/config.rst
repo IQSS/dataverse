@@ -991,7 +991,6 @@ Configuring Licenses
 Out of the box, users select from the following licenses or terms:
 
 - CC0 1.0 (default)
-- CC BY 4.0
 - Custom Dataset Terms
 
 You have a lot of control over which licenses and terms are available. You can remove licenses and add new ones. You can decide which license is the default. You can remove "Custom Dataset Terms" as a option. You can remove all licenses and make "Custom Dataset Terms" the only option.
@@ -1015,7 +1014,7 @@ Licenses are added with curl using JSON file as explained in the API Guide under
 Adding Creative Common Licenses
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-JSON files for `Creative Commons licenses <https://creativecommons.org/about/cclicenses/>`_ are provided below. Note that a new installation of Dataverse already includes CC0 and CC BY.
+JSON files for `Creative Commons licenses <https://creativecommons.org/about/cclicenses/>`_ are provided below. Note that a new installation of Dataverse already includes CC0.
 
 - :download:`licenseCC0-1.0.json <../../../../scripts/api/data/licenses/licenseCC0-1.0.json>`
 - :download:`licenseCC-BY-4.0.json <../../../../scripts/api/data/licenses/licenseCC-BY-4.0.json>`

@@ -3,5 +3,6 @@
   "uri": "http://creativecommons.org/publicdomain/zero/1.0",
   "shortDescription": "Creative Commons CC0 1.0 Universal Public Domain Dedication.",
   "iconUrl": "https://licensebuttons.net/p/zero/1.0/88x31.png",
-  "active": true
+  "active": true,
+  "sortOrder": 1
 }

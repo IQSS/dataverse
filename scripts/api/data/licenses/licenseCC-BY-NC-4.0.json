@@ -3,5 +3,6 @@
   "uri": "http://creativecommons.org/licenses/by-nc/4.0",
   "shortDescription": "Creative Commons Attribution-NonCommercial 4.0 International License.",
   "iconUrl": "https://licensebuttons.net/l/by-nc/4.0/88x31.png",
-  "active": true
+  "active": true,
+  "sortOrder": 4
 }
