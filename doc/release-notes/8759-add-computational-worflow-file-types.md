@@ -1,4 +1,4 @@
-The following file extensions should now be detected:
+The following file extensions are now detected:
 
 wdl=text/x-workflow-description-language
 cwl=text/x-computational-workflow-language
