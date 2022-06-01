@@ -87,6 +87,14 @@ public class Metadata extends AbstractApiBean {
         }
     }
 
+    @GET
+    @Path("clearExportTimestamps")
+    public Response clearExportTimestamps() {
+        // only clear the timestamp in the database, cached metadata export files are not deleted
+        int numItemsCleared = datasetService.clearAllExportTimes();
+        return ok("cleared: " + numItemsCleared);
+    }
+
     /**
      * initial attempt at triggering indexing/creation/population of a OAI set without going throught
      * the UI.
