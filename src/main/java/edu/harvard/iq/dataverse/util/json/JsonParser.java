@@ -29,6 +29,7 @@ import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 import org.apache.commons.validator.routines.DomainValidator;
@@ -387,7 +388,7 @@ public class JsonParser {
             terms.setDatasetVersion(dsv);
             JsonObject metadataBlocks = obj.getJsonObject("metadataBlocks");
             if (metadataBlocks == null){
-                throw new JsonParseException("Invalid json object: metadata blocks not found." );
+                throw new JsonParseException(BundleUtil.getStringFromBundle("jsonparser.error.metadatablocks.not.found"));
             }
             dsv.setDatasetFields(parseMetadataBlocks(metadataBlocks));
 
@@ -399,10 +400,10 @@ public class JsonParser {
                 dsv.setFileMetadatas(parseFiles(filesJson, dsv));
             }
             return dsv;
-        } catch (ParseException ex) {
-            throw new JsonParseException("Error parsing date:" + ex.getMessage(), ex);
+        } catch (ParseException ex) {            
+            throw new JsonParseException(BundleUtil.getStringFromBundle("jsonparser.error.parsing.date") + ex.getMessage(), ex);
         } catch (NumberFormatException ex) {
-            throw new JsonParseException("Error parsing number:" + ex.getMessage(), ex);
+            throw new JsonParseException(BundleUtil.getStringFromBundle("jsonparser.error.parsing.number") + ex.getMessage(), ex);
         }
     }
     
