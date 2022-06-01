@@ -440,7 +440,7 @@
                                                     <h:outputText value="#{bundle['file.delete']}"/> 
                                                 </p:commandLink>
                                             </li>
-                                            <li>
+                                            <li jsf:rendered="#{!settingsWrapper.publicInstall}">
                                                 <p:commandLink  onclick="if (!testFilesSelected2()) return false;"
                                                                 update="@([id$=editFileAccessPopup])" 
                                                                 oncomplete="PF('editFileAccessPopup').show();bind_bsui_components();">                                                               
@@ -449,7 +449,7 @@
                                                     <f:setPropertyActionListener target="#{EditDatafilesPage.fileAccessRequest}" value="#{version.termsOfUseAndAccess.fileAccessRequest}" />                        
                                                 </p:commandLink>
                                             </li>
-                                            <li>
+                                            <li jsf:rendered="#{!settingsWrapper.publicInstall}">
                                                 <p:commandLink  onclick="if (!testFilesSelected2()) return false;"
                                                                 actionListener="#{EditDatafilesPage.restrictFiles(false)}"
                                                                 update="filesTable,:messagePanel" 
