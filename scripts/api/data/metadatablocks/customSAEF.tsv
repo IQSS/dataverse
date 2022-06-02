@@ -1,0 +1,9 @@
+#metadataBlock	name	dataverseAlias	displayName	blockURI												
+	customSAEF	SAEF	SAEF Metadata													
+#datasetField	name	title	description	watermark	fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id	termURI
+	saefMMDID	MMD ID	Unique manuscript ID associated with the dataset		text	0	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	TRUE		customSAEF	
+	saefCreated	Created	Creation dates related to the dataset's manuscript. Manuscripts may be composed of multiple documents, each with a different creation date		text	1	#VALUE	TRUE	FALSE	TRUE	TRUE	TRUE	TRUE		customSAEF	
+	saefPersonOrgTags	Person/Org Tags	Names of persons or organizations associated with the dataset's manuscript		text	2	#VALUE	TRUE	FALSE	TRUE	TRUE	TRUE	TRUE		customSAEF	
+	saefTheme	Theme	Themes associated with the dataset's mansucript		text	3	#VALUE	TRUE	FALSE	TRUE	TRUE	TRUE	TRUE		customSAEF	
+	saefGenre	Genre	Genres of the dataset's manuscripts. Manuscripts may be composed of multiple documents, each with its own genre		text	4	#VALUE	TRUE	FALSE	TRUE	TRUE	TRUE	TRUE		customSAEF	
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder												
