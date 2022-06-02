@@ -2704,7 +2704,7 @@ These are the json configuration object and S3 profile settings to be used with 
 :DRSArchiverConfig
 ++++++++++++++++++
 
-This is the json configuration object required by the DRSSubmitToArchiveCommand class. Further information is in the :ref:`DRS Archiver Configuration` section above.
+This is the json configuration object required by the DRSSubmitToArchiveCommand class. Further information is in the :ref:`Harvard DRS Archiver Configuration` section above.
 
 .. _:InstallationName:
 
