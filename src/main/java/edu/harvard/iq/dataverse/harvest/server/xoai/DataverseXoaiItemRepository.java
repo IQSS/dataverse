@@ -373,8 +373,10 @@ public class DataverseXoaiItemRepository implements ItemRepository {
 
         if ("dataverse_json".equals(metadataPrefix)) {
             // Slightly modified version of the old proprietary Json harvesting hack:
+            // (decision pending as to whether we want to provide backward compatibility
+            // for older Dataverse harvesting clients)
             String apiUrl = customDataverseJsonApiUri(dataset.getGlobalId().asString());
-            metadata = new Metadata(new EchoElement("<dataverseCustom directApiCall=\"" + apiUrl + "\"/>"));
+            metadata = new Metadata(new EchoElement("<dataverse_json><directApiUri>" + apiUrl + "</directApiUri></dataverse_json>"));
         } else {
             InputStream pregeneratedMetadataStream;
             pregeneratedMetadataStream = ExportService.getInstance().getExport(dataset, metadataPrefix);

@@ -522,7 +522,21 @@ public class SettingsServiceBean {
          * would also work) of never muted notifications that cannot be turned off by the users. AlwaysMuted setting overrides
          * Nevermuted setting warning is logged.
          */
-        NeverMuted
+        NeverMuted,
+        /*
+         * The following values are for the OAI server, to limit the output of 
+         * the ListIdentifiers, ListRecords and ListSets verbs to the number
+         * of records specified. Sensible defaults are going to be provided for 
+         * these by SystemConfig. 
+         */
+        oaiServerMaxListIdentifiers,
+        oaiServerMaxListRecords,
+        oaiServerMaxListSets,
+        /* 
+         * The OAI "repository name", shown by the OAI Identify verb, needs
+         * to be configurable as well. 
+         */
+        oaiServerRepositoryName
         ;
 
         @Override
