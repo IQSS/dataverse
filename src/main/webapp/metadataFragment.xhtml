@@ -154,7 +154,6 @@
     <!-- Edit Mode -->
     <ui:fragment rendered="${(!empty editMode)}">
         <p:fragment id="editMetadataFragement">
-        <c:set var="customInstr" value="#{settingsWrapper.getCustomInstructionsFor(dataset.owner.alias)}"/>
         <o:importFunctions type="java.util.Collections" />
         <div class="panel-group">
                 <p>
@@ -199,11 +198,20 @@
                     </div>
                     <div id="panelCollapse#{block.index}" class="collapse #{block.first or editMode == 'CREATE' or !cvocConf.isEmpty() ? 'in' : ''}">
                         <div class="panel-body">
-                            <ui:repeat value="#{metadataBlockVal.value}" var="dsf">
+                            <ui:repeat value="#{metadataBlockVal.value}" var="dsf" varStatus="curField">
                                 <div class="form-group" role="group"
                                      jsf:rendered="#{((editMode == 'METADATA'
                                                          or dsf.datasetFieldType.displayOnCreate or !dsf.isEmpty() or dsf.required) and dsf.include)
                                                          or (!datasetPage and dsf.include)}">
+                                    <ui:fragment rendered="${templatePage}">
+                                        <h:outputLabel for="instr_${curField.index}" value="Custom Instructions: "/>
+                                        <p:inplace id="instr_${curField.index}" label="Click to Add" editor="true">
+                                            <p:inputText value="Test"/>
+                                        </p:inplace>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="${datasetPage and template != null}">
+                                    
+                                    </ui:fragment>
                                     <!-- Primitive fields -->
                                     <p:fragment id="editPrimitiveValueFragment" rendered="#{dsf.datasetFieldType.primitive}">
                                         <p:autoUpdate/>
@@ -214,7 +222,7 @@
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
                                           </h:outputLabel>
-                                          <h:outputText class="col-sm-9" value="#{customInstr.getString(dsf.datasetFieldType.name)}" rendered="#{customInstr.containsKey(dsf.datasetFieldType.name)}"/>
+                                          <h:outputText class="col-sm-9" value="#{template.getInstructionsFor(dsf.datasetFieldType.name)}" rendered="#{template!=null and not empty template.getInstructionsFor(dsf.datasetFieldType.name)}"/>
                                         </div>
                                         <div class="col-sm-3"/>
                                         <div class="col-sm-9" style="padding-left:2px">
@@ -287,7 +295,7 @@
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
                                           </div>
-                                          <div class="col-sm-9"> <h:outputText value="#{customInstr.getString(dsf.datasetFieldType.name)}" rendered="#{customInstr.containsKey(dsf.datasetFieldType.name)}"/>
+                                          <div class="col-sm-9"> <h:outputText value="#{template.getInstructionsFor(dsf.datasetFieldType.name)}" rendered="#{template != null and ! empty template.getInstructionsFor(dsf.datasetFieldType.name)}"/>
                                           </div>
                                         </div> 
                                         <div class="col-sm-3"/>

@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -10,6 +9,11 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonString;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -28,6 +32,8 @@ import javax.persistence.Transient;
 import javax.validation.constraints.Size;
 
 import edu.harvard.iq.dataverse.util.DateUtil;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import org.hibernate.validator.constraints.NotBlank;
@@ -125,7 +131,13 @@ public class Template implements Serializable {
     public List<DatasetField> getDatasetFields() {
         return datasetFields;
     }
+    
+    @Column(columnDefinition="TEXT", nullable = true )
+    private String instructions;
 
+    @Transient
+    private Map<String, String> instructionsMap = null;
+    
     @Transient
     private Map<MetadataBlock, List<DatasetField>> metadataBlocksForView = new HashMap<>();
     @Transient
@@ -379,6 +391,39 @@ public class Template implements Serializable {
         return retList;
     }
     
+    //Cache values in map for reading
+    private Map<String, String> getInstructionsMap() {
+        if(instructionsMap==null)
+            if(instructions != null) {
+            instructionsMap = JsonUtil.getJsonObject(instructions).entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(),entry -> ((JsonString)entry.getValue()).getString()));
+            } else {
+                instructionsMap = new HashMap<String,String>();
+        }
+        return instructionsMap;
+    }
+    
+    //Get the cutstom instructions defined for a give fieldType
+    public String getInstructionsFor(String fieldType) {
+        return getInstructionsMap().get(fieldType);
+    }
+    
+    //Add/change or remove (null instructionString) instructions for a given fieldType
+    public void setInstructionsFor(String fieldType, String instructionString) {
+        if(instructionString==null) {
+            getInstructionsMap().remove(fieldType);
+        } else {
+        getInstructionsMap().put(fieldType, instructionString);
+        }
+        updateInstructions();
+    }
+    //Keep instructions up-to-date on any change
+    private void updateInstructions() {
+        JsonObjectBuilder builder = Json.createObjectBuilder();
+        getInstructionsMap().forEach(builder::add);
+        instructions = JsonUtil.prettyPrint(builder.build());
+    }
+    
+
     @Override
      public int hashCode() {
         int hash = 0;
