@@ -250,17 +250,11 @@ public class Template implements Serializable {
         metadataBlocksForView.clear();
         metadataBlocksForEdit.clear();
         for (MetadataBlock mdb : this.getDataverse().getMetadataBlocks()) {
-            List<DatasetField> datasetFieldsForView = new ArrayList<>();
             List<DatasetField> datasetFieldsForEdit = new ArrayList<>();
             for (DatasetField dsf : this.getDatasetFields()) {
-
                 if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) {
                     datasetFieldsForEdit.add(dsf);
                 }
-            }
-
-            if (!datasetFieldsForView.isEmpty()) {
-                metadataBlocksForView.put(mdb, sortDatasetFields(datasetFieldsForView));
             }
             if (!datasetFieldsForEdit.isEmpty()) {
                 metadataBlocksForEdit.put(mdb, sortDatasetFields(datasetFieldsForEdit));
@@ -273,27 +267,31 @@ public class Template implements Serializable {
         metadataBlocksForView.clear();
         metadataBlocksForEdit.clear();
         List<DatasetField> filledInFields = this.getDatasetFields(); 
-        
+
+        Map<String, String> instructionsMap = getInstructionsMap();
         
         List <MetadataBlock> actualMDB = new ArrayList<>();
             
+        //The metadatablocks in this template include any from the Dataverse it is associated with 
+        //plus any others where the template has a displayable field (i.e. from before a block was dropped in the dataverse/collection)
         actualMDB.addAll(this.getDataverse().getMetadataBlocks());
-        for (DatasetField dsfv : filledInFields) {
-            if (!dsfv.isEmptyForDisplay()) {
-                MetadataBlock mdbTest = dsfv.getDatasetFieldType().getMetadataBlock();
+        for (DatasetField dsf : filledInFields) {
+            if (!dsf.isEmptyForDisplay()) {
+                MetadataBlock mdbTest = dsf.getDatasetFieldType().getMetadataBlock();
                 if (!actualMDB.contains(mdbTest)) {
                     actualMDB.add(mdbTest);
                 }
             }
-        }       
-        
+        }
+
         for (MetadataBlock mdb : actualMDB) {
             List<DatasetField> datasetFieldsForView = new ArrayList<>();
             List<DatasetField> datasetFieldsForEdit = new ArrayList<>();
             for (DatasetField dsf : this.getDatasetFields()) {
                 if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) {
                     datasetFieldsForEdit.add(dsf);
-                    if (!dsf.isEmpty()) {
+                    //For viewing, show the filed if it has a value or custom instructions
+                    if (!dsf.isEmpty() || instructionsMap.containsKey(dsf.getDatasetFieldType().getName())) {
                         datasetFieldsForView.add(dsf);
                     }
                 }
