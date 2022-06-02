@@ -47,7 +47,6 @@
                             <h:outputText value="#{bundle['dataset.template.returnBtn']}"/>
                         </h:outputLink>
                         
-                        <h:outputText value="#{TemplatePage.template.name}"/>
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{TemplatePage.selectedTabIndex}">
                             <p:tab id="metadataMapTab" title="#{bundle['file.dataFilesTab.metadata.header']}"
                                    rendered="#{empty TemplatePage.editMode or TemplatePage.editMode == 'METADATA'}">

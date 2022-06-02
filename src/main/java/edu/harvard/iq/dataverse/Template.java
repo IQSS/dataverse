@@ -392,7 +392,7 @@ public class Template implements Serializable {
     }
     
     //Cache values in map for reading
-    private Map<String, String> getInstructionsMap() {
+    public Map<String, String> getInstructionsMap() {
         if(instructionsMap==null)
             if(instructions != null) {
             instructionsMap = JsonUtil.getJsonObject(instructions).entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(),entry -> ((JsonString)entry.getValue()).getString()));
@@ -401,12 +401,13 @@ public class Template implements Serializable {
         }
         return instructionsMap;
     }
-    
+
     //Get the cutstom instructions defined for a give fieldType
     public String getInstructionsFor(String fieldType) {
         return getInstructionsMap().get(fieldType);
     }
-    
+
+    /*
     //Add/change or remove (null instructionString) instructions for a given fieldType
     public void setInstructionsFor(String fieldType, String instructionString) {
         if(instructionString==null) {
@@ -416,10 +417,12 @@ public class Template implements Serializable {
         }
         updateInstructions();
     }
+    */
+    
     //Keep instructions up-to-date on any change
-    private void updateInstructions() {
+    public void updateInstructions() {
         JsonObjectBuilder builder = Json.createObjectBuilder();
-        getInstructionsMap().forEach(builder::add);
+        getInstructionsMap().forEach((key, value) -> {if(value !=null) builder.add(key, value);});
         instructions = JsonUtil.prettyPrint(builder.build());
     }
     
