@@ -60,7 +60,9 @@ ul.navbar-nav li.dropdown.open > span.dropdown-toggle {background: #e7e7e7;}
 }
 
 a.headerlink {
-	display: none;
+    font-size: 60%;
+    vertical-align: middle;
+    color: #d14e6f;
 }
 
 #sidebar.bs-sidenav {
