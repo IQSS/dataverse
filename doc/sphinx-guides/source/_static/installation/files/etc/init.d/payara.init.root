@@ -4,7 +4,7 @@
 
 set -e
 
-ASADMIN=/usr/local/payara5/bin/asadmin
+ASADMIN=/usr/local/payara6/bin/asadmin
 
 case "$1" in
   start)

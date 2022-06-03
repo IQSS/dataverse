@@ -287,9 +287,9 @@ To run these tests, simply call out to Maven:
 Measuring Coverage of Integration Tests
 ---------------------------------------
 
-Measuring the code coverage of integration tests with Jacoco requires several steps. In order to make these steps clear we'll use "/usr/local/payara5" as the Payara directory and "dataverse" as the Payara Unix user.
+Measuring the code coverage of integration tests with Jacoco requires several steps. In order to make these steps clear we'll use "/usr/local/payara6" as the Payara directory and "dataverse" as the Payara Unix user.
 
-Please note that this was tested under Glassfish 4 but it is hoped that the same steps will work with Payara 5.
+Please note that this was tested under Glassfish 4 but it is hoped that the same steps will work with Payara.
 
 Add jacocoagent.jar to Payara
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -308,9 +308,9 @@ Note that we are running the following commands as the user "dataverse". In shor
   cd local/jacoco-0.8.1
   wget https://github.com/jacoco/jacoco/releases/download/v0.8.1/jacoco-0.8.1.zip
   unzip jacoco-0.8.1.zip
-  /usr/local/payara5/bin/asadmin stop-domain
-  cp /home/dataverse/local/jacoco-0.8.1/lib/jacocoagent.jar /usr/local/payara5/glassfish/lib
-  /usr/local/payara5/bin/asadmin start-domain
+  /usr/local/payara6/bin/asadmin stop-domain
+  cp /home/dataverse/local/jacoco-0.8.1/lib/jacocoagent.jar /usr/local/payara6/glassfish/lib
+  /usr/local/payara6/bin/asadmin start-domain
 
 Add jacococli.jar to the WAR File
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -333,21 +333,21 @@ Run this as the "dataverse" user.
 
 .. code-block:: bash
 
-  /usr/local/payara5/bin/asadmin deploy dataverse-jacoco.war
+  /usr/local/payara6/bin/asadmin deploy dataverse-jacoco.war
 
-Note that after deployment the file "/usr/local/payara5/glassfish/domains/domain1/config/jacoco.exec" exists and is empty.
+Note that after deployment the file "/usr/local/payara6/glassfish/domains/domain1/config/jacoco.exec" exists and is empty.
 
 Run Integration Tests
 ~~~~~~~~~~~~~~~~~~~~~
 
 Note that even though you see "docker-aio" in the command below, we assume you are not necessarily running the test suite within Docker. (Some day we'll probably move this script to another directory.) For this reason, we pass the URL with the normal port (8080) that app servers run on to the ``run-test-suite.sh`` script.
 
-Note that "/usr/local/payara5/glassfish/domains/domain1/config/jacoco.exec" will become non-empty after you stop and start Payara. You must stop and start Payara before every run of the integration test suite.
+Note that "/usr/local/payara6/glassfish/domains/domain1/config/jacoco.exec" will become non-empty after you stop and start Payara. You must stop and start Payara before every run of the integration test suite.
 
 .. code-block:: bash
 
-  /usr/local/payara5/bin/asadmin stop-domain
-  /usr/local/payara5/bin/asadmin start-domain
+  /usr/local/payara6/bin/asadmin stop-domain
+  /usr/local/payara6/bin/asadmin start-domain
   git clone https://github.com/IQSS/dataverse.git
   cd dataverse
   conf/docker-aio/run-test-suite.sh http://localhost:8080
@@ -362,7 +362,7 @@ Run these commands as the "dataverse" user. The ``cd dataverse`` means that you 
 .. code-block:: bash
 
   cd dataverse
-  java -jar /home/dataverse/local/jacoco-0.8.1/lib/jacococli.jar report --classfiles target/classes --sourcefiles src/main/java --html target/coverage-it/ /usr/local/payara5/glassfish/domains/domain1/config/jacoco.exec
+  java -jar /home/dataverse/local/jacoco-0.8.1/lib/jacococli.jar report --classfiles target/classes --sourcefiles src/main/java --html target/coverage-it/ /usr/local/payara6/glassfish/domains/domain1/config/jacoco.exec
 
 Read Code Coverage Report
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -463,7 +463,7 @@ Future Work on Unit Tests
 
 - Review pull requests from @bencomp for ideas for approaches to testing: https://github.com/IQSS/dataverse/pulls?q=is%3Apr+author%3Abencomp
 - Come up with a way to test commands: http://irclog.iq.harvard.edu/dataverse/2015-11-04#i_26750
-- Test EJBs using Arquillian, embedded app servers, or similar. @bmckinney kicked the tires on Arquillian at https://github.com/bmckinney/bio-dataverse/commit/2f243b1db1ca704a42cd0a5de329083763b7c37a
+- Test EJBs using Arquillian, embedded app servers, or similar. @bmckinney kicked the tires on Arquillian at https://github.com/bmckinney/bio-dataverse/commit/2f243b1db1ca704a42cd0a6de329083763b7c37a
 
 Future Work on Integration Tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

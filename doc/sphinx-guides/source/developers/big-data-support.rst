@@ -100,7 +100,7 @@ The JSON that a DCM sends to your Dataverse installation on successful checksum 
    :language: json
 
 - ``status`` - The valid strings to send are ``validation passed`` and ``validation failed``.
-- ``uploadFolder`` - This is the directory on disk where your Dataverse installation should attempt to find the files that a DCM has moved into place. There should always be a ``files.sha`` file and a least one data file. ``files.sha`` is a manifest of all the data files and their checksums. The ``uploadFolder`` directory is inside the directory where data is stored for the dataset and may have the same name as the "identifier" of the persistent id (DOI or Handle). For example, you would send ``"uploadFolder": "DNXV2H"`` in the JSON file when the absolute path to this directory is ``/usr/local/payara5/glassfish/domains/domain1/files/10.5072/FK2/DNXV2H/DNXV2H``.
+- ``uploadFolder`` - This is the directory on disk where your Dataverse installation should attempt to find the files that a DCM has moved into place. There should always be a ``files.sha`` file and a least one data file. ``files.sha`` is a manifest of all the data files and their checksums. The ``uploadFolder`` directory is inside the directory where data is stored for the dataset and may have the same name as the "identifier" of the persistent id (DOI or Handle). For example, you would send ``"uploadFolder": "DNXV2H"`` in the JSON file when the absolute path to this directory is ``/usr/local/payara6/glassfish/domains/domain1/files/10.5072/FK2/DNXV2H/DNXV2H``.
 - ``totalSize`` - Your Dataverse installation will use this value to represent the total size in bytes of all the files in the "package" that's created. If 360 data files and one ``files.sha`` manifest file are in the ``uploadFolder``, this value is the sum of the 360 data files.
 
 
@@ -122,9 +122,9 @@ Add Dataverse Installation settings to use mock (same as using DCM, noted above)
 
 At this point you should be able to download a placeholder rsync script. Your Dataverse installation is then waiting for news from the DCM about if checksum validation has succeeded or not. First, you have to put files in place, which is usually the job of the DCM. You should substitute "X1METO" for the "identifier" of the dataset you create. You must also use the proper path for where you store files in your dev environment.
 
-- ``mkdir /usr/local/payara5/glassfish/domains/domain1/files/10.5072/FK2/X1METO``
-- ``mkdir /usr/local/payara5/glassfish/domains/domain1/files/10.5072/FK2/X1METO/X1METO``
-- ``cd /usr/local/payara5/glassfish/domains/domain1/files/10.5072/FK2/X1METO/X1METO``
+- ``mkdir /usr/local/payara6/glassfish/domains/domain1/files/10.5072/FK2/X1METO``
+- ``mkdir /usr/local/payara6/glassfish/domains/domain1/files/10.5072/FK2/X1METO/X1METO``
+- ``cd /usr/local/payara6/glassfish/domains/domain1/files/10.5072/FK2/X1METO/X1METO``
 - ``echo "hello" > file1.txt``
 - ``shasum file1.txt > files.sha``
 
@@ -168,7 +168,7 @@ Optional steps for setting up the S3 Docker DCM Variant
 
   - Set S3 as the storage driver
 
-    - ``cd /opt/payara5/bin/``
+    - ``cd /opt/payara6/bin/``
     - ``./asadmin delete-jvm-options "\-Ddataverse.files.storage-driver-id=file"``
     - ``./asadmin create-jvm-options "\-Ddataverse.files.storage-driver-id=s3"``
     - ``./asadmin create-jvm-options "\-Ddataverse.files.s3.type=s3"``
@@ -191,11 +191,11 @@ Optional steps for setting up the S3 Docker DCM Variant
 
     - S3 bucket for your Dataverse installation
 
-      - ``/usr/local/payara5/glassfish/bin/asadmin create-jvm-options "-Ddataverse.files.s3.bucket-name=iqsstestdcmbucket"``
+      - ``/usr/local/payara6/glassfish/bin/asadmin create-jvm-options "-Ddataverse.files.s3.bucket-name=iqsstestdcmbucket"``
 
     - S3 bucket for DCM (as your Dataverse installation needs to do the copy over)
 
-      - ``/usr/local/payara5/glassfish/bin/asadmin create-jvm-options "-Ddataverse.files.dcm-s3-bucket-name=test-dcm"``
+      - ``/usr/local/payara6/glassfish/bin/asadmin create-jvm-options "-Ddataverse.files.dcm-s3-bucket-name=test-dcm"``
 
   - Set download method to be HTTP, as DCM downloads through S3 are over this protocol ``curl -X PUT "http://localhost:8080/api/admin/settings/:DownloadMethods" -d "native/http"``
 
@@ -228,7 +228,7 @@ Additional DCM docker development tips
 
 - There are a few logs to tail
 
-  - dvsrv : ``tail -n 2000 -f /opt/payara5/glassfish/domains/domain1/logs/server.log``
+  - dvsrv : ``tail -n 2000 -f /opt/payara6/glassfish/domains/domain1/logs/server.log``
   - dcmsrv : ``tail -n 2000 -f /var/log/lighttpd/breakage.log``
   - dcmsrv : ``tail -n 2000 -f /var/log/lighttpd/access.log``
 

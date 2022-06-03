@@ -79,7 +79,7 @@ On Linux, install ``jq`` from your package manager or download a binary from htt
 Install Payara
 ~~~~~~~~~~~~~~
 
-Payara 5.2021.6 or higher is required.
+Payara 6.2022.1.Alpha2 or higher is required.
 
 To install Payara, run the following commands:
 

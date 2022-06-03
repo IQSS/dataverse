@@ -13,8 +13,8 @@ Multiple App Servers
 You should be conscious of the following when running multiple app servers.
 
 - Only one app server can be the dedicated timer server, as explained in the :doc:`/admin/timers` section of the Admin Guide.
-- When users upload a logo or footer for their Dataverse collection using the "theme" feature described in the :doc:`/user/dataverse-management` section of the User Guide, these logos are stored only on the app server the user happened to be on when uploading the logo. By default these logos and footers are written to the directory ``/usr/local/payara5/glassfish/domains/domain1/docroot/logos``.
-- When a sitemap is created by an app server it is written to the filesystem of just that app server. By default the sitemap is written to the directory ``/usr/local/payara5/glassfish/domains/domain1/docroot/sitemap``.
+- When users upload a logo or footer for their Dataverse collection using the "theme" feature described in the :doc:`/user/dataverse-management` section of the User Guide, these logos are stored only on the app server the user happened to be on when uploading the logo. By default these logos and footers are written to the directory ``/usr/local/payara6/glassfish/domains/domain1/docroot/logos``.
+- When a sitemap is created by an app server it is written to the filesystem of just that app server. By default the sitemap is written to the directory ``/usr/local/payara6/glassfish/domains/domain1/docroot/sitemap``.
 - If Make Data Count is used, its raw logs must be copied from each app server to single instance of Counter Processor. See also :ref:`:MDCLogPath` section in the Configuration section of this guide and the :doc:`/admin/make-data-count` section of the Admin Guide.
 - Dataset draft version logging occurs separately on each app server. See :ref:`edit-draft-versions-logging` section in Monitoring of the Admin Guide for details.
 - Password aliases (``dataverse.db.password``, etc.) are stored per app server.
