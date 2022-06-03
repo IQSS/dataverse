@@ -350,6 +350,9 @@ public class Template implements Serializable {
         }
         terms.setTemplate(newTemplate);
         newTemplate.setTermsOfUseAndAccess(terms);
+        
+        newTemplate.getInstructionsMap().putAll(source.getInstructionsMap());
+        newTemplate.updateInstructions();
         return newTemplate;
     }
 
