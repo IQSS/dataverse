@@ -290,7 +290,7 @@ public class Template implements Serializable {
             for (DatasetField dsf : this.getDatasetFields()) {
                 if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) {
                     datasetFieldsForEdit.add(dsf);
-                    //For viewing, show the filed if it has a value or custom instructions
+                    //For viewing, show the field if it has a value or custom instructions
                     if (!dsf.isEmpty() || instructionsMap.containsKey(dsf.getDatasetFieldType().getName())) {
                         datasetFieldsForView.add(dsf);
                     }
