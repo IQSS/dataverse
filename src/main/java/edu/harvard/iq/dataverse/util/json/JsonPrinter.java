@@ -201,6 +201,14 @@ public class JsonPrinter {
         return bld;
     }
 
+    public static <E extends Enum> JsonArrayBuilder enumsToJson(Collection<E> collection) {
+        JsonArrayBuilder arr = Json.createArrayBuilder();
+        for (E entry : collection) {
+            arr.add(entry.name());
+        }
+        return arr;
+    }
+
     public static JsonObjectBuilder json(DataverseRole role) {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("alias", role.getAlias())

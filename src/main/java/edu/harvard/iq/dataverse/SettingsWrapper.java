@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.UserNotification.Type;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -23,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.Set;
 
 import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
@@ -102,6 +104,10 @@ public class SettingsWrapper implements java.io.Serializable {
     
     private Boolean customLicenseAllowed = null;
     
+    private Set<Type> alwaysMuted = null;
+
+    private Set<Type> neverMuted = null;
+    
     public String get(String settingKey) {
         if (settingsMap == null) {
             initSettingsMap();
@@ -168,12 +174,59 @@ public class SettingsWrapper implements java.io.Serializable {
         return ( val==null ) ? safeDefaultIfKeyNotFound : StringUtil.isTrue(val);
     }
 
+    public Integer getInteger(String settingKey, Integer defaultValue) {
+        String settingValue = get(settingKey);
+        if(settingValue != null) {
+            try {
+                return Integer.valueOf(settingValue);
+            } catch (Exception e) {
+                logger.warning(String.format("action=getInteger result=invalid-integer settingKey=%s settingValue=%s", settingKey, settingValue));
+            }
+        }
+
+        return defaultValue;
+    }
+
     private void initSettingsMap() {
         // initialize settings map
         settingsMap = new HashMap<>();
         for (Setting setting : settingsService.listAll()) {
             settingsMap.put(setting.getName(), setting.getContent());
         }
+    }
+
+    private void initAlwaysMuted() {
+        alwaysMuted = UserNotification.Type.tokenizeToSet(getValueForKey(Key.AlwaysMuted));
+    }
+
+    private void initNeverMuted() {
+        neverMuted = UserNotification.Type.tokenizeToSet(getValueForKey(Key.NeverMuted));
+    }
+
+    public Set<Type> getAlwaysMutedSet() {
+        if (alwaysMuted == null) {
+            initAlwaysMuted();
+        }
+        return alwaysMuted;
+    }
+
+    public Set<Type> getNeverMutedSet() {
+        if (neverMuted == null) {
+            initNeverMuted();
+        }
+        return neverMuted;
+    }
+
+    public boolean isAlwaysMuted(Type type) {
+        return getAlwaysMutedSet().contains(type);
+    }
+
+    public boolean isNeverMuted(Type type) {
+        return getNeverMutedSet().contains(type);
+    }
+
+    public boolean isShowMuteOptions() {
+        return isTrueForKey(Key.ShowMuteOptions, false);
     }
 
     
