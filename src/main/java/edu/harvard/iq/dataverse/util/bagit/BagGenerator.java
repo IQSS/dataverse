@@ -47,6 +47,7 @@ import org.apache.commons.compress.parallel.InputStreamSupplier;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.text.WordUtils;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -58,7 +59,7 @@ import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.ssl.SSLContextBuilder;
-
+import org.apache.http.util.EntityUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -89,7 +90,8 @@ public class BagGenerator {
 
     private int timeout = 60;
     private RequestConfig config = RequestConfig.custom().setConnectTimeout(timeout * 1000)
-            .setConnectionRequestTimeout(timeout * 1000).setSocketTimeout(timeout * 1000).build();
+            .setConnectionRequestTimeout(timeout * 1000).setSocketTimeout(timeout * 1000)
+            .setCookieSpec(CookieSpecs.STANDARD).build();
     protected CloseableHttpClient client;
     private PoolingHttpClientConnectionManager cm = null;
 
@@ -278,7 +280,8 @@ public class BagGenerator {
             }
             createFileFromString(manifestName, sha1StringBuffer.toString());
         } else {
-            logger.warning("No Hash values sent - Bag File does not meet BagIT specification requirement");
+            logger.warning("No Hash values (no files?) sending empty manifest to nominally comply with BagIT specification requirement");
+            createFileFromString("manifest-md5.txt", "");
         }
         // bagit.txt - Required by spec
         createFileFromString("bagit.txt", "BagIt-Version: 1.0\r\nTag-File-Character-Encoding: UTF-8");
@@ -463,7 +466,6 @@ public class BagGenerator {
 
         logger.info("Data Count: " + dataCount);
         logger.info("Data Size: " + totalDataSize);
-        //zf.close();
     }
 
     public static String getValidName(String bagName) {
@@ -1003,46 +1005,70 @@ public class BagGenerator {
         return request;
     }
 
-    InputStreamSupplier getInputStreamSupplier(final String uri) {
+    InputStreamSupplier getInputStreamSupplier(final String uriString) {
 
         return new InputStreamSupplier() {
             public InputStream get() {
-                int tries = 0;
-                while (tries < 5) {
-                    try {
-                        logger.fine("Get # " + tries + " for " + uri);
-                        HttpGet getMap = createNewGetRequest(new URI(uri), null);
-                        logger.finest("Retrieving " + tries + ": " + uri);
-                        CloseableHttpResponse response;
-                        //Note - if we ever need to pass an HttpClientContext, we need a new one per thread.
-                        response = client.execute(getMap);
-                        if (response.getStatusLine().getStatusCode() == 200) {
-                            logger.finest("Retrieved: " + uri);
-                            return response.getEntity().getContent();
-                        }
-                        logger.fine("Status: " + response.getStatusLine().getStatusCode());
-                        tries++;
+                try {
+                    URI uri = new URI(uriString);
 
-                    } catch (ClientProtocolException e) {
-                        tries += 5;
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        // Retry if this is a potentially temporary error such
-                        // as a timeout
-                        tries++;
-                        logger.log(Level.WARNING,"Attempt# " + tries + " : Unable to retrieve file: " + uri, e);
-                        if (tries == 5) {
-                            logger.severe("Final attempt failed for " + uri);
+                    int tries = 0;
+                    while (tries < 5) {
+
+                        logger.fine("Get # " + tries + " for " + uriString);
+                        HttpGet getFile = createNewGetRequest(uri, null);
+                        logger.finest("Retrieving " + tries + ": " + uriString);
+                        CloseableHttpResponse response = null;
+                        try {
+                            response = client.execute(getFile);
+                            // Note - if we ever need to pass an HttpClientContext, we need a new one per
+                            // thread.
+                            int statusCode = response.getStatusLine().getStatusCode();
+                            if (statusCode == 200) {
+                                logger.finest("Retrieved: " + uri);
+                                return response.getEntity().getContent();
+                            }
+                            logger.warning("Attempt: " + tries + " - Unexpected Status when retrieving " + uriString
+                                    + " : " + statusCode);
+                            if (statusCode < 500) {
+                                logger.fine("Will not retry for 40x errors");
+                                tries += 5;
+                            } else {
+                                tries++;
+                            }
+                            // Error handling
+                            if (response != null) {
+                                try {
+                                    EntityUtils.consumeQuietly(response.getEntity());
+                                    response.close();
+                                } catch (IOException io) {
+                                    logger.warning(
+                                            "Exception closing response after status: " + statusCode + " on " + uri);
+                                }
+                            }
+                        } catch (ClientProtocolException e) {
+                            tries += 5;
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            // Retry if this is a potentially temporary error such
+                            // as a timeout
+                            tries++;
+                            logger.log(Level.WARNING, "Attempt# " + tries + " : Unable to retrieve file: " + uriString,
+                                    e);
+                            if (tries == 5) {
+                                logger.severe("Final attempt failed for " + uriString);
+                            }
+                            e.printStackTrace();
                         }
-                        e.printStackTrace();
-                    } catch (URISyntaxException e) {
-                        tries += 5;
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
+
                     }
+
+                } catch (URISyntaxException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
                 }
-                logger.severe("Could not read: " + uri);
+                logger.severe("Could not read: " + uriString);
                 return null;
             }
         };
