@@ -1117,3 +1117,8 @@ span.label-default { background-color: #757575 }
 
 .login-container h1 { font-size:30px; }
 #embargoInputs label { font-weight: normal; }
+
+/*Template Instructions Editing*/
+.ui-inplace .ui-inputfield {
+    width:60%
+}
