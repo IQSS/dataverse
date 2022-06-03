@@ -33,9 +33,7 @@ import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Consumes;
@@ -87,9 +85,6 @@ public class EditDDI  extends AbstractApiBean {
     DataverseSession session;
 
     private List<FileMetadata> filesToBeDeleted = new ArrayList<>();
-
-    @Context
-    protected HttpServletRequest httpRequest;
 
     private VariableMetadataUtil variableMetadataUtil;
 
@@ -189,7 +184,7 @@ public class EditDDI  extends AbstractApiBean {
         Command<Dataset> cmd;
         try {
 
-            DataverseRequest dr = new DataverseRequest(apiTokenUser, httpRequest);
+            DataverseRequest dr = createDataverseRequest(apiTokenUser);
             cmd = new UpdateDatasetVersionCommand(dataset, dr, fm);
             ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);
             dataset = commandEngine.submit(cmd);
@@ -331,7 +326,7 @@ public class EditDDI  extends AbstractApiBean {
         }
         Command<Dataset> cmd;
         try {
-            DataverseRequest dr = new DataverseRequest(apiTokenUser, httpRequest);
+            DataverseRequest dr = createDataverseRequest(apiTokenUser);
             cmd = new UpdateDatasetVersionCommand(dataset, dr);
             ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);
             commandEngine.submit(cmd);

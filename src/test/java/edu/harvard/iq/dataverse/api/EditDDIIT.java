@@ -148,6 +148,7 @@ public class EditDDIIT {
         assertEquals(200, publishDataset.getStatusCode());
 
         Response editDDIResponseNewDraft = UtilIT.editDDI(stringOrigXml, origFileId, apiToken);
+        editDDIResponseNewDraft.prettyPrint();
         assertEquals(200, editDDIResponseNewDraft.getStatusCode());
 
         //not authorized
