@@ -10,7 +10,7 @@ bin/solr create_core -c collection1 -d server/solr/collection1/conf -force
 apachectl -DFOREGROUND &
 
 # TODO: Run Payara as non-root.
-cd /opt/payara5
+cd /opt/payara6
 bin/asadmin start-domain --debug
 sleep infinity
 
