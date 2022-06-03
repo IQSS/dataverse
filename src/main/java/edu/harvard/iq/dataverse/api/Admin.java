@@ -11,11 +11,14 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.validation.EMailValidator;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.Template;
+import edu.harvard.iq.dataverse.TemplateServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
@@ -85,6 +88,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeactivateUserCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteRoleCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteTemplateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -103,6 +107,7 @@ import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.rolesToJson;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
+import java.math.BigDecimal;
 
 
 import java.util.ArrayList;
@@ -142,6 +147,8 @@ public class Admin extends AbstractApiBean {
 	DataFileServiceBean fileService;
 	@EJB
 	DatasetServiceBean datasetService;
+        @EJB
+	DataverseServiceBean dataverseService;
 	@EJB
 	DatasetVersionServiceBean datasetversionService;
         @Inject
@@ -158,6 +165,8 @@ public class Admin extends AbstractApiBean {
         ExplicitGroupServiceBean explicitGroupService;
         @EJB
         BannerMessageServiceBean bannerMessageService;
+        @EJB
+        TemplateServiceBean templateService;
 
 	// Make the session available
 	@Inject
@@ -210,6 +219,75 @@ public class Admin extends AbstractApiBean {
 		settingsSvc.delete(name, lang);
 		return ok("Setting " + name + " - " + lang + " deleted.");
 	}
+        
+    @Path("template/{id}")
+    @DELETE
+    public Response deleteTemplate(@PathParam("id") long id) {
+        
+        AuthenticatedUser superuser = authSvc.getAdminUser();
+        if (superuser == null) {
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Cannot find superuser to execute DeleteTemplateCommand.");
+        }
+
+        Template doomed = templateService.find(id);
+        if (doomed == null) {
+            return error(Response.Status.NOT_FOUND, "Template with id " + id + " -  not found.");
+        }
+
+        Dataverse dv = doomed.getDataverse();
+        List <Dataverse> dataverseWDefaultTemplate = templateService.findDataversesByDefaultTemplateId(doomed.getId());
+
+        try {
+            commandEngine.submit(new DeleteTemplateCommand(createDataverseRequest(superuser), dv, doomed, dataverseWDefaultTemplate));
+        } catch (CommandException ex) {
+            Logger.getLogger(Admin.class.getName()).log(Level.SEVERE, null, ex);
+            return error(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
+        }
+
+        return ok("Template " + doomed.getName() + " deleted.");
+    }
+    
+    
+    @Path("templates")
+    @GET
+    public Response findAllTemplates() {
+        return findTemplates("");
+    }
+    
+    @Path("templates/{alias}")
+    @GET
+    public Response findTemplates(@PathParam("alias") String alias) {
+        List<Template> templates;
+
+            if (alias.isEmpty()) {
+                templates = templateService.findAll();
+            } else {
+                try{
+                    Dataverse owner = findDataverseOrDie(alias);
+                    templates = templateService.findByOwnerId(owner.getId());
+                } catch (WrappedResponse r){
+                    return r.getResponse();
+                }
+            }
+
+            JsonArrayBuilder container = Json.createArrayBuilder();
+            for (Template t : templates) {
+                JsonObjectBuilder bld = Json.createObjectBuilder();
+                bld.add("templateId", t.getId());
+                bld.add("templateName", t.getName());
+                Dataverse loopowner = t.getDataverse();
+                if (loopowner != null) {
+                    bld.add("owner", loopowner.getDisplayName());
+                } else {
+                    bld.add("owner", "This an orphan template, it may be safely removed");
+                }
+                container.add(bld);
+            }
+
+            return ok(container);
+
+        
+    }
 
 	@Path("authenticationProviderFactories")
 	@GET

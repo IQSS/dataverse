@@ -1,11 +1,13 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.branding.BrandingUtilTest;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.erdtman.jcs.JsonCanonicalizer;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -16,9 +18,7 @@ import java.security.KeyFactory;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.time.Instant;
 import java.util.Base64;
-import java.util.Date;
 
 /**
  *
@@ -111,7 +111,7 @@ public class DRSSubmitToArchiveCommandTest {
             System.out.println("Canonical form:"+ canonicalBody);
             
             Algorithm algorithmRSA = Algorithm.RSA256(null, privKey);
-            String token1 = DRSSubmitToArchiveCommand.createJWTString(algorithmRSA, BrandingUtil.getInstallationBrandName(), fakeBody, 5);
+            String token1 = DRSSubmitToArchiveCommand.createJWTString(algorithmRSA, "InstallationBrandName", fakeBody, 5);
             
             System.out.println("JWT: " + token1);
             DecodedJWT jwt = JWT.decode(token1);
