@@ -76,7 +76,7 @@
                                         <td jsf:rendered="#{!anonymized or !settingsWrapper.shouldBeAnonymized(dsf)}">
                                             <!-- Primitive datasetFields -->
                                             <ui:fragment rendered="#{dsf.datasetFieldType.primitive}">
-                                                <ui:fragment rendered="#{managePage}">
+                                                <ui:fragment rendered="#{managePage or templatePage}">
                                                   <div>
                                                     <h:outputLabel for="instr_view" value="#{bundle['template.instructions.label']}" class="italic normal-text margin-right"/>
                                                     <h:outputText id="instr_view" value="#{template.getInstructionsFor(dsf.datasetFieldType.name)}"/>
@@ -115,7 +115,7 @@
                                                         <h:outputText value="#{bundle['dataset.contact.tip']}"/>
                                                     </p>
                                                 </ui:fragment>
-                                                <ui:fragment rendered="#{managePage}">
+                                                <ui:fragment rendered="#{managePage or templatePage}">
                                                   <div>
                                                     <h:outputLabel for="compinstr_view" value="#{bundle['template.instructions.label']} " class="italic normal-text margin-right"/>
                                                     <h:outputText id="compinstr_view" value="#{template.getInstructionsFor(dsf.datasetFieldType.name)}"/>
