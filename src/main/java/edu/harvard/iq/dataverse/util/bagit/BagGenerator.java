@@ -206,7 +206,13 @@ public class BagGenerator {
         aggregation = (JsonObject) new JsonParser().parse(oremapObject.getJsonObject(JsonLDTerm.ore("describes").getLabel()).toString());
 
         String pidUrlString = aggregation.get("@id").getAsString();
-        String pidString = GlobalId.parse(pidUrlString).get().asString();
+        String pidString=pidUrlString;
+        //ToDo - put this conversion in GlobalId
+        if(pidUrlString.startsWith(GlobalId.DOI_RESOLVER_URL)) {
+            pidString = pidUrlString.replace(GlobalId.DOI_RESOLVER_URL, (GlobalId.DOI_PROTOCOL + ":"));
+        } else if(pidUrlString.startsWith(GlobalId.HDL_RESOLVER_URL)) {
+            pidString = pidUrlString.replace(GlobalId.HDL_RESOLVER_URL, (GlobalId.HDL_PROTOCOL + ":"));
+        }
         bagID = pidString + "v."
                 + aggregation.get(JsonLDTerm.schemaOrg("version").getLabel()).getAsString();
         
