@@ -78,7 +78,7 @@
                                             <ui:fragment rendered="#{dsf.datasetFieldType.primitive}">
                                                 <ui:fragment rendered="#{managePage}">
                                                   <div>
-                                                    <h:outputLabel for="instr_view" value="#{bundle['template.instructions.label']}&nbsp;" title="#{bundle['template.instructions.label.tip']}" class="italic normal-text"/>
+                                                    <h:outputLabel for="instr_view" value="#{bundle['template.instructions.label']}" class="italic normal-text margin-right"/>
                                                     <h:outputText id="instr_view" value="#{template.getInstructionsFor(dsf.datasetFieldType.name)}"/>
                                                   </div>
                                                 </ui:fragment>
@@ -117,7 +117,7 @@
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{managePage}">
                                                   <div>
-                                                    <h:outputLabel for="compinstr_view" value="#{bundle['template.instructions.label']} " title="#{bundle['template.instructions.label.tip']}" class="italic normal-text"/>
+                                                    <h:outputLabel for="compinstr_view" value="#{bundle['template.instructions.label']} " class="italic normal-text margin-right"/>
                                                     <h:outputText id="compinstr_view" value="#{template.getInstructionsFor(dsf.datasetFieldType.name)}"/>
                                                   </div>
                                                 </ui:fragment>
@@ -227,14 +227,14 @@
                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
                                           </h:outputLabel>
                                           <ui:fragment rendered="#{templatePage}">
-                                            <div class="col-sm-9">
-                                              <h:outputLabel for="instr" value="#{bundle['template.instructions.label']} " title="#{bundle['template.instructions.label.tip']}" class="italic normal-text"/>
+                                            <div class="col-sm-7">
+                                              <h:outputLabel for="instr" value="#{bundle['template.instructions.label']} " title="#{bundle['template.instructions.label.tip']}" class="italic normal-text margin-right"/>
                                                 <p:inplace id="instr" label="#{TemplatePage.getInstructionsLabelFor(dsf.datasetFieldType.name)}" editor="true">
                                                   <p:inputText value="#{TemplatePage.template.instructionsMap[dsf.datasetFieldType.name]}"/>
                                                 </p:inplace>
                                               </div>
                                           </ui:fragment>
-                                          <h:outputText class="col-sm-9" value="#{template.getInstructionsFor(dsf.datasetFieldType.name)}" rendered="#{!templatePage and template!=null and not empty template.getInstructionsFor(dsf.datasetFieldType.name)}"/>
+                                          <h:outputText class="col-sm-7" value="#{template.getInstructionsFor(dsf.datasetFieldType.name)}" rendered="#{!templatePage and template!=null and not empty template.getInstructionsFor(dsf.datasetFieldType.name)}"/>
                                         </div>
                                         <div class="col-sm-3"/>
                                         <div class="col-sm-9" style="padding-left:2px">
@@ -308,14 +308,14 @@
                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
                                           </div>
                                           
-                                          <div class="col-sm-9">
+                                          <div class="col-sm-7">
                                             <ui:fragment rendered="#{templatePage}">
-                                              <h:outputLabel for="compinstr" value="#{bundle['template.instructions.label']} " title="#{bundle['template.instructions.label.tip']}" class="italic normal-text"/>
+                                              <h:outputLabel for="compinstr" value="#{bundle['template.instructions.label']} " title="#{bundle['template.instructions.label.tip']}" class="italic normal-text margin-right"/>
                                                 <p:inplace id="compinstr" label="#{TemplatePage.getInstructionsLabelFor(dsf.datasetFieldType.name)}" editor="true">
                                                   <p:inputText value="#{TemplatePage.template.instructionsMap[dsf.datasetFieldType.name]}"/>
                                                 </p:inplace>
                                             </ui:fragment>
-                                           <h:outputText value="#{template.getInstructionsFor(dsf.datasetFieldType.name)}" rendered="#{!templatePage and template != null and ! empty template.getInstructionsFor(dsf.datasetFieldType.name)}"/>
+                                           <h:outputText class="col-sm-7" value="#{template.getInstructionsFor(dsf.datasetFieldType.name)}" rendered="#{!templatePage and template != null and ! empty template.getInstructionsFor(dsf.datasetFieldType.name)}"/>
                                           </div>
                                         </div> 
                                         <div class="col-sm-3"/>
