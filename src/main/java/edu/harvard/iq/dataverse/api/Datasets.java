@@ -2514,6 +2514,18 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
             @PathParam("id") String datasetId,
             @Context HttpHeaders httpHeaders
                     ){
+        
+        // checking the user linked to the API token received
+        User authUser;
+        try {
+            authUser = findUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.FORBIDDEN,
+                    BundleUtil.getStringFromBundle("file.addreplace.error.auth")
+                    );
+        }
+        
+        
         logger.log(Level.INFO, "========== Datasets#addFileMetadataToDataset : start ==========");
         logger.log(Level.INFO, "headers:dump={0}", 
               httpHeaders.getRequestHeaders().entrySet()
