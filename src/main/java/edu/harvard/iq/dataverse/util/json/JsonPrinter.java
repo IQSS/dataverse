@@ -40,15 +40,11 @@ import edu.harvard.iq.dataverse.globus.fileDetailsHolder;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
-import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
-import java.math.BigDecimal;
 
-import java.net.URISyntaxException;
 import java.util.*;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -220,6 +216,14 @@ public class JsonPrinter {
             bld.add(JsonPrinter.json(r));
         }
         return bld;
+    }
+
+    public static <E extends Enum> JsonArrayBuilder enumsToJson(Collection<E> collection) {
+        JsonArrayBuilder arr = Json.createArrayBuilder();
+        for (E entry : collection) {
+            arr.add(entry.name());
+        }
+        return arr;
     }
 
     public static JsonObjectBuilder json(DataverseRole role) {

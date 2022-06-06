@@ -60,6 +60,8 @@ import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+
+import edu.harvard.iq.dataverse.util.file.CreateDataFileResult;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
 import javax.json.Json;
@@ -143,6 +145,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     LicenseServiceBean licenseServiceBean;
     @Inject
     DataFileCategoryServiceBean dataFileCategoryService;
+    @Inject
+    EditDataFilesPageHelper editDataFilesPageHelper;
 
     private Dataset dataset = new Dataset();
 
@@ -1485,7 +1489,9 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // for example, multiple files can be extracted from an uncompressed
                 // zip file.
                 //datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
-                datafiles = FileUtil.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream", null, null, systemConfig);
+                CreateDataFileResult createDataFilesResult = FileUtil.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream", null, null, systemConfig);
+                datafiles = createDataFilesResult.getDataFiles();
+                errorMessage = editDataFilesPageHelper.getHtmlErrorMessage(createDataFilesResult);
 
             } catch (IOException ex) {
                 this.logger.log(Level.SEVERE, "Error during ingest of DropBox file {0} from link {1}", new Object[]{fileName, fileLink});
@@ -1739,6 +1745,10 @@ public class EditDatafilesPage implements java.io.Serializable {
             uploadedFiles.clear();
             uploadInProgress.setValue(false);
         }
+        if(errorMessage != null) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.uploadFailure"), errorMessage));
+            PrimeFaces.current().ajax().update(":messagePanel");
+        }
         // refresh the warning message below the upload component, if exists:
         if (uploadComponentId != null) {
             if (uploadWarningMessage != null) {
@@ -1787,6 +1797,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         multipleDupesNew = false;
         uploadWarningMessage = null;
         uploadSuccessMessage = null;
+        errorMessage = null;
     }
 
     private String warningMessageForFileTypeDifferentPopUp;
@@ -1937,6 +1948,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     private String uploadWarningMessage = null;
+    private String errorMessage = null;
     private String uploadSuccessMessage = null;
     private String uploadComponentId = null;
 
@@ -2005,8 +2017,10 @@ public class EditDatafilesPage implements java.io.Serializable {
         try {
             // Note: A single uploaded file may produce multiple datafiles - 
             // for example, multiple files can be extracted from an uncompressed
-            // zip file. 
-            dFileList = FileUtil.createDataFiles(workingVersion, uFile.getInputStream(), uFile.getFileName(), uFile.getContentType(), null, null, systemConfig);
+            // zip file.
+            CreateDataFileResult createDataFilesResult = FileUtil.createDataFiles(workingVersion, uFile.getInputStream(), uFile.getFileName(), uFile.getContentType(), null, null, systemConfig);
+            dFileList = createDataFilesResult.getDataFiles();
+            errorMessage = editDataFilesPageHelper.getHtmlErrorMessage(createDataFilesResult);
 
         } catch (IOException ioex) {
             logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ioex.getMessage());
@@ -2115,7 +2129,9 @@ public class EditDatafilesPage implements java.io.Serializable {
                     // for example, multiple files can be extracted from an uncompressed
                     // zip file.
                     //datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
-                    datafiles = FileUtil.createDataFiles(workingVersion, null, fileName, contentType, fullStorageIdentifier, checksumValue, checksumType, systemConfig);
+                    CreateDataFileResult createDataFilesResult = FileUtil.createDataFiles(workingVersion, null, fileName, contentType, fullStorageIdentifier, checksumValue, checksumType, systemConfig);
+                    datafiles = createDataFilesResult.getDataFiles();
+                    errorMessage = editDataFilesPageHelper.getHtmlErrorMessage(createDataFilesResult);
                 } catch (IOException ex) {
                     logger.log(Level.SEVERE, "Error during ingest of file {0}", new Object[]{fileName});
                 }
@@ -3070,5 +3086,5 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public void setFileAccessRequest(boolean fileAccessRequest) {
         this.fileAccessRequest = fileAccessRequest;
-    }   
+    }
 }

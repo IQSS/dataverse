@@ -30,6 +30,7 @@ import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.file.CreateDataFileResult;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -1202,7 +1203,7 @@ public class AddReplaceFileHelper{
         workingVersion = dataset.getEditVersion();
         clone =   workingVersion.cloneDatasetVersion();
         try {
-            initialFileList = FileUtil.createDataFiles(workingVersion,
+            CreateDataFileResult result = FileUtil.createDataFiles(workingVersion,
                     this.newFileInputStream,
                     this.newFileName,
                     this.newFileContentType,
@@ -1210,6 +1211,7 @@ public class AddReplaceFileHelper{
                     this.newCheckSum,
                     this.newCheckSumType,
                     this.systemConfig);
+            initialFileList = result.getDataFiles();
 
         } catch (IOException ex) {
             if (!Strings.isNullOrEmpty(ex.getMessage())) {
