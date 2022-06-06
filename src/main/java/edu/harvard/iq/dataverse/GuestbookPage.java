@@ -235,7 +235,7 @@ public class GuestbookPage implements java.io.Serializable {
         boolean create = false;
         if (!(guestbook.getCustomQuestions() == null)) {
             for (CustomQuestion cq : guestbook.getCustomQuestions()) {
-                if (cq.getQuestionType().equals("text")) {
+                if (cq.getQuestionType().equals("text") || cq.getQuestionType().equals("textarea")) {
                     cq.setCustomQuestionValues(null);
                 }
             }

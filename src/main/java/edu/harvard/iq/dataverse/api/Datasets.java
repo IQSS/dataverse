@@ -129,6 +129,7 @@ import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.net.URI;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
@@ -143,6 +144,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -186,6 +188,8 @@ import edu.harvard.iq.dataverse.EmbargoServiceBean;
 import edu.harvard.iq.dataverse.S3PackageImporter;
 import javax.json.JsonValue;
 
+import java.util.Map.Entry;
+
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
 
@@ -210,7 +214,7 @@ public class Datasets extends AbstractApiBean {
     
     @EJB
     DDIExportServiceBean ddiExportService;
-    
+
     @EJB
     MetadataBlockServiceBean metadataBlockService;
     
@@ -241,13 +245,13 @@ public class Datasets extends AbstractApiBean {
 
     @EJB
     EmbargoServiceBean embargoService;
-    
+
     @Inject
     MakeDataCountLoggingServiceBean mdcLogService;
     
     @Inject
     DataverseRequestServiceBean dvRequestService;
-    
+
     @Inject
     TrsaRegistryServiceBean trsaRegistryServiceBean;
     WorkflowServiceBean wfService;
@@ -720,7 +724,7 @@ public class Datasets extends AbstractApiBean {
             
         }
     }
-  
+
     @GET
     @Path("{id}/versions/{versionId}/metadata")
     @Produces("application/ld+json, application/json-ld")
@@ -748,7 +752,7 @@ public class Datasets extends AbstractApiBean {
     public Response getVersionJsonLDMetadata(@PathParam("id") String id, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         return getVersionJsonLDMetadata(id, ":draft", uriInfo, headers);
     }
-            
+
     @PUT
     @Path("{id}/metadata")
     @Consumes("application/ld+json, application/json-ld")
@@ -759,8 +763,8 @@ public class Datasets extends AbstractApiBean {
             DataverseRequest req = createDataverseRequest(findUserOrDie());
             DatasetVersion dsv = ds.getEditVersion();
             boolean updateDraft = ds.getLatestVersion().isDraft();
-            dsv = JSONLDUtil.updateDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, datasetFieldSvc, !replaceTerms, false);
-            
+            dsv = JSONLDUtil.updateDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, datasetFieldSvc, !replaceTerms, false, licenseSvc);
+
             DatasetVersion managedVersion;
             if (updateDraft) {
                 Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
@@ -778,7 +782,7 @@ public class Datasets extends AbstractApiBean {
             return error(Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage());
         }
     }
-    
+
     @PUT
     @Path("{id}/metadata/delete")
     @Consumes("application/ld+json, application/json-ld")
@@ -788,7 +792,7 @@ public class Datasets extends AbstractApiBean {
             DataverseRequest req = createDataverseRequest(findUserOrDie());
             DatasetVersion dsv = ds.getEditVersion();
             boolean updateDraft = ds.getLatestVersion().isDraft();
-            dsv = JSONLDUtil.deleteDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, datasetFieldSvc);
+            dsv = JSONLDUtil.deleteDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, licenseSvc);
             DatasetVersion managedVersion;
             if (updateDraft) {
                 Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
@@ -808,7 +812,7 @@ public class Datasets extends AbstractApiBean {
             return error(Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage());
         }
     }
-    
+
     @PUT
     @Path("{id}/deleteMetadata")
     public Response deleteVersionMetadata(String jsonBody, @PathParam("id") String id) throws WrappedResponse {
@@ -1259,7 +1263,7 @@ public class Datasets extends AbstractApiBean {
             return ex.getResponse();
         }
     }
-    
+
     @POST
     @Path("{id}/actions/:releasemigrated")
     @Consumes("application/ld+json, application/json-ld")
@@ -1300,7 +1304,7 @@ public class Datasets extends AbstractApiBean {
                     }
                 }
                 if(ds.getLatestVersion().getVersionNumber()==1 && ds.getLatestVersion().getMinorVersionNumber()==0) {
-                    //Also set publication date if this is the first 
+                    //Also set publication date if this is the first
                     if(dateTime != null) {
                       ds.setPublicationDate(Timestamp.valueOf(dateTime));
                     }
@@ -1338,7 +1342,7 @@ public class Datasets extends AbstractApiBean {
                 errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.failure") + " - " + ex.toString();
                 logger.severe(ex.getMessage());
             }
-            
+
             if (errorMsg != null) {
                 return error(Response.Status.INTERNAL_SERVER_ERROR, errorMsg);
             } else {
@@ -1349,7 +1353,7 @@ public class Datasets extends AbstractApiBean {
             return ex.getResponse();
         }
     }
-    
+
     @POST
     @Path("{id}/move/{targetDataverseAlias}")
     public Response moveDataset(@PathParam("id") String id, @PathParam("targetDataverseAlias") String targetDataverseAlias, @QueryParam("forceMove") Boolean force) {
@@ -1404,7 +1408,7 @@ public class Datasets extends AbstractApiBean {
          * also checks the user can edit this dataset, so we don't have to make that
          * check later.
          */
-        
+
         if ((!authenticatedUser.isSuperuser() && (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) ) || !permissionService.userOn(authenticatedUser, dataset).has(Permission.EditDataset)) {
             return error(Status.FORBIDDEN, "Either the files are released and user is not a superuser or user does not have EditDataset permissions");
         }
@@ -1426,7 +1430,7 @@ public class Datasets extends AbstractApiBean {
         JsonObject json = Json.createReader(rdr).readObject();
 
         Embargo embargo = new Embargo();
-       
+
 
         LocalDate currentDateTime = LocalDate.now();
         LocalDate dateAvailable = LocalDate.parse(json.getString("dateAvailable"));
@@ -1439,14 +1443,14 @@ public class Datasets extends AbstractApiBean {
         } else {
             return error(Status.BAD_REQUEST, "Date available can not be in the past");
         }
-        
+
         // dateAvailable is within limits
         if (maxEmbargoDateTime != null){
             if (dateAvailable.isAfter(maxEmbargoDateTime)){
                 return error(Status.BAD_REQUEST, "Date available can not exceed MaxEmbargoDurationInMonths: "+maxEmbargoDurationInMonths);
             }
         }
-        
+
         embargo.setReason(json.getString("reason"));
 
         List<DataFile> datasetFiles = dataset.getFiles();
@@ -1583,7 +1587,7 @@ public class Datasets extends AbstractApiBean {
                 }
             }
         }
-        
+
         List<Embargo> orphanedEmbargoes = new ArrayList<Embargo>();
         // check if files belong to dataset
         if (datasetFiles.containsAll(embargoFilesToUnset)) {
@@ -1634,7 +1638,7 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
-    
+
     @PUT
     @Path("{linkedDatasetId}/link/{linkingDataverseAlias}") 
     public Response linkDataset(@PathParam("linkedDatasetId") String linkedDatasetId, @PathParam("linkingDataverseAlias") String linkingDataverseAlias) {        
@@ -1656,7 +1660,30 @@ public class Datasets extends AbstractApiBean {
             return ex.getResponse();
         }
     }
-    
+
+    @GET
+    @Path("{id}/versions/{versionId}/customlicense")
+    public Response getCustomTermsTab(@PathParam("id") String id, @PathParam("versionId") String versionId,
+            @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+        User user = session.getUser();
+        String persistentId;
+        try {
+            if (getDatasetVersionOrDie(createDataverseRequest(user), versionId, findDatasetOrDie(id), uriInfo, headers)
+                    .getTermsOfUseAndAccess().getLicense() != null) {
+                return error(Status.NOT_FOUND, "This Dataset has no custom license");
+            }
+            persistentId = getRequestParameter(":persistentId".substring(1));
+            if (versionId.equals(":draft")) {
+                versionId = "DRAFT";
+            }
+        } catch (WrappedResponse wrappedResponse) {
+            return wrappedResponse.getResponse();
+        }
+        return Response.seeOther(URI.create(systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId="
+                + persistentId + "&version=" + versionId + "&selectTab=termsTab")).build();
+    }
+
+
     @GET
     @Path("{id}/links")
     public Response getLinks(@PathParam("id") String idSupplied ) {
@@ -2436,7 +2463,23 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 			}
 		} else {
 			newFilename = contentDispositionHeader.getFileName();
-			newFileContentType = formDataBodyPart.getMediaType().toString();
+                        // Let's see if the form data part has the mime (content) type specified. 
+                        // Note that we don't want to rely on formDataBodyPart.getMediaType() - 
+                        // because that defaults to "text/plain" when no "Content-Type:" header is 
+                        // present. Instead we'll go through the headers, and see if "Content-Type:" 
+                        // is there. If not, we'll default to "application/octet-stream" - the generic
+                        // unknown type. This will prompt the application to run type detection and 
+                        // potentially find something more accurate.
+                        //newFileContentType = formDataBodyPart.getMediaType().toString();
+
+                        for (String header : formDataBodyPart.getHeaders().keySet()) {
+                            if (header.equalsIgnoreCase("Content-Type")) {
+                                newFileContentType = formDataBodyPart.getHeaders().get(header).get(0);
+                            }
+                        }
+                        if (newFileContentType == null) {
+                            newFileContentType = FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT;
+                        }
 		}
 
         
@@ -2452,7 +2495,8 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                                                 fileService,
                                                 permissionSvc,
                                                 commandEngine,
-                                                systemConfig);
+                                                systemConfig,
+                                                licenseSvc);
 
 
         //-------------------
@@ -2713,7 +2757,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
     
     @GET
     @Path("{identifier}/locks")
-    public Response getLocks(@PathParam("identifier") String id, @QueryParam("type") DatasetLock.Reason lockType) {
+    public Response getLocksForDataset(@PathParam("identifier") String id, @QueryParam("type") DatasetLock.Reason lockType) {
 
         Dataset dataset = null;
         try {
@@ -2837,6 +2881,60 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 
         });
     }
+    
+    @GET
+    @Path("locks")
+    public Response listLocks(@QueryParam("type") String lockType, @QueryParam("userIdentifier") String userIdentifier) { //DatasetLock.Reason lockType) {        
+        // This API is here, under /datasets, and not under /admin, because we
+        // likely want it to be accessible to admin users who may not necessarily 
+        // have localhost access, that would be required to get to /api/admin in 
+        // most installations. It is still reasonable however to limit access to
+        // this api to admin users only.
+        AuthenticatedUser apiUser;
+        try {
+            apiUser = findAuthenticatedUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.UNAUTHORIZED, "Authentication is required.");
+        }
+        if (!apiUser.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
+        
+        // Locks can be optinally filtered by type, user or both.
+        DatasetLock.Reason lockTypeValue = null;
+        AuthenticatedUser user = null; 
+        
+        // For the lock type, we use a QueryParam of type String, instead of 
+        // DatasetLock.Reason; that would be less code to write, but this way 
+        // we can check if the value passed matches a valid lock type ("reason") 
+        // and provide a helpful error message if it doesn't. If you use a 
+        // QueryParam of an Enum type, trying to pass an invalid value to it 
+        // results in a potentially confusing "404/NOT FOUND - requested 
+        // resource is not available".
+        if (lockType != null && !lockType.isEmpty()) {
+            try {
+                lockTypeValue = DatasetLock.Reason.valueOf(lockType);
+            } catch (IllegalArgumentException iax) {
+                String validValues = Strings.join(",", DatasetLock.Reason.values());
+                String errorMessage = "Invalid lock type value: " + lockType + 
+                        "; valid lock types: " + validValues;
+                return error(Response.Status.BAD_REQUEST, errorMessage);
+            }
+        }
+        
+        if (userIdentifier != null && !userIdentifier.isEmpty()) {
+            user = authSvc.getAuthenticatedUser(userIdentifier);
+            if (user == null) {
+                return error(Response.Status.BAD_REQUEST, "Unknown user identifier: "+userIdentifier);
+            }
+        }
+        
+        //List<DatasetLock> locks = datasetService.getDatasetLocksByType(lockType);
+        List<DatasetLock> locks = datasetService.listLocks(lockTypeValue, user);
+                            
+        return ok(locks.stream().map(lock -> json(lock)).collect(toJsonArray()));
+    }   
+    
     
     @GET
     @Path("{id}/makeDataCount/citations")
@@ -3337,7 +3435,8 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                 this.fileService,
                 this.permissionSvc,
                 this.commandEngine,
-                this.systemConfig
+                this.systemConfig,
+                this.licenseSvc
         );
 
         return addFileHelper.addFiles(jsonData, dataset, authUser);

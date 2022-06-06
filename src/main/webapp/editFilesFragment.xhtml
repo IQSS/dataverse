@@ -24,7 +24,7 @@
         <div class="ui-tabs-panels">
             <div aria-hidden="false" role="tabpanel" class="ui-tabs-panel ui-widget-content ui-corner-bottom" id="datasetForm:tabView:dataFilesTab">
                 <!-- Create dataset workflow info msg + user guide link -->
-                <ui:fragment rendered="#{createDataset}">
+                <ui:fragment>
                     <p class="help-block">
                         <h:outputFormat value="#{bundle['dataset.message.uploadFilesSingle.message']}" escape="false"
                                         rendered="#{settingsWrapper.uploadMethodsCount == 1}">
@@ -72,9 +72,23 @@
                                         <f:param value="#{systemConfig.guidesBaseUrl}"/>
                                         <f:param value="#{systemConfig.guidesVersion}"/>
                                     </h:outputFormat>
+                                    <h:outputFormat value=" #{bundle['file.selectToAdd.tipMaxNumFiles']}" escape="false"
+                                                    rendered="#{EditDatafilesPage.maxNumberOfFiles > 0}">
+                                        <f:param value="#{EditDatafilesPage.maxNumberOfFiles}"/>
+                                    </h:outputFormat>
                                     <h:outputFormat value=" #{bundle['file.selectToAdd.tipLimit']}" escape="false" 
                                                     rendered="#{!EditDatafilesPage.isUnlimitedUploadFileSize()}">
                                         <f:param value="#{EditDatafilesPage.getHumanMaxFileUploadSizeInBytes()}"/>
+                                    </h:outputFormat>
+                                    <h:outputFormat value=" #{bundle['file.selectToAdd.tipTabularLimit']}" escape="false"
+                                                    rendered="#{EditDatafilesPage.maxIngestSizeInBytes != -1}">
+                                        <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                        <f:param value="#{systemConfig.guidesVersion}"/>
+                                        <f:param value="#{EditDatafilesPage.humanMaxIngestSizeInBytes}"/>
+                                    </h:outputFormat>
+                                    <h:outputFormat value=" #{bundle['file.selectToAdd.tipPerFileTabularLimit']}"
+                                                    rendered="#{not empty EditDatafilesPage.humanPerFormatTabularLimits}">
+                                        <f:param value="#{EditDatafilesPage.humanPerFormatTabularLimits}"/>
                                     </h:outputFormat>
                                 </p>
                     
@@ -141,7 +155,9 @@
                                   fileLimit="#{EditDatafilesPage.getMaxNumberOfFiles()}" 
                                   invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}" 
                                   sequential="true"
-                                  widgetVar="fileUploadWidget"/>
+                                  widgetVar="fileUploadWidget">
+                        <f:passThroughAttribute name="aria-label" value="#{bundle['file.uploadFiles']}"/>
+                    </p:fileUpload>
                                 
                                 <div jsf:id="dropboxBlock" jsf:rendered="#{settingsWrapper.isHasDropBoxKey() and !lockedFromEdits }"  class="margin-top">
                                     <!-- Dropbox upload widget -->
@@ -313,7 +329,8 @@
                                      selection="#{EditDatafilesPage.selectedFiles}" 
                                      var="fileMetadata" 
                                      widgetVar="filesTable"
-                                     emptyMessage="#{datasetPage || EditDatafilesPage.showFileUploadFragment() ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}">
+                                     emptyMessage="#{datasetPage || EditDatafilesPage.showFileUploadFragment() ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}"
+                                     ariaRowLabel="#{bundle['file.select.action']} #{fileMetadata.label}">
                             <f:facet name="header">
                                 <div jsf:id="filesHeaderBlock" class="row">
                                     <div id="filesHeaderCount" class="col-xs-6 text-left">
@@ -324,7 +341,7 @@
                                     </div>
                                 </div>
                             </f:facet>
-                            <p:column selectionMode="multiple" class="col-select-width text-center" style="width:40px !important;"/>
+                            <p:column selectionMode="multiple" class="col-select-width text-center" style="width:40px !important;" ariaHeaderText="#{bundle['file.select.tooltip']}" />
                             <p:column class="col-file-thumb text-center" style="width:73px !important;padding:4px 10px;">
                                 <div class="thumbnail-block">
                                     <!-- Thumbnail Preview -->
@@ -361,7 +378,10 @@
                                 </div>
                             </p:column>
                             <p:column class="col-file-metadata">
-                                <div id="fileInfoInclude-filesTable" class="col-sm-12 row">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="sr-only" value="#{bundle['file.tableheader.info']}"/>
+                                </f:facet>
+                                <div id="fileInfoInclude-filesTable-#{fileMetadata.label}" class="col-sm-12 row">
                                     <div class="pull-left col-file-thumb">
                                         <div class="thumbnail-block text-center">
                                             <!-- Thumbnail Preview -->
@@ -389,20 +409,20 @@
                                         </div>
                                     </div>
                                     <div class="col-md-10 file-metadata-block">
-                                        <label class="control-label" for="fileName" style="margin-right:1em;margin-bottom:.5em;">
+                                        <label class="control-label" for="datasetForm:filesTable:#{rowNum}:fileName" style="margin-right:1em;margin-bottom:.5em;">
                                             #{bundle['file.fileName']}
                                         </label>
                                         <p:inputText id="fileName" value="#{fileMetadata.label}" style="width:60%; margin-bottom:.5em;" disabled="#{fileMetadata.dataFile.filePackage}"/>
-                                        <p:message for="fileName"/>
+                                        <p:message for="datasetForm:filesTable:#{rowNum}:fileName"/>
 
-                                        <label class="control-label" for="fileDirectoryLabel" style="margin-right:1em;margin-bottom:.5em;">
+                                        <label class="control-label" for="datasetForm:filesTable:#{rowNum}:fileDirectoryName" style="margin-right:1em;margin-bottom:.5em;">
                                             #{bundle['file.metadataTab.fileMetadata.hierarchy.label']}    
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.metadataTab.fileMetadata.hierarchy.tip']}"></span>
                                         </label>
                                         <p:inputText id="fileDirectoryName" value="#{fileMetadata.directoryLabel}"                                            
                                                      style="width:60%; margin-bottom:.5em;" disabled="#{fileMetadata.dataFile.filePackage}" widgetVar="fileDirectoryName"/>                        
-                                        <p:message for="fileDirectoryName"/>
+                                        <p:message for="datasetForm:filesTable:#{rowNum}:fileDirectoryName"/>
 
                                         <div class="text-muted small">
                                             <!-- TYPE + SIZE + DATE + CHECKSUM -->
@@ -448,7 +468,7 @@
                                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                             <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFilesSelected']} <span class="caret"></span>
                                         </button>
-                                        <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
+                                        <ul class="dropdown-menu multi-level pull-right text-left">
                                             <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
                                                 <p:commandLink  onclick="if (!testFilesSelected2()) return false;" 
                                                                 oncomplete="PF('editDeleteFileConfirmation').show();">                                                  
@@ -496,7 +516,7 @@
                                             disabled="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
                                         <span class="glyphicon glyphicon-option-vertical"/><span class="sr-only">#{bundle['file.optionsBtn']}</span><span class="caret"></span>
                                     </button>
-                                    <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
+                                    <ul class="dropdown-menu multi-level pull-right text-left">
                                         <!-- Edit Options -->
                                         <li class="dropdown-header">#{bundle['file.optionsBtn.header.edit']} <span class="glyphicon glyphicon-pencil"/></li>
                                         <ui:fragment rendered="#{systemConfig.provCollectionEnabled}">
@@ -632,18 +652,18 @@
         </p>        
         <div class="form-horizontal">
             <div class="form-group">
-                <label for="metadata_TermsAccess" class="col-sm-3 control-label">
+                <label jsf:for="popup_TermsAccess" class="col-sm-3 control-label">
                     #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                           data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}"></span>
                 </label>
                 <div class="col-sm-9">
-                    <p:inputTextarea styleClass="form-control"
+                    <p:inputTextarea id="popup_TermsAccess" styleClass="form-control"
                                      value="#{EditDatafilesPage.termsOfAccess}" autoResize="false" rows="5"/>
                 </div>
             </div>
             <div class="form-group">
-                <label for="metadata_RequestAccess" class="col-sm-3 control-label">
+                <label class="col-sm-3 control-label">
                     #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                           data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}"></span>
@@ -852,7 +872,7 @@
         <p:focus context="fileSetThumbnail"/>
         <div class="form-horizontal">
             <div class="form-group">
-                <label for="datasetThumbnailImage" class="col-sm-4 control-label">
+                <label jsf:for="datasetThumbnailImage_input" class="col-sm-4 control-label">
                     #{bundle['file.datasetThumbnail']}
                 </label>
                 <div class="col-sm-8">

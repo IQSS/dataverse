@@ -79,45 +79,45 @@ On Linux, install ``jq`` from your package manager or download a binary from htt
 Install Payara
 ~~~~~~~~~~~~~~
 
-Payara 5.201 or higher is required.
+Payara 5.2021.6 or higher is required.
 
 To install Payara, run the following commands:
 
 ``cd /usr/local``
 
-``sudo curl -O -L https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2021.5/payara-5.2021.5.zip``
+``sudo curl -O -L https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2021.6/payara-5.2021.6.zip``
 
-``sudo unzip payara-5.2021.5.zip``
+``sudo unzip payara-5.2021.6.zip``
 
 ``sudo chown -R $USER /usr/local/payara5``
 
 Install PostgreSQL
 ~~~~~~~~~~~~~~~~~~
 
-For the past few release cycles much of the development has been done under PostgreSQL 9.6. While that version is known to be very stable, it is nearing its end-of-life (in Nov. 2021). The Dataverse Software has now been tested with versions up to 13 (13.2 is the latest released version as of writing this).  
+The Dataverse Software has been tested with PostgreSQL versions up to 13. PostgreSQL version 10+ is required. 
 
-On Mac, go to https://www.postgresql.org/download/macosx/ and choose "Interactive installer by EDB" option. Note that version 9.6 is used in the command line examples below, but the process will be identical for any version up to 13. When prompted to set a password for the "database superuser (postgres)" just enter "password".
+On Mac, go to https://www.postgresql.org/download/macosx/ and choose "Interactive installer by EDB" option. Note that version 13.5 is used in the command line examples below, but the process should be similar for other versions. When prompted to set a password for the "database superuser (postgres)" just enter "password".
 
 After installation is complete, make a backup of the ``pg_hba.conf`` file like this:
 
-``sudo cp /Library/PostgreSQL/9.6/data/pg_hba.conf /Library/PostgreSQL/9.6/data/pg_hba.conf.orig``
+``sudo cp /Library/PostgreSQL/13/data/pg_hba.conf /Library/PostgreSQL/13/data/pg_hba.conf.orig``
 
 Then edit ``pg_hba.conf`` with an editor such as vi:
 
-``sudo vi /Library/PostgreSQL/9.6/data/pg_hba.conf``
+``sudo vi /Library/PostgreSQL/13/data/pg_hba.conf``
 
-In the "METHOD" column, change all instances of "md5" to "trust". This will make it so PostgreSQL doesn't require a password.
+In the "METHOD" column, change all instances of "scram-sha-256" (or whatever is in that column) to "trust". This will make it so PostgreSQL doesn't require a password.
 
-In the Finder, click "Applications" then "PostgreSQL 9.6" and launch the "Reload Configuration" app. Click "OK" after you see "server signaled".
+In the Finder, click "Applications" then "PostgreSQL 13" and launch the "Reload Configuration" app. Click "OK" after you see "server signaled".
 
-Next, to confirm the edit worked, launch the "pgAdmin" application from the same folder. Under "Browser", expand "Servers" and double click "PostgreSQL 9.6". When you are prompted for a password, leave it blank and click "OK". If you have successfully edited "pg_hba.conf", you can get in without a password.
+Next, to confirm the edit worked, launch the "pgAdmin" application from the same folder. Under "Browser", expand "Servers" and double click "PostgreSQL 13". When you are prompted for a password, leave it blank and click "OK". If you have successfully edited "pg_hba.conf", you can get in without a password.
 
 On Linux, you should just install PostgreSQL using your favorite package manager, such as ``yum``. (Consult the PostgreSQL section of :doc:`/installation/prerequisites` in the main Installation guide for more info and command line examples). Find ``pg_hba.conf`` and set the authentication method to "trust" and restart PostgreSQL.
 
 Install Solr
 ~~~~~~~~~~~~
 
-`Solr <http://lucene.apache.org/solr/>`_ 8.8.1 is required.
+`Solr <http://lucene.apache.org/solr/>`_ 8.11.1 is required.
 
 To install Solr, execute the following commands:
 
@@ -127,25 +127,25 @@ To install Solr, execute the following commands:
 
 ``cd /usr/local/solr``
 
-``curl -O http://archive.apache.org/dist/lucene/solr/8.8.1/solr-8.8.1.tgz``
+``curl -O http://archive.apache.org/dist/lucene/solr/8.11.1/solr-8.11.1.tgz``
 
-``tar xvfz solr-8.8.1.tgz``
+``tar xvfz solr-8.11.1.tgz``
 
-``cd solr-8.8.1/server/solr``
+``cd solr-8.11.1/server/solr``
 
 ``cp -r configsets/_default collection1``
 
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/8.8.1/schema.xml``
+``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/8.11.1/schema.xml``
 
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/8.8.1/schema_dv_mdb_fields.xml``
+``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/8.11.1/schema_dv_mdb_fields.xml``
 
 ``mv schema*.xml collection1/conf``
 
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/8.8.1/solrconfig.xml``
+``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/8.11.1/solrconfig.xml``
 
 ``mv solrconfig.xml collection1/conf/solrconfig.xml``
 
-``cd /usr/local/solr/solr-8.8.1``
+``cd /usr/local/solr/solr-8.11.1``
 
 (Please note that the extra jetty argument below is a security measure to limit connections to Solr to only your computer. For extra security, run a firewall.)
 

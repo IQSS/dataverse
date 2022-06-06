@@ -8,11 +8,20 @@ import edu.harvard.iq.dataverse.Embargo;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.Guestbook;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.api.UtilIT;
+import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.util.FileUtil.FileCitationExtension;
 
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.net.URI;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.logging.Level;
@@ -21,6 +30,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -128,7 +138,9 @@ public class FileUtilTest {
             DatasetVersion dsv1 = new DatasetVersion();
             dsv1.setVersionState(DatasetVersion.VersionState.RELEASED);
             TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
-            termsOfUseAndAccess.setLicense(TermsOfUseAndAccess.License.CC0);
+            License license = new License("CC0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0"), URI.create("/resources/images/cc0.png"), true);
+            license.setDefault(true);
+            termsOfUseAndAccess.setLicense(license);
             dsv1.setTermsOfUseAndAccess(termsOfUseAndAccess);
             assertEquals(false, FileUtil.isDownloadPopupRequired(dsv1));
         }
@@ -143,7 +155,9 @@ public class FileUtilTest {
              * the popup when the are Terms of Use. This feels like a bug since the
              * Terms of Use should probably be shown.
              */
-            termsOfUseAndAccess.setLicense(TermsOfUseAndAccess.License.CC0);
+            License license = new License("CC0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0"), URI.create("/resources/images/cc0.png"), true);
+            license.setDefault(true);
+            termsOfUseAndAccess.setLicense(license);
             termsOfUseAndAccess.setTermsOfUse("be excellent to each other");
             dsv1.setTermsOfUseAndAccess(termsOfUseAndAccess);
             assertEquals(false, FileUtil.isDownloadPopupRequired(dsv1));
@@ -154,7 +168,7 @@ public class FileUtilTest {
             DatasetVersion dsv1 = new DatasetVersion();
             dsv1.setVersionState(DatasetVersion.VersionState.RELEASED);
             TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
-            termsOfUseAndAccess.setLicense(TermsOfUseAndAccess.License.NONE);
+            termsOfUseAndAccess.setLicense(null);
             termsOfUseAndAccess.setTermsOfUse("be excellent to each other");
             dsv1.setTermsOfUseAndAccess(termsOfUseAndAccess);
             assertEquals(true, FileUtil.isDownloadPopupRequired(dsv1));
@@ -220,7 +234,7 @@ public class FileUtilTest {
             nonRestrictedFileMetadata.setRestricted(false);
             assertEquals(false, FileUtil.isPubliclyDownloadable(nonRestrictedFileMetadata));
         }
-        
+
         @Test
         public void testIsPubliclyDownloadable3() {
 

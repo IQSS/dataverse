@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
+import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitations;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
 import edu.harvard.iq.dataverse.trsa.Trsa;
@@ -302,7 +303,7 @@ public class Dataset extends DvObjectContainer {
         //if the latest version has values get them copied over
         if (template != null) {
             dsv.updateDefaultValuesFromTemplate(template);
-            setVersions(new ArrayList());
+            setVersions(new ArrayList<>());
         } else {
             latestVersion = getLatestVersionForCopy();
             
@@ -316,11 +317,6 @@ public class Dataset extends DvObjectContainer {
             
             if (latestVersion.getTermsOfUseAndAccess()!= null){
                 dsv.setTermsOfUseAndAccess(latestVersion.getTermsOfUseAndAccess().copyTermsOfUseAndAccess());
-            } else {
-                TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-                terms.setDatasetVersion(dsv);
-                terms.setLicense(TermsOfUseAndAccess.License.CC0);
-                dsv.setTermsOfUseAndAccess(terms);
             }
 
             for (FileMetadata fm : latestVersion.getFileMetadatas()) {
@@ -397,11 +393,11 @@ public class Dataset extends DvObjectContainer {
      * @todo Investigate if this method should be deprecated in favor of
      * createNewDatasetVersion.
      */
-    public DatasetVersion getCreateVersion() {
+    public DatasetVersion getCreateVersion(License license) {
         DatasetVersion dsv = new DatasetVersion();
         dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
         dsv.setDataset(this);
-        dsv.initDefaultValues();
+        dsv.initDefaultValues(license);
         this.setVersions(new ArrayList<>());
         getVersions().add(0, dsv);
         return dsv;
@@ -451,24 +447,6 @@ public class Dataset extends DvObjectContainer {
             dataFileCategories = new ArrayList<>();
         }
         dataFileCategories.add(category);
-    }
-
-    public Collection<String> getCategoriesByName() {
-        Collection<String> ret = getCategoryNames();
-
-        // "Documentation", "Data" and "Code" are the 3 default categories that we 
-        // present by default:
-        if (!ret.contains(BundleUtil.getStringFromBundle("dataset.category.documentation"))) {
-            ret.add(BundleUtil.getStringFromBundle("dataset.category.documentation"));
-        }
-        if (!ret.contains(BundleUtil.getStringFromBundle("dataset.category.data"))) {
-            ret.add(BundleUtil.getStringFromBundle("dataset.category.data"));
-        }
-        if (!ret.contains(BundleUtil.getStringFromBundle("dataset.category.code"))) {
-            ret.add(BundleUtil.getStringFromBundle("dataset.category.code"));
-        }
-
-        return ret;
     }
 
     public void setCategoriesByName(List<String> newCategoryNames) {
@@ -561,30 +539,36 @@ public class Dataset extends DvObjectContainer {
     }
     
     public String getProtocolForFileStorage(){
-         String retVal = getProtocol();            
+        String retVal = getProtocol();            
         if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
-            for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
-                retVal = api.getProtocol();
+            for (AlternativePersistentIdentifier altpid : this.getAlternativePersistentIndentifiers()) {
+                if (altpid.isStorageLocationDesignator()) {
+                    retVal = altpid.getProtocol();
+                }
             }
         }
         return retVal;         
     }
     
     public String getAuthorityForFileStorage(){
-         String retVal = getAuthority();            
+        String retVal = getAuthority();            
         if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
-            for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
-                retVal = api.getAuthority();
+            for (AlternativePersistentIdentifier altpid : this.getAlternativePersistentIndentifiers()) {
+                if (altpid.isStorageLocationDesignator()) {
+                    retVal = altpid.getAuthority();
+                }
             }
         }
         return retVal;         
     }
     
     public String getIdentifierForFileStorage(){
-         String retVal = getIdentifier();            
+        String retVal = getIdentifier();            
         if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
-            for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
-                retVal = api.getIdentifier();
+            for (AlternativePersistentIdentifier altpid : this.getAlternativePersistentIndentifiers()) {
+                if (altpid.isStorageLocationDesignator()) {
+                    retVal = altpid.getIdentifier();
+                }
             }
         }
         return retVal;         

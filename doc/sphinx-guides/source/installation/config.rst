@@ -6,7 +6,7 @@ Now that you've successfully logged into your Dataverse installation with a supe
 
 Settings within your Dataverse installation itself are managed via JVM options or by manipulating values in the ``setting`` table directly or through API calls.
 
-Once you have finished securing and configuring your Dataverse installation, you may proceed to the :doc:`/admin/index` for more information on the ongoing administration of a Dataverse installation. Advanced configuration topics are covered in the :doc:`r-rapache-tworavens`, :doc:`shibboleth` and :doc:`oauth2` sections.
+Once you have finished securing and configuring your Dataverse installation, you may proceed to the :doc:`/admin/index` for more information on the ongoing administration of a Dataverse installation. Advanced configuration topics are covered in the :doc:`shibboleth` and :doc:`oauth2` sections.
 
 .. contents:: |toctitle|
   :local:
@@ -112,9 +112,7 @@ The need to redirect port HTTP (port 80) to HTTPS (port 443) for security has al
 
 Your decision to proxy or not should primarily be driven by which features of the Dataverse Software you'd like to use. If you'd like to use Shibboleth, the decision is easy because proxying or "fronting" Payara with Apache is required. The details are covered in the :doc:`shibboleth` section.
 
-If you'd like to use TwoRavens, you should also consider fronting with Apache because you will be required to install an Apache anyway to make use of the rApache module. For details, see the :doc:`r-rapache-tworavens` section.
-
-Even if you have no interest in Shibboleth nor TwoRavens, you may want to front your Dataverse installation with Apache or nginx to simply the process of installing SSL certificates. There are many tutorials on the Internet for adding certs to Apache, including a some `notes used by the Dataverse Project team <https://github.com/IQSS/dataverse/blob/v4.6.1/doc/shib/shib.md>`_, but the process of adding a certificate to Payara is arduous and not for the faint of heart. The Dataverse Project team cannot provide much help with adding certificates to Payara beyond linking to `tips <http://stackoverflow.com/questions/906402/importing-an-existing-x509-certificate-and-private-key-in-java-keystore-to-use-i>`_ on the web.
+Even if you have no interest in Shibboleth, you may want to front your Dataverse installation with Apache or nginx to simply the process of installing SSL certificates. There are many tutorials on the Internet for adding certs to Apache, including a some `notes used by the Dataverse Project team <https://github.com/IQSS/dataverse/blob/v4.6.1/doc/shib/shib.md>`_, but the process of adding a certificate to Payara is arduous and not for the faint of heart. The Dataverse Project team cannot provide much help with adding certificates to Payara beyond linking to `tips <http://stackoverflow.com/questions/906402/importing-an-existing-x509-certificate-and-private-key-in-java-keystore-to-use-i>`_ on the web.
 
 Still not convinced you should put Payara behind another web server? Even if you manage to get your SSL certificate into Payara, how are you going to run Payara on low ports such as 80 and 443? Are you going to run Payara as root? Bad idea. This is a security risk. Under "Additional Recommendations" under "Securing Your Installation" above you are advised to configure Payara to run as a user other than root.
 
@@ -240,8 +238,8 @@ As for the "Remote only" authentication mode, it means that:
 - ``:DefaultAuthProvider`` has been set to use the desired authentication provider
 - The "builtin" authentication provider has been disabled (:ref:`api-toggle-auth-provider`). Note that disabling the "builtin" authentication provider means that the API endpoint for converting an account from a remote auth provider will not work. Converting directly from one remote authentication provider to another (i.e. from GitHub to Google) is not supported. Conversion from remote is always to "builtin". Then the user initiates a conversion from "builtin" to remote. Note that longer term, the plan is to permit multiple login options to the same Dataverse installation account per https://github.com/IQSS/dataverse/issues/3487 (so all this talk of conversion will be moot) but for now users can only use a single login option, as explained in the :doc:`/user/account` section of the User Guide. In short, "remote only" might work for you if you only plan to use a single remote authentication provider such that no conversion between remote authentication providers will be necessary.
 
-File Storage: Using a Local Filesystem and/or Swift and/or S3 object stores
----------------------------------------------------------------------------
+File Storage: Using a Local Filesystem and/or Swift and/or object stores
+------------------------------------------------------------------------
 
 By default, a Dataverse installation stores all data files (files uploaded by end users) on the filesystem at ``/usr/local/payara5/glassfish/domains/domain1/files``. This path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.\<id\>.directory`` JVM option described below.
 
@@ -386,6 +384,9 @@ of two methods described below:
 1. Manually through creation of the credentials and config files or
 2. Automatically via the AWS console commands.
 
+Some usage scenarios might be eased without generating these files. You may also provide :ref:`static credentials via
+MicroProfile Config <s3-mpconfig>`, see below.
+
 Preparation When Using Amazon's S3 Service
 ##########################################
 
@@ -526,28 +527,69 @@ been tested already and what other options have been set for a successful integr
 
 Lastly, go ahead and restart your Payara server. With Dataverse deployed and the site online, you should be able to upload datasets and data files and see the corresponding files in your S3 bucket. Within a bucket, the folder structure emulates that found in local file storage.
 
-S3 Storage Options
-##################
+List of S3 Storage Options
+##########################
 
-===========================================  ==================  ==========================================================================  =============
-JVM Option                                   Value               Description                                                                 Default value
-===========================================  ==================  ==========================================================================  =============
-dataverse.files.storage-driver-id            <id>                Enable <id> as the default storage driver.                                  ``file``
-dataverse.files.<id>.bucket-name             <?>                 The bucket name. See above.                                                 (none)
-dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                          ``false``
-dataverse.files.<id>.upload-redirect         ``true``/``false``  Enable direct upload of files added to a dataset  to the S3 store.          ``false``
-dataverse.files.<id>.ingestsizelimit         <size in bytes>     Maximum size of directupload files that should be ingested                  (none)
-dataverse.files.<id>.url-expiration-minutes  <?>                 If direct uploads/downloads: time until links expire. Optional.             60
-dataverse.files.<id>.min-part-size           <?>                 Multipart direct uploads will occur for files larger than this. Optional.   ``1024**3``
-dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.          (none)
-dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                             ``dataverse``
-dataverse.files.<id>.profile                 <?>                 Allows the use of AWS profiles for storage spanning multiple AWS accounts.  (none)
-dataverse.files.<id>.proxy-url               <?>                 URL of a proxy protecting the S3 store. Optional.                           (none)
-dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.                     ``false``
-dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                            ``false``
-dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                          ``true``
-dataverse.files.<id>.connection-pool-size    <?>                 The maximum number of open connections to the S3 server                     ``256``
-===========================================  ==================  ==========================================================================  =============
+.. table::
+    :align: left
+
+    ===========================================  ==================  ==========================================================================  =============
+    JVM Option                                   Value               Description                                                                 Default value
+    ===========================================  ==================  ==========================================================================  =============
+    dataverse.files.storage-driver-id            <id>                Enable <id> as the default storage driver.                                  ``file``
+    dataverse.files.<id>.type                    ``s3``              **Required** to mark this storage as S3 based.                              (none)
+    dataverse.files.<id>.label                   <?>                 **Required** label to be shown in the UI for this storage                   (none)
+    dataverse.files.<id>.bucket-name             <?>                 The bucket name. See above.                                                 (none)
+    dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                          ``false``
+    dataverse.files.<id>.upload-redirect         ``true``/``false``  Enable direct upload of files added to a dataset  to the S3 store.          ``false``
+    dataverse.files.<id>.ingestsizelimit         <size in bytes>     Maximum size of directupload files that should be ingested                  (none)
+    dataverse.files.<id>.url-expiration-minutes  <?>                 If direct uploads/downloads: time until links expire. Optional.             60
+    dataverse.files.<id>.min-part-size           <?>                 Multipart direct uploads will occur for files larger than this. Optional.   ``1024**3``
+    dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.          (none)
+    dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                             ``dataverse``
+    dataverse.files.<id>.profile                 <?>                 Allows the use of AWS profiles for storage spanning multiple AWS accounts.  (none)
+    dataverse.files.<id>.proxy-url               <?>                 URL of a proxy protecting the S3 store. Optional.                           (none)
+    dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.                     ``false``
+    dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                            ``false``
+    dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                          ``true``
+    dataverse.files.<id>.connection-pool-size    <?>                 The maximum number of open connections to the S3 server                     ``256``
+    ===========================================  ==================  ==========================================================================  =============
+
+.. table::
+    :align: left
+
+    ===========================================  ==================  ==========================================================================  =============
+    MicroProfile Config Option                   Value               Description                                                                 Default value
+    ===========================================  ==================  ==========================================================================  =============
+    dataverse.files.<id>.access-key              <?>                 :ref:`Provide static access key ID. Read before use! <s3-mpconfig>`         ``""``
+    dataverse.files.<id>.secret-key              <?>                 :ref:`Provide static secret access key. Read before use! <s3-mpconfig>`     ``""``
+    ===========================================  ==================  ==========================================================================  =============
+
+
+.. _s3-mpconfig:
+
+Credentials via MicroProfile Config
+###################################
+
+Optionally, you may provide static credentials for each S3 storage using MicroProfile Config options:
+
+- ``dataverse.files.<id>.access-key`` for this storages "access key ID"
+- ``dataverse.files.<id>.secret-key`` for this storages "secret access key"
+
+You may provide the values for these via any of the
+`supported config sources <https://docs.payara.fish/community/docs/documentation/microprofile/config/README.html>`_.
+
+**WARNING:**
+
+*For security, do not use the sources "environment variable" or "system property" (JVM option) in a production context!*
+*Rely on password alias, secrets directory or cloud based sources instead!*
+
+**NOTE:**
+
+1. Providing both AWS CLI profile files (as setup in first step) and static keys, credentials from ``~/.aws``
+   will win over configured keys when valid!
+2. A non-empty ``dataverse.files.<id>.profile`` will be ignored when no credentials can be found for this profile name.
+   Current codebase does not make use of "named profiles" as seen for AWS CLI besides credentials.
 
 Reported Working S3-Compatible Storage
 ######################################
@@ -556,6 +598,11 @@ Reported Working S3-Compatible Storage
   Set ``dataverse.files.<id>.path-style-access=true``, as Minio works path-based. Works pretty smooth, easy to setup.
   **Can be used for quick testing, too:** just use the example values above. Uses the public (read: unsecure and
   possibly slow) https://play.minio.io:9000 service.
+
+`StorJ Object Store <https://www.storj.io>`_
+ StorJ is a distributed object store that can be configured with an S3 gateway. Per the S3 Storage instructions above, you'll first set up the StorJ S3 store by defining the id, type, and label. After following the general installation, set the following configurations to use a StorJ object store: ``dataverse.files.<id>.payload-signing=true`` and ``dataverse.files.<id>.chunked-encoding=false``.
+
+ Note that for direct uploads and downloads, Dataverse redirects to the proxy-url but presigns the urls based on the ``dataverse.files.<id>.custom-endpoint-url``. Also, note that if you choose to enable ``dataverse.files.<id>.download-redirect`` the S3 URLs expire after 60 minutes by default. You can change that minute value to reflect a timeout value that’s more appropriate by using ``dataverse.files.<id>.url-expiration-minutes``.
 
 `Surf Object Store v2019-10-30 <https://www.surf.nl/en>`_
   Set ``dataverse.files.<id>.payload-signing=true`` and ``dataverse.files.<id>.chunked-encoding=false`` to use Surf Object
@@ -610,7 +657,7 @@ If you prefer to start with less of a blank slate, you can review the custom hom
 
 Note that the ``custom-homepage.html`` file provided has multiple elements that assume your root Dataverse collection still has an alias of "root". While you were branding your root Dataverse collection, you may have changed the alias to "harvard" or "librascholar" or whatever and you should adjust the custom homepage code as needed.
 
-For more background on what this curl command above is doing, see the "Database Settings" section below. If you decide you'd like to remove this setting, use the following curl command:
+For more background on what this curl command above is doing, see the :ref:`database-settings` section below. If you decide you'd like to remove this setting, use the following curl command:
 
 ``curl -X DELETE http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
 
@@ -680,9 +727,10 @@ When a user selects one of the available choices, the Dataverse user interfaces 
 Allowing the Language Used for Dataset Metadata to be Specified
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-Since dataset metadata can only be entered in one language, and administrators may wish to limit which languages metadata can be entered in, Dataverse also offers a separate setting defining allowed metadata languages. 
-The presence of the :ref:`:MetadataLanguages` database setting identifies the available options (which can be different from those in the :Languages setting above, with fewer or more options). 
-Dataverse collection admins can select from these options to indicate which language should be used for new Datasets created with that specific collection.
+Since dataset metadata can only be entered in one language, and administrators may wish to limit which languages metadata can be entered in, Dataverse also offers a separate setting defining allowed metadata languages.
+The presence of the :ref:`:MetadataLanguages` database setting identifies the available options (which can be different from those in the :Languages setting above, with fewer or more options).
+
+Dataverse collection admins can select from these options to indicate which language should be used for new Datasets created with that specific collection. If they do not, users will be asked when creating a dataset to select the language they want to use when entering metadata. 
 
 When creating or editing a dataset, users will be asked to enter the metadata in that language. The metadata language selected will also be shown when dataset metadata is viewed and will be included in metadata exports (as appropriate for each format) for published datasets:
 
@@ -797,6 +845,65 @@ Both Google and Matomo provide the optional capability to track such events and 
 For Google Analytics, the example script at :download:`analytics-code.html </_static/installation/files/var/www/dataverse/branding/analytics-code.html>` will track both page hits and events within your Dataverse installation. You would use this file in the same way as the shorter example above, putting it somewhere outside your deployment directory, replacing ``YOUR ACCOUNT CODE`` with your actual code and setting :WebAnalyticsCode to reference it.
 
 Once this script is running, you can look in the Google Analytics console (Realtime/Events or Behavior/Events) and view events by type and/or the Dataset or File the event involves.
+
+.. _license-config:
+
+Configuring Licenses
+--------------------
+
+Out of the box, users select from the following licenses or terms:
+
+- CC0 1.0 (default)
+- CC BY 4.0
+- Custom Dataset Terms
+
+You have a lot of control over which licenses and terms are available. You can remove licenses and add new ones. You can decide which license is the default. You can remove "Custom Dataset Terms" as a option. You can remove all licenses and make "Custom Dataset Terms" the only option.
+
+Before making changes, you are encouraged to read the :ref:`license-terms` section of the User Guide about why CC0 is the default and what the "Custom Dataset Terms" option allows.
+
+Setting the Default License
++++++++++++++++++++++++++++
+
+The default license can be set with a curl command as explained in the API Guide under :ref:`license-management-api`.
+
+Note that "Custom Dataset Terms" is not a license and cannot be set to be the default.
+
+Adding Licenses
++++++++++++++++
+
+Licenses are added with curl using JSON file as explained in the API Guide under :ref:`license-management-api`.
+
+.. _adding-creative-commons-licenses:
+
+Adding Creative Common Licenses
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+JSON files for `Creative Commons licenses <https://creativecommons.org/about/cclicenses/>`_ are provided below. Note that a new installation of Dataverse already includes CC0 and CC BY.
+
+- :download:`licenseCC0-1.0.json <../../../../scripts/api/data/licenses/licenseCC0-1.0.json>`
+- :download:`licenseCC-BY-4.0.json <../../../../scripts/api/data/licenses/licenseCC-BY-4.0.json>`
+- :download:`licenseCC-BY-SA-4.0.json <../../../../scripts/api/data/licenses/licenseCC-BY-SA-4.0.json>`
+- :download:`licenseCC-BY-NC-4.0.json <../../../../scripts/api/data/licenses/licenseCC-BY-NC-4.0.json>`
+- :download:`licenseCC-BY-NC-SA-4.0.json <../../../../scripts/api/data/licenses/licenseCC-BY-NC-SA-4.0.json>`
+- :download:`licenseCC-BY-ND-4.0.json <../../../../scripts/api/data/licenses/licenseCC-BY-ND-4.0.json>`
+- :download:`licenseCC-BY-NC-ND-4.0.json <../../../../scripts/api/data/licenses/licenseCC-BY-NC-ND-4.0.json>`
+
+.. _adding-custom-licenses:
+
+Adding Custom Licenses
+^^^^^^^^^^^^^^^^^^^^^^
+
+If you are interested in adding a custom license, you will need to create your own JSON file as explained in  see :ref:`standardizing-custom-licenses`.
+
+Removing Licenses
++++++++++++++++++
+
+Licenses can be removed with a curl command as explained in the API Guide under :ref:`license-management-api`.
+
+Disabling Custom Dataset Terms
+++++++++++++++++++++++++++++++
+
+See :ref:`:AllowCustomTermsOfUse` for how to disable the "Custom Dataset Terms" option.
 
 .. _BagIt Export:
 
@@ -1108,26 +1215,27 @@ Can also be set via *MicroProfile Config API* sources, e.g. the environment vari
 dataverse.rserve.host
 +++++++++++++++++++++
 
-Configuration for :doc:`r-rapache-tworavens`.
+Host name for Rserve, used for tasks that require use of R (to ingest RData files and to save tabular data as RData frames).
 
 dataverse.rserve.port
 +++++++++++++++++++++
 
-Configuration for :doc:`r-rapache-tworavens`.
+Port number for Rserve, used for tasks that require use of R (to ingest RData files and to save tabular data as RData frames).
 
 dataverse.rserve.user
 +++++++++++++++++++++
 
-Configuration for :doc:`r-rapache-tworavens`.
-
-dataverse.rserve.tempdir
-++++++++++++++++++++++++
-Configuration for :doc:`r-rapache-tworavens`.
+Username for Rserve, used for tasks that require use of R (to ingest RData files and to save tabular data as RData frames).
 
 dataverse.rserve.password
 +++++++++++++++++++++++++
 
-Configuration for :doc:`r-rapache-tworavens`.
+Password for Rserve, used for tasks that require use of R (to ingest RData files and to save tabular data as RData frames).
+
+dataverse.rserve.tempdir
+++++++++++++++++++++++++
+
+Temporary directory used by Rserve (defaults to /tmp/Rserv). Note that this location is local to the host on which Rserv is running (specified in ``dataverse.rserve.host`` above). When talking to Rserve, Dataverse needs to know this location in order to generate absolute path names of the files on the other end. 
 
 .. _dataverse.dropbox.key:
 
@@ -1678,6 +1786,8 @@ Note: After making a change to this setting, a reExportAll needs to be run befor
 
 This will *force* a re-export of every published, local dataset, regardless of whether it has already been exported or not.
 
+The call returns a status message informing the administrator, that the process has been launched (``{"status":"WORKFLOW_IN_PROGRESS"}``). The administrator can check the progress of the process via log files: ``[Payara directory]/glassfish/domains/domain1/logs/export_[time stamp].log``.
+
 :NavbarAboutUrl
 +++++++++++++++
 
@@ -1747,7 +1857,12 @@ Notes:
 
 - For larger file upload sizes, you may need to configure your reverse proxy timeout. If using apache2 (httpd) with Shibboleth, add a timeout to the ProxyPass defined in etc/httpd/conf.d/ssl.conf (which is described in the :doc:`/installation/shibboleth` setup).
 
+:MultipleUploadFilesLimit
++++++++++++++++++++++++++
 
+This setting controls the number of files that can be uploaded through the UI at once. The default is 1000. It should be set to 1 or higher since 0 has no effect. To limit the number of files in a zip file, see ``:ZipUploadFilesLimit``.
+
+``curl -X PUT -d 500 http://localhost:8080/api/admin/settings/:MultipleUploadFilesLimit``
 
 :ZipDownloadLimit
 +++++++++++++++++
@@ -1823,16 +1938,6 @@ Session timeout (in minutes) for logged-in users. The default is 8 hours (480 mi
 In the example below we reduce the timeout to 4 hours:
 
 ``curl -X PUT -d 240 http://localhost:8080/api/admin/settings/:LoginSessionTimeout``
-
-:TwoRavensUrl
-+++++++++++++
-
-The ``:TwoRavensUrl`` option is no longer valid. See :doc:`r-rapache-tworavens` and the :doc:`/admin/external-tools` section of the Admin Guide.
-
-:TwoRavensTabularView
-+++++++++++++++++++++
-
-The ``:TwoRavensTabularView`` option is no longer valid. See :doc:`r-rapache-tworavens` and the :doc:`/admin/external-tools` section of the Admin Guide.
 
 .. _:DatasetPublishPopupCustomText:
 
@@ -2229,7 +2334,7 @@ See :ref:`i18n` for a curl example and related settings.
 :MetadataLanguages
 ++++++++++++++++++
 
-Sets which languages can be used when entering dataset metadata. 
+Sets which languages can be used when entering dataset metadata.
 
 See :ref:`i18n` for further discussion, a curl example, and related settings.
 
@@ -2265,7 +2370,10 @@ If you don’t want date facets to be sorted chronologically, set:
 :CustomZipDownloadServiceUrl
 ++++++++++++++++++++++++++++
 
-The location of the "Standalone Zipper" service. If this option is specified, the Dataverse installation will be redirecing bulk/mutli-file zip download requests to that location, instead of serving them internally. See the "Advanced" section of the Installation guide for information on how to install the external zipper. (This is still an experimental feature, as of Dataverse Software 5.0).
+The location of the "Standalone Zipper" service. If this option is specified, the Dataverse installation will be
+redirecing bulk/multi-file zip download requests to that location, instead of serving them internally.
+See :ref:`zipdownloader` of the Advanced Installation guide for information on how to install the external zipper.
+(This is still an **experimental** feature, as of Dataverse Software 5.0).
 
 To enable redirects to the zipper installed on the same server as the main Dataverse Software application: 
 
@@ -2273,7 +2381,7 @@ To enable redirects to the zipper installed on the same server as the main Datav
 
 To enable redirects to the zipper on a different server: 
 
-``curl -X PUT -d 'https://zipper.example.edu/cgi-bin/zipdownload' http://localhost:8080/api/admin/settings/:CustomZipDownloadServiceUrl`` 
+``curl -X PUT -d 'https://zipper.example.edu/cgi-bin/zipdownload' http://localhost:8080/api/admin/settings/:CustomZipDownloadServiceUrl``
 
 :ArchiverClassName
 ++++++++++++++++++
@@ -2367,8 +2475,7 @@ Also refer to the "Datafile Integrity" API  :ref:`datafile-integrity`
 :SendNotificationOnDatasetCreation
 ++++++++++++++++++++++++++++++++++
 
-A boolean setting that, if true will send an email and notification to users when a Dataset is created. Messages go to those, other than the dataset creator,
- who have the ability/permission necessary to publish the dataset. The intent of this functionality is to simplify tracking activity and planning to follow-up contact.
+A boolean setting that, if true, will send an email and notification to users when a Dataset is created. Messages go to those, other than the dataset creator, who have the ability/permission necessary to publish the dataset. The intent of this functionality is to simplify tracking activity and planning to follow-up contact.
   
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:SendNotificationOnDatasetCreation``
 
@@ -2379,7 +2486,7 @@ A boolean setting that, if true will send an email and notification to users whe
 
 A JSON-structured setting that configures Dataverse to associate specific metadatablock fields with external vocabulary services and specific vocabularies/sub-vocabularies managed by that service. More information about this capability is available at :doc:`/admin/metadatacustomization`.
 
-Scripts that implement this association for specific service protocols are maintained at https://github.com/gdcc/dataverse-external-vocab-support. That repository also includes a json-schema for validating the structure required by this setting along with an example metadatablock and sample :CVocConf setting values associating entries in the example block with ORCID and SKOSMOS based services. 
+Scripts that implement this association for specific service protocols are maintained at https://github.com/gdcc/dataverse-external-vocab-support. That repository also includes a json-schema for validating the structure required by this setting along with an example metadatablock and sample :CVocConf setting values associating entries in the example block with ORCID and SKOSMOS based services.
 
 ``wget https://gdcc.github.io/dataverse-external-vocab-support/examples/config/cvoc-conf.json``
 
@@ -2389,23 +2496,40 @@ Scripts that implement this association for specific service protocols are maint
 
 :AllowedCurationLabels
 ++++++++++++++++++++++
- 
-A JSON Object containing lists of allowed labels (up to 32 characters, spaces allowed) that can be set, via API or UI by users with the permission to publish a dataset. The set of labels allowed 
-for datasets can be selected by a superuser - via the Dataverse collection page (Edit/General Info) or set via API call. 
-The labels in a set should correspond to the states in an organization's curation process and are intended to help users/curators track the progress of a dataset through a defined curation process. 
-A dataset may only have one label at a time and if a label is set, it will be removed at publication time. 
+
+A JSON Object containing lists of allowed labels (up to 32 characters, spaces allowed) that can be set, via API or UI by users with the permission to publish a dataset. The set of labels allowed
+for datasets can be selected by a superuser - via the Dataverse collection page (Edit/General Info) or set via API call.
+The labels in a set should correspond to the states in an organization's curation process and are intended to help users/curators track the progress of a dataset through a defined curation process.
+A dataset may only have one label at a time and if a label is set, it will be removed at publication time.
 This functionality is disabled when this setting is empty/not set.
 Each set of labels is identified by a curationLabelSet name and a JSON Array of the labels allowed in that set.
 
 ``curl -X PUT -d '{"Standard Process":["Author contacted", "Privacy Review", "Awaiting paper publication", "Final Approval"], "Alternate Process":["State 1","State 2","State 3"]}' http://localhost:8080/api/admin/settings/:AllowedCurationLabels``
+
+If the Dataverse Installation supports multiple languages, the curation label translations should be added to the ``CurationLabels`` properties files. (See :ref:`i18n` for more on properties files and internationalization in general.)
+Since the Curation labels are free text, while creating the key, it has to be converted to lowercase, replace space with underscore.
+
+Example::
+
+  standard_process=Standard Process
+  author_contacted=Author contacted
+
+.. _:AllowCustomTermsOfUse:
+
+:AllowCustomTermsOfUse
+++++++++++++++++++++++
+
+By default, custom terms of data use and access can be specified after selecting "Custom Terms" from the License/DUA dropdown on the Terms tab. When ``:AllowCustomTermsOfUse`` is  set to ``false`` the "Custom Terms" item is not made available to the depositor.
+
+``curl -X PUT -d false http://localhost:8080/api/admin/settings/:AllowCustomTermsOfUse``
 
 .. _:MaxEmbargoDurationInMonths:
 
 :MaxEmbargoDurationInMonths
 +++++++++++++++++++++++++++
 
-This setting controls whether embargoes are allowed in a Dataverse instance and can limit the maximum duration users are allowed to specify. A value of 0 months or non-existent 
-setting indicates embargoes are not supported. A value of -1 allows embargoes of any length. Any other value indicates the maximum number of months (from the current date) a user 
+This setting controls whether embargoes are allowed in a Dataverse instance and can limit the maximum duration users are allowed to specify. A value of 0 months or non-existent
+setting indicates embargoes are not supported. A value of -1 allows embargoes of any length. Any other value indicates the maximum number of months (from the current date) a user
 can enter for an embargo end date. This limit will be enforced in the popup dialog in which users enter the embargo date. For example, to set a two year maximum:
 
 ``curl -X PUT -d 24 http://localhost:8080/api/admin/settings/:MaxEmbargoDurationInMonths``
@@ -2460,3 +2584,18 @@ For example:
 ++++++++++++++++++++++++++++++++
 
 When set to ``true``, this setting allows a superuser to publish and/or update Dataverse collections and datasets bypassing the external validation checks (specified by the settings above). In an event where an external script is reporting validation failures that appear to be in error, this option gives an admin with superuser privileges a quick way to publish the dataset or update a collection for the user. 
+
+:FileCategories
++++++++++++++++
+
+Overrides the default list of file categories that is used in the UI when adding tags to files. The default list is Documentation, Data, and Code.
+
+This setting is a comma-separated list of the new tags.
+
+To override the default list with Docs, Data, Code, and Workflow:
+
+``curl -X PUT -d 'Docs,Data,Code,Workflow' http://localhost:8080/api/admin/settings/:FileCategories``
+
+To remove the override and go back to the default list:
+
+``curl -X PUT -d '' http://localhost:8080/api/admin/settings/:FileCategories``

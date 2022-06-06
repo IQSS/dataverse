@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.api.datadeposit.SwordServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
@@ -151,6 +152,9 @@ public class Dataverses extends AbstractApiBean {
     @EJB
     DataverseServiceBean dataverseService;
 
+    @EJB
+    SwordServiceBean swordService;
+
     @POST
     public Response addRoot(String body) {
         logger.info("Creating root dataverse");
@@ -291,7 +295,7 @@ public class Dataverses extends AbstractApiBean {
             Dataset ds = new Dataset();
 
             ds.setOwner(owner);
-            ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, false); 
+            ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, false, licenseSvc);
             
             ds.setOwner(owner);
 
@@ -410,6 +414,9 @@ public class Dataverses extends AbstractApiBean {
             } catch (XMLStreamException e) {
                 return badRequest("Invalid file content: "+e.getMessage());
             }
+
+            swordService.addDatasetSubjectIfMissing(ds.getLatestVersion());
+
             ds.setOwner(owner);
             if (nonEmpty(pidParam)) {
                 if (!GlobalId.verifyImportCharacters(pidParam)) {
@@ -475,7 +482,7 @@ public class Dataverses extends AbstractApiBean {
             Dataset ds = new Dataset();
 
             ds.setOwner(owner);
-            ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, true); 
+            ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, true, licenseSvc);
           //ToDo - verify PID is one Dataverse can manage (protocol/authority/shoulder match)
             if(!
             (ds.getAuthority().equals(settingsService.getValueForKey(SettingsServiceBean.Key.Authority))&& 

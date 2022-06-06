@@ -109,6 +109,8 @@ public class SettingsWrapper implements java.io.Serializable {
     
     private Boolean dataFilePIDSequentialDependent = null;
     
+    private Boolean customLicenseAllowed = null;
+    
     public String get(String settingKey) {
         if (settingsMap == null) {
             initSettingsMap();
@@ -329,37 +331,20 @@ public class SettingsWrapper implements java.io.Serializable {
     
     public boolean isLocalesConfigured() {
         if (configuredLocales == null) {
-            initLocaleSettings();
+            configuredLocales = new LinkedHashMap<>();
+            settingsService.initLocaleSettings(configuredLocales);
         }
         return configuredLocales.size() > 1;
     }
 
     public Map<String, String> getConfiguredLocales() {
         if (configuredLocales == null) {
-            initLocaleSettings(); 
+            configuredLocales = new LinkedHashMap<>();
+            settingsService.initLocaleSettings(configuredLocales); 
         }
         return configuredLocales;
     }
     
-    private void initLocaleSettings() {
-        
-        configuredLocales = new LinkedHashMap<>();
-        
-        try {
-            JSONArray entries = new JSONArray(getValueForKey(SettingsServiceBean.Key.Languages, "[]"));
-            for (Object obj : entries) {
-                JSONObject entry = (JSONObject) obj;
-                String locale = entry.getString("locale");
-                String title = entry.getString("title");
-
-                configuredLocales.put(locale, title);
-            }
-        } catch (JSONException e) {
-            //e.printStackTrace();
-            // do we want to know? - probably not
-        }
-    }
-
     public boolean isDoiInstallation() {
         String protocol = getValueForKey(SettingsServiceBean.Key.Protocol);
         if ("doi".equals(protocol)) {
@@ -486,57 +471,28 @@ public class SettingsWrapper implements java.io.Serializable {
 
     Map<String,String> languageMap = null;
     
-    Map<String, String> getBaseMetadataLanguageMap(boolean refresh) {
+    public Map<String, String> getBaseMetadataLanguageMap(boolean refresh) {
         if (languageMap == null || refresh) {
-            languageMap = new HashMap<String, String>();
-
-            /* If MetadataLanaguages is set, use it.
-             * If not, we can't assume anything and should avoid assuming a metadata language
-             */
-            String mlString = getValueForKey(SettingsServiceBean.Key.MetadataLanguages,"");
-            
-            if(mlString.isEmpty()) {
-                mlString="[]";
-            }
-            JsonReader jsonReader = Json.createReader(new StringReader(mlString));
-            JsonArray languages = jsonReader.readArray();
-            for(JsonValue jv: languages) {
-                JsonObject lang = (JsonObject) jv;
-                languageMap.put(lang.getString("locale"), lang.getString("title"));
-            }
+           languageMap = settingsService.getBaseMetadataLanguageMap(languageMap, true);
         }
         return languageMap;
     }
     
     public Map<String, String> getMetadataLanguages(DvObjectContainer target) {
         Map<String,String> currentMap = new HashMap<String,String>();
-        currentMap.putAll(getBaseMetadataLanguageMap(true));
-        languageMap.put(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE, getDefaultMetadataLanguageLabel(target));
-        return languageMap;
+        currentMap.putAll(getBaseMetadataLanguageMap(false));
+        currentMap.put(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE, getDefaultMetadataLanguageLabel(target));
+        return currentMap;
     }
     
     private String getDefaultMetadataLanguageLabel(DvObjectContainer target) {
-        String mlLabel = Locale.getDefault().getDisplayLanguage();
-        Dataverse parent = target.getOwner();
-        boolean fromAncestor=false;
-        if(parent != null) {
-            mlLabel = parent.getEffectiveMetadataLanguage();
-            //recurse dataverse chain to root and if any have a metadata language set, fromAncestor is true
-            while(parent!=null) {
-                if(!parent.getMetadataLanguage().equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
-                    fromAncestor=true;
-                    break;
-                }
-                parent=parent.getOwner();
-            }
-        }
-        if(mlLabel.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
-            mlLabel = getBaseMetadataLanguageMap(false).get(getDefaultMetadataLanguage());
-        }
-        if(fromAncestor) {
+        String mlLabel = BundleUtil.getStringFromBundle("dataverse.metadatalanguage.setatdatasetcreation");
+        String mlCode = target.getEffectiveMetadataLanguage();
+        // If it's 'undefined', it's the global default
+        if (!mlCode.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
+            // Get the label for the language code found
+            mlLabel = getBaseMetadataLanguageMap(false).get(mlCode);
             mlLabel = mlLabel + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
-        } else {
-            mlLabel = mlLabel + " " + BundleUtil.getStringFromBundle("dataverse.default");
         }
         return mlLabel;
     }
@@ -548,8 +504,8 @@ public class SettingsWrapper implements java.io.Serializable {
                 //One entry - it's the default
             return (String) mdMap.keySet().toArray()[0];
             } else {
-                //More than one - :MetadataLanguages is set so we use the default
-                return DvObjectContainer.DEFAULT_METADATA_LANGUAGE_CODE;
+                //More than one - :MetadataLanguages is set and the default is undefined (users must choose if the collection doesn't override the default)
+                return DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE;
             }
         } else {
             // None - :MetadataLanguages is not set so return null to turn off the display (backward compatibility)
@@ -638,6 +594,13 @@ public class SettingsWrapper implements java.io.Serializable {
             return new ArrayList<String>();
         }
         return Arrays.asList(labelArray);
+    }
+
+    public boolean isCustomLicenseAllowed() {
+        if (customLicenseAllowed == null) {
+            customLicenseAllowed = systemConfig.isAllowCustomTerms();
+        }
+        return customLicenseAllowed;
     }
 }
 

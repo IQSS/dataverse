@@ -72,6 +72,9 @@ scripts/search/data/binary/trees.png.thumb140
 src/main/webapp/resources/images/cc0.png.thumb140
 src/main/webapp/resources/images/dataverseproject.png.thumb140
 
+# apache-maven is downloaded by docker-aio
+apache-maven*
+
 # visual studio code
 .factorypath
 

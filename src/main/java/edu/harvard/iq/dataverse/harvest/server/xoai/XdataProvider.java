@@ -14,16 +14,16 @@ import com.lyncode.xoai.dataprovider.parameters.OAIRequest;
 import com.lyncode.xoai.dataprovider.repository.Repository;
 import com.lyncode.xoai.services.api.DateProvider;
 import com.lyncode.xoai.services.impl.UTCDateProvider;
-import org.apache.log4j.Logger;
-
 import static com.lyncode.xoai.dataprovider.parameters.OAIRequest.Parameter.*;
+
+import java.util.logging.Logger;
 
 /**
  *
  * @author Leonid Andreev
  */
 public class XdataProvider {
-    private static Logger log = Logger.getLogger(XdataProvider.class);
+    private static Logger log = Logger.getLogger(XdataProvider.class.getCanonicalName());
 
     public static XdataProvider dataProvider (Context context, Repository repository) {
         return new XdataProvider(context, repository);
@@ -59,7 +59,7 @@ public class XdataProvider {
     }
 
     public OAIPMH handle (OAIRequest requestParameters) throws OAIException {
-        log.debug("Handling OAI request");
+        log.fine("Handling OAI request");
         Request request = new Request(repository.getConfiguration().getBaseUrl())
                 .withVerbType(requestParameters.get(Verb))
                 .withResumptionToken(requestParameters.get(ResumptionToken))
@@ -98,7 +98,7 @@ public class XdataProvider {
                     break;
             }
         } catch (HandlerException e) {
-            log.debug(e.getMessage(), e);
+            log.fine("HandlerException when executing "+request.getVerbType()+": " + e.getMessage());
             response.withError(errorsHandler.handle(e));
         }
 

@@ -39,6 +39,7 @@ import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestServiceShapefileHelper;
 import edu.harvard.iq.dataverse.ingest.IngestableDataChecker;
+import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil;
 import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatDoc;
 import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.HTML_H1;
@@ -1470,73 +1471,65 @@ public class FileUtil implements java.io.Serializable  {
      * elaborate on the text "This file cannot be downloaded publicly."
      */
     public static boolean isDownloadPopupRequired(DatasetVersion datasetVersion) {
-        // Each of these conditions is sufficient reason to have to 
-        // present the user with the popup: 
-        if (datasetVersion == null) {
-            logger.fine("Download popup required because datasetVersion is null.");
-            return false;
+        logger.fine("Checking if download popup is required.");
+        Boolean answer = popupDueToStateOrTerms(datasetVersion);
+        if (answer != null) {
+            return answer;
         }
-        //0. if version is draft then Popup "not required"
-        if (!datasetVersion.isReleased()) {
-            logger.fine("Download popup required because datasetVersion has not been released.");
-            return false;
-        }
-        // 1. License and Terms of Use:
-        if (datasetVersion.getTermsOfUseAndAccess() != null) {
-            if (!TermsOfUseAndAccess.License.CC0.equals(datasetVersion.getTermsOfUseAndAccess().getLicense())
-                    && !(datasetVersion.getTermsOfUseAndAccess().getTermsOfUse() == null
-                    || datasetVersion.getTermsOfUseAndAccess().getTermsOfUse().equals(""))) {
-                logger.fine("Download popup required because of license or terms of use.");
-                return true;
-            }
-
-            // 2. Terms of Access:
-            if (!(datasetVersion.getTermsOfUseAndAccess().getTermsOfAccess() == null) && !datasetVersion.getTermsOfUseAndAccess().getTermsOfAccess().equals("")) {
-                logger.fine("Download popup required because of terms of access.");
-                return true;
-            }
-        }
-
         // 3. Guest Book:
         if (datasetVersion.getDataset() != null && datasetVersion.getDataset().getGuestbook() != null && datasetVersion.getDataset().getGuestbook().isEnabled() && datasetVersion.getDataset().getGuestbook().getDataverse() != null) {
             logger.fine("Download popup required because of guestbook.");
             return true;
         }
-
         logger.fine("Download popup is not required.");
         return false;
     }
     
-    public static boolean isRequestAccessPopupRequired(DatasetVersion datasetVersion){
-        // Each of these conditions is sufficient reason to have to 
-        // present the user with the popup: 
+    public static boolean isRequestAccessPopupRequired(DatasetVersion datasetVersion) {
+        
+        Boolean answer = popupDueToStateOrTerms(datasetVersion);
+        if (answer != null) {
+            return answer;
+        }
+        logger.fine("Request access popup is not required.");
+        return false;
+    }
+    
+    /* Code shared by isDownloadPopupRequired and isRequestAccessPopupRequired.
+     * 
+     * Returns Boolean to allow null = no decision. This allows the isDownloadPopupRequired method to then add another check w.r.t. guestbooks before returning its value.
+     * 
+     */
+    private static Boolean popupDueToStateOrTerms(DatasetVersion datasetVersion) {
+
+        // Each of these conditions is sufficient reason to have to
+        // present the user with the popup:
         if (datasetVersion == null) {
-            logger.fine("Download popup required because datasetVersion is null.");
+            logger.fine("Popup not required because datasetVersion is null.");
             return false;
         }
-        //0. if version is draft then Popup "not required"
+        // 0. if version is draft then Popup "not required"
         if (!datasetVersion.isReleased()) {
-            logger.fine("Download popup required because datasetVersion has not been released.");
+            logger.fine("Popup not required because datasetVersion has not been released.");
             return false;
         }
         // 1. License and Terms of Use:
         if (datasetVersion.getTermsOfUseAndAccess() != null) {
-            if (!TermsOfUseAndAccess.License.CC0.equals(datasetVersion.getTermsOfUseAndAccess().getLicense())
-                    && !(datasetVersion.getTermsOfUseAndAccess().getTermsOfUse() == null
-                    || datasetVersion.getTermsOfUseAndAccess().getTermsOfUse().equals(""))) {
-                logger.fine("Download popup required because of license or terms of use.");
+            License license = datasetVersion.getTermsOfUseAndAccess().getLicense();
+            if ((license == null && StringUtils.isNotBlank(datasetVersion.getTermsOfUseAndAccess().getTermsOfUse()))
+                    || (license != null && !license.isDefault())) {
+                logger.fine("Popup required because of license or terms of use.");
                 return true;
             }
 
             // 2. Terms of Access:
             if (!(datasetVersion.getTermsOfUseAndAccess().getTermsOfAccess() == null) && !datasetVersion.getTermsOfUseAndAccess().getTermsOfAccess().equals("")) {
-                logger.fine("Download popup required because of terms of access.");
+                logger.fine("Popup required because of terms of access.");
                 return true;
             }
         }
-
-        logger.fine("Download popup is not required.");
-        return false;
+        //No decision based on the criteria above
+        return null;
     }
 
     /**
@@ -1579,24 +1572,6 @@ public class FileUtil implements java.io.Serializable  {
              * future to when the dataset is published to see if the file will
              * be publicly downloadable or not.
              */
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Show preview in many cases, but not when restricted.
-     *
-     * Originally, preview was limited to isPubliclyDownloadable().
-     */
-    public static boolean isPreviewAllowed(FileMetadata fileMetadata) {
-        if (fileMetadata == null) {
-            return false;
-        }
-        if (fileMetadata.isRestricted()) {
-            return false;
-        }
-        if (isActivelyEmbargoed(fileMetadata)) {
             return false;
         }
         return true;

@@ -79,7 +79,7 @@ Supported image types for logo images and footer images are JPEG, TIFF, or PNG a
 Widgets
 --------------
 
-The Widgets feature provides you with code for you to put on your personal website to have your Dataverse collection displayed there. There are two types of Widgets for a Dataverse collection, a Dataverse collection Search Box widget and a Dataverse collection Listing widget. From the Widgets tab on the Theme + Widgets page, you can copy and paste the code snippets for the widget you would like to add to your website. If you need to adjust the height of the widget on your website, you may do so by editing the `heightPx=500` parameter in the code snippet.
+The Widgets feature provides you with code for you to put on your personal website to have your Dataverse collection displayed there. There are two types of Widgets for a Dataverse collection, a Dataverse collection Search Box widget and a Dataverse collection Listing widget. Once a Dataverse collection has been published, from the Widgets tab on the Dataverse collection's Theme + Widgets page, it is possible to copy the code snippets for the widget(s) you would like to add to your website. If you need to adjust the height of the widget on your website, you may do so by editing the `heightPx=500` parameter in the code snippet.
 
 Dataverse Collection Search Box Widget
 **************************************
@@ -176,21 +176,20 @@ How do you create a template?
 Dataset Guestbooks
 -----------------------------
 
-Guestbooks allow you to collect data about who is downloading the files from your datasets. You can decide to collect account information (username, given name & last name, affiliation, etc.) as well as create custom questions (e.g., What do you plan to use this data for?). You are also able to download the data collected from the enabled guestbooks as Excel files to store and use outside of the Dataverse installation.
+Guestbooks allow you to collect data about who is downloading the files from your datasets. You can decide to collect account information (username, given name & last name, affiliation, etc.) as well as create custom questions (e.g., What do you plan to use this data for?). You are also able to download the data collected from the enabled guestbooks as CSV files to store and use outside of the Dataverse installation.
 
 How do you create a guestbook?
 
-#. After creating a Dataverse collection, click on the Edit Dataverse button and select Dataset Guestbook
-#. By default, guestbooks created in the Dataverse collection your Dataverse collection is in, will appear. If you do not want to use or see those guestbooks, uncheck the checkbox that says Include Guestbooks from Root Dataverse.
-#. To create a new guestbook, click the Create Dataset Guestbook button on the right side of the page. 
-#. Name the guestbook, determine the account information that you would like to be required (all account information fields show when someone downloads a file), and then add Custom Questions (can be required or not required). 
-#. Hit the Create Dataset Guestbook button once you have finished.
+#. After creating a Dataverse collection, click on the "Edit Dataverse" button and select "Dataset Guestbooks".
+#. To create a new guestbook, click the "Create Dataset Guestbook" button on the right side of the page. 
+#. Name the guestbook, determine the account information that you would like to be required (all account information fields show when someone downloads a file), and then add custom questions (can be required or not required), if desired.
+#. Click the "Create Dataset Guestbook" button once you have finished.
 
-What can you do with a guestbook? After creating a guestbook, you will notice there are several options for a guestbook and appear in the list of guestbooks. 
+What can you do with a guestbook? After creating a guestbook, you will notice there are several options for a guestbook that appear in the list of guestbooks.
 
-- If you want to use a guestbook you have created, you will first need to click the button in the Action column that says Enable. Once a guestbook has been enabled, you can go to the License + Terms for a dataset and select a guestbook for it.
-- There are also options to view, copy, edit, or delete a guestbook.
-- Once someone has downloaded a file in a dataset where a guestbook has been assigned, an option to download collected data will appear. 
+- From the dataset page, you can select a guestbook by clicking "Terms" and then "Edit Terms Requirements", unless the guestbook is disabled.
+- From the "Manage Dataset Guestbooks" page, there are options to view, copy, edit, disable, or delete a guestbook. There are also options to download or view responses. By default, guestbooks inherited from the parent Dataverse collection will appear. If you do not want to use or see those guestbooks, uncheck the checkbox that says "Include Guestbooks from [Parent]".
+- Note that it is also possible to download guestbook responses via API. See :ref:`download-guestbook-api` for details.
 
 .. _featured-dataverses:
 
