@@ -242,6 +242,13 @@ public class HarvesterServiceBean {
                 Date dateStamp = Date.from(h.getDatestamp());
                 
                 hdLogger.info("processing identifier: " + identifier + ", date: " + dateStamp);
+                
+                if (h.isDeleted()) {
+                    hdLogger.info("Deleting harvesting dataset for " + identifier + ", per ListIdentifiers.");
+
+                    deleteHarvestedDatasetIfExists(identifier, oaiHandler.getHarvestingClient().getDataverse(), dataverseRequest, deletedIdentifiers, hdLogger);
+                    continue;
+                }
 
                 MutableBoolean getRecordErrorOccurred = new MutableBoolean(false);
 
@@ -301,19 +308,9 @@ public class HarvesterServiceBean {
                 hdLogger.log(Level.SEVERE, "Error calling GetRecord - " + errMessage);
                 
             } else if (deleted) {
-                hdLogger.info("Deleting harvesting dataset for "+identifier+", per the OAI server's instructions.");
+                hdLogger.info("Deleting harvesting dataset for "+identifier+", per GetRecord.");
                 
-                Dataset dataset = datasetService.getDatasetByHarvestInfo(oaiHandler.getHarvestingClient().getDataverse(), identifier);
-                if (dataset != null) {
-                    hdLogger.info("Deleting dataset " + dataset.getGlobalIdString());
-                    datasetService.deleteHarvestedDataset(dataset, dataverseRequest, hdLogger);
-                    // TODO: 
-                    // check the status of that Delete - see if it actually succeeded
-                    deletedIdentifiers.add(identifier);
-                } else {
-                    hdLogger.info("No dataset found for "+identifier+", skipping delete. ");
-                }
-
+                deleteHarvestedDatasetIfExists(identifier, oaiHandler.getHarvestingClient().getDataverse(), dataverseRequest, deletedIdentifiers, hdLogger); 
             } else {
                 hdLogger.info("Successfully retrieved GetRecord response.");
 
@@ -394,6 +391,18 @@ public class HarvesterServiceBean {
 
         throw new IOException("Failed to download extended metadata.");
   
+    }
+    
+    private void deleteHarvestedDatasetIfExists(String persistentIdentifier, Dataverse harvestingDataverse, DataverseRequest dataverseRequest, List<String> deletedIdentifiers, Logger hdLogger) {
+        Dataset dataset = datasetService.getDatasetByHarvestInfo(harvestingDataverse, persistentIdentifier);
+        if (dataset != null) {
+            datasetService.deleteHarvestedDataset(dataset, dataverseRequest, hdLogger);
+            // TODO: 
+            // check the status of that Delete - see if it actually succeeded
+            deletedIdentifiers.add(persistentIdentifier);
+            return;
+        }
+        hdLogger.info("No dataset found for " + persistentIdentifier + ", skipping delete. ");
     }
     
     private static String getProprietaryDataverseMetadataURL(String baseURL, String identifier) {
