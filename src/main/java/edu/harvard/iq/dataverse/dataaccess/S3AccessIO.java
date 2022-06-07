@@ -933,9 +933,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                     // them for some servers, we check whether the protocol is in the url and then
                     // normalizing to use the part without the protocol
                     String endpointServer = endpoint;
-                    int protocolEnd = endpoint.indexOf("://");
+                    int protocolEnd = endpoint.indexOf(DataAccess.SEPARATOR);
                     if (protocolEnd >=0 ) {
-                        endpointServer = endpoint.substring(protocolEnd + 3);
+                        endpointServer = endpoint.substring(protocolEnd + DataAccess.SEPARATOR.length());
                     }
                     logger.fine("Endpoint: " + endpointServer);
                     // We're then replacing 
@@ -994,9 +994,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 // them for some servers, we check whether the protocol is in the url and then
                 // normalizing to use the part without the protocol
                 String endpointServer = endpoint;
-                int protocolEnd = endpoint.indexOf("://");
+                int protocolEnd = endpoint.indexOf(DataAccess.SEPARATOR);
                 if (protocolEnd >=0 ) {
-                    endpointServer = endpoint.substring(protocolEnd + 3);
+                    endpointServer = endpoint.substring(protocolEnd + DataAccess.SEPARATOR.length());
                 }
                 logger.fine("Endpoint: " + endpointServer);
                 // We're then replacing 
