@@ -256,30 +256,23 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             }
         }
 
-        exportMetadata(dataset);
-                
-        ctxt.datasets().updateLastExportTimeStamp(dataset.getId());
-
-        return retVal;
-    }
-
-    /**
-     * Attempting to run metadata export, for all the formats for which we have
-     * metadata Exporters.
-     */
-    private void exportMetadata(Dataset dataset) {
-
+        // Metadata export:
+        
         try {
             ExportService instance = ExportService.getInstance();
             instance.exportAllFormats(dataset);
-
+            ctxt.datasets().updateLastExportTimeStamp(dataset.getId());
         } catch (Exception ex) {
             // Something went wrong!
             // Just like with indexing, a failure to export is not a fatal
             // condition. We'll just log the error as a warning and keep
             // going:
-            logger.log(Level.WARNING, "Dataset publication finalization: exception while exporting:{0}", ex.getMessage());
-        }
+            logger.warning("Finalization: exception caught while exporting: "+ex.getMessage());
+            // ... but it is important to only update the export time stamp if the 
+            // export was indeed successful.
+        }        
+        
+        return retVal;
     }
 
     /**
