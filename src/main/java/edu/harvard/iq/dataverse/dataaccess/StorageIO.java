@@ -35,10 +35,10 @@ import java.nio.channels.Channel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-
-import com.amazonaws.services.s3.model.S3ObjectSummary;
+import java.util.Map;
 
 //import org.apache.commons.httpclient.Header;
 //import org.apache.commons.httpclient.methods.GetMethod;
@@ -80,6 +80,18 @@ public abstract class StorageIO<T extends DvObject> {
 
     protected boolean isReadAccess = false;
     protected boolean isWriteAccess = false;
+    
+    //A  public store is one in which files may be accessible outside Dataverse and therefore accessible without regard to Dataverse's access controls related to restriction and embargoes.
+    //Currently, this is just used to warn users at upload time rather than disable restriction/embargo. 
+    static protected Map<String, Boolean> driverPublicAccessMap = new HashMap<String, Boolean>();
+
+    public static boolean isPublicStore(String driverId) {
+        //Read once and cache
+        if(!driverPublicAccessMap.containsKey(driverId)) {
+            driverPublicAccessMap.put(driverId, Boolean.parseBoolean(System.getProperty("dataverse.files." + driverId + ".public")));
+        }
+        return driverPublicAccessMap.get(driverId);
+    }
 
     public boolean canRead() {
         return isReadAccess;
