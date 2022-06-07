@@ -12,15 +12,15 @@ cd ../../
 cp -r scripts conf/docker-aio/testdata/
 cp doc/sphinx-guides/source/_static/util/createsequence.sql conf/docker-aio/testdata/doc/sphinx-guides/source/_static/util/
 
-# wget -q https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
+# downloading the maven binary archive was moved to 0prep_deps.sh (payara/solr)
 if [ ! -d maven ]; then
-    tar xfz apache-maven-3.6.3-bin.tar.gz
+    tar xfz apache-maven-3.8.5-bin.tar.gz
     mkdir maven
-    mv apache-maven-3.6.3/* maven/
+    mv apache-maven-3.8.5/* maven/
 fi
 
 # echo "export JAVA_HOME=/usr/lib/jvm/jre-openjdk" > maven/maven.sh
-echo "export JAVA_HOME=/usr/lib/jvm/adoptopenjdk-11-openj9-amd64" > maven/maven.sh 
+echo "export JAVA_HOME=/usr/lib/jvm/temurin-11-jdk-amd64" > maven/maven.sh 
 echo "export M2_HOME=../maven" >> maven/maven.sh
 echo "export MAVEN_HOME=../maven" >> maven/maven.sh
 echo "export PATH=../maven/bin:${PATH}" >> maven/maven.sh

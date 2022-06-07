@@ -4,7 +4,7 @@ if [ ! -d dv/deps ]; then
 fi
 wdir=`pwd`
 
-if [ ! -e dv/deps/payara-5.2021.10.zip ]; then
+if [ ! -e dv/deps/payara-5.2022.2.zip ]; then
 	echo "payara dependency prep"
 	# no more fiddly patching :)
 	wget https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2022.2/payara-5.2022.2.zip  -O dv/deps/payara-5.2022.2.zip
@@ -18,9 +18,9 @@ if [ ! -e dv/deps/solr-8.11.1dv.tgz ]; then
 	cd ../../
 fi
 cd ../../
-if [ ! -e apache-maven-3.6.3-bin.tar.gz ]; then
+if [ ! -e apache-maven-3.8.5-bin.tar.gz ]; then
 	echo "maven dependency prep"
 	# cd dv/deps/	
-	wget https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz -O apache-maven-3.6.3-bin.tar.gz 
+	wget -q https://downloads.apache.org/maven/maven-3/3.8.5/binaries/apache-maven-3.8.5-bin.tar.gz -O apache-maven-3.8.5-bin.tar.gz 
 fi
 cd conf/docker-aio/
