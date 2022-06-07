@@ -62,18 +62,27 @@ public class DataAccess {
         return getStorageIO(dvObject, null);
     }
 
+    
+
+    public static String getStorgageDriverFromIdentifier(String storageIdentifier) {
+        
+        int separatorIndex = storageIdentifier.indexOf(SEPARATOR);
+        String driverId = DEFAULT_STORAGE_DRIVER_IDENTIFIER; // default
+        if (separatorIndex > 0) {
+            driverId = storageIdentifier.substring(0, separatorIndex);
+        }
+        return driverId;
+    }
+    
     //passing DVObject instead of a datafile to accomodate for use of datafiles as well as datasets
 	public static <T extends DvObject> StorageIO<T> getStorageIO(T dvObject, DataAccessRequest req) throws IOException {
 
 		if (dvObject == null || dvObject.getStorageIdentifier() == null || dvObject.getStorageIdentifier().isEmpty()) {
 			throw new IOException("getDataAccessObject: null or invalid datafile.");
 		}
-		String storageIdentifier = dvObject.getStorageIdentifier();
-		int separatorIndex = storageIdentifier.indexOf(SEPARATOR);
-		String storageDriverId = DEFAULT_STORAGE_DRIVER_IDENTIFIER; // default
-		if (separatorIndex > 0) {
-			storageDriverId = storageIdentifier.substring(0, separatorIndex);
-		}
+
+        String storageDriverId = getStorgageDriverFromIdentifier(dvObject.getStorageIdentifier());
+
 		return getStorageIO(dvObject, req, storageDriverId);
 	}
 
