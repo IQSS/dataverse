@@ -63,7 +63,8 @@
                                     <ui:include src="dataset-license-terms.xhtml" >
                                         <ui:param name="editMode" value="#{!empty TemplatePage.editMode ? 'LICENSE': ''}"/>
                                         <ui:param name="termsOfUseAndAccess" value="#{TemplatePage.template.termsOfUseAndAccess}"/>
-                                        <ui:param name="datasetPage" value="false"/>               
+                                        <ui:param name="datasetPage" value="false"/>
+                                        <ui:param name="publicStore" value="settingsWrapper.publicInstall"/>
                                     </ui:include>
                                 </p:tab>                           
                         </p:tabView>
@@ -105,7 +106,8 @@
                                 <ui:param name="datasetPage" value="false"/>
                                 <ui:param name="templatePage" value="true"/>
                                 <ui:param name="editMode" value="#{!empty TemplatePage.editMode ? 'LICENSE' : ''}"/>
-                                <ui:param name="termsOfUseAndAccess" value="#{TemplatePage.template.termsOfUseAndAccess}"/>   
+                                <ui:param name="termsOfUseAndAccess" value="#{TemplatePage.template.termsOfUseAndAccess}"/>
+                                <ui:param name="publicStore" value="settingsWrapper.publicInstall"/>
                             </ui:include> 
                         </ui:fragment>
                     </ui:fragment>
