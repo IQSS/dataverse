@@ -245,7 +245,7 @@
                <h:outputText value="#{publicStore ? bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess'] : bundle['file.dataFilesTab.terms.list.termsOfAccess.header']}"/>
                &#160;<span class="glyphicon glyphicon-chevron-up"/>
            </div>
-           <div id="panelCollapseTOA" jsf:class="#{!datasetPage.hasValidTermsOfAccess ? 'collapse' : ''}">
+           <div id="panelCollapseTOA" class="#{!datasetPage or DatasetPage.hasValidTermsOfAccess ? 'collapse in' : 'collapse'}">
                <div class="panel-body">
                    <ui:fragment rendered="#{empty editMode}">
                        <div class="form-group" jsf:rendered="#{!publicStore}">
