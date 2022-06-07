@@ -90,7 +90,7 @@ https://github.com/jupyter/repo2docker/blob/master/repo2docker/contentproviders/
 dataverse-migration-scripts
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This series of Python scripts offers a starting point for migrating datasets from one Dataverse installation to another. Multiple parts of the process are handled in these scripts, including adding users, collections, and multiple versions of datasets. These scripts were developed to migrate data from version 4.20 to 5.1, but may provide a helpful starting point for other software versions. The migration APIs added in version 5.6 are not used. You can find more details in the repository, as well as `this Google group thread <https://groups.google.com/g/dataverse-community/c/4yy3U5RtUAs/m/OLogk12NBgAJ>`_.
+This series of Python scripts offers a starting point for migrating datasets from one Dataverse installation to another. Multiple parts of the process are handled in these scripts, including adding users, collections, and multiple versions of datasets. These scripts were developed to migrate data from version 4.20 to 5.1, but may provide a helpful starting point for other software versions. The :doc:`migration APIs </developers/dataset-migration-api>` added in version 5.6 are not used. You can find more details in the repository, as well as `this Google group thread <https://groups.google.com/g/dataverse-community/c/4yy3U5RtUAs/m/OLogk12NBgAJ>`_.
 
 https://github.com/scholarsportal/dataverse-migration-scripts
 
