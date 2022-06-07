@@ -76,310 +76,310 @@ Each of the three main sections own sets of properties:
 #metadataBlock properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-+---------------------------------------------------------+---------------------------------------------------------+---------------------------------------------------------+
-| **Property**                                            | **Purpose**                                             | **Allowed values and restrictions**                     |
-+---------------------------------------------------------+---------------------------------------------------------+---------------------------------------------------------+
-| name                                                    | A user-definable string used to identify a              | \• No spaces or punctuation, except underscore.         |
-|                                                         | #metadataBlock                                          |                                                         |
-|                                                         |                                                         | \• By convention, should start with a letter, and use   |
-|                                                         |                                                         | lower camel case [3]_                                   |
-|                                                         |                                                         |                                                         |
-|                                                         |                                                         | \• Must not collide with a field of the same name in    |
-|                                                         |                                                         | the same or any other #datasetField definition,         |
-|                                                         |                                                         | including metadata blocks defined elsewhere. [4]_       |
-+---------------------------------------------------------+---------------------------------------------------------+---------------------------------------------------------+
-| dataverseAlias                                          | If specified, this metadata block will be available     | Free text. For an example, see custom_hbgdki.tsv.       |
-|                                                         | only to the Dataverse collection designated here by     |                                                         |
-|                                                         | its alias and to children of that Dataverse collection. |                                                         |
-+---------------------------------------------------------+---------------------------------------------------------+---------------------------------------------------------+
-| displayName                                             | Acts as a brief label for display related to this       | Should be relatively brief. The limit is 256 character, |
-|                                                         | #metadataBlock.                                         | but very long names might cause display problems.       |
-+---------------------------------------------------------+---------------------------------------------------------+---------------------------------------------------------+
-| blockURI                                                | Associates the properties in a block with an external   | The citation #metadataBlock has the blockURI            |
-|                                                         | URI.                                                    | https://dataverse.org/schema/citation/ which assigns a  |
-|                                                         | Properties will be assigned the global assigned the     | global URI to terms such as                             |
-|                                                         | global identifier blockURI<name> in the OAI_ORE         | https://dataverse.org/schema/citation/subtitle          |
-|                                                         | metadata and archival Bags                              |                                                         |
-+---------------------------------------------------------+---------------------------------------------------------+---------------------------------------------------------+
++----------------+---------------------------------------------------------+---------------------------------------------------------+
+| **Property**   | **Purpose**                                             | **Allowed values and restrictions**                     |
++----------------+---------------------------------------------------------+---------------------------------------------------------+
+| name           | A user-definable string used to identify a              | \• No spaces or punctuation, except underscore.         |
+|                | #metadataBlock                                          |                                                         |
+|                |                                                         | \• By convention, should start with a letter, and use   |
+|                |                                                         | lower camel case [3]_                                   |
+|                |                                                         |                                                         |
+|                |                                                         | \• Must not collide with a field of the same name in    |
+|                |                                                         | the same or any other #datasetField definition,         |
+|                |                                                         | including metadata blocks defined elsewhere. [4]_       |
++----------------+---------------------------------------------------------+---------------------------------------------------------+
+| dataverseAlias | If specified, this metadata block will be available     | Free text. For an example, see custom_hbgdki.tsv.       |
+|                | only to the Dataverse collection designated here by     |                                                         |
+|                | its alias and to children of that Dataverse collection. |                                                         |
++----------------+---------------------------------------------------------+---------------------------------------------------------+
+| displayName    | Acts as a brief label for display related to this       | Should be relatively brief. The limit is 256 character, |
+|                | #metadataBlock.                                         | but very long names might cause display problems.       |
++----------------+---------------------------------------------------------+---------------------------------------------------------+
+| blockURI       | Associates the properties in a block with an external   | The citation #metadataBlock has the blockURI            |
+|                | URI.                                                    | https://dataverse.org/schema/citation/ which assigns a  |
+|                | Properties will be assigned the                         | default global URI to terms such as                     |
+|                | global identifier blockURI<name> in the OAI_ORE         | https://dataverse.org/schema/citation/subtitle          |
+|                | metadata and archival Bags                              |                                                         |
++----------------+---------------------------------------------------------+---------------------------------------------------------+
 
 #datasetField (field) properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-+---------------------------------------------------------+---------------------------------------------------------+---------------------------------------------------------+
-| **Property**                                            | **Purpose**                                             | **Allowed values and restrictions**                     |
-+---------------------------------------------------------+---------------------------------------------------------+---------------------------------------------------------+
-| name                                                    | A user-definable string used to identify a              | \• (from DatasetFieldType.java) The internal DDI-like   |
-|                                                         | #datasetField. Maps directly to field name used by      | name, no spaces, etc.                                   |
-|                                                         | Solr.                                                   |                                                         |
-|                                                         |                                                         | \• (from Solr) Field names should consist of            |
-|                                                         |                                                         | alphanumeric or underscore characters only and not start|
-|                                                         |                                                         | with a digit. This is not currently strictly enforced,  |
-|                                                         |                                                         | but other field names will not have first class         |
-|                                                         |                                                         | support from all components and back compatibility      |
-|                                                         |                                                         | is not guaranteed.                                      |
-|                                                         |                                                         | Names with both leading and trailing underscores        |
-|                                                         |                                                         | (e.g. \_version_) are reserved.                         |
-|                                                         |                                                         |                                                         |
-|                                                         |                                                         | \• Must not collide with a field of                     |
-|                                                         |                                                         | the same same name in another #metadataBlock            |
-|                                                         |                                                         | definition or any name already included as a            |
-|                                                         |                                                         | field in the Solr index.                                |
-+---------------------------------------------------------+---------------------------------------------------------+---------------------------------------------------------+
-| title                                                   | Acts as a brief label for display                       | Should be relatively brief.                             |
-|                                                         | related to this #datasetField.                          |                                                         |
-+---------------------------------------------------------+---------------------------------------------------------+---------------------------------------------------------+
-| description                                             | Used to provide a description of the                    | Free text                                               |
-|                                                         | field.                                                  |                                                         |
-+---------------------------------------------------------+---------------------------------------------------------+---------------------------------------------------------+
-| watermark                                               | A string to initially display in a field                | Free text                                               |
-|                                                         | as a prompt for what the user should enter.             |                                                         |
-+---------------------------------------------------------+---------------------------------------------------------+---------------------------------------------------------+
-| fieldType                                               | Defines the type of content that the                    | | \• none                                               |
-|                                                         | field, if not empty, is meant to contain.               | | \• date                                               |
-|                                                         |                                                         | | \• email                                              |
-|                                                         |                                                         | | \• text                                               |
-|                                                         |                                                         | | \• textbox                                            |
-|                                                         |                                                         | | \• url                                                |
-|                                                         |                                                         | | \• int                                                |
-|                                                         |                                                         | | \• float                                              |
-|                                                         |                                                         | | \• See below for                                      |
-|                                                         |                                                         | | fieldtype definitions                                 |
-+---------------------------------------------------------+---------------------------------------------------------+---------------------------------------------------------+
-| displayOrder                                            | Controls the sequence in which the fields               | Non-negative integer.                                   |
-|                                                         | are displayed, both for input and                       |                                                         |
-|                                                         | presentation.                                           |                                                         |
-+---------------------------------------------------------+---------------------------------------------------------+---------------------------------------------------------+
-| displayFormat                                           | Controls how the content is displayed                   | See below for displayFormat                             |
-|                                                         | for presentation (not entry). The value of              | variables                                               |
-|                                                         | this field may contain one or more                      |                                                         |
-|                                                         | special variables (enumerated below).                   |                                                         |
-|                                                         | HTML tags, likely in conjunction with one               |                                                         |
-|                                                         | or more of these values, may be used                    |                                                         |
-|                                                         | to control the display of content in                    |                                                         |
-|                                                         | the web UI.                                             |                                                         |
-+---------------------------------------------------------+---------------------------------------------------------+---------------------------------------------------------+
-| advancedSearchField                                     | Specify whether this field is available in              | TRUE (available) or                                     |
-|                                                         | advanced search.                                        | FALSE (not available)                                   |
-+---------------------------------------------------------+---------------------------------------------------------+---------------------------------------------------------+
-| allowControlledVocabulary                               | Specify whether the possible values of                  | TRUE (controlled) or FALSE (not                         |
-|                                                         | this field are determined by values                     | controlled)                                             |
-|                                                         | in the #controlledVocabulary section.                   |                                                         |
-+---------------------------------------------------------+---------------------------------------------------------+---------------------------------------------------------+
-| allowmultiples                                          | Specify whether this field is repeatable.               | TRUE (repeatable) or FALSE (not                         |
-|                                                         |                                                         | repeatable)                                             |
-+---------------------------------------------------------+---------------------------------------------------------+---------------------------------------------------------+
-| facetable                                               | Specify whether the field is facetable                  | TRUE (controlled) or FALSE (not                         |
-|                                                         | (i.e., if the expected values for                       | controlled)                                             |
-|                                                         | this field are themselves useful                        |                                                         |
-|                                                         | search terms for this field). If a field is             |                                                         |
-|                                                         | "facetable" (able to be faceted on), it                 |                                                         |
-|                                                         | appears under "Browse/Search                            |                                                         |
-|                                                         | Facets" when you edit                                   |                                                         |
-|                                                         | "General Information" for a Dataverse                   |                                                         |
-|                                                         | collection.                                             |                                                         |
-|                                                         | Setting this value to TRUE generally makes              |                                                         |
-|                                                         | sense for enumerated or controlled                      |                                                         |
-|                                                         | vocabulary fields, fields representing                  |                                                         |
-|                                                         | identifiers (IDs, names, email                          |                                                         |
-|                                                         | addresses), and other fields that are                   |                                                         |
-|                                                         | likely to share values across                           |                                                         |
-|                                                         | entries. It is less likely to make sense                |                                                         |
-|                                                         | for fields containing descriptions,                     |                                                         |
-|                                                         | floating point numbers, and other                       |                                                         |
-|                                                         | values that are likely to be unique.                    |                                                         |
-+---------------------------------------------------------+---------------------------------------------------------+---------------------------------------------------------+
-| displayoncreate [5]_                                    | Designate fields that should display during             | TRUE (display during creation) or FALSE                 |
-|                                                         | the creation of a new dataset, even before              | (don’t display during creation)                         |
-|                                                         | the dataset is saved.                                   |                                                         |
-|                                                         | Fields not so designated will not                       |                                                         |
-|                                                         | be displayed until the dataset has been                 |                                                         |
-|                                                         | saved.                                                  |                                                         |
-+---------------------------------------------------------+---------------------------------------------------------+---------------------------------------------------------+
-| required                                                | For primitive fields, specify whether or not the        | For primitive fields, TRUE                              |
-|                                                         | field is required.                                      | (required) or FALSE (optional).                         |
-|                                                         |                                                         |                                                         |
-|                                                         | For compound fields, also specify if one or more        | For compound fields:                                    |
-|                                                         | subfields are required or conditionally required. At    |                                                         |
-|                                                         | least one instance of a required field must be          | \• To make one or more                                  |
-|                                                         | present. More than one instance of a field may be       | subfields optional, the parent                          |
-|                                                         | allowed, depending on the value of allowmultiples.      | field and subfield(s) must be                           |
-|                                                         |                                                         | FALSE (optional).                                       |
-|                                                         |                                                         |                                                         |
-|                                                         |                                                         | \• To make one or more subfields                        |
-|                                                         |                                                         | required, the parent field and                          |
-|                                                         |                                                         | the required subfield(s) must be                        |
-|                                                         |                                                         | TRUE (required).                                        |
-|                                                         |                                                         |                                                         |
-|                                                         |                                                         | \• To make one or more subfields                        |
-|                                                         |                                                         | conditionally required, make the                        |
-|                                                         |                                                         | parent field FALSE (optional)                           |
-|                                                         |                                                         | and make TRUE (required) any                            |
-|                                                         |                                                         | subfield or subfields that are                          |
-|                                                         |                                                         | required if any other subfields                         |
-|                                                         |                                                         | are filled.                                             |
-+---------------------------------------------------------+---------------------------------------------------------+---------------------------------------------------------+
-| parent                                                  | For subfields, specify the name of the parent or        | \• Must not result in a cyclical reference.             |
-|                                                         | containing field.                                       |                                                         |
-|                                                         |                                                         | \• Must reference an existing field in the same         |
-|                                                         |                                                         | #metadataBlock.                                         |
-+---------------------------------------------------------+---------------------------------------------------------+---------------------------------------------------------+
-| metadatablock_id                                        | Specify the name of the #metadataBlock that contains    | \• Must reference an existing #metadataBlock.           |
-|                                                         | this field.                                             |                                                         |
-|                                                         |                                                         | \• As a best practice, the value should reference the   |
-|                                                         |                                                         | #metadataBlock in the current                           |
-|                                                         |                                                         | definition (it is technically                           |
-|                                                         |                                                         | possible to reference another                           |
-|                                                         |                                                         | existing metadata block.)                               |
-+---------------------------------------------------------+---------------------------------------------------------+---------------------------------------------------------+
-| termURI                                                 | Specify a global URI identifying this term in an        | For example, the existing citation                      |
-|                                                         | external community vocabulary.                          | #metadataBlock defines the property                     |
-|                                                         |                                                         | names 'title' as http://purl.org/dc/terms/title         |
-|                                                         | This value overrides the default created by appending   | - i.e. indicating that it can                           |
-|                                                         | the property name to the blockURI defined for the       | be interpreted as the Dublin Core term 'title'          |
-|                                                         | #metadataBlock                                          |                                                         |
-+---------------------------------------------------------+---------------------------------------------------------+---------------------------------------------------------+
++---------------------------+--------------------------------------------------------+----------------------------------------------------------+-----------------------+
+| **Property**              | **Purpose**                                            | **Allowed values and restrictions**                      |                       |
++---------------------------+--------------------------------------------------------+----------------------------------------------------------+-----------------------+
+| name                      | A user-definable string used to identify a             | \• (from DatasetFieldType.java) The internal DDI-like    |                       |
+|                           | #datasetField. Maps directly to field name used by     | name, no spaces, etc.                                    |                       |
+|                           | Solr.                                                  |                                                          |                       |
+|                           |                                                        | \• (from Solr) Field names should consist of             |                       |
+|                           |                                                        | alphanumeric or underscore characters only and not start |                       |
+|                           |                                                        | with a digit. This is not currently strictly enforced,   |                       |
+|                           |                                                        | but other field names will not have first class          |                       |
+|                           |                                                        | support from all components and back compatibility       |                       |
+|                           |                                                        | is not guaranteed.                                       |                       |
+|                           |                                                        | Names with both leading and trailing underscores         |                       |
+|                           |                                                        | (e.g. \_version_) are reserved.                          |                       |
+|                           |                                                        |                                                          |                       |
+|                           |                                                        | \• Must not collide with a field of                      |                       |
+|                           |                                                        | the same same name in another #metadataBlock             |                       |
+|                           |                                                        | definition or any name already included as a             |                       |
+|                           |                                                        | field in the Solr index.                                 |                       |
++---------------------------+--------------------------------------------------------+----------------------------------------------------------+-----------------------+
+| title                     | Acts as a brief label for display                      | Should be relatively brief.                              |                       |
+|                           | related to this #datasetField.                         |                                                          |                       |
++---------------------------+--------------------------------------------------------+----------------------------------------------------------+-----------------------+
+| description               | Used to provide a description of the                   | Free text                                                |                       |
+|                           | field.                                                 |                                                          |                       |
++---------------------------+--------------------------------------------------------+----------------------------------------------------------+-----------------------+
+| watermark                 | A string to initially display in a field               | Free text                                                |                       |
+|                           | as a prompt for what the user should enter.            |                                                          |                       |
++---------------------------+--------------------------------------------------------+----------------------------------------------------------+-----------------------+
+| fieldType                 | Defines the type of content that the                   |                                                          | \• none               |
+|                           | field, if not empty, is meant to contain.              |                                                          | \• date               |
+|                           |                                                        |                                                          | \• email              |
+|                           |                                                        |                                                          | \• text               |
+|                           |                                                        |                                                          | \• textbox            |
+|                           |                                                        |                                                          | \• url                |
+|                           |                                                        |                                                          | \• int                |
+|                           |                                                        |                                                          | \• float              |
+|                           |                                                        |                                                          | \• See below for      |
+|                           |                                                        |                                                          | fieldtype definitions |
++---------------------------+--------------------------------------------------------+----------------------------------------------------------+-----------------------+
+| displayOrder              | Controls the sequence in which the fields              | Non-negative integer.                                    |                       |
+|                           | are displayed, both for input and                      |                                                          |                       |
+|                           | presentation.                                          |                                                          |                       |
++---------------------------+--------------------------------------------------------+----------------------------------------------------------+-----------------------+
+| displayFormat             | Controls how the content is displayed                  | See below for displayFormat                              |                       |
+|                           | for presentation (not entry). The value of             | variables                                                |                       |
+|                           | this field may contain one or more                     |                                                          |                       |
+|                           | special variables (enumerated below).                  |                                                          |                       |
+|                           | HTML tags, likely in conjunction with one              |                                                          |                       |
+|                           | or more of these values, may be used                   |                                                          |                       |
+|                           | to control the display of content in                   |                                                          |                       |
+|                           | the web UI.                                            |                                                          |                       |
++---------------------------+--------------------------------------------------------+----------------------------------------------------------+-----------------------+
+| advancedSearchField       | Specify whether this field is available in             | TRUE (available) or                                      |                       |
+|                           | advanced search.                                       | FALSE (not available)                                    |                       |
++---------------------------+--------------------------------------------------------+----------------------------------------------------------+-----------------------+
+| allowControlledVocabulary | Specify whether the possible values of                 | TRUE (controlled) or FALSE (not                          |                       |
+|                           | this field are determined by values                    | controlled)                                              |                       |
+|                           | in the #controlledVocabulary section.                  |                                                          |                       |
++---------------------------+--------------------------------------------------------+----------------------------------------------------------+-----------------------+
+| allowmultiples            | Specify whether this field is repeatable.              | TRUE (repeatable) or FALSE (not                          |                       |
+|                           |                                                        | repeatable)                                              |                       |
++---------------------------+--------------------------------------------------------+----------------------------------------------------------+-----------------------+
+| facetable                 | Specify whether the field is facetable                 | TRUE (controlled) or FALSE (not                          |                       |
+|                           | (i.e., if the expected values for                      | controlled)                                              |                       |
+|                           | this field are themselves useful                       |                                                          |                       |
+|                           | search terms for this field). If a field is            |                                                          |                       |
+|                           | "facetable" (able to be faceted on), it                |                                                          |                       |
+|                           | appears under "Browse/Search                           |                                                          |                       |
+|                           | Facets" when you edit                                  |                                                          |                       |
+|                           | "General Information" for a Dataverse                  |                                                          |                       |
+|                           | collection.                                            |                                                          |                       |
+|                           | Setting this value to TRUE generally makes             |                                                          |                       |
+|                           | sense for enumerated or controlled                     |                                                          |                       |
+|                           | vocabulary fields, fields representing                 |                                                          |                       |
+|                           | identifiers (IDs, names, email                         |                                                          |                       |
+|                           | addresses), and other fields that are                  |                                                          |                       |
+|                           | likely to share values across                          |                                                          |                       |
+|                           | entries. It is less likely to make sense               |                                                          |                       |
+|                           | for fields containing descriptions,                    |                                                          |                       |
+|                           | floating point numbers, and other                      |                                                          |                       |
+|                           | values that are likely to be unique.                   |                                                          |                       |
++---------------------------+--------------------------------------------------------+----------------------------------------------------------+-----------------------+
+| displayoncreate [5]_      | Designate fields that should display during            | TRUE (display during creation) or FALSE                  |                       |
+|                           | the creation of a new dataset, even before             | (don’t display during creation)                          |                       |
+|                           | the dataset is saved.                                  |                                                          |                       |
+|                           | Fields not so designated will not                      |                                                          |                       |
+|                           | be displayed until the dataset has been                |                                                          |                       |
+|                           | saved.                                                 |                                                          |                       |
++---------------------------+--------------------------------------------------------+----------------------------------------------------------+-----------------------+
+| required                  | For primitive fields, specify whether or not the       | For primitive fields, TRUE                               |                       |
+|                           | field is required.                                     | (required) or FALSE (optional).                          |                       |
+|                           |                                                        |                                                          |                       |
+|                           | For compound fields, also specify if one or more       | For compound fields:                                     |                       |
+|                           | subfields are required or conditionally required. At   |                                                          |                       |
+|                           | least one instance of a required field must be         | \• To make one or more                                   |                       |
+|                           | present. More than one instance of a field may be      | subfields optional, the parent                           |                       |
+|                           | allowed, depending on the value of allowmultiples.     | field and subfield(s) must be                            |                       |
+|                           |                                                        | FALSE (optional).                                        |                       |
+|                           |                                                        |                                                          |                       |
+|                           |                                                        | \• To make one or more subfields                         |                       |
+|                           |                                                        | required, the parent field and                           |                       |
+|                           |                                                        | the required subfield(s) must be                         |                       |
+|                           |                                                        | TRUE (required).                                         |                       |
+|                           |                                                        |                                                          |                       |
+|                           |                                                        | \• To make one or more subfields                         |                       |
+|                           |                                                        | conditionally required, make the                         |                       |
+|                           |                                                        | parent field FALSE (optional)                            |                       |
+|                           |                                                        | and make TRUE (required) any                             |                       |
+|                           |                                                        | subfield or subfields that are                           |                       |
+|                           |                                                        | required if any other subfields                          |                       |
+|                           |                                                        | are filled.                                              |                       |
++---------------------------+--------------------------------------------------------+----------------------------------------------------------+-----------------------+
+| parent                    | For subfields, specify the name of the parent or       | \• Must not result in a cyclical reference.              |                       |
+|                           | containing field.                                      |                                                          |                       |
+|                           |                                                        | \• Must reference an existing field in the same          |                       |
+|                           |                                                        | #metadataBlock.                                          |                       |
++---------------------------+--------------------------------------------------------+----------------------------------------------------------+-----------------------+
+| metadatablock_id          | Specify the name of the #metadataBlock that contains   | \• Must reference an existing #metadataBlock.            |                       |
+|                           | this field.                                            |                                                          |                       |
+|                           |                                                        | \• As a best practice, the value should reference the    |                       |
+|                           |                                                        | #metadataBlock in the current                            |                       |
+|                           |                                                        | definition (it is technically                            |                       |
+|                           |                                                        | possible to reference another                            |                       |
+|                           |                                                        | existing metadata block.)                                |                       |
++---------------------------+--------------------------------------------------------+----------------------------------------------------------+-----------------------+
+| termURI                   | Specify a global URI identifying this term in an       | For example, the existing citation                       |                       |
+|                           | external community vocabulary.                         | #metadataBlock defines the property                      |                       |
+|                           |                                                        | named 'title' as http://purl.org/dc/terms/title          |                       |
+|                           | This value overrides the default (created by appending | - i.e. indicating that it can                            |                       |
+|                           | the property name to the blockURI defined for the      | be interpreted as the Dublin Core term 'title'           |                       |
+|                           | #metadataBlock)                                        |                                                          |                       |
++---------------------------+--------------------------------------------------------+----------------------------------------------------------+-----------------------+
 
 #controlledVocabulary (enumerated) properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-+---------------------------------------------------------+---------------------------------------------------------+---------------------------------------------------------+
-| **Property**                                            | **Purpose**                                             | **Allowed values and restrictions**                     |
-+---------------------------------------------------------+---------------------------------------------------------+---------------------------------------------------------+
-| DatasetField                                            | Specifies the #datasetField to which                    | Must reference an existing                              |
-|                                                         | #datasetField to which this entry applies.              | #datasetField.                                          |
-|                                                         |                                                         | As a best practice, the value should                    |
-|                                                         |                                                         | reference a #datasetField in the                        |
-|                                                         |                                                         | current metadata  block definition. (It                 |
-|                                                         |                                                         | is technically possible to reference                    |
-|                                                         |                                                         | an existing #datasetField from                          |
-|                                                         |                                                         | another metadata block.)                                |
-+---------------------------------------------------------+---------------------------------------------------------+---------------------------------------------------------+
-| Value                                                   | A short display string, representing                    | Free text                                               |
-|                                                         | an enumerated value for this field. If                  |                                                         |
-|                                                         | the identifier property is empty,                       |                                                         |
-|                                                         | this value is used as the identifier.                   |                                                         |
-+---------------------------------------------------------+---------------------------------------------------------+---------------------------------------------------------+
-| identifier                                              | A string used to encode the selected                    | Free text                                               |
-|                                                         | enumerated value of a field. If this                    |                                                         |
-|                                                         | property is empty, the value of the                     |                                                         |
-|                                                         | “Value” field is used as the identifier.                |                                                         |
-+---------------------------------------------------------+---------------------------------------------------------+---------------------------------------------------------+
-| displayOrder                                            | Control the order in which the enumerated               | Non-negative integer.                                   |
-|                                                         | values are displayed for selection.                     |                                                         |
-+---------------------------------------------------------+---------------------------------------------------------+---------------------------------------------------------+
++--------------+--------------------------------------------+-----------------------------------------+
+| **Property** | **Purpose**                                | **Allowed values and restrictions**     |
++--------------+--------------------------------------------+-----------------------------------------+
+| DatasetField | Specifies the #datasetField to which       | Must reference an existing              |
+|              | #datasetField to which this entry applies. | #datasetField.                          |
+|              |                                            | As a best practice, the value should    |
+|              |                                            | reference a #datasetField in the        |
+|              |                                            | current metadata  block definition. (It |
+|              |                                            | is technically possible to reference    |
+|              |                                            | an existing #datasetField from          |
+|              |                                            | another metadata block.)                |
++--------------+--------------------------------------------+-----------------------------------------+
+| Value        | A short display string, representing       | Free text                               |
+|              | an enumerated value for this field. If     |                                         |
+|              | the identifier property is empty,          |                                         |
+|              | this value is used as the identifier.      |                                         |
++--------------+--------------------------------------------+-----------------------------------------+
+| identifier   | A string used to encode the selected       | Free text                               |
+|              | enumerated value of a field. If this       |                                         |
+|              | property is empty, the value of the        |                                         |
+|              | “Value” field is used as the identifier.   |                                         |
++--------------+--------------------------------------------+-----------------------------------------+
+| displayOrder | Control the order in which the enumerated  | Non-negative integer.                   |
+|              | values are displayed for selection.        |                                         |
++--------------+--------------------------------------------+-----------------------------------------+
 
 FieldType definitions
 ~~~~~~~~~~~~~~~~~~~~~
 
-+---------------------------------------------------------+---------------------------------------------------------+
-| **Fieldtype**                                           | **Definition**                                          |
-+---------------------------------------------------------+---------------------------------------------------------+
-| none                                                    | Used for compound fields, in which                      |
-|                                                         | case the parent field would have                        |
-|                                                         | no value and display no data                            |
-|                                                         | entry control.                                          |
-+---------------------------------------------------------+---------------------------------------------------------+
-| date                                                    | A date, expressed in one of three                       |
-|                                                         | resolutions of the form                                 |
-|                                                         | YYYY-MM-DD, YYYY-MM, or YYYY.                           |
-+---------------------------------------------------------+---------------------------------------------------------+
-| email                                                   | A valid email address. Not                              |
-|                                                         | indexed for privacy reasons.                            |
-+---------------------------------------------------------+---------------------------------------------------------+
-| text                                                    | Any text other than newlines may                        |
-|                                                         | be entered into this field.                             |
-+---------------------------------------------------------+---------------------------------------------------------+
-| textbox                                                 | Any text may be entered. For                            |
-|                                                         | input, the Dataverse Software                           |
-|                                                         | presents a                                              |
-|                                                         | multi-line area that accepts                            |
-|                                                         | newlines. While any HTML is                             |
-|                                                         | permitted, only a subset of HTML                        |
-|                                                         | tags will be rendered in the UI.                        |
-|                                                         | See the                                                 |
-|                                                         | :ref:`supported-html-fields`                            |
-|                                                         | section of the Dataset + File                           |
-|                                                         | Management page in the User Guide.                      |
-+---------------------------------------------------------+---------------------------------------------------------+
-| url                                                     | If not empty, field must contain                        |
-|                                                         | a valid URL.                                            |
-+---------------------------------------------------------+---------------------------------------------------------+
-| int                                                     | An integer value destined for a                         |
-|                                                         | numeric field.                                          |
-+---------------------------------------------------------+---------------------------------------------------------+
-| float                                                   | A floating point number destined                        |
-|                                                         | for a numeric field.                                    |
-+---------------------------------------------------------+---------------------------------------------------------+
++---------------+------------------------------------+
+| **Fieldtype** | **Definition**                     |
++---------------+------------------------------------+
+| none          | Used for compound fields, in which |
+|               | case the parent field would have   |
+|               | no value and display no data       |
+|               | entry control.                     |
++---------------+------------------------------------+
+| date          | A date, expressed in one of three  |
+|               | resolutions of the form            |
+|               | YYYY-MM-DD, YYYY-MM, or YYYY.      |
++---------------+------------------------------------+
+| email         | A valid email address. Not         |
+|               | indexed for privacy reasons.       |
++---------------+------------------------------------+
+| text          | Any text other than newlines may   |
+|               | be entered into this field.        |
++---------------+------------------------------------+
+| textbox       | Any text may be entered. For       |
+|               | input, the Dataverse Software      |
+|               | presents a                         |
+|               | multi-line area that accepts       |
+|               | newlines. While any HTML is        |
+|               | permitted, only a subset of HTML   |
+|               | tags will be rendered in the UI.   |
+|               | See the                            |
+|               | :ref:`supported-html-fields`       |
+|               | section of the Dataset + File      |
+|               | Management page in the User Guide. |
++---------------+------------------------------------+
+| url           | If not empty, field must contain   |
+|               | a valid URL.                       |
++---------------+------------------------------------+
+| int           | An integer value destined for a    |
+|               | numeric field.                     |
++---------------+------------------------------------+
+| float         | A floating point number destined   |
+|               | for a numeric field.               |
++---------------+------------------------------------+
 
 displayFormat variables
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 These are common ways to use the displayFormat to control how values are displayed in the UI. This list is not exhaustive.
 
-+---------------------------------------------------------+---------------------------------------------------------+
-| **Variable**                                            | **Description**                                         |
-+---------------------------------------------------------+---------------------------------------------------------+
-| (blank)                                                 | The displayFormat is left blank                         |
-|                                                         | for primitive fields (e.g.                              |
-|                                                         | subtitle) and fields that do not                        |
-|                                                         | take values (e.g. author), since                        |
-|                                                         | displayFormats do not work for                          |
-|                                                         | these fields.                                           |
-+---------------------------------------------------------+---------------------------------------------------------+
-| #VALUE                                                  | The value of the field (instance level).                |
-+---------------------------------------------------------+---------------------------------------------------------+
-| #NAME                                                   | The name of the field (class level).                    |
-+---------------------------------------------------------+---------------------------------------------------------+
-| #EMAIL                                                  | For displaying emails.                                  |
-+---------------------------------------------------------+---------------------------------------------------------+
-| <a href="#VALUE">#VALUE</a>                             | For displaying the value as a                           |
-|                                                         | link (if the value entered is a                         |
-|                                                         | link).                                                  |
-+---------------------------------------------------------+---------------------------------------------------------+
-| <a href='URL/#VALUE'>#VALUE</a>                         | For displaying the value as a                           |
-|                                                         | link, with the value included in                        |
-|                                                         | the URL (e.g. if URL is                                 |
-|                                                         | \http://emsearch.rutgers.edu/atla\                      |
-|                                                         | \s/#VALUE_summary.html,                                 |
-|                                                         | and the value entered is 1001,                          |
-|                                                         | the field is displayed as                               |
-|                                                         | `1001 <http://emsearch.rutgers.ed                       |
-|                                                         | u/atlas/1001_summary.html>`__                           |
-|                                                         | (hyperlinked to                                         |
-|                                                         | http://emsearch.rutgers.edu/atlas/1001_summary.html)).  |
-+---------------------------------------------------------+---------------------------------------------------------+
-| <img src="#VALUE" alt="#NAME"                           | For displaying the image of an                          |
-| class="metadata-logo"/><br/>                            | entered image URL (used to                              |
-|                                                         | display images in the producer                          |
-|                                                         | and distributor logos metadata                          |
-|                                                         | fields).                                                |
-+---------------------------------------------------------+---------------------------------------------------------+
-| #VALUE:                                                 | Appends and/or prepends                                 |
-|                                                         | characters to the value of the                          |
-| \- #VALUE:                                              | field. e.g. if the displayFormat                        |
-|                                                         | for the distributorAffiliation is                       |
-| (#VALUE)                                                | (#VALUE) (wrapped with parens)                          |
-|                                                         | and the value entered                                   |
-|                                                         | is University of North                                  |
-|                                                         | Carolina, the field is displayed                        |
-|                                                         | in the UI as (University of                             |
-|                                                         | North Carolina).                                        |
-+---------------------------------------------------------+---------------------------------------------------------+
-|    ;                                                    | Displays the character (e.g.                            |
-|                                                         | semicolon, comma) between the                           |
-|    :                                                    | values of fields within                                 |
-|                                                         | compound fields. For example,                           |
-|    ,                                                    | if the displayFormat for the                            |
-|                                                         | compound field “series” is a                            |
-|                                                         | colon, and if the value                                 |
-|                                                         | entered for seriesName is                               |
-|                                                         | IMPs and for                                            |
-|                                                         | seriesInformation is A                                  |
-|                                                         | collection of NMR data, the                             |
-|                                                         | compound field is displayed in                          |
-|                                                         | the UI as IMPs: A                                       |
-|                                                         | collection of NMR data.                                 |
-+---------------------------------------------------------+---------------------------------------------------------+
++---------------------------------+--------------------------------------------------------+
+| **Variable**                    | **Description**                                        |
++---------------------------------+--------------------------------------------------------+
+| (blank)                         | The displayFormat is left blank                        |
+|                                 | for primitive fields (e.g.                             |
+|                                 | subtitle) and fields that do not                       |
+|                                 | take values (e.g. author), since                       |
+|                                 | displayFormats do not work for                         |
+|                                 | these fields.                                          |
++---------------------------------+--------------------------------------------------------+
+| #VALUE                          | The value of the field (instance level).               |
++---------------------------------+--------------------------------------------------------+
+| #NAME                           | The name of the field (class level).                   |
++---------------------------------+--------------------------------------------------------+
+| #EMAIL                          | For displaying emails.                                 |
++---------------------------------+--------------------------------------------------------+
+| <a href="#VALUE">#VALUE</a>     | For displaying the value as a                          |
+|                                 | link (if the value entered is a                        |
+|                                 | link).                                                 |
++---------------------------------+--------------------------------------------------------+
+| <a href='URL/#VALUE'>#VALUE</a> | For displaying the value as a                          |
+|                                 | link, with the value included in                       |
+|                                 | the URL (e.g. if URL is                                |
+|                                 | \http://emsearch.rutgers.edu/atla\                     |
+|                                 | \s/#VALUE_summary.html,                                |
+|                                 | and the value entered is 1001,                         |
+|                                 | the field is displayed as                              |
+|                                 | `1001 <http://emsearch.rutgers.ed                      |
+|                                 | u/atlas/1001_summary.html>`__                          |
+|                                 | (hyperlinked to                                        |
+|                                 | http://emsearch.rutgers.edu/atlas/1001_summary.html)). |
++---------------------------------+--------------------------------------------------------+
+| <img src="#VALUE" alt="#NAME"   | For displaying the image of an                         |
+| class="metadata-logo"/><br/>    | entered image URL (used to                             |
+|                                 | display images in the producer                         |
+|                                 | and distributor logos metadata                         |
+|                                 | fields).                                               |
++---------------------------------+--------------------------------------------------------+
+| #VALUE:                         | Appends and/or prepends                                |
+|                                 | characters to the value of the                         |
+| \- #VALUE:                      | field. e.g. if the displayFormat                       |
+|                                 | for the distributorAffiliation is                      |
+| (#VALUE)                        | (#VALUE) (wrapped with parens)                         |
+|                                 | and the value entered                                  |
+|                                 | is University of North                                 |
+|                                 | Carolina, the field is displayed                       |
+|                                 | in the UI as (University of                            |
+|                                 | North Carolina).                                       |
++---------------------------------+--------------------------------------------------------+
+| ;                               | Displays the character (e.g.                           |
+|                                 | semicolon, comma) between the                          |
+| :                               | values of fields within                                |
+|                                 | compound fields. For example,                          |
+| ,                               | if the displayFormat for the                           |
+|                                 | compound field “series” is a                           |
+|                                 | colon, and if the value                                |
+|                                 | entered for seriesName is                              |
+|                                 | IMPs and for                                           |
+|                                 | seriesInformation is A                                 |
+|                                 | collection of NMR data, the                            |
+|                                 | compound field is displayed in                         |
+|                                 | the UI as IMPs: A                                      |
+|                                 | collection of NMR data.                                |
++---------------------------------+--------------------------------------------------------+
 
 Metadata Block Setup
 --------------------

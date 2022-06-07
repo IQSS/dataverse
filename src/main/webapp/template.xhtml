@@ -92,7 +92,7 @@
                                 </div>
                             </div>
                         </div>
-                        <ui:fragment rendered="#{TemplatePage.editMode == 'METADATA' or TemplatePage.editMode == 'CREATE'}">
+                        <ui:fragment rendered="#{TemplatePage.editMode == 'METADATA' or TemplatePage.editMode == 'CLONE' or TemplatePage.editMode == 'CREATE'}">
                             <ui:include src="metadataFragment.xhtml" >
                                 <ui:param name="datasetPage" value="false"/>
                                 <ui:param name="templatePage" value="true"/>
@@ -118,11 +118,13 @@
                         </p:commandButton>
                         <p:commandButton styleClass="btn btn-default" action="#{TemplatePage.save('')}" update="@form,messagePanel"
                                          value="#{TemplatePage.editMode == 'LICENSEADD' ? bundle['dataset.manageTemplates.saveNewTerms'] : bundle.saveChanges}"
-                                         rendered="#{TemplatePage.editMode == 'METADATA' or TemplatePage.editMode == 'LICENSE' or TemplatePage.editMode == 'LICENSEADD'}">
+                                         rendered="#{TemplatePage.editMode == 'METADATA'  or TemplatePage.editMode == 'CLONE' or TemplatePage.editMode == 'LICENSE' or TemplatePage.editMode == 'LICENSEADD'}">
                             <f:ajax onerror="window.scrollTo(0, 0)"/>
                         </p:commandButton>
-                        <h:button styleClass="btn btn-link" value="#{bundle.cancel}" 
+                        <h:button styleClass="btn btn-link" value="#{bundle.cancel}" rendered="#{TemplatePage.editMode != 'CLONE'}"
                                   outcome="/manage-templates.xhtml?dataverseId=#{TemplatePage.dataverse.id}"></h:button>
+                        <p:commandButton styleClass="btn btn-link" value="#{bundle.cancel}" rendered="#{TemplatePage.editMode == 'CLONE'}"
+                                         action="#{TemplatePage.deleteTemplate(TemplatePage.templateId)}"    ></p:commandButton>          
                     </div>
                 </h:form>
             </ui:define>

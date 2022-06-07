@@ -20,7 +20,7 @@
     <properties>
         <skipUnitTests>false</skipUnitTests>
         <reload4j.version>1.2.18.4</reload4j.version>
-        <flyway.version>5.2.4</flyway.version>
+        <flyway.version>8.5.10</flyway.version>
         <jhove.version>1.20.1</jhove.version>
         <jacoco.version>0.8.7</jacoco.version>
         <poi.version>5.2.1</poi.version>
@@ -190,7 +190,7 @@
         <dependency>
             <groupId>org.primefaces</groupId>
             <artifactId>primefaces</artifactId>
-            <version>10.0.0</version>
+            <version>11.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.primefaces.themes</groupId>
