@@ -1,0 +1,1 @@
+ALTER TABLE template ADD COLUMN IF NOT EXISTS instructions TEXT;
