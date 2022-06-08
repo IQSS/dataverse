@@ -34,6 +34,20 @@ import javax.ws.rs.HttpMethod;
 public class ExternalToolHandler {
 
     /**
+     * @return the allowedUrls
+     */
+    public String getAllowedUrls() {
+        return allowedUrls;
+    }
+
+    /**
+     * @param allowedUrls the allowedUrls to set
+     */
+    public void setAllowedUrls(String allowedUrls) {
+        this.allowedUrls = allowedUrls;
+    }
+
+    /**
      * @param user the user to set
      */
     public void setUser(String user) {
@@ -53,6 +67,7 @@ public class ExternalToolHandler {
     private String toolContext;
     private String user;
     private String siteUrl;
+    private String allowedUrls;
     
     /**
      * File level tool
@@ -209,6 +224,8 @@ public class ExternalToolHandler {
                 }
             case LOCALE_CODE:
                 return key + "=" + getLocaleCode();
+            case ALLOWED_URLS:
+                return key + "=" + getAllowedUrls();                    
             default:
                 break;
         }

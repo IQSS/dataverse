@@ -49,6 +49,7 @@ import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
@@ -419,10 +420,28 @@ public abstract class AbstractApiBean {
             } else {
                 throw new WrappedResponse(badWFKey(wfid));
             }
+        } else {
+            AuthenticatedUser authUser = getAuthenticatedUserFromSignedUrl();
+            if (authUser != null) {
+                return authUser;
+            } 
         }
         //Just send info about the apiKey - workflow users will learn about invocationId elsewhere
         throw new WrappedResponse(badApiKey(null));
     }
+    
+    private AuthenticatedUser getAuthenticatedUserFromSignedUrl() {
+        AuthenticatedUser authUser = null;
+        String signedUrl = httpRequest.getRequestURL().toString();
+        String user = httpRequest.getParameter("user");
+        String method = httpRequest.getMethod();
+        String key = httpRequest.getParameter("token");
+        boolean validated = UrlSignerUtil.isValidUrl(signedUrl, method, user, key);
+        if (validated){
+            authUser = authSvc.getAuthenticatedUser(user);
+        }     
+        return authUser;
+    }    
 
     protected Dataverse findDataverseOrDie( String dvIdtf ) throws WrappedResponse {
         Dataverse dv = findDataverse(dvIdtf);

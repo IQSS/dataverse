@@ -41,6 +41,7 @@ public class ExternalTool implements Serializable {
     public static final String TOOL_PARAMETERS = "toolParameters";
     public static final String CONTENT_TYPE = "contentType";
     public static final String TOOL_NAME = "toolName";
+    public static final String ALLOWED_URLS = "allowedUrls";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -98,6 +99,13 @@ public class ExternalTool implements Serializable {
     private String contentType;
 
     /**
+     * Path for retrieving data through the REST api. Used to build signedUrls
+     * for POST headers, as in DPCreator
+     */
+    @Column(nullable = true, columnDefinition = "TEXT")
+    private String allowedUrls;
+
+    /**
      * This default constructor is only here to prevent this error at
      * deployment:
      *
@@ -120,6 +128,18 @@ public class ExternalTool implements Serializable {
         this.toolUrl = toolUrl;
         this.toolParameters = toolParameters;
         this.contentType = contentType;
+    }
+
+    public ExternalTool(String displayName, String toolName, String description, List<ExternalToolType> externalToolTypes, Scope scope, String toolUrl, String toolParameters, String contentType, String allowedUrls) {
+        this.displayName = displayName;
+        this.toolName = toolName;
+        this.description = description;
+        this.externalToolTypes = externalToolTypes;
+        this.scope = scope;
+        this.toolUrl = toolUrl;
+        this.toolParameters = toolParameters;
+        this.contentType = contentType;
+        this.allowedUrls = allowedUrls;
     }
 
     public enum Type {
@@ -273,6 +293,9 @@ public class ExternalTool implements Serializable {
         if (getContentType() != null) {
             jab.add(CONTENT_TYPE, getContentType());
         }
+        if (getAllowedUrls()!= null) {
+            jab.add(ALLOWED_URLS,getAllowedUrls());
+        }
         return jab;
     }
 
@@ -292,7 +315,8 @@ public class ExternalTool implements Serializable {
         DATASET_PID("datasetPid"),
         DATASET_VERSION("datasetVersion"),
         FILE_METADATA_ID("fileMetadataId"),
-        LOCALE_CODE("localeCode");
+        LOCALE_CODE("localeCode"),
+        ALLOWED_URLS("allowedUrls");
 
         private final String text;
         private final String START = "{";
@@ -353,6 +377,20 @@ public class ExternalTool implements Serializable {
             displayName = this.getDisplayName();
         }
         return displayName;
+    }
+
+    /**
+     * @return the allowedUrls
+     */
+    public String getAllowedUrls() {
+        return allowedUrls;
+    }
+
+    /**
+     * @param allowedUrls the allowedUrls to set
+     */
+    public void setAllowedUrls(String allowedUrls) {
+        this.allowedUrls = allowedUrls;
     }
 
 
