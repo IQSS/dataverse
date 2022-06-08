@@ -5955,6 +5955,6 @@ public class DatasetPage implements java.io.Serializable {
     
     //Determines whether this Dataset uses a public store and therefore doesn't support embargoed or restricted files
     public boolean isHasPublicStore() {
-        return settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, StorageIO.isPublicStore(dataset.getStorageDriverId()));
+        return settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, StorageIO.isPublicStore(dataset.getEffectiveStorageDriverId()));
     }
 }
