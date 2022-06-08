@@ -41,7 +41,8 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
-    'sphinx.ext.graphviz'
+    'sphinx.ext.graphviz',
+    'sphinxcontrib.icon',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -238,6 +239,10 @@ html_last_updated_fmt = '%b %d, %Y'
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
 #html_use_smartypants = True
+
+# Enable and customize the permanent headerlinks with a nice icon (chain symbol from FontAwesome)
+html_permalinks = True
+html_permalinks_icon = "<i class=\"fas fa-link\"></i>"
 
 # Custom sidebar templates, maps document names to template names.
 #html_sidebars = {}

@@ -473,13 +473,13 @@ Next you need to figure out the alias or database id of the "parent" Dataverse c
   export PARENT=root
   export SERVER_URL=https://demo.dataverse.org
 
-  curl -H X-Dataverse-key:$API_TOKEN -X POST "$SERVER_URL/api/dataverses/$PARENT/datasets" --upload-file dataset-finch1.json
+  curl -H X-Dataverse-key:$API_TOKEN -X POST "$SERVER_URL/api/dataverses/$PARENT/datasets" --upload-file dataset-finch1.json -H 'Content-type:application/json'
 
 The fully expanded example above (without the environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/dataverses/root/datasets" --upload-file "dataset-finch1.json"
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/dataverses/root/datasets" --upload-file "dataset-finch1.json" -H 'Content-type:application/json'
 
 You should expect an HTTP 200 ("OK") response and JSON indicating the database ID and Persistent ID (PID such as DOI or Handle) that has been assigned to your newly created dataset.
 
@@ -2836,13 +2836,90 @@ Show Info About Single Metadata Block
 Notifications
 -------------
 
+See :ref:`account-notifications` in the User Guide for an overview. For a list of all the notification types mentioned below (e.g. ASSIGNROLE), see :ref:`mute-notifications` in the Admin Guide.
+
 Get All Notifications by User
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Each user can get a dump of their notifications by passing in their API token::
+Each user can get a dump of their notifications by passing in their API token:
 
-    curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/notifications/all
-    
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/notifications/all
+
+Delete Notification by User
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Each user can delete notifications by passing in their API token and specifying notification ID (e.g., 555):
+
+.. code-block:: bash
+
+  export NOTIFICATION_ID=555
+
+  curl -H X-Dataverse-key:$API_TOKEN -X DELETE "$SERVER_URL/api/notifications/$NOTIFICATION_ID"
+
+Get All Muted In-app Notifications by User
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Each user can get a list of their muted in-app notification types by passing in their API token:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:$API_TOKEN -X GET "$SERVER_URL/api/notifications/mutedNotifications"
+
+Mute In-app Notification by User
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Each user can mute in-app notifications by passing in their API token and specifying notification type to be muted (e.g., ASSIGNROLE):
+
+.. code-block:: bash
+
+  export NOTIFICATION_TYPE=ASSIGNROLE
+
+  curl -H X-Dataverse-key:$API_TOKEN -X PUT "$SERVER_URL/api/notifications/mutedNotifications/$NOTIFICATION_TYPE"
+
+Unmute In-app Notification by User
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Each user can unmute in-app notifications by passing in their API token and specifying notification type to be unmuted (e.g., ASSIGNROLE):
+
+.. code-block:: bash
+
+  export NOTIFICATION_TYPE=ASSIGNROLE
+
+  curl -H X-Dataverse-key:$API_TOKEN -X DELETE "$SERVER_URL/api/notifications/mutedNotifications/$NOTIFICATION_TYPE"
+
+Get All Muted Email Notifications by User
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Each user can get a list of their muted email notification types by passing in their API token:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:$API_TOKEN -X GET "$SERVER_URL/api/notifications/mutedEmails"
+
+Mute Email Notification by User
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Each user can mute email notifications by passing in their API token and specifying notification type to be muted (e.g., ASSIGNROLE):
+
+.. code-block:: bash
+
+  export NOTIFICATION_TYPE=ASSIGNROLE
+
+  curl -H X-Dataverse-key:$API_TOKEN -X PUT "$SERVER_URL/api/notifications/mutedEmails/$NOTIFICATION_TYPE"
+
+Unmute Email Notification by User
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Each user can unmute email notifications by passing in their API token and specifying notification type to be unmuted (e.g., ASSIGNROLE):
+
+.. code-block:: bash
+
+  export NOTIFICATION_TYPE=ASSIGNROLE
+
+  curl -H X-Dataverse-key:$API_TOKEN -X DELETE "$SERVER_URL/api/notifications/mutedEmails/$NOTIFICATION_TYPE"
+
 .. _User Information:
 
 User Information
@@ -3806,3 +3883,36 @@ Superusers can delete a license that is not in use by the license ``$ID``:
 .. code-block:: bash
 
   curl -X DELETE -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/licenses/$ID
+  
+List Dataset Templates
+~~~~~~~~~~~~~~~~~~~~~~
+
+List all templates in the system. ::
+
+    GET http://$SERVER/api/admin/templates
+    
+List templates in a given dataverse by the dataverse's alias or id. ::
+
+    GET http://$SERVER/api/admin/templates/{alias or id}
+
+    
+Delete Dataset Template
+~~~~~~~~~~~~~~~~~~~~~~~
+
+A curl example using an ``ID``
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+
+  curl -X DELETE $SERVER_URL/api/admin/template/$ID
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -X DELETE https://demo.dataverse.org/api/admin/template/24
+  
+  
+  
