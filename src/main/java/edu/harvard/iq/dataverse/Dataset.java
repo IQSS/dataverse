@@ -33,7 +33,6 @@ import javax.persistence.StoredProcedureParameter;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
@@ -152,6 +151,19 @@ public class Dataset extends DvObjectContainer {
     public void setCitationDateDatasetFieldType(DatasetFieldType citationDateDatasetFieldType) {
         this.citationDateDatasetFieldType = citationDateDatasetFieldType;
     }    
+
+    
+    @ManyToOne
+    @JoinColumn(name="template_id",nullable = true)
+    private Template template;
+    
+    public Template getTemplate() {
+        return template;
+    }
+
+    public void setTemplate(Template template) {
+        this.template = template;
+    }
 
     public Dataset() {
         DatasetVersion datasetVersion = new DatasetVersion();

@@ -38,7 +38,6 @@ import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 @Path("inbox")
@@ -115,7 +114,7 @@ public class LDNInbox extends AbstractApiBean {
                     if (citingType.startsWith(JsonLDNamespace.schema.getUrl())) {
                         citingType = citingType.replace(JsonLDNamespace.schema.getUrl(), "");
                     }
-                    if(msgObject.containsKey(JsonLDTerm.schemaOrg("name").getUrl())) {
+                    if (msgObject.containsKey(JsonLDTerm.schemaOrg("name").getUrl())) {
                         name = msgObject.getString(JsonLDTerm.schemaOrg("name").getUrl());
                     }
                     logger.fine("Citing Type: " + citingType);
@@ -142,7 +141,8 @@ public class LDNInbox extends AbstractApiBean {
                                 Dataset dataset = datasetSvc.findByGlobalId(pid);
                                 if (dataset != null) {
                                     JsonObject citingResource = Json.createObjectBuilder().add("@id", citingPID)
-                                            .add("@type", citingType).add("relationship", relationship).add("name", name).build();
+                                            .add("@type", citingType).add("relationship", relationship)
+                                            .add("name", name).build();
                                     StringWriter sw = new StringWriter(128);
                                     try (JsonWriter jw = Json.createWriter(sw)) {
                                         jw.write(citingResource);
@@ -171,10 +171,6 @@ public class LDNInbox extends AbstractApiBean {
                                             });
                                     sent = true;
                                 }
-                                // .forEach( au -> userNotificationService.sendNotificationInNewTransaction(au,
-                                // timestamp, type, dataset.getLatestVersion().getId()) );
-
-// Subject: <<<Root: You have been assigned a role>>>. Body: Root Support, the Root has just been notified that the http://schema.org/ScholarlyArticle <a href={3}/dataset.xhtml?persistentId={4}>http://ec2-3-236-45-73.compute-1.amazonaws.com</a> cites "<a href={5}>Une Démonstration</a>.<br><br>You may contact us for support at qqmyers@hotmail.com.<br><br>Thank you,<br>Root Support
                             }
                         }
                     }
@@ -190,15 +186,10 @@ public class LDNInbox extends AbstractApiBean {
                             "Unable to process message. Please contact the administrators.");
                 }
             }
-        } else
-
-        {
+        } else {
             logger.info("Ignoring message from IP address: " + origin.toString());
             throw new ForbiddenException("Inbox does not acept messages from this address");
         }
-
-        return
-
-        ok("Message Received");
+        return ok("Message Received");
     }
 }

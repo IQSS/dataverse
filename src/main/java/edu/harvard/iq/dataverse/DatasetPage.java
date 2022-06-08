@@ -1662,15 +1662,7 @@ public class DatasetPage implements java.io.Serializable {
     public void updateSelectedTemplate(ValueChangeEvent event) {
 
         selectedTemplate = (Template) event.getNewValue();
-        if (selectedTemplate != null) {
-            //then create new working version from the selected template
-            workingVersion.updateDefaultValuesFromTemplate(selectedTemplate);
-            updateDatasetFieldInputLevels();
-        } else {
-            workingVersion.initDefaultValues(licenseServiceBean.getDefault());
-            updateDatasetFieldInputLevels();
-        }
-        resetVersionUI();
+
     }
 
     /*
@@ -1764,6 +1756,22 @@ public class DatasetPage implements java.io.Serializable {
 
     public void handleChangeButton() {
 
+        if (selectedTemplate != null) {
+            //then create new working version from the selected template
+            workingVersion.updateDefaultValuesFromTemplate(selectedTemplate);
+            updateDatasetFieldInputLevels();
+        } else {
+            workingVersion.initDefaultValues(licenseServiceBean.getDefault());
+            updateDatasetFieldInputLevels();
+        }
+        dataset.setTemplate(selectedTemplate);
+        /*
+        Issue 8646: necessary for the access popup which is shared by the dataset page and the file page
+        */
+        setFileAccessRequest(workingVersion.getTermsOfUseAndAccess().isFileAccessRequest());
+        setTermsOfAccess(workingVersion.getTermsOfUseAndAccess().getTermsOfAccess());
+        
+        resetVersionUI();
     }
 
     public boolean isShapefileType(FileMetadata fm) {
@@ -2044,6 +2052,8 @@ public class DatasetPage implements java.io.Serializable {
                         selectedTemplate = testT;
                     }
                 }
+                //Initalize with the default if there is one 
+                dataset.setTemplate(selectedTemplate);
                 workingVersion = dataset.getEditVersion(selectedTemplate, null);
                 updateDatasetFieldInputLevels();
             } else {
@@ -3554,6 +3564,7 @@ public class DatasetPage implements java.io.Serializable {
             if (editMode == EditMode.CREATE) {
                 //Lock the metadataLanguage once created
                 dataset.setMetadataLanguage(getEffectiveMetadataLanguage());
+                //ToDo - could drop use of selectedTemplate and just use the persistent dataset.getTemplate() 
                 if ( selectedTemplate != null ) {
                     if ( isSessionUserAuthenticated() ) {
                         cmd = new CreateNewDatasetCommand(dataset, dvRequestService.getDataverseRequest(), false, selectedTemplate);

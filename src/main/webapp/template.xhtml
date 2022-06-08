@@ -47,13 +47,13 @@
                             <h:outputText value="#{bundle['dataset.template.returnBtn']}"/>
                         </h:outputLink>
                         
-                        <h:outputText value="#{TeplatePage.template.name}"/>
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{TemplatePage.selectedTabIndex}">
                             <p:tab id="metadataMapTab" title="#{bundle['file.dataFilesTab.metadata.header']}"
                                    rendered="#{empty TemplatePage.editMode or TemplatePage.editMode == 'METADATA'}">
                                 <ui:include src="metadataFragment.xhtml">
                                     <ui:param name="datasetPage" value="false"/>
                                     <ui:param name="templatePage" value="true"/>
+                                    <ui:param name="template" value="#{TemplatePage.template}"/>
                                     <ui:param name="editMode" value="#{!empty TemplatePage.editMode ? 'METADATA' : ''}"/>
                                     <ui:param name="metadataBlocks" value="#{!empty TemplatePage.editMode ? TemplatePage.template.metadataBlocksForEdit.entrySet().toArray() : TemplatePage.template.metadataBlocksForView.entrySet().toArray()}"/>   
                                 </ui:include>
@@ -96,6 +96,7 @@
                             <ui:include src="metadataFragment.xhtml" >
                                 <ui:param name="datasetPage" value="false"/>
                                 <ui:param name="templatePage" value="true"/>
+                                <ui:param name="template" value="#{TemplatePage.template}"/>
                                 <ui:param name="editMode" value="#{!empty TemplatePage.editMode ? 'METADATA' : ''}"/>
                                 <ui:param name="metadataBlocks" value="#{!empty TemplatePage.editMode ? TemplatePage.template.metadataBlocksForEdit.entrySet().toArray() : TemplatePage.template.metadataBlocksForView.entrySet().toArray()}"/>   
                             </ui:include>  
