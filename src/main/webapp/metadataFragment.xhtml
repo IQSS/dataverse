@@ -315,7 +315,7 @@
                                                   <p:inputText value="#{TemplatePage.template.instructionsMap[dsf.datasetFieldType.name]}"/>
                                                 </p:inplace>
                                             </ui:fragment>
-                                           <h:outputText class="col-sm-7" value="#{template.getInstructionsFor(dsf.datasetFieldType.name)}" rendered="#{!templatePage and template != null and ! empty template.getInstructionsFor(dsf.datasetFieldType.name)}"/>
+                                           <h:outputText value="#{template.getInstructionsFor(dsf.datasetFieldType.name)}" rendered="#{!templatePage and template != null and ! empty template.getInstructionsFor(dsf.datasetFieldType.name)}"/>
                                           </div>
                                         </div> 
                                         <div class="col-sm-3"/>
