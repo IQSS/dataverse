@@ -1,0 +1,2 @@
+hash-line-1  data/file-line-1.txt
+hash-line-2  data/file-line-2.txt
