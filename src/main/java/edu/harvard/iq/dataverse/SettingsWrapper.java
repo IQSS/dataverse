@@ -389,25 +389,6 @@ public class SettingsWrapper implements java.io.Serializable {
         return configuredLocales;
     }
     
-    private void initLocaleSettings() {
-        
-        configuredLocales = new LinkedHashMap<>();
-        
-        try {
-            JSONArray entries = new JSONArray(getValueForKey(SettingsServiceBean.Key.Languages, "[]"));
-            for (Object obj : entries) {
-                JSONObject entry = (JSONObject) obj;
-                String locale = entry.getString("locale");
-                String title = entry.getString("title");
-
-                configuredLocales.put(locale, title);
-            }
-        } catch (JSONException e) {
-            //e.printStackTrace();
-            // do we want to know? - probably not
-        }
-    }
-    
     public String getHypothesisKey() {
 
         String configuredHypothesisKey = System.getProperty("dataverse.hypothesis.key");
