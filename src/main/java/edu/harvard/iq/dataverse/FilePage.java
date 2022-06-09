@@ -118,9 +118,6 @@ public class FilePage implements java.io.Serializable {
     @EJB
     IngestServiceBean ingestService;
     @EJB
-    DatasetServiceBean datasetService;
-    
-    @EJB
     SystemConfig systemConfig;
 
 
