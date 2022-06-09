@@ -87,6 +87,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.activation.MimetypesFileTypeMap;
 import javax.ejb.EJBException;
+import javax.enterprise.inject.spi.CDI;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -1153,10 +1154,7 @@ public class FileUtil implements java.io.Serializable  {
                     return result;
                 }
             }
-        }
-    }else
-
-    {
+        } else {
             // Default to suppliedContentType if set or the overall undetermined default if a contenttype isn't supplied
             finalType = StringUtils.isBlank(suppliedContentType) ? FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT : suppliedContentType;
             String type = determineFileTypeByExtension(fileName);
