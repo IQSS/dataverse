@@ -40,7 +40,7 @@ public class ClientHarvestRun implements Serializable {
         this.id = id;
     }
 
-    public enum RunResultType { SUCCESS, FAILURE, INPROGRESS };
+    public enum RunResultType { SUCCESS, FAILURE, INPROGRESS, STOPPING, ABORTED };
     
     private static String RESULT_LABEL_SUCCESS = "SUCCESS";
     private static String RESULT_LABEL_FAILURE = "FAILED";
@@ -127,7 +127,23 @@ public class ClientHarvestRun implements Serializable {
     public void setInProgress() {
         harvestResult = RunResultType.INPROGRESS;
     }
+    
+    public void markAsStopping() {
+        harvestResult = RunResultType.STOPPING;
+    }
+    
+    public boolean isStopping() {
+        return harvestResult == RunResultType.STOPPING;
+    }
+    
+    public void markAsAborted() {
+        harvestResult = RunResultType.ABORTED;
+    }
 
+    public boolean isAborted() {
+        return harvestResult == RunResultType.ABORTED;
+    }
+    
     // Time of this harvest attempt:
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date startTime;
