@@ -44,7 +44,7 @@ Adding a New Dataset
 #. Navigate to the Dataverse collection in which you want to add a dataset.
 #. Click on the "Add Data" button and select "New Dataset" in the dropdown menu. **Note:** If you are on the root Dataverse collection, your My Data page or click the "Add Data" link in the navbar, the dataset you create will be hosted in the root Dataverse collection. You can change this by selecting another Dataverse collection you have proper permissions to create datasets in, from the Host Dataverse collection dropdown in the create dataset form. This option to choose will not be available after you create the dataset.
 #. To quickly get started, enter at minimum all the required fields with an asterisk (e.g., the Dataset Title, Author, 
-   Description, Contact Email and Subject) to get a Data Citation with a DOI.
+   Description, Point of Contact Email and Subject) to get a Data Citation with a DOI.
 #. Scroll down to the "Files" section and click on "Select Files to Add" to add all the relevant files to your Dataset. 
    You can also upload your files directly from your Dropbox. **Tip:** You can drag and drop or select multiple files at a time from your desktop
    directly into the upload widget. Your files will appear below the "Select Files to Add" button where you can add a
