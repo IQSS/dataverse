@@ -138,7 +138,12 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
     
     public List<DatasetMetrics> parseSushiReport(JsonObject report, Dataset dataset) {
         List<DatasetMetrics> datasetMetricsAll = new ArrayList<>();
-        JsonArray reportDatasets = report.getJsonArray("report_datasets");
+        //Current counter-processor v 0.1.04+ format
+        JsonArray reportDatasets = report.getJsonArray("report-datasets");
+        if(reportDatasets==null) {
+            //Try counter-processor v 0.0.1 name
+            reportDatasets = report.getJsonArray("report_datasets");
+        }
         for (JsonValue reportDataset : reportDatasets) {
             List<DatasetMetrics> datasetMetricsDataset = new ArrayList<>();
             String globalId = null;

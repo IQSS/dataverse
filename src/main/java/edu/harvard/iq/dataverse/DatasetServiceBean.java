@@ -77,28 +77,28 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     @EJB
     SettingsServiceBean settingsService;
-    
+
     @EJB
     DatasetVersionServiceBean versionService;
-    
+
     @EJB
     DvObjectServiceBean dvObjectService;
-    
+
     @EJB
     AuthenticationServiceBean authentication;
-    
+
     @EJB
-    DataFileServiceBean fileService; 
-    
+    DataFileServiceBean fileService;
+
     @EJB
     PermissionServiceBean permissionService;
-    
+
     @EJB
     OAIRecordServiceBean recordService;
-    
+
     @EJB
     EjbDataverseEngine commandEngine;
-    
+
     @EJB
     SystemConfig systemConfig;
     
@@ -106,21 +106,21 @@ public class DatasetServiceBean implements java.io.Serializable {
     FailedPIDResolutionLoggingServiceBean fprLogService;
 
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
-    
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     protected EntityManager em;
 
     public Dataset find(Object pk) {
         return em.find(Dataset.class, pk);
     }
-    
+
     public List<Dataset> findByOwnerId(Long ownerId) {
         return findByOwnerId(ownerId, false);
     }
-    
+
     public List<Dataset> findPublishedByOwnerId(Long ownerId) {
         return findByOwnerId(ownerId, true);
-    }    
+    }
 
     private List<Dataset> findByOwnerId(Long ownerId, boolean onlyPublished) {
         List<Dataset> retList = new ArrayList<>();
@@ -137,11 +137,11 @@ public class DatasetServiceBean implements java.io.Serializable {
             return retList;
         }
     }
-    
+
     public List<Long> findIdsByOwnerId(Long ownerId) {
         return findIdsByOwnerId(ownerId, false);
     }
-    
+
     private List<Long> findIdsByOwnerId(Long ownerId, boolean onlyPublished) {
         List<Long> retList = new ArrayList<>();
         if (!onlyPublished) {
@@ -174,7 +174,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         List<Dataset> ret = new ArrayList<>();
         if (ds != null) ret.add(ds);
 
-        
+
         /*
         List<Dataset> ret = em.createNamedQuery("Dataset.filterByPid", Dataset.class)
             .setParameter("affiliation", "%" + filterQuery.toLowerCase() + "%").getResultList();
@@ -186,23 +186,23 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
         return ret;
     }
-    
+
     public List<Dataset> findAll() {
         return em.createQuery("select object(o) from Dataset as o order by o.id", Dataset.class).getResultList();
     }
-      
+
     public List<Long> findIdStale() {
         return em.createNamedQuery("Dataset.findIdStale").getResultList();
     }
- 
+
      public List<Long> findIdStalePermission() {
         return em.createNamedQuery("Dataset.findIdStalePermission").getResultList();
     }
-  
+
     public List<Long> findAllLocalDatasetIds() {
         return em.createQuery("SELECT o.id FROM Dataset o WHERE o.harvestedFrom IS null ORDER BY o.id", Long.class).getResultList();
     }
-    
+
     public List<Long> findAllUnindexed() {
         return em.createQuery("SELECT o.id FROM Dataset o WHERE o.indexTime IS null ORDER BY o.id DESC", Long.class).getResultList();
     }
@@ -219,7 +219,7 @@ public class DatasetServiceBean implements java.io.Serializable {
      * @param skipIndexed
      * @return a list of datasets
      * @see DataverseServiceBean#findAllOrSubset(long, long, boolean)
-     */     
+     */
     public List<Long> findAllOrSubset(long numPartitions, long partitionId, boolean skipIndexed) {
         if (numPartitions < 1) {
             long saneNumPartitions = 1;
@@ -233,7 +233,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         typedQuery.setParameter("partitionId", partitionId);
         return typedQuery.getResultList();
     }
-    
+
         /**
      * For docs, see the equivalent method on the DataverseServiceBean.
      * @param numPartitions
@@ -241,7 +241,7 @@ public class DatasetServiceBean implements java.io.Serializable {
      * @param skipIndexed
      * @return a list of datasets
      * @see DataverseServiceBean#findAllOrSubset(long, long, boolean)
-     */     
+     */
     public List<Long> findAllOrSubsetOrderByFilesOwned(boolean skipIndexed) {
         /*
         Disregards deleted or replaced files when determining 'size' of dataset.
@@ -263,7 +263,7 @@ public class DatasetServiceBean implements java.io.Serializable {
 
         List<Long> retVal = new ArrayList();
         for (Object[] result : queryResults) {
-            Long dsId;           
+            Long dsId;
             if (result[0] != null) {
                 try {
                     dsId = Long.parseLong(result[0].toString()) ;
@@ -278,7 +278,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
         return retVal;
     }
-    
+
     /**
      * Merges the passed dataset to the persistence context.
      * @param ds the dataset whose new state we want to persist.
@@ -287,7 +287,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     public Dataset merge( Dataset ds ) {
         return em.merge(ds);
     }
-    
+
     public Dataset findByGlobalId(String globalId) {
         Dataset retVal = (Dataset) dvObjectService.findByGlobalId(globalId, "Dataset");
         if (retVal != null){
@@ -308,16 +308,16 @@ public class DatasetServiceBean implements java.io.Serializable {
             return retVal;
         }
     }
-    
+
     /**
      * Instantiate dataset, and its components (DatasetVersions and FileMetadatas)
      * this method is used for object validation; if there are any invalid values
      * in the dataset components, a ConstraintViolationException will be thrown,
      * which can be further parsed to detect the specific offending values.
      * @param id the id of the dataset
-     * @throws javax.validation.ConstraintViolationException 
+     * @throws javax.validation.ConstraintViolationException
      */
-    
+
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void instantiateDatasetInNewTransaction(Long id, boolean includeVariables) {
         Dataset dataset = find(id);
@@ -339,7 +339,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     public String generateDatasetIdentifier(Dataset dataset, GlobalIdServiceBean idServiceBean) {
         String identifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
         String shoulder = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder, "");
-       
+
         switch (identifierType) {
             case "randomString":
                 return generateIdentifierAsRandomString(dataset, idServiceBean, shoulder);
@@ -350,31 +350,31 @@ public class DatasetServiceBean implements java.io.Serializable {
                 return generateIdentifierAsRandomString(dataset, idServiceBean, shoulder);
         }
     }
-    
+
     private String generateIdentifierAsRandomString(Dataset dataset, GlobalIdServiceBean idServiceBean, String shoulder) {
         String identifier = null;
         do {
-            identifier = shoulder + RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
+            identifier = shoulder + RandomStringUtils.randomAlphanumeric(6).toUpperCase();
         } while (!isIdentifierLocallyUnique(identifier, dataset));
-        
+
         return identifier;
     }
 
     private String generateIdentifierFromStoredProcedure(Dataset dataset, GlobalIdServiceBean idServiceBean, String shoulder) {
-        
-        String identifier; 
+
+        String identifier;
         do {
             StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierFromStoredProcedure");
             query.execute();
             String identifierFromStoredProcedure = (String) query.getOutputParameterValue(1);
-            // some diagnostics here maybe - is it possible to determine that it's failing 
+            // some diagnostics here maybe - is it possible to determine that it's failing
             // because the stored procedure hasn't been created in the database?
             if (identifierFromStoredProcedure == null) {
-                return null; 
+                return null;
             }
             identifier = shoulder + identifierFromStoredProcedure;
         } while (!isIdentifierLocallyUnique(identifier, dataset));
-        
+
         return identifier;
     }
 
@@ -389,7 +389,7 @@ public class DatasetServiceBean implements java.io.Serializable {
      */
     public boolean isIdentifierUnique(String userIdentifier, Dataset dataset, GlobalIdServiceBean persistentIdSvc) {
         if ( ! isIdentifierLocallyUnique(userIdentifier, dataset) ) return false; // duplication found in local database
-        
+
         // not in local DB, look in the persistent identifier service
         try {
             return ! persistentIdSvc.alreadyExists(dataset);
@@ -399,11 +399,11 @@ public class DatasetServiceBean implements java.io.Serializable {
 
         return true;
     }
-    
+
     public boolean isIdentifierLocallyUnique(Dataset dataset) {
         return isIdentifierLocallyUnique(dataset.getIdentifier(), dataset);
     }
-    
+
     public boolean isIdentifierLocallyUnique(String identifier, Dataset dataset) {
         return em.createNamedQuery("Dataset.findByIdentifierAuthorityProtocol")
             .setParameter("identifier", identifier)
@@ -411,7 +411,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             .setParameter("protocol", dataset.getProtocol())
             .getResultList().isEmpty();
     }
-    
+
     public Long getMaximumExistingDatafileIdentifier(Dataset dataset) {
         //Cannot rely on the largest table id having the greatest identifier counter
         long zeroFiles = new Long(0);
@@ -434,7 +434,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                     testVal = new Long(identifier) ;
                     if (testVal > retVal){
                         retVal = testVal;
-                    }               
+                    }
                 }
             }
         }
@@ -445,7 +445,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         em.persist(dsv);
         return dsv;
     }
-      
+
 
     public DatasetVersionUser getDatasetVersionUser(DatasetVersion version, User user) {
 
@@ -469,22 +469,22 @@ public class DatasetServiceBean implements java.io.Serializable {
         List<DatasetLock> lock = lockCounter.getResultList();
         return lock.size()>0;
     }
-    
+
     public List<DatasetLock> getDatasetLocksByUser( AuthenticatedUser user) {
 
         return listLocks(null, user);
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public DatasetLock addDatasetLock(Dataset dataset, DatasetLock lock) {
         lock.setDataset(dataset);
         dataset.addLock(lock);
         lock.setStartTime( new Date() );
         em.persist(lock);
-        //em.merge(dataset); 
+        //em.merge(dataset);
         return lock;
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW) /*?*/
     public DatasetLock addDatasetLock(Long datasetId, DatasetLock.Reason reason, Long userId, String info) {
 
@@ -497,11 +497,11 @@ public class DatasetServiceBean implements java.io.Serializable {
 
         // Check if the dataset is already locked for this reason:
         // (to prevent multiple, duplicate locks on the dataset!)
-        DatasetLock lock = dataset.getLockFor(reason); 
+        DatasetLock lock = dataset.getLockFor(reason);
         if (lock != null) {
             return lock;
         }
-        
+
         // Create new:
         lock = new DatasetLock(reason, user);
         lock.setDataset(dataset);
@@ -541,22 +541,22 @@ public class DatasetServiceBean implements java.io.Serializable {
                     });
         }
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void updateDatasetLock(DatasetLock datasetLock) {
         em.merge(datasetLock);
     }
-    
+
     /*
      * Lists all dataset locks, optionally filtered by lock type or user, or both
-     * @param lockType 
+     * @param lockType
      * @param user
-     * @return a list of DatasetLocks    
+     * @return a list of DatasetLocks
     */
     public List<DatasetLock> listLocks(DatasetLock.Reason lockType, AuthenticatedUser user) {
 
-        TypedQuery<DatasetLock> query; 
-        
+        TypedQuery<DatasetLock> query;
+
         if (lockType == null && user == null) {
             query = em.createNamedQuery("DatasetLock.findAll", DatasetLock.class);
         } else if (user == null) {
@@ -576,21 +576,21 @@ public class DatasetServiceBean implements java.io.Serializable {
             return null;
         }
     }
-    
+
     /*
     getTitleFromLatestVersion methods use native query to return a dataset title
-    
+
         There are two versions:
      1) The version with datasetId param only will return the title regardless of version state
      2)The version with the param 'includeDraft' boolean  will return the most recently published title if the param is set to false
     If no Title found return empty string - protects against calling with
     include draft = false with no published version
     */
-    
+
     public String getTitleFromLatestVersion(Long datasetId){
         return getTitleFromLatestVersion(datasetId, true);
     }
-    
+
     public String getTitleFromLatestVersion(Long datasetId, boolean includeDraft){
 
         String whereDraft = "";
@@ -598,7 +598,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         if (!includeDraft) {
             whereDraft = " and v.versionstate !='DRAFT' ";
         }
-        
+
         try {
             return (String) em.createNativeQuery("select dfv.value  from dataset d "
                 + " join datasetversion v on d.id = v.dataset_id "
@@ -616,7 +616,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
 
     }
-    
+
     public Dataset getDatasetByHarvestInfo(Dataverse dataverse, String harvestIdentifier) {
         String queryStr = "SELECT d FROM Dataset d, DvObject o WHERE d.id = o.id AND o.owner.id = " + dataverse.getId() + " and d.harvestIdentifier = '" + harvestIdentifier + "'";
         Query query = em.createQuery(queryStr);
@@ -631,45 +631,45 @@ public class DatasetServiceBean implements java.io.Serializable {
         return dataset;
 
     }
-    
+
     public Long getDatasetVersionCardImage(Long versionId, User user) {
         if (versionId == null) {
             return null;
         }
-        
-        
-        
+
+
+
         return null;
     }
-    
+
     /**
      * Used to identify and properly display Harvested objects on the dataverse page.
-     * 
+     *
      * @param datasetIds
-     * @return 
+     * @return
      */
     public Map<Long, String> getArchiveDescriptionsForHarvestedDatasets(Set<Long> datasetIds){
         if (datasetIds == null || datasetIds.size() < 1) {
             return null;
         }
-        
+
         String datasetIdStr = Strings.join(datasetIds, ", ");
-        
+
         String qstr = "SELECT d.id, h.archiveDescription FROM harvestingClient h, dataset d WHERE d.harvestingClient_id = h.id AND d.id IN (" + datasetIdStr + ")";
         List<Object[]> searchResults;
-        
+
         try {
             searchResults = em.createNativeQuery(qstr).getResultList();
         } catch (Exception ex) {
             searchResults = null;
         }
-        
+
         if (searchResults == null) {
             return null;
         }
-        
+
         Map<Long, String> ret = new HashMap<>();
-        
+
         for (Object[] result : searchResults) {
             Long dsId;
             if (result[0] != null) {
@@ -681,78 +681,78 @@ public class DatasetServiceBean implements java.io.Serializable {
                 if (dsId == null) {
                     continue;
                 }
-                
+
                 ret.put(dsId, (String)result[1]);
             }
         }
-        
-        return ret;        
+
+        return ret;
     }
-    
-    
-    
-    public boolean isDatasetCardImageAvailable(DatasetVersion datasetVersion, User user) {        
+
+
+
+    public boolean isDatasetCardImageAvailable(DatasetVersion datasetVersion, User user) {
         if (datasetVersion == null) {
-            return false; 
+            return false;
         }
-                
-        // First, check if this dataset has a designated thumbnail image: 
-        
+
+        // First, check if this dataset has a designated thumbnail image:
+
         if (datasetVersion.getDataset() != null) {
             DataFile dataFile = datasetVersion.getDataset().getThumbnailFile();
             if (dataFile != null) {
                 return ImageThumbConverter.isThumbnailAvailable(dataFile, 48);
             }
         }
-        
+
         // If not, we'll try to use one of the files in this dataset version:
         // (the first file with an available thumbnail, really)
-        
+
         List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
 
         for (FileMetadata fileMetadata : fileMetadatas) {
             DataFile dataFile = fileMetadata.getDataFile();
-            
-            // TODO: use permissionsWrapper here - ? 
-            // (we are looking up these download permissions on individual files, 
-            // true, and those are unique... but the wrapper may be able to save 
+
+            // TODO: use permissionsWrapper here - ?
+            // (we are looking up these download permissions on individual files,
+            // true, and those are unique... but the wrapper may be able to save
             // us some queries when it determines the download permission on the
             // dataset as a whole? -- L.A. 4.2.1
-            
+
             if (fileService.isThumbnailAvailable(dataFile) && permissionService.userOn(user, dataFile).has(Permission.DownloadFile)) { //, user)) {
                 return true;
             }
- 
+
         }
-        
+
         return false;
     }
-    
-    
-    // reExportAll *forces* a reexport on all published datasets; whether they 
-    // have the "last export" time stamp set or not. 
-    @Asynchronous 
+
+
+    // reExportAll *forces* a reexport on all published datasets; whether they
+    // have the "last export" time stamp set or not.
+    @Asynchronous
     public void reExportAllAsync() {
         exportAllDatasets(true);
     }
-    
+
     public void reExportAll() {
         exportAllDatasets(true);
     }
-    
-    
+
+
     // exportAll() will try to export the yet unexported datasets (it will honor
     // and trust the "last export" time stamp).
-    
+
     @Asynchronous
     public void exportAllAsync() {
         exportAllDatasets(false);
     }
-    
+
     public void exportAll() {
         exportAllDatasets(false);
     }
-    
+
     public void exportAllDatasets(boolean forceReExport) {
         Integer countAll = 0;
         Integer countSuccess = 0;
@@ -780,20 +780,20 @@ public class DatasetServiceBean implements java.io.Serializable {
         exportLogger.info("Starting an export all job");
 
         for (Long datasetId : findAllLocalDatasetIds()) {
-            // Potentially, there's a godzillion datasets in this Dataverse. 
-            // This is why we go through the list of ids here, and instantiate 
-            // only one dataset at a time. 
+            // Potentially, there's a godzillion datasets in this Dataverse.
+            // This is why we go through the list of ids here, and instantiate
+            // only one dataset at a time.
             Dataset dataset = this.find(datasetId);
             if (dataset != null) {
                 // Accurate "is published?" test - ?
-                // Answer: Yes, it is! We can't trust dataset.isReleased() alone; because it is a dvobject method 
+                // Answer: Yes, it is! We can't trust dataset.isReleased() alone; because it is a dvobject method
                 // that returns (publicationDate != null). And "publicationDate" is essentially
-                // "the first publication date"; that stays the same as versions get 
-                // published and/or deaccessioned. But in combination with !isDeaccessioned() 
+                // "the first publication date"; that stays the same as versions get
+                // published and/or deaccessioned. But in combination with !isDeaccessioned()
                 // it is indeed an accurate test.
                 if (dataset.isReleased() && dataset.getReleasedVersion() != null && !dataset.isDeaccessioned()) {
 
-                    // can't trust dataset.getPublicationDate(), no. 
+                    // can't trust dataset.getPublicationDate(), no.
                     Date publicationDate = dataset.getReleasedVersion().getReleaseTime(); // we know this dataset has a non-null released version! Maybe not - SEK 8/19 (We do now! :)
                     if (forceReExport || (publicationDate != null
                             && (dataset.getLastExportTime() == null
@@ -815,34 +815,44 @@ public class DatasetServiceBean implements java.io.Serializable {
         exportLogger.info("Datasets exported successfully: " + countSuccess.toString());
         exportLogger.info("Datasets failures: " + countError.toString());
         exportLogger.info("Finished export-all job.");
-        
+
         if (fileHandlerSuceeded) {
             fileHandler.close();
         }
 
     }
     
-    //get a string to add to save success message
-    //depends on dataset state and user privleges
     public String getReminderString(Dataset dataset, boolean canPublishDataset) {
+        return getReminderString( dataset, canPublishDataset, false);
+    }
 
+    //get a string to add to save success message
+    //depends on page (dataset/file) and user privleges
+    public String getReminderString(Dataset dataset, boolean canPublishDataset, boolean filePage) {
+       
         String reminderString;
 
-        if(!dataset.isReleased() ){
-            //messages for draft state.
-            if (canPublishDataset){
-                reminderString = BundleUtil.getStringFromBundle("dataset.message.publish.remind.draft");
+        if (canPublishDataset) {
+            reminderString = BundleUtil.getStringFromBundle("dataset.message.publish.warning");
+        } else {
+            reminderString = BundleUtil.getStringFromBundle("dataset.message.submit.warning");
+        }
+
+        if (canPublishDataset) {
+            if (!filePage) {
+                reminderString = reminderString + " " + BundleUtil.getStringFromBundle("dataset.message.publish.remind.draft");
             } else {
-                reminderString = BundleUtil.getStringFromBundle("dataset.message.submit.remind.draft");
-            }            
-        } else{
-            //messages for new version - post-publish
-            if (canPublishDataset){
-                reminderString = BundleUtil.getStringFromBundle("dataset.message.publish.remind.version");
+                reminderString = reminderString + " " + BundleUtil.getStringFromBundle("dataset.message.publish.remind.draft.filePage");
+                reminderString = reminderString.replace("{0}", "" + (dataset.getGlobalId().asString().concat("&version=DRAFT")));
+            }
+        } else {
+            if (!filePage) {
+                reminderString = reminderString + " " + BundleUtil.getStringFromBundle("dataset.message.submit.remind.draft");
             } else {
-                reminderString = BundleUtil.getStringFromBundle("dataset.message.submit.remind.version");
-            }           
-        }             
+                reminderString = reminderString + " " + BundleUtil.getStringFromBundle("dataset.message.submit.remind.draft.filePage");
+                reminderString = reminderString.replace("{0}", "" + (dataset.getGlobalId().asString().concat("&version=DRAFT")));
+            }
+        }
 
         if (reminderString != null) {
             return reminderString;
@@ -851,7 +861,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             return "";
         }
     }
-    
+
     public void updateLastExportTimeStamp(Long datasetId) {
         Date now = new Date();
         em.createNativeQuery("UPDATE Dataset SET lastExportTime='"+now.toString()+"' WHERE id="+datasetId).executeUpdate();
@@ -896,22 +906,22 @@ public class DatasetServiceBean implements java.io.Serializable {
         dataset.setUseGenericThumbnail(true);
         return merge(dataset);
     }
-    
+
     // persist assigned thumbnail in a single one-field-update query:
     // (the point is to avoid doing an em.merge() on an entire dataset object...)
     public void assignDatasetThumbnailByNativeQuery(Long datasetId, Long dataFileId) {
         try {
             em.createNativeQuery("UPDATE dataset SET thumbnailfile_id=" + dataFileId + " WHERE id=" + datasetId).executeUpdate();
         } catch (Exception ex) {
-            // it's ok to just ignore... 
+            // it's ok to just ignore...
         }
     }
-    
+
     public void assignDatasetThumbnailByNativeQuery(Dataset dataset, DataFile dataFile) {
         try {
             em.createNativeQuery("UPDATE dataset SET thumbnailfile_id=" + dataFile.getId() + " WHERE id=" + dataset.getId()).executeUpdate();
         } catch (Exception ex) {
-            // it's ok to just ignore... 
+            // it's ok to just ignore...
         }
     }
 
@@ -919,17 +929,17 @@ public class DatasetServiceBean implements java.io.Serializable {
         em.persist(workflowComment);
         return workflowComment;
     }
-    
+
     public void markWorkflowCommentAsRead(WorkflowComment workflowComment) {
         workflowComment.setToBeShown(false);
         em.merge(workflowComment);
     }
-    
-    
+
+
     /**
-     * This method used to throw CommandException, which was pretty pointless 
-     * seeing how it's called asynchronously. As of v5.0 any CommanExceptiom 
-     * thrown by the FinalizeDatasetPublicationCommand below will be caught 
+     * This method used to throw CommandException, which was pretty pointless
+     * seeing how it's called asynchronously. As of v5.0 any CommanExceptiom
+     * thrown by the FinalizeDatasetPublicationCommand below will be caught
      * and we'll log it as a warning - which is the best we can do at this point.
      * Any failure notifications to users should be sent from inside the command.
      */
@@ -937,11 +947,11 @@ public class DatasetServiceBean implements java.io.Serializable {
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void callFinalizePublishCommandAsynchronously(Long datasetId, CommandContext ctxt, DataverseRequest request, boolean isPidPrePublished) {
 
-        // Since we are calling the next command asynchronously anyway - sleep here 
-        // for a few seconds, just in case, to make sure the database update of 
-        // the dataset initiated by the PublishDatasetCommand has finished, 
-        // to avoid any concurrency/optimistic lock issues. 
-        // Aug. 2020/v5.0: It MAY be working consistently without any 
+        // Since we are calling the next command asynchronously anyway - sleep here
+        // for a few seconds, just in case, to make sure the database update of
+        // the dataset initiated by the PublishDatasetCommand has finished,
+        // to avoid any concurrency/optimistic lock issues.
+        // Aug. 2020/v5.0: It MAY be working consistently without any
         // sleep here, after the call the method has been moved to the onSuccess()
         // portion of the PublishDatasetCommand. I'm going to leave the 1 second
         // sleep below, for just in case reasons: -- L.A.
@@ -958,21 +968,21 @@ public class DatasetServiceBean implements java.io.Serializable {
             logger.warning("CommandException caught when executing the asynchronous portion of the Dataset Publication Command.");
         }
     }
-    
+
     /*
-     Experimental asynchronous method for requesting persistent identifiers for 
-     datafiles. We decided not to run this method on upload/create (so files 
-     will not have persistent ids while in draft; when the draft is published, 
-     we will force obtaining persistent ids for all the files in the version. 
-     
-     If we go back to trying to register global ids on create, care will need to 
-     be taken to make sure the asynchronous changes below are not conflicting with 
-     the changes from file ingest (which may be happening in parallel, also 
-     asynchronously). We would also need to lock the dataset (similarly to how 
+     Experimental asynchronous method for requesting persistent identifiers for
+     datafiles. We decided not to run this method on upload/create (so files
+     will not have persistent ids while in draft; when the draft is published,
+     we will force obtaining persistent ids for all the files in the version.
+
+     If we go back to trying to register global ids on create, care will need to
+     be taken to make sure the asynchronous changes below are not conflicting with
+     the changes from file ingest (which may be happening in parallel, also
+     asynchronously). We would also need to lock the dataset (similarly to how
      tabular ingest logs the dataset), to prevent the user from publishing the
-     version before all the identifiers get assigned - otherwise more conflicts 
+     version before all the identifiers get assigned - otherwise more conflicts
      are likely. (It sounds like it would make sense to treat these two tasks -
-     persistent identifiers for files and ingest - as one post-upload job, so that 
+     persistent identifiers for files and ingest - as one post-upload job, so that
      they can be run in sequence). -- L.A. Mar. 2018
     */
     @Asynchronous
@@ -1025,58 +1035,58 @@ public class DatasetServiceBean implements java.io.Serializable {
                     datafile.setIdentifierRegistered(true);
                     datafile.setGlobalIdCreateTime(new Date());
                 }
-                
+
                 DataFile merged = em.merge(datafile);
-                merged = null; 
+                merged = null;
             }
 
         }
     }
-    
+
     public long findStorageSize(Dataset dataset) throws IOException {
         return findStorageSize(dataset, false, GetDatasetStorageSizeCommand.Mode.STORAGE, null);
     }
-    
-    
+
+
     public long findStorageSize(Dataset dataset, boolean countCachedExtras) throws IOException {
         return findStorageSize(dataset, countCachedExtras, GetDatasetStorageSizeCommand.Mode.STORAGE, null);
     }
-  
+
     /**
-     * Returns the total byte size of the files in this dataset 
-     * 
+     * Returns the total byte size of the files in this dataset
+     *
      * @param dataset
      * @param countCachedExtras boolean indicating if the cached disposable extras should also be counted
      * @param mode String indicating whether we are getting the result for storage (entire dataset) or download version based
      * @param version optional param for dataset version
-     * @return total size 
-     * @throws IOException if it can't access the objects via StorageIO 
-     * (in practice, this can only happen when called with countCachedExtras=true; when run in the 
-     * default mode, the method doesn't need to access the storage system, as the 
+     * @return total size
+     * @throws IOException if it can't access the objects via StorageIO
+     * (in practice, this can only happen when called with countCachedExtras=true; when run in the
+     * default mode, the method doesn't need to access the storage system, as the
      * sizes of the main files are recorded in the database)
      */
     public long findStorageSize(Dataset dataset, boolean countCachedExtras, GetDatasetStorageSizeCommand.Mode mode, DatasetVersion version) throws IOException {
-        long total = 0L; 
-        
+        long total = 0L;
+
         if (dataset.isHarvested()) {
             return 0L;
         }
 
         List<DataFile> filesToTally = new ArrayList();
-        
+
         if (version == null || (mode != null &&  mode.equals("storage"))){
             filesToTally = dataset.getFiles();
         } else {
             List <FileMetadata>  fmds = version.getFileMetadatas();
             for (FileMetadata fmd : fmds){
                     filesToTally.add(fmd.getDataFile());
-            }           
+            }
         }
-    
-        
+
+
         //CACHED EXTRAS FOR DOWNLOAD?
-        
-        
+
+
         for (DataFile datafile : filesToTally) {
                 total += datafile.getFilesize();
 
@@ -1095,13 +1105,13 @@ public class DatasetServiceBean implements java.io.Serializable {
                     }
                 }
             }
-        
+
         // and finally,
         if (countCachedExtras) {
             // count the sizes of the files cached for the dataset itself
             // (i.e., the metadata exports):
             StorageIO<Dataset> datasetSIO = DataAccess.getStorageIO(dataset);
-            
+
             for (String[] exportProvider : ExportService.getInstance().getExportersLabels()) {
                 String exportLabel = "export_" + exportProvider[1] + ".cached";
                 try {
@@ -1111,31 +1121,31 @@ public class DatasetServiceBean implements java.io.Serializable {
                 }
             }
         }
-        
-        return total; 
+
+        return total;
     }
-    
+
     /**
-     * An optimized method for deleting a harvested dataset. 
-     * 
+     * An optimized method for deleting a harvested dataset.
+     *
      * @param dataset
      * @param request DataverseRequest (for initializing the DestroyDatasetCommand)
      * @param hdLogger logger object (in practice, this will be a separate log file created for a specific harvesting job)
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void deleteHarvestedDataset(Dataset dataset, DataverseRequest request, Logger hdLogger) {
-        // Purge all the SOLR documents associated with this client from the 
-        // index server: 
+        // Purge all the SOLR documents associated with this client from the
+        // index server:
         indexService.deleteHarvestedDocuments(dataset);
-        
+
         try {
-            // files from harvested datasets are removed unceremoniously, 
-            // directly in the database. no need to bother calling the 
+            // files from harvested datasets are removed unceremoniously,
+            // directly in the database. no need to bother calling the
             // DeleteFileCommand on them.
             for (DataFile harvestedFile : dataset.getFiles()) {
                 DataFile merged = em.merge(harvestedFile);
                 em.remove(merged);
-                harvestedFile = null; 
+                harvestedFile = null;
             }
             dataset.setFiles(null);
             Dataset merged = em.merge(dataset);
@@ -1143,6 +1153,6 @@ public class DatasetServiceBean implements java.io.Serializable {
             hdLogger.info("Successfully destroyed the dataset");
         } catch (Exception ex) {
             hdLogger.warning("Failed to destroy the dataset");
-        } 
+        }
     }
 }

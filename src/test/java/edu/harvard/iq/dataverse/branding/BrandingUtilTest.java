@@ -143,7 +143,8 @@ public class BrandingUtilTest {
                 		"LibraScholar",
                         "<a href=\"http://guides.dataverse.org/en/4.3/user/index.html\">User Guide</a>",
                         "<a mailto:\"LibraScholar<support@librascholar.edu>\">contact us</a>"
-                ));
+                ))
+                + " " + BundleUtil.getStringFromBundle("notification.welcomeConfirmEmail");
         log.fine("message: " + message);
         assertEquals("Welcome to LibraScholar! Get started by adding or finding data. "
                 + "Have questions? Check out our <a href=\"http://guides.dataverse.org/en/4.3/user/index.html\">User Guide</a> or <a mailto:\"LibraScholar<support@librascholar.edu>\">contact us</a>.",

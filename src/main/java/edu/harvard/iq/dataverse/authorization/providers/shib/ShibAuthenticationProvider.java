@@ -40,4 +40,9 @@ public class ShibAuthenticationProvider implements AuthenticationProvider {
     @Override
     public boolean isUserInfoUpdateAllowed() { return true; };
 
+    
+    // We don't override "isEmailVerified" because we're using timestamps
+    // ("emailconfirmed" on the "authenticateduser" table) to know if
+    // Shib users have confirmed/verified their email or not.
+
 }

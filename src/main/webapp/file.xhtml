@@ -381,7 +381,7 @@
                     <div id="contentTabs">
                         <div class="file-row-panel-backdrop"></div>
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{FilePage.selectedTabIndex}">
-                            <p:ajax event="tabChange" listener="#{FilePage.tabChanged}" oncomplete="bind_bsui_components();" update="@this" />
+                            <p:ajax event="tabChange" listener="#{FilePage.tabChanged}" update="@this" />
                             <p:tab id="accessTab" class="padding-none" title="#{bundle['file.dataFilesTab.dataAccess']}"
                                    rendered="#{settingsWrapper.rsyncDownload and FilePage.fileMetadata.dataFile.filePackage and systemConfig.rsyncDownload
                                         and !FilePage.fileMetadata.getDataFile().getOwner().getStorageIdentifier().startsWith('s3://') }">
@@ -735,6 +735,13 @@
                         </div>
                     </p:dialog>
                 </h:form>
+                <script>
+                    //<![CDATA[
+                    function editTerms(){                             
+                        PF('accessPopup').show();
+                    }
+                    //]]>
+                </script>
             </ui:define>
         </ui:composition>
     </h:body>

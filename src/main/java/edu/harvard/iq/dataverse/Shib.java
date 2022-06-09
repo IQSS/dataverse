@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.validation.EMailValidator;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -249,12 +250,12 @@ public class Shib implements java.io.Serializable {
             }
         }
 
-        if (!EMailValidator.isEmailValid(emailAddressInAssertion, null)) {
+        if (!EMailValidator.isEmailValid(emailAddressInAssertion)) {
             String msg = "The SAML assertion contained an invalid email address: \"" + emailAddressInAssertion + "\".";
             logger.info(msg);
             msg=BundleUtil.getStringFromBundle("shib.invalidEmailAddress",   Arrays.asList(emailAddressInAssertion));
             String singleEmailAddress = ShibUtil.findSingleValue(emailAddressInAssertion);
-            if (EMailValidator.isEmailValid(singleEmailAddress, null)) {
+            if (EMailValidator.isEmailValid(singleEmailAddress)) {
                 msg = "Multiple email addresses were asserted by the Identity Provider (" + emailAddressInAssertion + " ). These were sorted and the first was chosen: " + singleEmailAddress;
                 logger.info(msg);
                 emailAddress = singleEmailAddress;

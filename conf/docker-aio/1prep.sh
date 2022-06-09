@@ -12,10 +12,10 @@ cd ../../
 cp -r scripts conf/docker-aio/testdata/
 cp doc/sphinx-guides/source/_static/util/createsequence.sql conf/docker-aio/testdata/doc/sphinx-guides/source/_static/util/
 
-wget -q https://downloads.apache.org/maven/maven-3/3.8.4/binaries/apache-maven-3.8.4-bin.tar.gz
-tar xfz apache-maven-3.8.4-bin.tar.gz
+wget -q https://downloads.apache.org/maven/maven-3/3.8.5/binaries/apache-maven-3.8.5-bin.tar.gz
+tar xfz apache-maven-3.8.5-bin.tar.gz
 mkdir maven
-mv apache-maven-3.8.4/* maven/
+mv apache-maven-3.8.5/* maven/
 echo "export JAVA_HOME=/usr/lib/jvm/jre-openjdk" > maven/maven.sh
 echo "export M2_HOME=../maven" >> maven/maven.sh
 echo "export MAVEN_HOME=../maven" >> maven/maven.sh

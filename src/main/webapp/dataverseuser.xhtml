@@ -53,12 +53,50 @@
                         <h:outputText value="#{bundle['user.lostPasswdTip']}" />
                     </p:panel>
 
-                    <p:tabView id="dataRelatedToMeView" activeIndex="#{DataverseUserPage.activeIndex}" dynamic="true" rendered="#{empty DataverseUserPage.editMode}">
-                        <p:ajax event="tabChange" listener="#{DataverseUserPage.onTabChange}" update="@all" oncomplete="javascript:bind_bsui_components();addQDRBackdrop();" />
+                    <p:tabView id="dataRelatedToMeView" activeIndex="#{DataverseUserPage.activeIndex}" dynamic="true" cache="false" rendered="#{empty DataverseUserPage.editMode}">
+                        <p:ajax event="tabChange" listener="#{DataverseUserPage.onTabChange}" update="@all"  oncomplete="javascript:addQDRBackdrop();"/>
                         <p:tab id="myData" title="#{bundle['user.dataRelatedToMe']}">
                             <ui:include src="mydata_fragment.xhtml"></ui:include>
                         </p:tab>
                         <p:tab id="notifications" title="#{bundle['header.user.selectTab.notifications']}">
+                            <div class="panel panel-default" jsf:rendered="#{settingsWrapper.showMuteOptions}">
+                                <div data-toggle="collapse" data-target="#muteCollapse" aria-expanded="false" class="panel-heading text-info" role="button" aria-controls="muteCollapse">
+                                    #{bundle['notification.muteOptions']} <span class="glyphicon glyphicon-chevron-down" />
+                                </div>
+                                <div id="muteCollapse" class="collapse">
+                                    <div class="panel-body">
+                                        <div class="form-group text-left">
+                                            <label for="mutedEmails" class="col-sm-4 control-label">
+                                                #{bundle['notification.mutedEmails']}
+                                            </label>
+                                            <div class="col-sm-8">
+                                                <p:selectManyCheckbox id="mutedEmails" value="#{DataverseUserPage.toReceiveEmails}"
+                                                    styleClass="grid-checkbox" layout="grid" columns="1">
+                                                    <f:selectItems value="#{DataverseUserPage.notificationTypeList}" var="t"
+                                                        itemLabel="#{t.description}" itemValue="#{t}"
+                                                        itemDisabled="#{DataverseUserPage.isDisabled(t)}" />
+                                                </p:selectManyCheckbox>
+                                            </div>
+                                        </div>
+                                        <div class="form-group text-left">
+                                            <label for="mutedNotifications" class="col-sm-4 control-label">
+                                                #{bundle['notification.mutedNotifications']}
+                                            </label>
+                                            <div class="col-sm-8">
+                                                <p:selectManyCheckbox id="mutedNotifications" value="#{DataverseUserPage.toReceiveNotifications}"
+                                                    styleClass="grid-checkbox" layout="grid" columns="1">
+                                                    <f:selectItems value="#{DataverseUserPage.notificationTypeList}" var="t"
+                                                        itemLabel="#{t.description}" itemValue="#{t}"
+                                                        itemDisabled="#{DataverseUserPage.isDisabled(t)}" />
+                                                </p:selectManyCheckbox>
+                                            </div>
+                                        </div>
+                                        <p:commandButton id="save" styleClass="btn btn-default" value="#{bundle.saveChanges}"
+                                            action="#{DataverseUserPage.save}" onclick="PF('muteCollapse').collapse('hide')" update="@form"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr/>
                             <div class="table-container">
                                 <ui:repeat value="#{DataverseUserPage.notificationsList}" var="item">
                                     <div class="notification-item #{item.displayAsRead ? '' : 'bg-warning'}">
@@ -80,6 +118,8 @@
                                                           <a href="mailto:#{settingsWrapper.get(':SystemEmail')}">contact us</a>
                                                         </o:param>
                                                     </h:outputFormat>
+                                                    <!--Only show message about an email confirmation link to non-Shib users (Shib users can't edit their accounts)-->
+                                                    <h:outputFormat value=" #{bundle['notification.welcomeConfirmEmail']}" rendered="#{DataverseUserPage.accountDetailsEditable}"/>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'CREATEDV'}">
                                                     <span class="icon-dataverse text-icon-inline text-muted"></span>
@@ -366,8 +406,7 @@
                                         </div>
                                         <div class="notification-item-cell">
                                             <p:commandLink title="#{bundle.removeNotification}" styleClass="bootstrap-button-tooltip"
-                                                           action="#{DataverseUserPage.remove(item.id)}" update="@form"
-                                                           oncomplete="bind_bsui_components();">
+                                                           action="#{DataverseUserPage.remove(item.id)}" update="@form">
                                                 <span class="glyphicon glyphicon-remove"></span>
                                             </p:commandLink>
                                         </div>
@@ -376,14 +415,11 @@
                             </div>
                         </p:tab>
                         <p:tab id="accountInfo" title="#{bundle['header.user.selectTab.accountInfo']}">
-                            <div class="button-block tab-header margin-bottom text-right" jsf:rendered="#{empty DataverseUserPage.editMode or DataverseUserPage.passwordEditable or DataverseUserPage.accountDetailsEditable}">
+                            <div class="button-block tab-header margin-bottom text-right" jsf:rendered="#{empty DataverseUserPage.editMode and (DataverseUserPage.passwordEditable or DataverseUserPage.accountDetailsEditable)}">
                                 <div class="btn-group">
                                     <button type="button" id="editAccount" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                         <ui:fragment rendered="#{DataverseUserPage.accountDetailsEditable}">
                                             <span class="glyphicon glyphicon-pencil"/> #{bundle['account.edit']}
-                                        </ui:fragment>
-                                        <ui:fragment rendered="#{! DataverseUserPage.accountDetailsEditable}">
-                                            #{bundle['account.info']}
                                         </ui:fragment>
                                         <span class="caret"></span>
                                     </button>
@@ -479,7 +515,6 @@
                                                                 id="verifyEmailButton"
                                                                 action="#{DataverseUserPage.sendConfirmEmail()}"
                                                                 update="@([id$=verifyEmailButton]), :messagePanel"
-                                                                onclick="if (!testHasEmailToken(#{DataverseUserPage.getHasActiveVerificationToken()})) return false;"
                                                                >
                                                     <span class="glyphicon glyphicon-ok"></span> #{bundle['confirmEmail.submitRequest']}
                                                 </p:commandLink>
@@ -752,32 +787,7 @@
                             </div>
                         </p:tab>
                     </p:tabView>
-                        <p:dialog id="tokenExists" styleClass="smallPopUp"
-                                  header="#{bundle['account.emailvalidation.header']}" widgetVar="tokenExists" modal="true">
-                            
-                             <h:outputFormat value="#{bundle['account.emailvalidation.token.exists']}" escape="false">
-                                <o:param>#{DataverseUserPage.currentUser.email}</o:param>
-                            </h:outputFormat>
-                            
-                            
-                            <div class="button-block">
-                                <button class="btn btn-default" onclick="PF('tokenExists').hide();" type="button">
-                                    #{bundle.close}
-                                </button>
-                            </div>
-                        </p:dialog> 
                 </h:form>
-                <script>
-                    //<![CDATA[        
-                        function testHasEmailToken(hasActiveVerificationToken) {
-                            if (hasActiveVerificationToken) {                               
-                                PF("tokenExists").show();
-                            } else {
-                                return true;
-                            }                        
-                        }
-                    //]]>
-                </script>
             </ui:define>
         </ui:composition>
     </h:body>

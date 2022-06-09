@@ -40,6 +40,9 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestServiceShapefileHelper;
 import edu.harvard.iq.dataverse.ingest.IngestableDataChecker;
 import edu.harvard.iq.dataverse.license.License;
+import edu.harvard.iq.dataverse.util.file.BagItFileHandler;
+import edu.harvard.iq.dataverse.util.file.CreateDataFileResult;
+import edu.harvard.iq.dataverse.util.file.BagItFileHandlerFactory;
 import edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil;
 import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatDoc;
 import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.HTML_H1;
@@ -78,6 +81,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -536,6 +540,11 @@ public class FileUtil implements java.io.Serializable  {
                 //  logger.info("------- shapefile FOUND ----------");
                 fileType = ShapefileHandler.SHAPEFILE_FILE_TYPE; //"application/zipped-shapefile";
             }
+
+            Optional<BagItFileHandler> bagItFileHandler = CDI.current().select(BagItFileHandlerFactory.class).get().getBagItFileHandler();
+             if(bagItFileHandler.isPresent() && bagItFileHandler.get().isBagItPackage(fileName, f)) {
+                 fileType = BagItFileHandler.FILE_TYPE;
+             }
         } 
 
         logger.fine("returning fileType "+fileType);
@@ -744,7 +753,7 @@ public class FileUtil implements java.io.Serializable  {
         return "";
     }
 
-    public static List<DataFile> createDataFiles(DatasetVersion version, InputStream inputStream,
+    public static CreateDataFileResult createDataFiles(DatasetVersion version, InputStream inputStream,
             String fileName, String suppliedContentType, String newStorageIdentifier, String newCheckSum,
             SystemConfig systemConfig)  throws IOException {
         ChecksumType checkSumType = DataFile.ChecksumType.MD5;
@@ -754,7 +763,7 @@ public class FileUtil implements java.io.Serializable  {
         return createDataFiles(version, inputStream, fileName, suppliedContentType, newStorageIdentifier, newCheckSum, checkSumType, systemConfig);
     }
     
-    public static List<DataFile> createDataFiles(DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, String newCheckSum, ChecksumType newCheckSumType, SystemConfig systemConfig) throws IOException {
+    public static CreateDataFileResult createDataFiles(DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, String newCheckSum, ChecksumType newCheckSumType, SystemConfig systemConfig) throws IOException {
         List<DataFile> datafiles = new ArrayList<>();
 
         //When there is no checksum/checksumtype being sent (normal upload, needs to be calculated), set the type to the current default
@@ -867,7 +876,7 @@ public class FileUtil implements java.io.Serializable  {
                     }
 
                     datafiles.add(datafile);
-                    return datafiles;
+                    return CreateDataFileResult.success(finalType, datafiles);
                 }
 
                 // If it's a ZIP file, we are going to unpack it and create multiple
@@ -1043,7 +1052,7 @@ public class FileUtil implements java.io.Serializable  {
                         logger.warning("Could not remove temp file " + tempFile.getFileName().toString());
                     }
                     // and return:
-                    return datafiles;
+                    return CreateDataFileResult.success(finalType, datafiles);
                 }
 
             } else if (finalType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)) {
@@ -1059,7 +1068,7 @@ public class FileUtil implements java.io.Serializable  {
                 boolean didProcessWork = shpIngestHelper.processFile();
                 if (!(didProcessWork)) {
                     logger.severe("Processing of zipped shapefile failed.");
-                    return null;
+                    return CreateDataFileResult.error(finalType);
                 }
 
                 try {
@@ -1120,11 +1129,11 @@ public class FileUtil implements java.io.Serializable  {
                         logger.warning("Unable to delete: " + tempFile.toString() + "due to Security Exception: "
                                 + se.getMessage());
                     }
-                    return datafiles;
+                    return CreateDataFileResult.success(finalType, datafiles);
                 } else {
                     logger.severe("No files added from directory of rezipped shapefiles");
                 }
-                return null;
+                return CreateDataFileResult.error(finalType);
 
             } else if (finalType.equals(FileUtil.MIME_TYPE_HYPOTHESIS_ANNOTATIONS)) {
                 // ToDo - parse and if rows total > 200 report error (we've only retrieved the
@@ -1137,8 +1146,17 @@ public class FileUtil implements java.io.Serializable  {
                         warningMessage = HYPOTHESIS_LIMIT_WARNING;
                     }
                 }
+            } else if (finalType.equalsIgnoreCase(BagItFileHandler.FILE_TYPE)) {
+                Optional<BagItFileHandler> bagItFileHandler = CDI.current().select(BagItFileHandlerFactory.class).get().getBagItFileHandler();
+                if (bagItFileHandler.isPresent()) {
+                    CreateDataFileResult result = bagItFileHandler.get().handleBagItPackage(systemConfig, version, fileName, tempFile.toFile());
+                    return result;
+                }
             }
-        } else {
+        }
+    }else
+
+    {
             // Default to suppliedContentType if set or the overall undetermined default if a contenttype isn't supplied
             finalType = StringUtils.isBlank(suppliedContentType) ? FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT : suppliedContentType;
             String type = determineFileTypeByExtension(fileName);
@@ -1172,10 +1190,10 @@ public class FileUtil implements java.io.Serializable  {
             }
             datafiles.add(datafile);
 
-            return datafiles;
+            return CreateDataFileResult.success(finalType, datafiles);
         }
 
-        return null;
+        return CreateDataFileResult.error(finalType);
     }   // end createDataFiles
 
 	private static boolean useRecognizedType(String suppliedContentType, String recognizedType) {
@@ -1207,13 +1225,14 @@ public class FileUtil implements java.io.Serializable  {
 						&& !suppliedContentType.equalsIgnoreCase(MIME_TYPE_XLSX))
 				|| canIngestAsTabular(recognizedType) || recognizedType.equals("application/fits-gzipped")
 				|| recognizedType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)
+				|| recognizedType.equalsIgnoreCase(BagItFileHandler.FILE_TYPE)
 				|| recognizedType.equals(MIME_TYPE_ZIP)) {
 			return true;
 		}
 		return false;
 	}
 
-    private static File saveInputStreamInTempFile(InputStream inputStream, Long fileSizeLimit)
+	public static File saveInputStreamInTempFile(InputStream inputStream, Long fileSizeLimit)
             throws IOException, FileExceedsMaxSizeException {
         Path tempFile = Files.createTempFile(Paths.get(getFilesTempDirectory()), "tmp", "upload");
 
@@ -1243,15 +1262,15 @@ public class FileUtil implements java.io.Serializable  {
      * been figured out. 
      */
 
-    private static DataFile createSingleDataFile(DatasetVersion version, File tempFile, String fileName, String contentType, DataFile.ChecksumType checksumType) {
+    public static DataFile createSingleDataFile(DatasetVersion version, File tempFile, String fileName, String contentType, DataFile.ChecksumType checksumType) {
         return createSingleDataFile(version, tempFile, null, fileName, contentType, checksumType, null, false);
     }
 
-    private static DataFile createSingleDataFile(DatasetVersion version, File tempFile, String storageIdentifier,  String fileName, String contentType, DataFile.ChecksumType checksumType, String checksum) {
+    public static DataFile createSingleDataFile(DatasetVersion version, File tempFile, String storageIdentifier,  String fileName, String contentType, DataFile.ChecksumType checksumType, String checksum) {
         return createSingleDataFile(version, tempFile, storageIdentifier, fileName, contentType, checksumType, checksum, false);
     }
 
-    private static DataFile createSingleDataFile(DatasetVersion version, File tempFile, String storageIdentifier, String fileName, String contentType, DataFile.ChecksumType checksumType, String checksum, boolean addToDataset) {
+    public static DataFile createSingleDataFile(DatasetVersion version, File tempFile, String storageIdentifier, String fileName, String contentType, DataFile.ChecksumType checksumType, String checksum, boolean addToDataset) {
 
         if ((tempFile == null) && (storageIdentifier == null)) {
             return null;

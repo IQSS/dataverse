@@ -281,8 +281,8 @@ public class XLSXFileReader extends TabularDataFileReader {
             this(sst, null, null);
         }
 
-        private SheetHandler(SharedStrings sst2, DataTable dataTable, PrintWriter tempOut) {
-            this.sst = sst2;
+        private SheetHandler(SharedStrings sst, DataTable dataTable, PrintWriter tempOut) {
+            this.sst = sst;
             this.dataTable = dataTable;
             this.tempOut = tempOut; 
             variableHeader = true;
