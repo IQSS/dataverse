@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse.util.json;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,5 +57,16 @@ public class JsonUtil {
         }
         return stringWriter.toString();
     }
+    
+    public static javax.json.JsonObject getJsonObject(String serializedJson) {
+        try (StringReader rdr = new StringReader(serializedJson)) {
+            return Json.createReader(rdr).readObject();
+        }
+    }
 
+    public static JsonArray getJsonArray(String serializedJson) {
+        try (StringReader rdr = new StringReader(serializedJson)) {
+            return Json.createReader(rdr).readArray();
+        }
+    }
 }

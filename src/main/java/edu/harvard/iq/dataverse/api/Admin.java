@@ -31,6 +31,7 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailException;
@@ -44,6 +45,7 @@ import edu.harvard.iq.dataverse.settings.Setting;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -94,6 +96,7 @@ import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -2061,4 +2064,43 @@ public class Admin extends AbstractApiBean {
                 .collect(toJsonArray()));
 
     }
+    
+    @POST
+    @Consumes("application/json")
+    @Path("/requestSignedUrl")
+    public Response getSignedUrl(JsonObject urlInfo) throws WrappedResponse {
+        AuthenticatedUser superuser = authSvc.getAdminUser();
+        
+        if (superuser == null) {
+            return error(Response.Status.FORBIDDEN, "Requesting signed URLs is restricted to superusers.");
+        }
+        
+        String userId = urlInfo.getString("user");
+        String key=null;
+        if(userId!=null) {
+        AuthenticatedUser user = authSvc.getAuthenticatedUser(userId);
+        if(user!=null) {
+            ApiToken apiToken = authSvc.findApiTokenByUser(user);
+            if(apiToken!=null && !apiToken.isExpired() &&  ! apiToken.isDisabled()) {
+                key = apiToken.getTokenString();
+            }
+        } else {
+            userId=superuser.getIdentifier();
+            //We ~know this exists - the superuser just used it and it was unexpired/not disabled. (ToDo - if we want this to work with workflow tokens (or as a signed URL, we should do more checking as for the user above))
+        }
+            key =  authSvc.findApiTokenByUser(superuser).getTokenString();
+        }
+        if(key==null) {
+            return error(Response.Status.CONFLICT, "Do not have a valid user with apiToken");
+        }
+        
+        String baseUrl = urlInfo.getString("url");
+        int timeout = urlInfo.getInt("timeout", 10);
+        String method = urlInfo.getString("method", "GET");
+        
+        String signedUrl = UrlSignerUtil.signUrl(baseUrl, timeout, userId, method, key); 
+        
+        return ok(Json.createObjectBuilder().add("signedUrl", signedUrl));
+    }
+ 
 }
