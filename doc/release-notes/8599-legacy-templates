@@ -1,5 +1,0 @@
-Some older legacy templates did not have an associated termsofuseandaccess linked to them. When custom licenses were added, dataverses that these legacy templates as default would not allow the creation of a new dataset (500 error). 
-
-In this release, we run a script that creates a default empty termsofuseandaccess for each of these templates and links them.
-
-Note the termsofuseandaccess that are created this way default to using the license with id=1 (cc0) and the fileaccessrequest to false. 
