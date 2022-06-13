@@ -649,8 +649,8 @@ public class EditDatafilesPage implements java.io.Serializable {
             setUpRsync();
         }
 
-        if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)){
-            JH.addMessage(FacesMessage.SEVERITY_WARN, getBundleString("dataset.message.publicInstall"));
+        if (isHasPublicStore()){
+            JH.addMessage(FacesMessage.SEVERITY_WARN, getBundleString("dataset.message.label.fileAccess"), getBundleString("dataset.message.publicInstall"));
         }
 
         return null;
@@ -3086,5 +3086,10 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public void setFileAccessRequest(boolean fileAccessRequest) {
         this.fileAccessRequest = fileAccessRequest;
+    }
+    
+    //Determines whether this Dataset uses a public store and therefore doesn't support embargoed or restricted files
+    public boolean isHasPublicStore() {
+        return settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, StorageIO.isPublicStore(dataset.getEffectiveStorageDriverId()));
     }
 }
