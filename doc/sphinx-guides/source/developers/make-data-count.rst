@@ -51,9 +51,9 @@ Once you are done with your configuration, you can run Counter Processor like th
 
 ``su - counter``
 
-``cd /usr/local/counter-processor-0.0.1``
+``cd /usr/local/counter-processor-0.1.04``
 
-``CONFIG_FILE=counter-processor-config.yaml python36 main.py``
+``CONFIG_FILE=counter-processor-config.yaml python39 main.py``
 
 (Please note that the Counter Processor README says you can also pass in values like ``START_DATE``, ``END_DATE`` etc. at the command line if you find this to be more convenient.)
 
@@ -84,7 +84,7 @@ Second, if you are also sending your SUSHI report to Make Data Count, you will n
 
 ``curl -H "Authorization: Bearer $JSON_WEB_TOKEN" -X DELETE https://$MDC_SERVER/reports/$REPORT_ID``
 
-To get the ``REPORT_ID``, look at the logs generated in ``/usr/local/counter-processor-0.0.1/tmp/datacite_response_body.txt``
+To get the ``REPORT_ID``, look at the logs generated in ``/usr/local/counter-processor-0.1.04/tmp/datacite_response_body.txt``
 
 To read more about the Make Data Count api, see https://github.com/datacite/sashimi
 

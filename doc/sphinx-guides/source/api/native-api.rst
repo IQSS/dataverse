@@ -459,7 +459,7 @@ To create a dataset, you must supply a JSON file that contains at least the foll
 - Description
 - Subject
 
-As a starting point, you can download :download:`dataset-finch1.json <../../../../scripts/search/tests/data/dataset-finch1.json>` and modify it to meet your needs. (In addition to this minimal example, you can download :download:`dataset-create-new-all-default-fields.json <../../../../scripts/api/data/dataset-create-new-all-default-fields.json>` which populates all of the metadata fields that ship with a Dataverse installation.)
+As a starting point, you can download :download:`dataset-finch1.json <../../../../scripts/search/tests/data/dataset-finch1.json>` and modify it to meet your needs. (:download:`dataset-create-new-all-default-fields.json <../../../../scripts/api/data/dataset-finch1_fr.json>` is a variant of this file that includes setting the metadata language (see :ref:`:MetadataLanguages`) to French (fr). In addition to this minimal example, you can download :download:`dataset-create-new-all-default-fields.json <../../../../scripts/api/data/dataset-create-new-all-default-fields.json>` which populates all of the metadata fields that ship with a Dataverse installation.)
 
 The curl command below assumes you have kept the name "dataset-finch1.json" and that this file is in your current working directory.
 
@@ -473,13 +473,13 @@ Next you need to figure out the alias or database id of the "parent" Dataverse c
   export PARENT=root
   export SERVER_URL=https://demo.dataverse.org
 
-  curl -H X-Dataverse-key:$API_TOKEN -X POST "$SERVER_URL/api/dataverses/$PARENT/datasets" --upload-file dataset-finch1.json
+  curl -H X-Dataverse-key:$API_TOKEN -X POST "$SERVER_URL/api/dataverses/$PARENT/datasets" --upload-file dataset-finch1.json -H 'Content-type:application/json'
 
 The fully expanded example above (without the environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/dataverses/root/datasets" --upload-file "dataset-finch1.json"
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/dataverses/root/datasets" --upload-file "dataset-finch1.json" -H 'Content-type:application/json'
 
 You should expect an HTTP 200 ("OK") response and JSON indicating the database ID and Persistent ID (PID such as DOI or Handle) that has been assigned to your newly created dataset.
 
@@ -1301,6 +1301,7 @@ When adding a file to a dataset, you can optionally specify the following:
 - A description of the file.
 - The "File Path" of the file, indicating which folder the file should be uploaded to within the dataset.
 - Whether or not the file is restricted.
+- Whether or not the file skips :doc:`tabular ingest </user/tabulardataingest/index>`. If the ``tabIngest`` parameter is not specified, it defaults to ``true``.
 
 Note that when a Dataverse instance is configured to use S3 storage with direct upload enabled, there is API support to send a file directly to S3. This is more complex and is described in the :doc:`/developers/s3-direct-upload-api` guide.
  
@@ -1315,13 +1316,13 @@ In the curl example below, all of the above are specified but they are optional.
   export SERVER_URL=https://demo.dataverse.org
   export PERSISTENT_ID=doi:10.5072/FK2/J8SJZB
 
-  curl -H X-Dataverse-key:$API_TOKEN -X POST -F "file=@$FILENAME" -F 'jsonData={"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"false"}' "$SERVER_URL/api/datasets/:persistentId/add?persistentId=$PERSISTENT_ID"
+  curl -H X-Dataverse-key:$API_TOKEN -X POST -F "file=@$FILENAME" -F 'jsonData={"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"false", "tabIngest":"false"}' "$SERVER_URL/api/datasets/:persistentId/add?persistentId=$PERSISTENT_ID"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST -F file=@data.tsv -F 'jsonData={"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"false"}' "https://demo.dataverse.org/api/datasets/:persistentId/add?persistentId=doi:10.5072/FK2/J8SJZB"
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST -F file=@data.tsv -F 'jsonData={"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"false", "tabIngest":"false"}' "https://demo.dataverse.org/api/datasets/:persistentId/add?persistentId=doi:10.5072/FK2/J8SJZB"
 
 You should expect a 201 ("CREATED") response and JSON indicating the database id that has been assigned to your newly uploaded file.
 
@@ -2835,13 +2836,90 @@ Show Info About Single Metadata Block
 Notifications
 -------------
 
+See :ref:`account-notifications` in the User Guide for an overview. For a list of all the notification types mentioned below (e.g. ASSIGNROLE), see :ref:`mute-notifications` in the Admin Guide.
+
 Get All Notifications by User
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Each user can get a dump of their notifications by passing in their API token::
+Each user can get a dump of their notifications by passing in their API token:
 
-    curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/notifications/all
-    
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/notifications/all
+
+Delete Notification by User
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Each user can delete notifications by passing in their API token and specifying notification ID (e.g., 555):
+
+.. code-block:: bash
+
+  export NOTIFICATION_ID=555
+
+  curl -H X-Dataverse-key:$API_TOKEN -X DELETE "$SERVER_URL/api/notifications/$NOTIFICATION_ID"
+
+Get All Muted In-app Notifications by User
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Each user can get a list of their muted in-app notification types by passing in their API token:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:$API_TOKEN -X GET "$SERVER_URL/api/notifications/mutedNotifications"
+
+Mute In-app Notification by User
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Each user can mute in-app notifications by passing in their API token and specifying notification type to be muted (e.g., ASSIGNROLE):
+
+.. code-block:: bash
+
+  export NOTIFICATION_TYPE=ASSIGNROLE
+
+  curl -H X-Dataverse-key:$API_TOKEN -X PUT "$SERVER_URL/api/notifications/mutedNotifications/$NOTIFICATION_TYPE"
+
+Unmute In-app Notification by User
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Each user can unmute in-app notifications by passing in their API token and specifying notification type to be unmuted (e.g., ASSIGNROLE):
+
+.. code-block:: bash
+
+  export NOTIFICATION_TYPE=ASSIGNROLE
+
+  curl -H X-Dataverse-key:$API_TOKEN -X DELETE "$SERVER_URL/api/notifications/mutedNotifications/$NOTIFICATION_TYPE"
+
+Get All Muted Email Notifications by User
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Each user can get a list of their muted email notification types by passing in their API token:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:$API_TOKEN -X GET "$SERVER_URL/api/notifications/mutedEmails"
+
+Mute Email Notification by User
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Each user can mute email notifications by passing in their API token and specifying notification type to be muted (e.g., ASSIGNROLE):
+
+.. code-block:: bash
+
+  export NOTIFICATION_TYPE=ASSIGNROLE
+
+  curl -H X-Dataverse-key:$API_TOKEN -X PUT "$SERVER_URL/api/notifications/mutedEmails/$NOTIFICATION_TYPE"
+
+Unmute Email Notification by User
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Each user can unmute email notifications by passing in their API token and specifying notification type to be unmuted (e.g., ASSIGNROLE):
+
+.. code-block:: bash
+
+  export NOTIFICATION_TYPE=ASSIGNROLE
+
+  curl -H X-Dataverse-key:$API_TOKEN -X DELETE "$SERVER_URL/api/notifications/mutedEmails/$NOTIFICATION_TYPE"
+
 .. _User Information:
 
 User Information
@@ -3805,3 +3883,36 @@ Superusers can delete a license that is not in use by the license ``$ID``:
 .. code-block:: bash
 
   curl -X DELETE -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/licenses/$ID
+  
+List Dataset Templates
+~~~~~~~~~~~~~~~~~~~~~~
+
+List all templates in the system. ::
+
+    GET http://$SERVER/api/admin/templates
+    
+List templates in a given dataverse by the dataverse's alias or id. ::
+
+    GET http://$SERVER/api/admin/templates/{alias or id}
+
+    
+Delete Dataset Template
+~~~~~~~~~~~~~~~~~~~~~~~
+
+A curl example using an ``ID``
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+
+  curl -X DELETE $SERVER_URL/api/admin/template/$ID
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -X DELETE https://demo.dataverse.org/api/admin/template/24
+  
+  
+  

@@ -96,7 +96,7 @@ PostgreSQL
 ----------
 
 Installing PostgreSQL
-=======================
+=====================
 
 The application has been tested with PostgreSQL versions up to 13 and version 10+ is required. We recommend installing the latest version that is available for your OS distribution. *For example*, to install PostgreSQL 13 under RHEL7/derivative::
 
@@ -107,7 +107,7 @@ The application has been tested with PostgreSQL versions up to 13 and version 10
 	# /usr/bin/systemctl start postgresql-13
 	# /usr/bin/systemctl enable postgresql-13
 
-For RHEL8/derivative the process would be identical, except for the very first command - you would need to install the "EL-8" yum repository configuration instead. 
+For RHEL8/derivative the process would be identical, except for the first two commands: you would need to install the "EL-8" yum repository configuration and run ``yum makecache`` instead.
 
 Configuring Database Access for the Dataverse Installation (and the Dataverse Software Installer)
 =================================================================================================
@@ -416,43 +416,51 @@ Counter Processor is required to enable Make Data Count metrics in a Dataverse i
 Installing Counter Processor
 ============================
 
-Counter Processor has only been tested on el7 (see "Linux" above). Please note that a scripted installation using Ansible is mentioned in the :doc:`/developers/make-data-count` section of the Developer Guide.
+A scripted installation using Ansible is mentioned in the :doc:`/developers/make-data-count` section of the Developer Guide.
 
 As root, download and install Counter Processor::
 
         cd /usr/local
-        wget https://github.com/CDLUC3/counter-processor/archive/v0.0.1.tar.gz
-        tar xvfz v0.0.1.tar.gz
+        wget https://github.com/CDLUC3/counter-processor/archive/v0.1.04.tar.gz
+        tar xvfz v0.1.04.tar.gz
+        cd /usr/local/counter-processor-0.1.04
 
-As root, change to the Counter Processor directory you just created, download the GeoLite2-Country tarball, untar it, and copy the geoip database into place::
+Installing GeoLite Country Database
+===================================
 
-        cd /usr/local/counter-processor-0.0.1
-        wget https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz
+Counter Processor can report per country results if the optional GeoLite Country Database is installed. At present, this database is free but to use it one must signing an agreement (EULA) with MaxMind. 
+(The primary concern appears to be that individuals can opt-out of having their location tracked via IP address and, due to various privacy laws, MaxMind needs a way to comply with that for products it has "sold" (for no cost in this case). Their agreement requires you to either configure automatic updates to the GeoLite Country database or be responsible on your own for managing take down notices.)
+The process required to sign up, download the database, and to configure automated updating is described at https://blog.maxmind.com/2019/12/18/significant-changes-to-accessing-and-using-geolite2-databases/ and the links from that page.
+
+As root, change to the Counter Processor directory you just created, download the GeoLite2-Country tarball from MaxMind, untar it, and copy the geoip database into place::
+
+        <download or move the GeoLite2-Country.tar.gz to the /usr/local/counter-processor-0.1.04 directory>
         tar xvfz GeoLite2-Country.tar.gz
         cp GeoLite2-Country_*/GeoLite2-Country.mmdb maxmind_geoip
+
+Creating a counter User
+=======================
 
 As root, create a "counter" user and change ownership of Counter Processor directory to this new user::
 
         useradd counter
-        chown -R counter:counter /usr/local/counter-processor-0.0.1
+        chown -R counter:counter /usr/local/counter-processor-0.1.04
 
 Installing Counter Processor Python Requirements
 ================================================
 
-Counter Processor requires Python 3.6.4 or higher. The following commands are intended to be run as root but we are aware that Pythonistas might prefer fancy virtualenv or similar setups. Pull requests are welcome to improve these steps!
+Counter Processor version 0.1.04 requires Python 3.7 or higher. This version of Python is available in many operating systems, and is purportedly available for RHEL7 or CentOS 7 via Red Hat Software Collections. Alternately, one may compile it from source.
 
-Enable the EPEL repo if you haven't already::
+The following commands are intended to be run as root but we are aware that Pythonistas might prefer fancy virtualenv or similar setups. Pull requests are welcome to improve these steps!
 
-        yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+Install Python 3.9::
 
-Install Python 3.6::
-
-        yum install python36
+        yum install python39
 
 Install Counter Processor Python requirements::
 
-        python3.6 -m ensurepip
-        cd /usr/local/counter-processor-0.0.1
+        python3.9 -m ensurepip
+        cd /usr/local/counter-processor-0.1.04
         pip3 install -r requirements.txt
 
 See the :doc:`/admin/make-data-count` section of the Admin Guide for how to configure and run Counter Processor.
