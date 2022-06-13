@@ -988,7 +988,7 @@ Once this script is running, you can look in the Google Analytics console (Realt
 Configuring Licenses
 --------------------
 
-On a new installation of Dataverse, users may select from the following licenses or terms:
+On a new Dataverse installation, users may select from the following licenses or terms:
 
 - CC0 1.0 (default)
 - CC BY 4.0
