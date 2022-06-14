@@ -440,7 +440,7 @@ public abstract class AbstractApiBean {
         //ToDo - add null checks/ verify that calling methods catch things.
         String user = httpRequest.getParameter("user");
         AuthenticatedUser targetUser = authSvc.getAuthenticatedUser(user);
-        String key = authSvc.findApiTokenByUser(targetUser).getTokenString();
+        String key = System.getProperty(SystemConfig.API_SIGNING_SECRET,"") + authSvc.findApiTokenByUser(targetUser).getTokenString();
         String signedUrl = httpRequest.getRequestURL().toString();
         String method = httpRequest.getMethod();
         
