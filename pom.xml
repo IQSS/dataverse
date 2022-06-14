@@ -20,9 +20,11 @@
     <properties>
         <skipUnitTests>false</skipUnitTests>
         <reload4j.version>1.2.18.4</reload4j.version>
-        <flyway.version>5.2.4</flyway.version>
+        <flyway.version>8.5.10</flyway.version>
         <jhove.version>1.20.1</jhove.version>
         <jacoco.version>0.8.7</jacoco.version>
+        <poi.version>5.2.1</poi.version>
+        <tika.version>2.3.0</tika.version>
     </properties>
     
     <!-- Versions of dependencies used both directly and transitive are managed here.
@@ -188,7 +190,7 @@
         <dependency>
             <groupId>org.primefaces</groupId>
             <artifactId>primefaces</artifactId>
-            <version>10.0.0</version>
+            <version>11.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.primefaces.themes</groupId>
@@ -200,11 +202,18 @@
             <artifactId>omnifaces</artifactId>
             <version>3.8</version> <!-- Or 1.8-SNAPSHOT -->
         </dependency>
+        
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
+            <scope>provided</scope>
         </dependency>
-      <dependency>
+        <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.el</artifactId>
             <scope>provided</scope>
@@ -286,17 +295,17 @@
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
-            <version>4.1.1</version>
+            <version>${poi.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
-            <version>4.1.1</version>
+            <version>${poi.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-scratchpad</artifactId>
-            <version>4.1.1</version>
+            <version>${poi.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openpreservation.jhove</groupId>
@@ -488,8 +497,13 @@
         <!--  Full text indexing -->
         <dependency>
             <groupId>org.apache.tika</groupId>
-            <artifactId>tika-parsers</artifactId>
-            <version>1.27</version>
+            <artifactId>tika-core</artifactId>
+            <version>${tika.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-parsers-standard-package</artifactId>
+            <version>${tika.version}</version>
         </dependency>
         <!-- Named Entity Recognition -->
         <dependency>

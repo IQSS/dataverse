@@ -39,6 +39,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -106,6 +107,8 @@ public class ImportServiceBean {
 
     @EJB
     IndexServiceBean indexService;
+    @EJB
+    LicenseServiceBean licenseService;
     /**
      * This is just a convenience method, for testing migration.  It creates
      * a dummy dataverse with the directory name as dataverse name & alias.
@@ -270,7 +273,7 @@ public class ImportServiceBean {
         JsonObject obj = jsonReader.readObject();
         //and call parse Json to read it into a dataset
         try {
-            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService);
+            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService, licenseService);
             parser.setLenient(true);
             Dataset ds = parser.parseDataset(obj);
 
@@ -427,7 +430,7 @@ public class ImportServiceBean {
         JsonObject obj = jsonReader.readObject();
         //and call parse Json to read it into a dataset
         try {
-            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService);
+            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService, licenseService);
             parser.setLenient(!importType.equals(ImportType.NEW));
             Dataset ds = parser.parseDataset(obj);
 

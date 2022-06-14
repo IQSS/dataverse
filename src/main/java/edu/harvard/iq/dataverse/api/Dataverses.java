@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.GuestbookServiceBean;
@@ -31,6 +32,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataverse.DataverseUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.AddRoleAssigneesToExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
@@ -69,6 +71,7 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
+import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
 import java.io.StringReader;
@@ -113,6 +116,7 @@ import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import javax.servlet.http.HttpServletResponse;
@@ -226,6 +230,7 @@ public class Dataverses extends AbstractApiBean {
     @Consumes("application/json")
     public Response createDataset(String jsonBody, @PathParam("identifier") String parentIdtf) {
         try {
+            logger.fine("Json is: " + jsonBody);
             User u = findUserOrDie();
             Dataverse owner = findDataverseOrDie(parentIdtf);
             logger.log(Level.INFO, "jsonBody:createDataset={0}", jsonBody);
@@ -241,11 +246,16 @@ public class Dataverses extends AbstractApiBean {
                 return badRequest(BundleUtil.getStringFromBundle("dataverses.api.create.dataset.error.superuserFiles"));
             }
 
+            //Throw BadRequestException if metadataLanguage isn't compatible with setting
+            DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
+
             // clean possible version metadata
             DatasetVersion version = ds.getVersions().get(0);
             version.setMinorVersionNumber(null);
             version.setVersionNumber(null);
             version.setVersionState(DatasetVersion.VersionState.DRAFT);
+            version.getTermsOfUseAndAccess().setFileAccessRequest(true);
+            version.getTermsOfUseAndAccess().setDatasetVersion(version);
 
             ds.setAuthority(null);
             ds.setIdentifier(null);
@@ -304,11 +314,16 @@ public class Dataverses extends AbstractApiBean {
             version.setMinorVersionNumber(null);
             version.setVersionNumber(null);
             version.setVersionState(DatasetVersion.VersionState.DRAFT);
+            version.getTermsOfUseAndAccess().setFileAccessRequest(true);
+            version.getTermsOfUseAndAccess().setDatasetVersion(version);
 
             ds.setAuthority(null);
             ds.setIdentifier(null);
             ds.setProtocol(null);
             ds.setGlobalIdCreateTime(null);
+            
+            //Throw BadRequestException if metadataLanguage isn't compatible with setting
+            DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
 
             Dataset managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u)));
             return created("/datasets/" + managedDs.getId(),
@@ -339,6 +354,9 @@ public class Dataverses extends AbstractApiBean {
             if (ds.getVersions().isEmpty()) {
                 return badRequest("Supplied json must contain a single dataset version.");
             }
+
+            //Throw BadRequestException if metadataLanguage isn't compatible with setting
+            DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
 
             DatasetVersion version = ds.getVersions().get(0);
             if (version.getVersionState() == null) {
@@ -407,6 +425,7 @@ public class Dataverses extends AbstractApiBean {
             Dataset ds = null;
             try {
                 ds = jsonParser().parseDataset(importService.ddiToJson(xml));
+                DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
             } catch (JsonParseException jpe) {
                 return badRequest("Error parsing data as Json: "+jpe.getMessage());
             } catch (ImportException e) {
@@ -493,8 +512,10 @@ public class Dataverses extends AbstractApiBean {
             if(!datasetSvc.isIdentifierLocallyUnique(ds)) {
                 throw new BadRequestException("Cannot recreate a dataset whose PID is already in use");
             }
-
             
+            //Throw BadRequestException if metadataLanguage isn't compatible with setting
+            DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
+
 
             if (ds.getVersions().isEmpty()) {
                 return badRequest("Supplied json must contain a single dataset version.");
