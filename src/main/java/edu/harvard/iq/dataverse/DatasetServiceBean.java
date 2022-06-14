@@ -809,14 +809,9 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
 
     public void exportDataset(Dataset dataset, boolean forceReExport) {
-        // Note that we reExport only one dataset so we don't log in a separate export logging file here
         if (dataset != null) {
-            // Accurate "is published?" test - ?
-            // Answer: Yes, it is! We can't trust dataset.isReleased() alone; because it is a dvobject method 
-            // that returns (publicationDate != null). And "publicationDate" is essentially
-            // "the first publication date"; that stays the same as versions get 
-            // published and/or deaccessioned. But in combination with !isDeaccessioned() 
-            // it is indeed an accurate test.
+            // Note that the logic for handling a dataset is similar to what is implemented in exportAllDatasets, 
+            // but when only one dataset is exported we do not log in a separate export logging file
             if (dataset.isReleased() && dataset.getReleasedVersion() != null && !dataset.isDeaccessioned()) {
 
                 // can't trust dataset.getPublicationDate(), no. 
