@@ -63,6 +63,7 @@ COPY --chown=dataverse:dataverse src /dataverse/src/
 COPY --chown=dataverse:dataverse modules /dataverse/modules/
 COPY --chown=dataverse:dataverse scripts /dataverse/scripts/
 COPY --chown=dataverse:dataverse conf/jhove/ /dataverse/conf/jhove/
+COPY --chown=dataverse:dataverse local_lib /dataverse/local_lib/
 
 # this likely isn't needed on Linux but was needed on a Windows build
 RUN find /dataverse -type f -print0 | xargs -0 -n 1 -P 4 dos2unix
@@ -71,7 +72,7 @@ RUN find /dataverse -type f -print0 | xargs -0 -n 1 -P 4 dos2unix
 RUN cd /dataverse/ && \
   export dpkgArch="$(dpkg --print-architecture)" && \
   export JAVA_HOME="/usr/lib/jvm/java-11-openjdk-${dpkgArch}" && \
-  mvn package -DskipTests
+  mvn package -DskipTests --no-transfer-progress
 
 USER root
 COPY --chown=dataverse:dataverse ./conf/docker-compose/dataverse/startup.sh /startup.sh
