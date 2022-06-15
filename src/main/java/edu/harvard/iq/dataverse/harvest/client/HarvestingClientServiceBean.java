@@ -85,20 +85,25 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
         em.refresh(harvestingClient);
         harvestingClient.setHarvestingNow(false);
         
-        // And if there is an unfinished RunResult object, we'll
-        // just mark it as a failure:
-        if (harvestingClient.getLastRun() != null 
-                && harvestingClient.getLastRun().isInProgress()) {
-            harvestingClient.getLastRun().setFailed();
+        // And if there is still an unfinished RunResult object, we'll
+        // just mark it as a failure; similarly a Job in a "stopping" 
+        // state should be marked as "Aborted":
+        if (harvestingClient.getLastRun() != null) {
+            
+            if (harvestingClient.getLastRun().isInProgress()) {
+                harvestingClient.getLastRun().setFailed();
+            } else if (harvestingClient.getLastRun().isStopping()) {
+                harvestingClient.getLastRun().markAsAborted();
+            }
         }
        
     }
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void setHarvestInProgress(Long hcId, Date startTime) {
+    public ClientHarvestRun setHarvestInProgress(Long hcId, Date startTime) {
         HarvestingClient harvestingClient = em.find(HarvestingClient.class, hcId);
         if (harvestingClient == null) {
-            return;
+            return null;
         }
         em.refresh(harvestingClient);
         harvestingClient.setHarvestingNow(true);
@@ -110,6 +115,7 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
         currentRun.setStartTime(startTime);
         currentRun.setInProgress();
         harvestingClient.getRunHistory().add(currentRun);
+        return currentRun; 
     }
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
@@ -171,19 +177,23 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
         if (harvestingClient == null) {
             return;
         }
-        em.refresh(harvestingClient);
+        //em.refresh(harvestingClient);
         
         ClientHarvestRun currentRun = harvestingClient.getLastRun();
         
-        if (currentRun != null && currentRun.isInProgress()) {
-            // TODO: what if there's no current run in progress? should we just
-            // give up quietly, or should we make a noise of some kind? -- L.A. 4.4      
+        if (currentRun != null) {
             
-            currentRun.setSuccess();
+            
             currentRun.setFinishTime(currentTime);
             currentRun.setHarvestedDatasetCount(new Long(harvestedCount));
             currentRun.setFailedDatasetCount(new Long(failedCount));
             currentRun.setDeletedDatasetCount(new Long(deletedCount));
+            
+            if (currentRun.isInProgress()) {
+                currentRun.setSuccess();
+            } else if (currentRun.isStopping()) {
+                currentRun.markAsAborted();
+            }
         }
     }
 
@@ -204,7 +214,21 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
             currentRun.setFailed();
             currentRun.setFinishTime(currentTime);
         }
-    }  
+    }
+    
+    public ClientHarvestRun refreshHarvestingJobState(ClientHarvestRun harvestingRun) {
+        //return em.find(ClientHarvestRun.class, jobId);
+        em.refresh(harvestingRun);
+        return harvestingRun; 
+    }
+    
+    public boolean checkIfStoppingJob(Long jobId) {
+        ClientHarvestRun harvestingJob = em.find(ClientHarvestRun.class, jobId);
+        if (harvestingJob != null) {
+            return harvestingJob.isStopping();
+        }
+        return false; 
+    }
     
     public Long getNumberOfHarvestedDatasetByClients(List<HarvestingClient> clients) {
         String dvs = null; 
