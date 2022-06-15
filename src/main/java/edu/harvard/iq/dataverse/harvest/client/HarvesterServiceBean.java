@@ -237,7 +237,7 @@ public class HarvesterServiceBean {
             for (Iterator<Header> idIter = oaiHandler.runListIdentifiers(); idIter.hasNext();) {
 
                 // Before each iteration, check if this harvesting job needs to be aborted:
-                if (false) { // (harvestingClientService.checkIfStoppingJob(thisJobId) {
+                if (harvestingClientService.checkIfStoppingJob(thisJobId)) {
                     
                 }
                 Header h = idIter.next();
