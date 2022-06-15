@@ -5,14 +5,14 @@
  */
 package edu.harvard.iq.dataverse.harvest.server.web.servlet;
 
-import io.gdcc.xoai.xmlio.exceptions.XmlWriteException;
 import io.gdcc.xoai.dataprovider.DataProvider;
-import io.gdcc.xoai.dataprovider.builder.OAIRequestParametersBuilder;
+//import io.gdcc.xoai.dataprovider.builder.OAIRequestParametersBuilder;
 import io.gdcc.xoai.dataprovider.repository.Repository;
 import io.gdcc.xoai.dataprovider.repository.RepositoryConfiguration;
 import io.gdcc.xoai.dataprovider.model.Context;
 import io.gdcc.xoai.dataprovider.model.MetadataFormat;
-import io.gdcc.xoai.services.impl.SimpleResumptionTokenFormat;
+import io.gdcc.xoai.dataprovider.request.RequestBuilder;
+import io.gdcc.xoai.dataprovider.request.RequestBuilder.RawRequest;
 import io.gdcc.xoai.dataprovider.repository.ItemRepository;
 import io.gdcc.xoai.dataprovider.repository.SetRepository;
 import io.gdcc.xoai.model.oaipmh.DeletedRecord;
@@ -29,7 +29,6 @@ import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.xoai.DataverseXoaiItemRepository;
 import edu.harvard.iq.dataverse.harvest.server.xoai.DataverseXoaiSetRepository;
-import edu.harvard.iq.dataverse.harvest.server.xoai.conditions.UsePregeneratedMetadataFormat;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -99,7 +98,7 @@ public class OAIServlet extends HttpServlet {
         if (isDataverseOaiExtensionsSupported()) {
             xoaiContext = addDataverseJsonMetadataFormat(xoaiContext);
         }
-        addMetadataFormatConditions(xoaiContext); 
+        //addMetadataFormatConditions(xoaiContext); 
         
         setRepository = new DataverseXoaiSetRepository(setService);
         itemRepository = new DataverseXoaiItemRepository(recordService, datasetService, systemConfig.getDataverseSiteUrl()+"/oai");
@@ -109,7 +108,7 @@ public class OAIServlet extends HttpServlet {
         xoaiRepository = new Repository()
             .withSetRepository(setRepository)
             .withItemRepository(itemRepository)
-            .withResumptionTokenFormatter(new SimpleResumptionTokenFormat())
+            //.withResumptionTokenFormatter(new SimpleResumptionTokenFormat())
             .withConfiguration(repositoryConfiguration);
         
         dataProvider = new DataProvider(getXoaiContext(), getXoaiRepository());
@@ -159,13 +158,14 @@ public class OAIServlet extends HttpServlet {
         return context;
     }
     
+    /* No longer needed after the modifications on the gdcc/xoai side
     private void addMetadataFormatConditions(Context context) {
         for (MetadataFormat metadataFormat : context.getMetadataFormats()) {
             UsePregeneratedMetadataFormat condition = new UsePregeneratedMetadataFormat(); 
             condition.withMetadataFormat(metadataFormat);
             metadataFormat.withCondition(condition);
         }
-    }
+    }*/
     
     private boolean isDataverseOaiExtensionsSupported() {
         return true;
@@ -230,7 +230,7 @@ public class OAIServlet extends HttpServlet {
     }
      
     
-    private void processRequest(HttpServletRequest request, HttpServletResponse response)
+    private void processRequest(HttpServletRequest httpServletRequest, HttpServletResponse response)
             throws ServletException, IOException {
         
         try {
@@ -241,16 +241,17 @@ public class OAIServlet extends HttpServlet {
                 return;
             }
             
-            OAIRequestParametersBuilder parametersBuilder = newXoaiRequest();
+            //OAIRequestParametersBuilder parametersBuilder = newXoaiRequest();
+            RawRequest rawRequest = RequestBuilder.buildRawRequest(httpServletRequest.getParameterMap());
             
-            for (Object p : request.getParameterMap().keySet()) {
+            /*for (Object p : httpServletRequest.getParameterMap().keySet()) {
                 String parameterName = (String)p; 
-                String parameterValue = request.getParameter(parameterName);
+                String parameterValue = httpServletRequest.getParameter(parameterName);
                 parametersBuilder = parametersBuilder.with(parameterName, parameterValue);
 
-            }
+            }*/
             
-            OAIPMH handle = dataProvider.handle(parametersBuilder);
+            OAIPMH handle = dataProvider.handle(rawRequest);
             response.setContentType("text/xml;charset=UTF-8");
 
             XmlWriter xmlWriter = new XmlWriter(response.getOutputStream());
@@ -264,9 +265,6 @@ public class OAIServlet extends HttpServlet {
         } catch (XMLStreamException xse) {
             logger.warning("XML Stream exception in Get; "+xse.getMessage());
             throw new ServletException ("XML Stream Exception in Get", xse);
-        } catch (XmlWriteException xwe) {
-            logger.warning("XML Write exception in Get; "+xwe.getMessage());
-            throw new ServletException ("XML Write Exception in Get", xwe);  
         } catch (Exception e) {
             logger.warning("Unknown exception in Get; "+e.getMessage());
             throw new ServletException ("Unknown servlet exception in Get.", e);
@@ -281,11 +279,6 @@ public class OAIServlet extends HttpServlet {
     protected Repository getXoaiRepository() {
         return xoaiRepository;
     }
-    
-    protected OAIRequestParametersBuilder newXoaiRequest() {
-        return new OAIRequestParametersBuilder();
-    }
-    
     
     public boolean isHarvestingServerEnabled() {
         return systemConfig.isOAIServerEnabled();

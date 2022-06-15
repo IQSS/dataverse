@@ -1,10 +1,10 @@
 package edu.harvard.iq.dataverse.harvest.server.xoai;
 
-import io.gdcc.xoai.dataprovider.exceptions.IdDoesNotExistException;
-import io.gdcc.xoai.dataprovider.exceptions.OAIException;
+import io.gdcc.xoai.dataprovider.exceptions.handler.IdDoesNotExistException;
+import io.gdcc.xoai.exceptions.OAIException;
 import io.gdcc.xoai.dataprovider.filter.ScopedFilter;
-import io.gdcc.xoai.dataprovider.handlers.results.ListItemIdentifiersResult;
-import io.gdcc.xoai.dataprovider.handlers.results.ListItemsResults;
+//import io.gdcc.xoai.dataprovider.handlers.results.ListItemIdentifiersResult;
+//import io.gdcc.xoai.dataprovider.handlers.results.ListItemsResults;
 import io.gdcc.xoai.dataprovider.model.Item;
 import io.gdcc.xoai.dataprovider.model.ItemIdentifier;
 import io.gdcc.xoai.dataprovider.model.Set;
@@ -16,11 +16,13 @@ import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecord;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
-import edu.harvard.iq.dataverse.harvest.server.xoai.conditions.UsePregeneratedMetadataFormat;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import io.gdcc.xoai.dataprovider.exceptions.handler.HandlerException;
+import io.gdcc.xoai.dataprovider.exceptions.handler.NoMetadataFormatsException;
 import io.gdcc.xoai.dataprovider.filter.Scope;
-import io.gdcc.xoai.dataprovider.model.conditions.Condition;
-import io.gdcc.xoai.model.oaipmh.Metadata;
+import io.gdcc.xoai.dataprovider.repository.ResultsPage;
+import io.gdcc.xoai.model.oaipmh.ResumptionToken;
+import io.gdcc.xoai.model.oaipmh.results.record.Metadata;
 import io.gdcc.xoai.xml.EchoElement;
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,19 +57,19 @@ public class DataverseXoaiItemRepository implements ItemRepository {
 
 
     @Override
-    public Item getItem(String identifier) throws IdDoesNotExistException, OAIException {
+    public Item getItem(String identifier) throws IdDoesNotExistException {
         // I'm assuming we don't want to use this version of getItem 
         // that does not specify the requested metadata format, ever
         // in our implementation - ? 
-        throw new OAIException("Metadata Format is Required");
+        throw new IdDoesNotExistException("Metadata Format is Required");
     }
     
     @Override
-    public Item getItem(String identifier, MetadataFormat metadataFormat) throws IdDoesNotExistException, OAIException {
+    public Item getItem(String identifier, MetadataFormat metadataFormat) throws HandlerException {
         logger.fine("getItem; calling findOaiRecordsByGlobalId, identifier " + identifier);
         
         if (metadataFormat == null) {
-            throw new OAIException("Metadata Format is Required");
+            throw new NoMetadataFormatsException("Metadata Format is Required");
         }
         
         List<OAIRecord> oaiRecords = recordService.findOaiRecordsByGlobalId(identifier);
@@ -136,44 +138,15 @@ public class DataverseXoaiItemRepository implements ItemRepository {
     }
 
     @Override
-    public ListItemIdentifiersResult getItemIdentifiers(List<ScopedFilter> filters, int offset, int length) throws OAIException {
-        return getItemIdentifiers(filters, offset, length, null, null, null);
-    }
-
-    @Override
-    public ListItemIdentifiersResult getItemIdentifiers(List<ScopedFilter> filters, int offset, int length, Instant from) throws OAIException {
-        return getItemIdentifiers(filters, offset, length, null, from, null);
-    }
-
-    @Override
-    public ListItemIdentifiersResult getItemIdentifiersUntil(List<ScopedFilter> filters, int offset, int length, Instant until) throws OAIException {
-        return getItemIdentifiers(filters, offset, length, null, null, until);
-    }
-
-    @Override
-    public ListItemIdentifiersResult getItemIdentifiers(List<ScopedFilter> filters, int offset, int length, Instant from, Instant until) throws OAIException {
-        return getItemIdentifiers(filters, offset, length, null, from, until);
-    }
-
-    @Override
-    public ListItemIdentifiersResult getItemIdentifiers(List<ScopedFilter> filters, int offset, int length, String setSpec) throws OAIException {
-        return getItemIdentifiers(filters, offset, length, setSpec, null, null);
-    }
-
-    @Override
-    public ListItemIdentifiersResult getItemIdentifiers(List<ScopedFilter> filters, int offset, int length, String setSpec, Instant from) throws OAIException {
-        return getItemIdentifiers(filters, offset, length, setSpec, from, null);
-    }
-
-    @Override
-    public ListItemIdentifiersResult getItemIdentifiersUntil(List<ScopedFilter> filters, int offset, int length, String setSpec, Instant until) throws OAIException {
-        return getItemIdentifiers(filters, offset, length, setSpec, null, until);
-    }
-
-    @Override
-    public ListItemIdentifiersResult getItemIdentifiers(List<ScopedFilter> filters, int offset, int length, String setSpec, Instant from, Instant until) throws OAIException {
+    public  ResultsPage<ItemIdentifier> getItemIdentifiers(List<ScopedFilter> filters, MetadataFormat metadataFormat, int maxResponseLength, ResumptionToken.Value resumptionToken) throws HandlerException {
+        
+        int offset = resumptionToken.getOffset().intValue();
+        String setSpec = resumptionToken.getSetSpec();
+        Instant from = resumptionToken.getFrom();
+        Instant until = resumptionToken.getUntil();
+        
         logger.fine("calling getItemIdentifiers; offset=" + offset
-                + ", length=" + length
+                + ", length=" + maxResponseLength
                 + ", setSpec=" + setSpec
                 + ", from=" + from
                 + ", until=" + until);
@@ -185,7 +158,7 @@ public class DataverseXoaiItemRepository implements ItemRepository {
         List<ItemIdentifier> xoaiItems = new ArrayList<>();
         if (oaiRecords != null && !oaiRecords.isEmpty()) {
 
-            for (int i = offset; i < offset + length && i < oaiRecords.size(); i++) {
+            for (int i = offset; i < offset + maxResponseLength && i < oaiRecords.size(); i++) {
                 OAIRecord record = oaiRecords.get(i);
                 xoaiItems.add(new DataverseXoaiItem(record));
             }
@@ -195,13 +168,14 @@ public class DataverseXoaiItemRepository implements ItemRepository {
             // formatted output in the header:
             addExtraSets(xoaiItems, setSpec, from, until);
             
-            boolean hasMore = offset + length < oaiRecords.size();
-            ListItemIdentifiersResult result = new ListItemIdentifiersResult(hasMore, xoaiItems);
+            boolean hasMore = offset + maxResponseLength < oaiRecords.size();
+            //ListItemIdentifiersResult result = new ListItemIdentifiersResult(hasMore, xoaiItems);
+            ResultsPage<ItemIdentifier> result = new ResultsPage(resumptionToken, hasMore, xoaiItems, oaiRecords.size());
             logger.fine("returning result with " + xoaiItems.size() + " items.");
             return result;
         }
 
-        return new ListItemIdentifiersResult(false, xoaiItems);
+        return new ResultsPage(resumptionToken, false, xoaiItems, 0);
     }
 
     @Override

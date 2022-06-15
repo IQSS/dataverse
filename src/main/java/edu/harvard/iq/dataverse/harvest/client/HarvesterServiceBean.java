@@ -34,7 +34,7 @@ import javax.xml.transform.TransformerException;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.xml.sax.SAXException;
 
-import io.gdcc.xoai.model.oaipmh.Header;
+import io.gdcc.xoai.model.oaipmh.results.record.Header;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;

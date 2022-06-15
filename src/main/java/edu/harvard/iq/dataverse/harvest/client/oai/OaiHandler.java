@@ -1,10 +1,10 @@
 package edu.harvard.iq.dataverse.harvest.client.oai;
 
-import io.gdcc.xoai.model.oaipmh.Description;
+import io.gdcc.xoai.model.oaipmh.results.Description;
 import io.gdcc.xoai.model.oaipmh.Granularity;
-import io.gdcc.xoai.model.oaipmh.Header;
-import io.gdcc.xoai.model.oaipmh.MetadataFormat;
-import io.gdcc.xoai.model.oaipmh.Set;
+import io.gdcc.xoai.model.oaipmh.results.record.Header;
+import io.gdcc.xoai.model.oaipmh.results.MetadataFormat;
+import io.gdcc.xoai.model.oaipmh.results.Set;
 import io.gdcc.xoai.serviceprovider.ServiceProvider;
 import io.gdcc.xoai.serviceprovider.client.JdkHttpOaiClient;  //.HttpOAIClient;
 import io.gdcc.xoai.serviceprovider.exceptions.BadArgumentException;

@@ -2,8 +2,8 @@ package edu.harvard.iq.dataverse.harvest.server.xoai;
 
 import io.gdcc.xoai.dataprovider.model.Item;
 import io.gdcc.xoai.dataprovider.model.Set;
-import io.gdcc.xoai.model.oaipmh.Metadata;
-import io.gdcc.xoai.model.oaipmh.About;
+import io.gdcc.xoai.model.oaipmh.results.record.Metadata;
+import io.gdcc.xoai.model.oaipmh.results.record.About;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecord;
 import edu.harvard.iq.dataverse.util.StringUtil;

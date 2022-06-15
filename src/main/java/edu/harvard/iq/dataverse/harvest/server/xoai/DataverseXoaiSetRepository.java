@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.harvest.server.xoai;
 
 import io.gdcc.xoai.model.xoai.Element;
 import io.gdcc.xoai.dataprovider.repository.SetRepository;
-import io.gdcc.xoai.dataprovider.handlers.results.ListSetsResult;
+//import io.gdcc.xoai.dataprovider.handlers.results.ListSetsResult;
 import io.gdcc.xoai.dataprovider.model.Set;
 import io.gdcc.xoai.model.xoai.XOAIMetadata;
 import edu.harvard.iq.dataverse.harvest.server.OAISet;
@@ -47,7 +47,7 @@ public class DataverseXoaiSetRepository implements SetRepository {
     }
 
     @Override
-    public ListSetsResult retrieveSets(int offset, int length) {
+    public List<Set> getSets() { //int offset, int length) {
         logger.fine("calling retrieveSets()");
         List<OAISet> dataverseOAISets = setService.findAllNamedSets();
         List<Set> XOAISets = new ArrayList<Set>();
@@ -66,7 +66,7 @@ public class DataverseXoaiSetRepository implements SetRepository {
             }
         }
         
-        return new ListSetsResult(offset + length < XOAISets.size(), XOAISets.subList(offset, Math.min(offset + length, XOAISets.size())));
+        return XOAISets;
     }
 
     @Override
