@@ -138,7 +138,7 @@ public class DataverseXoaiItemRepository implements ItemRepository {
     }
 
     @Override
-    public  ResultsPage<ItemIdentifier> getItemIdentifiers(List<ScopedFilter> filters, MetadataFormat metadataFormat, int maxResponseLength, ResumptionToken.Value resumptionToken) throws HandlerException {
+    public ResultsPage<ItemIdentifier> getItemIdentifiers(List<ScopedFilter> filters, MetadataFormat metadataFormat, int maxResponseLength, ResumptionToken.Value resumptionToken) throws HandlerException {
         
         int offset = resumptionToken.getOffset().intValue();
         String setSpec = resumptionToken.getSetSpec();
@@ -178,85 +178,34 @@ public class DataverseXoaiItemRepository implements ItemRepository {
         return new ResultsPage(resumptionToken, false, xoaiItems, 0);
     }
 
+    /* ResultsPage<Item> getItems(
+        final List<ScopedFilter> filters, final MetadataFormat metadataFormat, final int maxResponseLength,
+        final ResumptionToken.Value resumptionToken) throws HandlerException; */
     @Override
-    public ListItemsResults getItems(List<ScopedFilter> filters, int offset, int length) throws OAIException {
-        return getItems(filters, offset, length, null, null, null);
-    }
-
-    @Override
-    public ListItemsResults getItems(List<ScopedFilter> filters, int offset, int length, Instant from) throws OAIException {
-        return getItems(filters, offset, length, null, from, null);
-    }
-
-    @Override
-    public ListItemsResults getItemsUntil(List<ScopedFilter> filters, int offset, int length, Instant until) throws OAIException {
-        return getItems(filters, offset, length, null, null, until);
-    }
-
-    @Override
-    public ListItemsResults getItems(List<ScopedFilter> filters, int offset, int length, Instant from, Instant until) throws OAIException {
-        return getItems(filters, offset, length, null, from, until);
-    }
-
-    @Override
-    public ListItemsResults getItems(List<ScopedFilter> filters, int offset, int length, String setSpec) throws OAIException {
-        return getItems(filters, offset, length, setSpec, null, null);
-    }
-
-    @Override
-    public ListItemsResults getItems(List<ScopedFilter> filters, int offset, int length, String setSpec, Instant from) throws OAIException {
-        return getItems(filters, offset, length, setSpec, from, null);
-    }
-
-    @Override
-    public ListItemsResults getItemsUntil(List<ScopedFilter> filters, int offset, int length, String setSpec, Instant until) throws OAIException {
-        return getItems(filters, offset, length, setSpec, null, until);
-    }
-
-    @Override
-    public ListItemsResults getItems(List<ScopedFilter> filters, int offset, int length, String setSpec, Instant from, Instant until) throws OAIException {
+    public ResultsPage<Item> getItems(List<ScopedFilter> filters, MetadataFormat metadataFormat, int maxResponseLength, ResumptionToken.Value resumptionToken) throws HandlerException {
+        int offset = resumptionToken.getOffset().intValue();
+        String setSpec = resumptionToken.getSetSpec();
+        Instant from = resumptionToken.getFrom();
+        Instant until = resumptionToken.getUntil();
+        
         logger.fine("calling getItems; offset=" + offset
-                + ", length=" + length
+                + ", length=" + maxResponseLength
                 + ", setSpec=" + setSpec
                 + ", from=" + from
                 + ", until=" + until);
-
-        // TODO:?/WORKINPROGRESS:
-        // we need to know the MetadataFormat requested, in 
-        // order to look up the pre-generated metadata stream
-        // and create a CopyElement Metadata object out of it.
-        // In the current implementation this is solved by encoding the 
-        // MetadataFormat in a custom Condition, which results in it being 
-        // passed to the getItems() method as a ScopedFilter. 
-        // (or should we simply offer versions of all these methods,
-        // with the extra MetadataFormat argument, on the gdcc.xoai side, 
-        // like it was done with getItem() above?
-        
-        MetadataFormat metadataFormat = null; 
-        
-        for (ScopedFilter f : filters) {
-
-            if (f.getScope().equals(Scope.MetadataFormat)) {
-                Condition condition = f.getCondition();
-                if (condition instanceof UsePregeneratedMetadataFormat) {
-                    metadataFormat = ((UsePregeneratedMetadataFormat) condition).getMetadataFormat();
-                    break;
-                }
-            }
-        }
-        
+   
+        // this is not needed, is it?
         if (metadataFormat == null) {
-            throw new OAIException("Metadata Format is Required");
+            throw new NoMetadataFormatsException("Metadata Format is Required");
         }
         
         List<OAIRecord> oaiRecords = recordService.findOaiRecordsBySetName(setSpec, from, until);
 
-        logger.fine("total " + oaiRecords.size() + " records returned");
-
         List<Item> xoaiItems = new ArrayList<>();
-        if (oaiRecords != null && !oaiRecords.isEmpty()) {
+        if (!(oaiRecords == null || oaiRecords.isEmpty())) {
+            logger.fine("total " + oaiRecords.size() + " records returned");
 
-            for (int i = offset; i < offset + length && i < oaiRecords.size(); i++) {
+            for (int i = offset; i < offset + maxResponseLength && i < oaiRecords.size(); i++) {
                 OAIRecord oaiRecord = oaiRecords.get(i);
                 
                 DataverseXoaiItem xoaiItem = new DataverseXoaiItem(oaiRecord); 
@@ -302,13 +251,15 @@ public class DataverseXoaiItemRepository implements ItemRepository {
             
             addExtraSets(xoaiItems, setSpec, from, until);
             
-            boolean hasMore = offset + length < oaiRecords.size();
-            ListItemsResults result = new ListItemsResults(hasMore, xoaiItems);
+            boolean hasMore = offset + maxResponseLength < oaiRecords.size();
+            //ListItemsResults result = new ListItemsResults(hasMore, xoaiItems);
+            ResultsPage<Item> result = new ResultsPage(resumptionToken, hasMore, xoaiItems, oaiRecords.size());
             logger.fine("returning result with " + xoaiItems.size() + " items.");
             return result;
         }
 
-        return new ListItemsResults(false, xoaiItems);
+        logger.fine("no records found");
+        return new ResultsPage(resumptionToken, false, xoaiItems, 0);
     }
     
     private void addExtraSets(Object xoaiItemsList, String setSpec, Instant from, Instant until) {
