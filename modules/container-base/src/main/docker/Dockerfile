@@ -61,8 +61,6 @@ ENV PATH="${PATH}:${PAYARA_DIR}/bin" \
     ENABLE_DUMPS=0 \
     JVM_DUMPS_ARG="-XX:+HeapDumpOnOutOfMemoryError"
 
-ARG ESH_VERSION=0.3.1
-ARG ESH_CHECKSUM="1e0bd783f930cba13d6708b11c1ac844bbb1eddd02ac1666fc10d47eb9517bd7"
 ARG JATTACH_VERSION="v2.0"
 ARG JATTACH_CHECKSUM="989dc53279c7fb3ec399dbff1692647439286e5a4339c2849fd4323e998af7f8"
 ARG PKGS="jq imagemagick curl unzip wget acl dirmngr gpg lsof procps netcat tini"
@@ -89,10 +87,6 @@ RUN true && \
     # Install packages
     apt-get update -q && \
     apt-get install -qqy --no-install-recommends ${PKGS} && \
-    # Download & check esh template script
-    curl -sSfL -o /usr/bin/esh "https://raw.githubusercontent.com/jirutka/esh/v${ESH_VERSION}/esh" && \
-    echo "${ESH_CHECKSUM} /usr/bin/esh" | sha256sum -c - && \
-    chmod +x /usr/bin/esh && \
     # Install jattach
     curl -sSfL -o /usr/bin/jattach "https://github.com/apangin/jattach/releases/download/${JATTACH_VERSION}/jattach" && \
     echo "${JATTACH_CHECKSUM} /usr/bin/jattach" | sha256sum -c - && \
