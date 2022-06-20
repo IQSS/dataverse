@@ -644,6 +644,14 @@
                     <include>**/services/*</include>
                 </includes>
             </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <!-- Filter files matching here for Maven properties and replace -->
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/*.properties</include>
+                </includes>
+            </resource>
         </resources>
         <plugins>
             <plugin>
