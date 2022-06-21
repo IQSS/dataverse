@@ -33,6 +33,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -91,12 +92,6 @@ public class SystemConfig {
      * token is valid ({@link #getMinutesUntilPasswordResetTokenExpires}).
      */
     private static final String PASSWORD_RESET_TIMEOUT_IN_MINUTES = "dataverse.auth.password-reset-timeout-in-minutes";
-
-    /**
-     * A common place to find the String for a sane Solr hostname:port
-     * combination.
-     */
-    private String saneDefaultForSolrHostColonPort = "localhost:8983";
 
     /**
      * The default number of datafiles that we allow to be created through 
@@ -161,15 +156,28 @@ public class SystemConfig {
         
         return appVersion;
     }
-
+    
+    /**
+     * Retrieve the Solr endpoint in "host:port" form, to be used with a Solr client.
+     *
+     * This will retrieve the setting from either the database ({@link SettingsServiceBean.Key#SolrHostColonPort}) or
+     * via Microprofile Config API (properties {@link JvmSettings#SOLR_HOST} and {@link JvmSettings#SOLR_PORT}).
+     *
+     * A database setting always takes precedence. If not given via other config sources, a default from
+     * <code>resources/META-INF/microprofile-config.properties</code> is used. (It's possible to use profiles.)
+     *
+     * @return Solr endpoint as string "hostname:port"
+     */
     public String getSolrHostColonPort() {
-        String SolrHost;
-        if ( System.getenv("SOLR_SERVICE_HOST") != null && System.getenv("SOLR_SERVICE_HOST") != ""){
-            SolrHost = System.getenv("SOLR_SERVICE_HOST");
-        }
-        else SolrHost = saneDefaultForSolrHostColonPort;
-        String solrHostColonPort = settingsService.getValueForKey(SettingsServiceBean.Key.SolrHostColonPort, SolrHost);
-        return solrHostColonPort;
+        // Get from MPCONFIG. Might be configured by a sysadmin or simply return the default shipped with
+        // resources/META-INF/microprofile-config.properties.
+        // NOTE: containers should use system property mp.config.profile=ct to use sane container usage default
+        String host = config.getValue(JvmSettings.SOLR_HOST.getScopedKey(), String.class);
+        String port = config.getValue(JvmSettings.SOLR_PORT.getScopedKey(), String.class);
+        
+        // DB setting takes precedence over all. If not present, will return default from above.
+        return Optional.ofNullable(settingsService.getValueForKey(SettingsServiceBean.Key.SolrHostColonPort))
+            .orElse(host + ":" + port);
     }
 
     public boolean isProvCollectionEnabled() {

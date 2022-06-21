@@ -20,7 +20,12 @@ public enum JvmSettings {
     
     // GENERAL SETTINGS
     VERSION(PREFIX, "version"),
-    BUILD(PREFIX, "build")
+    BUILD(PREFIX, "build"),
+    
+    // SOLR INDEX SETTINGS
+    SCOPE_SOLR(PREFIX, "solr"),
+    SOLR_HOST(SCOPE_SOLR, "host"),
+    SOLR_PORT(SCOPE_SOLR, "port"),
     
     ;
     
