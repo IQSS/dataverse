@@ -26,6 +26,9 @@ public enum JvmSettings {
     SCOPE_SOLR(PREFIX, "solr"),
     SOLR_HOST(SCOPE_SOLR, "host"),
     SOLR_PORT(SCOPE_SOLR, "port"),
+    SOLR_PROT(SCOPE_SOLR, "protocol"),
+    SOLR_CORE(SCOPE_SOLR, "core"),
+    SOLR_PATH(SCOPE_SOLR, "path"),
     
     ;
     

@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.search;
 
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -15,6 +16,8 @@ import javax.ejb.Singleton;
 import javax.inject.Named;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 
 /**
  *
@@ -30,6 +33,7 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient;
 @Singleton
 public class SolrClientService {
     private static final Logger logger = Logger.getLogger(SolrClientService.class.getCanonicalName());
+    private static final Config config = ConfigProvider.getConfig();
     
     @EJB
     SystemConfig systemConfig;
@@ -38,9 +42,11 @@ public class SolrClientService {
     
     @PostConstruct
     public void init() {
-        String urlString = "http://" + systemConfig.getSolrHostColonPort() + "/solr/collection1";
-        solrClient = new HttpSolrClient.Builder(urlString).build();
+        String protocol = config.getValue(JvmSettings.SOLR_PROT.getScopedKey(), String.class);
+        String path = config.getValue(JvmSettings.SOLR_PATH.getScopedKey(), String.class);
         
+        String urlString = protocol + "://" + systemConfig.getSolrHostColonPort() + path;
+        solrClient = new HttpSolrClient.Builder(urlString).build();
     }
     
     @PreDestroy
