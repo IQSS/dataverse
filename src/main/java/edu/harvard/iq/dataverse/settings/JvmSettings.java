@@ -42,6 +42,11 @@ public enum JvmSettings {
     VERSION(PREFIX, "version"),
     BUILD(PREFIX, "build"),
     
+    // SOLR INDEX SETTINGS
+    SCOPE_SOLR(PREFIX, "solr"),
+    SOLR_HOST(SCOPE_SOLR, "host"),
+    SOLR_PORT(SCOPE_SOLR, "port"),
+    
     ;
     
     private static final String SCOPE_SEPARATOR = ".";
