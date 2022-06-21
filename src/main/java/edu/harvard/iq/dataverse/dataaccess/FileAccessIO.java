@@ -303,7 +303,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
             throw new IOException("Null or invalid Auxiliary Object Tag.");
         }
         if(isDirectAccess()) {
-            //Overlay case
+            //includes overlay case
             return Paths.get(physicalPath.toString() + "." + auxItemTag);
         }
         String datasetDirectory = getDatasetDirectory();
