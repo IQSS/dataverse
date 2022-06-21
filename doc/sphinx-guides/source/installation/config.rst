@@ -1462,6 +1462,61 @@ Defaults to ``5432``, the default PostgreSQL port.
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_DB_PORT``.
 
+.. _dataverse.solr.host:
+
+dataverse.solr.host
++++++++++++++++++++
+
+The hostname of a Solr server to connect to. Remember to restart / redeploy Dataverse after changing the setting
+(as with :ref:`:SolrHostColonPort`).
+
+Defaults to ``localhost``.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SOLR_HOST``.
+Defaults to ``solr``, when used with ``mp.config.profile=ct`` (:ref:`see below <:ApplicationServerSettings>`).
+
+dataverse.solr.port
++++++++++++++++++++
+
+The Solr server port to connect to. Remember to restart / redeploy Dataverse after changing the setting
+(as with :ref:`:SolrHostColonPort`).
+
+Defaults to ``8983``, the default Solr port.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SOLR_PORT``.
+
+dataverse.solr.core
++++++++++++++++++++
+
+The name of the Solr core to use for this Dataverse installation. Might be used to switch to a different core quickly.
+Remember to restart / redeploy Dataverse after changing the setting (as with :ref:`:SolrHostColonPort`).
+
+Defaults to ``collection1``.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SOLR_CORE``.
+
+dataverse.solr.protocol
++++++++++++++++++++++++
+
+The Solr server URL protocol for the connection. Remember to restart / redeploy Dataverse after changing the setting
+(as with :ref:`:SolrHostColonPort`).
+
+Defaults to ``http``, but might be set to ``https`` for extra secure Solr installations.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SOLR_PROTOCOL``.
+
+dataverse.solr.path
++++++++++++++++++++
+
+The path part of the Solr endpoint URL (e.g. ``/solr/collection1`` of ``http://localhost:8389/solr/collection1``).
+Might be used to target a Solr API at non-default places. Remember to restart / redeploy Dataverse after changing the
+setting (as with :ref:`:SolrHostColonPort`).
+
+Defaults to ``/solr/${dataverse.solr.core}``, interpolating the core name when used. Make sure to include the variable
+when using it to configure your core name!
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SOLR_PATH``.
+
 dataverse.rserve.host
 +++++++++++++++++++++
 
@@ -1672,6 +1727,21 @@ To facilitate large file upload and download, the Dataverse Software installer b
 ``./asadmin set server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds=3600``
 
 and restart Payara to apply your change.
+
+mp.config.profile
++++++++++++++++++
+
+MicroProfile Config 2.0 defines the `concept of "profiles" <https://download.eclipse.org/microprofile/microprofile-config-2.0/microprofile-config-spec-2.0.html#configprofile>`_.
+They can be used to change configuration values by context. This is used in Dataverse to change some configuration
+defaults when used inside container context rather classic installations.
+
+As per the spec, you will need to set the configuration value ``mp.config.profile`` to ``ct`` as early as possible.
+This is best done with a system property:
+
+``./asadmin create-system-properties 'mp.config.profile=ct'``
+
+You might also create your own profiles and use these, please refer to the upstream documentation linked above.
+
 
 .. _database-settings:
 
@@ -2160,12 +2230,16 @@ Limit the number of files in a zip that your Dataverse installation will accept.
 
 ``curl -X PUT -d 2048 http://localhost:8080/api/admin/settings/:ZipUploadFilesLimit``
 
+.. _:SolrHostColonPort:
+
 :SolrHostColonPort
 ++++++++++++++++++
 
 By default your Dataverse installation will attempt to connect to Solr on port 8983 on localhost. Use this setting to change the hostname or port. You must restart Payara after making this change.
 
 ``curl -X PUT -d localhost:8983 http://localhost:8080/api/admin/settings/:SolrHostColonPort``
+
+**Note:** instead of using a database setting, you could alternatively use JVM settings like :ref:`dataverse.solr.host`.
 
 :SolrFullTextIndexing
 +++++++++++++++++++++
