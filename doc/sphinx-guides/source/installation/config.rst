@@ -270,6 +270,8 @@ If you wish to change which store is used by default, you'll need to delete the 
 
 It is also possible to set maximum file upload size limits per store. See the :ref:`:MaxFileUploadSizeInBytes` setting below.
 
+.. _storage-files-dir:
+
 File Storage
 ++++++++++++
 
@@ -1313,7 +1315,19 @@ dataverse.siteUrl
 dataverse.files.directory
 +++++++++++++++++++++++++
 
-This is how you configure the path Dataverse uses for temporary files. (File store specific dataverse.files.\<id\>.directory options set the permanent data storage locations.)
+Please provide an absolute path to a directory backed by some mounted file system. This directory is used for a number
+of purposes:
+
+1. ``<dataverse.files.directory>/temp`` after uploading, data is temporarily stored here for ingest and/or before
+   shipping to the final storage destination.
+2. ``<dataverse.files.directory>/sword`` a place to store uploads via the :doc:`../api/sword` before transfer
+   to final storage location and/or ingest.
+3. ``<dataverse.files.directory>/<PID Authority>/<PID Identifier>`` data location for file system imports, see
+   :ref:`api-import-dataset`.
+4. ``<dataverse.files.directory>/googlecloudkey.json`` used with :ref:`Google Cloud Configuration` for BagIt exports.
+
+This directory might also be used for permanent storage of data, but this setting is independent from
+:ref:`storage-files-dir` configuration.
 
 dataverse.auth.password-reset-timeout-in-minutes
 ++++++++++++++++++++++++++++++++++++++++++++++++
