@@ -129,7 +129,7 @@ public class SystemConfig {
         //       which contains in the source a Maven property reference to ${project.version}.
         //       When packaging the app to deploy it, Maven will replace this, rendering it a static entry.
         // NOTE: MicroProfile Config will cache the entry for us in internal maps.
-        String appVersion = config.getValue(JvmSettings.VERSION.getScopedKey(), String.class);
+        String appVersion = JvmSettings.VERSION.lookup();
             
         if (withBuildNumber) {
             if (buildNumber == null) {
@@ -145,7 +145,7 @@ public class SystemConfig {
                 // Also try to read the build number via MicroProfile Config if not already present from the
                 // properties file (so can be overridden by env var or other source)
                 if (buildNumber == null || buildNumber.isEmpty()) {
-                    buildNumber = config.getOptionalValue(JvmSettings.BUILD.getScopedKey(), String.class).orElse("");
+                    buildNumber = JvmSettings.BUILD.lookupOptional().orElse("");
                 }
             }
             
@@ -172,8 +172,8 @@ public class SystemConfig {
         // Get from MPCONFIG. Might be configured by a sysadmin or simply return the default shipped with
         // resources/META-INF/microprofile-config.properties.
         // NOTE: containers should use system property mp.config.profile=ct to use sane container usage default
-        String host = config.getValue(JvmSettings.SOLR_HOST.getScopedKey(), String.class);
-        String port = config.getValue(JvmSettings.SOLR_PORT.getScopedKey(), String.class);
+        String host = JvmSettings.SOLR_HOST.lookup();
+        String port = JvmSettings.SOLR_PORT.lookup();
         
         // DB setting takes precedence over all. If not present, will return default from above.
         return Optional.ofNullable(settingsService.getValueForKey(SettingsServiceBean.Key.SolrHostColonPort))

@@ -42,8 +42,8 @@ public class SolrClientService {
     
     @PostConstruct
     public void init() {
-        String protocol = config.getValue(JvmSettings.SOLR_PROT.getScopedKey(), String.class);
-        String path = config.getValue(JvmSettings.SOLR_PATH.getScopedKey(), String.class);
+        String protocol = JvmSettings.SOLR_PROT.lookup();
+        String path = JvmSettings.SOLR_PATH.lookup();
         
         String urlString = protocol + "://" + systemConfig.getSolrHostColonPort() + path;
         solrClient = new HttpSolrClient.Builder(urlString).build();
