@@ -1,5 +1,9 @@
 package edu.harvard.iq.dataverse.settings;
 
+import org.eclipse.microprofile.config.ConfigProvider;
+
+import java.util.Optional;
+
 /**
  * Enum to store each and every JVM-based setting as a reference,
  * much like the enum {@link SettingsServiceBean.Key} for DB settings.
@@ -21,6 +25,8 @@ public enum JvmSettings {
     // GENERAL SETTINGS
     VERSION(PREFIX, "version"),
     BUILD(PREFIX, "build")
+    
+    ;
     
     ;
     
@@ -48,5 +54,28 @@ public enum JvmSettings {
         } else {
             return this.key;
         }
+    }
+    
+    /**
+     * Lookup this setting via MicroProfile Config as a required option (it will fail if not present).
+     * @throws java.util.NoSuchElementException - if the property is not defined or is defined as an empty string
+     * @return The setting as a String
+     */
+    public String lookup() {
+        // This must be done with the full-fledged lookup, as we cannot store the config in an instance or static
+        // variable, as the alias config source depends on this enum (circular dependency). This is easiest
+        // avoided by looking up the static cached config at the cost of a method invocation.
+        return ConfigProvider.getConfig().getValue(this.getScopedKey(), String.class);
+    }
+    
+    /**
+     * Lookup this setting via MicroProfile Config as an optional setting.
+     * @return The setting as String wrapped in a (potentially empty) Optional
+     */
+    public Optional<String> lookupOptional() {
+        // This must be done with the full-fledged lookup, as we cannot store the config in an instance or static
+        // variable, as the alias config source depends on this enum (circular dependency). This is easiest
+        // avoided by looking up the static cached config at the cost of a method invocation.
+        return ConfigProvider.getConfig().getOptionalValue(this.getScopedKey(), String.class);
     }
 }
