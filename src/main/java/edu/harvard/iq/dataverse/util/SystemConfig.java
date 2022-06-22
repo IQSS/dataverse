@@ -77,11 +77,6 @@ public class SystemConfig {
     public static final String SITE_URL = "dataverse.siteUrl";
 
     /**
-     * A JVM option for where files are stored on the file system.
-     */
-    public static final String FILES_DIRECTORY = "dataverse.files.directory";
-
-    /**
      * Some installations may not want download URLs to their files to be
      * available in Schema.org JSON-LD output.
      */
