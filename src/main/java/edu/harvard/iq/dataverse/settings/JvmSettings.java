@@ -42,6 +42,10 @@ public enum JvmSettings {
     VERSION(PREFIX, "version"),
     BUILD(PREFIX, "build"),
     
+    // FILES SETTINGS
+    SCOPE_FILES(PREFIX, "files"),
+    FILES_DIRECTORY(SCOPE_FILES, "directory"),
+
     ;
     
     private static final String SCOPE_SEPARATOR = ".";

@@ -57,6 +57,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import org.apache.commons.io.IOUtils;
 
 import java.io.FileReader;
@@ -433,8 +434,10 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
             manifest = checksumManifest;
             getJobLogger().log(Level.INFO, "Checksum manifest = " + manifest + " (FileSystemImportJob.xml property)");
         }
-        // construct full path
-        String manifestAbsolutePath = System.getProperty("dataverse.files.directory")
+        
+        // Construct full path - retrieve base dir via MPCONFIG.
+        // (Has sane default /tmp/dataverse from META-INF/microprofile-config.properties)
+        String manifestAbsolutePath = JvmSettings.FILES_DIRECTORY.lookup()
                 + SEP + dataset.getAuthority()
                 + SEP + dataset.getIdentifier()
                 + SEP + uploadFolder
