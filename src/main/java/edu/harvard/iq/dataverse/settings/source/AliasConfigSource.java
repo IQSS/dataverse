@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.settings.source;
 
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
@@ -7,6 +8,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -16,9 +18,6 @@ import java.util.logging.Logger;
 /**
  * Enable using an old name for a new config name.
  * Usages will be logged and this source will ALWAYS stand back if the new name is used anywhere.
- *
- * By using a DbSettingConfigSource value (dataverse.settings.fromdb.XXX) as old name, we can
- * alias a new name to an old db setting, enabling backward compatibility.
  */
 public final class AliasConfigSource implements ConfigSource {
     
@@ -33,10 +32,19 @@ public final class AliasConfigSource implements ConfigSource {
             Properties aliasProps = readAliases(ALIASES_PROP_FILE);
             // store in our aliases map
             importAliases(aliasProps);
+            // also store all old names from JvmSettings
+            importJvmSettings(JvmSettings.getAliasedSettings());
         } catch (IOException e) {
             logger.info("Could not read from "+ALIASES_PROP_FILE+". Skipping MPCONFIG alias setup.");
         }
     }
+    
+    void importJvmSettings(List<JvmSettings> aliasedSettings) {
+        aliasedSettings.forEach(
+            setting -> setting.getOldNames().forEach(
+                oldName -> aliases.put(setting.getScopedKey(), oldName)));
+    }
+    
     
     Properties readAliases(String filePath) throws IOException {
         // get resource from classpath

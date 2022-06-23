@@ -2,7 +2,12 @@ package edu.harvard.iq.dataverse.settings;
 
 import org.eclipse.microprofile.config.ConfigProvider;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Enum to store each and every JVM-based setting as a reference,
@@ -14,9 +19,9 @@ import java.util.Optional;
  * settings that are destined to be made at the JVM level.
  *
  * Further extensions of this class include
- * - adding aliases when renaming settings,
  * - adding predicates for validation and
- * - offering injecting parameters into keys (as used with the file access subsystem).
+ * - offering injecting parameters into keys (as used with the file access subsystem) and
+ * - adding data manipulation for aliased config names.
  */
 public enum JvmSettings {
     // the upmost root scope - every setting shall start with it.
@@ -33,17 +38,54 @@ public enum JvmSettings {
     private final String key;
     private final String scopedKey;
     private final JvmSettings parent;
+    private final List<String> oldNames;
     
     JvmSettings(String key) {
         this.key = key;
         this.scopedKey = key;
         this.parent = null;
+        this.oldNames = List.of();
     }
     
     JvmSettings(JvmSettings scope, String key) {
         this.key = key;
         this.scopedKey = scope.scopedKey + SCOPE_SEPARATOR + key;
         this.parent = scope;
+        this.oldNames = List.of();
+    }
+    
+    JvmSettings(JvmSettings scope, String key, String... oldNames) {
+        this.key = key;
+        this.scopedKey = scope.scopedKey + SCOPE_SEPARATOR + key;
+        this.parent = scope;
+        this.oldNames = Arrays.stream(oldNames).collect(Collectors.toUnmodifiableList());
+    }
+    
+    private static final List<JvmSettings> aliased = new ArrayList<>();
+    static {
+        for (JvmSettings setting : JvmSettings.values()) {
+            if (!setting.oldNames.isEmpty()) {
+                aliased.add(setting);
+            }
+        }
+    }
+    
+    /**
+     * Get all settings having old names to include them in {@link edu.harvard.iq.dataverse.settings.source.AliasConfigSource}
+     * @return List of settings with old alias names. Can be empty, but will not be null.
+     */
+    public static List<JvmSettings> getAliasedSettings() {
+        return Collections.unmodifiableList(aliased);
+    }
+    
+    /**
+     * Return a list of old names to be used as aliases for backward compatibility.
+     * Will return empty list if no old names present.
+     *
+     * @return List of old names, may be empty, but never null.
+     */
+    public List<String> getOldNames() {
+        return oldNames;
     }
     
     /**
