@@ -140,7 +140,7 @@ public class DataverseXoaiItemRepository implements ItemRepository {
     @Override
     public ResultsPage<ItemIdentifier> getItemIdentifiers(List<ScopedFilter> filters, MetadataFormat metadataFormat, int maxResponseLength, ResumptionToken.Value resumptionToken) throws HandlerException {
         
-        int offset = resumptionToken.getOffset().intValue();
+        int offset = Long.valueOf(resumptionToken.getOffset()).intValue();
         String setSpec = resumptionToken.getSetSpec();
         Instant from = resumptionToken.getFrom();
         Instant until = resumptionToken.getUntil();
@@ -183,7 +183,7 @@ public class DataverseXoaiItemRepository implements ItemRepository {
         final ResumptionToken.Value resumptionToken) throws HandlerException; */
     @Override
     public ResultsPage<Item> getItems(List<ScopedFilter> filters, MetadataFormat metadataFormat, int maxResponseLength, ResumptionToken.Value resumptionToken) throws HandlerException {
-        int offset = resumptionToken.getOffset().intValue();
+        int offset = Long.valueOf(resumptionToken.getOffset()).intValue();
         String setSpec = resumptionToken.getSetSpec();
         Instant from = resumptionToken.getFrom();
         Instant until = resumptionToken.getUntil();
@@ -297,11 +297,12 @@ public class DataverseXoaiItemRepository implements ItemRepository {
         Metadata metadata;
 
         if ("dataverse_json".equals(metadataPrefix)) {
-            // Slightly modified version of the old proprietary Json harvesting hack:
-            // (decision pending as to whether we want to provide backward compatibility
-            // for older Dataverse harvesting clients)
+            // Solely for backward compatibility, for older Dataverse harvesting clients
+            // that may still be relying on harvesting "dataverse_json";
+            // we will want to eventually get rid of this hack! 
             String apiUrl = customDataverseJsonApiUri(dataset.getGlobalId().asString());
-            metadata = new Metadata(new EchoElement("<dataverse_json><directApiUri>" + apiUrl + "</directApiUri></dataverse_json>"));
+            metadata = new Metadata(new EchoElement("<dataverse_json>custom metadata</dataverse_json>")).withAttribute("directApiCall", apiUrl);
+            
         } else {
             InputStream pregeneratedMetadataStream;
             pregeneratedMetadataStream = ExportService.getInstance().getExport(dataset, metadataPrefix);

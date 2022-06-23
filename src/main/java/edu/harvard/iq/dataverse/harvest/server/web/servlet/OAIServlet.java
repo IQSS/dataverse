@@ -101,10 +101,10 @@ public class OAIServlet extends HttpServlet {
         //addMetadataFormatConditions(xoaiContext); 
         
         setRepository = new DataverseXoaiSetRepository(setService);
-        itemRepository = new DataverseXoaiItemRepository(recordService, datasetService, systemConfig.getDataverseSiteUrl()+"/oai");
+        itemRepository = new DataverseXoaiItemRepository(recordService, datasetService, systemConfig.getDataverseSiteUrl());
 
         repositoryConfiguration = createRepositoryConfiguration(); 
-                        
+                                
         xoaiRepository = new Repository()
             .withSetRepository(setRepository)
             .withItemRepository(itemRepository)
@@ -182,20 +182,19 @@ public class OAIServlet extends HttpServlet {
         // (Note: if the setting does not exist, we are going to assume that they
         // have a reason not to want to advertise their email address, so no 
         // email will be shown in the output of Identify. 
-        InternetAddress internetAddress = MailUtil.parseSystemAddress(settingsService.getValueForKey(SettingsServiceBean.Key.SystemEmail));
+        InternetAddress systemEmailAddress = MailUtil.parseSystemAddress(settingsService.getValueForKey(SettingsServiceBean.Key.SystemEmail));
 
-        RepositoryConfiguration repositoryConfiguration = new RepositoryConfiguration()
+        RepositoryConfiguration repositoryConfiguration = RepositoryConfiguration.defaults()
                 .withRepositoryName(repositoryName)
                 .withBaseUrl(systemConfig.getDataverseSiteUrl()+"/oai")
                 .withCompression("gzip")
                 .withCompression("deflate")
-                .withAdminEmail(internetAddress != null ? internetAddress.getAddress() : null)
+                .withAdminEmail(systemEmailAddress != null ? systemEmailAddress.getAddress() : null)
                 .withDeleteMethod(DeletedRecord.TRANSIENT)
-                .withGranularity(Granularity.Second)
                 .withMaxListIdentifiers(systemConfig.getOaiServerMaxIdentifiers())
                 .withMaxListRecords(systemConfig.getOaiServerMaxRecords())
                 .withMaxListSets(systemConfig.getOaiServerMaxSets())
-                .withEarliestDate(new Date().toInstant()); // TODO:
+                .withEnableMetadataAttributes(true);
         
         return repositoryConfiguration; 
     }
