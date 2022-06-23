@@ -28,18 +28,21 @@ public enum JvmSettings {
     
     ;
     
-    ;
+    private static final String SCOPE_SEPARATOR = ".";
     
     private final String key;
+    private final String scopedKey;
     private final JvmSettings parent;
     
     JvmSettings(String key) {
         this.key = key;
+        this.scopedKey = key;
         this.parent = null;
     }
     
     JvmSettings(JvmSettings scope, String key) {
         this.key = key;
+        this.scopedKey = scope.scopedKey + SCOPE_SEPARATOR + key;
         this.parent = scope;
     }
     
@@ -49,11 +52,7 @@ public enum JvmSettings {
      * @return The scoped key (or the key if no scope). Example: dataverse.subscope.subsubscope.key
      */
     public String getScopedKey() {
-        if (this.parent != null) {
-            return parent.getScopedKey() + "." + this.key;
-        } else {
-            return this.key;
-        }
+        return this.scopedKey;
     }
     
     /**
