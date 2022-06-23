@@ -174,7 +174,12 @@ public class SettingsServiceBean {
          *
          */
         SearchRespectPermissionRoot,
-        /** Solr hostname and port, such as "localhost:8983". */
+        /**
+         * Solr hostname and port, such as "localhost:8983".
+         * @deprecated New installations should not use this database setting, but use {@link JvmSettings#SOLR_HOST}
+         *             and {@link JvmSettings#SOLR_PORT}.
+         */
+        @Deprecated(forRemoval = true, since = "2022-07-01")
         SolrHostColonPort,
         /** Enable full-text indexing in solr up to max file size */
         SolrFullTextIndexing, //true or false (default)
