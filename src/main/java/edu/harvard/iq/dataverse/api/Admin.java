@@ -2088,7 +2088,7 @@ public class Admin extends AbstractApiBean {
             userId=superuser.getIdentifier();
             //We ~know this exists - the superuser just used it and it was unexpired/not disabled. (ToDo - if we want this to work with workflow tokens (or as a signed URL, we should do more checking as for the user above))
         }
-            key =  authSvc.findApiTokenByUser(superuser).getTokenString();
+            key =  System.getProperty(SystemConfig.API_SIGNING_SECRET,"") + authSvc.findApiTokenByUser(superuser).getTokenString();
         }
         if(key==null) {
             return error(Response.Status.CONFLICT, "Do not have a valid user with apiToken");
