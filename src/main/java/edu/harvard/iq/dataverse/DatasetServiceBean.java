@@ -540,7 +540,6 @@ public class DatasetServiceBean implements java.io.Serializable {
                         em.remove(lock);
                     });
         }
-        logger.info("RL: haslock: " + checkDatasetLock(dataset.getId()));
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
