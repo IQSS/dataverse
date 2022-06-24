@@ -94,7 +94,8 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand imp
                         }
 
                         // Store BagIt file
-                        String fileName = spaceName + ".v" + dv.getFriendlyVersionNumber();
+                        String fileName = getFileName(spaceName, dv);
+                        
                         String bagKey = spaceName + "/" + fileName + ".zip";
                         // Add BagIt ZIP file
                         // Google uses MD5 as one way to verify the
@@ -155,6 +156,10 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand imp
             return new Failure(
                     "S3 Submission not configured - no \":S3ArchivalProfile\"  and/or \":S3ArchivalConfig\" or no bucket-name defined in config.");
         }
+    }
+
+    protected String getFileName(String spaceName, DatasetVersion dv) {
+        return spaceName + ".v" + dv.getFriendlyVersionNumber();
     }
 
     protected String getSpaceName(Dataset dataset) {

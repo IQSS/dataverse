@@ -97,7 +97,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
             Dataverse ancestor = dataset.getOwner();
             String alias = getArchivableAncestor(ancestor, collections);
             String spaceName = getSpaceName(dataset);
-            String packageId = spaceName + ".v" + dv.getFriendlyVersionNumber();
+            String packageId = getFileName(spaceName, dv);
 
             if (alias != null) {
                 if (drsConfigObject.getBoolean("single_version", false)) {
@@ -288,6 +288,11 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
         return WorkflowStepResult.OK;
     }
 
+    @Override
+    protected String getFileName(String spaceName, DatasetVersion dv) {
+        return spaceName + (".v" + dv.getFriendlyVersionNumber()).replace('.', '_');
+    }
+    
     public static String createJWTString(Algorithm algorithmRSA, String installationBrandName, String body, int expirationInMinutes) throws IOException {
         String canonicalBody = new JsonCanonicalizer(body).getEncodedString();
         logger.fine("Canonical body: " + canonicalBody);
