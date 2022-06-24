@@ -772,7 +772,7 @@ public class PermissionServiceBean {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.publishNotAllowed"), command);
             }
             else if (dataset.isLockedFor(DatasetLock.Reason.GlobusUpload)) {
-                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.downloadNotAllowed"), command);
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.publishNotAllowed"), command);
             }
             else if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress)) {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.publishNotAllowed"), command);
