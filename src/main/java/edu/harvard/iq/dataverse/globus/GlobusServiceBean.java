@@ -16,8 +16,6 @@ import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonPatch;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
@@ -184,7 +182,7 @@ public class GlobusServiceBean implements java.io.Serializable{
 
     public int givePermission(String principalType, String principal, String perm, AccessToken clientTokenUser, String directory, String globusEndpoint) throws MalformedURLException {
 
-        ArrayList rules = checkPermisions( clientTokenUser, directory, globusEndpoint, principalType, principal);
+        ArrayList<?> rules = checkPermisions( clientTokenUser, directory, globusEndpoint, principalType, principal);
 
 
 
@@ -249,35 +247,15 @@ public class GlobusServiceBean implements java.io.Serializable{
                 "GET",  null);
 
         Task task = null;
-        String status = null;
-        //2019-12-01 18:34:37+00:00
 
         if (result.status == 200) {
             task = parseJson(result.jsonResponse, Task.class, false);
-            status = task.getStatus();
         }
         if (result.status != 200) {
             globusLogger.warning("Cannot find information for the task " + taskId + " : Reason :   " + result.jsonResponse.toString());
         }
 
         return task;
-    }
-
-    public Boolean getTaskSkippedErrors(AccessToken clientTokenUser, String taskId , Logger globusLogger) throws MalformedURLException {
-
-        URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint_manager/task/"+taskId );
-
-        MakeRequestResponse result = makeRequest(url, "Bearer",clientTokenUser.getOtherTokens().get(0).getAccessToken(),
-                "GET",  null);
-
-        Task task = null;
-
-        if (result.status == 200) {
-            task = parseJson(result.jsonResponse, Task.class, false);
-            return task.getSkip_source_errors();
-        }
-
-        return false;
     }
 
     public AccessToken getClientToken() throws MalformedURLException {
@@ -580,22 +558,20 @@ public class GlobusServiceBean implements java.io.Serializable{
             jpe.printStackTrace();
             logger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}");
         }
-        logger.fine("json: " + JsonUtil.prettyPrint(jsonObject));
+        logger.info("json: " + JsonUtil.prettyPrint(jsonObject));
 
         String taskIdentifier = jsonObject.getString("taskIdentifier");
 
         String ruleId = "";
         try {
-            jsonObject.getString("ruleId");
+            ruleId = jsonObject.getString("ruleId");
         } catch (NullPointerException npe) {
-
+            logger.warning("NPE for jsonData object" );
         }
 
         //  globus task status check
-        String taskStatus = globusStatusCheck(taskIdentifier, globusLogger);
-        Boolean taskSkippedFiles = taskSkippedFiles(taskIdentifier, globusLogger);
-
-        
+        Task task = globusStatusCheck(taskIdentifier, globusLogger);
+        String taskStatus = getTaskStatus(task);
         
         //ToDo - always "" from 1199
         if(ruleId.length() > 0) {
@@ -683,7 +659,7 @@ public class GlobusServiceBean implements java.io.Serializable{
                                 fileJsonObject = path.apply(fileJsonObject);
                                 path = Json.createPatchBuilder().add("/mimeType", newfileJsonObject.get(0).getString("mime")).build();
                                 fileJsonObject = path.apply(fileJsonObject);
-                                jsonDataSecondAPI.add(JsonUtil.getJsonObject(fileJsonObject.toString()));
+                                jsonDataSecondAPI.add(fileJsonObject);
                                 countSuccess++;
                             } else {
                                 globusLogger.info(fileName + " will be skipped from adding to dataset by second API due to missing values ");
@@ -762,7 +738,6 @@ public class GlobusServiceBean implements java.io.Serializable{
 
     private String addFiles(String curlCommand, Logger globusLogger)
     {
-        boolean success = false;
         ProcessBuilder processBuilder = new ProcessBuilder();
         Process process = null;
         String line;
@@ -840,9 +815,9 @@ public class GlobusServiceBean implements java.io.Serializable{
         }
 
         //  globus task status check
-        String taskStatus = globusStatusCheck(taskIdentifier,globusLogger);
-        Boolean taskSkippedFiles = taskSkippedFiles(taskIdentifier, globusLogger);
-
+        Task task = globusStatusCheck(taskIdentifier,globusLogger);
+        String taskStatus = getTaskStatus(task);
+        
         if(ruleId.length() > 0) {
             deletePermision(ruleId, globusLogger);
         }
@@ -854,6 +829,7 @@ public class GlobusServiceBean implements java.io.Serializable{
             globusLogger.info("Globus task failed during download process");
         }
         else {
+            boolean taskSkippedFiles = (task.getSkip_source_errors()==null) ? false : task.getSkip_source_errors();
             if(!taskSkippedFiles) {
                 userNotificationService.sendNotification((AuthenticatedUser) authUser, new Timestamp(new Date().getTime()), UserNotification.Type.GLOBUSDOWNLOADCOMPLETED, dataset.getId());
             }
@@ -867,35 +843,42 @@ public class GlobusServiceBean implements java.io.Serializable{
     Executor executor = Executors.newFixedThreadPool(10);
 
 
-    private String globusStatusCheck(String taskId, Logger globusLogger) throws MalformedURLException {
+    private Task globusStatusCheck(String taskId, Logger globusLogger) throws MalformedURLException {
         boolean taskCompletion = false;
         String status = "";
+        Task task = null;
         do {
             try {
                 globusLogger.info("checking globus transfer task   " + taskId);
                 Thread.sleep(50000);
-                AccessToken clientTokenUser =  getClientToken();
-                //success =  globusServiceBean.getSuccessfulTransfers(clientTokenUser, taskId);
-                Task task = getTask(clientTokenUser,taskId, globusLogger);
-                status = task.getStatus();
-                if(status != null) {
-                    //The task is in progress.
-                    if (status.equalsIgnoreCase("ACTIVE")) {
-                        if(task.getNice_status().equalsIgnoreCase("ok") || task.getNice_status().equalsIgnoreCase("queued")) {
-                            taskCompletion = false;
-                        }
-                        else {
+                AccessToken clientTokenUser = getClientToken();
+                // success = globusServiceBean.getSuccessfulTransfers(clientTokenUser, taskId);
+                task = getTask(clientTokenUser, taskId, globusLogger);
+                if (task != null) {
+                    status = task.getStatus();
+                    if (status != null) {
+                        // The task is in progress.
+                        if (status.equalsIgnoreCase("ACTIVE")) {
+                            if (task.getNice_status().equalsIgnoreCase("ok")
+                                    || task.getNice_status().equalsIgnoreCase("queued")) {
+                                taskCompletion = false;
+                            } else {
+                                taskCompletion = true;
+                                // status = "FAILED" + "#" + task.getNice_status() + "#" +
+                                // task.getNice_status_short_description();
+                            }
+                        } else {
+                            // The task is either succeeded, failed or inactive.
                             taskCompletion = true;
-                            status = "FAILED" + "#" + task.getNice_status() + "#" + task.getNice_status_short_description();
+                            // status = status + "#" + task.getNice_status() + "#" +
+                            // task.getNice_status_short_description();
                         }
                     } else {
-                        //The task is either succeeded, failed or inactive.
+                        // status = "FAILED";
                         taskCompletion = true;
-                        status = status + "#" + task.getNice_status() + "#" + task.getNice_status_short_description();
                     }
-                }
-                else {
-                    status = "FAILED";
+                } else {
+                    // status = "FAILED";
                     taskCompletion = true;
                 }
             } catch (Exception ex) {
@@ -905,26 +888,31 @@ public class GlobusServiceBean implements java.io.Serializable{
         } while (!taskCompletion);
 
         globusLogger.info("globus transfer task completed successfully");
-
+        return task;
+    }
+    
+    private String getTaskStatus(Task task) {
+        String status = null;
+        if (task != null) {
+            status = task.getStatus();
+            if (status != null) {
+                // The task is in progress.
+                if (status.equalsIgnoreCase("ACTIVE")) {
+                    status = "FAILED" + "#" + task.getNice_status() + "#" + task.getNice_status_short_description();
+                } else {
+                    // The task is either succeeded, failed or inactive.
+                    status = status + "#" + task.getNice_status() + "#" + task.getNice_status_short_description();
+                }
+            } else {
+                status = "FAILED";
+            }
+        } else {
+            status = "FAILED";
+        }
         return status;
     }
-
-    private Boolean taskSkippedFiles(String taskId, Logger globusLogger) throws MalformedURLException {
-
-        try {
-            globusLogger.info("checking globus transfer task   " + taskId);
-            Thread.sleep(50000);
-            AccessToken clientTokenUser =  getClientToken();
-            return   getTaskSkippedErrors(clientTokenUser,taskId, globusLogger);
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
-        return false;
-
-    }
-
+    
+    
 
     public JsonObject calculateMissingMetadataFields(List<String> inputList, Logger globusLogger) throws InterruptedException, ExecutionException, IOException {
 
