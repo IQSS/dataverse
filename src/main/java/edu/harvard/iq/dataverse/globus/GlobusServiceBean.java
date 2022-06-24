@@ -601,7 +601,14 @@ public class GlobusServiceBean implements java.io.Serializable{
         if(ruleId.length() > 0) {
             deletePermision(ruleId, globusLogger);
         }
-        
+
+        //If success, switch to an EditInProgress lock - do this before removing the GlobusUpload lock
+        //Keeping a lock through the add datafiles API call avoids a conflicting edit and keeps any open dataset page refreshing until the datafile appears 
+        if (!(taskStatus.startsWith("FAILED") || taskStatus.startsWith("INACTIVE"))) {
+            datasetSvc.addDatasetLock(dataset,
+                    new DatasetLock(DatasetLock.Reason.EditInProgress, authUser, "Completing Globus Upload"));
+        }
+    
         DatasetLock gLock = dataset.getLockFor(DatasetLock.Reason.GlobusUpload);
         if (gLock == null) {
             logger.log(Level.WARNING, "No lock found for dataset");
@@ -629,7 +636,8 @@ public class GlobusServiceBean implements java.io.Serializable{
         }
         else {
             try {
-                datasetSvc.addDatasetLock(dataset, new DatasetLock(DatasetLock.Reason.EditInProgress, authUser, "Completing Globus Upload"));
+                //
+               
                 List<String> inputList = new ArrayList<String>();
                 JsonArray filesJsonArray = jsonObject.getJsonArray("files");
 
