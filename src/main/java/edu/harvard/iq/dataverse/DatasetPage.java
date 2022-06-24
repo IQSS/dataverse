@@ -1821,15 +1821,21 @@ public class DatasetPage implements java.io.Serializable {
 
             // initiate from scratch: (isolate the creation of a new dataset in its own method?)
             init(true);
-            // rebuild the bred crumbs display:
+            // rebuild the bread crumbs display:
             dataverseHeaderFragment.initBreadcrumbs(dataset);
         }
     }
 
     public boolean rsyncUploadSupported() {
 
-        return settingsWrapper.isRsyncUpload() && DatasetUtil.isAppropriateStorageDriver(dataset);
+        return settingsWrapper.isRsyncUpload() && DatasetUtil.isRsyncAppropriateStorageDriver(dataset);
     }
+    
+    public boolean globusUploadSupported() {
+        return settingsWrapper.isGlobusUpload() && settingsWrapper.isGlobusEnabledStorageDriver(dataset.getEffectiveStorageDriverId());
+    }
+    
+    
 
     private String init(boolean initFull) {
 
@@ -2170,8 +2176,8 @@ public class DatasetPage implements java.io.Serializable {
                 lockedDueToDcmUpload = true;
             }
             if (dataset.isLockedFor(DatasetLock.Reason.GlobusUpload)) {
-                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.summary"),
-                        BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.details"));
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.globusUpload.inProgressMessage.summary"),
+                        BundleUtil.getStringFromBundle("file.globusUpload.inProgressMessage.details"));
             }
             //This is a hack to remove dataset locks for File PID registration if
             //the dataset is released

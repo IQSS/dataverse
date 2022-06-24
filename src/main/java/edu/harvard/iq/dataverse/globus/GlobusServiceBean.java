@@ -1,23 +1,18 @@
 package edu.harvard.iq.dataverse.globus;
 
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.GsonBuilder;
 import edu.harvard.iq.dataverse.*;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
-import javax.faces.view.ViewScoped;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 
 import java.net.HttpURLConnection;
@@ -25,31 +20,15 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 
-import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import com.google.gson.Gson;
-import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.engine.command.Command;
-import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.FileUtil;
-import edu.harvard.iq.dataverse.util.JsfHelper;
-import edu.harvard.iq.dataverse.util.SystemConfig;
-import org.primefaces.PrimeFaces;
-
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import edu.harvard.iq.dataverse.util.URLTokenUtil;
 
 
 @Stateless
@@ -287,6 +266,7 @@ public class GlobusServiceBean implements java.io.Serializable{
     public AccessToken getAccessToken(HttpServletRequest origRequest, String basicGlobusToken ) throws UnsupportedEncodingException, MalformedURLException {
         String serverName = origRequest.getServerName();
         if (serverName.equals("localhost")) {
+            logger.severe("Changing localhost to utoronto");
             serverName = "utl-192-123.library.utoronto.ca";
         }
 
@@ -503,7 +483,28 @@ public class GlobusServiceBean implements java.io.Serializable{
 
         return true;
     }
-/*
+    
+    public String getGlobusAppUrlForDataset(Dataset d) {
+        String localeCode = session.getLocaleCode();
+        ApiToken apiToken = null;
+        User user = session.getUser();
+        
+        if (user instanceof AuthenticatedUser) {
+            apiToken = authSvc.findApiTokenByUser((AuthenticatedUser) user);
+        }
+        if ((apiToken == null) || (apiToken.getExpireTime().before(new Date()))) {
+            logger.fine("Created apiToken for user: " + user.getIdentifier());
+            apiToken = authSvc.generateApiTokenForUser(( AuthenticatedUser) user);
+        }
+        URLTokenUtil tokenUtil = new URLTokenUtil(d, apiToken, localeCode);
+        String appUrl = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusAppUrl, "http://localhost")
+                + "/upload?datasetPid={datasetPid}&siteUrl={siteUrl}&apiToken={apiToken}&datasetId={datasetId}&datasetVersion={datasetVersion}";
+        return tokenUtil.replaceTokensWithValues(appUrl);
+    }
+    
+    
+    
+    /*
     public boolean globusFinishTransfer(Dataset dataset,  AuthenticatedUser user) throws MalformedURLException {
 
         logger.info("=====Tasklist == dataset id :" + dataset.getId());

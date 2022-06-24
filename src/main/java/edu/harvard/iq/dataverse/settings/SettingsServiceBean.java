@@ -455,9 +455,17 @@ public class SettingsServiceBean {
          */
         BasicGlobusToken,
         /**
-         * GlobusEndpoint is Glopus endpoint for Globus application
+         * GlobusEndpoint is Globus endpoint for Globus application
          */
         GlobusEndpoint,
+        /** 
+         * Comma separated list of Globus enabled stores
+         */
+        GlobusStores,
+        /** Globus App URL
+         * 
+         */
+        GlobusAppUrl,
         /**Client id for Globus application
          *
          */

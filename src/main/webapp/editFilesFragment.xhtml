@@ -167,6 +167,11 @@
                                     <p:commandButton id="dropBoxUserButton" disabled="#{!(datasetPage || EditDatafilesPage.showFileUploadComponent())}" value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status" />
                                     <p:message for="dropBoxButton" id="dropBoxUploadMessage" display="text" redisplay="false" />
                                 </div>
+                                <div jsf:id="globusBlock" jsf:rendered="#{globusUploadSupported and !lockedFromEdits }"  class="margin-top">
+                                    <p class="help-block" jsf:rendered="#{!createDataset}">#{bundle['file.fromGlobus.tip']}</p>
+                                    <p class="help-block" jsf:rendered="#{createDataset}">#{bundle['file.fromGlobusAfterCreate.tip']}</p>
+                                    <p:button target="_blank" rendered="#{!createDataset}" onclick="cancelDatasetEdit();window.open('#{GlobusServiceBean.getGlobusAppUrlForDataset(dataset)}');return false;" value="#{bundle['file.fromGlobus']}"  icon="globus-btn" />
+                                </div>
                     
                             </div>
                         </div>

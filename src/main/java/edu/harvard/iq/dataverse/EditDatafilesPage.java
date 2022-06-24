@@ -3045,13 +3045,21 @@ public class EditDatafilesPage implements java.io.Serializable {
         // ToDo - rsync was written before multiple store support and currently is hardcoded to use the DataAccess.S3 store. 
         // When those restrictions are lifted/rsync can be configured per store, the test in the 
         // Dataset Util method should be updated
-        if (settingsWrapper.isRsyncUpload() && !DatasetUtil.isAppropriateStorageDriver(dataset)) {
+        if (settingsWrapper.isRsyncUpload() && !DatasetUtil.isRsyncAppropriateStorageDriver(dataset)) {
             //dataset.file.upload.setUp.rsync.failed.detail
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.upload.setUp.rsync.failed"), BundleUtil.getStringFromBundle("dataset.file.upload.setUp.rsync.failed.detail"));
             FacesContext.getCurrentInstance().addMessage(null, message);
         }
 
-        return settingsWrapper.isRsyncUpload() && DatasetUtil.isAppropriateStorageDriver(dataset);
+        return settingsWrapper.isRsyncUpload() && DatasetUtil.isRsyncAppropriateStorageDriver(dataset);
+    }
+    
+    // Globus must be one of the upload methods listed in the :UploadMethods setting
+    // and the dataset's store must be in the list allowed by the GlobusStores
+    // setting
+    public boolean globusUploadSupported() {
+        return settingsWrapper.isGlobusUpload()
+                && settingsWrapper.isGlobusEnabledStorageDriver(dataset.getEffectiveStorageDriverId());
     }
 
     private void populateFileMetadatas() {
