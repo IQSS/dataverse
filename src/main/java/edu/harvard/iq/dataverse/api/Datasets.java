@@ -164,7 +164,7 @@ public class Datasets extends AbstractApiBean {
     DataverseServiceBean dataverseService;
     
     @EJB
-    GlobusServiceBean globusServiceBean;
+    GlobusServiceBean globusService;
 
     @EJB
     UserNotificationServiceBean userNotificationService;
@@ -3182,9 +3182,9 @@ public class Datasets extends AbstractApiBean {
         // -------------------------------------
         // (1) Get the user from the API key
         // -------------------------------------
-        User authUser;
+        AuthenticatedUser authUser;
         try {
-            authUser = findUserOrDie();
+            authUser = findAuthenticatedUserOrDie();
         } catch (WrappedResponse ex) {
             return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("file.addreplace.error.auth")
             );
@@ -3214,8 +3214,8 @@ public class Datasets extends AbstractApiBean {
 
 
         String lockInfoMessage = "Globus Upload API started ";
-        DatasetLock lock = datasetService.addDatasetLock(dataset.getId(), DatasetLock.Reason.EditInProgress,
-                ((AuthenticatedUser) authUser).getId(), lockInfoMessage);
+        DatasetLock lock = datasetService.addDatasetLock(dataset.getId(), DatasetLock.Reason.GlobusUpload,
+                (authUser).getId(), lockInfoMessage);
         if (lock != null) {
             dataset.addLock(lock);
         } else {
@@ -3223,7 +3223,7 @@ public class Datasets extends AbstractApiBean {
         }
 
 
-        ApiToken token = authSvc.findApiTokenByUser((AuthenticatedUser) authUser);
+        ApiToken token = authSvc.findApiTokenByUser(authUser);
 
         if(uriInfo != null) {
             logger.info(" ====  (api uriInfo.getRequestUri()) jsonData   ====== " + uriInfo.getRequestUri().toString());
@@ -3237,7 +3237,7 @@ public class Datasets extends AbstractApiBean {
         }
 
         // Async Call
-        datasetService.globusUpload(jsonData, token, dataset, requestUrl, authUser);
+        globusService.globusUpload(jsonData, token, dataset, requestUrl, authUser);
 
         return ok("Async call to Globus Upload started ");
 
@@ -3280,7 +3280,7 @@ public class Datasets extends AbstractApiBean {
         }
 
         // Async Call
-        datasetService.globusDownload(jsonData, dataset, authUser);
+        globusService.globusDownload(jsonData, dataset, authUser);
 
         return ok("Async call to Globus Download started");
 
@@ -3326,6 +3326,7 @@ public class Datasets extends AbstractApiBean {
             return wr.getResponse();
         }
 
+        dataset.getLocks().forEach(dl -> {logger.info(dl.toString());});
 
         //------------------------------------
         // (2a) Make sure dataset does not have package file
