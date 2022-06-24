@@ -112,7 +112,6 @@ public class URLTokenUtil {
             String token = matcher.group(1);
             ReservedWord reservedWord = ReservedWord.fromString(token);
             String tValue = getTokenValue(token);
-            logger.info("Replacing " + reservedWord.toString() + " with " + tValue + " in " + newUrl);
             newUrl = newUrl.replace(reservedWord.toString(), tValue);
         }
         return newUrl;
