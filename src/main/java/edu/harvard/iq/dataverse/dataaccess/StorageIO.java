@@ -596,4 +596,8 @@ public abstract class StorageIO<T extends DvObject> {
     public String generateTemporaryDownloadUrl() throws IOException {
         throw new UnsupportedDataAccessOperationException("Direct download not implemented for this storage type");
     }
+    
+    public static String getDriverPrefix(String driverId) {
+        return driverId+ DataAccess.SEPARATOR;
+    }
 }

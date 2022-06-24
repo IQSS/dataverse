@@ -491,7 +491,8 @@ public class GlobusServiceBean implements java.io.Serializable{
 
         return true;
     }
-    
+
+    //Generates the URL to launch the Globus app
     public String getGlobusAppUrlForDataset(Dataset d) {
         String localeCode = session.getLocaleCode();
         ApiToken apiToken = null;
@@ -504,12 +505,18 @@ public class GlobusServiceBean implements java.io.Serializable{
             logger.fine("Created apiToken for user: " + user.getIdentifier());
             apiToken = authSvc.generateApiTokenForUser(( AuthenticatedUser) user);
         }
+        String storePrefix ="";
+        String driverId = d.getEffectiveStorageDriverId();
+        try {
+        storePrefix = DataAccess.getDriverPrefix(driverId);
+        } catch(Exception e) {
+            logger.warning("GlobusAppUrlForDataset: Failed to get storePrefix for " + driverId);
+        }
         URLTokenUtil tokenUtil = new URLTokenUtil(d, apiToken, localeCode);
         String appUrl = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusAppUrl, "http://localhost")
-                + "/upload?datasetPid={datasetPid}&siteUrl={siteUrl}&apiToken={apiToken}&datasetId={datasetId}&datasetVersion={datasetVersion}";
-        return tokenUtil.replaceTokensWithValues(appUrl);
+                + "/upload?datasetPid={datasetPid}&siteUrl={siteUrl}&apiToken={apiToken}&datasetId={datasetId}&datasetVersion={datasetVersion}&dvLocale={localeCode}";
+        return tokenUtil.replaceTokensWithValues(appUrl)+"&storeprefix=" + storePrefix;
     }
-    
     
 
     @Asynchronous
@@ -573,7 +580,7 @@ public class GlobusServiceBean implements java.io.Serializable{
         Task task = globusStatusCheck(taskIdentifier, globusLogger);
         String taskStatus = getTaskStatus(task);
         
-        //ToDo - always "" from 1199
+
         if(ruleId.length() > 0) {
             deletePermision(ruleId, globusLogger);
         }

@@ -1270,5 +1270,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     public void setMainDriver(boolean mainDriver) {
         this.mainDriver = mainDriver;
     }
+    
+    public static String getDriverPrefix(String driverId) {
+        return driverId+ DataAccess.SEPARATOR + getBucketName(driverId) + ":";
+    }
 
 }

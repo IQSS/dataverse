@@ -160,6 +160,27 @@ public class DataAccess {
     	}
     	return System.getProperty("dataverse.files." + driverId + ".type", "Undefined");
     }
+    
+    //This 
+    public static String getDriverPrefix(String driverId) throws IOException {
+        if(driverId.isEmpty() || driverId.equals("tmp")) {
+            return "tmp" + SEPARATOR;
+        }
+        String storageType = System.getProperty("dataverse.files." + driverId + ".type", "Undefined");
+        switch(storageType) {
+        case FILE:
+            return FileAccessIO.getDriverPrefix(driverId);
+        case S3:
+            return S3AccessIO.getDriverPrefix(driverId);
+        case SWIFT:
+            return SwiftAccessIO.getDriverPrefix(driverId);
+        default:
+            logger.warning("Could not find storage driver for id: " + driverId);
+            throw new IOException("getDriverPrefix: Unsupported storage method.");
+        }
+        
+
+    }
 
     // createDataAccessObject() methods create a *new*, empty DataAccess objects,
     // for saving new, not yet saved datafiles.
