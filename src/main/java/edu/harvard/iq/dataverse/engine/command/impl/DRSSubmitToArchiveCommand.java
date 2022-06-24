@@ -292,6 +292,12 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
     protected String getFileName(String spaceName, DatasetVersion dv) {
         return spaceName + (".v" + dv.getFriendlyVersionNumber()).replace('.', '_');
     }
+
+    @Override
+    protected String getDataCiteFileName(String spaceName, DatasetVersion dv) {
+        return spaceName + ("_datacite.v" + dv.getFriendlyVersionNumber()).replace('.','_');
+    }
+
     
     public static String createJWTString(Algorithm algorithmRSA, String installationBrandName, String body, int expirationInMinutes) throws IOException {
         String canonicalBody = new JsonCanonicalizer(body).getEncodedString();

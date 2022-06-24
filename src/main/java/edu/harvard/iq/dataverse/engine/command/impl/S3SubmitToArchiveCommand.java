@@ -84,8 +84,7 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand imp
                         // Add datacite.xml file
                         ObjectMetadata om = new ObjectMetadata();
                         om.setContentLength(dataciteIn.available());
-                        String dcKey = spaceName + "/" + spaceName + "_datacite.v" + dv.getFriendlyVersionNumber()
-                                + ".xml";
+                        String dcKey = spaceName + "/" + getDataCiteFileName(spaceName, dv) + ".xml";
                         tm.upload(new PutObjectRequest(bucketName, dcKey, dataciteIn, om)).waitForCompletion();
                         om = s3.getObjectMetadata(bucketName, dcKey);
                         if (om == null) {
@@ -156,6 +155,10 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand imp
             return new Failure(
                     "S3 Submission not configured - no \":S3ArchivalProfile\"  and/or \":S3ArchivalConfig\" or no bucket-name defined in config.");
         }
+    }
+
+    protected String getDataCiteFileName(String spaceName, DatasetVersion dv) {
+        return spaceName + "_datacite.v" + dv.getFriendlyVersionNumber();
     }
 
     protected String getFileName(String spaceName, DatasetVersion dv) {
