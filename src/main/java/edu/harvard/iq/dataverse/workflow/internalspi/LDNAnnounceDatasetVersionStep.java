@@ -130,7 +130,7 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
         }
         Set<String> reqFields = fields.keySet();
         for (DatasetField df : dvf) {
-            if (reqFields.contains(df.getDatasetFieldType().getName())) {
+            if(!df.isEmpty() && reqFields.contains(df.getDatasetFieldType().getName())) {
                 fields.put(df.getDatasetFieldType().getName(), df);
             }
         }
