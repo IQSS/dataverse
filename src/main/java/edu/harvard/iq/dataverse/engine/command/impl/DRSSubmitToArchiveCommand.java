@@ -61,8 +61,7 @@ import com.auth0.jwt.exceptions.JWTCreationException;
 public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implements Command<DatasetVersion> {
 
     private static final Logger logger = Logger.getLogger(DRSSubmitToArchiveCommand.class.getName());
-    private static final String DRS_CONFIG = "This archiver adds";
-    
+    private static final String DRS_CONFIG = ":DRSArchivalConfig";
     private static final String ADMIN_METADATA = "admin_metadata";
     private static final String S3_BUCKET_NAME = "s3_bucket_name";
     private static final String S3_PATH = "s3_path";
@@ -99,7 +98,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
             Dataverse ancestor = dataset.getOwner();
             String alias = getArchivableAncestor(ancestor, collections);
             String spaceName = getSpaceName(dataset);
-            String packageId = spaceName + ".v" + dv.getFriendlyVersionNumber();
+            String packageId = getFileName(spaceName, dv);
 
             if (alias != null) {
                 if (drsConfigObject.getBoolean(SINGLE_VERSION, false)) {
@@ -129,7 +128,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                     int jwtTimeout = drsConfigObject.getInt(TIMEOUT, 5);
                     JsonObjectBuilder job = Json.createObjectBuilder();
 
-                    job.add(S3_BUCKET_NAME, bucketName);
+                    job.add(S3_BUCKET_NAME, adminMetadata.getString(S3_BUCKET_NAME));
 
                     job.add(PACKAGE_ID, packageId);
                     job.add(S3_PATH, spaceName);
@@ -138,9 +137,15 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                     JsonObjectBuilder amob = Json.createObjectBuilder(adminMetadata);
                     // Remove collections and then override any params for the given alias
                     amob.remove(COLLECTIONS);
-                    
+                    // Allow override of bucket name
+                    if (collectionConfig.containsKey(S3_BUCKET_NAME)) {
+                        job.add(S3_BUCKET_NAME, collectionConfig.get(S3_BUCKET_NAME));
+                    }
+
                     for (Entry<String, JsonValue> entry : collectionConfig.entrySet()) {
-                        amob.add(entry.getKey(), entry.getValue());
+                        if (!entry.getKey().equals(S3_BUCKET_NAME)) {
+                            amob.add(entry.getKey(), entry.getValue());
+                        }
                     }
                     job.add(ADMIN_METADATA, amob);
 
@@ -287,6 +292,17 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
         return WorkflowStepResult.OK;
     }
 
+    @Override
+    protected String getFileName(String spaceName, DatasetVersion dv) {
+        return spaceName + (".v" + dv.getFriendlyVersionNumber()).replace('.', '_');
+    }
+
+    @Override
+    protected String getDataCiteFileName(String spaceName, DatasetVersion dv) {
+        return spaceName + ("_datacite.v" + dv.getFriendlyVersionNumber()).replace('.','_');
+    }
+
+    
     public static String createJWTString(Algorithm algorithmRSA, String installationBrandName, String body, int expirationInMinutes) throws IOException {
         String canonicalBody = new JsonCanonicalizer(body).getEncodedString();
         logger.fine("Canonical body: " + canonicalBody);

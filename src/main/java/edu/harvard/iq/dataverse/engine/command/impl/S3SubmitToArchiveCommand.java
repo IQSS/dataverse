@@ -69,7 +69,7 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand imp
         } catch (Exception e) {
             logger.warning("Unable to parse " + S3_CONFIG + " setting as a Json object");
         }
-        if (configObject != null && bucketName != null) {
+        if (configObject != null && profileName != null && bucketName != null) {
 
             s3 = createClient(configObject, profileName);
             tm = TransferManagerBuilder.standard().withS3Client(s3).build();
@@ -84,8 +84,7 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand imp
                         // Add datacite.xml file
                         ObjectMetadata om = new ObjectMetadata();
                         om.setContentLength(dataciteIn.available());
-                        String dcKey = spaceName + "/" + spaceName + "_datacite.v" + dv.getFriendlyVersionNumber()
-                                + ".xml";
+                        String dcKey = spaceName + "/" + getDataCiteFileName(spaceName, dv) + ".xml";
                         tm.upload(new PutObjectRequest(bucketName, dcKey, dataciteIn, om)).waitForCompletion();
                         om = s3.getObjectMetadata(bucketName, dcKey);
                         if (om == null) {
@@ -94,7 +93,8 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand imp
                         }
 
                         // Store BagIt file
-                        String fileName = spaceName + ".v" + dv.getFriendlyVersionNumber();
+                        String fileName = getFileName(spaceName, dv);
+                        
                         String bagKey = spaceName + "/" + fileName + ".zip";
                         // Add BagIt ZIP file
                         // Google uses MD5 as one way to verify the
@@ -155,6 +155,14 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand imp
             return new Failure(
                     "S3 Submission not configured - no \":S3ArchivalProfile\"  and/or \":S3ArchivalConfig\" or no bucket-name defined in config.");
         }
+    }
+
+    protected String getDataCiteFileName(String spaceName, DatasetVersion dv) {
+        return spaceName + "_datacite.v" + dv.getFriendlyVersionNumber();
+    }
+
+    protected String getFileName(String spaceName, DatasetVersion dv) {
+        return spaceName + ".v" + dv.getFriendlyVersionNumber();
     }
 
     protected String getSpaceName(Dataset dataset) {
