@@ -3927,13 +3927,13 @@ Superusers can change whether an existing license is active (usable for new data
   export STATE=true
   curl -X PUT -H 'Content-Type: application/json' -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/licenses/$ID/:active/$STATE
 
-Superusers can set which license is the default specified by the license ``$ID``:
+Superusers may change the default license by specifying the license ``$ID``:
 
 .. code-block:: bash
 
-  curl -X PUT -H 'Content-Type: application/json' -H X-Dataverse-key:$API_TOKEN --data-binary @edit-license.json $SERVER_URL/api/licenses/default/$ID
+  curl -X PUT -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/licenses/default/$ID
 
-Superusers can delete a license that is not in use by the license ``$ID``:
+Superusers can delete a license, provided it is not in use, by the license ``$ID``:
 
 .. code-block:: bash
 
