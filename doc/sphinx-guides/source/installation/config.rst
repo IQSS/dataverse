@@ -1287,30 +1287,52 @@ When changing values these values with ``asadmin``, you'll need to delete the ol
 
 It's also possible to change these values by stopping Payara, editing ``payara5/glassfish/domains/domain1/config/domain.xml``, and restarting Payara.
 
+.. _dataverse.fqdn:
+
 dataverse.fqdn
 ++++++++++++++
 
-If the Dataverse installation has multiple DNS names, this option specifies the one to be used as the "official" host name. For example, you may want to have dataverse.example.edu, and not the less appealing server-123.socsci.example.edu to appear exclusively in all the registered global identifiers, Data Deposit API records, etc.
+The URL to access your Dataverse installation gets used in multiple places:
 
-The password reset feature requires ``dataverse.fqdn`` to be configured.
+- Email confirmation links
+- Password reset links
+- Generating a Private URL
+- PID minting
+- Exporting to Schema.org format (and showing JSON-LD in HTML's <meta/> tag)
+- Exporting to DDI format
+- Which Dataverse installation an "external tool" should return to
+- URLs embedded in SWORD API responses
+- ...
 
-.. note::
+Usually it will follow the pattern ``https://<full-qualified-domain-name>/<some-place-to-go-to>``.
+The FQDN part of the your Dataverse installation URL can be determined by setting ``dataverse.fqdn``.
 
-	Do note that whenever the system needs to form a service URL, by default, it will be formed with ``https://`` and port 443. I.e.,
-	``https://{dataverse.fqdn}/``
-	If that does not suit your setup, you can define an additional option, ``dataverse.siteUrl``, explained below.
+**Notes:**
+
+- The URL will default to using ``https://`` and no additional port information. If that does not suit your setup, you
+  can define an additional option, ``dataverse.siteUrl``, :ref:`explained below <dataverse.siteUrl>`, which always
+  takes precedence.
+- Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FQDN``.
+  Defaults to ``localhost`` when used with ``mp.config.profile=ct``
 
 .. _dataverse.siteUrl:
 
 dataverse.siteUrl
 +++++++++++++++++
 
-.. note::
+Some environments may require using a different URL pattern to access your installation. You might need to use
+HTTP without "S", a non-standard port and so on. This is especially useful in development or testing environments.
 
-	and specify the protocol and port number you would prefer to be used to advertise the URL for your Dataverse installation.
-	For example, configured in domain.xml:
-	``<jvm-options>-Ddataverse.fqdn=dataverse.example.edu</jvm-options>``
-	``<jvm-options>-Ddataverse.siteUrl=http://${dataverse.fqdn}:8080</jvm-options>``
+You can provide a custom tailored site URL via ``dataverse.siteUrl``, which always takes precedence.
+Example: ``dataverse.siteUrl=http://localhost:8080``
+
+**Notes:**
+
+- This setting may be used in combination with variable replacement, referencing :ref:`dataverse.fqdn` with
+  ``./asadmin create-jvm-options "\-Ddataverse.siteUrl=http\://\${dataverse.fqdn}\:8080"``
+- Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SITEURL``.
+  Defaults to ``http://${dataverse.fqdn}:8080`` when used with ``mp.config.profile=ct``
+
 
 dataverse.files.directory
 +++++++++++++++++++++++++
