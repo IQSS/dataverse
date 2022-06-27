@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.ucsb.nceas.ezid.EZIDException;
 import edu.ucsb.nceas.ezid.EZIDService;
 import edu.ucsb.nceas.ezid.EZIDServiceRequest;
@@ -26,10 +27,10 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
 
     public DOIEZIdServiceBean() {
         logger.log(Level.FINE,"Constructor");
-        baseURLString = System.getProperty("doi.baseurlstring");
+        baseURLString = JvmSettings.EZID_API_URL.lookup();
         ezidService = new EZIDService(baseURLString);
-        USERNAME = System.getProperty("doi.username");
-        PASSWORD = System.getProperty("doi.password");
+        USERNAME = JvmSettings.EZID_USERNAME.lookup();
+        PASSWORD = JvmSettings.EZID_PASSWORD.lookup();
         logger.log(Level.FINE, "Using baseURLString {0}", baseURLString);
         try {
             ezidService.login(USERNAME, PASSWORD);
