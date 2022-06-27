@@ -59,23 +59,7 @@ public class SystemConfig {
     AuthenticationServiceBean authenticationService;
     
    public static final String DATAVERSE_PATH = "/dataverse/";
-
-    /**
-     * A JVM option for the advertised fully qualified domain name (hostname) of
-     * the Dataverse installation, such as "dataverse.example.com", which may
-     * differ from the hostname that the server knows itself as.
-     *
-     * The equivalent in DVN 3.x was "dvn.inetAddress".
-     */
-    public static final String FQDN = "dataverse.fqdn";
-    
-    /**
-     * A JVM option for specifying the "official" URL of the site.
-     * Unlike the FQDN option above, this would be a complete URL, 
-     * with the protocol, port number etc. 
-     */
-    public static final String SITE_URL = "dataverse.siteUrl";
-
+   
     /**
      * Some installations may not want download URLs to their files to be
      * available in Schema.org JSON-LD output.
@@ -250,32 +234,58 @@ public class SystemConfig {
     }
     
     /**
-     * The "official", designated URL of the site;
-     * can be defined as a complete URL; or derived from the 
-     * "official" hostname. If none of these options is set,
-     * defaults to the InetAddress.getLocalHOst() and https;
-     * These are legacy JVM options. Will be eventualy replaced
-     * by the Settings Service configuration.
+     * Lookup (or construct) the designated URL of this instance from configuration.
+     *
+     * Can be defined as a complete URL via <code>dataverse.siteUrl</code>; or derived from the hostname
+     * <code>dataverse.fqdn</code> and HTTPS. If none of these options is set, defaults to the
+     * {@link InetAddress#getLocalHost} and HTTPS.
+     *
+     * NOTE: This method does not provide any validation.
+     * TODO: The behaviour of this method is subject to a later change, see
+     *       https://github.com/IQSS/dataverse/issues/6636
+     *
+     * @return The designated URL of this instance as per configuration.
      */
     public String getDataverseSiteUrl() {
         return getDataverseSiteUrlStatic();
     }
     
+    /**
+     * Lookup (or construct) the designated URL of this instance from configuration.
+     *
+     * Can be defined as a complete URL via <code>dataverse.siteUrl</code>; or derived from the hostname
+     * <code>dataverse.fqdn</code> and HTTPS. If none of these options is set, defaults to the
+     * {@link InetAddress#getLocalHost} and HTTPS.
+     *
+     * NOTE: This method does not provide any validation.
+     * TODO: The behaviour of this method is subject to a later change, see
+     *       https://github.com/IQSS/dataverse/issues/6636
+     *
+     * @return The designated URL of this instance as per configuration.
+     */
     public static String getDataverseSiteUrlStatic() {
-        String hostUrl = System.getProperty(SITE_URL);
-        if (hostUrl != null && !"".equals(hostUrl)) {
-            return hostUrl;
+        // If dataverse.siteUrl has been configured, simply return it
+        Optional<String> siteUrl = JvmSettings.SITE_URL.lookupOptional();
+        if (siteUrl.isPresent()) {
+            return siteUrl.get();
         }
-        String hostName = System.getProperty(FQDN);
-        if (hostName == null) {
-            try {
-                hostName = InetAddress.getLocalHost().getCanonicalHostName();
-            } catch (UnknownHostException e) {
-                return null;
-            }
+        
+        // Other wise try to lookup dataverse.fqdn setting and default to HTTPS
+        Optional<String> fqdn = JvmSettings.FQDN.lookupOptional();
+        if (fqdn.isPresent()) {
+            return "https://" + fqdn.get();
         }
-        hostUrl = "https://" + hostName;
-        return hostUrl;
+        
+        // Last resort - get the servers local name and use it.
+        // BEWARE - this is dangerous.
+        // 1) A server might have a different name than your repository URL.
+        // 2) The underlying reverse DNS lookup might point to a different name than your repository URL.
+        // 3) If this server has multiple IPs assigned, which one will it be for the lookup?
+        try {
+            return "https://" + InetAddress.getLocalHost().getCanonicalHostName();
+        } catch (UnknownHostException e) {
+            return null;
+        }
     }
     
     /**
@@ -283,22 +293,6 @@ public class SystemConfig {
      */
     public String getPageURLWithQueryString() {
         return PrettyContext.getCurrentInstance().getRequestURL().toURL() + PrettyContext.getCurrentInstance().getRequestQueryString().toQueryString();
-    }
-
-    /**
-     * The "official" server's fully-qualified domain name: 
-     */
-    public String getDataverseServer() {
-        // still reliese on a JVM option: 
-        String fqdn = System.getProperty(FQDN);
-        if (fqdn == null) {
-            try {
-                fqdn = InetAddress.getLocalHost().getCanonicalHostName();
-            } catch (UnknownHostException e) {
-                return null;
-            }
-        }
-        return fqdn;
     }
 
     public String getGuidesBaseUrl() {

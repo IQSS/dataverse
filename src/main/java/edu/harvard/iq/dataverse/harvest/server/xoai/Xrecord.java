@@ -8,14 +8,12 @@ import static com.lyncode.xoai.xml.XmlWriter.defaultContext;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
-import static edu.harvard.iq.dataverse.util.SystemConfig.FQDN;
-import static edu.harvard.iq.dataverse.util.SystemConfig.SITE_URL;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.poi.util.ReplacingInputStream;
 
 /**
@@ -149,7 +147,7 @@ public class Xrecord extends Record {
     private String customMetadataExtensionRef(String identifier) {
         String ret = "<" + METADATA_FIELD 
                 + " directApiCall=\"" 
-                + getDataverseSiteUrl()
+                + SystemConfig.getDataverseSiteUrlStatic()
                 + DATAVERSE_EXTENDED_METADATA_API 
                 + "?exporter=" 
                 + DATAVERSE_EXTENDED_METADATA_FORMAT 
@@ -163,22 +161,5 @@ public class Xrecord extends Record {
     
     private boolean isExtendedDataverseMetadataMode(String formatName) {
         return DATAVERSE_EXTENDED_METADATA_FORMAT.equals(formatName);
-    }
-    
-    private String getDataverseSiteUrl() {
-        String hostUrl = System.getProperty(SITE_URL);
-        if (hostUrl != null && !"".equals(hostUrl)) {
-            return hostUrl;
-        }
-        String hostName = System.getProperty(FQDN);
-        if (hostName == null) {
-            try {
-                hostName = InetAddress.getLocalHost().getCanonicalHostName();
-            } catch (UnknownHostException e) {
-                return null;
-            }
-        }
-        hostUrl = "https://" + hostName;
-        return hostUrl;
     }
 }
