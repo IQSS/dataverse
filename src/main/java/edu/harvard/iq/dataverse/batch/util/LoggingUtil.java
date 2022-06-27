@@ -154,8 +154,8 @@ public class LoggingUtil {
 	    try {
 		    Logger jobLogger = Logger.getLogger("job-"+jobId);
 		    FileHandler fh;
-		    String logDir = System.getProperty("com.sun.aas.instanceRoot") + System.getProperty("file.separator") 
-			    + "logs" + System.getProperty("file.separator") + "batch-jobs" + System.getProperty("file.separator");
+		    String logDir = System.getProperty("com.sun.aas.instanceRoot") + File.separator
+			    + "logs" + File.separator + "batch-jobs" + File.separator;
 		    checkCreateLogDirectory( logDir );
 		    fh = new FileHandler(logDir + "job-" + jobId + ".log");
 		    logger.log(Level.INFO, "JOB LOG: " + logDir + "job-" + jobId + ".log");
