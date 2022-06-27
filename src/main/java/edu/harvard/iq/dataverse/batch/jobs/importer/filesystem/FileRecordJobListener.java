@@ -60,6 +60,7 @@ import javax.servlet.http.HttpServletRequest;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import org.apache.commons.io.IOUtils;
 
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -80,7 +81,7 @@ import javax.batch.operations.NoSuchJobExecutionException;
 @Dependent
 public class FileRecordJobListener implements ItemReadListener, StepListener, JobListener {
     
-    public static final String SEP = System.getProperty("file.separator");
+    public static final String SEP = File.separator;
     
     private static final UserNotification.Type notifyType = UserNotification.Type.FILESYSTEMIMPORT;
     

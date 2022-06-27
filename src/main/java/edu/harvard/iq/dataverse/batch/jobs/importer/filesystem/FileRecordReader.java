@@ -55,7 +55,7 @@ import java.util.logging.Logger;
 @Dependent
 public class FileRecordReader extends AbstractItemReader {
     
-    public static final String SEP = System.getProperty("file.separator");
+    public static final String SEP = File.separator;
 
     @Inject
     JobContext jobContext;
