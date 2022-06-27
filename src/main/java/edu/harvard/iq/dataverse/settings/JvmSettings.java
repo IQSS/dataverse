@@ -45,6 +45,23 @@ public enum JvmSettings {
     SOLR_CORE(SCOPE_SOLR, "core"),
     SOLR_PATH(SCOPE_SOLR, "path"),
     
+    // PERSISTENT IDENTIFIER SETTINGS
+    SCOPE_PID(PREFIX, "pid"),
+    
+    // PROVIDER EZID (legacy) - these settings were formerly kept together with DataCite ones
+    SCOPE_PID_EZID(SCOPE_PID, "ezid"),
+    EZID_API_URL(SCOPE_PID_EZID, "api-url", "doi.baseurlstring"),
+    EZID_USERNAME(SCOPE_PID_EZID, "username", "doi.username"),
+    EZID_PASSWORD(SCOPE_PID_EZID, "password", "doi.password"),
+    
+    // PROVIDER DATACITE
+    SCOPE_PID_DATACITE(SCOPE_PID, "datacite"),
+    DATACITE_MDS_API_URL(SCOPE_PID_DATACITE, "mds-api-url", "doi.baseurlstring"),
+    DATACITE_REST_API_URL(SCOPE_PID_DATACITE, "rest-api-url", "doi.dataciterestapiurlstring", "doi.mdcbaseurlstring"),
+    DATACITE_USERNAME(SCOPE_PID_DATACITE, "username", "doi.username"),
+    DATACITE_PASSWORD(SCOPE_PID_DATACITE, "password", "doi.password"),
+    
+    
     ;
     
     private static final String SCOPE_SEPARATOR = ".";

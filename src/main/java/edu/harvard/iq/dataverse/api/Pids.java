@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.DeletePidCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReservePidCommand;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Arrays;
 import javax.ejb.Stateless;
@@ -46,9 +47,13 @@ public class Pids extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.errors.invalidApiToken"));
         }
-        String baseUrl = systemConfig.getDataCiteRestApiUrlString();
-        String username = System.getProperty("doi.username");
-        String password = System.getProperty("doi.password");
+
+        // FIXME: Even before changing to MPCONFIG retrieval, this was pinned to be DataCite specific!
+        //        Should this be extended to EZID and other PID systems like Handle?
+        String baseUrl = JvmSettings.DATACITE_REST_API_URL.lookup();
+        String username = JvmSettings.DATACITE_USERNAME.lookup();
+        String password = JvmSettings.DATACITE_PASSWORD.lookup();
+        
         try {
             JsonObjectBuilder result = PidUtil.queryDoi(persistentId, baseUrl, username, password);
             return ok(result);
