@@ -941,6 +941,12 @@ Some external tools are also ready to be translated, especially if they are usin
 
 .. _dataverse-internationalization-wg: https://groups.google.com/forum/#!forum/dataverse-internationalization-wg
 
+
+Tools
++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+In order to ease the amount of work necessary for translating Dataverse and be able to reuse previous work, You may use `easyTranslationHelper <https://github.com/universidadeaveiro/easyTranslationHelper>`_, a tool developed by University of Aveiro.
+
 .. _Web-Analytics-Code:
 
 Web Analytics Code
