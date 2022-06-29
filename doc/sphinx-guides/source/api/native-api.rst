@@ -2934,7 +2934,7 @@ Each user can get a dump of their basic information in JSON format by passing in
 
     curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/users/:me    
 
-.. _pids-api:
+
 
 Managing Harvesting Server and Sets
 -----------------------------------
@@ -3044,6 +3044,10 @@ The fully expanded example above (without the environment variables) looks like 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/harvest/server/oaisets/ffAuthor"
 
 Only users with superuser permissions may delete harvesting sets.
+
+
+
+.. _pids-api:
 
 PIDs
 ----
