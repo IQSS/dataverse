@@ -146,7 +146,9 @@ Configuring Your Dataverse Installation for Make Data Count Citations
 
 Please note: as explained in the note above about limitations, this feature is not available to Dataverse installations that use Handles.
 
-To configure your Dataverse installation to pull citations from the test vs. production DataCite server see :ref:`doi.dataciterestapiurlstring` in the Installation Guide.
+To configure your Dataverse installation to pull citations from the test vs.
+production DataCite server see :ref:`dataverse.pid.datacite.rest-api-url` in
+the Installation Guide.
 
 Please note that in the curl example, Bash environment variables are used with the idea that you can set a few environment variables and copy and paste the examples as is. For example, "$DOI" could become "doi:10.5072/FK2/BL2IBM" by issuing the following export command from Bash:
 

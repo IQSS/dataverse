@@ -144,36 +144,71 @@ As the person installing the Dataverse Software, you may or may not be a local m
 Persistent Identifiers and Publishing Datasets
 ----------------------------------------------
 
-Persistent identifiers are a required and integral part of the Dataverse Software. They provide a URL that is guaranteed to resolve to the datasets or files they represent. The Dataverse Software currently supports creating identifiers using DOI and Handle.
+Persistent identifiers are a required and integral part of the Dataverse
+Software. They provide a URL that is guaranteed to resolve to the datasets or
+files they represent. The Dataverse Software currently supports creating
+identifiers using DOI and Handle.
 
-By default, the installer configures a default DOI namespace (10.5072) with DataCite as the registration provider. Please note that as of the release 4.9.3, we can no longer use EZID as the provider. Unlike EZID, DataCite requires that you register for a test account, configured with your own prefix (please contact support@datacite.org). Once you receive the login name, password, and prefix for the account, configure the credentials in your domain.xml, as the following two JVM options::
+By default, the installer configures a default DOI namespace (10.5072) with
+DataCite as the registration provider. Please note that as of the release
+4.9.3, we can no longer use EZID as the provider. Unlike EZID, DataCite
+requires that you register for a test account, configured with your own prefix
+(please contact support@datacite.org).
 
-      <jvm-options>-Ddoi.username=...</jvm-options>
-      <jvm-options>-Ddoi.password=...</jvm-options>
+Once you receive the login name, password, and prefix for the account,
+configure the credentials via :ref:`dataverse.pid.datacite.username` and
+:ref:`dataverse.pid.datacite.password`, then restart Payara.
 
-and restart Payara. The prefix can be configured via the API (where it is referred to as "Authority"):
+The prefix can be configured via the API (where it is referred to as
+"Authority"):
 
 ``curl -X PUT -d 10.xxxx http://localhost:8080/api/admin/settings/:Authority``
 
-Once this is done, you will be able to publish datasets and files, but the persistent identifiers will not be citable, and they will only resolve from the DataCite test environment (and then only if the Dataverse installation from which you published them is accessible - DOIs minted from your laptop will not resolve). Note that any datasets or files created using the test configuration cannot be directly migrated and would need to be created again once a valid DOI namespace is configured.
+Once this is done, you will be able to publish datasets and files, but the
+persistent identifiers will not be citable, and they will only resolve from the
+DataCite test environment (and then only if the Dataverse installation from
+which you published them is accessible - DOIs minted from your laptop will not
+resolve). Note that any datasets or files created using the test configuration
+cannot be directly migrated and would need to be created again once a valid DOI
+namespace is configured.
 
-To properly configure persistent identifiers for a production installation, an account and associated namespace must be acquired for a fee from a DOI or HDL provider. **DataCite** (https://www.datacite.org) is the recommended DOI provider (see https://dataverse.org/global-dataverse-community-consortium for more on joining DataCite) but **EZID** (http://ezid.cdlib.org) is an option for the University of California according to https://www.cdlib.org/cdlinfo/2017/08/04/ezid-doi-service-is-evolving/ . **Handle.Net** (https://www.handle.net) is the HDL provider.
+To properly configure persistent identifiers for a production installation, an
+account and associated namespace must be acquired for a fee from a DOI or HDL
+provider. **DataCite** (https://www.datacite.org) is the recommended DOI
+provider (see https://dataverse.org/global-dataverse-community-consortium for
+more on joining DataCite) but **EZID** (http://ezid.cdlib.org) is an option for
+the University of California according to
+https://www.cdlib.org/cdlinfo/2017/08/04/ezid-doi-service-is-evolving/ .
+**Handle.Net** (https://www.handle.net) is the HDL provider.
 
-Once you have your DOI or Handle account credentials and a namespace, configure your Dataverse installation to use them using the JVM options and database settings below.
+Once you have your DOI or Handle account credentials and a namespace, configure
+your Dataverse installation to use them using the JVM options and database
+settings below.
 
 Configuring Your Dataverse Installation for DOIs
 ++++++++++++++++++++++++++++++++++++++++++++++++
 
-By default, your Dataverse installation attempts to register DOIs for each dataset and file under a test authority, though you must apply for your own credentials as explained above.
+By default, your Dataverse installation attempts to register DOIs for each
+dataset and file under a test authority, though you must apply for your own
+credentials as explained above.
 
 Here are the configuration options for DOIs:
 
-**JVM Options:**
+**JVM Options for DataCite:**
 
-- :ref:`doi.baseurlstring`
-- :ref:`doi.username`
-- :ref:`doi.password`
-- :ref:`doi.dataciterestapiurlstring`
+- :ref:`dataverse.pid.datacite.mds-api-url`
+- :ref:`dataverse.pid.datacite.rest-api-url`
+- :ref:`dataverse.pid.datacite.username`
+- :ref:`dataverse.pid.datacite.password`
+
+**JVM Options for EZID:**
+
+As stated above, with very few exceptions, you will not be able to use
+this provider.
+
+- :ref:`dataverse.pid.ezid.api-url`
+- :ref:`dataverse.pid.ezid.username`
+- :ref:`dataverse.pid.ezid.password`
 
 **Database Settings:**
 
@@ -188,7 +223,8 @@ Here are the configuration options for DOIs:
 Configuring Your Dataverse Installation for Handles
 +++++++++++++++++++++++++++++++++++++++++++++++++++
 
-Here are the configuration options for handles:
+Here are the configuration options for handles. Most notably, you need to
+change the ``:Protocol`` setting, as it defaults to DOI usage.
 
 **JVM Options:**
 
@@ -1511,77 +1547,180 @@ dataverse.dataAccess.thumbnail.pdf.limit
 
 For limiting the size (in bytes) of thumbnail images generated from files. The default is 1000000 bytes (1 MB).
 
-.. _doi.baseurlstring:
 
-doi.baseurlstring
-+++++++++++++++++
+.. _dataverse.pid.datacite.mds-api-url:
 
-As of this writing, "https://mds.datacite.org" (DataCite) and "https://ezid.cdlib.org" (EZID) are the main valid values.
+dataverse.pid.datacite.mds-api-url
+++++++++++++++++++++++++++++++++++
 
-While the above two options are recommended because they have been tested by the Dataverse Project Team, it is also possible to use a DataCite Client API as a proxy to DataCite. In this case, requests made to the Client API are captured and passed on to DataCite for processing. The application will interact with the DataCite Client API exactly as if it were interacting directly with the DataCite API, with the only difference being the change to the base endpoint URL.
+Configure the basic endpoint of the `DataCite MDS API <https://support.datacite.org/reference/overview>`_,
+used to mint and manage DOIs. Valid values are "https://mds.datacite.org" and "https://mds.test.datacite.org"
+(see also note below).
 
-For example, the Australian Data Archive (ADA) successfully uses the Australian National Data Service (ANDS) API (a proxy for DataCite) to mint their DOIs through their Dataverse installation using a ``doi.baseurlstring`` value of "https://researchdata.ands.org.au/api/doi/datacite" as documented at https://documentation.ands.org.au/display/DOC/ANDS+DataCite+Client+API . As ADA did for ANDS DOI minting, any DOI provider (and their corresponding DOI configuration parameters) other than DataCite must be tested with the Dataverse Software to establish whether or not it will function properly.
+Out of the box, the installer script configures your installation to use a `DataCite MDS Test API
+base URL <https://support.datacite.org/docs/testing-guide>`_. You can delete it like this:
 
-Out of the box, the Dataverse Software is configured to use a test MDS DataCite base URL string. You can delete it like this:
+``./asadmin delete-jvm-options '-Ddataverse.pid.datacite.mds-api-url=https\://mds.test.datacite.org'``
 
-``./asadmin delete-jvm-options '-Ddoi.baseurlstring=https\://mds.test.datacite.org'``
+Then, to switch to `production DataCite <https://support.datacite.org/docs/mds-api-guide>`__,
+you can issue the following command:
 
-Then, to switch to production DataCite, you can issue the following command:
+``./asadmin create-jvm-options '-Ddataverse.pid.datacite.mds-api-url=https\://mds.datacite.org'``
 
-``./asadmin create-jvm-options '-Ddoi.baseurlstring=https\://mds.datacite.org'``
+Without setting an option, always defaults to testing API endpoint.
 
-See also these related database settings below:
+**Notes:**
 
-- :ref:`:DoiProvider`
-- :ref:`:Protocol`
-- :ref:`:Authority`
-- :ref:`:Shoulder`
+- See also these related database settings below: :ref:`:DoiProvider`, 
+  :ref:`:Protocol`, :ref:`:Authority`, :ref:`:Shoulder`.
+- Can also be set via *MicroProfile Config API* sources, e.g. the environment
+  variable ``DATAVERSE_PID_DATACITE_MDS_API_URL``.
+- This setting was formerly known as ``doi.baseurlstring`` and has been renamed.
+  You should delete and re-add it.
+- While using DataCite directly is recommended because it is tested by the Dataverse
+  Project Team plus field tested with most installations, it is also possible
+  to use a DataCite Client API as a proxy to DataCite. `Since the launch of DataCite Fabrica in
+  2019, the only example by Australian National Data Services (ANDS) has been decommissioned
+  <https://intranet.ands.org.au/display/DOC/DOI+Technical+Changes%3A+Transition+to+DataCite+DOI+services>`_.
 
-.. _doi.dataciterestapiurlstring:
 
-doi.dataciterestapiurlstring
-++++++++++++++++++++++++++++
+.. _dataverse.pid.datacite.rest-api-url:
 
-This configuration option affects the ``updateCitationsForDataset`` API endpoint documented under :ref:`MDC-updateCitationsForDataset` in the Admin Guide as well as the /pids/* API.
+dataverse.pid.datacite.rest-api-url
++++++++++++++++++++++++++++++++++++
 
-As of this writing, "https://api.datacite.org" (DataCite) and "https://api.test.datacite.org" (DataCite Testing) are the main valid values.
+Configure the basic endpoint of the `DataCite REST API <https://support.datacite.org/reference/introduction>`_,
+currently used for :doc:`/admin/make-data-count` integration and :ref:`Native PIDs API
+<pids-api>` information retrieval. Valid values are "https://api.datacite.org" and
+"https://api.test.datacite.org".
 
-Out of the box, the Dataverse Software is configured to use a test DataCite REST API base URL string. You can delete it like this:
+Out of the box, the installer configures your installation to use a `DataCite
+REST Test API base URL <https://support.datacite.org/docs/testing-guide>`_. You
+can delete it like this:
 
-``./asadmin delete-jvm-options '-Ddoi.dataciterestapiurlstring=https\://api.test.datacite.org'``
+``./asadmin delete-jvm-options '-Ddataverse.pid.datacite.rest-api-url=https\://api.test.datacite.org'``
 
-Then, to switch to production DataCite, you can issue the following command:
+Then, to switch to `production DataCite <https://support.datacite.org/docs/api>`__,
+you can issue the following command:
 
-``./asadmin create-jvm-options '-Ddoi.dataciterestapiurlstring=https\://api.datacite.org'``
+``./asadmin create-jvm-options '-Ddataverse.pid.datacite.rest-api-url=https\://api.datacite.org'``
 
-For backward compatibility, if this option is not defined, the value of '-Ddoi.mdcbaseurlstring' is used if set. If not the default used is "https\://api.datacite.org:.
+Without setting an option, always defaults to testing API endpoint.
 
-See also these related database settings below:
+**Notes:**
 
-- :ref:`:MDCLogPath`
-- :ref:`:DisplayMDCMetrics`
+- See also these related database settings below: :ref:`:MDCLogPath`,
+  :ref:`:DisplayMDCMetrics`.
+- Can also be set via *MicroProfile Config API* sources, e.g. the environment
+  variable ``DATAVERSE_PID_DATACITE_REST_API_URL``.
+- This setting was formerly known as ``doi.dataciterestapiurlstring`` or
+  ``doi.mdcbaseurlstring`` and has been renamed. You should delete and re-add it.
 
-.. _doi.username:
 
-doi.username
-++++++++++++
+.. _dataverse.pid.datacite.username:
 
-Used in conjuction with ``doi.baseurlstring``.
+dataverse.pid.datacite.username
++++++++++++++++++++++++++++++++
+
+DataCite uses `HTTP Basic authentication <https://en.wikipedia.org/wiki/Basic_access_authentication>`_
+for `Fabrica <https://doi.datacite.org/>`_ and their APIs. You need to provide
+the same credentials to Dataverse Software to mint and manage DOIs for you.
 
 Once you have a username from your provider, you can enter it like this:
 
-``./asadmin create-jvm-options '-Ddoi.username=YOUR_USERNAME_HERE'``
+``./asadmin create-jvm-options '-Ddataverse.pid.datacite.username=YOUR_USERNAME_HERE'``
 
-.. _doi.password:
+**Notes:**
 
-doi.password
-++++++++++++
+- Used in conjuction with :ref:`dataverse.pid.datacite.mds-api-url`, 
+  :ref:`dataverse.pid.datacite.rest-api-url` and :ref:`dataverse.pid.datacite.password`.
+- Can also be set via *MicroProfile Config API* sources, e.g. the environment
+  variable ``DATAVERSE_PID_DATACITE_USERNAME``.
+- This setting was formerly known as ``doi.username`` and has been renamed.
+  You should delete and re-add it.
 
-Used in conjuction with ``doi.baseurlstring``.
+.. _dataverse.pid.datacite.password:
 
-Once you have a password from your provider, you can enter it like this:
+dataverse.pid.datacite.password
++++++++++++++++++++++++++++++++
 
-``./asadmin create-jvm-options '-Ddoi.password=YOUR_PASSWORD_HERE'``
+Once you have a password from your provider, you should create a password alias.
+This avoids storing it in clear text, although you could use a JVM option `to reference
+a different place <https://docs.payara.fish/community/docs/Technical%20Documentation/Payara%20Server%20Documentation/Server%20Configuration%20And%20Management/Configuration%20Options/Variable%20Substitution/Types%20of%20Variables.html>`__.
+
+``./asadmin create-password-alias dataverse.pid.datacite.password``
+
+It will allow you to enter the password while not echoing the characters.
+To manage these, read up on `Payara docs about password aliases <https://docs.payara.fish/community/docs/Technical%20Documentation/Payara%20Server%20Documentation/Server%20Configuration%20And%20Management/Configuration%20Options/Password%20Aliases.html#asadmin-commands-password-aliases>`__.
+
+**Notes:**
+
+- Used in conjuction with :ref:`dataverse.pid.datacite.mds-api-url`, 
+  :ref:`dataverse.pid.datacite.rest-api-url` and :ref:`dataverse.pid.datacite.username`.
+- Can also be set via *MicroProfile Config API* sources, e.g. the environment
+  variable ``DATAVERSE_PID_DATACITE_PASSWORD`` (although you shouldn't use
+  environment variables for passwords).
+- This setting was formerly known as ``doi.password`` and has been renamed.
+  You should delete the old JVM option and the wrapped password alias, then recreate
+  with new alias name as above.
+
+
+.. _dataverse.pid.ezid.api-url:
+
+dataverse.pid.ezid.api-url
+++++++++++++++++++++++++++
+
+The EZID DOI provider is likely not an option if you are `not associated with
+California Digital Library (CDL) or Purdue University 
+<https://www.cdlib.org/cdlinfo/2017/08/04/ezid-doi-service-is-evolving/>`_.
+
+Defaults to ``https://ezid.cdlib.org``.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment
+variable ``DATAVERSE_PID_EZID_API_URL``. This setting was formerly known as
+``doi.baseurlstring`` and has been renamed. You should delete and re-add it.
+
+
+.. _dataverse.pid.ezid.username:
+
+dataverse.pid.ezid.username
++++++++++++++++++++++++++++
+
+The EZID DOI provider is likely not an option if you are `not associated with
+California Digital Library (CDL) or Purdue University 
+<https://www.cdlib.org/cdlinfo/2017/08/04/ezid-doi-service-is-evolving/>`_.
+
+Works the same way as :ref:`dataverse.pid.datacite.username`, but for the EZID DOI
+provider.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment
+variable ``DATAVERSE_PID_EZID_USERNAME``.
+
+This setting was formerly known as ``doi.username`` and has been renamed. You
+should delete and re-add it.
+
+.. _dataverse.pid.ezid.password:
+
+dataverse.pid.ezid.password
++++++++++++++++++++++++++++
+
+The EZID DOI provider is likely not an option if you are `not associated with
+California Digital Library (CDL) or Purdue University 
+<https://www.cdlib.org/cdlinfo/2017/08/04/ezid-doi-service-is-evolving/>`_.
+
+Works the same way as :ref:`dataverse.pid.datacite.password`, but for the EZID DOI
+provider.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment
+variable ``DATAVERSE_PID_EZID_PASSWORD`` (although you shouldn't use
+environment variables for passwords). 
+
+This setting was formerly known as ``doi.password`` and has been renamed. You
+should delete the old JVM option and the wrapped password alias, then recreate
+as shown for :ref:`dataverse.pid.datacite.password` but with the EZID alias
+name.
+
+
 
 .. _dataverse.handlenet.admcredfile:
 
@@ -1824,15 +1963,22 @@ By default the footer says "Copyright © [YYYY]" but you can add text after the 
 :DoiProvider
 ++++++++++++
 
-As of this writing "DataCite" and "EZID" are the only valid options for production installations. Developers using Dataverse Software 4.10+ are welcome to use the keyword "FAKE" to configure a non-production installation with an non-resolving, in-code provider, which will basically short-circuit the DOI publishing process. ``:DoiProvider`` is only needed if you are using DOI.
+As of this writing "DataCite" and "EZID" are the only valid options for
+production installations. Developers using Dataverse Software 4.10+ are welcome
+to use the keyword "FAKE" to configure a non-production installation with an
+non-resolving, in-code provider, which will basically short-circuit the DOI
+publishing process. ``:DoiProvider`` is only needed if you are using DOI.
 
 ``curl -X PUT -d DataCite http://localhost:8080/api/admin/settings/:DoiProvider``
 
-This setting relates to the ``:Protocol``, ``:Authority``, ``:Shoulder``, and ``:IdentifierGenerationStyle`` database settings below as well as the following JVM options:
+This setting relates to the ``:Protocol``, ``:Authority``, ``:Shoulder``, and
+``:IdentifierGenerationStyle`` database settings below as well as the following
+JVM options:
 
-- :ref:`doi.baseurlstring`
-- :ref:`doi.username`
-- :ref:`doi.password`
+- :ref:`dataverse.pid.datacite.mds-api-url`
+- :ref:`dataverse.pid.datacite.rest-api-url`
+- :ref:`dataverse.pid.datacite.username`
+- :ref:`dataverse.pid.datacite.password`
 
 .. _:Protocol:
 
