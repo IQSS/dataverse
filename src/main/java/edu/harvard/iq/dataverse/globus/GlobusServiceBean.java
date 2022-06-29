@@ -77,7 +77,7 @@ public class GlobusServiceBean implements java.io.Serializable{
     @EJB
     UserNotificationServiceBean userNotificationService;
 
-    private static final Logger logger = Logger.getLogger(FeaturedDataverseServiceBean.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(GlobusServiceBean.class.getCanonicalName());
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 
     private String code;
@@ -515,7 +515,7 @@ public class GlobusServiceBean implements java.io.Serializable{
         URLTokenUtil tokenUtil = new URLTokenUtil(d, apiToken, localeCode);
         String appUrl = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusAppUrl, "http://localhost")
                 + "/upload?datasetPid={datasetPid}&siteUrl={siteUrl}&apiToken={apiToken}&datasetId={datasetId}&datasetVersion={datasetVersion}&dvLocale={localeCode}";
-        return tokenUtil.replaceTokensWithValues(appUrl)+"&storeprefix=" + storePrefix;
+        return tokenUtil.replaceTokensWithValues(appUrl)+"&storePrefix=" + storePrefix;
     }
     
 
