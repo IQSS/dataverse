@@ -103,10 +103,7 @@ public enum JvmSettings {
      * @return The setting as a String
      */
     public String lookup() {
-        // This must be done with the full-fledged lookup, as we cannot store the config in an instance or static
-        // variable, as the alias config source depends on this enum (circular dependency). This is easiest
-        // avoided by looking up the static cached config at the cost of a method invocation.
-        return ConfigProvider.getConfig().getValue(this.getScopedKey(), String.class);
+        return lookup(String.class);
     }
     
     /**
@@ -114,9 +111,33 @@ public enum JvmSettings {
      * @return The setting as String wrapped in a (potentially empty) Optional
      */
     public Optional<String> lookupOptional() {
+        return lookupOptional(String.class);
+    }
+    
+    /**
+     * Lookup this setting via MicroProfile Config as a required option (it will fail if not present).
+     * @throws java.util.NoSuchElementException - if the property is not defined or is defined as an empty string
+     * @param klass The target type class to convert the setting to if found and not null
+     * @return The setting as an instance of {@link T}
+     * @param <T> Target type to convert the setting to (you can create custom converters)
+     */
+    public <T> T lookup(Class<T> klass) {
         // This must be done with the full-fledged lookup, as we cannot store the config in an instance or static
         // variable, as the alias config source depends on this enum (circular dependency). This is easiest
         // avoided by looking up the static cached config at the cost of a method invocation.
-        return ConfigProvider.getConfig().getOptionalValue(this.getScopedKey(), String.class);
+        return ConfigProvider.getConfig().getValue(this.getScopedKey(), klass);
+    }
+    
+    /**
+     * Lookup this setting via MicroProfile Config as an optional setting.
+     * @param klass The target type class to convert the setting to if found and not null
+     * @return The setting as an instance of {@link Optional<T>} or an empty Optional
+     * @param <T> Target type to convert the setting to (you can create custom converters)
+     */
+    public <T> Optional<T> lookupOptional(Class<T> klass) {
+        // This must be done with the full-fledged lookup, as we cannot store the config in an instance or static
+        // variable, as the alias config source depends on this enum (circular dependency). This is easiest
+        // avoided by looking up the static cached config at the cost of a method invocation.
+        return ConfigProvider.getConfig().getOptionalValue(this.getScopedKey(), klass);
     }
 }
