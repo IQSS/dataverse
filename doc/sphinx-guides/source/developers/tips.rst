@@ -173,6 +173,13 @@ commit id in your test deployment webpages on the bottom right corner next to th
 
 When you prefer manual updates, there is another script, see above: :ref:`custom_build_num_script`.
 
+An alternative to that is using *MicroProfile Config* and set the option ``dataverse.build`` via a system property,
+environment variable (``DATAVERSE_BUILD``) or `one of the other config sources
+<https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Overview.html#config-sources>`__.
+
+You could even override the version itself with the option ``dataverse.version`` in the same way, which is usually
+picked up from a build time source.
+
 Sample Data
 -----------
 
