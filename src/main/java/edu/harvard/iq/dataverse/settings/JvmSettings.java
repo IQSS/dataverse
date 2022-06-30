@@ -29,7 +29,13 @@ public enum JvmSettings {
     
     // GENERAL SETTINGS
     VERSION(PREFIX, "version"),
-    BUILD(PREFIX, "build")
+    BUILD(PREFIX, "build"),
+    
+    
+    // FOR TESTING PURPOSES ONLY
+    // (Enums cannot be extended/inherited, so must define test data here)
+    TEST_PREFIX("test"),
+    TEST_ALIAS_CONFIG_SOURCE(TEST_PREFIX, "foobar", "former.hello")
     
     ;
     
