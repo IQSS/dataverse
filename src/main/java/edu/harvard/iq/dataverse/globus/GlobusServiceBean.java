@@ -494,6 +494,10 @@ public class GlobusServiceBean implements java.io.Serializable{
 
     //Generates the URL to launch the Globus app
     public String getGlobusAppUrlForDataset(Dataset d) {
+        return getGlobusAppUrlForDataset(d, true, null);
+    }
+    
+    public String getGlobusAppUrlForDataset(Dataset d, boolean upload, DataFile df) {
         String localeCode = session.getLocaleCode();
         ApiToken apiToken = null;
         User user = session.getUser();
@@ -514,7 +518,7 @@ public class GlobusServiceBean implements java.io.Serializable{
         }
         URLTokenUtil tokenUtil = new URLTokenUtil(d, apiToken, localeCode);
         String appUrl = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusAppUrl, "http://localhost")
-                + "/upload?datasetPid={datasetPid}&siteUrl={siteUrl}&apiToken={apiToken}&datasetId={datasetId}&datasetVersion={datasetVersion}&dvLocale={localeCode}";
+                + "/" + (upload ? "upload":"download") + "?datasetPid={datasetPid}&siteUrl={siteUrl}&apiToken={apiToken}&datasetId={datasetId}&datasetVersion={datasetVersion}&dvLocale={localeCode}"+ (df!=null ? "&fileId={fileId}":"");
         return tokenUtil.replaceTokensWithValues(appUrl)+"&storePrefix=" + storePrefix;
     }
     

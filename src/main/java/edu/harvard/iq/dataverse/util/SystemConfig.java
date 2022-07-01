@@ -993,19 +993,19 @@ public class SystemConfig {
     }
     
     public boolean isRsyncUpload(){
-        return getUploadMethodAvailable(SystemConfig.FileUploadMethods.RSYNC.toString());
+        return getMethodAvailable(SystemConfig.FileUploadMethods.RSYNC.toString(), true);
     }
 
     public boolean isGlobusUpload(){
-        return getUploadMethodAvailable(FileUploadMethods.GLOBUS.toString());
+        return getMethodAvailable(FileUploadMethods.GLOBUS.toString(), true);
     }
 
     // Controls if HTTP upload is enabled for both GUI and API.
     public boolean isHTTPUpload(){       
-        return getUploadMethodAvailable(SystemConfig.FileUploadMethods.NATIVE.toString());       
+        return getMethodAvailable(SystemConfig.FileUploadMethods.NATIVE.toString(), true);
     }
     
-    public boolean isRsyncOnly(){       
+    public boolean isRsyncOnly(){
         String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
         if(downloadMethods == null){
             return false;
@@ -1018,31 +1018,33 @@ public class SystemConfig {
             return false;
         } else {
            return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
-        }        
+        }
     }
     
     public boolean isRsyncDownload() {
-        String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
-        return downloadMethods !=null && downloadMethods.toLowerCase().contains(SystemConfig.FileDownloadMethods.RSYNC.toString());
+        return getMethodAvailable(SystemConfig.FileUploadMethods.RSYNC.toString(), false);
     }
     
     public boolean isHTTPDownload() {
-        String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
-        logger.warning("Download Methods:" + downloadMethods);
-        return downloadMethods !=null && downloadMethods.toLowerCase().contains(SystemConfig.FileDownloadMethods.NATIVE.toString());
+        return getMethodAvailable(SystemConfig.FileUploadMethods.NATIVE.toString(), false);
     }
 
     public boolean isGlobusDownload() {
-        String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
-        return downloadMethods !=null && downloadMethods.toLowerCase().contains(FileDownloadMethods.GLOBUS.toString());
+        return getMethodAvailable(FileUploadMethods.GLOBUS.toString(), false);
     }
-    
-    private Boolean getUploadMethodAvailable(String method){
-        String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods); 
-        if (uploadMethods==null){
+
+    public List<String> getGlobusStoresList() {
+    String globusStores = settingsService.getValueForKey(SettingsServiceBean.Key.GlobusStores, "");
+    return Arrays.asList(globusStores.split("\\s*,\\s*"));
+    }
+
+    private Boolean getMethodAvailable(String method, boolean upload) {
+        String methods = settingsService.getValueForKey(
+                upload ? SettingsServiceBean.Key.UploadMethods : SettingsServiceBean.Key.DownloadMethods);
+        if (methods == null) {
             return false;
         } else {
-           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).contains(method);
+            return Arrays.asList(methods.toLowerCase().split("\\s*,\\s*")).contains(method);
         }
     }
     

@@ -95,6 +95,7 @@ public class SettingsWrapper implements java.io.Serializable {
     private Boolean rsyncDownload = null;
     
     private Boolean globusUpload = null;
+    private Boolean globusDownload = null;
     
     private String globusAppUrl = null;
     
@@ -306,10 +307,16 @@ public class SettingsWrapper implements java.io.Serializable {
         return globusUpload;
     }
     
+    public boolean isGlobusDownload() {
+        if (globusDownload == null) {
+            globusDownload = systemConfig.isGlobusDownload();
+        }
+        return globusDownload;
+    }
+    
     public boolean isGlobusEnabledStorageDriver(String driverId) {
         if (globusStoreList == null) {
-            String globusStores = settingsService.getValueForKey(SettingsServiceBean.Key.GlobusStores, "");
-            globusStoreList = Arrays.asList(globusStores.split("\\s*,\\s*"));
+            globusStoreList = systemConfig.getGlobusStoresList();
         }
         return globusStoreList.contains(driverId);
     }
