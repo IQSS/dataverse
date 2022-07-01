@@ -68,7 +68,7 @@
                          actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'GlobusTransfer')}">
                 <!-- non-tabular data file: -->
                 <!-- no guest book/terms of use/etc. - straight to the download API url: -->
-                GT: #{fileMetadata.dataFile.friendlyType == 'Unknown' ? bundle['file.download.filetype.unknown'] : fileMetadata.dataFile.friendlyType}
+                <span class="globus-btn ui-icon" title="#{bundle['file.globus.transfer']}"/> #{bundle['file.globus.of']} #{fileMetadata.dataFile.friendlyType == 'Unknown' ? bundle['file.download.filetype.unknown'] : fileMetadata.dataFile.friendlyType}
             </p:commandLink>
             <p:commandLink rendered="#{downloadPopupRequired and !fileMetadata.dataFile.filePackage}"
                          styleClass="btn-download"
