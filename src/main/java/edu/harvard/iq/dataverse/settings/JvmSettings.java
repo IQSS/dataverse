@@ -42,6 +42,14 @@ public enum JvmSettings {
     VERSION(PREFIX, "version"),
     BUILD(PREFIX, "build"),
     
+    // RSERVE CONNECTION
+    SCOPE_RSERVE(PREFIX, "rserve"),
+    RSERVE_HOST(SCOPE_RSERVE, "host"),
+    RSERVE_PORT(SCOPE_RSERVE, "port", "dataverse.ingest.rserve.port"),
+    RSERVE_USER(SCOPE_RSERVE, "user"),
+    RSERVE_PASSWORD(SCOPE_RSERVE, "password"),
+    RSERVE_TEMPDIR(SCOPE_RSERVE, "tempdir"),
+    
     ;
     
     private static final String SCOPE_SEPARATOR = ".";
