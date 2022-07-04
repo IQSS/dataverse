@@ -20,6 +20,7 @@
 
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import java.io.File;
@@ -69,7 +70,7 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     private static final Logger logger = Logger.getLogger(HandlenetServiceBean.class.getCanonicalName());
     
     private static final String HANDLE_PROTOCOL_TAG = "hdl";
-    int handlenetIndex = System.getProperty("dataverse.handlenet.index")!=null? Integer.parseInt(System.getProperty("dataverse.handlenet.index")) : 300;
+    int handlenetIndex = JvmSettings.HANDLENET_INDEX.lookup(Integer.class);
     
     public HandlenetServiceBean() {
         logger.log(Level.FINE,"Constructor");
@@ -227,8 +228,8 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     private PublicKeyAuthenticationInfo getAuthInfo(String handlePrefix) {
         logger.log(Level.FINE,"getAuthInfo");
         byte[] key = null;
-        String adminCredFile = System.getProperty("dataverse.handlenet.admcredfile");
-        int handlenetIndex = System.getProperty("dataverse.handlenet.index")!=null? Integer.parseInt(System.getProperty("dataverse.handlenet.index")) : 300;
+        String adminCredFile = JvmSettings.HANDLENET_KEY_PATH.lookup();
+        int handlenetIndex = JvmSettings.HANDLENET_INDEX.lookup(Integer.class);
        
         key = readKey(adminCredFile);        
         PrivateKey privkey = null;
@@ -285,7 +286,7 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
         logger.log(Level.FINE,"readPrivKey");
         PrivateKey privkey=null;
         
-        String secret = System.getProperty("dataverse.handlenet.admprivphrase");
+        String secret = JvmSettings.HANDLENET_KEY_PASSPHRASE.lookup();
         byte secKey[] = null;
         try {
             if ( Util.requiresSecretKey(key) ) {
@@ -362,9 +363,9 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     public void deleteIdentifier(DvObject dvObject) throws Exception  {
         String handle = getDvObjectHandle(dvObject);
         String authHandle = getAuthenticationHandle(dvObject);
-
-        String adminCredFile = System.getProperty("dataverse.handlenet.admcredfile");
-        int handlenetIndex = System.getProperty("dataverse.handlenet.index")!=null? Integer.parseInt(System.getProperty("dataverse.handlenet.index")) : 300;
+    
+        String adminCredFile = JvmSettings.HANDLENET_KEY_PATH.lookup();
+        int handlenetIndex = JvmSettings.HANDLENET_INDEX.lookup(Integer.class);
        
         byte[] key = readKey(adminCredFile);
         PrivateKey privkey = readPrivKey(key, adminCredFile);

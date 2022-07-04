@@ -58,6 +58,13 @@ public enum JvmSettings {
     DATACITE_USERNAME(SCOPE_PID_DATACITE, "username", "doi.username"),
     DATACITE_PASSWORD(SCOPE_PID_DATACITE, "password", "doi.password"),
     
+    // PROVIDER HANDLE
+    SCOPE_PID_HANDLENET(SCOPE_PID, "handlenet"),
+    HANDLENET_INDEX(SCOPE_PID_HANDLENET, "index"),
+    SCOPE_PID_HANDLENET_KEY(SCOPE_PID_HANDLENET, "key"),
+    HANDLENET_KEY_PATH(SCOPE_PID_HANDLENET_KEY, "path"),
+    HANDLENET_KEY_PASSPHRASE(SCOPE_PID_HANDLENET_KEY, "passphrase"),
+    
     ;
     
     private static final String SCOPE_SEPARATOR = ".";
