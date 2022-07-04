@@ -141,6 +141,8 @@ In order for non-superusers to start creating Dataverse collections or datasets,
 
 As the person installing the Dataverse Software, you may or may not be a local metadata expert. You may want to have others sign up for accounts and grant them the "Admin" role at the root Dataverse collection to configure metadata fields, templates, browse/search facets, guestbooks, etc. For more on these topics, consult the :doc:`/user/dataverse-management` section of the User Guide.
 
+.. _pids-configuration:
+
 Persistent Identifiers and Publishing Datasets
 ----------------------------------------------
 
@@ -185,6 +187,8 @@ Once you have your DOI or Handle account credentials and a namespace, configure
 your Dataverse installation to use them using the JVM options and database
 settings below.
 
+.. _pids-doi-configuration:
+
 Configuring Your Dataverse Installation for DOIs
 ++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -220,6 +224,8 @@ this provider.
 - :ref:`:DataFilePIDFormat <:DataFilePIDFormat>` (optional)
 - :ref:`:FilePIDsEnabled <:FilePIDsEnabled>` (optional, defaults to true)
 
+.. _pids-handle-configuration:
+
 Configuring Your Dataverse Installation for Handles
 +++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -228,9 +234,9 @@ change the ``:Protocol`` setting, as it defaults to DOI usage.
 
 **JVM Options:**
 
-- :ref:`dataverse.handlenet.admcredfile`
-- :ref:`dataverse.handlenet.admprivphrase`
-- :ref:`dataverse.handlenet.index`
+- :ref:`dataverse.pid.handlenet.key.path`
+- :ref:`dataverse.pid.handlenet.key.passphrase`
+- :ref:`dataverse.pid.handlenet.index`
 
 **Database Settings:**
 
@@ -1722,24 +1728,68 @@ name.
 
 
 
-.. _dataverse.handlenet.admcredfile:
+.. _dataverse.pid.handlenet.key.path:
 
-dataverse.handlenet.admcredfile
-+++++++++++++++++++++++++++++++
+dataverse.pid.handlenet.key.path
+++++++++++++++++++++++++++++++++
 
-If you're using **handles**, this JVM setting configures access credentials so your Dataverse installation can talk to your Handle.Net server. This is the private key generated during Handle.Net server installation. Typically the full path is set to ``handle/svr_1/admpriv.bin``. Please refer to `Handle.Net's documentation <http://handle.net/hnr_documentation.html>`_ for more info.
+Related to :ref:`Handle.Net PID provider usage <pids-handle-configuration>`.
 
-.. _dataverse.handlenet.admprivphrase:
+Provide an absolute path to a private key file authenticating requests to your
+Handle.Net server.
 
-dataverse.handlenet.admprivphrase
-+++++++++++++++++++++++++++++++++
-This JVM setting is also part of **handles** configuration. The Handle.Net installer lets you choose whether to encrypt the admcredfile private key or not. If you do encrypt it, this is the pass phrase that it's encrypted with.
+Handle.Net servers use a public key authentication method where the public key
+is stored in a handle itself and the matching private key is provided from this
+file. Typically, the absolute path ends like ``handle/svr_1/admpriv.bin``. See
+also chapter 1.4 "Authentication" of the `Handle.Net Technical Documentation
+<http://www.handle.net/tech_manual/HN_Tech_Manual_8.pdf>`__
 
-.. _dataverse.handlenet.index:
+Can also be set via *MicroProfile Config API* sources, e.g. the environment
+variable ``DATAVERSE_PID_HANDLENET_KEY_PATH``. This setting was formerly known
+as ``dataverse.handlenet.admcredfile`` and has been renamed. You should delete
+and re-add it.
 
-dataverse.handlenet.index
-+++++++++++++++++++++++++
-If you want to use different index than the default 300
+
+.. _dataverse.pid.handlenet.key.passphrase:
+
+dataverse.pid.handlenet.key.passphrase
+++++++++++++++++++++++++++++++++++++++
+
+Related to :ref:`Handle.Net PID provider usage <pids-handle-configuration>`.
+
+Provide a passphrase to decrypt the :ref:`private key file <dataverse.pid.handlenet.key.path>`.
+
+The key file may (and should) be encrypted with a passphrase (used for
+encryption with AES-128). See also chapter 1.4 "Authentication" of the
+`Handle.Net Technical Documentation <http://www.handle.net/tech_manual/HN_Tech_Manual_8.pdf>`__
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment
+variable ``DATAVERSE_PID_HANDLENET_KEY_PASSPHRASE`` (although you shouldn't use
+environment variables for passwords). This setting was formerly known as
+``dataverse.handlenet.admprivphrase`` and has been renamed. You should delete
+the old JVM option and the wrapped password alias, then recreate as shown for
+:ref:`dataverse.pid.datacite.password` but with this option as alias name.
+
+
+.. _dataverse.pid.handlenet.index:
+
+dataverse.pid.handlenet.index
++++++++++++++++++++++++++++++
+
+Related to :ref:`Handle.Net PID provider usage <pids-handle-configuration>`.
+
+Configure your *Handle.Net Index* to be used registering new persistent
+identifiers. Defaults to ``300``. 
+
+Indices are used to separate concerns within the Handle system. To add data to
+an index, authentication is mandatory. See also chapter 1.4 "Authentication" of
+the `Handle.Net Technical Documentation <http://www.handle.net/tech_manual/HN_Tech_Manual_8.pdf>`__
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment
+variable ``DATAVERSE_PID_HANDLENET_INDEX``. This setting was formerly known as
+``dataverse.handlenet.index`` and has been renamed. You should delete and
+re-add it.
+
 
 .. _dataverse.timerServer:
 
