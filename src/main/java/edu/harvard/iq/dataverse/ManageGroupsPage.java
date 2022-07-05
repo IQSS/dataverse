@@ -34,6 +34,7 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import org.apache.commons.lang3.StringUtils;
+import org.primefaces.PrimeFaces;
 
 /**
  * @author michaelsuo
@@ -95,10 +96,24 @@ public class ManageGroupsPage implements java.io.Serializable {
             return permissionsWrapper.notAuthorized();
         }
         explicitGroups = new LinkedList<>(explicitGroupService.findByOwner(getDataverseId()));
-
+        renderDeletePopup = false;
         return null;
     }
+    
+    private boolean renderDeletePopup = false;
 
+    public boolean isRenderDeletePopup() {
+        return renderDeletePopup;
+    }
+
+    public void setRenderDeletePopup(boolean renderDeletePopup) {
+        this.renderDeletePopup = renderDeletePopup;
+    }
+    
+    public void clickDeleteGroup(ExplicitGroup selectedGroup) {
+        setRenderDeletePopup(true);
+        this.selectedGroup = selectedGroup;
+    }
 
     public void setSelectedGroup(ExplicitGroup selectedGroup) {
         this.selectedGroup = selectedGroup;
