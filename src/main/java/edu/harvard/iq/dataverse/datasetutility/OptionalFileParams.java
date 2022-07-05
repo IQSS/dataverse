@@ -396,7 +396,7 @@ public class OptionalFileParams {
         // -------------------------------
         if ((jsonObj.has(LEGACY_CHECKSUM_ATTR_NAME)) && (!jsonObj.get(LEGACY_CHECKSUM_ATTR_NAME).isJsonNull())){
 
-            this.checkSumValue = jsonObj.get(LEGACY_CHECKSUM_ATTR_NAME).getAsString();
+            this.checkSumValue = jsonObj.get(LEGACY_CHECKSUM_ATTR_NAME).getAsString().toLowerCase();
             this.checkSumType= ChecksumType.MD5;
         }
         // -------------------------------
@@ -404,7 +404,7 @@ public class OptionalFileParams {
         // -------------------------------
         else if ((jsonObj.has(CHECKSUM_OBJECT_NAME)) && (!jsonObj.get(CHECKSUM_OBJECT_NAME).isJsonNull())){
 
-            this.checkSumValue = ((JsonObject) jsonObj.get(CHECKSUM_OBJECT_NAME)).get(CHECKSUM_OBJECT_VALUE).getAsString();
+            this.checkSumValue = ((JsonObject) jsonObj.get(CHECKSUM_OBJECT_NAME)).get(CHECKSUM_OBJECT_VALUE).getAsString().toLowerCase();
             this.checkSumType = ChecksumType.fromString(((JsonObject) jsonObj.get(CHECKSUM_OBJECT_NAME)).get(CHECKSUM_OBJECT_TYPE).getAsString());
 
         }
