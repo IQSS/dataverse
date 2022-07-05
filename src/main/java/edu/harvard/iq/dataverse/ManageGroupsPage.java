@@ -34,7 +34,7 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import org.apache.commons.lang3.StringUtils;
-import org.primefaces.PrimeFaces;
+
 
 /**
  * @author michaelsuo
