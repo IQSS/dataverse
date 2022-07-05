@@ -1852,6 +1852,7 @@ public class FileUtil implements java.io.Serializable  {
             if (!fixed) {
                 String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.wrongChecksumValue", Arrays.asList(dataFile.getId().toString()));
                 logger.log(Level.INFO, info);
+                logger.fine("Expected: " + dataFile.getChecksumValue() +", calculated: " + recalculatedChecksum);
                 throw new IOException(info);
             }
         }
