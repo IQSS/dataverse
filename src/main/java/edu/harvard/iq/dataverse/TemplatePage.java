@@ -173,8 +173,6 @@ public class TemplatePage implements java.io.Serializable {
     }
 
     public String save(String redirectPage) {
-
-        //SEK - removed dead code 1/6/2015
         
         boolean create = false;
         Command<Void> cmd;

@@ -44,6 +44,7 @@
             <ui:param name="publishDataset" value="#{DatasetPage.publishDatasetPopup()}"/>
             <ui:param name="releaseDraft" value="#{DatasetPage.releaseDraftPopup()}"/>
             <ui:param name="releaseBoth" value="#{DatasetPage.publishBothPopup()}"/>
+            <ui:param name="hasRestrictedFile" value="#{DatasetPage.isHasRestrictedFiles()}"/>
             <ui:define name="meta_header">
                 <ui:fragment rendered="#{!DatasetPage.anonymizedAccess}">
                     <meta name="description" content="#{DatasetPage.description}"/>
@@ -1867,16 +1868,19 @@
                     
                     function testTOADatasetPage() {
                         var termsofAccessHidden, fileAccessRequestHidden;
+                        var hasRestricted;
                         try{
                             termsofAccessHidden = document.getElementById("datasetForm:tabView:termsofAccessHiddenLT").value;
                             fileAccessRequestHidden  = document.getElementById("datasetForm:tabView:fileAccessRequestHiddenLT").value;  
                         }
                         catch (error){
+                            alert("notdatasetform");
                             //terms not present so save...
                             PF('blockDatasetForm').show();
                             datasetSaveCommand();                        
                         }  
-                        if (fileAccessRequestHidden === 'false' && termsofAccessHidden === '') {
+                        hasRestricted = document.getElementById("datasetForm:tabView:hasRestrictedFilesLT").value;
+                        if (hasRestricted === 'true' && fileAccessRequestHidden === 'false' && termsofAccessHidden === '') {
                            //Not compliant show error keep page open...
                         } else {
                             PF('blockDatasetForm').show();
