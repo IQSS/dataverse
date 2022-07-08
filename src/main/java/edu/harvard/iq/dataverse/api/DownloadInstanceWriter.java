@@ -105,7 +105,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                 String auxiliaryFileName = null; 
                 // Before we do anything else, check if this download can be handled 
                 // by a redirect to remote storage (only supported on S3, as of 5.4):
-                if (storageIO instanceof S3AccessIO && ((S3AccessIO) storageIO).downloadRedirectEnabled()) {
+                if (storageIO.downloadRedirectEnabled()) {
 
                     // Even if the above is true, there are a few cases where a  
                     // redirect is not applicable. 
@@ -199,13 +199,11 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     storageIO.closeInputStream();
                     // [attempt to] redirect: 
                     try {
-                        redirect_url_str = ((S3AccessIO) storageIO).generateTemporaryDownloadUrl(auxiliaryTag, auxiliaryType, auxiliaryFileName);
+                        redirect_url_str = storageIO.generateTemporaryDownloadUrl(auxiliaryTag, auxiliaryType, auxiliaryFileName);
                     } catch (IOException ioex) {
+                        logger.warning("Unable to generate downloadURL for " + dataFile.getId() + ": " + auxiliaryTag);
+                        //Setting null will let us try to get the file/aux file w/o redirecting 
                         redirect_url_str = null;
-                    }
-
-                    if (redirect_url_str == null) {
-                        throw new ServiceUnavailableException();
                     }
                 }
                 

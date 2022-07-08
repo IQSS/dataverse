@@ -593,7 +593,7 @@ public abstract class StorageIO<T extends DvObject> {
         return false;
     }
 
-    public String generateTemporaryDownloadUrl() throws IOException {
+    public String generateTemporaryDownloadUrl(String auxiliaryTag, String auxiliaryType, String auxiliaryFileName) throws IOException {
         throw new UnsupportedDataAccessOperationException("Direct download not implemented for this storage type");
     }
     
