@@ -546,6 +546,9 @@ public class FileUtil implements java.io.Serializable  {
              }
         } 
         
+        if(fileType==null) {
+            fileType = MIME_TYPE_UNDETERMINED_DEFAULT;
+        }
         logger.fine("returning fileType "+fileType);
         return fileType;
     }
