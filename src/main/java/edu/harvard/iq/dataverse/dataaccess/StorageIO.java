@@ -576,11 +576,15 @@ public abstract class StorageIO<T extends DvObject> {
 		}
 	}
 
-	public boolean downloadRedirectEnabled() {
-	    return false;
-	}
-	
-	public String generateTemporaryDownloadUrl() throws IOException {
-		throw new UnsupportedDataAccessOperationException("Direct download not implemented for this storage type");
-	}
+    public boolean downloadRedirectEnabled() {
+        return false;
+    }
+
+    public String generateTemporaryDownloadUrl(String auxiliaryTag, String auxiliaryType, String auxiliaryFileName) throws IOException {
+        throw new UnsupportedDataAccessOperationException("Direct download not implemented for this storage type");
+    }
+    
+    public static String getDriverPrefix(String driverId) {
+        return driverId+ DataAccess.SEPARATOR;
+    }
 }

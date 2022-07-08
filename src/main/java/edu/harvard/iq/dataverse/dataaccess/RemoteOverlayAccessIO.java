@@ -391,12 +391,21 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         return false;
     }
 
-    public String generateTemporaryDownloadUrl() throws IOException {
-        String secretKey = System.getProperty("dataverse.files." + this.driverId + ".secretkey");
-        if (secretKey == null) {
-            return baseUrl + "/" + urlPath;
+    @Override
+    public String generateTemporaryDownloadUrl(String auxiliaryTag, String auxiliaryType, String auxiliaryFileName)
+            throws IOException {
+
+        // ToDo - support remote auxiliary Files
+        if (auxiliaryTag == null) {
+            String secretKey = System.getProperty("dataverse.files." + this.driverId + ".secretkey");
+            if (secretKey == null) {
+                return baseUrl + "/" + urlPath;
+            } else {
+                return UrlSignerUtil.signUrl(baseUrl + "/" + urlPath, getUrlExpirationMinutes(), null, "GET",
+                        secretKey);
+            }
         } else {
-            return UrlSignerUtil.signUrl(baseUrl + "/" + urlPath, getUrlExpirationMinutes(), null, "GET", secretKey);
+            return baseStore.generateTemporaryDownloadUrl(auxiliaryTag, auxiliaryType, auxiliaryFileName);
         }
     }
 
