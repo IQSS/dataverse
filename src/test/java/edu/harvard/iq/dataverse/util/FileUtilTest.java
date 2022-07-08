@@ -329,6 +329,18 @@ public class FileUtilTest {
                 fail("File does not exist: " + file.toPath().toString());
             }
         }
+        
+        @Test
+        public void testDetermineFileTypeFromName() {
+            //Verify that name of the local file isn't used in determining the type (as we often use *.tmp when the real name has a different extension)
+            try {
+                File file = File.createTempFile("empty", "png");
+                assertEquals("text/plain", FileUtil.determineFileType(file, "something.txt"));
+            } catch (IOException ex) {
+                Logger.getLogger(FileUtilTest.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+        }
 
         // isThumbnailSuppported() has been moved from DataFileService to FileUtil:
         /**
