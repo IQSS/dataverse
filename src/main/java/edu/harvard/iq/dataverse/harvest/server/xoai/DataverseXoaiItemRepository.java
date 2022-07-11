@@ -1,10 +1,7 @@
 package edu.harvard.iq.dataverse.harvest.server.xoai;
 
 import io.gdcc.xoai.dataprovider.exceptions.handler.IdDoesNotExistException;
-import io.gdcc.xoai.exceptions.OAIException;
 import io.gdcc.xoai.dataprovider.filter.ScopedFilter;
-//import io.gdcc.xoai.dataprovider.handlers.results.ListItemIdentifiersResult;
-//import io.gdcc.xoai.dataprovider.handlers.results.ListItemsResults;
 import io.gdcc.xoai.dataprovider.model.Item;
 import io.gdcc.xoai.dataprovider.model.ItemIdentifier;
 import io.gdcc.xoai.dataprovider.model.Set;
@@ -19,7 +16,6 @@ import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import io.gdcc.xoai.dataprovider.exceptions.handler.HandlerException;
 import io.gdcc.xoai.dataprovider.exceptions.handler.NoMetadataFormatsException;
-import io.gdcc.xoai.dataprovider.filter.Scope;
 import io.gdcc.xoai.dataprovider.repository.ResultsPage;
 import io.gdcc.xoai.model.oaipmh.ResumptionToken;
 import io.gdcc.xoai.model.oaipmh.results.record.Metadata;
@@ -40,7 +36,7 @@ import java.util.logging.Logger;
  */
 
 public class DataverseXoaiItemRepository implements ItemRepository {
-    private static Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.xoai.XitemRepository");
+    private static Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.xoai.DataverseXoaiItemRepository");
     
     private OAIRecordServiceBean recordService;
     private DatasetServiceBean datasetService;
@@ -60,7 +56,7 @@ public class DataverseXoaiItemRepository implements ItemRepository {
     public Item getItem(String identifier) throws IdDoesNotExistException {
         // I'm assuming we don't want to use this version of getItem 
         // that does not specify the requested metadata format, ever
-        // in our implementation - ? 
+        // in our implementation - ? (L.A.)
         throw new IdDoesNotExistException("Metadata Format is Required");
     }
     
@@ -153,8 +149,6 @@ public class DataverseXoaiItemRepository implements ItemRepository {
 
         List<OAIRecord> oaiRecords = recordService.findOaiRecordsBySetName(setSpec, from, until);
 
-        //logger.fine("total " + oaiRecords.size() + " returned");
-
         List<ItemIdentifier> xoaiItems = new ArrayList<>();
         if (oaiRecords != null && !oaiRecords.isEmpty()) {
 
@@ -169,7 +163,6 @@ public class DataverseXoaiItemRepository implements ItemRepository {
             addExtraSets(xoaiItems, setSpec, from, until);
             
             boolean hasMore = offset + maxResponseLength < oaiRecords.size();
-            //ListItemIdentifiersResult result = new ListItemIdentifiersResult(hasMore, xoaiItems);
             ResultsPage<ItemIdentifier> result = new ResultsPage(resumptionToken, hasMore, xoaiItems, oaiRecords.size());
             logger.fine("returning result with " + xoaiItems.size() + " items.");
             return result;
@@ -178,9 +171,6 @@ public class DataverseXoaiItemRepository implements ItemRepository {
         return new ResultsPage(resumptionToken, false, xoaiItems, 0);
     }
 
-    /* ResultsPage<Item> getItems(
-        final List<ScopedFilter> filters, final MetadataFormat metadataFormat, final int maxResponseLength,
-        final ResumptionToken.Value resumptionToken) throws HandlerException; */
     @Override
     public ResultsPage<Item> getItems(List<ScopedFilter> filters, MetadataFormat metadataFormat, int maxResponseLength, ResumptionToken.Value resumptionToken) throws HandlerException {
         int offset = Long.valueOf(resumptionToken.getOffset()).intValue();
@@ -194,7 +184,8 @@ public class DataverseXoaiItemRepository implements ItemRepository {
                 + ", from=" + from
                 + ", until=" + until);
    
-        // this is not needed, is it?
+        // this is not needed, is it? (the parameters should be pre-validated 
+        // on the gdcc/xoai side by this point)
         if (metadataFormat == null) {
             throw new NoMetadataFormatsException("Metadata Format is Required");
         }
@@ -252,7 +243,6 @@ public class DataverseXoaiItemRepository implements ItemRepository {
             addExtraSets(xoaiItems, setSpec, from, until);
             
             boolean hasMore = offset + maxResponseLength < oaiRecords.size();
-            //ListItemsResults result = new ListItemsResults(hasMore, xoaiItems);
             ResultsPage<Item> result = new ResultsPage(resumptionToken, hasMore, xoaiItems, oaiRecords.size());
             logger.fine("returning result with " + xoaiItems.size() + " items.");
             return result;
@@ -300,8 +290,10 @@ public class DataverseXoaiItemRepository implements ItemRepository {
             // Solely for backward compatibility, for older Dataverse harvesting clients
             // that may still be relying on harvesting "dataverse_json";
             // we will want to eventually get rid of this hack! 
-            String apiUrl = customDataverseJsonApiUri(dataset.getGlobalId().asString());
-            metadata = new Metadata(new EchoElement("<dataverse_json>custom metadata</dataverse_json>")).withAttribute("directApiCall", apiUrl);
+            // @Deprecated(since = "5.0")
+            metadata = new Metadata(
+                    new EchoElement("<dataverse_json>custom metadata</dataverse_json>"))
+                    .withAttribute("directApiCall", customDataverseJsonApiUri(dataset.getGlobalId().asString()));
             
         } else {
             InputStream pregeneratedMetadataStream;

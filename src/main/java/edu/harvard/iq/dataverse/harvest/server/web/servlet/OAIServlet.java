@@ -71,17 +71,21 @@ public class OAIServlet extends HttpServlet {
     SystemConfig systemConfig;
     
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.web.servlet.OAIServlet");
-    protected HashMap attributesMap = new HashMap();
     // If we are going to stick with this solution - of providing a minimalist 
     // xml record containing a link to the proprietary json metadata API for 
     // "dataverse json harvesting", we'll probably want to create minimalistic,  
     // but valid schemas for this format as well. 
-    // (although the more I'm thinking about this... these records just don't seem 
-    // needed at all)
+    // UPDATE: we are keeping this hack on the server side purely for backward 
+    // compatibility with older (pre v6) Dataverses who may still be using the 
+    // format. Once v6 has been around for a while, we will get rid of it completely. 
+    // Starting this version, harvesting clients will not be making GetRecord 
+    // calls at all when using harvesting dataverse_json; instead they will only 
+    // be calling ListIdentifiers, and then making direct calls to the export 
+    // API of the remote Dataverse, to obtain the records in native json. This 
+    // is how we should have implemented this in the first place, really. 
     private static final String DATAVERSE_EXTENDED_METADATA_FORMAT = "dataverse_json";
-    private static final String DATAVERSE_EXTENDED_METADATA_NAMESPACE = "";
-    private static final String DATAVERSE_EXTENDED_METADATA_SCHEMA = "";
-     
+    private static final String DATAVERSE_EXTENDED_METADATA_NAMESPACE = "Custom Dataverse metadata in JSON format (Dataverse4 to Dataverse4 harvesting only)";
+    private static final String DATAVERSE_EXTENDED_METADATA_SCHEMA = "JSON schema pending";     
     
     private Context xoaiContext;
     private SetRepository setRepository;
@@ -98,7 +102,6 @@ public class OAIServlet extends HttpServlet {
         if (isDataverseOaiExtensionsSupported()) {
             xoaiContext = addDataverseJsonMetadataFormat(xoaiContext);
         }
-        //addMetadataFormatConditions(xoaiContext); 
         
         setRepository = new DataverseXoaiSetRepository(setService);
         itemRepository = new DataverseXoaiItemRepository(recordService, datasetService, systemConfig.getDataverseSiteUrl());
@@ -108,7 +111,6 @@ public class OAIServlet extends HttpServlet {
         xoaiRepository = new Repository()
             .withSetRepository(setRepository)
             .withItemRepository(itemRepository)
-            //.withResumptionTokenFormatter(new SimpleResumptionTokenFormat())
             .withConfiguration(repositoryConfiguration);
         
         dataProvider = new DataProvider(getXoaiContext(), getXoaiRepository());
@@ -158,15 +160,6 @@ public class OAIServlet extends HttpServlet {
         return context;
     }
     
-    /* No longer needed after the modifications on the gdcc/xoai side
-    private void addMetadataFormatConditions(Context context) {
-        for (MetadataFormat metadataFormat : context.getMetadataFormats()) {
-            UsePregeneratedMetadataFormat condition = new UsePregeneratedMetadataFormat(); 
-            condition.withMetadataFormat(metadataFormat);
-            metadataFormat.withCondition(condition);
-        }
-    }*/
-    
     private boolean isDataverseOaiExtensionsSupported() {
         return true;
     }
@@ -185,6 +178,7 @@ public class OAIServlet extends HttpServlet {
         InternetAddress systemEmailAddress = MailUtil.parseSystemAddress(settingsService.getValueForKey(SettingsServiceBean.Key.SystemEmail));
 
         RepositoryConfiguration repositoryConfiguration = RepositoryConfiguration.defaults()
+                .withEnableMetadataAttributes(true)
                 .withRepositoryName(repositoryName)
                 .withBaseUrl(systemConfig.getDataverseSiteUrl()+"/oai")
                 .withCompression("gzip")
@@ -193,8 +187,7 @@ public class OAIServlet extends HttpServlet {
                 .withDeleteMethod(DeletedRecord.TRANSIENT)
                 .withMaxListIdentifiers(systemConfig.getOaiServerMaxIdentifiers())
                 .withMaxListRecords(systemConfig.getOaiServerMaxRecords())
-                .withMaxListSets(systemConfig.getOaiServerMaxSets())
-                .withEnableMetadataAttributes(true);
+                .withMaxListSets(systemConfig.getOaiServerMaxSets());
         
         return repositoryConfiguration; 
     }
@@ -239,21 +232,13 @@ public class OAIServlet extends HttpServlet {
                         "Sorry. OAI Service is disabled on this Dataverse node.");
                 return;
             }
-            
-            //OAIRequestParametersBuilder parametersBuilder = newXoaiRequest();
+                        
             RawRequest rawRequest = RequestBuilder.buildRawRequest(httpServletRequest.getParameterMap());
-            
-            /*for (Object p : httpServletRequest.getParameterMap().keySet()) {
-                String parameterName = (String)p; 
-                String parameterValue = httpServletRequest.getParameter(parameterName);
-                parametersBuilder = parametersBuilder.with(parameterName, parameterValue);
-
-            }*/
             
             OAIPMH handle = dataProvider.handle(rawRequest);
             response.setContentType("text/xml;charset=UTF-8");
 
-            XmlWriter xmlWriter = new XmlWriter(response.getOutputStream());
+            XmlWriter xmlWriter = new XmlWriter(response.getOutputStream(), repositoryConfiguration);
             xmlWriter.write(handle);
             xmlWriter.flush();
             xmlWriter.close();

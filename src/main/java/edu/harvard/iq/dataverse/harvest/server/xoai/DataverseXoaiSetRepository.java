@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.harvest.server.xoai;
 
 import io.gdcc.xoai.model.xoai.Element;
 import io.gdcc.xoai.dataprovider.repository.SetRepository;
-//import io.gdcc.xoai.dataprovider.handlers.results.ListSetsResult;
 import io.gdcc.xoai.dataprovider.model.Set;
 import io.gdcc.xoai.model.xoai.XOAIMetadata;
 import edu.harvard.iq.dataverse.harvest.server.OAISet;
@@ -37,7 +36,6 @@ public class DataverseXoaiSetRepository implements SetRepository {
 
     @Override
     public boolean supportSets() {
-        logger.fine("calling supportSets()");
         List<OAISet> dataverseOAISets = setService.findAllNamedSets();
         
         if (dataverseOAISets == null || dataverseOAISets.isEmpty()) {
@@ -47,7 +45,7 @@ public class DataverseXoaiSetRepository implements SetRepository {
     }
 
     @Override
-    public List<Set> getSets() { //int offset, int length) {
+    public List<Set> getSets() { 
         logger.fine("calling retrieveSets()");
         List<OAISet> dataverseOAISets = setService.findAllNamedSets();
         List<Set> XOAISets = new ArrayList<Set>();
@@ -71,7 +69,6 @@ public class DataverseXoaiSetRepository implements SetRepository {
 
     @Override
     public boolean exists(String setSpec) {
-        // return true;
         return setService.setExists(setSpec);
     }
     
