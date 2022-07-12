@@ -49,17 +49,20 @@ public final class AliasConfigSource implements ConfigSource {
     }
     
     
-    Properties readAliases(String filePath) throws IOException {
+    private Properties readAliases(String filePath) throws IOException {
         // get resource from classpath
         ClassLoader classLoader = this.getClass().getClassLoader();
         URL aliasesResource = classLoader.getResource(filePath);
+        
+        // Prevent errors if file not found or could not be loaded
+        if (aliasesResource == null) {
+            throw new IOException("Could not find or load, class loader returned null");
+        }
     
         // load properties from file resource (parsing included)
         Properties aliasProps = new Properties();
-        try {
-            aliasProps.load(aliasesResource.openStream());
-        } catch (NullPointerException e) {
-            throw new IOException(e.getMessage());
+        try (InputStream propStream = aliasesResource.openStream()) {
+            aliasProps.load(propStream);
         }
         return aliasProps;
     }
@@ -70,8 +73,7 @@ public final class AliasConfigSource implements ConfigSource {
     
     @Override
     public Map<String, String> getProperties() {
-        // No, just no. We're not going to drop a list of stuff. We're only
-        // dealiasing on getValue();
+        // No, just no. We're not going to drop a list of stuff. We're only de-aliasing on calls to getValue()
         return new HashMap<>();
     }
     
