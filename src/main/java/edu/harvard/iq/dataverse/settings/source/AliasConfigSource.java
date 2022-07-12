@@ -7,10 +7,12 @@ import org.eclipse.microprofile.config.spi.ConfigSource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -103,16 +105,63 @@ public final class AliasConfigSource implements ConfigSource {
     
     @Override
     public String getValue(String key) {
-        String value = null;
+        
+        // If the key is null or not starting with the prefix ("dataverse"), we are not going to jump through loops,
+        // avoiding computation overhead
+        if (key == null || ! key.startsWith(JvmSettings.PREFIX.getScopedKey())) {
+            return null;
+        }
+        
+        List<String> oldNames = new ArrayList<>();
+        
+        // Retrieve simple cases without placeholders
         if (this.aliases.containsKey(key)) {
-            String oldKey = this.aliases.get(key);
-            value = ConfigProvider.getConfig().getOptionalValue(oldKey, String.class).orElse(null);
+            oldNames.addAll(this.aliases.get(key));
+        // Or try with regex patterns
+        } else {
+            // Seek for the given key within all the patterns for placeholder containing settings,
+            // returning a Matcher to extract the variable arguments as regex match groups.
+            Optional<Matcher> foundMatcher = varArgAliases.keySet().stream()
+                .map(pattern -> pattern.matcher(key))
+                .filter(Matcher::matches)
+                .findFirst();
             
-            if (value != null) {
-                logger.warning("Detected deprecated config option '"+oldKey+"' in use. Please update your config to use '"+key+"'.");
+            // Extract the matched groups and construct all old setting names with them
+            if (foundMatcher.isPresent()) {
+                Matcher matcher = foundMatcher.get();
+                
+                List<String> varArgs = new ArrayList<>();
+                for (int i = 1; i <= matcher.groupCount(); i++) {
+                    varArgs.add(matcher.group(i));
+                }
+                Object[] args = varArgs.toArray();
+                
+                this.varArgAliases
+                    .get(matcher.pattern())
+                    .forEach(oldNamePattern -> oldNames.add(String.format(oldNamePattern, args)));
             }
         }
-        return value;
+    
+        // Return the first non-empty result
+        // NOTE: When there are multiple old names in use, they would conflict anyway. Upon deletion of one of the
+        //       old settings the other becomes visible and triggers the warning again. There might even be different
+        //       old settings in different sources, which might conflict, too (see ordinal value).
+        // NOTE: As the default is an empty oldNames array, loop will only be executed if anything was found before.
+        for (String oldName : oldNames) {
+            Optional<String> value = ConfigProvider.getConfig().getOptionalValue(oldName, String.class);
+        
+            if (value.isPresent()) {
+                logger.log(
+                    Level.WARNING,
+                    "Detected deprecated config option {0} in use. Please update your config to use {1}.",
+                    new String[]{oldName, key}
+                );
+                return value.get();
+            }
+        }
+        
+        // Sane default: nothing found.
+        return null;
     }
     
     @Override
