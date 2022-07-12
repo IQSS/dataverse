@@ -5,6 +5,7 @@ import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,7 +14,10 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Enable using an old name for a new config name.
@@ -22,9 +26,10 @@ import java.util.logging.Logger;
 public final class AliasConfigSource implements ConfigSource {
     
     private static final Logger logger = Logger.getLogger(AliasConfigSource.class.getName());
+    private static final String ALIASES_PROP_FILE = "META-INF/microprofile-aliases.properties";
     
-    private final ConcurrentHashMap<String, String> aliases = new ConcurrentHashMap<>();
-    private final String ALIASES_PROP_FILE = "META-INF/microprofile-aliases.properties";
+    private final ConcurrentHashMap<String, List<String>> aliases = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Pattern, List<String>> varArgAliases = new ConcurrentHashMap<>();
     
     public AliasConfigSource() {
         try {
@@ -42,10 +47,16 @@ public final class AliasConfigSource implements ConfigSource {
         importJvmSettings(JvmSettings.getAliasedSettings());
     }
     
-    void importJvmSettings(List<JvmSettings> aliasedSettings) {
-        aliasedSettings.forEach(
-            setting -> setting.getOldNames().forEach(
-                oldName -> aliases.put(setting.getScopedKey(), oldName)));
+    private void importJvmSettings(List<JvmSettings> aliasedSettings) {
+        // First add all simple aliases not containing placeholders
+        aliasedSettings.stream()
+            .filter(s -> ! s.needsVarArgs())
+            .forEach(setting -> aliases.put(setting.getScopedKey(), setting.getOldNames()));
+        
+        // Aliases with placeholders need to be compiled into a regex
+        aliasedSettings.stream()
+            .filter(JvmSettings::needsVarArgs)
+            .forEach(setting -> varArgAliases.put(setting.getPatternizedKey(), setting.getOldNames()));
     }
     
     
@@ -67,8 +78,8 @@ public final class AliasConfigSource implements ConfigSource {
         return aliasProps;
     }
     
-    void importAliases(Properties aliasProps) {
-        aliasProps.forEach((key, value) -> aliases.put(key.toString(), value.toString()));
+    private void importAliases(Properties aliasProps) {
+        aliasProps.forEach((key, value) -> aliases.put(key.toString(), List.of(value.toString())));
     }
     
     @Override
