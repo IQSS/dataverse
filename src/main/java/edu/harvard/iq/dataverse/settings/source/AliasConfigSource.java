@@ -35,7 +35,9 @@ public final class AliasConfigSource implements ConfigSource {
             // also store all old names from JvmSettings
             importJvmSettings(JvmSettings.getAliasedSettings());
         } catch (IOException e) {
-            logger.info("Could not read from "+ALIASES_PROP_FILE+". Skipping MPCONFIG alias setup.");
+            // Usually it's an anti-pattern to catch the exception here, but skipping the file
+            // should be fine here, as it's optional.
+            logger.log(Level.INFO, "Could not read from "+ALIASES_PROP_FILE+". Skipping MPCONFIG alias setup.", e);
         }
     }
     
