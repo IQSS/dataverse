@@ -1204,31 +1204,4 @@ public class SystemConfig {
         }
         return labelMap;
     }
-    
-    public int getOaiServerMaxIdentifiers() {
-        return getIntSettingOrDefault(SettingsServiceBean.Key.oaiServerMaxListIdentifiers, 100);
     }
-    
-    public int getOaiServerMaxSets() {
-        return getIntSettingOrDefault(SettingsServiceBean.Key.oaiServerMaxListSets, 100);
-    }
-    
-    public int getOaiServerMaxRecords() {
-        return getIntSettingOrDefault(SettingsServiceBean.Key.oaiServerMaxListRecords, 10);
-    }
-    
-    private int getIntSettingOrDefault(SettingsServiceBean.Key key, int defaultValue) {
-        String settingValue = settingsService.getValueForKey(key);
-        if (settingValue != null) {
-            try {
-                int intFromSetting = Integer.parseInt(settingValue);
-                if (intFromSetting > 0) {
-                    return intFromSetting;
-                } 
-            } catch (NumberFormatException ex) {
-                // will use the default
-            }
-        }
-        return defaultValue;
-    }
-}

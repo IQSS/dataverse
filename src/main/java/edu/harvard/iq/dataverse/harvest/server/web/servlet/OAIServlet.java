@@ -6,7 +6,6 @@
 package edu.harvard.iq.dataverse.harvest.server.web.servlet;
 
 import io.gdcc.xoai.dataprovider.DataProvider;
-//import io.gdcc.xoai.dataprovider.builder.OAIRequestParametersBuilder;
 import io.gdcc.xoai.dataprovider.repository.Repository;
 import io.gdcc.xoai.dataprovider.repository.RepositoryConfiguration;
 import io.gdcc.xoai.dataprovider.model.Context;
@@ -36,10 +35,10 @@ import org.apache.commons.lang3.StringUtils;
 
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.inject.Inject;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import javax.mail.internet.InternetAddress;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -47,6 +46,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.stream.XMLStreamException;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 
 /**
  *
@@ -69,6 +70,18 @@ public class OAIServlet extends HttpServlet {
     
     @EJB
     SystemConfig systemConfig;
+
+    @Inject
+    @ConfigProperty(name = "dataverse.oai.server.maxidentifiers", defaultValue="100")
+    private Integer maxListIdentifiers;
+    
+    @Inject
+    @ConfigProperty(name = "dataverse.oai.server.maxsets", defaultValue="100")
+    private Integer maxListSets;
+    
+    @Inject
+    @ConfigProperty(name = "dataverse.oai.server.maxrecords", defaultValue="10")
+    private Integer maxListRecords;
     
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.web.servlet.OAIServlet");
     // If we are going to stick with this solution - of providing a minimalist 
@@ -165,9 +178,10 @@ public class OAIServlet extends HttpServlet {
     }
     
     private RepositoryConfiguration createRepositoryConfiguration() {
-
-        String repositoryName = settingsService.getValueForKey(SettingsServiceBean.Key.oaiServerRepositoryName);
-        if (repositoryName == null) {
+        Config config = ConfigProvider.getConfig();
+        String repositoryName = config.getOptionalValue("dataverse.oai.server.repositoryname", String.class).orElse("");
+        
+        if (repositoryName == null || repositoryName.isEmpty()) {
             String dataverseName = dataverseService.getRootDataverseName();
             repositoryName = StringUtils.isEmpty(dataverseName) || "Root".equals(dataverseName) ? "Test Dataverse OAI Archive" : dataverseName + " Dataverse OAI Archive";
         }
@@ -185,9 +199,9 @@ public class OAIServlet extends HttpServlet {
                 .withCompression("deflate")
                 .withAdminEmail(systemEmailAddress != null ? systemEmailAddress.getAddress() : null)
                 .withDeleteMethod(DeletedRecord.TRANSIENT)
-                .withMaxListIdentifiers(systemConfig.getOaiServerMaxIdentifiers())
-                .withMaxListRecords(systemConfig.getOaiServerMaxRecords())
-                .withMaxListSets(systemConfig.getOaiServerMaxSets());
+                .withMaxListIdentifiers(maxListIdentifiers)
+                .withMaxListRecords(maxListRecords)
+                .withMaxListSets(maxListSets);
         
         return repositoryConfiguration; 
     }
