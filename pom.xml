@@ -385,11 +385,6 @@
         <!-- New and Improved GDCC XOAI library! --> 
         <dependency>
             <groupId>io.gdcc</groupId>
-            <artifactId>xoai-common</artifactId>
-            <version>${gdcc.xoai.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.gdcc</groupId>
             <artifactId>xoai-data-provider</artifactId>
             <version>${gdcc.xoai.version}</version>
         </dependency>
