@@ -16,7 +16,6 @@ import io.gdcc.xoai.dataprovider.request.RequestBuilder.RawRequest;
 import io.gdcc.xoai.dataprovider.repository.ItemRepository;
 import io.gdcc.xoai.dataprovider.repository.SetRepository;
 import io.gdcc.xoai.model.oaipmh.DeletedRecord;
-import io.gdcc.xoai.model.oaipmh.Granularity;
 import io.gdcc.xoai.model.oaipmh.OAIPMH;
 
 import io.gdcc.xoai.xml.XmlWriter;
@@ -32,6 +31,7 @@ import edu.harvard.iq.dataverse.harvest.server.xoai.DataverseXoaiSetRepository;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import io.gdcc.xoai.exceptions.OAIException;
 import org.apache.commons.lang3.StringUtils;
 
 
@@ -220,7 +220,7 @@ public class OAIServlet extends HttpServlet {
             throws ServletException, IOException {
         processRequest(request, response);
     }
-     
+          
     
     private void processRequest(HttpServletRequest httpServletRequest, HttpServletResponse response)
             throws ServletException, IOException {
@@ -242,15 +242,8 @@ public class OAIServlet extends HttpServlet {
                 xmlWriter.write(handle);
             }
                        
-        } catch (IOException ex) {
-            logger.warning("IO exception in Get; "+ex.getMessage());
-            throw new ServletException ("IO Exception in Get", ex);
-        } catch (XMLStreamException xse) {
-            logger.warning("XML Stream exception in Get; "+xse.getMessage());
-            throw new ServletException ("XML Stream Exception in Get", xse);
-        } catch (Exception e) {
-            logger.warning("Unknown exception in Get; "+e.getMessage());
-            throw new ServletException ("Unknown servlet exception in Get.", e);
+        } catch (XMLStreamException | OAIException e) {
+            throw new ServletException (e);
         }
         
     }
