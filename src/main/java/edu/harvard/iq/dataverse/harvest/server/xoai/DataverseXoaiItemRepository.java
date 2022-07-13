@@ -53,11 +53,26 @@ public class DataverseXoaiItemRepository implements ItemRepository {
 
 
     @Override
-    public Item getItem(String identifier) throws IdDoesNotExistException {
-        // I'm assuming we don't want to use this version of getItem 
-        // that does not specify the requested metadata format, ever
-        // in our implementation - ? (L.A.)
-        throw new IdDoesNotExistException("Metadata Format is Required");
+    public ItemIdentifier getItem(String identifier) throws IdDoesNotExistException {
+        // This method is called when ListMetadataFormats request specifies 
+        // the identifier, requesting the formats available for this specific record.
+        // In our case, under the current implementation, we need to simply look 
+        // up if the record exists; if it does, all the OAI formats that we serve
+        // should be available for this record. 
+        
+        List<OAIRecord> oaiRecords = recordService.findOaiRecordsByGlobalId(identifier);
+        if (oaiRecords != null && !oaiRecords.isEmpty()) {
+            DataverseXoaiItem xoaiItem = null; 
+            for (OAIRecord oaiRecord : oaiRecords) {
+                // We can return the first *active* record we find for this identifier. 
+                if (!oaiRecord.isRemoved()) {
+                    xoaiItem = new DataverseXoaiItem(oaiRecord);
+                    return xoaiItem; 
+                }
+            }
+        }
+        
+        throw new IdDoesNotExistException();
     }
     
     @Override
