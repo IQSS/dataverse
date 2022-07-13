@@ -238,10 +238,9 @@ public class OAIServlet extends HttpServlet {
             OAIPMH handle = dataProvider.handle(rawRequest);
             response.setContentType("text/xml;charset=UTF-8");
 
-            XmlWriter xmlWriter = new XmlWriter(response.getOutputStream(), repositoryConfiguration);
-            xmlWriter.write(handle);
-            xmlWriter.flush();
-            xmlWriter.close();
+            try (XmlWriter xmlWriter = new XmlWriter(response.getOutputStream(), repositoryConfiguration);) {
+                xmlWriter.write(handle);
+            }
                        
         } catch (IOException ex) {
             logger.warning("IO exception in Get; "+ex.getMessage());
