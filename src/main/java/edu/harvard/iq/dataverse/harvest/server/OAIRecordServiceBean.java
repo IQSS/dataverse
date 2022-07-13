@@ -323,36 +323,9 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         if (from != null) { 
             query.setParameter("from",Date.from(from),TemporalType.TIMESTAMP); 
         }
-        // In order to achieve inclusivity on the "until" matching, we need to do 
-        // the following (if the "until" parameter is supplied):
-        // 1) if the supplied "until" parameter has the time portion (and is not just
-        // a date), we'll increment it by one second. This is because the time stamps we 
-        // keep in the database also have fractional thousands of a second. 
-        // So, a record may be shown as "T17:35:45", but in the database it is 
-        // actually "17:35:45.356", so "<= 17:35:45" isn't going to work on this 
-        // time stamp! - So we want to try "<= 17:35:45" instead. 
-        // 2) if it's just a date, we'll increment it by a *full day*. Otherwise
-        // our database time stamp of 2016-10-23T17:35:45.123Z is NOT going to 
-        // match " <= 2016-10-23" - which is really going to be interpreted as 
-        // "2016-10-23T00:00:00.000". 
-        // -- L.A. 4.6
         
         if (until != null) { 
-            // 24 * 3600 * 1000 = number of milliseconds in a day. 
-                        
             Date untilDate = Date.from(until);
-            
-            if (untilDate.getTime() % (24 * 3600 * 1000) == 0) {
-                // The supplied "until" parameter is a date, with no time
-                // portion. 
-                // TODO: review/reimplement this!
-
-                logger.fine("plain date. incrementing by one day");
-                untilDate.setTime(untilDate.getTime()+(24 * 3600 * 1000));
-            } else {
-                logger.fine("date and time. incrementing by one second");
-                untilDate.setTime(untilDate.getTime()+1000);
-            }
             query.setParameter("until",untilDate,TemporalType.TIMESTAMP); 
         }
                 
