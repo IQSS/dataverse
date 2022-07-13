@@ -84,7 +84,7 @@ public class HarvesterServiceBean {
     public static final String HARVEST_RESULT_SUCCESS="success";
     public static final String HARVEST_RESULT_FAILED="failed";
     public static final String DATAVERSE_PROPRIETARY_METADATA_FORMAT="dataverse_json";
-    public static final String DATAVERSE_PROPRIETARY_METADATA_API="/api/datasets/export?exporter="+DATAVERSE_PROPRIETARY_METADATA_FORMAT;
+    public static final String DATAVERSE_PROPRIETARY_METADATA_API="/api/datasets/export?exporter="+DATAVERSE_PROPRIETARY_METADATA_FORMAT+"&persistentId=";
 
     public HarvesterServiceBean() {
 
@@ -302,8 +302,9 @@ public class HarvesterServiceBean {
             if (DATAVERSE_PROPRIETARY_METADATA_FORMAT.equals(oaiHandler.getMetadataPrefix())) {
                 // Make direct call to obtain the proprietary Dataverse metadata
                 // in JSON from the remote Dataverse server:
-                String extendedApiUrl = getProprietaryDataverseMetadataURL(oaiHandler.getBaseOaiUrl(), identifier);
-                tempFile = retrieveProprietaryDataverseMetadata(httpClient, extendedApiUrl);
+                String metadataApiUrl = oaiHandler.getProprietaryDataverseMetadataURL(identifier);
+                logger.info("calling "+metadataApiUrl);
+                tempFile = retrieveProprietaryDataverseMetadata(httpClient, metadataApiUrl);
                 
             } else {
                 FastGetRecord record = oaiHandler.runGetRecord(identifier);
@@ -409,18 +410,7 @@ public class HarvesterServiceBean {
         }
         hdLogger.info("No dataset found for " + persistentIdentifier + ", skipping delete. ");
     }
-    
-    private static String getProprietaryDataverseMetadataURL(String baseURL, String identifier) {
-
-        baseURL = baseURL.replaceAll("/oai", "");
-        
-        StringBuilder requestURL =  new StringBuilder(baseURL);
-        requestURL.append(DATAVERSE_PROPRIETARY_METADATA_API);
-        requestURL.append("&persistentId=").append(identifier);
-
-        return requestURL.toString();
-    }
-       
+           
     private void logBeginOaiHarvest(Logger hdLogger, HarvestingClient harvestingClient) {
         hdLogger.log(Level.INFO, "BEGIN HARVEST, oaiUrl=" 
                 +harvestingClient.getHarvestingUrl() 

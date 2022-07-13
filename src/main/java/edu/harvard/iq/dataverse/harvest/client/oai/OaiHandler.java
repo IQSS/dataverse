@@ -1,12 +1,11 @@
 package edu.harvard.iq.dataverse.harvest.client.oai;
 
-import io.gdcc.xoai.model.oaipmh.results.Description;
 import io.gdcc.xoai.model.oaipmh.Granularity;
 import io.gdcc.xoai.model.oaipmh.results.record.Header;
 import io.gdcc.xoai.model.oaipmh.results.MetadataFormat;
 import io.gdcc.xoai.model.oaipmh.results.Set;
 import io.gdcc.xoai.serviceprovider.ServiceProvider;
-import io.gdcc.xoai.serviceprovider.client.JdkHttpOaiClient;  //.HttpOAIClient;
+import io.gdcc.xoai.serviceprovider.client.JdkHttpOaiClient;
 import io.gdcc.xoai.serviceprovider.exceptions.BadArgumentException;
 import io.gdcc.xoai.serviceprovider.exceptions.InvalidOAIResponse;
 import io.gdcc.xoai.serviceprovider.exceptions.NoSetHierarchyException;
@@ -14,16 +13,15 @@ import io.gdcc.xoai.serviceprovider.exceptions.IdDoesNotExistException;
 import io.gdcc.xoai.serviceprovider.model.Context;
 import io.gdcc.xoai.serviceprovider.parameters.ListIdentifiersParameters;
 import edu.harvard.iq.dataverse.harvest.client.FastGetRecord;
+import static edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean.DATAVERSE_PROPRIETARY_METADATA_API;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import java.io.IOException;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 import javax.xml.transform.TransformerException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -70,8 +68,9 @@ public class OaiHandler implements Serializable {
         this.harvestingClient = harvestingClient;
     }
     
-    private String baseOaiUrl; //= harvestingClient.getHarvestingUrl();
-    private String metadataPrefix; // = harvestingClient.getMetadataPrefix();
+    private String baseOaiUrl; 
+    private String dataverseApiUrl; // if the remote server is a Dataverse and we access its native metadata
+    private String metadataPrefix; 
     private String setName; 
     private Date   fromDate;
     private Boolean setListTruncated = false;
@@ -120,7 +119,7 @@ public class OaiHandler implements Serializable {
         return setListTruncated;
     }
     
-    private ServiceProvider getServiceProvider() throws OaiHandlerException {
+    public ServiceProvider getServiceProvider() throws OaiHandlerException {
         if (serviceProvider == null) {
             if (baseOaiUrl == null) {
                 throw new OaiHandlerException("Could not instantiate Service Provider, missing OAI server URL.");
@@ -275,6 +274,18 @@ public class OaiHandler implements Serializable {
         }
         
         return mip;
+    }
+    
+    public String getProprietaryDataverseMetadataURL(String identifier) {
+
+        if (dataverseApiUrl == null) {
+            dataverseApiUrl = baseOaiUrl.replaceFirst("/oai", "");
+        }
+        
+        StringBuilder requestURL =  new StringBuilder(dataverseApiUrl);
+        requestURL.append(DATAVERSE_PROPRIETARY_METADATA_API).append(identifier);
+
+        return requestURL.toString();
     }
     
     public void runIdentify() {
