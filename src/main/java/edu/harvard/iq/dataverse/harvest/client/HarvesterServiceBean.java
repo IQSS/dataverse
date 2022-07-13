@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.harvest.client;
 
+import static java.net.HttpURLConnection.HTTP_OK;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -17,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-//import java.net.URLEncoder;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,7 +28,6 @@ import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.Timer;
 import javax.inject.Named;
-//import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -45,9 +44,10 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
@@ -222,6 +222,7 @@ public class HarvesterServiceBean {
         
         List<Long> harvestedDatasetIds = new ArrayList<Long>();
         OaiHandler oaiHandler;
+        HttpClient httpClient = null; 
 
         try {
             oaiHandler = new OaiHandler(harvestingClient);
@@ -233,7 +234,13 @@ public class HarvesterServiceBean {
             hdLogger.log(Level.SEVERE, errorMessage);
             throw new IOException(errorMessage);
         }
-                
+
+        if (DATAVERSE_PROPRIETARY_METADATA_FORMAT.equals(oaiHandler.getMetadataPrefix())) {
+            // If we are harvesting native Dataverse json, we'll also need this 
+            // jdk http client to make direct calls to the remote Dataverse API:
+            httpClient = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build();
+        }
+        
         try {
             for (Iterator<Header> idIter = oaiHandler.runListIdentifiers(); idIter.hasNext();) {
 
@@ -253,7 +260,8 @@ public class HarvesterServiceBean {
                 MutableBoolean getRecordErrorOccurred = new MutableBoolean(false);
 
                 // Retrieve and process this record with a separate GetRecord call:
-                Long datasetId = processRecord(dataverseRequest, hdLogger, importCleanupLog, oaiHandler, identifier, getRecordErrorOccurred, deletedIdentifiers, dateStamp);
+                
+                Long datasetId = processRecord(dataverseRequest, hdLogger, importCleanupLog, oaiHandler, identifier, getRecordErrorOccurred, deletedIdentifiers, dateStamp, httpClient);
                 
                 if (datasetId != null) {
                     harvestedDatasetIds.add(datasetId);
@@ -282,7 +290,7 @@ public class HarvesterServiceBean {
 
     }    
     
-    private Long processRecord(DataverseRequest dataverseRequest, Logger hdLogger, PrintWriter importCleanupLog, OaiHandler oaiHandler, String identifier, MutableBoolean recordErrorOccurred, List<String> deletedIdentifiers, Date dateStamp) {
+    private Long processRecord(DataverseRequest dataverseRequest, Logger hdLogger, PrintWriter importCleanupLog, OaiHandler oaiHandler, String identifier, MutableBoolean recordErrorOccurred, List<String> deletedIdentifiers, Date dateStamp, HttpClient httpClient) {
         String errMessage = null;
         Dataset harvestedDataset = null;
         logGetRecord(hdLogger, oaiHandler, identifier);
@@ -295,7 +303,7 @@ public class HarvesterServiceBean {
                 // Make direct call to obtain the proprietary Dataverse metadata
                 // in JSON from the remote Dataverse server:
                 String extendedApiUrl = getProprietaryDataverseMetadataURL(oaiHandler.getBaseOaiUrl(), identifier);
-                tempFile = retrieveProprietaryDataverseMetadata(extendedApiUrl);
+                tempFile = retrieveProprietaryDataverseMetadata(httpClient, extendedApiUrl);
                 
             } else {
                 FastGetRecord record = oaiHandler.runGetRecord(identifier);
@@ -354,43 +362,40 @@ public class HarvesterServiceBean {
         return harvestedDataset != null ? harvestedDataset.getId() : null;
     }
     
-    File retrieveProprietaryDataverseMetadata (String remoteApiUrl) throws IOException {
-        InputStream in;
-        int responseCode = 0;
-        HttpURLConnection con = null;
+    File retrieveProprietaryDataverseMetadata (HttpClient client, String remoteApiUrl) throws IOException {
         
-        File tempMetadataFile = File.createTempFile("meta", ".tmp");
-        
-        try {
-            URL url = new URL(remoteApiUrl);
-
-            con = (HttpURLConnection) url.openConnection();
-            con.setRequestProperty("User-Agent", "DataverseHarvester/3.0");
-            responseCode = con.getResponseCode();
-        } catch (MalformedURLException mue) {
-            throw new IOException ("Bad API URL: "+remoteApiUrl);
-        } 
-        
-        if (responseCode == 200) {
-            in = con.getInputStream();
-            
-            FileOutputStream tempOut = new FileOutputStream(tempMetadataFile);
-            
-            int bufsize;
-            byte[] buffer = new byte[4 * 8192];
-
-            while ((bufsize = in.read(buffer)) != -1) {
-                tempOut.write(buffer, 0, bufsize);
-                tempOut.flush();
-            }
-
-            in.close();
-            tempOut.close();
-            return tempMetadataFile;
+        if (client == null) {
+            throw new IOException("Null Http Client, cannot make a call to obtain native metadata.");
         }
+        
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(remoteApiUrl))
+                .GET()
+                .header("User-Agent", "DataverseHarvester/6.0")
+                .build();
+        
+        HttpResponse<InputStream> response;
 
-        throw new IOException("Failed to download extended metadata.");
-  
+        try {            
+             response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Failed to connect to the remote dataverse server to obtain native metadata");
+        }
+            
+        int responseCode = response.statusCode();
+            
+        if (responseCode == HTTP_OK) {
+            File tempMetadataFile = File.createTempFile("meta", ".tmp");
+
+            try (InputStream inputStream = response.body();
+                    FileOutputStream outputStream = new FileOutputStream(tempMetadataFile);) {
+                inputStream.transferTo(outputStream);
+                return tempMetadataFile;
+            }
+        }
+            
+        throw new IOException("Failed to download native metadata from the remote dataverse server.");
     }
     
     private void deleteHarvestedDatasetIfExists(String persistentIdentifier, Dataverse harvestingDataverse, DataverseRequest dataverseRequest, List<String> deletedIdentifiers, Logger hdLogger) {
