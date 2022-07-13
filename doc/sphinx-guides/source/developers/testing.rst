@@ -89,6 +89,11 @@ For unit tests, the most interesting part is to set a JVM setting just for the c
 Please use ``@JvmSetting(key = JvmSettings.XXX, value = "")`` annotation on a test method or
 a test class to set and clear the property automatically.
 
+To set arbitrary system properties for the current test, a similar extension
+``@SystemProperty(key = "", value = "")`` has been added.
+
+Both extensions will ensure the global state of system properties is non-interfering for
+test executions. Tests using these extensions will be executed in serial.
 
 Observing Changes to Code Coverage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
