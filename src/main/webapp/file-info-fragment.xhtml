@@ -72,7 +72,7 @@
                 </div>
                 <!-- CHECKSUM -->
                 <div class="checksum-block" jsf:rendered="#{!fileMetadata.dataFile.tabularData and !(empty fileMetadata.dataFile.checksumValue)}">
-                    <span class="sr-only #{!editDatafilesPage ? 'checksum-truncate checksum-tooltip' : ''}" style="margin-right:3px;"
+                    <span class="#{!editDatafilesPage ? 'checksum-truncate checksum-tooltip' : ''}" style="margin-right:3px;"
                                   data-toggle="tooltip" data-placement="top" data-html="true"
                                   data-clipboard-action="copy"
                                   data-clipboard-text="#{fileMetadata.dataFile.checksumValue}"
@@ -81,7 +81,7 @@
                                   data-toggle="tooltip" data-placement="top" data-html="true"
                                   data-clipboard-action="copy"
                                   data-clipboard-text="#{fileMetadata.dataFile.checksumValue}" 
-                                  title="#{bundle['file.metaData.checksum.copy']}&lt;br/&gt;#{fileMetadata.dataFile.checksumValue}"></span>
+                                  title="#{bundle['file.metaData.checksum.copy']}>&lt;br/&gt;#{fileMetadata.dataFile.checksumValue}"></span>
                 </div>
                 <!-- TABULAR VARIABLES, OBSERVATIONS + UNF -->
                 <div class="unf-block" jsf:rendered="#{fileMetadata.dataFile.tabularData}">
