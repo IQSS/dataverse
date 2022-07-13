@@ -49,6 +49,8 @@ public @interface JvmSetting {
      */
     String value();
     
+    String[] varArgs() default {};
+    
     /**
      * Containing annotation of repeatable {@code @SetSystemProperty}.
      */
