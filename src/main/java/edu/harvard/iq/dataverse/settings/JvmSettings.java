@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -18,10 +19,20 @@ import java.util.stream.Collectors;
  * this enum will provide the place to add any old and new
  * settings that are destined to be made at the JVM level.
  *
- * Further extensions of this class include
+ * Further future extensions of this enum class include
  * - adding predicates for validation and
- * - offering injecting parameters into keys (as used with the file access subsystem) and
  * - adding data manipulation for aliased config names.
+ *
+ * To create a setting, simply add it within a scope:
+ * {@link JvmSettings#JvmSettings(JvmSettings, String)}
+ *
+ * Settings that might get renamed may provide their old names as aliases:
+ * {@link JvmSettings#JvmSettings(JvmSettings, String, String...)}
+ *
+ * Some scopes or settings may need one or more placeholders, simply don't give
+ * a key in these cases:
+ * {@link JvmSettings#JvmSettings(JvmSettings)}
+ *
  */
 public enum JvmSettings {
     // the upmost root scope - every setting shall start with it.
@@ -34,31 +45,77 @@ public enum JvmSettings {
     ;
     
     private static final String SCOPE_SEPARATOR = ".";
+    public static final String PLACEHOLDER_KEY = "%s";
+    private static final Pattern OLD_NAME_PLACEHOLDER_PATTERN = Pattern.compile("%\\d?s");
     
     private final String key;
     private final String scopedKey;
     private final JvmSettings parent;
     private final List<String> oldNames;
+    private final int placeholders;
     
+    /**
+     * Create a root scope.
+     * @param key The scopes name.
+     */
     JvmSettings(String key) {
         this.key = key;
         this.scopedKey = key;
         this.parent = null;
         this.oldNames = List.of();
+        this.placeholders = 0;
     }
     
+    /**
+     * Create a scope or setting with a placeholder for a variable argument in it.
+     * Used to create "configurable objects" with certain attributes using dynamic, programmatic lookup.
+     *
+     * Any placeholder present in a settings full scoped key will be replaced when looked up
+     * via {@link #lookup(Class, String...)}.
+     *
+     * @param scope The parent scope.
+     */
+    JvmSettings(JvmSettings scope) {
+        this.key = PLACEHOLDER_KEY;
+        this.scopedKey = scope.scopedKey + SCOPE_SEPARATOR + this.key;
+        this.parent = scope;
+        this.oldNames = List.of();
+        this.placeholders = scope.placeholders + 1;
+    }
+    
+    /**
+     * Create a scope or setting with name it and associate with a parent scope.
+     * @param scope The parent scope.
+     * @param key The name of this scope or setting.
+     */
     JvmSettings(JvmSettings scope, String key) {
         this.key = key;
         this.scopedKey = scope.scopedKey + SCOPE_SEPARATOR + key;
         this.parent = scope;
         this.oldNames = List.of();
+        this.placeholders = scope.placeholders;
     }
     
+    /**
+     * Create a setting with name it and associate with a parent scope.
+     * (Could also be a scope, but old names for scopes aren't the way this is designed.)
+     *
+     * When old names are given, these need to be given as fully scoped setting names! (Otherwise
+     * it would not be possible to switch between completely different scopes.)
+     *
+     * @param scope The parent scope of this setting.
+     * @param key The name of the setting.
+     * @param oldNames Any previous names this setting was known as.
+     *                 Must be given as fully scopes names, not just the old unscoped key/name.
+     *                 Used by {@link edu.harvard.iq.dataverse.settings.source.AliasConfigSource} to allow backward
+     *                 compatible, non-breaking deprecation and switching to new setting names.
+     */
     JvmSettings(JvmSettings scope, String key, String... oldNames) {
         this.key = key;
         this.scopedKey = scope.scopedKey + SCOPE_SEPARATOR + key;
         this.parent = scope;
         this.oldNames = Arrays.stream(oldNames).collect(Collectors.toUnmodifiableList());
+        this.placeholders = scope.placeholders;
     }
     
     private static final List<JvmSettings> aliased = new ArrayList<>();
@@ -82,19 +139,70 @@ public enum JvmSettings {
      * Return a list of old names to be used as aliases for backward compatibility.
      * Will return empty list if no old names present.
      *
+     * This method should only be used by {@link edu.harvard.iq.dataverse.settings.source.AliasConfigSource}.
+     * In case of a setting containing placeholder(s), it will check any old names given in the definition
+     * for presence of at least one placeholder plus it doesn't use more placeholders than available.
+     * (Old names containing placeholders for settings without any are checked, too.)
+     *
+     * Violations will result in a {@link IllegalArgumentException} and will be noticed during any test execution.
+     * A developer must fix the old name definition before shipping the code.
+     *
      * @return List of old names, may be empty, but never null.
+     * @throws IllegalArgumentException When an old name has no or too many placeholders for this setting.
      */
     public List<String> getOldNames() {
+        if (needsVarArgs()) {
+            for (String name : oldNames) {
+                long matches = OLD_NAME_PLACEHOLDER_PATTERN.matcher(name).results().count();
+                
+                if (matches == 0) {
+                    throw new IllegalArgumentException("JvmSettings." + this.name() + "'s old name '" +
+                        name + "' needs at least one placeholder");
+                } else if (matches > this.placeholders) {
+                    throw new IllegalArgumentException("JvmSettings." + this.name() + "'s old name '" +
+                        name + "' has more placeholders than the current name");
+                }
+            }
+        } else if (! this.oldNames.stream().noneMatch(OLD_NAME_PLACEHOLDER_PATTERN.asPredicate())) {
+            throw new IllegalArgumentException("JvmSettings." + this.name() + " has no placeholder but old name requires it");
+        }
+        
         return oldNames;
     }
     
     /**
      * Retrieve the scoped key for this setting. Scopes are separated by dots.
+     * If the setting contains placeholders, these will be represented as {@link #PLACEHOLDER_KEY}.
      *
      * @return The scoped key (or the key if no scope). Example: dataverse.subscope.subsubscope.key
      */
     public String getScopedKey() {
         return this.scopedKey;
+    }
+    
+    public Pattern getPatternizedKey() {
+        return Pattern.compile(
+            getScopedKey()
+                .replace(SCOPE_SEPARATOR, "\\.")
+                .replace(PLACEHOLDER_KEY, "(.+?)"));
+    }
+    
+    
+    /**
+     * Does this setting carry and placeholders for variable arguments?
+     * @return True if so, False otherwise.
+     */
+    public boolean needsVarArgs() {
+        return this.placeholders > 0;
+    }
+    
+    /**
+     * Return the number of placeholders / variable arguments are necessary to lookup this setting.
+     * An exact match in the number of arguments will be necessary for a successful lookup.
+     * @return Number of placeholders for this scoped setting.
+     */
+    public int numberOfVarArgs() {
+        return placeholders;
     }
     
     /**
@@ -122,6 +230,10 @@ public enum JvmSettings {
      * @param <T> Target type to convert the setting to (you can create custom converters)
      */
     public <T> T lookup(Class<T> klass) {
+        if (needsVarArgs()) {
+            throw new IllegalArgumentException("Cannot lookup a setting containing placeholders with this method.");
+        }
+        
         // This must be done with the full-fledged lookup, as we cannot store the config in an instance or static
         // variable, as the alias config source depends on this enum (circular dependency). This is easiest
         // avoided by looking up the static cached config at the cost of a method invocation.
@@ -135,9 +247,38 @@ public enum JvmSettings {
      * @param <T> Target type to convert the setting to (you can create custom converters)
      */
     public <T> Optional<T> lookupOptional(Class<T> klass) {
+        if (needsVarArgs()) {
+            throw new IllegalArgumentException("Cannot lookup a setting containing variable arguments with this method.");
+        }
+        
         // This must be done with the full-fledged lookup, as we cannot store the config in an instance or static
         // variable, as the alias config source depends on this enum (circular dependency). This is easiest
         // avoided by looking up the static cached config at the cost of a method invocation.
         return ConfigProvider.getConfig().getOptionalValue(this.getScopedKey(), klass);
     }
+    
+    public <T> T lookup(Class<T> klass, String... arguments) {
+        if (needsVarArgs()) {
+            if (arguments == null || arguments.length != placeholders) {
+                throw new IllegalArgumentException("You must specify " + placeholders + " placeholder lookup arguments.");
+            }
+            return ConfigProvider.getConfig().getValue(this.insert(arguments), klass);
+        }
+        throw new IllegalArgumentException("Cannot lookup a setting without variable arguments with this method.");
+    }
+    
+    public <T> Optional<T> lookupOptional(Class<T> klass, String... arguments) {
+        if (needsVarArgs()) {
+            if (arguments == null || arguments.length != placeholders) {
+                throw new IllegalArgumentException("You must specify " + placeholders + " placeholder lookup arguments.");
+            }
+            return ConfigProvider.getConfig().getOptionalValue(this.insert(arguments), klass);
+        }
+        throw new IllegalArgumentException("Cannot lookup a setting without variable arguments with this method.");
+    }
+    
+    public String insert(String... arguments) {
+        return String.format(this.getScopedKey(), (Object[]) arguments);
+    }
+    
 }
