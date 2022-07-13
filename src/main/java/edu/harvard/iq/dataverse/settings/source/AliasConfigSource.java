@@ -84,6 +84,16 @@ public final class AliasConfigSource implements ConfigSource {
         aliasProps.forEach((key, value) -> aliases.put(key.toString(), List.of(value.toString())));
     }
     
+    // Has visibility "package" to be usable from test class!
+    void addAlias(String newName, List<String> oldNames) {
+        this.aliases.put(newName, oldNames);
+    }
+    
+    // Has visibility "package" to be usable from test class!
+    void addAlias(Pattern newNamePattern, List<String> oldNamePatterns) {
+        this.varArgAliases.put(newNamePattern, oldNamePatterns);
+    }
+    
     @Override
     public Map<String, String> getProperties() {
         // No, just no. We're not going to drop a list of stuff. We're only de-aliasing on calls to getValue()
