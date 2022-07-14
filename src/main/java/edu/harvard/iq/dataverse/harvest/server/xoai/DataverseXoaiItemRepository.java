@@ -62,8 +62,7 @@ public class DataverseXoaiItemRepository implements ItemRepository {
             for (OAIRecord oaiRecord : oaiRecords) {
                 // We can return the first *active* record we find for this identifier. 
                 if (!oaiRecord.isRemoved()) {
-                    xoaiItem = new DataverseXoaiItem(oaiRecord);
-                    return xoaiItem; 
+                    return new DataverseXoaiItem(oaiRecord);
                 }
             }
         }
