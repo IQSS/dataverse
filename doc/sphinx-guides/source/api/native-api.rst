@@ -454,9 +454,9 @@ A dataset is a container for files as explained in the :doc:`/user/dataset-manag
 To create a dataset, you must supply a JSON file that contains at least the following required metadata fields:
 
 - Title
-- Author
-- Contact
-- Description
+- Author Name
+- Point of Contact Email
+- Description Text
 - Subject
 
 As a starting point, you can download :download:`dataset-finch1.json <../../../../scripts/search/tests/data/dataset-finch1.json>` and modify it to meet your needs. (:download:`dataset-create-new-all-default-fields.json <../../../../scripts/api/data/dataset-finch1_fr.json>` is a variant of this file that includes setting the metadata language (see :ref:`:MetadataLanguages`) to French (fr). In addition to this minimal example, you can download :download:`dataset-create-new-all-default-fields.json <../../../../scripts/api/data/dataset-create-new-all-default-fields.json>` which populates all of the metadata fields that ship with a Dataverse installation.)
