@@ -48,9 +48,6 @@ public class DataverseXoaiItemRepository implements ItemRepository {
         this.serverUrl = serverUrl; 
     }
     
-    private List<DataverseXoaiItem> list = new ArrayList<DataverseXoaiItem>();
-
-
     @Override
     public ItemIdentifier getItem(String identifier) throws IdDoesNotExistException {
         // This method is called when ListMetadataFormats request specifies 
