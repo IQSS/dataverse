@@ -16,7 +16,7 @@ import java.util.logging.Logger;
  * @author Leonid Andreev
  */
 public class DataverseXoaiSetRepository implements SetRepository {
-    private static Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.xoai.DataverseXoaiSetRepository");
+    private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.xoai.DataverseXoaiSetRepository");
     
     private OAISetServiceBean setService;
 
