@@ -213,7 +213,6 @@ function contentTruncate(truncSelector, truncMoreBtn, truncMoreTip, truncLessBtn
  */
 function checksumTruncate(){
     $('span.checksum-truncate').each(function () {
-//        $(this).toggleClass('sr-only').toggleClass('visisble');
         var checksumText = $(this).text();
         var checksumLength = checksumText.length;
         if (checksumLength > 25) {
