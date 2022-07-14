@@ -36,7 +36,7 @@ import java.util.logging.Logger;
  */
 
 public class DataverseXoaiItemRepository implements ItemRepository {
-    private static Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.xoai.DataverseXoaiItemRepository");
+    private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.xoai.DataverseXoaiItemRepository");
     
     private OAIRecordServiceBean recordService;
     private DatasetServiceBean datasetService;
