@@ -58,7 +58,6 @@ public class DataverseXoaiItemRepository implements ItemRepository {
         
         List<OAIRecord> oaiRecords = recordService.findOaiRecordsByGlobalId(identifier);
         if (oaiRecords != null && !oaiRecords.isEmpty()) {
-            DataverseXoaiItem xoaiItem = null; 
             for (OAIRecord oaiRecord : oaiRecords) {
                 // We can return the first *active* record we find for this identifier. 
                 if (!oaiRecord.isRemoved()) {
