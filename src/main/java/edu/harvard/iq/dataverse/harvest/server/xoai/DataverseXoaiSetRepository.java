@@ -21,7 +21,6 @@ public class DataverseXoaiSetRepository implements SetRepository {
     private OAISetServiceBean setService;
 
     public DataverseXoaiSetRepository (OAISetServiceBean setService) {
-        super();
         this.setService = setService;
     }
     

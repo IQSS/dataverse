@@ -20,7 +20,7 @@ import java.util.List;
  * You can think of it as an XOAI Item wrapper around the
  * Dataverse OAIRecord entity.
  */
-public class DataverseXoaiItem implements Item {
+public final class DataverseXoaiItem implements Item {
     
     public DataverseXoaiItem(OAIRecord oaiRecord) {
         super();
@@ -29,7 +29,6 @@ public class DataverseXoaiItem implements Item {
         if (!StringUtil.isEmpty(oaiRecord.getSetName())) {
             oaisets.add(new Set(oaiRecord.getSetName()));
         }
-        about = new ArrayList<>();
     }
    
     private OAIRecord oaiRecord;
@@ -53,13 +52,6 @@ public class DataverseXoaiItem implements Item {
         return this; 
     }
     
-    private List<About> about;
-    
-    @Override
-    public List<About> getAbout() {
-        return about;
-    }
-
     private Metadata metadata;
     
     @Override

@@ -43,7 +43,6 @@ public class DataverseXoaiItemRepository implements ItemRepository {
     private String serverUrl; 
 
     public DataverseXoaiItemRepository (OAIRecordServiceBean recordService, DatasetServiceBean datasetService, String serverUrl) {
-        super();
         this.recordService = recordService;
         this.datasetService = datasetService;
         this.serverUrl = serverUrl; 
