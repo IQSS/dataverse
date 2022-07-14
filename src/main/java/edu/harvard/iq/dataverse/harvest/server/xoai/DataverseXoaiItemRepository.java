@@ -38,9 +38,9 @@ import java.util.logging.Logger;
 public class DataverseXoaiItemRepository implements ItemRepository {
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.xoai.DataverseXoaiItemRepository");
     
-    private OAIRecordServiceBean recordService;
-    private DatasetServiceBean datasetService;
-    private String serverUrl; 
+    private final OAIRecordServiceBean recordService;
+    private final DatasetServiceBean datasetService;
+    private final String serverUrl; 
 
     public DataverseXoaiItemRepository (OAIRecordServiceBean recordService, DatasetServiceBean datasetService, String serverUrl) {
         this.recordService = recordService;
