@@ -2263,7 +2263,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 				eTagList.add(new PartETag(Integer.parseInt(partNo), object.getString(partNo)));
 			}
 			for(PartETag et: eTagList) {
-				logger.info("Part: " + et.getPartNumber() + " : " + et.getETag());
+				logger.fine("Part: " + et.getPartNumber() + " : " + et.getETag());
 			}
 		} catch (JsonException je) {
 			logger.info("Unable to parse eTags from: " + partETagBody);
@@ -2528,7 +2528,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         if ( dsv == null || dsv.getId() == null ) {
             throw new WrappedResponse( notFound("Dataset version " + versionNumber + " of dataset " + ds.getId() + " not found") );
         }
-        if (dsv.isReleased()) {
+        if (dsv.isReleased()&& uriInfo!=null) {
             MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, ds);
             mdcLogService.logEntry(entry);
         }
@@ -3286,27 +3286,28 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         csvSB.append("\n");
         return ok(csvSB.toString(), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "datasets.status.csv");
     }
-    
-    //APIs to manage archival status
-    
+
+    // APIs to manage archival status
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("/submitDatasetVersionToArchive/{id}/{version}/status")
-    public Response getDatasetVersionToArchiveStatus(@PathParam("id") String dsid,
-            @PathParam("version") String versionNumber) {
+    @Path("/{id}/{version}/archivalStatus")
+    public Response getDatasetVersionArchivalStatus(@PathParam("id") String datasetId,
+            @PathParam("version") String versionNumber, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
 
         try {
             AuthenticatedUser au = findAuthenticatedUserOrDie();
             if (!au.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
-            Dataset ds = findDatasetOrDie(dsid);
-           
-            DatasetVersion dv = datasetversionService.findByFriendlyVersionNumber(ds.getId(), versionNumber);
-            if (dv.getArchivalCopyLocation() == null) {
+            DataverseRequest req = createDataverseRequest(au);
+            DatasetVersion dsv = getDatasetVersionOrDie(req, versionNumber, findDatasetOrDie(datasetId), uriInfo,
+                    headers);
+
+            if (dsv.getArchivalCopyLocation() == null) {
                 return error(Status.NO_CONTENT, "This dataset version has not been archived");
             } else {
-                JsonObject status = JsonUtil.getJsonObject(dv.getArchivalCopyLocation());
+                JsonObject status = JsonUtil.getJsonObject(dsv.getArchivalCopyLocation());
                 return ok(status);
             }
         } catch (WrappedResponse wr) {
@@ -3316,72 +3317,68 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
-    @Path("/submitDatasetVersionToArchive/{id}/{version}/status")
-    public Response setDatasetVersionToArchiveStatus(@PathParam("id") String dsid,
-            @PathParam("version") String versionNumber, JsonObject update) {
+    @Path("/{id}/{version}/archivalStatus")
+    public Response setDatasetVersionArchivalStatus(@PathParam("id") String datasetId,
+            @PathParam("version") String versionNumber, JsonObject update, @Context UriInfo uriInfo,
+            @Context HttpHeaders headers) {
 
-        logger.info(JsonUtil.prettyPrint(update));
+        logger.fine(JsonUtil.prettyPrint(update));
         try {
             AuthenticatedUser au = findAuthenticatedUserOrDie();
 
             if (!au.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-        if (update.containsKey(DatasetVersion.STATUS)
-                && update.containsKey(DatasetVersion.MESSAGE)) {
-            String status = update.getString(DatasetVersion.STATUS);
-            if (status.equals(DatasetVersion.PENDING)
-                    || status.equals(DatasetVersion.FAILURE)
-                    || status.equals(DatasetVersion.SUCCESS)) {
 
-                try {
-                    Dataset ds;
+            if (update.containsKey(DatasetVersion.ARCHIVAL_STATUS) && update.containsKey(DatasetVersion.ARCHIVAL_STATUS_MESSAGE)) {
+                String status = update.getString(DatasetVersion.ARCHIVAL_STATUS);
+                if (status.equals(DatasetVersion.ARCHIVAL_STATUS_PENDING) || status.equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE)
+                        || status.equals(DatasetVersion.ARCHIVAL_STATUS_SUCCESS)) {
 
-                    ds = findDatasetOrDie(dsid);
+                    DataverseRequest req = createDataverseRequest(au);
+                    DatasetVersion dsv = getDatasetVersionOrDie(req, versionNumber, findDatasetOrDie(datasetId),
+                            uriInfo, headers);
 
-                    DatasetVersion dv = datasetversionService.findByFriendlyVersionNumber(ds.getId(), versionNumber);
-                    if(dv==null) {
+                    if (dsv == null) {
                         return error(Status.NOT_FOUND, "Dataset version not found");
                     }
 
-                    dv.setArchivalCopyLocation(JsonUtil.prettyPrint(update));
-                    dv = datasetversionService.merge(dv);
-                    logger.info("location now: " + dv.getArchivalCopyLocation());
-                    logger.info("status now: " + dv.getArchivalCopyLocationStatus());
-                    logger.info("message now: " + dv.getArchivalCopyLocationMessage());
-                    
-                    return ok("Status updated");
+                    dsv.setArchivalCopyLocation(JsonUtil.prettyPrint(update));
+                    dsv = datasetversionService.merge(dsv);
+                    logger.info("location now: " + dsv.getArchivalCopyLocation());
+                    logger.info("status now: " + dsv.getArchivalCopyLocationStatus());
+                    logger.info("message now: " + dsv.getArchivalCopyLocationMessage());
 
-                } catch (WrappedResponse wr) {
-                    return wr.getResponse();
+                    return ok("Status updated");
                 }
             }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
         }
+
         return error(Status.BAD_REQUEST, "Unacceptable status format");
     }
     
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("/submitDatasetVersionToArchive/{id}/{version}/status")
-    public Response deleteDatasetVersionToArchiveStatus(@PathParam("id") String dsid,
-            @PathParam("version") String versionNumber) {
+    @Path("/{id}/{version}/archivalStatus")
+    public Response deleteDatasetVersionArchivalStatus(@PathParam("id") String datasetId,
+            @PathParam("version") String versionNumber, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
 
         try {
             AuthenticatedUser au = findAuthenticatedUserOrDie();
             if (!au.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
-            Dataset ds = findDatasetOrDie(dsid);
 
-            DatasetVersion dv = datasetversionService.findByFriendlyVersionNumber(ds.getId(), versionNumber);
-            if (dv == null) {
+            DataverseRequest req = createDataverseRequest(au);
+            DatasetVersion dsv = getDatasetVersionOrDie(req, versionNumber, findDatasetOrDie(datasetId), uriInfo,
+                    headers);
+            if (dsv == null) {
                 return error(Status.NOT_FOUND, "Dataset version not found");
             }
-            dv.setArchivalCopyLocation(null);
-            dv = datasetversionService.merge(dv);
+            dsv.setArchivalCopyLocation(null);
+            dsv = datasetversionService.merge(dsv);
 
             return ok("Status deleted");
 

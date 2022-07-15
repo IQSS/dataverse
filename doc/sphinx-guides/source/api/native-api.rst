@@ -1878,9 +1878,9 @@ The API call requires a Json body that includes the list of the fileIds that the
 Get the Archival Status of a Dataset By Version
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Archiving is an optional feature that may be configured for a Dataverse instance. When enabled, this API call be used to retrieve the status. Note that this requires "superuser" credentials.
+Archiving is an optional feature that may be configured for a Dataverse instance. When that is enabled, this API call be used to retrieve the status. Note that this requires "superuser" credentials.
 
-/api/datasets/submitDatasetVersionToArchive/$dataset-id/$version/status returns the archival status of the specified dataset version. 
+/api/datasets/$dataset-id/$version/archivalStatus returns the archival status of the specified dataset version. 
 
 The response is a Json object that will contain a "status" which may be "success", "pending", or "failure" and a "message" which is archive system specific. For "success" the message should provide an identifier or link to the archival copy. For example: 
 
@@ -1891,14 +1891,14 @@ The response is a Json object that will contain a "status" which may be "success
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/7U7YBV
   export VERSION=1.0
 
-  curl -H "X-Dataverse-key: $API_TOKEN" -H "Accept:application/json" "$SERVER_URL/api/datasets/submitDatasetVersionToArchive/$VERSION/status?persistentId=$PERSISTENT_IDENTIFIER"
+  curl -H "X-Dataverse-key: $API_TOKEN" -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/$VERSION/archivalStatus?persistentId=$PERSISTENT_IDENTIFIER"
   
 Set the Archival Status of a Dataset By Version
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Archiving is an optional feature that may be configured for a Dataverse instance. When enabled, this API call be used to set the status. Note that this is intended to be used by the archival system and requires "superuser" credentials.
+Archiving is an optional feature that may be configured for a Dataverse instance. When that is enabled, this API call be used to set the status. Note that this is intended to be used by the archival system and requires "superuser" credentials.
 
-/api/datasets/submitDatasetVersionToArchive/$dataset-id/$version/status sets the archival status of the specified dataset version. 
+/api/datasets/$dataset-id/$version/archivalStatus sets the archival status of the specified dataset version. 
 
 The body is a Json object that must contain a "status" which may be "success", "pending", or "failure" and a "message" which is archive system specific. For "success" the message should provide an identifier or link to the archival copy. For example: 
 
@@ -1910,14 +1910,14 @@ The body is a Json object that must contain a "status" which may be "success", "
   export VERSION=1.0
   export JSON='{"status":"failure","message":"Something went wrong"}'
 
-  curl -H "X-Dataverse-key: $API_TOKEN" -H "Content-Type:application/json" -X PUT "$SERVER_URL/api/datasets/submitDatasetVersionToArchive/$VERSION/status?persistentId=$PERSISTENT_IDENTIFIER" -d "$JSON"
+  curl -H "X-Dataverse-key: $API_TOKEN" -H "Content-Type:application/json" -X PUT "$SERVER_URL/api/datasets/:persistentId/$VERSION/archivalStatus?persistentId=$PERSISTENT_IDENTIFIER" -d "$JSON"
 
 Delete the Archival Status of a Dataset By Version
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Archiving is an optional feature that may be configured for a Dataverse instance. When enabled, this API call be used to delete the status. Note that this is intended to be used by the archival system and requires "superuser" credentials.
+Archiving is an optional feature that may be configured for a Dataverse instance. When that is enabled, this API call be used to delete the status. Note that this is intended to be used by the archival system and requires "superuser" credentials.
 
-/api/datasets/submitDatasetVersionToArchive/$dataset-id/$version/status deletes the archival status of the specified dataset version. 
+/api/datasets/$dataset-id/$version/archivalStatus deletes the archival status of the specified dataset version. 
 
 .. code-block:: bash
 
@@ -1926,7 +1926,7 @@ Archiving is an optional feature that may be configured for a Dataverse instance
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/7U7YBV
   export VERSION=1.0
 
-  curl -H "X-Dataverse-key: $API_TOKEN" -H "Content-Type:application/json" -X DELETE "$SERVER_URL/api/datasets/submitDatasetVersionToArchive/$VERSION/status?persistentId=$PERSISTENT_IDENTIFIER"
+  curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE "$SERVER_URL/api/datasets/:persistentId/$VERSION/archivalStatus?persistentId=$PERSISTENT_IDENTIFIER"
   
 
 Files

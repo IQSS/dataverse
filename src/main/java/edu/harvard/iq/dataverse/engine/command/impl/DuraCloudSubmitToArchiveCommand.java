@@ -72,8 +72,8 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                 ContentStore store;
                 //Set a failure status that will be updated if we succeed
                 JsonObjectBuilder statusObject = Json.createObjectBuilder();
-                statusObject.add(DatasetVersion.STATUS, DatasetVersion.FAILURE);
-                statusObject.add(DatasetVersion.MESSAGE, "Bag not transferred");
+                statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
+                statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, "Bag not transferred");
                 
                 try {
                     /*
@@ -142,7 +142,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                                         bagger.generateBag(out);
                                     } catch (Exception e) {
                                         logger.severe("Error creating bag: " + e.getMessage());
-                                        statusObject.add(DatasetVersion.MESSAGE, "Could not create bag");
+                                        statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, "Could not create bag");
                                         // TODO Auto-generated catch block
                                         e.printStackTrace();
                                         throw new RuntimeException("Error creating bag: " + e.getMessage());
@@ -182,8 +182,8 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                         sb.append("/duradmin/spaces/sm/");
                         sb.append(store.getStoreId());
                         sb.append("/" + spaceName + "/" + fileName);
-                        statusObject.add(DatasetVersion.STATUS, DatasetVersion.SUCCESS);
-                        statusObject.add(DatasetVersion.MESSAGE, sb.toString());
+                        statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_SUCCESS);
+                        statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, sb.toString());
                         
                         logger.fine("DuraCloud Submission step complete: " + sb.toString());
                     } catch (ContentStoreException | IOException e) {

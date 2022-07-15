@@ -96,12 +96,12 @@ public class DatasetVersion implements Serializable {
     public static final int VERSION_NOTE_MAX_LENGTH = 1000;
     
     //Archival copies: Status message required components
-    public static final String STATUS = "status";
-    public static final String MESSAGE = "message";
+    public static final String ARCHIVAL_STATUS = "status";
+    public static final String ARCHIVAL_STATUS_MESSAGE = "message";
     //Archival Copies: Allowed Statuses
-    public static final String PENDING = "pending";
-    public static final String SUCCESS = "success";
-    public static final String FAILURE = "failure";
+    public static final String ARCHIVAL_STATUS_PENDING = "pending";
+    public static final String ARCHIVAL_STATUS_SUCCESS = "success";
+    public static final String ARCHIVAL_STATUS_FAILURE = "failure";
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -161,6 +161,11 @@ public class DatasetVersion implements Serializable {
     // removed pending further investigation (v4.13)
     private String archiveNote;
     
+    // Originally a simple string indicating the location of the archival copy. As
+    // of v5.12, repurposed to provide a more general json archival status (failure,
+    // pending, success) and message (serialized as a string). The archival copy
+    // location is now expected as the contents of the message for the status
+    // 'success'. See the /api/datasets/{id}/{version}/archivalStatus API calls for more details
     @Column(nullable=true, columnDefinition = "TEXT")
     private String archivalCopyLocation;
     
@@ -335,14 +340,14 @@ public class DatasetVersion implements Serializable {
         populateArchivalStatus(false);
         
         if(archivalStatus!=null) {
-            return archivalStatus.getString(STATUS);
+            return archivalStatus.getString(ARCHIVAL_STATUS);
         } 
         return null;
     }
     public String getArchivalCopyLocationMessage() {
         populateArchivalStatus(false);
         if(archivalStatus!=null) {
-            return archivalStatus.getString(MESSAGE);
+            return archivalStatus.getString(ARCHIVAL_STATUS_MESSAGE);
         } 
         return null;
     }

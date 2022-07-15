@@ -59,8 +59,8 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
             Storage storage;
             //Set a failure status that will be updated if we succeed
             JsonObjectBuilder statusObject = Json.createObjectBuilder();
-            statusObject.add(DatasetVersion.STATUS, DatasetVersion.FAILURE);
-            statusObject.add(DatasetVersion.MESSAGE, "Bag not transferred");
+            statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
+            statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, "Bag not transferred");
             
             try {
                 FileInputStream fis = new FileInputStream(System.getProperty("dataverse.files.directory") + System.getProperty("file.separator")+ "googlecloudkey.json");
@@ -133,7 +133,7 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                                         bagger.setAuthenticationKey(token.getTokenString());
                                         bagger.generateBag(out);
                                     } catch (Exception e) {
-                                        statusObject.add(DatasetVersion.MESSAGE, "Could not create bag");
+                                        statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, "Could not create bag");
                                         logger.severe("Error creating bag: " + e.getMessage());
                                         // TODO Auto-generated catch block
                                         e.printStackTrace();
@@ -212,8 +212,8 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
 
                         StringBuffer sb = new StringBuffer("https://console.cloud.google.com/storage/browser/");
                         sb.append(blobIdString);
-                        statusObject.add(DatasetVersion.STATUS, DatasetVersion.SUCCESS);
-                        statusObject.add(DatasetVersion.MESSAGE, sb.toString());
+                        statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_SUCCESS);
+                        statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, sb.toString());
                         
                     } catch (RuntimeException rte) {
                         logger.severe("Error creating datacite xml file during GoogleCloud Archiving: " + rte.getMessage());

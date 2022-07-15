@@ -1194,11 +1194,19 @@ public class UtilIT {
     }
 
     static Response publishDatasetViaNativeApi(String idOrPersistentId, String majorOrMinor, String apiToken) {
+        return publishDatasetViaNativeApi(idOrPersistentId, majorOrMinor, apiToken, false);
+    }
+    
+    static Response publishDatasetViaNativeApi(String idOrPersistentId, String majorOrMinor, String apiToken, boolean mustBeIndexed) {
+
         String idInPath = idOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentId)) {
+        if (!NumberUtils.isCreatable(idOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "&persistentId=" + idOrPersistentId;
+        }
+        if(mustBeIndexed) {
+            optionalQueryParam = optionalQueryParam+"&assureIsIndexed=true";
         }
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
@@ -2384,6 +2392,27 @@ public class UtilIT {
 
     }
     
+    static Boolean sleepForReindex(String idOrPersistentId, String apiToken, int duration) {
+        int i = 0;
+        Response timestampResponse;
+        do {
+            timestampResponse = UtilIT.getDatasetTimestamps(idOrPersistentId, apiToken);
+            try {
+                Thread.sleep(200);
+                i++;
+                if (i > duration) {
+                    break; 
+                }
+            } catch (InterruptedException ex) {
+                Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } while (timestampResponse.body().jsonPath().getBoolean("hasStaleIndex"));
+
+        return i <= duration;
+
+    }
+    
+    
     //Helper function that returns true if a given search returns a non-zero response within a fixed time limit
     // a given duration returns false if still zero results after given duration
     static Boolean sleepForSearch(String searchPart, String apiToken,  String subTree, int duration) {
@@ -2472,6 +2501,20 @@ public class UtilIT {
             .header(API_TOKEN_HTTP_HEADER, apiToken)
             .delete("api/datasets/" + datasetId + "/locks" + (lockType == null ? "" : "?type="+lockType));
         return response;       
+    }
+    
+    static Response getDatasetTimestamps(String idOrPersistentId, String apiToken) {
+        String idInPath = idOrPersistentId; // Assume it's a number.
+        String queryParams = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isCreatable(idOrPersistentId)) {
+            idInPath = ":persistentId";
+            queryParams = "?persistentId=" + idOrPersistentId;
+        }
+        
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .get("api/datasets/" + idInPath + "/timestamps" + queryParams);
+        return response;
     }
     
     static Response exportOaiSet(String setName) {
@@ -2864,6 +2907,25 @@ public class UtilIT {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .put("/api/datasets/" + datasetId + "/curationStatus?label=" + label);
+        return response;
+    }
+    
+    static Response getDatasetVersionArchivalStatus(Integer datasetId, String version, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId + "/" + version);
+        return response;
+    }
+    static Response setDatasetVersionArchivalStatus(Integer datasetId, String version, String apiToken, String status, String message) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken).body("{\"status\":\"" + status + "\", \"message\":\"" + message + "\"}")
+                .put("/api/datasets/" + datasetId + "/" + version);
+        return response;
+    }
+    static Response deleteDatasetVersionArchivalStatus(Integer datasetId, String version, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/datasets/" + datasetId + "/" + version);
         return response;
     }
 
