@@ -169,6 +169,8 @@ public class ExternalToolServiceBean {
         String toolUrl = getRequiredTopLevelField(jsonObject, TOOL_URL);
         JsonObject toolParametersObj = jsonObject.getJsonObject(TOOL_PARAMETERS);
         JsonArray queryParams = toolParametersObj.getJsonArray("queryParameters");
+        JsonObject allowedApiCallsObj = jsonObject.getJsonObject(ALLOWED_API_CALLS);
+        JsonArray apis = allowedApiCallsObj.getJsonArray("apis");
         boolean allRequiredReservedWordsFound = false;
         if (scope.equals(Scope.FILE)) {
             List<ReservedWord> requiredReservedWordCandidates = new ArrayList<>();
@@ -221,8 +223,10 @@ public class ExternalToolServiceBean {
 
         }
         String toolParameters = toolParametersObj.toString();
+        String allowedApiCalls = allowedApiCallsObj.toString();
 
-        return new ExternalTool(displayName, toolName, description, externalToolTypes, scope, toolUrl, toolParameters, contentType);
+//        return new ExternalTool(displayName, toolName, description, externalToolTypes, scope, toolUrl, toolParameters, contentType);
+        return new ExternalTool(displayName, toolName, description, externalToolTypes, scope, toolUrl, toolParameters, contentType, allowedApiCalls);
     }
 
     private static String getRequiredTopLevelField(JsonObject jsonObject, String key) {

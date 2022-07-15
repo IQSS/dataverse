@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 import java.io.IOException;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -21,9 +22,11 @@ import java.util.logging.Logger;
 
 import javax.json.Json;
 import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.json.JsonString;
+import javax.json.JsonWriter;
 import javax.ws.rs.HttpMethod;
 
 /**
@@ -33,17 +36,17 @@ import javax.ws.rs.HttpMethod;
  */
 public class ExternalToolHandler extends URLTokenUtil {
     /**
-     * @return the allowedUrls
+     * @return the allowedApiCalls
      */
-    public String getAllowedUrls() {
-        return allowedUrls;
+    public String getAllowedApiCalls() {
+        return allowedApiCalls;
     }
 
     /**
-     * @param allowedUrls the allowedUrls to set
+     * @param allowedApiCalls the allowedApiCalls to set
      */
-    public void setAllowedUrls(String allowedUrls) {
-        this.allowedUrls = allowedUrls;
+    public void setAllowedApiCalls(String allowedApiCalls) {
+        this.allowedApiCalls = allowedApiCalls;
     }
 
     /**
@@ -59,7 +62,7 @@ public class ExternalToolHandler extends URLTokenUtil {
     private String toolContext;
     private String user;
     private String siteUrl;
-    private String allowedUrls;
+    private String allowedApiCalls;
     
     /**
      * File level tool
@@ -113,13 +116,43 @@ public class ExternalToolHandler extends URLTokenUtil {
                     params.add(param);
                 }
             });
-        });        
-        if (requestMethod.equals(HttpMethod.POST)){
+        });   
+
+        StringWriter allowedApiCallsStringWriter = new StringWriter();
+        String allowedApis;
+        try (JsonWriter jsonWriter = Json.createWriter(allowedApiCallsStringWriter)) {
+            JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+            allowedApiCalls = externalTool.getAllowedApiCalls();
+            JsonReader jsonReaderApis = Json.createReader(new StringReader(allowedApiCalls));
+            JsonObject objApis = jsonReaderApis.readObject();
+            JsonArray apis = objApis.getJsonArray("apis");
+            apis.getValuesAs(JsonObject.class).forEach(((apiObj) -> {
+                String name = apiObj.getJsonString("name").toString();
+                String httpmethod = apiObj.getJsonString("method").toString();
+                int timeout = apiObj.getInt("timeOut");
+                String apiPath = replaceTokensWithValues(apiObj.getJsonString("urlTemplate").toString());
+                String url = UrlSignerUtil.signUrl(apiPath, timeout, user,httpmethod, getApiToken().getTokenString());
+                jsonArrayBuilder.add(
+                        Json.createObjectBuilder().add("name", name)
+                                .add("httpMethod", httpmethod)
+                                .add("signedUrl", url)
+                                .add("timeOut", timeout));
+            }));
+            JsonArray allowedApiCallsArray = jsonArrayBuilder.build();
+            jsonWriter.writeArray(allowedApiCallsArray);
+            allowedApis = allowedApiCallsStringWriter.toString();
             try {
-                return postFormData(obj.getJsonNumber("timeOut").intValue(), params);
-            } catch (IOException | InterruptedException ex) {
+                allowedApiCallsStringWriter.close();
+            } catch (IOException ex) {
                 Logger.getLogger(ExternalToolHandler.class.getName()).log(Level.SEVERE, null, ex);
             }
+        }
+        if (requestMethod.equals(HttpMethod.POST)){
+            try {
+                return postFormData(allowedApis);
+            } catch (IOException | InterruptedException ex) {
+                Logger.getLogger(ExternalToolHandler.class.getName()).log(Level.SEVERE, null, ex); 
+           }
         }
         if (!preview) {
             return "?" + String.join("&", params);
@@ -129,14 +162,11 @@ public class ExternalToolHandler extends URLTokenUtil {
     }
 
     
-    private String postFormData(Integer timeout,List<String> params ) throws IOException, InterruptedException{
-        String url = "";
-//        Integer timeout = obj.getJsonNumber("timeOut").intValue();
-        url = UrlSignerUtil.signUrl(siteUrl, timeout, user, HttpMethod.POST, getApiToken().getTokenString());
+    private String postFormData(String allowedApis ) throws IOException, InterruptedException{
+        String url = null;
         HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder().POST(HttpRequest.BodyPublishers.ofString(String.join("&", params))).uri(URI.create(externalTool.getToolUrl()))
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .header("signedUrl", url)
+        HttpRequest request = HttpRequest.newBuilder().POST(HttpRequest.BodyPublishers.ofString(allowedApis)).uri(URI.create(externalTool.getToolUrl()))
+                .header("Content-Type", "application/json")
                 .build();        
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         boolean redirect=false;

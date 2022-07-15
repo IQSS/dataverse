@@ -41,7 +41,7 @@ public class ExternalTool implements Serializable {
     public static final String TOOL_PARAMETERS = "toolParameters";
     public static final String CONTENT_TYPE = "contentType";
     public static final String TOOL_NAME = "toolName";
-    public static final String ALLOWED_URLS = "allowedUrls";
+    public static final String ALLOWED_API_CALLS = "allowedApiCalls";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -103,7 +103,7 @@ public class ExternalTool implements Serializable {
      * for POST headers, as in DPCreator
      */
     @Column(nullable = true, columnDefinition = "TEXT")
-    private String allowedUrls;
+    private String allowedApiCalls;
 
     /**
      * This default constructor is only here to prevent this error at
@@ -130,7 +130,7 @@ public class ExternalTool implements Serializable {
         this.contentType = contentType;
     }
 
-    public ExternalTool(String displayName, String toolName, String description, List<ExternalToolType> externalToolTypes, Scope scope, String toolUrl, String toolParameters, String contentType, String allowedUrls) {
+    public ExternalTool(String displayName, String toolName, String description, List<ExternalToolType> externalToolTypes, Scope scope, String toolUrl, String toolParameters, String contentType, String allowedApiCalls) {
         this.displayName = displayName;
         this.toolName = toolName;
         this.description = description;
@@ -139,7 +139,7 @@ public class ExternalTool implements Serializable {
         this.toolUrl = toolUrl;
         this.toolParameters = toolParameters;
         this.contentType = contentType;
-        this.allowedUrls = allowedUrls;
+        this.allowedApiCalls = allowedApiCalls;
     }
 
     public enum Type {
@@ -293,8 +293,8 @@ public class ExternalTool implements Serializable {
         if (getContentType() != null) {
             jab.add(CONTENT_TYPE, getContentType());
         }
-        if (getAllowedUrls()!= null) {
-            jab.add(ALLOWED_URLS,getAllowedUrls());
+        if (getAllowedApiCalls()!= null) {
+            jab.add(ALLOWED_API_CALLS,getAllowedApiCalls());
         }
         return jab;
     }
@@ -322,17 +322,17 @@ public class ExternalTool implements Serializable {
     }
 
     /**
-     * @return the allowedUrls
+     * @return the allowedApiCalls
      */
-    public String getAllowedUrls() {
-        return allowedUrls;
+    public String getAllowedApiCalls() {
+        return allowedApiCalls;
     }
 
     /**
-     * @param allowedUrls the allowedUrls to set
+     * @param allowedApiCalls the allowedApiCalls to set
      */
-    public void setAllowedUrls(String allowedUrls) {
-        this.allowedUrls = allowedUrls;
+    public void setAllowedApiCalls(String allowedApiCalls) {
+        this.allowedApiCalls = allowedApiCalls;
     }
 
 

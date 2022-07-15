@@ -166,6 +166,8 @@ public class URLTokenUtil {
             }
         case LOCALE_CODE:
             return getLocaleCode();
+        case ALLOWED_API_CALLS:
+            
         default:
             break;
         }
@@ -186,7 +188,9 @@ public class URLTokenUtil {
         DATASET_ID("datasetId"),
         // datasetPid is the DOI or Handle
         DATASET_PID("datasetPid"), DATASET_VERSION("datasetVersion"), FILE_METADATA_ID("fileMetadataId"),
-        LOCALE_CODE("localeCode");
+        LOCALE_CODE("localeCode"),
+        ALLOWED_API_CALLS ("allowedApiCalls");
+
 
         private final String text;
         private final String START = "{";
