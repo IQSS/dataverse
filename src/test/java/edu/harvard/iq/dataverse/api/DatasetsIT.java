@@ -2867,16 +2867,23 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
 
+        String pathToJsonFileSingle = "doc/sphinx-guides/source/_static/api/dataset-simple-update-metadata.json";
+        Response addSubjectSingleViaNative = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileSingle, apiToken);
+        addSubjectSingleViaNative.prettyPrint();
+        addSubjectSingleViaNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        
         // Now change the title
-        Response response = UtilIT.updateDatasetJsonLDMetadata(datasetId, apiToken,
-                "{\"title\": \"New Title\", \"@context\":{\"title\": \"http://purl.org/dc/terms/title\"}}", true);
-        response.then().assertThat().statusCode(OK.getStatusCode());
+//        Response response = UtilIT.updateDatasetJsonLDMetadata(datasetId, apiToken,
+//                "{\"title\": \"New Title\", \"@context\":{\"title\": \"http://purl.org/dc/terms/title\"}}", true);
+//        response.then().assertThat().statusCode(OK.getStatusCode());
 
         int status = Status.CONFLICT.getStatusCode();
         while (status == Status.CONFLICT.getStatusCode()) {
 
             Response publishV2 = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
-            status = response.thenReturn().statusCode();
+            status = publishV2.thenReturn().statusCode();
         }
         assertEquals(OK.getStatusCode(), status);
 
