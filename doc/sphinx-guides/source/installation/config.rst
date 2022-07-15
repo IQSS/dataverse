@@ -1156,12 +1156,12 @@ For example:
 
 .. _Archiving API Call:
 
-API Call
-++++++++
+API Calls
++++++++++
 
-Once this configuration is complete, you, as a user with the *PublishDataset* permission, should be able to use the API call to manually submit a DatasetVersion for processing:
+Once this configuration is complete, you, as a user with the *PublishDataset* permission, should be able to use the admin API call to manually submit a DatasetVersion for processing:
 
-``curl -H "X-Dataverse-key: <key>" http://localhost:8080/api/admin/submitDataVersionToArchive/{id}/{version}``
+``curl -X POST -H "X-Dataverse-key: <key>" http://localhost:8080/api/admin/submitDatasetVersionToArchive/{id}/{version}``
 
 where:
 
@@ -1169,9 +1169,19 @@ where:
 
 ``{version}`` is the friendly version number, e.g. "1.2".
 
-The submitDataVersionToArchive API (and the workflow discussed below) attempt to archive the dataset version via an archive specific method. For Chronopolis, a DuraCloud space named for the dataset (it's DOI with ':' and '.' replaced with '-') is created and two files are uploaded to it: a version-specific datacite.xml metadata file and a BagIt bag containing the data and an OAI-ORE map file. (The datacite.xml file, stored outside the Bag as well as inside is intended to aid in discovery while the ORE map file is 'complete', containing all user-entered metadata and is intended as an archival record.)
+The submitDatasetVersionToArchive API (and the workflow discussed below) attempt to archive the dataset version via an archive specific method. For Chronopolis, a DuraCloud space named for the dataset (it's DOI with ':' and '.' replaced with '-') is created and two files are uploaded to it: a version-specific datacite.xml metadata file and a BagIt bag containing the data and an OAI-ORE map file. (The datacite.xml file, stored outside the Bag as well as inside is intended to aid in discovery while the ORE map file is 'complete', containing all user-entered metadata and is intended as an archival record.)
 
 In the Chronopolis case, since the transfer from the DuraCloud front-end to archival storage in Chronopolis can take significant time, it is currently up to the admin/curator to submit a 'snap-shot' of the space within DuraCloud and to monitor its successful transfer. Once transfer is complete the space should be deleted, at which point the Dataverse Software API call can be used to submit a Bag for other versions of the same Dataset. (The space is reused, so that archival copies of different Dataset versions correspond to different snapshots of the same DuraCloud space.).
+
+A batch version of this admin api call is also available:
+
+``curl -X POST -H "X-Dataverse-key: <key>" http://localhost:8080/api/admin/archiveAllUnarchivedDatasetVersions?listonly=true&limit=10&latestonly=true``
+
+The archiveAllUnarchivedDatasetVersions call takes 3 optional configuration parameters. 
+* listonly=true will cause the API to list dataset versions that would be archived but will not take any action.
+* limit=<n> will limit the number of dataset versions archived in one api call to <= <n>. 
+* latestonly=true will limit archiving to only the latest published versions of datasets instead of archiving all unarchived versions.
+
 
 PostPublication Workflow
 ++++++++++++++++++++++++
@@ -2566,7 +2576,7 @@ Number of errors to display to the user when creating DataFiles from a file uplo
 .. _:BagItHandlerEnabled:
 
 :BagItHandlerEnabled
-+++++++++++++++++++++
+++++++++++++++++++++
 
 Part of the database settings to configure the BagIt file handler. Enables the BagIt file handler. By default, the handler is disabled.
 
