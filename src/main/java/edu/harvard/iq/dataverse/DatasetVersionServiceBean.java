@@ -1187,4 +1187,36 @@ w
         return null;
     }
     
+    /**
+     * Execute a query to return DatasetVersion
+     * 
+     * @param queryString
+     * @return 
+     */
+    public List<DatasetVersion> getUnarchivedDatasetVersions(){
+        
+        String queryString = "SELECT OBJECT(o) FROM DatasetVersion AS o WHERE o.releaseTime IS NOT NULL and o.archivalCopyLocation IS NULL";
+        
+        try {
+            TypedQuery<DatasetVersion> query = em.createQuery(queryString, DatasetVersion.class);
+            List<DatasetVersion> dsl = query.getResultList();
+            return dsl;
+
+        } catch (javax.persistence.NoResultException e) {
+            logger.log(Level.FINE, "No unarchived DatasetVersions found: {0}", queryString);
+            return null;
+        } catch (EJBException e) {
+            logger.log(Level.WARNING, "EJBException exception: {0}", e.getMessage());
+            return null;
+        }
+    } // end getUnarchivedDatasetVersions
+
+    /**
+     * Merges the passed datasetversion to the persistence context.
+     * @param ver the DatasetVersion whose new state we want to persist.
+     * @return The managed entity representing {@code ver}.
+     */
+    public DatasetVersion merge( DatasetVersion ver ) {
+        return em.merge(ver);
+    }
 } // end class
