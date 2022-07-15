@@ -83,49 +83,7 @@ public class DataverseXoaiItemRepository implements ItemRepository {
             for (OAIRecord oaiRecord : oaiRecords) {
                 if (xoaiItem == null) {
                     xoaiItem = new DataverseXoaiItem(oaiRecord); 
-                    
-                    // If this is a "deleted" OAI oaiRecord - i.e., if someone
-                    // has called GetRecord on a deleted oaiRecord (??), our 
-                    // job here is done. If it's a live oaiRecord, let's try to 
-                    // look up the dataset and open the pre-generated metadata 
-                    // stream. 
-                    
-                    if (!oaiRecord.isRemoved()) {
-                        Dataset dataset = datasetService.findByGlobalId(oaiRecord.getGlobalId());
-                        if (dataset == null) {
-                            // This should not happen - but if there are no longer datasets 
-                            // associated with this persistent identifier, we should simply 
-                            // bail out. 
-                            // TODO: Consider an alternative - instead of throwing 
-                            // an IdDoesNotExist exception, mark the oaiRecord as 
-                            // "deleted" and serve it to the client (?). For all practical
-                            // purposes, this is what this oaiRecord represents - it's 
-                            // still in the database as part of an OAI set; but the 
-                            // corresponding dataset no longer exists, because it 
-                            // must have been deleted. 
-                            // i.e.
-                            // xoaiItem.getOaiRecord().setRemoved(true);
-                            break;
-                        }
-                        
-                        Metadata metadata;
-                        
-                        try {
-                            metadata = getDatasetMetadata(dataset, metadataFormat.getPrefix());
-                        } catch (ExportException | IOException ex) {
-                            // Again, this is not supposed to happen in normal operations; 
-                            // since by design only the datasets for which the metadata
-                            // records have been pre-generated ("exported") should be 
-                            // served as "OAI Record". But, things happen. If for one
-                            // reason or another that cached metadata file is no longer there, 
-                            // we are not going to serve this oaiRecord. 
-                            // TODO: see the comment above; and consider
-                            // xoaiItem.getOaiRecord().setRemoved(true);
-                            // instead. 
-                            break;
-                        }
-                        xoaiItem.withDataset(dataset).withMetadata(metadata);
-                    }
+                    xoaiItem = addMetadata(xoaiItem, metadataFormat);
                 } else {
                     // Adding extra set specs to the XOAI Item, if this oaiRecord
                     // is part of multiple sets:
@@ -145,25 +103,55 @@ public class DataverseXoaiItemRepository implements ItemRepository {
     @Override
     public ResultsPage<ItemIdentifier> getItemIdentifiers(List<ScopedFilter> filters, MetadataFormat metadataFormat, int maxResponseLength, ResumptionToken.Value resumptionToken) throws HandlerException {
         
+        return (ResultsPage<ItemIdentifier>)getRepositoryRecords(metadataFormat, maxResponseLength, resumptionToken, false);
+
+    }
+ 
+    @Override
+    public ResultsPage<Item> getItems(List<ScopedFilter> filters, MetadataFormat metadataFormat, int maxResponseLength, ResumptionToken.Value resumptionToken) throws HandlerException {
+        
+        return (ResultsPage<Item>)getRepositoryRecords(metadataFormat, maxResponseLength, resumptionToken, true);
+    }
+    
+    private ResultsPage<? extends ItemIdentifier> getRepositoryRecords (
+            MetadataFormat metadataFormat, 
+            int maxResponseLength, 
+            ResumptionToken.Value resumptionToken,
+            boolean fullItems) throws HandlerException {
+                
         int offset = Long.valueOf(resumptionToken.getOffset()).intValue();
         String setSpec = resumptionToken.getSetSpec();
         Instant from = resumptionToken.getFrom();
         Instant until = resumptionToken.getUntil();
         
-        logger.fine("calling getItemIdentifiers; offset=" + offset
+        boolean hasMore = false; 
+        
+        logger.fine("calling " + (fullItems ? "getItems" : "getItemIdentifiers")
+                + "; offset=" + offset
                 + ", length=" + maxResponseLength
                 + ", setSpec=" + setSpec
                 + ", from=" + from
                 + ", until=" + until);
 
         List<OAIRecord> oaiRecords = recordService.findOaiRecordsBySetName(setSpec, from, until);
+        
+        List<DataverseXoaiItem> xoaiItems = new ArrayList<>();
 
-        List<ItemIdentifier> xoaiItems = new ArrayList<>();
         if (oaiRecords != null && !oaiRecords.isEmpty()) {
-
+            logger.fine("total " + oaiRecords.size() + " records returned");
+            
             for (int i = offset; i < offset + maxResponseLength && i < oaiRecords.size(); i++) {
                 OAIRecord record = oaiRecords.get(i);
-                xoaiItems.add(new DataverseXoaiItem(record));
+                DataverseXoaiItem xoaiItem = new DataverseXoaiItem(record);
+                
+                if (fullItems) {
+                    // If we are cooking "full" Items (for the ListRecords verb),
+                    // add the metadata to the item object (if not a deleted
+                    // record, if available, etc.):
+                    xoaiItem = addMetadata(xoaiItem, metadataFormat);
+                }
+                
+                xoaiItems.add(xoaiItem);
             }
             
             // Run a second pass, looking for records in this set that occur
@@ -171,93 +159,13 @@ public class DataverseXoaiItemRepository implements ItemRepository {
             // formatted output in the header:
             addExtraSets(xoaiItems, setSpec, from, until);
             
-            boolean hasMore = offset + maxResponseLength < oaiRecords.size();
-            ResultsPage<ItemIdentifier> result = new ResultsPage(resumptionToken, hasMore, xoaiItems, oaiRecords.size());
+            hasMore = offset + maxResponseLength < oaiRecords.size();
+            
+            ResultsPage<DataverseXoaiItem> result = new ResultsPage(resumptionToken, hasMore, xoaiItems, oaiRecords.size());
             logger.fine("returning result with " + xoaiItems.size() + " items.");
             return result;
         }
 
-        return new ResultsPage(resumptionToken, false, xoaiItems, 0);
-    }
-
-    @Override
-    public ResultsPage<Item> getItems(List<ScopedFilter> filters, MetadataFormat metadataFormat, int maxResponseLength, ResumptionToken.Value resumptionToken) throws HandlerException {
-        int offset = Long.valueOf(resumptionToken.getOffset()).intValue();
-        String setSpec = resumptionToken.getSetSpec();
-        Instant from = resumptionToken.getFrom();
-        Instant until = resumptionToken.getUntil();
-        
-        logger.fine("calling getItems; offset=" + offset
-                + ", length=" + maxResponseLength
-                + ", setSpec=" + setSpec
-                + ", from=" + from
-                + ", until=" + until);
-   
-        // this is not needed, is it? (the parameters should be pre-validated 
-        // on the gdcc/xoai side by this point)
-        if (metadataFormat == null) {
-            throw new NoMetadataFormatsException("Metadata Format is Required");
-        }
-        
-        List<OAIRecord> oaiRecords = recordService.findOaiRecordsBySetName(setSpec, from, until);
-
-        List<Item> xoaiItems = new ArrayList<>();
-        if (!(oaiRecords == null || oaiRecords.isEmpty())) {
-            logger.fine("total " + oaiRecords.size() + " records returned");
-
-            for (int i = offset; i < offset + maxResponseLength && i < oaiRecords.size(); i++) {
-                OAIRecord oaiRecord = oaiRecords.get(i);
-                
-                DataverseXoaiItem xoaiItem = new DataverseXoaiItem(oaiRecord); 
-                
-                // This may be a "deleted" OAI oaiRecord - i.e., a oaiRecord kept in 
-                // the OAI set for a dataset that's no longer in this Dataverse. 
-                // (it serves to tell the remote client to delete it from their 
-                // holdings too). 
-                // If this is the case here, our job is done with this oaiRecord.
-                // If not, if it's a live oaiRecord, let's try to 
-                // look up the dataset and open the pre-generated metadata 
-                // stream.
-                
-                if (!oaiRecord.isRemoved()) {
-                    Dataset dataset = datasetService.findByGlobalId(oaiRecord.getGlobalId());
-                    if (dataset != null) {
-                        try {
-                            Metadata metadata = getDatasetMetadata(dataset, metadataFormat.getPrefix());
-                            xoaiItem.withDataset(dataset).withMetadata(metadata);
-                        } catch (ExportException|IOException ex) {
-                            // Again, this is not supposed to happen in normal operations; 
-                            // since by design only the datasets for which the metadata
-                            // records have been pre-generated ("exported") should be 
-                            // served as "OAI Record". But, things happen. If for one
-                            // reason or another that cached metadata file is no longer there, 
-                            // we are not going to serve any metadata for this oaiRecord, 
-                            // BUT we are going to include it marked as "deleted"
-                            // (because skipping it could potentially mess up the
-                            // counts and offsets, in a resumption token scenario.
-                            xoaiItem.getOaiRecord().setRemoved(true);
-                        }
-                    } else {
-                        // If dataset (somehow) no longer exists (again, this is 
-                        // not supposed to happen), we will serve the oaiRecord, 
-                        // marked as "deleted" and without any metadata. 
-                        // We can't just skip it, because that could mess up the
-                        // counts and offsets, in a resumption token scenario.
-                        xoaiItem.getOaiRecord().setRemoved(true);
-                    }
-                }
-                xoaiItems.add(xoaiItem);
-            }
-            
-            addExtraSets(xoaiItems, setSpec, from, until);
-            
-            boolean hasMore = offset + maxResponseLength < oaiRecords.size();
-            ResultsPage<Item> result = new ResultsPage(resumptionToken, hasMore, xoaiItems, oaiRecords.size());
-            logger.fine("returning result with " + xoaiItems.size() + " items.");
-            return result;
-        }
-
-        logger.fine("no records found");
         return new ResultsPage(resumptionToken, false, xoaiItems, 0);
     }
     
@@ -290,6 +198,45 @@ public class DataverseXoaiItemRepository implements ItemRepository {
                 j++;
             }
         }
+    }
+    
+    private DataverseXoaiItem addMetadata(DataverseXoaiItem xoaiItem, MetadataFormat metadataFormat) {
+        // This may be a "deleted" record - i.e., a oaiRecord kept in 
+        // the OAI set for a dataset that's no longer in this Dataverse. 
+        // (it serves to tell the remote client to delete it from their 
+        // holdings too). 
+        // If this is the case here, there's nothing we need to do for this item.
+        // If not, if it's a live record, let's try to look up the dataset and 
+        // open the pre-generated metadata stream.
+
+        if (!xoaiItem.isDeleted()) {
+            Dataset dataset = datasetService.findByGlobalId(xoaiItem.getIdentifier());
+            if (dataset != null) {
+                try {
+                    Metadata metadata = getDatasetMetadata(dataset, metadataFormat.getPrefix());
+                    xoaiItem.withDataset(dataset).withMetadata(metadata);
+                } catch (ExportException | IOException ex) {
+                    // This is not supposed to happen in normal operations; 
+                    // since by design only the datasets for which the metadata
+                    // records have been pre-generated ("exported") should be 
+                    // served as "OAI Record". But, things happen. If for one
+                    // reason or another that cached metadata file is no longer there, 
+                    // we are not going to serve any metadata for this oaiRecord, 
+                    // BUT we are going to include it marked as "deleted"
+                    // (because skipping it could potentially mess up the
+                    // counts and offsets, in a resumption token scenario.
+                    xoaiItem.getOaiRecord().setRemoved(true);
+                }
+            } else {
+                // If dataset (somehow) no longer exists (again, this is 
+                // not supposed to happen), we will serve the oaiRecord, 
+                // marked as "deleted" and without any metadata. 
+                // We can't just skip it, because that could mess up the
+                // counts and offsets, in a resumption token scenario.
+                xoaiItem.getOaiRecord().setRemoved(true);
+            }
+        }
+        return xoaiItem;
     }
     
     private Metadata getDatasetMetadata(Dataset dataset, String metadataPrefix) throws ExportException, IOException {
