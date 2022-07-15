@@ -945,7 +945,11 @@ Some external tools are also ready to be translated, especially if they are usin
 Tools for Translators
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-In order to ease the amount of work necessary for translating the Dataverse software and be able to reuse previous work, You may use `easyTranslationHelper <https://github.com/universidadeaveiro/easyTranslationHelper>`_, a tool developed by University of Aveiro.
+The list below depicts a set of tools that can be used to ease the amount of work necessary for translating the Dataverse software by facilitating this collaborative effort and enabling the reuse of previous work:
+
+- `Weblate for the Dataverse Software <https://weblate.dataverse.org/>`_, made available in the scope of the `SSHOC <https://sshopencloud.eu/>`_ project
+
+- `easyTranslationHelper <https://github.com/universidadeaveiro/easyTranslationHelper>`_, a tool developed by `University of Aveiro <https://www.ua.pt/>`_.
 
 .. _Web-Analytics-Code:
 
