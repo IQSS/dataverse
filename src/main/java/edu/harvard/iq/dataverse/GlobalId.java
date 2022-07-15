@@ -254,4 +254,27 @@ public class GlobalId implements java.io.Serializable {
 
         return m.matches();
     }
+
+    /**
+     * Convenience method to get the internal form of a PID string when it may be in
+     * the https:// or http:// form ToDo -refactor class to allow creating a
+     * GlobalID from any form (which assures it has valid syntax) and then have methods to get
+     * the form you want.
+     * 
+     * @param pidUrlString - a string assumed to be a valid PID in some form
+     * @return the internal form as a String
+     */
+    public static String getInternalFormOfPID(String pidUrlString) {
+        String pidString = pidUrlString;
+        if(pidUrlString.startsWith(GlobalId.DOI_RESOLVER_URL)) {
+            pidString = pidUrlString.replace(GlobalId.DOI_RESOLVER_URL, (GlobalId.DOI_PROTOCOL + ":"));
+        } else if(pidUrlString.startsWith(GlobalId.HDL_RESOLVER_URL)) {
+            pidString = pidUrlString.replace(GlobalId.HDL_RESOLVER_URL, (GlobalId.HDL_PROTOCOL + ":"));
+        } else if(pidUrlString.startsWith(GlobalId.HTTP_DOI_RESOLVER_URL)) {
+            pidString = pidUrlString.replace(GlobalId.HTTP_DOI_RESOLVER_URL, (GlobalId.DOI_PROTOCOL + ":"));
+        } else if(pidUrlString.startsWith(GlobalId.HTTP_HDL_RESOLVER_URL)) {
+            pidString = pidUrlString.replace(GlobalId.HTTP_HDL_RESOLVER_URL, (GlobalId.HDL_PROTOCOL + ":"));
+        }
+        return pidString;
+    }
 }
