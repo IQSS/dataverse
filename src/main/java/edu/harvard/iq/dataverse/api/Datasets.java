@@ -3345,9 +3345,9 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 
                     dsv.setArchivalCopyLocation(JsonUtil.prettyPrint(update));
                     dsv = datasetversionService.merge(dsv);
-                    logger.info("location now: " + dsv.getArchivalCopyLocation());
-                    logger.info("status now: " + dsv.getArchivalCopyLocationStatus());
-                    logger.info("message now: " + dsv.getArchivalCopyLocationMessage());
+                    logger.fine("location now: " + dsv.getArchivalCopyLocation());
+                    logger.fine("status now: " + dsv.getArchivalCopyLocationStatus());
+                    logger.fine("message now: " + dsv.getArchivalCopyLocationMessage());
 
                     return ok("Status updated");
                 }
