@@ -261,7 +261,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         try {
             ExportService instance = ExportService.getInstance();
             instance.exportAllFormats(dataset);
-            ctxt.datasets().updateLastExportTimeStamp(dataset.getId());
+            dataset = ctxt.datasets().merge(dataset); 
         } catch (Exception ex) {
             // Something went wrong!
             // Just like with indexing, a failure to export is not a fatal
