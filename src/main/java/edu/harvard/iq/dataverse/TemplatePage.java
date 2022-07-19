@@ -14,6 +14,7 @@ import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
@@ -52,6 +53,8 @@ public class TemplatePage implements java.io.Serializable {
     
     @Inject
     LicenseServiceBean licenseServiceBean;
+    
+    private static final Logger logger = Logger.getLogger(TemplatePage.class.getCanonicalName());
 
     public enum EditMode {
 
@@ -160,7 +163,7 @@ public class TemplatePage implements java.io.Serializable {
         
         for (DatasetField dsf: template.getFlatDatasetFields()){ 
            DataverseFieldTypeInputLevel dsfIl = dataverseFieldTypeInputLevelService.findByDataverseIdDatasetFieldTypeId(dvIdForInputLevel, dsf.getDatasetFieldType().getId());
-           if (dsfIl != null){              
+           if (dsfIl != null){
                dsf.setInclude(dsfIl.isInclude());
            } else {
                dsf.setInclude(true);
@@ -210,20 +213,13 @@ public class TemplatePage implements java.io.Serializable {
                 error.append(cause).append(" ");
                 error.append(cause.getMessage()).append(" ");
             }
-            //
-            //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Template Save Failed", " - " + error.toString()));
-            System.out.print("dataverse " + dataverse.getName());
-            System.out.print("Ejb exception");
-            System.out.print(error.toString());
+            logger.warning("Template Save failed - Ejb exception " + error.toString());
             JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("template.save.fail"));
             return null;
         } catch (CommandException ex) {
-            System.out.print("command exception");
-            System.out.print(ex.toString());
-            //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Template Save Failed", " - " + ex.toString()));
+            logger.severe("Template Save failed - Ejb exception " + ex.toString());
             JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("template.save.fail"));
             return null;
-            //logger.severe(ex.getMessage());
         }
         editMode = null;       
         String msg = (create)? BundleUtil.getStringFromBundle("template.create"): BundleUtil.getStringFromBundle("template.save");
