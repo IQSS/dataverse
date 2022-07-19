@@ -2919,7 +2919,7 @@ public class UtilIT {
     }
     static Response setDatasetVersionArchivalStatus(Integer datasetId, String version, String apiToken, String status, String message) {
         Response response = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken).body("{\"status\":\"" + status + "\", \"message\":\"" + message + "\"}")
+                .header(API_TOKEN_HTTP_HEADER, apiToken).contentType("application/ld+json; charset=utf-8").body("{\"status\":\"" + status + "\", \"message\":\"" + message + "\"}")
                 .put("/api/datasets/" + datasetId + "/" + version + "/archivalStatus");
         return response;
     }
