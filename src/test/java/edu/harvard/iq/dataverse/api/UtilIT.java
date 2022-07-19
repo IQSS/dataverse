@@ -2914,19 +2914,19 @@ public class UtilIT {
     static Response getDatasetVersionArchivalStatus(Integer datasetId, String version, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/datasets/" + datasetId + "/" + version);
+                .get("/api/datasets/" + datasetId + "/" + version + "/archivalStatus");
         return response;
     }
     static Response setDatasetVersionArchivalStatus(Integer datasetId, String version, String apiToken, String status, String message) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken).body("{\"status\":\"" + status + "\", \"message\":\"" + message + "\"}")
-                .put("/api/datasets/" + datasetId + "/" + version);
+                .put("/api/datasets/" + datasetId + "/" + version + "/archivalStatus");
         return response;
     }
     static Response deleteDatasetVersionArchivalStatus(Integer datasetId, String version, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .delete("/api/datasets/" + datasetId + "/" + version);
+                .delete("/api/datasets/" + datasetId + "/" + version + "/archivalStatus");
         return response;
     }
 
