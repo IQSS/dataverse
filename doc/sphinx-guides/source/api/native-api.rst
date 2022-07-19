@@ -1880,9 +1880,9 @@ Get the Archival Status of a Dataset By Version
 
 Archiving is an optional feature that may be configured for a Dataverse instance. When that is enabled, this API call be used to retrieve the status. Note that this requires "superuser" credentials.
 
-/api/datasets/$dataset-id/$version/archivalStatus returns the archival status of the specified dataset version. 
+GET /api/datasets/$dataset-id/$version/archivalStatus returns the archival status of the specified dataset version.
 
-The response is a Json object that will contain a "status" which may be "success", "pending", or "failure" and a "message" which is archive system specific. For "success" the message should provide an identifier or link to the archival copy. For example: 
+The response is a JSON object that will contain a "status" which may be "success", "pending", or "failure" and a "message" which is archive system specific. For "success" the message should provide an identifier or link to the archival copy. For example:
 
 .. code-block:: bash
 
@@ -1898,9 +1898,9 @@ Set the Archival Status of a Dataset By Version
 
 Archiving is an optional feature that may be configured for a Dataverse instance. When that is enabled, this API call be used to set the status. Note that this is intended to be used by the archival system and requires "superuser" credentials.
 
-/api/datasets/$dataset-id/$version/archivalStatus sets the archival status of the specified dataset version. 
+PUT /api/datasets/$dataset-id/$version/archivalStatus sets the archival status of the specified dataset version.
 
-The body is a Json object that must contain a "status" which may be "success", "pending", or "failure" and a "message" which is archive system specific. For "success" the message should provide an identifier or link to the archival copy. For example: 
+The body is a JSON object that must contain a "status" which may be "success", "pending", or "failure" and a "message" which is archive system specific. For "success" the message should provide an identifier or link to the archival copy. For example:
 
 .. code-block:: bash
 
@@ -1917,7 +1917,7 @@ Delete the Archival Status of a Dataset By Version
 
 Archiving is an optional feature that may be configured for a Dataverse instance. When that is enabled, this API call be used to delete the status. Note that this is intended to be used by the archival system and requires "superuser" credentials.
 
-/api/datasets/$dataset-id/$version/archivalStatus deletes the archival status of the specified dataset version. 
+DELETE /api/datasets/$dataset-id/$version/archivalStatus deletes the archival status of the specified dataset version.
 
 .. code-block:: bash
 
