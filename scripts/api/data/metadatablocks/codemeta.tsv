@@ -5,30 +5,30 @@
 	developmentStatus	Development Status	Description of development status, e.g. work in progress (wip), active, inactive, suspended. See repostatus.org for more information.		text	1	<a href='https://www.repostatus.org/##VALUE'><img src='https://www.repostatus.org/badges/latest/#VALUE.svg' alt='#VALUE '/></a>	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE		codeMeta20	
 	codeRepository	Code Repository	Link to the repository where the un-compiled, human readable code and related code is located (SVN, GitHub, CodePlex, institutional GitLab instance, etc.).	https://...	url	2	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	TRUE	FALSE	TRUE	FALSE	TRUE	FALSE		codeMeta20	https://schema.org/codeRepository
 	programmingLanguage	Programming Language	The programming language(s) used to implement the software (e.g. Python, C++, Matlab, Fortran, Java, Julia,...)		text	3	#VALUE	TRUE	FALSE	TRUE	TRUE	TRUE	FALSE		codeMeta20	https://schema.org/programmingLanguage
-	operatingSystem	Operating Systems	Operating systems supported (e.g. Windows 10, OSX 11.3, Android 11).			4		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		codeMeta20	https://schema.org/operatingSystem
-	operatingSystemName	Name	The supported operating systems name	Windows, Mac OS X, Linux, Android, ...	text	5	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	operatingSystem	codeMeta20	
-	operatingSystemVersion	Version	The supported operating systems version		text	6	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	operatingSystem	codeMeta20	
-	applicationCategory	Application Category	Type of software application, e.g. Simulation, Analysis, Visualisation.	""	text		#VALUE	TRUE	FALSE	TRUE	TRUE	TRUE	FALSE		codeMeta20	https://schema.org/applicationCategory
-	applicationSubCategory	Application Subcategory	Subcategory of the application, e.g. Arcade Game.		text		#VALUE	TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		codeMeta20	https://schema.org/applicationSubCategory
-	softwareHelp	Software Help/Documentation	Link to help texts or documentation	https://...	url		<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		codeMeta20	https://schema.org/softwareHelp
-	buildInstructions	Build instructions	Link to installation instructions/documentation	https://...	url		<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	FALSE	TRUE	FALSE	FALSE		codeMeta20	
-	runtimePlatform	Runtime Platform	Runtime platform or script interpreter dependencies (Example - Java v1, Python2.3, .Net Framework 3.0). Supersedes runtime.		text		#VALUE	TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		codeMeta20	https://schema.org/runtimePlatform
-	targetProduct	Target Product	Target Operating System / Product to which the code applies. If applies to several versions, just the product name can be used.		text		#VALUE	FALSE	FALSE	TRUE	TRUE	FALSE	FALSE		codeMeta20	https://schema.org/targetProduct
-	softwareRequirements	Software Requirements	Required software dependencies		none			FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		codeMeta20	https://schema.org/softwareRequirements
-	softwareRequirementsName	Name	Name or title of the required software/library		text		#VALUE		FALSE	FALSE	FALSE	FALSE	FALSE	softwareRequirements	codeMeta20	
-	softwareRequirementsVersion	Version	Version of the required software/library		text		#VALUE		FALSE	FALSE	FALSE	FALSE	FALSE	softwareRequirements	codeMeta20	
-	softwareRequirementsUrl	URL	Link to required software/library	https://...	url		<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>		FALSE	FALSE	FALSE	FALSE	FALSE	softwareRequirements	codeMeta20	
-	softwareSuggestions	Software Suggestions	Optional dependencies, e.g. for optional features, code development, etc.		none			FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		codeMeta20	
-	softwareSuggestionsName	Name	Name or title of the optional software/library		text		#VALUE		FALSE	FALSE	FALSE	FALSE	FALSE	softwareSuggestions	codeMeta20	
-	softwareSuggestionsVersion	Version	Version of the optional software/library		text		#VALUE		FALSE	FALSE	FALSE	FALSE	FALSE	softwareSuggestions	codeMeta20	
-	softwareSuggestionsUrl	URL	Link to optional software/library	https://...	url		<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>		FALSE	FALSE	FALSE	FALSE	FALSE	softwareSuggestions	codeMeta20	
-	permissions	Permissions	Permission(s) required to run the code (for example, a mobile app may require full internet access or may run only on wifi).		text		#VALUE	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		codeMeta20	https://schema.org/permissions
-	memoryRequirements	Memory Requirements	Minimum memory requirements.		text		#VALUE	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		codeMeta20	https://schema.org/memoryRequirements
-	processorRequirements	Processor Requirements	Processor architecture required to run the application (e.g. IA64).		text		#VALUE	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		codeMeta20	https://schema.org/processorRequirements
-	storageRequirements	Storage Requirements	Storage requirements (e.g. free space required).		text		#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		codeMeta20	https://schema.org/storageRequirements
-	releaseNotes	Release Notes	Link to release notes	https://...	url		<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		codeMeta20	https://schema.org/releaseNotes
-	contIntegration	Continous integration	Link to continuous integration service	https://...	url		<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		codeMeta20	
-	issueTracker	Issue Tracker	Link to software bug reporting or issue tracking system	https://...	url		<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	FALSE	TRUE	FALSE	FALSE		codeMeta20	
+	operatingSystem	Operating Systems	Operating systems supported (e.g. Windows 10, OSX 11.3, Android 11).		text	4		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		codeMeta20	https://schema.org/operatingSystem
+	operatingSystemName	Name	The supported operating systems name	Windows, Mac OS X, Linux, Android, ...	text	0	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	operatingSystem	codeMeta20	
+	operatingSystemVersion	Version	The supported operating systems version		text	1	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	operatingSystem	codeMeta20	
+	applicationCategory	Application Category	Type of software application, e.g. Simulation, Analysis, Visualisation.		text	0	#VALUE	TRUE	FALSE	TRUE	TRUE	TRUE	FALSE		codeMeta20	https://schema.org/applicationCategory
+	applicationSubCategory	Application Subcategory	Subcategory of the application, e.g. Arcade Game.		text	1	#VALUE	TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		codeMeta20	https://schema.org/applicationSubCategory
+	softwareHelp	Software Help/Documentation	Link to help texts or documentation	https://...	url	5	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		codeMeta20	https://schema.org/softwareHelp
+	buildInstructions	Build instructions	Link to installation instructions/documentation	https://...	url	6	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	FALSE	TRUE	FALSE	FALSE		codeMeta20	
+	runtimePlatform	Runtime Platform	Runtime platform or script interpreter dependencies (Example - Java v1, Python2.3, .Net Framework 3.0). Supersedes runtime.		text	7	#VALUE	TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		codeMeta20	https://schema.org/runtimePlatform
+	targetProduct	Target Product	Target Operating System / Product to which the code applies. If applies to several versions, just the product name can be used.		text	8	#VALUE	FALSE	FALSE	TRUE	TRUE	FALSE	FALSE		codeMeta20	https://schema.org/targetProduct
+	softwareRequirements	Software Requirements	Required software dependencies		none	9		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		codeMeta20	https://schema.org/softwareRequirements
+	softwareRequirementsName	Name	Name or title of the required software/library		text	0	#VALUE		FALSE	FALSE	FALSE	FALSE	FALSE	softwareRequirements	codeMeta20	
+	softwareRequirementsVersion	Version	Version of the required software/library		text	1	#VALUE		FALSE	FALSE	FALSE	FALSE	FALSE	softwareRequirements	codeMeta20	
+	softwareRequirementsUrl	URL	Link to required software/library	https://...	url	2	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>		FALSE	FALSE	FALSE	FALSE	FALSE	softwareRequirements	codeMeta20	
+	softwareSuggestions	Software Suggestions	Optional dependencies, e.g. for optional features, code development, etc.		none	10		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		codeMeta20	
+	softwareSuggestionsName	Name	Name or title of the optional software/library		text	0	#VALUE		FALSE	FALSE	FALSE	FALSE	FALSE	softwareSuggestions	codeMeta20	
+	softwareSuggestionsVersion	Version	Version of the optional software/library		text	1	#VALUE		FALSE	FALSE	FALSE	FALSE	FALSE	softwareSuggestions	codeMeta20	
+	softwareSuggestionsUrl	URL	Link to optional software/library	https://...	url	2	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>		FALSE	FALSE	FALSE	FALSE	FALSE	softwareSuggestions	codeMeta20	
+	permissions	Permissions	Permission(s) required to run the code (for example, a mobile app may require full internet access or may run only on wifi).		text	11	#VALUE	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		codeMeta20	https://schema.org/permissions
+	memoryRequirements	Memory Requirements	Minimum memory requirements.		text	12	#VALUE	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		codeMeta20	https://schema.org/memoryRequirements
+	processorRequirements	Processor Requirements	Processor architecture required to run the application (e.g. IA64).		text	13	#VALUE	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		codeMeta20	https://schema.org/processorRequirements
+	storageRequirements	Storage Requirements	Storage requirements (e.g. free space required).		text	14	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		codeMeta20	https://schema.org/storageRequirements
+	releaseNotes	Release Notes	Link to release notes	https://...	url	15	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		codeMeta20	https://schema.org/releaseNotes
+	contIntegration	Continous integration	Link to continuous integration service	https://...	url	16	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		codeMeta20	
+	issueTracker	Issue Tracker	Link to software bug reporting or issue tracking system	https://...	url	17	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	FALSE	TRUE	FALSE	FALSE		codeMeta20	
 #controlledVocabulary	DatasetField	Value	identifier	displayOrder												
 	developmentStatus	Concept	concept	0												
 	developmentStatus	WIP	wip	1												
