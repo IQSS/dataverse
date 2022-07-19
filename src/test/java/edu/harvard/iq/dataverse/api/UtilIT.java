@@ -2392,7 +2392,7 @@ public class UtilIT {
 
     }
     
-    static Boolean sleepForReindex(String idOrPersistentId, String apiToken, int duration) {
+    static boolean sleepForReindex(String idOrPersistentId, String apiToken, int duration) {
         int i = 0;
         Response timestampResponse;
         do {
