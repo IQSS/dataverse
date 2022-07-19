@@ -2397,6 +2397,7 @@ public class UtilIT {
         Response timestampResponse;
         do {
             timestampResponse = UtilIT.getDatasetTimestamps(idOrPersistentId, apiToken);
+            
             try {
                 Thread.sleep(200);
                 i++;
@@ -2406,7 +2407,7 @@ public class UtilIT {
             } catch (InterruptedException ex) {
                 Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
             }
-        } while (timestampResponse.body().jsonPath().getBoolean("hasStaleIndex"));
+        } while (timestampResponse.body().jsonPath().getBoolean("data.hasStaleIndex"));
 
         return i <= duration;
 
