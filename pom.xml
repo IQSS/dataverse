@@ -177,18 +177,24 @@
             <artifactId>jakarta.jakartaee-api</artifactId>
             <scope>provided</scope>
         </dependency>
-        <!-- JSON-P -->
+        
+        <!-- Jakarta Activation, MIME support etc -->
+        <!-- Runtime implementation here only, as necessary for testing. -->
         <dependency>
-            <groupId>org.glassfish</groupId>
+            <groupId>org.eclipse.angus</groupId>
+            <artifactId>angus-activation</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        
+        <!-- JSON-P -->
+        <!-- Runtime implementation here only, as necessary for testing. -->
+        <dependency>
+            <groupId>org.eclipse.parsson</groupId>
             <artifactId>jakarta.json</artifactId>
             <scope>provided</scope>
-            <!-- no version here as managed by Payara BOM above! -->
         </dependency>
-        <dependency>
-            <groupId>com.sun.mail</groupId>
-            <artifactId>jakarta.mail</artifactId>
-            <scope>provided</scope>
-        </dependency>
+        
+        <!-- Jakarta Faces & related -->
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.faces</artifactId>
@@ -211,6 +217,7 @@
             <version>4.0-M13</version> <!-- Or 1.8-SNAPSHOT -->
         </dependency>
         
+        <!-- Jakarta Validation API & runtime -->
         <dependency>
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
@@ -221,9 +228,12 @@
             <artifactId>hibernate-validator</artifactId>
             <scope>provided</scope>
         </dependency>
+    
+        <!-- Jakarta Expression Language -->
+        <!-- Runtime implementation here only, as necessary for testing. -->
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.el</artifactId>
+            <groupId>org.glassfish.expressly</groupId>
+            <artifactId>expressly</artifactId>
             <scope>provided</scope>
         </dependency>
         
