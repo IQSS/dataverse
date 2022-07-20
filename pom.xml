@@ -165,6 +165,8 @@
             <version>29.0-jre</version>
             <type>jar</type>
         </dependency>
+        
+        <!-- Jakarta EE & Eclipse MicroProfile base dependencies -->
         <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>
@@ -173,7 +175,6 @@
         <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-api</artifactId>
-            <version>${jakartaee-api.version}</version>
             <scope>provided</scope>
         </dependency>
         <!-- JSON-P -->
