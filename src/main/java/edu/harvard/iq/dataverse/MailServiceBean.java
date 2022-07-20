@@ -5,7 +5,6 @@
  */
 package edu.harvard.iq.dataverse;
 
-import com.sun.mail.smtp.SMTPSendFailedException;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -152,7 +151,7 @@ public class MailServiceBean implements java.io.Serializable {
                 try {
                     Transport.send(msg, recipients);
                     sent = true;
-                } catch (SMTPSendFailedException ssfe) {
+                } catch (MessagingException ssfe) {
                     logger.warning("Failed to send mail to: " + to);
                     logger.warning("SMTPSendFailedException Message: " + ssfe);
                 }
