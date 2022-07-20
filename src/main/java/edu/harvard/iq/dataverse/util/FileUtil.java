@@ -876,7 +876,7 @@ public class FileUtil implements java.io.Serializable  {
                     }
 
                     datafiles.add(datafile);
-                    return CreateDataFileResult.success(finalType, datafiles);
+                    return CreateDataFileResult.success(fileName, finalType, datafiles);
                 }
 
                 // If it's a ZIP file, we are going to unpack it and create multiple
@@ -1052,7 +1052,7 @@ public class FileUtil implements java.io.Serializable  {
                         logger.warning("Could not remove temp file " + tempFile.getFileName().toString());
                     }
                     // and return:
-                    return CreateDataFileResult.success(finalType, datafiles);
+                    return CreateDataFileResult.success(fileName, finalType, datafiles);
                 }
 
             } else if (finalType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)) {
@@ -1068,7 +1068,7 @@ public class FileUtil implements java.io.Serializable  {
                 boolean didProcessWork = shpIngestHelper.processFile();
                 if (!(didProcessWork)) {
                     logger.severe("Processing of zipped shapefile failed.");
-                    return CreateDataFileResult.error(finalType);
+                    return CreateDataFileResult.error(fileName, finalType);
                 }
 
                 try {
@@ -1129,11 +1129,11 @@ public class FileUtil implements java.io.Serializable  {
                         logger.warning("Unable to delete: " + tempFile.toString() + "due to Security Exception: "
                                 + se.getMessage());
                     }
-                    return CreateDataFileResult.success(finalType, datafiles);
+                    return CreateDataFileResult.success(fileName, finalType, datafiles);
                 } else {
                     logger.severe("No files added from directory of rezipped shapefiles");
                 }
-                return CreateDataFileResult.error(finalType);
+                return CreateDataFileResult.error(fileName, finalType);
 
             } else if (finalType.equalsIgnoreCase(BagItFileHandler.FILE_TYPE)) {
                 Optional<BagItFileHandler> bagItFileHandler = CDI.current().select(BagItFileHandlerFactory.class).get().getBagItFileHandler();
@@ -1176,10 +1176,10 @@ public class FileUtil implements java.io.Serializable  {
             }
             datafiles.add(datafile);
 
-            return CreateDataFileResult.success(finalType, datafiles);
+            return CreateDataFileResult.success(fileName, finalType, datafiles);
         }
 
-        return CreateDataFileResult.error(finalType);
+        return CreateDataFileResult.error(fileName, finalType);
     }   // end createDataFiles
     
 
