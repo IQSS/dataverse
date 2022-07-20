@@ -2071,7 +2071,8 @@ Currently the following methods are used to detect file types:
 
 - The file type detected by the browser (or sent via API).
 - JHOVE: http://jhove.openpreservation.org
-- As a last resort the file extension (e.g. ".ipybn") is used, defined in a file called ``MimeTypeDetectionByFileExtension.properties``.
+- The file extension (e.g. ".ipybn") is used, defined in a file called ``MimeTypeDetectionByFileExtension.properties``.
+- The file name (e.g. "Dockerfile") is used, defined in a file called ``MimeTypeDetectionByFileName.properties``.
 
 Replacing Files
 ~~~~~~~~~~~~~~~
