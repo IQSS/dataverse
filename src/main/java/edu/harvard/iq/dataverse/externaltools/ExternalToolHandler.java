@@ -7,6 +7,8 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -35,19 +37,6 @@ import javax.ws.rs.HttpMethod;
  * such as constructing a URL to access that file.
  */
 public class ExternalToolHandler extends URLTokenUtil {
-    /**
-     * @return the allowedApiCalls
-     */
-    public String getAllowedApiCalls() {
-        return allowedApiCalls;
-    }
-
-    /**
-     * @param allowedApiCalls the allowedApiCalls to set
-     */
-    public void setAllowedApiCalls(String allowedApiCalls) {
-        this.allowedApiCalls = allowedApiCalls;
-    }
 
     /**
      * @param user the user to set
@@ -61,8 +50,7 @@ public class ExternalToolHandler extends URLTokenUtil {
     private String requestMethod;
     private String toolContext;
     private String user;
-    private String siteUrl;
-    private String allowedApiCalls;
+
     
     /**
      * File level tool
@@ -98,9 +86,7 @@ public class ExternalToolHandler extends URLTokenUtil {
     
     // TODO: rename to handleRequest() to someday handle sending headers as well as query parameters.
     public String handleRequest(boolean preview) {
-        String toolParameters = externalTool.getToolParameters();
-        JsonReader jsonReader = Json.createReader(new StringReader(toolParameters));
-        JsonObject obj = jsonReader.readObject();
+        JsonObject obj = JsonUtil.getJsonObject(externalTool.getToolParameters());
         JsonString method = obj.getJsonString("httpMethod");
         requestMethod = method!=null?method.getString():HttpMethod.GET;
         JsonArray queryParams = obj.getJsonArray("queryParameters");
@@ -118,36 +104,32 @@ public class ExternalToolHandler extends URLTokenUtil {
             });
         });   
 
-        StringWriter allowedApiCallsStringWriter = new StringWriter();
         String allowedApis;
-        try (JsonWriter jsonWriter = Json.createWriter(allowedApiCallsStringWriter)) {
-            JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
-            allowedApiCalls = externalTool.getAllowedApiCalls();
-            JsonReader jsonReaderApis = Json.createReader(new StringReader(allowedApiCalls));
-            JsonObject objApis = jsonReaderApis.readObject();
-            JsonArray apis = objApis.getJsonArray("apis");
-            apis.getValuesAs(JsonObject.class).forEach(((apiObj) -> {
-                String name = apiObj.getJsonString("name").toString();
-                String httpmethod = apiObj.getJsonString("method").toString();
-                int timeout = apiObj.getInt("timeOut");
-                String apiPath = replaceTokensWithValues(apiObj.getJsonString("urlTemplate").toString());
-                String url = UrlSignerUtil.signUrl(apiPath, timeout, user,httpmethod, getApiToken().getTokenString());
-                jsonArrayBuilder.add(
-                        Json.createObjectBuilder().add("name", name)
-                                .add("httpMethod", httpmethod)
-                                .add("signedUrl", url)
-                                .add("timeOut", timeout));
-            }));
-            JsonArray allowedApiCallsArray = jsonArrayBuilder.build();
-            jsonWriter.writeArray(allowedApiCallsArray);
-            allowedApis = allowedApiCallsStringWriter.toString();
-            try {
-                allowedApiCallsStringWriter.close();
-            } catch (IOException ex) {
-                Logger.getLogger(ExternalToolHandler.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        if (requestMethod.equals(HttpMethod.POST)){
+        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+
+        JsonObject objApis = JsonUtil.getJsonObject(externalTool.getAllowedApiCalls());
+
+        JsonArray apis = objApis.getJsonArray("apis");
+        apis.getValuesAs(JsonObject.class).forEach(((apiObj) -> {
+            String name = apiObj.getJsonString("name").getString();
+            String httpmethod = apiObj.getJsonString("method").getString();
+            int timeout = apiObj.getInt("timeOut");
+            String urlTemplate = apiObj.getJsonString("urlTemplate").getString();
+            logger.fine("URL Template: " + urlTemplate);
+            String apiPath = replaceTokensWithValues(urlTemplate);
+            logger.fine("URL WithTokens: " + apiPath);
+            String url = UrlSignerUtil.signUrl(apiPath, timeout, user, httpmethod, getApiToken().getTokenString());
+            logger.fine("Signed URL: " + url);
+            jsonArrayBuilder.add(Json.createObjectBuilder().add("name", name).add("httpMethod", httpmethod)
+                    .add("signedUrl", url).add("timeOut", timeout));
+        }));
+        JsonArray allowedApiCallsArray = jsonArrayBuilder.build();
+        allowedApis = JsonUtil.prettyPrint(allowedApiCallsArray);
+        logger.fine("Sending these signed URLS: " + allowedApis);
+        
+        //ToDo - if the allowedApiCalls() are defined, could/should we send them to tools using GET as well?
+        
+        if (requestMethod.equals(HttpMethod.POST)) {
             try {
                 return postFormData(allowedApis);
             } catch (IOException | InterruptedException ex) {
@@ -167,7 +149,7 @@ public class ExternalToolHandler extends URLTokenUtil {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder().POST(HttpRequest.BodyPublishers.ofString(allowedApis)).uri(URI.create(externalTool.getToolUrl()))
                 .header("Content-Type", "application/json")
-                .build();        
+                .build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         boolean redirect=false;
         int status = response.statusCode();
@@ -178,7 +160,7 @@ public class ExternalToolHandler extends URLTokenUtil {
                 redirect = true;
             }
         }
-        if (redirect=true){
+        if (redirect==true){
             String newUrl = response.headers().firstValue("location").get();
             toolContext = "http://" + response.uri().getAuthority();
             

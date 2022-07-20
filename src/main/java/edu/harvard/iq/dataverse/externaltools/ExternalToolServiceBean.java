@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.Type;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.URLTokenUtil.ReservedWord;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.Scope;
 
 import java.io.StringReader;
@@ -151,8 +152,7 @@ public class ExternalToolServiceBean {
         if (manifest == null || manifest.isEmpty()) {
             throw new IllegalArgumentException("External tool manifest was null or empty!");
         }
-        JsonReader jsonReader = Json.createReader(new StringReader(manifest));
-        JsonObject jsonObject = jsonReader.readObject();
+        JsonObject jsonObject = JsonUtil.getJsonObject(manifest);
         //Note: ExternalToolServiceBeanTest tests are dependent on the order of these retrievals
         String displayName = getRequiredTopLevelField(jsonObject, DISPLAY_NAME);
         String toolName = getOptionalTopLevelField(jsonObject, TOOL_NAME);
