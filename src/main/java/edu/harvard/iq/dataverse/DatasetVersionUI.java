@@ -20,6 +20,8 @@ import jakarta.ejb.EJB;
 import jakarta.faces.view.ViewScoped;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.util.TreeMap;
+import static java.util.stream.Collectors.toList;
 
 /**
  *
@@ -36,22 +38,22 @@ public class DatasetVersionUI implements Serializable {
     public DatasetVersionUI() {
     }
 
-    private Map<MetadataBlock, List<DatasetField>> metadataBlocksForView = new HashMap<>();
-    private Map<MetadataBlock, List<DatasetField>> metadataBlocksForEdit = new HashMap<>();
+    private TreeMap<MetadataBlock, List<DatasetField>> metadataBlocksForView = new TreeMap<>();
+    private TreeMap<MetadataBlock, List<DatasetField>> metadataBlocksForEdit = new TreeMap<>();
 
-    public Map<MetadataBlock, List<DatasetField>> getMetadataBlocksForView() {
+    public TreeMap<MetadataBlock, List<DatasetField>> getMetadataBlocksForView() {
         return metadataBlocksForView;
     }
 
-    public void setMetadataBlocksForView(Map<MetadataBlock, List<DatasetField>> metadataBlocksForView) {
+    public void setMetadataBlocksForView(TreeMap<MetadataBlock, List<DatasetField>> metadataBlocksForView) {
         this.metadataBlocksForView = metadataBlocksForView;
     }
 
-    public Map<MetadataBlock, List<DatasetField>> getMetadataBlocksForEdit() {
+    public TreeMap<MetadataBlock, List<DatasetField>> getMetadataBlocksForEdit() {
         return metadataBlocksForEdit;
     }
 
-    public void setMetadataBlocksForEdit(Map<MetadataBlock, List<DatasetField>> metadataBlocksForEdit) {
+    public void setMetadataBlocksForEdit(TreeMap<MetadataBlock, List<DatasetField>> metadataBlocksForEdit) {
         this.metadataBlocksForEdit = metadataBlocksForEdit;
     }
     
@@ -414,7 +416,7 @@ public class DatasetVersionUI implements Serializable {
                     actualMDB.add(mdbTest);
                 }
             }
-        }       
+        }
         
         for (MetadataBlock mdb : actualMDB) {
             mdb.setEmpty(true);

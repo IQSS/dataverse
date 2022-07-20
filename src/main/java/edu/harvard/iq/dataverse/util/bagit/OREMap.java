@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
@@ -86,7 +87,7 @@ public class OREMap {
         localContext.putIfAbsent(JsonLDNamespace.schema.getPrefix(), JsonLDNamespace.schema.getUrl());
 
         Dataset dataset = version.getDataset();
-        String id = dataset.getGlobalId().asString();
+        String id = dataset.getGlobalId().toURL().toExternalForm();
         JsonArrayBuilder fileArray = Json.createArrayBuilder();
         // The map describes an aggregation
         JsonObjectBuilder aggBuilder = Json.createObjectBuilder();
@@ -214,7 +215,9 @@ public class OREMap {
         }
 
         aggBuilder.add(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel(),
-                BrandingUtil.getRootDataverseCollectionName());
+                BrandingUtil.getInstallationBrandName());
+
+        aggBuilder.add(JsonLDTerm.schemaOrg("isPartOf").getLabel(), getDataverseDescription(dataset.getOwner()));
         String mdl = dataset.getMetadataLanguage();
         if(!mdl.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
             aggBuilder.add(JsonLDTerm.schemaOrg("inLanguage").getLabel(), mdl);
@@ -318,6 +321,17 @@ public class OREMap {
                     .add("@context", contextBuilder.build());
             return oremapBuilder;
         }
+    }
+
+    private JsonObjectBuilder getDataverseDescription(Dataverse dv) {
+        //Schema.org is already in local context, no updates needed as long as we only use chemaOrg and "@id" here
+        JsonObjectBuilder dvjob = Json.createObjectBuilder().add(JsonLDTerm.schemaOrg("name").getLabel(), dv.getCurrentName()).add("@id", dv.getLocalURL());
+        addIfNotNull(dvjob, JsonLDTerm.schemaOrg("description"), dv.getDescription());
+        Dataverse owner = dv.getOwner();
+        if(owner!=null) {
+            dvjob.add(JsonLDTerm.schemaOrg("isPartOf").getLabel(), getDataverseDescription(owner));
+        }
+        return dvjob;
     }
 
     /*

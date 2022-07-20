@@ -13,6 +13,8 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
 import java.io.IOException;
+
+import static jakarta.ws.rs.core.Response.Status.*;
 import static java.lang.Thread.sleep;
 
 import java.nio.file.Path;
@@ -23,16 +25,7 @@ import java.util.Collections;
 
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
-import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 
-import static jakarta.ws.rs.core.Response.Status.CREATED;
-import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
-import static jakarta.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
-import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
-import static jakarta.ws.rs.core.Response.Status.NO_CONTENT;
-import static jakarta.ws.rs.core.Response.Status.OK;
-import static jakarta.ws.rs.core.Response.Status.REQUESTED_RANGE_NOT_SATISFIABLE;
-import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static junit.framework.Assert.assertEquals;
 import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -1633,25 +1626,25 @@ public class FilesIT {
         // Download the first 10 bytes.
         Response downloadTxtFirst10 = UtilIT.downloadFile(fileIdTxt, "0-9", null, null, authorApiToken);
         downloadTxtFirst10.then().assertThat()
-                .statusCode(OK.getStatusCode())
+                .statusCode(PARTIAL_CONTENT.getStatusCode())
                 .body(equalTo("first is t"));
 
         // Download the last 6 bytes.
         Response downloadTxtLast6 = UtilIT.downloadFile(fileIdTxt, "-6", null, null, authorApiToken);
         downloadTxtLast6.then().assertThat()
-                .statusCode(OK.getStatusCode())
+                .statusCode(PARTIAL_CONTENT.getStatusCode())
                 .body(equalTo("chest\n"));
 
         // Download some bytes from the middle.
         Response downloadTxtMiddle = UtilIT.downloadFile(fileIdTxt, "09-19", null, null, authorApiToken);
         downloadTxtMiddle.then().assertThat()
-                .statusCode(OK.getStatusCode())
+                .statusCode(PARTIAL_CONTENT.getStatusCode())
                 .body(equalTo("the worst\ns"));
 
         // Skip the first 10 bytes and download the rest.
         Response downloadTxtSkipFirst10 = UtilIT.downloadFile(fileIdTxt, "9-", null, null, authorApiToken);
         downloadTxtSkipFirst10.then().assertThat()
-                .statusCode(OK.getStatusCode())
+                .statusCode(PARTIAL_CONTENT.getStatusCode())
                 .body(equalTo("the worst\n"
                         + "second is the best\n"
                         + "third is the one with the hairy chest\n"));
@@ -1686,30 +1679,30 @@ public class FilesIT {
         // first 10 bytes of tabular format
         Response downloadTabFirstTen = UtilIT.downloadFile(fileIdCsv, "0-9", null, null, authorApiToken);
         downloadTabFirstTen.then().assertThat()
-                .statusCode(OK.getStatusCode())
+                .statusCode(PARTIAL_CONTENT.getStatusCode())
                 .body(equalTo("name\tpound"));
 
         // first 30 bytes of tabular format
         Response downloadTabFirst30 = UtilIT.downloadFile(fileIdCsv, "0-29", null, null, authorApiToken);
         downloadTabFirst30.then().assertThat()
-                .statusCode(OK.getStatusCode())
+                .statusCode(PARTIAL_CONTENT.getStatusCode())
                 .body(equalTo("name\tpounds\tspecies\n"
                         + "\"Marshall\""));
 
         // last 16 bytes of tabular format
         Response downloadTabLast16 = UtilIT.downloadFile(fileIdCsv, "-16", null, null, authorApiToken);
         downloadTabLast16.then().assertThat()
-                .statusCode(OK.getStatusCode())
+                .statusCode(PARTIAL_CONTENT.getStatusCode())
                 .body(equalTo("nther\"\t21\t\"cat\"\n"));
 
         Response downloadTabMiddleBytesHeader = UtilIT.downloadFile(fileIdCsv, "1-7", null, null, authorApiToken);
         downloadTabMiddleBytesHeader.then().assertThat()
-                .statusCode(OK.getStatusCode())
+                .statusCode(PARTIAL_CONTENT.getStatusCode())
                 .body(equalTo("ame\tpou"));
 
         Response downloadTabMiddleBytesBody = UtilIT.downloadFile(fileIdCsv, "31-43", null, null, authorApiToken);
         downloadTabMiddleBytesBody.then().assertThat()
-                .statusCode(OK.getStatusCode())
+                .statusCode(PARTIAL_CONTENT.getStatusCode())
                 .body(equalTo("40\t\"dog\"\n"
                         + "\"Tig"));
 
@@ -1725,19 +1718,19 @@ public class FilesIT {
         // first ten bytes
         Response downloadOrigFirstTen = UtilIT.downloadFile(fileIdCsv, "0-9", "original", null, authorApiToken);
         downloadOrigFirstTen.then().assertThat()
-                .statusCode(OK.getStatusCode())
+                .statusCode(PARTIAL_CONTENT.getStatusCode())
                 .body(equalTo("name,pound"));
 
         // last ten bytes
         Response downloadOrigLastTen = UtilIT.downloadFile(fileIdCsv, "-10", "original", null, authorApiToken);
         downloadOrigLastTen.then().assertThat()
-                .statusCode(OK.getStatusCode())
+                .statusCode(PARTIAL_CONTENT.getStatusCode())
                 .body(equalTo("er,21,cat\n"));
 
         // middle bytes
         Response downloadOrigMiddle = UtilIT.downloadFile(fileIdCsv, "29-39", "original", null, authorApiToken);
         downloadOrigMiddle.then().assertThat()
-                .statusCode(OK.getStatusCode())
+                .statusCode(PARTIAL_CONTENT.getStatusCode())
                 .body(equalTo("40,dog\nTige"));
 
         String pathToZipWithImage = "scripts/search/data/binary/trees.zip";
@@ -1759,7 +1752,7 @@ public class FilesIT {
         String imageThumbPixels = "true";
         Response downloadThumbnail = UtilIT.downloadFile(fileIdPng, "0-149", null, imageThumbPixels, authorApiToken);
 //        downloadThumbnail.prettyPrint();
-        downloadThumbnail.then().assertThat().statusCode(OK.getStatusCode());
+        downloadThumbnail.then().assertThat().statusCode(PARTIAL_CONTENT.getStatusCode());
 
         Response multipleRangesNotSupported = UtilIT.downloadFile(fileIdTxt, "0-9,20-29", null, null, authorApiToken);
         // "Error due to Range header: Only one range is allowed."

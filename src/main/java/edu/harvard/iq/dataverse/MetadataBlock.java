@@ -35,7 +35,7 @@ import jakarta.persistence.Transient;
     @NamedQuery( name="MetadataBlock.findByName", query = "SELECT mdb FROM MetadataBlock mdb WHERE mdb.name=:name")
 })
 @Entity
-public class MetadataBlock implements Serializable {
+public class MetadataBlock implements Serializable, Comparable {
 
     private static final long serialVersionUID = 1L;
     
@@ -209,5 +209,13 @@ public class MetadataBlock implements Serializable {
         } catch (MissingResourceException e) {
             return displayName;
         }
+    }
+
+    @Override
+    public int compareTo(Object arg0) {
+        //guaranteeing that citation will be shown first with custom blocks in order of creation
+        MetadataBlock other = (MetadataBlock) arg0;
+        Long t = "citation".equals(name) ? -1 : this.getId();
+        return t.compareTo("citation".equals(other.name) ? -1 : other.getId());
     }
 }
