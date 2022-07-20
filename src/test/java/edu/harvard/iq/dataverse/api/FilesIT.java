@@ -3,8 +3,9 @@ package edu.harvard.iq.dataverse.api;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
 import java.util.logging.Logger;
-import org.junit.BeforeClass;
+
 import org.junit.Test;
+import org.junit.BeforeClass;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.path.xml.XmlPath;
 import static edu.harvard.iq.dataverse.api.AccessIT.apiToken;
@@ -23,27 +24,18 @@ import java.util.Collections;
 import java.util.ResourceBundle;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
-import static javax.ws.rs.core.Response.Status.NO_CONTENT;
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.REQUESTED_RANGE_NOT_SATISFIABLE;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static javax.ws.rs.core.Response.Status.*;
 import static junit.framework.Assert.assertEquals;
 import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.CoreMatchers.nullValue;
 import org.hamcrest.Matchers;
-import org.junit.AfterClass;
+
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import org.junit.Ignore;
 
 public class FilesIT {
 
@@ -1634,25 +1626,25 @@ public class FilesIT {
         // Download the first 10 bytes.
         Response downloadTxtFirst10 = UtilIT.downloadFile(fileIdTxt, "0-9", null, null, authorApiToken);
         downloadTxtFirst10.then().assertThat()
-                .statusCode(OK.getStatusCode())
+                .statusCode(PARTIAL_CONTENT.getStatusCode())
                 .body(equalTo("first is t"));
 
         // Download the last 6 bytes.
         Response downloadTxtLast6 = UtilIT.downloadFile(fileIdTxt, "-6", null, null, authorApiToken);
         downloadTxtLast6.then().assertThat()
-                .statusCode(OK.getStatusCode())
+                .statusCode(PARTIAL_CONTENT.getStatusCode())
                 .body(equalTo("chest\n"));
 
         // Download some bytes from the middle.
         Response downloadTxtMiddle = UtilIT.downloadFile(fileIdTxt, "09-19", null, null, authorApiToken);
         downloadTxtMiddle.then().assertThat()
-                .statusCode(OK.getStatusCode())
+                .statusCode(PARTIAL_CONTENT.getStatusCode())
                 .body(equalTo("the worst\ns"));
 
         // Skip the first 10 bytes and download the rest.
         Response downloadTxtSkipFirst10 = UtilIT.downloadFile(fileIdTxt, "9-", null, null, authorApiToken);
         downloadTxtSkipFirst10.then().assertThat()
-                .statusCode(OK.getStatusCode())
+                .statusCode(PARTIAL_CONTENT.getStatusCode())
                 .body(equalTo("the worst\n"
                         + "second is the best\n"
                         + "third is the one with the hairy chest\n"));
@@ -1687,30 +1679,30 @@ public class FilesIT {
         // first 10 bytes of tabular format
         Response downloadTabFirstTen = UtilIT.downloadFile(fileIdCsv, "0-9", null, null, authorApiToken);
         downloadTabFirstTen.then().assertThat()
-                .statusCode(OK.getStatusCode())
+                .statusCode(PARTIAL_CONTENT.getStatusCode())
                 .body(equalTo("name\tpound"));
 
         // first 30 bytes of tabular format
         Response downloadTabFirst30 = UtilIT.downloadFile(fileIdCsv, "0-29", null, null, authorApiToken);
         downloadTabFirst30.then().assertThat()
-                .statusCode(OK.getStatusCode())
+                .statusCode(PARTIAL_CONTENT.getStatusCode())
                 .body(equalTo("name\tpounds\tspecies\n"
                         + "\"Marshall\""));
 
         // last 16 bytes of tabular format
         Response downloadTabLast16 = UtilIT.downloadFile(fileIdCsv, "-16", null, null, authorApiToken);
         downloadTabLast16.then().assertThat()
-                .statusCode(OK.getStatusCode())
+                .statusCode(PARTIAL_CONTENT.getStatusCode())
                 .body(equalTo("nther\"\t21\t\"cat\"\n"));
 
         Response downloadTabMiddleBytesHeader = UtilIT.downloadFile(fileIdCsv, "1-7", null, null, authorApiToken);
         downloadTabMiddleBytesHeader.then().assertThat()
-                .statusCode(OK.getStatusCode())
+                .statusCode(PARTIAL_CONTENT.getStatusCode())
                 .body(equalTo("ame\tpou"));
 
         Response downloadTabMiddleBytesBody = UtilIT.downloadFile(fileIdCsv, "31-43", null, null, authorApiToken);
         downloadTabMiddleBytesBody.then().assertThat()
-                .statusCode(OK.getStatusCode())
+                .statusCode(PARTIAL_CONTENT.getStatusCode())
                 .body(equalTo("40\t\"dog\"\n"
                         + "\"Tig"));
 
@@ -1726,19 +1718,19 @@ public class FilesIT {
         // first ten bytes
         Response downloadOrigFirstTen = UtilIT.downloadFile(fileIdCsv, "0-9", "original", null, authorApiToken);
         downloadOrigFirstTen.then().assertThat()
-                .statusCode(OK.getStatusCode())
+                .statusCode(PARTIAL_CONTENT.getStatusCode())
                 .body(equalTo("name,pound"));
 
         // last ten bytes
         Response downloadOrigLastTen = UtilIT.downloadFile(fileIdCsv, "-10", "original", null, authorApiToken);
         downloadOrigLastTen.then().assertThat()
-                .statusCode(OK.getStatusCode())
+                .statusCode(PARTIAL_CONTENT.getStatusCode())
                 .body(equalTo("er,21,cat\n"));
 
         // middle bytes
         Response downloadOrigMiddle = UtilIT.downloadFile(fileIdCsv, "29-39", "original", null, authorApiToken);
         downloadOrigMiddle.then().assertThat()
-                .statusCode(OK.getStatusCode())
+                .statusCode(PARTIAL_CONTENT.getStatusCode())
                 .body(equalTo("40,dog\nTige"));
 
         String pathToZipWithImage = "scripts/search/data/binary/trees.zip";
@@ -1760,7 +1752,7 @@ public class FilesIT {
         String imageThumbPixels = "true";
         Response downloadThumbnail = UtilIT.downloadFile(fileIdPng, "0-149", null, imageThumbPixels, authorApiToken);
 //        downloadThumbnail.prettyPrint();
-        downloadThumbnail.then().assertThat().statusCode(OK.getStatusCode());
+        downloadThumbnail.then().assertThat().statusCode(PARTIAL_CONTENT.getStatusCode());
 
         Response multipleRangesNotSupported = UtilIT.downloadFile(fileIdTxt, "0-9,20-29", null, null, authorApiToken);
         // "Error due to Range header: Only one range is allowed."
@@ -1781,6 +1773,60 @@ public class FilesIT {
 //        publishDataverse.then().assertThat().statusCode(OK.getStatusCode());
 //        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPid, "major", authorApiToken);
 //        publishDataset.then().assertThat().statusCode(OK.getStatusCode());
+
+    }
+
+    @Test
+    public void testAddFileToDatasetSkipTabIngest() throws IOException, InterruptedException {
+
+        Response createUser = UtilIT.createRandomUser();
+        assertEquals(200, createUser.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        assertEquals(201, createDataverseResponse.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        assertEquals(201, createDatasetResponse.getStatusCode());
+        Integer datasetIdInt = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        String pathToFile = "src/test/resources/sav/dct.sav";
+        String jsonAsString = "{\"description\":\"My description.\",\"directoryLabel\":\"data/subdir1\",\"categories\":[\"Data\"], \"restrict\":\"false\", \"tabIngest\":\"false\"}";
+        Response r = UtilIT.uploadFileViaNative(datasetIdInt.toString(), pathToFile, jsonAsString, apiToken);
+        logger.info(r.prettyPrint());
+        assertEquals(200, r.getStatusCode());
+
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile, UtilIT.sleepForLock(datasetIdInt, "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
+        Long dataFileId = JsonPath.from(r.body().asString()).getLong("data.files[0].dataFile.id");
+        Response fileMeta = UtilIT.getDataFileMetadataDraft(dataFileId, apiToken);
+        String label = JsonPath.from(fileMeta.body().asString()).getString("label");
+        assertEquals("dct.sav", label);
+
+        pathToFile = "src/test/resources/sav/frequency-test.sav";
+        jsonAsString = "{\"description\":\"My description.\",\"directoryLabel\":\"data/subdir1\",\"categories\":[\"Data\"], \"restrict\":\"false\"  }";
+        Response rTabIngest = UtilIT.uploadFileViaNative(datasetIdInt.toString(), pathToFile, jsonAsString, apiToken);
+        logger.info(rTabIngest.prettyPrint());
+        assertEquals(200, rTabIngest.getStatusCode());
+
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile, UtilIT.sleepForLock(datasetIdInt, "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
+        Long ingDataFileId = JsonPath.from(rTabIngest.body().asString()).getLong("data.files[0].dataFile.id");
+        Response ingFileMeta = UtilIT.getDataFileMetadataDraft(ingDataFileId, apiToken);
+        String ingLabel = JsonPath.from(ingFileMeta.body().asString()).getString("label");
+        assertEquals("frequency-test.tab", ingLabel);
+
+        //cleanup
+        Response destroyDatasetResponse = UtilIT.destroyDataset(datasetIdInt, apiToken);
+        assertEquals(200, destroyDatasetResponse.getStatusCode());
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        assertEquals(200, deleteUserResponse.getStatusCode());
 
     }
 

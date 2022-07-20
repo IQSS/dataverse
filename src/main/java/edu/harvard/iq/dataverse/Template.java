@@ -28,12 +28,22 @@ import javax.persistence.Transient;
 import javax.validation.constraints.Size;
 
 import edu.harvard.iq.dataverse.util.DateUtil;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**
  *
  * @author skraffmiller
  */
+
+@NamedQueries({
+    @NamedQuery(name = "Template.findByOwnerId",
+               query = "select object(o) from Template as o where o.dataverse.id =:ownerId"),
+    @NamedQuery(name = "Template.findAll",
+               query = "select object(o) from Template as o")
+})
+
 @Entity
 @Table(indexes = {@Index(columnList="dataverse_id")})
 public class Template implements Serializable {
@@ -225,10 +235,8 @@ public class Template implements Serializable {
     }
 
     private void initMetadataBlocksForCreate() {
-        metadataBlocksForView.clear();
         metadataBlocksForEdit.clear();
         for (MetadataBlock mdb : this.getDataverse().getMetadataBlocks()) {
-            List<DatasetField> datasetFieldsForView = new ArrayList<>();
             List<DatasetField> datasetFieldsForEdit = new ArrayList<>();
             for (DatasetField dsf : this.getDatasetFields()) {
 
@@ -237,9 +245,6 @@ public class Template implements Serializable {
                 }
             }
 
-            if (!datasetFieldsForView.isEmpty()) {
-                metadataBlocksForView.put(mdb, sortDatasetFields(datasetFieldsForView));
-            }
             if (!datasetFieldsForEdit.isEmpty()) {
                 metadataBlocksForEdit.put(mdb, sortDatasetFields(datasetFieldsForEdit));
             }
@@ -252,25 +257,24 @@ public class Template implements Serializable {
         metadataBlocksForEdit.clear();
         List<DatasetField> filledInFields = this.getDatasetFields(); 
         
-        
-        List <MetadataBlock> actualMDB = new ArrayList<>();
+        List <MetadataBlock> viewMDB = new ArrayList<>();
+        List <MetadataBlock> editMDB=this.getDataverse().getMetadataBlocks(true);
             
-        actualMDB.addAll(this.getDataverse().getMetadataBlocks());
+        viewMDB.addAll(this.getDataverse().getMetadataBlocks(true));
         for (DatasetField dsfv : filledInFields) {
             if (!dsfv.isEmptyForDisplay()) {
                 MetadataBlock mdbTest = dsfv.getDatasetFieldType().getMetadataBlock();
-                if (!actualMDB.contains(mdbTest)) {
-                    actualMDB.add(mdbTest);
+                if (!viewMDB.contains(mdbTest)) {
+                    viewMDB.add(mdbTest);
                 }
             }
         }       
         
-        for (MetadataBlock mdb : actualMDB) {
+        for (MetadataBlock mdb : viewMDB) {
+
             List<DatasetField> datasetFieldsForView = new ArrayList<>();
-            List<DatasetField> datasetFieldsForEdit = new ArrayList<>();
             for (DatasetField dsf : this.getDatasetFields()) {
                 if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) {
-                    datasetFieldsForEdit.add(dsf);
                     if (!dsf.isEmpty()) {
                         datasetFieldsForView.add(dsf);
                     }
@@ -280,10 +284,20 @@ public class Template implements Serializable {
             if (!datasetFieldsForView.isEmpty()) {
                 metadataBlocksForView.put(mdb, sortDatasetFields(datasetFieldsForView));
             }
-            if (!datasetFieldsForEdit.isEmpty()) {
-                metadataBlocksForEdit.put(mdb, sortDatasetFields(datasetFieldsForEdit));
-            }
+
         }
+        
+        for (MetadataBlock mdb : editMDB) {
+            List<DatasetField> datasetFieldsForEdit = new ArrayList<>();
+            this.setDatasetFields(initDatasetFields());
+            for (DatasetField dsf : this.getDatasetFields() ) {
+                if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) { 
+                    datasetFieldsForEdit.add(dsf);
+                }
+            }
+            metadataBlocksForEdit.put(mdb, sortDatasetFields(datasetFieldsForEdit));
+        }
+        
     }
 
     // TODO: clean up init methods and get them to work, cascading all the way down.
@@ -323,7 +337,12 @@ public class Template implements Serializable {
         TermsOfUseAndAccess terms = null;
         if(source.getTermsOfUseAndAccess() != null){
             terms = source.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
+        } else {
+            terms = new TermsOfUseAndAccess();
+           // terms.setLicense(TermsOfUseAndAccess.defaultLicense);
+            terms.setFileAccessRequest(true);
         }
+        terms.setTemplate(newTemplate);
         newTemplate.setTermsOfUseAndAccess(terms);
         return newTemplate;
     }
