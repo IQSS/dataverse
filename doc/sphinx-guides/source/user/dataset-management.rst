@@ -162,13 +162,13 @@ BagIt Support
 
 BagIt is a set of hierarchical file system conventions designed to support disk-based storage and network transfer of arbitrary digital content. It offers several benefits such as integration with digital libraries, easy implementation, and transfer validation. See `the Wikipedia article <https://en.wikipedia.org/wiki/BagIt>`__ for more information.
 
-If the repository you are using has enabled BagIt file handling, when uploading BagIt files the repository will validate the checksum values listed in each BagIt’s manifest file against the uploaded files and generate errors about any mismatches. The repository will identify a certain number of errors, such as the first five errors in each BagIt file, before reporting the errors.
+If the Dataverse installation you are using has enabled BagIt file handling, when uploading BagIt files the repository will validate the checksum values listed in each BagIt’s manifest file against the uploaded files and generate errors about any mismatches. The repository will identify a certain number of errors, such as the first five errors in each BagIt file, before reporting the errors.
 
 |bagit-image1|
 
 You can fix the errors and reupload the BagIt files.
 
-For information on how to enable and configure the BagIt file handler see the :ref:`installation guide <BagIt File Handler>`
+More information on how your admin can enable and configure the BagIt file handler can be found in the :ref:`Installation Guide <BagIt File Handler>`.
 
 .. _file-handling:
 
@@ -238,10 +238,11 @@ Computational workflows precisely describe a multi-step process to coordinate mu
 
 |cw-image1|
 
+
 FAIR Computational Workflow
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-FAIR principles (Findable, Accessible, Interoperable, Reusable) also apply to computational workflows. The FAIR Principles (https://doi.org/10.1162/dint_a_00033) apply to workflows in two areas as FAIR data and FAIR criteria for workflows as digital objects. In the FAIR data area, "*properly designed workflows contribute to FAIR data principles since they provide the metadata and provenance necessary to describe their data products, and they describe the involved data in a formalized, completely traceable way*" (https://doi.org/10.1162/dint_a_00033). Regarding the FAIR criteria for workflows as digital objects, "*workflows are research products in their own right, encapsulating methodological know-how that is to be found and published, accessed and cited, exchanged and combined with others, and reused as well as adapted*" (https://doi.org/10.1162/dint_a_00033).
+The FAIR Principles (Findable, Accessible, Interoperable, Reusable) apply to computational workflows (https://doi.org/10.1162/dint_a_00033) in two areas: as FAIR data and as FAIR criteria for workflows as digital objects. In the FAIR data area, "*properly designed workflows contribute to FAIR data principles since they provide the metadata and provenance necessary to describe their data products, and they describe the involved data in a formalized, completely traceable way*" (https://doi.org/10.1162/dint_a_00033). Regarding the FAIR criteria for workflows as digital objects, "*workflows are research products in their own right, encapsulating methodological know-how that is to be found and published, accessed and cited, exchanged and combined with others, and reused as well as adapted*" (https://doi.org/10.1162/dint_a_00033).
 
 How to Create a Computational Workflow
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -257,18 +258,8 @@ You are encouraged to review these examples when creating a computational workfl
 
 At https://workflows.community, the Workflows Community Initiative offers resources for computational workflows, such as a list of workflow systems (https://workflows.community/systems) and other workflow registries (https://workflows.community/registries). The initiative also helps organize working groups related to workflows research, development and application.
 
-How to Upload your Computational Workflow
+How to Upload Your Computational Workflow
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-When you :ref:`add a new dataset <adding-new-dataset>`, the Dataverse repository you are using may provide additional support for describing computational workflows, including Computational Workflow Metadata fields for describing your workflow and a "Workflow" tag you can apply to your workflow files.
-
-|cw-image2|
-
-The three fields are adapted from `Bioschemas Computational Workflow Profile, version 1.0 <https://bioschemas.org/profiles/ComputationalWorkflow/1.0-RELEASE>`__ and `Codemeta <https://codemeta.github.io/terms/>`__:
-
-- **Workflow Type**: The kind of Computational Workflow, which is designed to compose and execute a series of computational or data manipulation steps in a scientific application
-- **External Code Repository URL**: A link to another public repository where the un-compiled, human-readable code and related code is also located (e.g., SVN, GitHub, GitLab, CodePlex)
-- **Documentation**: A link (URL) to the documentation or text describing the Computational Workflow and its use
 
 After you :ref:`upload your files <dataset-file-upload>`, you can apply a "Workflow" tag to your workflow files, such as your Snakemake or R Notebooks files, so that you and others can find them more easily among your deposit’s other files.
 
@@ -276,12 +267,26 @@ After you :ref:`upload your files <dataset-file-upload>`, you can apply a "Workf
 
 |cw-image4|
 
+How to Describe Your Computational Workflow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Dataverse installation you are using may have enabled Computational Workflow metadata fields for your use. If so, when :ref:`editing your dataset metadata <adding-new-dataset>`, you will see the fields described below.
+
+|cw-image2|
+
+As described in the :ref:`metadata-references` section of the :doc:`/user/appendix`, the three fields are adapted from `Bioschemas Computational Workflow Profile, version 1.0 <https://bioschemas.org/profiles/ComputationalWorkflow/1.0-RELEASE>`__ and `Codemeta <https://codemeta.github.io/terms/>`__:
+
+- **Workflow Type**: The kind of Computational Workflow, which is designed to compose and execute a series of computational or data manipulation steps in a scientific application
+- **External Code Repository URL**: A link to another public repository where the un-compiled, human-readable code and related code is also located (e.g., GitHub, GitLab, SVN)
+- **Documentation**: A link (URL) to the documentation or text describing the Computational Workflow and its use
+
+
 How to Search for Computational Workflows
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If the search page of the Dataverse repository you are using includes a "Dataset Feature" facet with a Computational Workflows link, you can follow that link to find only datasets that contain computational workflows.
 
-You can also use the "Workflow Type" facet, if the Dataverse repository uses it, to find datasets that contain certain types of computational workflows, such as workflows written in Common Workflow Language files or Jupyter Notebooks.
+You can also search on the "Workflow Type" facet, if the Dataverse installation has the field enabled, to find datasets that contain certain types of computational workflows, such as workflows written in Common Workflow Language files or Jupyter Notebooks.
 
 |cw-image5|
 
