@@ -44,7 +44,6 @@
             <ui:param name="publishDataset" value="#{DatasetPage.publishDatasetPopup()}"/>
             <ui:param name="releaseDraft" value="#{DatasetPage.releaseDraftPopup()}"/>
             <ui:param name="releaseBoth" value="#{DatasetPage.publishBothPopup()}"/>
-            <ui:param name="hasRestrictedFile" value="#{DatasetPage.isHasRestrictedFiles()}"/>
             <ui:define name="meta_header">
                 <ui:fragment rendered="#{!DatasetPage.anonymizedAccess}">
                     <meta name="description" content="#{DatasetPage.description}"/>
