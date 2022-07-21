@@ -1861,7 +1861,7 @@ The API call requires a Json body that includes the embargo's end date (dateAvai
 Remove an Embargo on Files in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-/api/datasets/$dataset-id/files/actions/:unset-embargo can be used to remove an embargo on one or more files in a dataset. Embargoes can be removed from files that are only in a draft dataset version (and are not in any previously published version) by anyone who can edit the dataset. The same API call can be used by a superuser to remove embargos from files that have already been released as part of a previously published dataset version.
+``/api/datasets/$dataset-id/files/actions/:unset-embargo`` can be used to remove an embargo on one or more files in a dataset. Embargoes can be removed from files that are only in a draft dataset version (and are not in any previously published version) by anyone who can edit the dataset. The same API call can be used by a superuser to remove embargos from files that have already been released as part of a previously published dataset version.
 
 The API call requires a Json body that includes the list of the fileIds that the embargo should be removed from. All files listed must be in the specified dataset. For example: 
 
@@ -1880,7 +1880,7 @@ Get the Archival Status of a Dataset By Version
 
 Archiving is an optional feature that may be configured for a Dataverse instance. When that is enabled, this API call be used to retrieve the status. Note that this requires "superuser" credentials.
 
-GET /api/datasets/$dataset-id/$version/archivalStatus returns the archival status of the specified dataset version.
+``GET /api/datasets/$dataset-id/$version/archivalStatus`` returns the archival status of the specified dataset version.
 
 The response is a JSON object that will contain a "status" which may be "success", "pending", or "failure" and a "message" which is archive system specific. For "success" the message should provide an identifier or link to the archival copy. For example:
 
@@ -1898,7 +1898,7 @@ Set the Archival Status of a Dataset By Version
 
 Archiving is an optional feature that may be configured for a Dataverse instance. When that is enabled, this API call be used to set the status. Note that this is intended to be used by the archival system and requires "superuser" credentials.
 
-PUT /api/datasets/$dataset-id/$version/archivalStatus sets the archival status of the specified dataset version.
+``PUT /api/datasets/$dataset-id/$version/archivalStatus`` sets the archival status of the specified dataset version.
 
 The body is a JSON object that must contain a "status" which may be "success", "pending", or "failure" and a "message" which is archive system specific. For "success" the message should provide an identifier or link to the archival copy. For example:
 
@@ -1917,7 +1917,7 @@ Delete the Archival Status of a Dataset By Version
 
 Archiving is an optional feature that may be configured for a Dataverse instance. When that is enabled, this API call be used to delete the status. Note that this is intended to be used by the archival system and requires "superuser" credentials.
 
-DELETE /api/datasets/$dataset-id/$version/archivalStatus deletes the archival status of the specified dataset version.
+``DELETE /api/datasets/$dataset-id/$version/archivalStatus`` deletes the archival status of the specified dataset version.
 
 .. code-block:: bash
 
