@@ -1871,7 +1871,6 @@ public class Admin extends AbstractApiBean {
             // DataverseRequest and is sent to the back-end command where it is used to get
             // the API Token which is then used to retrieve files (e.g. via S3 direct
             // downloads) to create the Bag
-            session.setUser(au);
             List<DatasetVersion> dsl = datasetversionService.getUnarchivedDatasetVersions();
             if (dsl != null) {
                 if (listonly) {
