@@ -3343,8 +3343,8 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                         return error(Status.NOT_FOUND, "Dataset version not found");
                     }
                     if (isSingleVersionArchiving()) {
-                        for (DatasetVersion version : ds.getVersions()) {
-                            if ((!dv.equals(version)) && (version.getArchivalCopyLocation() != null)) {
+                        for (DatasetVersion version : dsv.getDataset().getVersions()) {
+                            if ((!dsv.equals(version)) && (version.getArchivalCopyLocation() != null)) {
                                 return error(Status.CONFLICT, "Dataset already archived.");
                             }
                         }

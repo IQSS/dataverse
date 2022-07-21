@@ -72,7 +72,6 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                             .replace('.', '-').toLowerCase();
 
                     String dataciteXml = getDataCiteXml(dv);
-
                     MessageDigest messageDigest = MessageDigest.getInstance("MD5");
                     try (PipedInputStream dataciteIn = new PipedInputStream();
                             DigestInputStream digestInputStream = new DigestInputStream(dataciteIn, messageDigest)) {
