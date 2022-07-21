@@ -422,14 +422,6 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
     
-    public boolean getHasRestrictedFiles(){
-        return isHasRestrictedFiles(); //HasValidTermsOfAccess
-    }
-    
-    public void setHasRestrictedFiles(boolean value){
-        //dummy for ui
-    }
-    
     public boolean getHasValidTermsOfAccess(){
         return isHasValidTermsOfAccess(); //HasValidTermsOfAccess
     }

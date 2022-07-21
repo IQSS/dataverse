@@ -1868,19 +1868,16 @@
                     
                     function testTOADatasetPage() {
                         var termsofAccessHidden, fileAccessRequestHidden;
-                        var hasRestricted;
                         try{
                             termsofAccessHidden = document.getElementById("datasetForm:tabView:termsofAccessHiddenLT").value;
                             fileAccessRequestHidden  = document.getElementById("datasetForm:tabView:fileAccessRequestHiddenLT").value;  
                         }
                         catch (error){
-                            alert("notdatasetform");
                             //terms not present so save...
                             PF('blockDatasetForm').show();
                             datasetSaveCommand();                        
-                        }  
-                        hasRestricted = document.getElementById("datasetForm:tabView:hasRestrictedFilesLT").value;
-                        if (hasRestricted === 'true' && fileAccessRequestHidden === 'false' && termsofAccessHidden === '') {
+                        }                         
+                        if ('#{DatasetPage.isHasRestrictedFiles()}' === 'true' && fileAccessRequestHidden === 'false' && termsofAccessHidden === '') {
                            //Not compliant show error keep page open...
                         } else {
                             PF('blockDatasetForm').show();
