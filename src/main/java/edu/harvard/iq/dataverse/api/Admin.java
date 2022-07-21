@@ -105,9 +105,6 @@ import java.io.OutputStream;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.rolesToJson;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
-import java.math.BigDecimal;
-
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -1816,14 +1813,13 @@ public class Admin extends AbstractApiBean {
             // DataverseRequest and is sent to the back-end command where it is used to get
             // the API Token which is then used to retrieve files (e.g. via S3 direct
             // downloads) to create the Bag
-            session.setUser(au); // TODO: Stop using session. Use createDataverseRequest instead.
             Dataset ds = findDatasetOrDie(dsid);
 
             DatasetVersion dv = datasetversionService.findByFriendlyVersionNumber(ds.getId(), versionNumber);
             if (dv.getArchivalCopyLocation() == null) {
                 String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
                 AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className,
-                        dvRequestService.getDataverseRequest(), dv);
+                        createDataverseRequest(au), dv);
                 if (cmd != null) {
                     new Thread(new Runnable() {
                         public void run() {
@@ -1895,8 +1891,8 @@ public class Admin extends AbstractApiBean {
                     return ok(jab); 
                 }
                 String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
-                AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), dsl.get(0));
-                final DataverseRequest request = dvRequestService.getDataverseRequest();
+                final DataverseRequest request = createDataverseRequest(au);
+                AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, request, dsl.get(0));
                 if (cmd != null) {
                     new Thread(new Runnable() {
                         public void run() {
