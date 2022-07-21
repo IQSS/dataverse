@@ -45,8 +45,8 @@ public class LocalSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand 
         
         //Set a failure status that will be updated if we succeed
         JsonObjectBuilder statusObject = Json.createObjectBuilder();
-        statusObject.add(DatasetVersion.STATUS, DatasetVersion.FAILURE);
-        statusObject.add(DatasetVersion.MESSAGE, "Bag not transferred");
+        statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
+        statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, "Bag not transferred");
         
         try {
 
@@ -77,8 +77,8 @@ public class LocalSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand 
 
                 if (srcFile.renameTo(destFile)) {
                     logger.fine("Localhost Submission step: Content Transferred");
-                    statusObject.add(DatasetVersion.STATUS, DatasetVersion.SUCCESS);
-                    statusObject.add(DatasetVersion.MESSAGE, "file://" + zipName);
+                    statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_SUCCESS);
+                    statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, "file://" + zipName);
                 } else {
                     logger.warning("Unable to move " + zipName + ".partial to " + zipName);
                 }
