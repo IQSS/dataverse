@@ -115,13 +115,13 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                 WorkflowStepResult s3Result = super.performArchiveSubmission(dv, token, requestedSettings);
 
                 JsonObjectBuilder statusObject = Json.createObjectBuilder();
-                statusObject.add(DatasetVersion.STATUS, DatasetVersion.FAILURE);
-                statusObject.add(DatasetVersion.MESSAGE, "Bag not transferred");
+                statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
+                statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, "Bag not transferred");
 
                 if (s3Result == WorkflowStepResult.OK) {
                     //This will be overwritten if the further steps are successful
-                    statusObject.add(DatasetVersion.STATUS, DatasetVersion.FAILURE);
-                    statusObject.add(DatasetVersion.MESSAGE, "Bag transferred, DRS ingest call failed");
+                    statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
+                    statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, "Bag transferred, DRS ingest call failed");
 
                     // Now contact DRS
                     boolean trustCert = drsConfigObject.getBoolean(TRUST_CERT, false);
@@ -213,22 +213,22 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                                 logger.info("Status: " + code);
                                 logger.info("Response" + responseBody);
                                 JsonObject responseObject = JsonUtil.getJsonObject(responseBody);
-                                if (responseObject.containsKey(DatasetVersion.STATUS)
-                                        && responseObject.containsKey(DatasetVersion.MESSAGE)) {
-                                    String status = responseObject.getString(DatasetVersion.STATUS);
-                                    if (status.equals(DatasetVersion.PENDING) || status.equals(DatasetVersion.FAILURE)
-                                            || status.equals(DatasetVersion.SUCCESS)) {
+                                if (responseObject.containsKey(DatasetVersion.ARCHIVAL_STATUS)
+                                        && responseObject.containsKey(DatasetVersion.ARCHIVAL_STATUS_MESSAGE)) {
+                                    String status = responseObject.getString(DatasetVersion.ARCHIVAL_STATUS);
+                                    if (status.equals(DatasetVersion.ARCHIVAL_STATUS_PENDING) || status.equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE)
+                                            || status.equals(DatasetVersion.ARCHIVAL_STATUS_SUCCESS)) {
                                         statusObject.addAll(Json.createObjectBuilder(responseObject));
                                         switch (status) {
-                                        case DatasetVersion.PENDING:
+                                        case DatasetVersion.ARCHIVAL_STATUS_PENDING:
                                             logger.info("DRS Ingest successfully started for: " + packageId + " : "
                                                     + responseObject.toString());
                                             break;
-                                        case DatasetVersion.FAILURE:
+                                        case DatasetVersion.ARCHIVAL_STATUS_FAILURE:
                                             logger.severe("DRS Ingest Failed for: " + packageId + " : "
                                                     + responseObject.toString());
                                             return new Failure("DRS Archiver fail in Ingest call");
-                                        case DatasetVersion.SUCCESS:
+                                        case DatasetVersion.ARCHIVAL_STATUS_SUCCESS:
                                             // We don't expect this from DRS
                                             logger.warning("Unexpected Status: " + status);
                                         }
