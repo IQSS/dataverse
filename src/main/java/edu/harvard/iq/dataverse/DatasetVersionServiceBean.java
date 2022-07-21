@@ -1188,6 +1188,15 @@ w
     }
     
     /**
+     * Merges the passed datasetversion to the persistence context.
+     * @param ver the DatasetVersion whose new state we want to persist.
+     * @return The managed entity representing {@code ver}.
+     */
+    public DatasetVersion merge( DatasetVersion ver ) {
+        return em.merge(ver);
+    }
+    
+    /**
      * Execute a query to return DatasetVersion
      * 
      * @param queryString
@@ -1207,13 +1216,4 @@ w
             return null;
         }
     } // end getUnarchivedDatasetVersions
-
-    /**
-     * Merges the passed datasetversion to the persistence context.
-     * @param ver the DatasetVersion whose new state we want to persist.
-     * @return The managed entity representing {@code ver}.
-     */
-    public DatasetVersion merge( DatasetVersion ver ) {
-        return em.merge(ver);
-    }
 } // end class
