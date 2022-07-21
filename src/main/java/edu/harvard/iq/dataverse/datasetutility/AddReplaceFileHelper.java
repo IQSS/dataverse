@@ -32,6 +32,7 @@ import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.file.CreateDataFileResult;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -501,9 +502,11 @@ public class AddReplaceFileHelper{
         if (!phase1Success){
             return false;
         }
-        
-       
-        return runAddReplacePhase2();
+        boolean tabIngest = true;
+        if (optionalFileParams != null) {
+            tabIngest = optionalFileParams.getTabIngest();
+        }
+        return runAddReplacePhase2(tabIngest);
         
     }
 
@@ -653,7 +656,7 @@ public class AddReplaceFileHelper{
     
     
     public boolean runReplaceFromUI_Phase2(){
-        return runAddReplacePhase2();
+        return runAddReplacePhase2(true);
     }
     
 
@@ -744,7 +747,7 @@ public class AddReplaceFileHelper{
      * 
      * @return 
      */
-    private boolean runAddReplacePhase2(){
+    private boolean runAddReplacePhase2(boolean tabIngest){
         
         if (this.hasError()){
             return false;   // possible to have errors already...
@@ -756,7 +759,7 @@ public class AddReplaceFileHelper{
         }
         
          msgt("step_060_addFilesViaIngestService");
-        if (!this.step_060_addFilesViaIngestService()){
+        if (!this.step_060_addFilesViaIngestService(tabIngest)){
             return false;
             
         }
@@ -1204,7 +1207,7 @@ public class AddReplaceFileHelper{
         workingVersion = dataset.getEditVersion();
         clone =   workingVersion.cloneDatasetVersion();
         try {
-            initialFileList = FileUtil.createDataFiles(workingVersion,
+            CreateDataFileResult result = FileUtil.createDataFiles(workingVersion,
                     this.newFileInputStream,
                     this.newFileName,
                     this.newFileContentType,
@@ -1212,6 +1215,7 @@ public class AddReplaceFileHelper{
                     this.newCheckSum,
                     this.newCheckSumType,
                     this.systemConfig);
+            initialFileList = result.getDataFiles();
 
         } catch (IOException ex) {
             if (!Strings.isNullOrEmpty(ex.getMessage())) {
@@ -1570,7 +1574,7 @@ public class AddReplaceFileHelper{
         return true;
     }
     
-    private boolean step_060_addFilesViaIngestService(){
+    private boolean step_060_addFilesViaIngestService(boolean tabIngest){
                        
         if (this.hasError()){
             return false;
@@ -1583,7 +1587,7 @@ public class AddReplaceFileHelper{
         }
         
         int nFiles = finalFileList.size();
-        finalFileList = ingestService.saveAndAddFilesToDataset(workingVersion, finalFileList, fileToReplace);
+        finalFileList = ingestService.saveAndAddFilesToDataset(workingVersion, finalFileList, fileToReplace, tabIngest);
 
         if (nFiles != finalFileList.size()) {
             if (nFiles == 1) {

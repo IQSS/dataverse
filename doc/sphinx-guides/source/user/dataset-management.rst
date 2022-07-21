@@ -43,8 +43,8 @@ Adding a New Dataset
 
 #. Navigate to the Dataverse collection in which you want to add a dataset.
 #. Click on the "Add Data" button and select "New Dataset" in the dropdown menu. **Note:** If you are on the root Dataverse collection, your My Data page or click the "Add Data" link in the navbar, the dataset you create will be hosted in the root Dataverse collection. You can change this by selecting another Dataverse collection you have proper permissions to create datasets in, from the Host Dataverse collection dropdown in the create dataset form. This option to choose will not be available after you create the dataset.
-#. To quickly get started, enter at minimum all the required fields with an asterisk (e.g., the Dataset Title, Author, 
-   Description, Contact Email and Subject) to get a Data Citation with a DOI.
+#. To quickly get started, enter at minimum all the required fields with an asterisk (e.g., the Dataset Title, Author Name, 
+   Description Text, Point of Contact Email, and Subject) to get a Data Citation with a DOI.
 #. Scroll down to the "Files" section and click on "Select Files to Add" to add all the relevant files to your Dataset. 
    You can also upload your files directly from your Dropbox. **Tip:** You can drag and drop or select multiple files at a time from your desktop
    directly into the upload widget. Your files will appear below the "Select Files to Add" button where you can add a
@@ -509,7 +509,7 @@ will be removed as soon as you Publish.
 Submit for Review
 =================
 
-If you have a Contributor role (can edit metadata, upload files, and edit files, edit Terms, Guestbook, and Submit datasets for review) in a Dataverse collection you can submit your dataset for review when you have finished uploading your files and filling in all of the relevant metadata fields. To Submit for Review, go to your dataset and click on the "Submit for Review" button, which is located next to the "Edit" button on the upper-right. Once Submitted for Review: the Admin or Curator for this Dataverse collection will be notified to review this dataset before they decide to either "Publish" the dataset or "Return to Author". If the dataset is published the contributor will be notified that it is now published. If the dataset is returned to the author, the contributor of this dataset will be notified that they need to make modifications before it can be submitted for review again.
+If you have a Contributor role (can edit metadata, upload files, and edit files, edit Terms, Guestbook, and submit datasets for review) in a Dataverse collection you can submit your dataset for review when you have finished uploading your files and filling in all of the relevant metadata fields. To submit your dataset for review, go to your dataset and click the "Submit for Review" button, which is located next to the "Edit" button on the upper-right. In the confirmation popup, you can review your selection of license (or custom terms, if available). Once you have confirmed the submission, the Admin or Curator for this Dataverse collection will be notified to review this dataset before they decide to either publish the dataset or click "Return to Author". If the dataset is published, the contributor will be notified that it is now published. If the dataset is returned to the author, the contributor of this dataset will be notified that they need to make modifications before it can be submitted for review again.
 
 .. _privateurl:
 

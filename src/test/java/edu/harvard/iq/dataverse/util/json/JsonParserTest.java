@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseTheme.Alignment;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
@@ -704,4 +705,15 @@ public class JsonParserTest {
         }
     }
 
+    @Test
+    public void testEnum() throws JsonParseException {
+        JsonArrayBuilder arr = Json.createArrayBuilder();
+        for (Type entry : Arrays.asList(Type.REVOKEROLE, Type.ASSIGNROLE)) {
+            arr.add(entry.name());
+        }
+        Set<Type> typesSet = new HashSet<>(JsonParser.parseEnumsFromArray(arr.build(), Type.class));
+        assertTrue("Set contains two elements", typesSet.size() == 2);
+        assertTrue("Set contains REVOKEROLE", typesSet.contains(Type.REVOKEROLE));
+        assertTrue("Set contains ASSIGNROLE", typesSet.contains(Type.ASSIGNROLE));
+    }
 }

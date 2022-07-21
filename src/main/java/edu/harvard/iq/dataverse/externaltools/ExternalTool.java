@@ -20,7 +20,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
-import javax.persistence.Transient;
 
 /**
  * A specification or definition for how an external tool is intended to
@@ -29,8 +28,6 @@ import javax.persistence.Transient;
  */
 @Entity
 public class ExternalTool implements Serializable {
-
-    private static final Logger logger = Logger.getLogger(ExternalToolServiceBean.class.getCanonicalName());
 
     public static final String DISPLAY_NAME = "displayName";
     public static final String DESCRIPTION = "description";
@@ -99,8 +96,9 @@ public class ExternalTool implements Serializable {
     private String contentType;
 
     /**
-     * Path for retrieving data through the REST api. Used to build signedUrls
-     * for POST headers, as in DPCreator
+     * Set of API calls the tool would like to be able to use (e,.g. for retrieving
+     * data through the Dataverse REST api). Used to build signedUrls for POST
+     * headers, as in DPCreator
      */
     @Column(nullable = true, columnDefinition = "TEXT")
     private String allowedApiCalls;

@@ -72,6 +72,7 @@ import com.google.gson.JsonSyntaxException;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFile.ChecksumType;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 
 public class BagGenerator {
@@ -115,6 +116,7 @@ public class BagGenerator {
     private boolean usetemp = false;
 
     private int numConnections = 8;
+    public static final String BAG_GENERATOR_THREADS = ":BagGeneratorThreads";
 
     private OREMap oremap;
 
@@ -203,7 +205,9 @@ public class BagGenerator {
         // The oremapObject is javax.json.JsonObject and we need com.google.gson.JsonObject for the aggregation object
         aggregation = (JsonObject) new JsonParser().parse(oremapObject.getJsonObject(JsonLDTerm.ore("describes").getLabel()).toString());
 
-        bagID = aggregation.get("@id").getAsString() + "v."
+        String pidUrlString = aggregation.get("@id").getAsString();
+        String pidString=GlobalId.getInternalFormOfPID(pidUrlString);
+        bagID = pidString + "v."
                 + aggregation.get(JsonLDTerm.schemaOrg("version").getLabel()).getAsString();
         
         logger.info("Generating Bag: " + bagID);
@@ -1078,6 +1082,11 @@ public class BagGenerator {
 
     public void setAuthenticationKey(String tokenString) {
         apiKey = tokenString;
+    }
+
+    public void setNumConnections(int numConnections) {
+        this.numConnections = numConnections;
+        logger.fine("BagGenerator will use " + numConnections + " threads");
     }
 
 }
