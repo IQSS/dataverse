@@ -23,6 +23,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
+
 import org.apache.commons.codec.binary.Hex;
 import org.duracloud.client.ContentStore;
 import org.duracloud.client.ContentStoreManager;
@@ -88,6 +91,11 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                         .replace('.', '-').toLowerCase() + "_v" + dv.getFriendlyVersionNumber();
 
                 ContentStore store;
+                //Set a failure status that will be updated if we succeed
+                JsonObjectBuilder statusObject = Json.createObjectBuilder();
+                statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
+                statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, "Bag not transferred");
+                
                 try {
                     /*
                      * If there is a failure in creating a space, it is likely that a prior version
@@ -194,7 +202,9 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                         sb.append("/duradmin/spaces/sm/");
                         sb.append(store.getStoreId());
                         sb.append("/" + spaceName + "/" + fileName);
-                        dv.setArchivalCopyLocation(sb.toString());
+                        statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_SUCCESS);
+                        statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, sb.toString());
+                        
                         logger.fine("DuraCloud Submission step complete: " + sb.toString());
                     } catch (ContentStoreException | IOException e) {
                         // TODO Auto-generated catch block
@@ -216,6 +226,9 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                     return new Failure("Unable to create DuraCloud space with name: " + baseFileName, mesg);
                 } catch (NoSuchAlgorithmException e) {
                     logger.severe("MD5 MessageDigest not available!");
+                }
+                finally {
+                    dv.setArchivalCopyLocation(statusObject.build().toString());
                 }
             } else {
                 logger.warning(
