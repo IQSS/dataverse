@@ -39,6 +39,8 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
@@ -59,6 +61,13 @@ import org.apache.commons.lang3.StringUtils;
  *
  * @author skraffmiller
  */
+
+@NamedQueries({
+    @NamedQuery(name = "DatasetVersion.findUnarchivedReleasedVersions",
+               query = "SELECT OBJECT(o) FROM DatasetVersion AS o WHERE o.releaseTime IS NOT NULL and o.archivalCopyLocation IS NULL"
+    )})
+    
+    
 @Entity
 @Table(indexes = {@Index(columnList="dataset_id")},
         uniqueConstraints = @UniqueConstraint(columnNames = {"dataset_id,versionnumber,minorversionnumber"}))

@@ -1195,15 +1195,12 @@ w
      */
     public List<DatasetVersion> getUnarchivedDatasetVersions(){
         
-        String queryString = "SELECT OBJECT(o) FROM DatasetVersion AS o WHERE o.releaseTime IS NOT NULL and o.archivalCopyLocation IS NULL";
-        
         try {
-            TypedQuery<DatasetVersion> query = em.createQuery(queryString, DatasetVersion.class);
-            List<DatasetVersion> dsl = query.getResultList();
+            @SuppressWarnings("unchecked")
+            List<DatasetVersion> dsl = em.createNamedQuery("DatasetVersion.findUnarchivedReleasedVersion").getResultList();
             return dsl;
-
         } catch (javax.persistence.NoResultException e) {
-            logger.log(Level.FINE, "No unarchived DatasetVersions found: {0}", queryString);
+            logger.log(Level.FINE, "No unarchived DatasetVersions found: {0}");
             return null;
         } catch (EJBException e) {
             logger.log(Level.WARNING, "EJBException exception: {0}", e.getMessage());
