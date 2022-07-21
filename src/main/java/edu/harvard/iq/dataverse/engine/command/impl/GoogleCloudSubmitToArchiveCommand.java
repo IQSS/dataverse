@@ -51,7 +51,7 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
         if (bucketName != null && projectName != null) {
             Storage storage;
             try {
-                FileInputStream fis = new FileInputStream(System.getProperty("dataverse.files.directory") + System.getProperty("file.separator")+ "googlecloudkey.json");
+                FileInputStream fis = new FileInputStream(System.getProperty("dataverse.files.directory") + System.getProperty("file.separator") + "googlecloudkey.json");
                 storage = StorageOptions.newBuilder()
                         .setCredentials(ServiceAccountCredentials.fromStream(fis))
                         .setProjectId(projectName)
@@ -92,12 +92,12 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                         dcThread.start();
                         // Have seen Pipe Closed errors for other archivers when used as a workflow
                         // without this delay loop
-                        int i=0;
-                        while(digestInputStream.available()<=0 && i<100) {
+                        int i = 0;
+                        while (digestInputStream.available() <= 0 && i < 100) {
                             Thread.sleep(10);
                             i++;
                         }
-                        Blob dcXml = bucket.create(spaceName + "/datacite.v" + dv.getFriendlyVersionNumber()+".xml", digestInputStream, "text/xml", Bucket.BlobWriteOption.doesNotExist());
+                        Blob dcXml = bucket.create(spaceName + "/datacite.v" + dv.getFriendlyVersionNumber() + ".xml", digestInputStream, "text/xml", Bucket.BlobWriteOption.doesNotExist());
 
                         dcThread.join();
                         String checksum = dcXml.getMd5ToHexString();
@@ -128,10 +128,9 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                             Thread bagThread = startBagThread(dv, in, digestInputStream2, dataciteXml, token);
                             Blob bag = bucket.create(spaceName + "/" + fileName, digestInputStream2, "application/zip",
                                     Bucket.BlobWriteOption.doesNotExist());
-                            if(bag.getSize()==0) {
+                            if (bag.getSize() == 0) {
                                 throw new IOException("Empty Bag");
                             }
-
                             bagThread.join();
 
                             checksum = bag.getMd5ToHexString();
@@ -154,7 +153,7 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
 
                         // Document the location of dataset archival copy location (actually the URL
                         // where you can view it as an admin)
-                        //Changed to point at bucket where the zip and datacite.xml are visible
+                        // Changed to point at bucket where the zip and datacite.xml are visible
 
                         StringBuffer sb = new StringBuffer("https://console.cloud.google.com/storage/browser/");
                         sb.append(bucketName + "/" + spaceName);
