@@ -224,10 +224,13 @@ public enum JvmSettings {
     
     /**
      * Lookup this setting via MicroProfile Config as a required option (it will fail if not present).
-     * @throws java.util.NoSuchElementException - if the property is not defined or is defined as an empty string
+     *
      * @param klass The target type class to convert the setting to if found and not null
      * @return The setting as an instance of {@link T}
      * @param <T> Target type to convert the setting to (you can create custom converters)
+     *
+     * @throws java.util.NoSuchElementException When the property is not defined or is defined as an empty string.
+     * @throws IllegalArgumentException When the settings value could not be converted to target type.
      */
     public <T> T lookup(Class<T> klass) {
         if (needsVarArgs()) {
@@ -242,9 +245,12 @@ public enum JvmSettings {
     
     /**
      * Lookup this setting via MicroProfile Config as an optional setting.
+     *
      * @param klass The target type class to convert the setting to if found and not null
-     * @return The setting as an instance of {@link Optional<T>} or an empty Optional
      * @param <T> Target type to convert the setting to (you can create custom converters)
+     * @return The setting as an instance of {@link Optional<T>} or an empty Optional
+     *
+     * @throws IllegalArgumentException When the settings value could not be converted to target type.
      */
     public <T> Optional<T> lookupOptional(Class<T> klass) {
         if (needsVarArgs()) {
@@ -257,6 +263,49 @@ public enum JvmSettings {
         return ConfigProvider.getConfig().getOptionalValue(this.getScopedKey(), klass);
     }
     
+    /**
+     * Lookup a required setting containing placeholders for arguments like a name and return as plain String.
+     * To use type conversion, use {@link #lookup(Class, String...)}.
+     *
+     * @param arguments The var args to replace the placeholders of this setting.
+     * @return The value of the setting.
+     *
+     * @throws java.util.NoSuchElementException When the setting has not been set in any MPCONFIG source or is an empty string.
+     * @throws IllegalArgumentException When using it on a setting without placeholders.
+     * @throws IllegalArgumentException When not providing as many arguments as there are placeholders.
+     */
+    public String lookup(String... arguments) {
+        return lookup(String.class, arguments);
+    }
+    
+    /**
+     * Lookup an optional setting containing placeholders for arguments like a name and return as plain String.
+     * To use type conversion, use {@link #lookupOptional(Class, String...)}.
+     *
+     * @param arguments The var args to replace the placeholders of this setting.
+     * @return The value as an instance of {@link Optional<String>} or an empty Optional
+     *
+     * @throws IllegalArgumentException When using it on a setting without placeholders.
+     * @throws IllegalArgumentException When not providing as many arguments as there are placeholders.
+     */
+    public Optional<String> lookupOptional(String... arguments) {
+        return lookupOptional(String.class, arguments);
+    }
+    
+    /**
+     * Lookup a required setting containing placeholders for arguments like a name and return as converted type.
+     * To avoid type conversion, use {@link #lookup(String...)}.
+     *
+     * @param klass The target type class.
+     * @param arguments The var args to replace the placeholders of this setting.
+     * @param <T> Target type to convert the setting to (you can create custom converters)
+     * @return The value of the setting, converted to the given type.
+     *
+     * @throws java.util.NoSuchElementException When the setting has not been set in any MPCONFIG source or is an empty string.
+     * @throws IllegalArgumentException When using it on a setting without placeholders.
+     * @throws IllegalArgumentException When not providing as many arguments as there are placeholders.
+     * @throws IllegalArgumentException When the settings value could not be converted to the target type.
+     */
     public <T> T lookup(Class<T> klass, String... arguments) {
         if (needsVarArgs()) {
             if (arguments == null || arguments.length != placeholders) {
@@ -267,6 +316,19 @@ public enum JvmSettings {
         throw new IllegalArgumentException("Cannot lookup a setting without variable arguments with this method.");
     }
     
+    /**
+     * Lookup an optional setting containing placeholders for arguments like a name and return as converted type.
+     * To avoid type conversion, use {@link #lookupOptional(String...)}.
+     *
+     * @param klass The target type class.
+     * @param arguments The var args to replace the placeholders of this setting.
+     * @param <T> Target type to convert the setting to (you can create custom converters)
+     * @return The value as an instance of {@link Optional<T>} or an empty Optional
+     *
+     * @throws IllegalArgumentException When using it on a setting without placeholders.
+     * @throws IllegalArgumentException When not providing as many arguments as there are placeholders.
+     * @throws IllegalArgumentException When the settings value could not be converted to the target type.
+     */
     public <T> Optional<T> lookupOptional(Class<T> klass, String... arguments) {
         if (needsVarArgs()) {
             if (arguments == null || arguments.length != placeholders) {
@@ -277,6 +339,12 @@ public enum JvmSettings {
         throw new IllegalArgumentException("Cannot lookup a setting without variable arguments with this method.");
     }
     
+    /**
+     * Inject arguments into the placeholders of this setting. Will not do anything when no placeholders present.
+     *
+     * @param arguments The variable arguments to be inserted for the placeholders.
+     * @return The formatted setting name.
+     */
     public String insert(String... arguments) {
         return String.format(this.getScopedKey(), (Object[]) arguments);
     }
