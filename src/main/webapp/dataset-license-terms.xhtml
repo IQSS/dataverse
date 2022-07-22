@@ -264,7 +264,7 @@
                                </div>
                            </ui:fragment>
                        </div>
-                       <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.termsOfAccess}">
+                       <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.termsOfAccess and DatasetPage.restrictedFileCount > 0}">
                            <label for="datasetForm:tabView:metadata_TermsAccessText" class="col-sm-3 control-label">
                                #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
