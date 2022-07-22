@@ -46,7 +46,7 @@ public enum JvmSettings {
     
     private static final String SCOPE_SEPARATOR = ".";
     public static final String PLACEHOLDER_KEY = "%s";
-    private static final Pattern OLD_NAME_PLACEHOLDER_PATTERN = Pattern.compile("%\\d?s");
+    private static final Pattern OLD_NAME_PLACEHOLDER_PATTERN = Pattern.compile("%(\\d\\$)?s");
     
     private final String key;
     private final String scopedKey;
