@@ -7,8 +7,10 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataverseContact;
+import edu.harvard.iq.dataverse.DataverseMetadataBlockFacet;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordServiceBean;
+import edu.harvard.iq.dataverse.api.dto.DataverseMetadataBlockFacetDTO;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectContainer;
@@ -49,6 +51,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.LinkDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListDataverseContentCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListExplicitGroupsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListFacetsCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ListMetadataBlockFacetsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRolesCommand;
@@ -117,6 +120,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
@@ -707,6 +711,56 @@ public class Dataverses extends AbstractApiBean {
             // by passing null for Featured Dataverses and DataverseFieldTypeInputLevel, those are not changed
             execCommand(new UpdateDataverseCommand(dataverse, facets, null, createDataverseRequest(findUserOrDie()), null));
             return ok("Facets of dataverse " + dvIdtf + " updated.");
+
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
+    @GET
+    @Path("{identifier}/metadatablockfacets")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response listMetadataBlockFacets(@PathParam("identifier") String dvIdtf) {
+        try {
+            User u = findUserOrDie();
+            DataverseRequest request = createDataverseRequest(u);
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            List<DataverseMetadataBlockFacet> metadataBlockFacets = Optional.ofNullable(execCommand(new ListMetadataBlockFacetsCommand(request, dataverse))).orElse(Collections.emptyList());
+            List<DataverseMetadataBlockFacetDTO.MetadataBlockDTO> metadataBlocksDTOs = metadataBlockFacets.stream()
+                    .map(item -> new DataverseMetadataBlockFacetDTO.MetadataBlockDTO(item.getMetadataBlock().getName(), item.getMetadataBlock().getLocaleDisplayFacet()))
+                    .collect(Collectors.toList());
+            DataverseMetadataBlockFacetDTO response = new DataverseMetadataBlockFacetDTO(dataverse.getId(), dataverse.getAlias(), dataverse.isMetadataBlockFacetRoot(), metadataBlocksDTOs);
+            return Response.ok(response).build();
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+    }
+
+    @POST
+    @Path("{identifier}/metadatablockfacets")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response setMetadataBlockFacets(@PathParam("identifier") String dvIdtf, List<String> metadataBlockNames) {
+        try {
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+
+            List<DataverseMetadataBlockFacet> metadataBlockFacets = new LinkedList<>();
+            for(String metadataBlockName: metadataBlockNames) {
+                MetadataBlock metadataBlock = findMetadataBlock(metadataBlockName);
+                if (metadataBlock == null) {
+                    return error(Response.Status.BAD_REQUEST, String.format("Invalid metadata block name: %s", metadataBlockName));
+                }
+
+                DataverseMetadataBlockFacet metadataBlockFacet = new DataverseMetadataBlockFacet();
+                metadataBlockFacet.setDataverse(dataverse);
+                metadataBlockFacet.setMetadataBlock(metadataBlock);
+                metadataBlockFacets.add(metadataBlockFacet);
+            }
+
+            dataverse.setMetadataBlockFacetRoot(true);
+            dataverse.setMetadataBlockFacets(metadataBlockFacets);
+            execCommand(new UpdateDataverseCommand(dataverse, null, null, createDataverseRequest(findUserOrDie()), null));
+            return ok(String.format("Metadata block facets updated. DataverseId: %s blocks: %s", dvIdtf, metadataBlockNames));
 
         } catch (WrappedResponse ex) {
             return ex.getResponse();
