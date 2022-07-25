@@ -68,7 +68,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
     private static final String COLLECTIONS = "collections";
     private static final String PACKAGE_ID = "package_id";
     private static final String SINGLE_VERSION = "single_version";
-    private static final String DRS_ENDPOINT = "DRSendpoint";
+    private static final String DRS_ENDPOINT = "DRS_endpoint";
     
 
     private static final String RSA_KEY = "dataverse.archiver.drs.rsa_key";
