@@ -1910,13 +1910,9 @@ The body is a JSON object that must contain a "status" which may be "success", "
   export VERSION=1.0
   export JSON='{"status":"failure","message":"Something went wrong"}'
 
-<<<<<<< HEAD
-  curl -H "X-Dataverse-key: $API_TOKEN" -H "Content-Type:application/json" -X PUT "$SERVER_URL/api/datasets/submitDatasetVersionToArchive/$VERSION/status?persistentId=$PERSISTENT_IDENTIFIER" -d "$JSON"
-  
-Note that if the configured archiver only supports archiving a single version, the call may return 409 CONFLICT if/when another version already has a non-null status.
-=======
   curl -H "X-Dataverse-key: $API_TOKEN" -H "Content-Type:application/json" -X PUT "$SERVER_URL/api/datasets/:persistentId/$VERSION/archivalStatus?persistentId=$PERSISTENT_IDENTIFIER" -d "$JSON"
->>>>>>> refs/remotes/IQSS/develop
+
+Note that if the configured archiver only supports archiving a single version, the call may return 409 CONFLICT if/when another version already has a non-null status.
 
 Delete the Archival Status of a Dataset By Version
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
