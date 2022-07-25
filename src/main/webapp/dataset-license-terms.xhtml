@@ -236,7 +236,7 @@
                 </p:fragment>
             </div>
         </div>
-       <div class="panel panel-default" jsf:rendered="#{!empty editMode or empty editMode and (!empty termsOfUseAndAccess.termsOfAccess
+       <div class="panel panel-default" jsf:rendered="#{!empty editMode or empty editMode and ((!empty termsOfUseAndAccess.termsOfAccess and DatasetPage.restrictedFileCount > 0) 
                                                         or !empty termsOfUseAndAccess.dataAccessPlace 
                                         or !empty termsOfUseAndAccess.originalArchive or !empty termsOfUseAndAccess.availabilityStatus 
                                         or !empty termsOfUseAndAccess.contactForAccess or !empty termsOfUseAndAccess.sizeOfCollection 
@@ -248,7 +248,7 @@
            <div id="panelCollapseTOA" jsf:class="#{!datasetPage.hasValidTermsOfAccess ? 'collapse' : ''}">
                <div class="panel-body">
                    <ui:fragment rendered="#{empty editMode}">
-                       <div class="form-group" jsf:rendered="#{!settingsWrapper.publicInstall}">
+                       <div class="form-group" jsf:rendered="#{!settingsWrapper.publicInstall and DatasetPage.restrictedFileCount > 0}">
                            <label for="datasetForm:tabView:metadata_RestrictedFiles" class="col-sm-3 control-label">
                                #{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles']}
                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
