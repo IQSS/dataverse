@@ -1188,9 +1188,9 @@ The :S3ArchiverConfig setting is a JSON object that must include an "s3_bucket_n
 Harvard DRS Configuration
 +++++++++++++++++++++++++
 
-The Harvard DRS Archiver can send Dataverse Archival Bag to the Harvard DRS. It extends the S3 Archiver and uses all of the settings of that Archiver.
+The Harvard Digital Repository Service (DRS) Archiver can send Dataverse Archival Bags to the Harvard DRS. It extends the S3 Archiver and uses all of the settings of that Archiver.
 
-As this Archiver is specific to Harvard and the DRS, a full description of the required configuration is out-of-scope for this guide. However, the basics will be described to support management and to indicate how similar future Archivers might leverage its flexible configuration.
+As this Archiver is specific to Harvard and the DRS, a full description of the required configuration is out-of-scope for this guide. However, the basics will be described to support its setup and to indicate how similar future Archivers might leverage its flexible configuration. In particular, the DRS Archive supports single-version-only semantics and supports archiving only from specified collections (and with collection specific parameters).
  
 This Archiver adds a :DRSArchiverConfig setting that is a JSON object containing several keys and sub-objects:
 
@@ -1199,7 +1199,7 @@ This Archiver adds a :DRSArchiverConfig setting that is a JSON object containing
 - "single_version":true - whether to limit Dataverse to archiving one version of a dataset
 - "timeout":600 - DRS uses JWT for authentication and this key sets the timeout (in seconds) of the token provided
 - "admin_metadata" - a sub-object containing many DRS-specific keys and
-   - "collections" - a sub-object containing keys that identify specific collections in Dataverse by their alias. If there is an alias entry for a given collection, a) the DRS Archiver will submit any Dataverse within that collection or its subcollection for archiving, and b) will use any keys in the object supplied for that alias as overrides for the admin_metadata provided in the parent object. The latter allows, for example, different billing codes and contacts to be assigned for different collections.
+ - "collections" - a sub-object containing keys that identify specific collections in Dataverse by their alias. If there is an alias entry for a given collection, a) the DRS Archiver will submit any Dataverse within that collection or its subcollection for archiving, and b) will use any keys in the object supplied for that alias as overrides for the admin_metadata provided in the parent object. The latter allows, for example, different billing codes and contacts to be assigned for different collections.
 
 ``curl http://localhost:8080/api/admin/settings/:ArchiverClassName -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.DRSSubmitToArchiveCommand"``
 
