@@ -199,7 +199,7 @@ On operating systems which use systemd such as RHEL/derivative, you may then add
 
 Solr launches asynchronously and attempts to use the ``lsof`` binary to watch for its own availability. Installation of this package isn't required but will prevent a warning in the log at startup::
 
-	# yum install lsof
+	# dnf install lsof
 
 Finally, you need to tell Solr to create the core "collection1" on startup::
 
@@ -255,8 +255,8 @@ Installing jq
 
 ``jq`` is a command line tool for parsing JSON output that is used by the Dataverse Software installation script. It is available in the EPEL repository::
 
-	# yum install epel-release
-	# yum install jq
+	# dnf install epel-release
+	# dnf install jq
 
 or you may install it manually::
 
@@ -277,7 +277,7 @@ Installing and configuring ImageMagick
 
 On a Red Hat or derivative Linux distribution, you can install ImageMagick with something like::
 
-	# yum install ImageMagick
+	# dnf install ImageMagick
 
 (most RedHat systems will have it pre-installed).
 When installed using standard ``yum`` mechanism, above, the executable for the ImageMagick convert utility will be located at ``/usr/bin/convert``. No further configuration steps will then be required.
@@ -305,7 +305,7 @@ Installing R
 
 For RHEL/derivative, the EPEL distribution is strongly recommended:
 
-If :fixedwidthplain:`yum` isn't configured to use EPEL repositories ( https://fedoraproject.org/wiki/EPEL ):
+If :fixedwidthplain:`dnf` isn't configured to use EPEL repositories ( https://fedoraproject.org/wiki/EPEL ):
 
 RHEL9/derivative users can install the epel-release RPM::
 
@@ -336,9 +336,9 @@ RHEL 7 users will want to log in to their organization's respective RHN interfac
 • click on "Subscribed Channels: Alter Channel Subscriptions"
 • enable EPEL, Server Extras, Server Optional
 
-Finally, install R with :fixedwidthplain:`yum`::
+Finally, install R with :fixedwidthplain:`dnf`::
 
-       yum install R-core R-core-devel
+       dnf install R-core R-core-devel
 
 Installing the required R libraries
 ===================================
@@ -463,7 +463,7 @@ The following commands are intended to be run as root but we are aware that Pyth
 
 Install Python 3.9::
 
-        yum install python39
+        dnf install python39
 
 Install Counter Processor Python requirements::
 
