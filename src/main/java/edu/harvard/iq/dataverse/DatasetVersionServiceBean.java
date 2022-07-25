@@ -1205,8 +1205,7 @@ w
     public List<DatasetVersion> getUnarchivedDatasetVersions(){
         
         try {
-            @SuppressWarnings("unchecked")
-            List<DatasetVersion> dsl = em.createNamedQuery("DatasetVersion.findUnarchivedReleasedVersion").getResultList();
+            List<DatasetVersion> dsl = em.createNamedQuery("DatasetVersion.findUnarchivedReleasedVersion", DatasetVersion.class).getResultList();
             return dsl;
         } catch (javax.persistence.NoResultException e) {
             logger.log(Level.FINE, "No unarchived DatasetVersions found: {0}");
