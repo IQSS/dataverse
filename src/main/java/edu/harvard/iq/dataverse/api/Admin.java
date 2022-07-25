@@ -1891,8 +1891,13 @@ public class Admin extends AbstractApiBean {
                 }
                 String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
                 final DataverseRequest request = createDataverseRequest(au);
+                // createSubmitToArchiveCommand() tries to find and instantiate an non-abstract
+                // implementation of AbstractSubmitToArchiveCommand based on the provided
+                // className. If a class with that name isn't found (or can't be instatiated, it
+                // will return null
                 AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, request, dsl.get(0));
                 if (cmd != null) {
+                    //Found an archiver to use
                     new Thread(new Runnable() {
                         public void run() {
                             int total = dsl.size();
