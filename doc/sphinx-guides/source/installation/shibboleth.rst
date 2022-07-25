@@ -32,7 +32,7 @@ We will be "fronting" the app server with Apache so that we can make use of the 
 
 We include the ``mod_ssl`` package to enforce HTTPS per below.
 
-``yum install httpd mod_ssl``
+``dnf install httpd mod_ssl``
 
 Install Shibboleth
 ~~~~~~~~~~~~~~~~~~
@@ -51,7 +51,7 @@ Install Shibboleth Via Yum
 
 Please note that during the installation it's ok to import GPG keys from the Shibboleth project. We trust them.
 
-``yum install shibboleth``
+``dnf install shibboleth``
 
 Configure Payara
 ----------------
@@ -122,7 +122,7 @@ Near the bottom of ``/etc/httpd/conf.d/ssl.conf`` but before the closing ``</Vir
 
 You can download a :download:`sample ssl.conf file <../_static/installation/files/etc/httpd/conf.d/ssl.conf>` to compare it against the file you edited.
 
-Note that ``/etc/httpd/conf.d/shib.conf`` and ``/etc/httpd/conf.d/shibboleth-ds.conf`` are expected to be present from installing Shibboleth via yum.
+Note that ``/etc/httpd/conf.d/shib.conf`` and ``/etc/httpd/conf.d/shibboleth-ds.conf`` are expected to be present from installing Shibboleth via dnf.
 
 You may wish to also add a timeout directive to the ProxyPass line within ssl.conf. This is especially useful for larger file uploads as apache may prematurely kill the connection before the upload is processed. 
 

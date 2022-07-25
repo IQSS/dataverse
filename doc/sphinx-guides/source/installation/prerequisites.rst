@@ -14,7 +14,7 @@ After following all the steps below, you can proceed to the :doc:`installation-m
 Linux
 -----
 
-We assume you plan to run your Dataverse installation on Linux and we recommend RHEL or a derivative such as RockyLinux or AlmaLinux, which is the distribution family tested by the Dataverse Project team. Please be aware that while EL8 (RHEL/derivatives) is the recommended platform, the steps below were orginally written for EL6 and may need to be updated (please feel free to make a pull request!). A number of community members have installed the Dataverse Software in Debian/Ubuntu environments.
+We assume you plan to run your Dataverse installation on Linux and we recommend RHEL or a derivative such as RockyLinux or AlmaLinux, which is the distribution family tested by the Dataverse Project team. These instructions are written for RHEL9 and derivatives with notes for RHEL 8 and earlier, but a number of community members have successfully installed Dataverse in Debian and Ubuntu environments.
 
 Java
 ----
@@ -28,9 +28,9 @@ The Dataverse Software should run fine with only the Java Runtime Environment (J
 
 The Oracle JDK can be downloaded from http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
-On a RHEL/derivative, install OpenJDK (devel version) using yum::
+On a RHEL/derivative OS, install OpenJDK (devel version) using dnf::
 
-	# sudo yum install java-11-openjdk
+	# sudo dnf install java-11-openjdk
 
 If you have multiple versions of Java installed, Java 11 should be the default when ``java`` is invoked from the command line. You can test this by running ``java -version``.
 
@@ -98,16 +98,16 @@ PostgreSQL
 Installing PostgreSQL
 =====================
 
-The application has been tested with PostgreSQL versions up to 13 and version 10+ is required. We recommend installing the latest version that is available for your OS distribution. *For example*, to install PostgreSQL 13 under RHEL7/derivative::
+The application has been tested with PostgreSQL versions up to 13 and version 10+ is required. We recommend installing the latest version that is available for your OS distribution. *For example*, to install PostgreSQL 13 under RHEL9/derivative::
 
-	# yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
-	# yum makecache fast
-	# yum install -y postgresql13-server
-	# /usr/pgsql-13/bin/postgresql-13-setup initdb
-	# /usr/bin/systemctl start postgresql-13
-	# /usr/bin/systemctl enable postgresql-13
+	# sudo dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+	# sudo dnf makecache
+	# sudo dnf install -y postgresql13-server
+	# sudo /usr/pgsql-13/bin/postgresql-13-setup initdb
+	# sudo /usr/bin/systemctl start postgresql-13
+	# sudo /usr/bin/systemctl enable postgresql-13
 
-For RHEL8/derivative the process would be identical, except for the first two commands: you would need to install the "EL-8" yum repository configuration and run ``yum makecache`` instead.
+For RHEL8/derivative the process would be identical but requires a disabling the OS' built-in postgresql module with ``dnf -qy module disable postgresql``. On RHEL7 the second command should be ``yum makecache fast``.
 
 Configuring Database Access for the Dataverse Installation (and the Dataverse Software Installer)
 =================================================================================================
@@ -141,7 +141,7 @@ Configuring Database Access for the Dataverse Installation (and the Dataverse So
 
   The file ``postgresql.conf`` will be located in the same directory as the ``pg_hba.conf`` above.
 
-- **Important: PostgreSQL must be restarted** for the configuration changes to take effect! On RHEL7/derivative and similar (provided you installed Postgres as instructed above)::
+- **Important: PostgreSQL must be restarted** for the configuration changes to take effect! On RHEL9/derivative and similar (provided you installed Postgres as instructed above)::
 
         # systemctl restart postgresql-13
 
@@ -307,13 +307,21 @@ For RHEL/derivative, the EPEL distribution is strongly recommended:
 
 If :fixedwidthplain:`yum` isn't configured to use EPEL repositories ( https://fedoraproject.org/wiki/EPEL ):
 
+RHEL9/derivative users can install the epel-release RPM::
+
+       dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+
 RHEL8/derivative users can install the epel-release RPM::
 
-       yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+       dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
 
 RHEL7/derivative users can install the epel-release RPM::
 
        yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+
+Rocky 9 users will need te enable the CodeReady-Builder repository::
+
+       dnf config-manager --enable crb
 
 RHEL 8 users will need to enable the CodeReady-Builder repository::
 
@@ -449,7 +457,7 @@ As root, create a "counter" user and change ownership of Counter Processor direc
 Installing Counter Processor Python Requirements
 ================================================
 
-Counter Processor version 0.1.04 requires Python 3.7 or higher. This version of Python is available in many operating systems, and is purportedly available for RHEL7 or CentOS 7 via Red Hat Software Collections. Alternately, one may compile it from source.
+Counter Processor version 0.1.04 requires Python 3.7 or higher. This version of Python or higher is available in many operating systems, and is purportedly available for RHEL7 or CentOS 7 via Red Hat Software Collections. Alternately, one may compile it from source.
 
 The following commands are intended to be run as root but we are aware that Pythonistas might prefer fancy virtualenv or similar setups. Pull requests are welcome to improve these steps!
 
