@@ -349,12 +349,12 @@
         <dependency>
             <groupId>org.ocpsoft.rewrite</groupId>
             <artifactId>rewrite-servlet</artifactId>
-            <version>3.6.0-SNAPSHOT</version>
+            <version>5.0.0.Alpha1</version>
         </dependency>
         <dependency>
             <groupId>org.ocpsoft.rewrite</groupId>
             <artifactId>rewrite-config-prettyfaces</artifactId>
-            <version>3.6.0-SNAPSHOT</version>
+            <version>5.0.0.Alpha1</version>
         </dependency>
         <dependency>
             <groupId>edu.ucsb.nceas</groupId>
