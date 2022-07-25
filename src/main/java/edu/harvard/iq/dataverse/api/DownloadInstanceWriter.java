@@ -456,6 +456,9 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                 
                                 offset = ranges.get(0).getStart();
                                 leftToRead = rangeContentSize;
+                                httpHeaders.add("Accept-Ranges", "bytes");
+                                httpHeaders.add("Content-Range", "bytes "+offset+"-"+(offset+rangeContentSize-1)+"/"+contentSize);
+
                             }
                         } else {
                             // Content size unknown, must be a dynamically

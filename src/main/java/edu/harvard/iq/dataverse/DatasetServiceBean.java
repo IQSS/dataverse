@@ -862,11 +862,6 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
     }
 
-    public void updateLastExportTimeStamp(Long datasetId) {
-        Date now = new Date();
-        em.createNativeQuery("UPDATE Dataset SET lastExportTime='"+now.toString()+"' WHERE id="+datasetId).executeUpdate();
-    }
-
     public Dataset setNonDatasetFileAsThumbnail(Dataset dataset, InputStream inputStream) {
         if (dataset == null) {
             logger.fine("In setNonDatasetFileAsThumbnail but dataset is null! Returning null.");

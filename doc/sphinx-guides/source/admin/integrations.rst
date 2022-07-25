@@ -70,6 +70,13 @@ Amnesia is a flexible data anonymization tool that transforms relational and tra
 
 For instructions on depositing or loading data from Dataverse installations to Amnesia, visit https://amnesia.openaire.eu/about-documentation.html
 
+SampleDB
+++++++++
+
+SampleDB is a web-based electronic lab notebook (ELN) with a focus on flexible metadata. SampleDB can export this flexible, process-specific metadata to a new Dataset in a Dataverse installation using the EngMeta Process Metadata block.
+
+For instructions on using the Dataverse export, you can visit https://scientific-it-systems.iffgit.fz-juelich.de/SampleDB/administrator_guide/dataverse_export.html
+
 
 Embedding Data on Websites
 --------------------------
