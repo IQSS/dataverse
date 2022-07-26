@@ -233,6 +233,9 @@ public class DataAccess {
         case S3:
         	storageIO = new S3AccessIO<>(dvObject, null, storageDriverId);
         	break;
+        case REMOTE:
+            storageIO = createNewStorageIO(dvObject, storageTag, RemoteOverlayAccessIO.getBaseStoreIdFor(storageDriverId)) ;
+            break;
         default:
         	logger.warning("Could not find storage driver for: " + storageTag);
         	throw new IOException("createDataAccessObject: Unsupported storage method " + storageDriverId);

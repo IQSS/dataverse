@@ -339,8 +339,14 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
     public String getStorageLocation() throws IOException {
         String fullStorageLocation = dvObject.getStorageIdentifier();
         logger.fine("storageidentifier: " + fullStorageLocation);
-        fullStorageLocation = fullStorageLocation.substring(fullStorageLocation.lastIndexOf(DataAccess.SEPARATOR) + DataAccess.SEPARATOR.length());
-        fullStorageLocation = fullStorageLocation.substring(0, fullStorageLocation.indexOf("//"));
+        int driverIndex = fullStorageLocation.lastIndexOf(DataAccess.SEPARATOR);
+        if(driverIndex >=0) {
+          fullStorageLocation = fullStorageLocation.substring(fullStorageLocation.lastIndexOf(DataAccess.SEPARATOR) + DataAccess.SEPARATOR.length());
+        }
+        int suffixIndex = fullStorageLocation.indexOf("//");
+        if(suffixIndex >=0) {
+          fullStorageLocation = fullStorageLocation.substring(0, fullStorageLocation.indexOf("//"));
+        }
         if (this.getDvObject() instanceof Dataset) {
             fullStorageLocation = this.getDataset().getAuthorityForFileStorage() + "/"
                     + this.getDataset().getIdentifierForFileStorage() + "/" + fullStorageLocation;
@@ -429,7 +435,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         baseUrl = System.getProperty("dataverse.files." + this.driverId + ".baseUrl");
 
         if (baseStore == null) {
-            String baseDriverId = System.getProperty("dataverse.files." + driverId + ".baseStore");
+            String baseDriverId = getBaseStoreIdFor(driverId);
             String fullStorageLocation = null;
             String baseDriverType = System.getProperty("dataverse.files." + baseDriverId + ".type");
             if(dvObject  instanceof Dataset) {
@@ -546,6 +552,10 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         throw new UnsupportedDataAccessOperationException(
                 "RemoteOverlayAccessIO: saveInputStream(InputStream, Long) not implemented in this storage driver.");
 
+    }
+
+    public static String getBaseStoreIdFor(String driverId) {
+        return System.getProperty("dataverse.files." + driverId + ".baseStore");
     }
 
 }
