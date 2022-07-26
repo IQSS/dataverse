@@ -1016,7 +1016,7 @@ public class GlobusServiceBean implements java.io.Serializable{
     public String calculatemime(String fileName) throws InterruptedException {
 
         String finalType = FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT;
-        String type = FileUtil.determineFileTypeByExtension(fileName);
+        String type = FileUtil.determineFileTypeByNameAndExtension(fileName);
 
         if (!StringUtils.isBlank(type)) {
             if (FileUtil.useRecognizedType(finalType, type)) {
