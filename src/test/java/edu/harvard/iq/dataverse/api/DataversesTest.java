@@ -13,8 +13,9 @@ import edu.harvard.iq.dataverse.api.dto.DataverseMetadataBlockFacetDTO;
 import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteMetadataBlockFacetsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListMetadataBlockFacetsCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateMetadataBlockFacetsCommand;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -23,6 +24,7 @@ import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -77,7 +79,6 @@ public class DataversesTest {
         VALID_DATAVERSE = new Dataverse();
         VALID_DATAVERSE.setId(MocksFactory.nextId());
         VALID_DATAVERSE.setAlias(UUID.randomUUID().toString());
-        VALID_DATAVERSE.setMetadataBlockFacetRoot(true);
 
         Mockito.lenient().when(dataverseService.findByAlias(VALID_DATAVERSE.getAlias())).thenReturn(VALID_DATAVERSE);
         Mockito.lenient().when(httpRequest.getHeader("X-Dataverse-key")).thenReturn(UUID.randomUUID().toString());
@@ -89,7 +90,9 @@ public class DataversesTest {
         String dataverseAlias = UUID.randomUUID().toString();
         Mockito.when(dataverseService.findByAlias(dataverseAlias)).thenReturn(null);
         Response result = target.listMetadataBlockFacets(dataverseAlias);
+
         MatcherAssert.assertThat(result.getStatus(), Matchers.is(404));
+        Mockito.verifyNoMoreInteractions(engineSvc);
     }
 
     @Test
@@ -138,20 +141,9 @@ public class DataversesTest {
         String dataverseAlias = UUID.randomUUID().toString();
         Mockito.when(dataverseService.findByAlias(dataverseAlias)).thenReturn(null);
         Response result = target.setMetadataBlockFacets(dataverseAlias, Collections.emptyList());
+
         MatcherAssert.assertThat(result.getStatus(), Matchers.is(404));
-    }
-
-    @Test
-    public void setMetadataBlockFacets_should_return_400_when_dataverse_is_not_metadatablock_root() {
-        String dataverseAlias = UUID.randomUUID().toString();
-        Dataverse dataverse = new Dataverse();
-        dataverse.setMetadataBlockRoot(false);
-        Mockito.when(dataverseService.findByAlias(dataverseAlias)).thenReturn(dataverse);
-
-        List<String> metadataBlocks = Arrays.asList("test_block");
-        Response result = target.setMetadataBlockFacets(dataverseAlias, metadataBlocks);
-
-        MatcherAssert.assertThat(result.getStatus(), Matchers.is(400));
+        Mockito.verifyNoMoreInteractions(engineSvc);
     }
 
     @Test
@@ -162,16 +154,24 @@ public class DataversesTest {
         Response result = target.setMetadataBlockFacets(VALID_DATAVERSE.getAlias(), metadataBlocks);
 
         MatcherAssert.assertThat(result.getStatus(), Matchers.is(400));
+        Mockito.verifyNoMoreInteractions(engineSvc);
     }
 
     @Test
-    public void setMetadataBlockFacets_should_return_200_when_all_is_valid() throws Exception{
-        Mockito.when(metadataBlockSvc.findByName("valid_block")).thenReturn(new MetadataBlock());
+    public void setMetadataBlockFacets_should_return_200_when_update_is_successful() throws Exception {
+        MetadataBlock validBlock = new MetadataBlock();
+        Mockito.when(metadataBlockSvc.findByName("valid_block")).thenReturn(validBlock);
         List<String> metadataBlocks = Arrays.asList("valid_block");
         Response result = target.setMetadataBlockFacets(VALID_DATAVERSE.getAlias(), metadataBlocks);
 
         MatcherAssert.assertThat(result.getStatus(), Matchers.is(200));
-        Mockito.verify(engineSvc).submit(Mockito.any(UpdateDataverseCommand.class));
+        ArgumentCaptor<UpdateMetadataBlockFacetsCommand> updateCommand = ArgumentCaptor.forClass(UpdateMetadataBlockFacetsCommand.class);
+        Mockito.verify(engineSvc).submit(updateCommand.capture());
+
+        MatcherAssert.assertThat(updateCommand.getValue().getEditedDataverse(), Matchers.is(VALID_DATAVERSE));
+        MatcherAssert.assertThat(updateCommand.getValue().getMetadataBlockFacets().size(), Matchers.is(1));
+        MatcherAssert.assertThat(updateCommand.getValue().getMetadataBlockFacets().get(0).getDataverse(), Matchers.is(VALID_DATAVERSE));
+        MatcherAssert.assertThat(updateCommand.getValue().getMetadataBlockFacets().get(0).getMetadataBlock(), Matchers.is(validBlock));
     }
 
     @Test
@@ -179,6 +179,27 @@ public class DataversesTest {
         Response result = target.setMetadataBlockFacets(VALID_DATAVERSE.getAlias(), Collections.emptyList());
 
         MatcherAssert.assertThat(result.getStatus(), Matchers.is(200));
-        Mockito.verify(engineSvc).submit(Mockito.any(UpdateDataverseCommand.class));
+        Mockito.verify(engineSvc).submit(Mockito.any(UpdateMetadataBlockFacetsCommand.class));
+    }
+
+    @Test
+    public void deleteMetadataBlockFacets_should_return_404_when_dataverse_is_not_found() {
+        String dataverseAlias = UUID.randomUUID().toString();
+        Mockito.when(dataverseService.findByAlias(dataverseAlias)).thenReturn(null);
+        Response result = target.deleteMetadataBlockFacets(dataverseAlias);
+
+        MatcherAssert.assertThat(result.getStatus(), Matchers.is(404));
+        Mockito.verifyNoMoreInteractions(engineSvc);
+    }
+
+    @Test
+    public void deleteMetadataBlockFacets_should_return_200_when_dataverse_is_found() throws Exception{
+        Response result = target.deleteMetadataBlockFacets(VALID_DATAVERSE.getAlias());
+
+        MatcherAssert.assertThat(result.getStatus(), Matchers.is(200));
+        ArgumentCaptor<DeleteMetadataBlockFacetsCommand> deleteCommand = ArgumentCaptor.forClass(DeleteMetadataBlockFacetsCommand.class);
+        Mockito.verify(engineSvc).submit(deleteCommand.capture());
+
+        MatcherAssert.assertThat(deleteCommand.getValue().getEditedDataverse(), Matchers.is(VALID_DATAVERSE));
     }
 }

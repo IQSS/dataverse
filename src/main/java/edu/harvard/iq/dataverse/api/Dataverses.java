@@ -43,6 +43,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseLinkingDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteExplicitGroupCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteMetadataBlockFacetsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataverseStorageSizeCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetExplicitGroupCommand;
@@ -65,6 +66,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseDefaultContributorRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateMetadataBlockFacetsCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
@@ -757,10 +759,21 @@ public class Dataverses extends AbstractApiBean {
                 metadataBlockFacets.add(metadataBlockFacet);
             }
 
-            dataverse.setMetadataBlockFacetRoot(true);
-            dataverse.setMetadataBlockFacets(metadataBlockFacets);
-            execCommand(new UpdateDataverseCommand(dataverse, null, null, createDataverseRequest(findUserOrDie()), null));
+            execCommand(new UpdateMetadataBlockFacetsCommand(createDataverseRequest(findUserOrDie()), dataverse, metadataBlockFacets));
             return ok(String.format("Metadata block facets updated. DataverseId: %s blocks: %s", dvIdtf, metadataBlockNames));
+
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
+    @DELETE
+    @Path("{identifier}/metadatablockfacets")
+    public Response deleteMetadataBlockFacets(@PathParam("identifier") String dvIdtf) {
+        try {
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            execCommand(new DeleteMetadataBlockFacetsCommand(createDataverseRequest(findUserOrDie()), dataverse));
+            return ok(String.format("Metadata block facets deleted. DataverseId: %s", dvIdtf));
 
         } catch (WrappedResponse ex) {
             return ex.getResponse();
