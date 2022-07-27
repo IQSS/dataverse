@@ -20,7 +20,6 @@ import jakarta.persistence.NonUniqueResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import org.apache.commons.lang3.StringUtils;
-import org.ocpsoft.common.util.Strings;
 
 /**
  * Your goto bean for everything {@link DvObject}, that's not tied to any
@@ -257,7 +256,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
             return null;
         }
         
-        String datasetIdStr = Strings.join(objectIds, ", ");
+        String datasetIdStr = StringUtils.join(objectIds, ", ");
         
         String qstr = "WITH RECURSIVE path_elements AS ((" +
             " SELECT id, owner_id FROM dvobject WHERE id in (" + datasetIdStr + "))" +

@@ -50,7 +50,7 @@ import jakarta.persistence.Query;
 import jakarta.persistence.StoredProcedureQuery;
 import jakarta.persistence.TypedQuery;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.ocpsoft.common.util.Strings;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -633,7 +633,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             return null;
         }
 
-        String datasetIdStr = Strings.join(datasetIds, ", ");
+        String datasetIdStr = StringUtils.join(datasetIds, ", ");
 
         String qstr = "SELECT d.id, h.archiveDescription FROM harvestingClient h, dataset d WHERE d.harvestingClient_id = h.id AND d.id IN (" + datasetIdStr + ")";
         List<Object[]> searchResults;
