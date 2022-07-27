@@ -346,6 +346,12 @@
             <artifactId>jai-imageio-core</artifactId>
             <version>1.3.1</version>
         </dependency>
+        
+        <!--
+        
+        TEMPORARY EXCLUSION
+        Avoid the deployment exception happening because of prettyfaces still relying on JSF JSP UIComponentELTag
+        
         <dependency>
             <groupId>org.ocpsoft.rewrite</groupId>
             <artifactId>rewrite-servlet</artifactId>
@@ -356,6 +362,8 @@
             <artifactId>rewrite-config-prettyfaces</artifactId>
             <version>5.0.0.Alpha1</version>
         </dependency>
+        -->
+        
         <dependency>
             <groupId>edu.ucsb.nceas</groupId>
             <artifactId>ezid</artifactId>
