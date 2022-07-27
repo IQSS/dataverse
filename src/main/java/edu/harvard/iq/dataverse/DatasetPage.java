@@ -1817,6 +1817,10 @@ public class DatasetPage implements java.io.Serializable {
                     return permissionsWrapper.notFound();
                 }
                 logger.fine("retrieved dataset, id="+dataset.getId());
+                logger.info("Dataset has " + dataset.getVersions().size() + " versions.");
+                for(DatasetVersion dv: dataset.getVersions()) {
+                    logger.info("Version id: " + dv.getId());
+                }
 
                 retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
                 //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);
