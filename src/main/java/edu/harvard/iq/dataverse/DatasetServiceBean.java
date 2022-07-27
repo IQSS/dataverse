@@ -44,7 +44,7 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import jakarta.persistence.StoredProcedureQuery;
 import jakarta.persistence.TypedQuery;
-import org.ocpsoft.common.util.Strings;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -117,7 +117,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     public Dataset findDeep(Object pk) {
         return (Dataset) em.createNamedQuery("Dataset.findById")
             .setParameter("id", pk)
-            // Optimization hints: retrieve all data in one query; this prevents point queries when iterating over the files 
+            // Optimization hints: retrieve all data in one query; this prevents point queries when iterating over the files
             .setHint("eclipselink.left-join-fetch", "o.files.ingestRequest")
             .setHint("eclipselink.left-join-fetch", "o.files.thumbnailForDataset")
             .setHint("eclipselink.left-join-fetch", "o.files.dataTables")
@@ -591,7 +591,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             return null;
         }
 
-        String datasetIdStr = Strings.join(datasetIds, ", ");
+        String datasetIdStr = StringUtils.join(datasetIds, ", ");
 
         String qstr = "SELECT d.id, h.archiveDescription FROM harvestingClient h, dataset d WHERE d.harvestingClient_id = h.id AND d.id IN (" + datasetIdStr + ")";
         List<Object[]> searchResults;
@@ -767,11 +767,11 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     public void exportDataset(Dataset dataset, boolean forceReExport) {
         if (dataset != null) {
-            // Note that the logic for handling a dataset is similar to what is implemented in exportAllDatasets, 
+            // Note that the logic for handling a dataset is similar to what is implemented in exportAllDatasets,
             // but when only one dataset is exported we do not log in a separate export logging file
             if (dataset.isReleased() && dataset.getReleasedVersion() != null && !dataset.isDeaccessioned()) {
 
-                // can't trust dataset.getPublicationDate(), no. 
+                // can't trust dataset.getPublicationDate(), no.
                 Date publicationDate = dataset.getReleasedVersion().getReleaseTime(); // we know this dataset has a non-null released version! Maybe not - SEK 8/19 (We do now! :)
                 if (forceReExport || (publicationDate != null
                         && (dataset.getLastExportTime() == null

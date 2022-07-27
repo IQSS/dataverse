@@ -21,7 +21,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import org.apache.commons.lang3.StringUtils;
-import org.ocpsoft.common.util.Strings;
 
 @Stateless
 @Named
@@ -190,7 +189,7 @@ public class UserServiceBean {
         // Add '@' to each identifier and delimit the list by ","
         // -------------------------------------------------
         String identifierListString = userIdentifierList.stream()
-                                     .filter(x -> !Strings.isNullOrEmpty(x))
+                                     .filter(x -> x != null && !x.isEmpty())
                                      .map(x -> "'@" + x + "'")
                                      .collect(Collectors.joining(", "));
 
