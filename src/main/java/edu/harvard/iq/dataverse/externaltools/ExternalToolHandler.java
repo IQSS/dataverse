@@ -208,7 +208,7 @@ public class ExternalToolHandler {
      */
     public String getExploreScript() {
         String toolUrl = this.getToolUrlWithQueryParams();
-        logger.info("Exploring with " + toolUrl);
+        logger.fine("Exploring with " + toolUrl);
         String msg = BundleUtil.getStringFromBundle("externaltools.enable.browser.popups");
         String script = "const newWin = window.open('" + toolUrl + "', target='_blank'); if (!newWin || newWin.closed || typeof newWin.closed == \"undefined\") {alert(\"" + msg + "\");}";
         return script;
