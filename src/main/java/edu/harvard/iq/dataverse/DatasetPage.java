@@ -4342,7 +4342,11 @@ public class DatasetPage implements java.io.Serializable {
     private List<DatasetVersion> resetVersionTabList() {
         //if (true)return null;
         List<DatasetVersion> retList = new ArrayList<>();
-
+        logger.info("At reset list: Dataset has " + dataset.getVersions().size() + " versions.");
+        for(DatasetVersion dv: dataset.getVersions()) {
+            logger.info("Version id: " + dv.getId());
+        }
+        
         if (permissionService.on(dataset).has(Permission.ViewUnpublishedDataset)) {
             for (DatasetVersion version : dataset.getVersions()) {
                 Collection<FileMetadata> fml = version.getFileMetadatas();
