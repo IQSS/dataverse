@@ -147,7 +147,6 @@
                 <h:outputText id="versionDate" value="#{versionTab.publicationDateAsString}" />
             </ui:fragment>
         </p:column><!-- end: date column -->
-        <!--  ToDo: change HeaderText to Bundled string, stop this fragment from being loaded for datasets during creation -->
         <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.archived']}" class="col-sm-1"  rendered="#{!empty(DatasetPage.dataset.id) and permissionServiceBean.on(DatasetPage.dataset).has('ViewUnpublishedDataset') and !versionTab.isDraft() and (DatasetPage.archivable  or DatasetPage.someVersionArchived or not empty(versionTab.archivalCopyLocation))}">
             <ui:fragment>
               <ui:fragment rendered="#{'success' eq versionTab.archivalCopyLocationStatus}">
@@ -162,7 +161,7 @@
                                                    action="#{DatasetPage.archiveVersion(versionTab.id)}">
                   <h:outputText value="#{bundle['file.dataFilesTab.versions.headers.archived.submit']}"/>
               </p:commandLink>
-              <h:outputText  value="#{bundle['file.dataFilesTab.versions.headers.archived.notarchived']}" rendered="#{(not DatasetPage.isSuperUser() or DatasetPage.someVersionArchived) and empty(versionTab.archivalCopyLocation)}"/>
+              <h:outputText  value="#{bundle['file.dataFilesTab.versions.headers.archived.notarchived']}" rendered="#{ empty(versionTab.archivalCopyLocation) and ((not DatasetPage.isSuperUser() and DatasetPage.someVersionArchived) or (DatasetPage.isSuperUser() and not DatasetPage.versionArchivable))}"/>
               
             </ui:fragment>
         </p:column><!-- end: archivalCopy column -->

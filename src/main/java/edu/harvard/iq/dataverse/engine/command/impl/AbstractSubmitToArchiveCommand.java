@@ -183,5 +183,4 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
    public static boolean isSingleVersion(SettingsServiceBean settingsService) {
        return false;
   }
-
 }
