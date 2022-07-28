@@ -5577,6 +5577,7 @@ public class DatasetPage implements java.io.Serializable {
     
     public boolean isArchivable() {
         if (archivable == null) {
+            archivable = false;
             String className = settingsWrapper.getValueForKey(SettingsServiceBean.Key.ArchiverClassName, null);
             if (className != null) {
                 try {
@@ -5590,7 +5591,6 @@ public class DatasetPage implements java.io.Serializable {
                     e.printStackTrace();
                 }
             }
-            archivable = false;
         }
         return archivable;
     }
@@ -5598,6 +5598,7 @@ public class DatasetPage implements java.io.Serializable {
     public boolean isVersionArchivable() {
         if (versionArchivable == null) {
             // If this dataset isn't in an archivable collection return false
+            versionArchivable = false;
             if (isArchivable()) {
                 boolean checkForArchivalCopy = false;
                 // Otherwise, we need to know if the archiver is single-version-only
@@ -5610,35 +5611,35 @@ public class DatasetPage implements java.io.Serializable {
                         Method m = clazz.getMethod("isSingleVersion", SettingsWrapper.class);
                         Object[] params = { settingsWrapper };
                         checkForArchivalCopy = (Boolean) m.invoke(null, params);
+
+                        if (checkForArchivalCopy) {
+                            // If we have to check (single version archiving), we can't allow archiving if
+                            // one version is already archived (or attempted - any non-null status)
+                            versionArchivable = !isSomeVersionArchived();
+                        } else {
+                            // If we allow multiple versions or didn't find one that has had archiving run
+                            // on it, we can archive, so return true
+                            versionArchivable = true;
+                        }
                     } catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException
                             | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                         logger.warning("Failed to call is Archivable on configured archiver class: " + className);
                         e.printStackTrace();
                     }
-                    if (checkForArchivalCopy) {
-                        // If we have to check (single version archiving), we can't allow archiving if
-                        // one version is already archived (or attempted - any non-null status)
-                        versionArchivable = !isSomeVersionArchived();
-                    }
-                    // If we allow multiple versions or didn't find one that has had archiving run
-                    // on it, we can archive, so return true
-                    versionArchivable = true;
                 }
             }
-            // not in an archivable collection
-            versionArchivable = false;
         }
         return versionArchivable;
     }
 
     public boolean isSomeVersionArchived() {
         if (someVersionArchived == null) {
+            someVersionArchived = false;
             for (DatasetVersion dv : dataset.getVersions()) {
                 if (dv.getArchivalCopyLocation() != null) {
                     someVersionArchived = true;
                 }
             }
-            someVersionArchived = false;
         }
         return someVersionArchived;
     }
