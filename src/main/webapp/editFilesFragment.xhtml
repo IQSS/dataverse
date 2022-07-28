@@ -294,7 +294,7 @@
                         </div>
                     </div>               
                     
-                    <p:message for="fileUpload" id="uploadMessage" display="text" />
+                    <p:message for="fileUpload" id="uploadMessage" display="text" escape="false"/>
                     
                     <p:commandButton id="updateEditDataFilesButtonsForUpload" action="#{EditDatafilesPage.uploadFinished()}" update="datasetForm:editDataFilesButtons" rendered="#{showFileButtonUpdate}" style="display:none"/>
                     <p:commandButton id="updateEditDataFilesButtonsForDelete" action="#{EditDatafilesPage.deleteFilesCompleted()}" update="datasetForm:editDataFilesButtons" rendered="#{showFileButtonUpdate}" style="display:none"/>
@@ -442,7 +442,7 @@
                                                     <f:setPropertyActionListener target="#{DatasetPage.selectedFiles}" value="#{EditDatafilesPage.selectedFiles}" /> 
                                                 </p:commandLink>
                                             </li>
-                                            <li>
+                                            <li jsf:rendered="#{!settingsWrapper.publicInstall}">
                                                 <p:commandLink  onclick="if (!testFilesSelected2()) return false;"
                                                                 update="@([id$=accessPopup])" 
                                                                 oncomplete="PF('accessPopup').show();">                                                               
@@ -452,7 +452,7 @@
                                                     <f:setPropertyActionListener target="#{DatasetPage.selectedFiles}" value="#{EditDatafilesPage.selectedFiles}" /> 
                                                 </p:commandLink>
                                             </li>
-                                            <li>
+                                            <li jsf:rendered="#{!settingsWrapper.publicInstall}">
                                                 <p:commandLink  onclick="if (!testFilesSelected2()) return false;"
                                                                 actionListener="#{EditDatafilesPage.restrictFiles(false)}"
                                                                 update="filesTable,:messagePanel" 

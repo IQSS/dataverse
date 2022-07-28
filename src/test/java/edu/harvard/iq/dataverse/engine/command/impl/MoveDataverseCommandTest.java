@@ -156,9 +156,11 @@ public class MoveDataverseCommandTest {
         mbA = new MetadataBlock();
         mbA.setOwner(root);
         mbA.setId(1l);
+        mbA.setName("mbA");
         mbB = new MetadataBlock();
         mbB.setOwner(childE);
         mbB.setId(2l);
+        mbB.setName("mbB");
         mbsE.add(mbB);
         mbsEE.add(mbA);
         mbsEE.add(mbB);
