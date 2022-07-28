@@ -294,7 +294,7 @@
                         </div>
                     </div>               
                     
-                    <p:message for="fileUpload" id="uploadMessage" display="text" />
+                    <p:message for="fileUpload" id="uploadMessage" display="text" escape="false"/>
                     
                     <p:commandButton id="updateEditDataFilesButtonsForUpload" action="#{EditDatafilesPage.uploadFinished()}" update="datasetForm:editDataFilesButtons" rendered="#{showFileButtonUpdate}" style="display:none"/>
                     <p:commandButton id="updateEditDataFilesButtonsForDelete" action="#{EditDatafilesPage.deleteFilesCompleted()}" update="datasetForm:editDataFilesButtons" rendered="#{showFileButtonUpdate}" style="display:none"/>
