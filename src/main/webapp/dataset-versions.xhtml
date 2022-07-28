@@ -161,7 +161,7 @@
                                                    action="#{DatasetPage.archiveVersion(versionTab.id)}">
                   <h:outputText value="#{bundle['file.dataFilesTab.versions.headers.archived.submit']}"/>
               </p:commandLink>
-              <h:outputText  value="#{bundle['file.dataFilesTab.versions.headers.archived.notarchived']}" rendered="#{(not DatasetPage.isSuperUser() or DatasetPage.someVersionArchived) and empty(versionTab.archivalCopyLocation)}"/>
+              <h:outputText  value="#{bundle['file.dataFilesTab.versions.headers.archived.notarchived']}" rendered="#{ empty(versionTab.archivalCopyLocation) and ((not DatasetPage.isSuperUser() and DatasetPage.someVersionArchived) or (DatasetPage.isSuperUser() and not DatasetPage.versionArchivable))}"/>
               
             </ui:fragment>
         </p:column><!-- end: archivalCopy column -->
