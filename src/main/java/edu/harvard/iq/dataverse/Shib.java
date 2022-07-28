@@ -218,7 +218,13 @@ public class Shib implements java.io.Serializable {
             ? getValueFromAssertion(shibAffiliationAttribute)
             : shibService.getAffiliation(shibIdp, shibService.getDevShibAccountType());
 
+
         if (affiliation != null) {
+            boolean defaultShibAffiliationFeide = false;
+            boolean ShibAffiliationFeide = settingsService.isTrueForKey(SettingsServiceBean.Key.ShibAffiliationFeide, defaultShibAffiliationFeide);
+            if (ShibAffiliationFeide != false) {
+                 affiliation = affiliation.substring(affiliation.lastIndexOf(';') + 1); //patch for FEIDE returning an array
+            }
             affiliationToDisplayAtConfirmation = affiliation;
             friendlyNameForInstitution = affiliation;
         }
