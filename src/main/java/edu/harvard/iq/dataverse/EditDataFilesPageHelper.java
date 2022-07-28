@@ -2,9 +2,11 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.file.CreateDataFileResult;
+import org.apache.commons.text.StringEscapeUtils;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -22,6 +24,14 @@ public class EditDataFilesPageHelper {
     @Inject
     private SettingsWrapper settingsWrapper;
 
+    public String consolidateHtmlErrorMessages(List<String> errorMessages) {
+        if(errorMessages == null || errorMessages.isEmpty()) {
+            return null;
+        }
+
+        return String.join("</br>", errorMessages);
+    }
+
     public String getHtmlErrorMessage(CreateDataFileResult createDataFileResult) {
         List<String> errors = createDataFileResult.getErrors();
         if(errors == null || errors.isEmpty()) {
@@ -33,8 +43,8 @@ public class EditDataFilesPageHelper {
             return null;
         }
 
-        String typeMessage = Optional.ofNullable(BundleUtil.getStringFromBundle(createDataFileResult.getBundleKey())).orElse("Error processing file");
-        String errorsMessage = errors.stream().limit(maxErrorsToShow).map(text -> String.format("<li>%s</li>", text)).collect(Collectors.joining());
-        return String.format("%s:<br /><ul>%s</ul>", typeMessage, errorsMessage);
+        String typeMessage = Optional.ofNullable(BundleUtil.getStringFromBundle(createDataFileResult.getBundleKey(), Arrays.asList(createDataFileResult.getFilename()))).orElse("Error processing file");
+        String errorsMessage = errors.stream().limit(maxErrorsToShow).map(text -> String.format("<li>%s</li>", StringEscapeUtils.escapeHtml4(text))).collect(Collectors.joining());
+        return String.format("%s<br /><ul>%s</ul>", typeMessage, errorsMessage);
     }
 }
