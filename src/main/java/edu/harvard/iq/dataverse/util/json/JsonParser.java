@@ -38,6 +38,7 @@ import java.io.StringReader;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -400,10 +401,10 @@ public class JsonParser {
                 dsv.setFileMetadatas(parseFiles(filesJson, dsv));
             }
             return dsv;
-        } catch (ParseException ex) {            
-            throw new JsonParseException(BundleUtil.getStringFromBundle("jsonparser.error.parsing.date") + ex.getMessage(), ex);
+        } catch (ParseException ex) {      
+            throw new JsonParseException(BundleUtil.getStringFromBundle("jsonparser.error.parsing.date", Arrays.asList(ex.getMessage())) , ex);
         } catch (NumberFormatException ex) {
-            throw new JsonParseException(BundleUtil.getStringFromBundle("jsonparser.error.parsing.number") + ex.getMessage(), ex);
+            throw new JsonParseException(BundleUtil.getStringFromBundle("jsonparser.error.parsing.number", Arrays.asList(ex.getMessage())), ex);
         }
     }
     
