@@ -160,7 +160,7 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
         }
         return bagThread;
     }
-
+    
     public static boolean isArchivable(Dataset dataset, SettingsWrapper settingsWrapper) {
         return true;
    }
