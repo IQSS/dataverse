@@ -35,9 +35,6 @@ function bind_bsui_components(){
     // Sharrre
     sharrre();
     
-    // Custom Popover with HTML content
-    popoverHTML();
-    
     // clipboard.js click to copy
     clickCopyClipboard();
     
