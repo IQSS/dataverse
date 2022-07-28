@@ -1912,13 +1912,11 @@ public class DatasetPage implements java.io.Serializable {
             // init the citation
             displayCitation = dataset.getCitation(true, workingVersion, isAnonymizedAccess());
             logger.fine("Citation: " + displayCitation);
-
             if(workingVersion.isPublished()) {
                 MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, workingVersion);
                 mdcLogService.logEntry(entry);
             }
             displayWorkflowComments();
-
 
             if (initFull) {
 
@@ -2058,7 +2056,6 @@ public class DatasetPage implements java.io.Serializable {
 
         displayLockInfo(dataset);
         displayPublishMessage();
-
         for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
             if (fmd.getDataFile().isTabularData()) {
                 versionHasTabular = true;
@@ -5612,7 +5609,7 @@ public class DatasetPage implements java.io.Serializable {
                     DatasetVersion version = commandEngine.submit(cmd);
                     logger.info("Archived to " + version.getArchivalCopyLocation());
                     if (version.getArchivalCopyLocation() != null) {
-                        resetVersionTabList();
+                        setVersionTabList(resetVersionTabList());
                         this.setVersionTabListForPostLoad(getVersionTabList());
                         JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("datasetversion.archive.success"));
                     } else {
