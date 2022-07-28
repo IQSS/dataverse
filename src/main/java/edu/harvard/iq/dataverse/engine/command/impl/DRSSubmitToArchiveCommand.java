@@ -151,7 +151,6 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
 
                     String drsConfigString = JsonUtil.prettyPrint(job.build());
 
-                    // TODO - ADD code to ignore self-signed cert
                     CloseableHttpClient client = null;
                     if (trustCert) {
                         // use the TrustSelfSignedStrategy to allow Self Signed Certificates
@@ -246,7 +245,6 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                                 }
                             } else {
                                 logger.severe("DRS Ingest Failed for: " + packageId + " with status code: " + code);
-                                logger.fine("Status: " + code);
                                 logger.fine("Response" + responseBody);
                                 return new Failure("DRS Archiver fail in Ingest call with status code: " + code);
                             }
