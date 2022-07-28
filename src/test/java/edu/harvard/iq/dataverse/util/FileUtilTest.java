@@ -303,7 +303,7 @@ public class FileUtilTest {
         }*/
 
         @Test
-        public void testDetermineFileType() {
+        public void testDetermineFileTypeByExtension() {
             File file = new File("src/main/webapp/resources/images/cc0.png");
             if (file.exists()) {
                 try {
@@ -326,6 +326,20 @@ public class FileUtilTest {
                 Logger.getLogger(FileUtilTest.class.getName()).log(Level.SEVERE, null, ex);
             }
 
+        }
+
+        @Test
+        public void testDetermineFileTypeByName() {
+            File file = new File("src/test/resources/fileutil/Makefile");
+            if (file.exists()) {
+                try {
+                    assertEquals("text/x-makefile", FileUtil.determineFileType(file, "Makefile"));
+                } catch (IOException ex) {
+                    Logger.getLogger(FileUtilTest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } else {
+                fail("File does not exist: " + file.toPath().toString());
+            }
         }
 
         // isThumbnailSuppported() has been moved from DataFileService to FileUtil:
