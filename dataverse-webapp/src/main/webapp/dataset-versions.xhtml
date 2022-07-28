@@ -169,7 +169,8 @@
                 <!-- date column -->
                 <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.published']}" class="col-sm-2">
                     <ui:fragment>
-                        <h:outputText id="versionDate" value="#{dv:formatDate(versionSummary.version.lastUpdateTime)}"/>
+                        <h:outputText id="versionDate" value="#{not empty versionSummary.version.releaseTime
+                        ? dv:formatDate(versionSummary.version.releaseTime) : dv:formatDate(versionSummary.version.lastUpdateTime)}"/>
                     </ui:fragment>
                 </p:column><!-- end: date column -->
             </p:dataTable>
