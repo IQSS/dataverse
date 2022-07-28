@@ -486,9 +486,11 @@ public class DataverseUserPage implements java.io.Serializable {
             return false;
         }
         final Timestamp emailConfirmed = currentUser.getEmailConfirmed();
-        final ConfirmEmailData confirmedDate = confirmEmailService.findSingleConfirmEmailDataByUser(currentUser);
-        return (!getUserAuthProvider().isEmailVerified())
-                && confirmedDate == null
+        boolean allTokensExpired = confirmEmailService.findAllConfirmEmailDataByUser(currentUser)
+                .stream()
+                .allMatch(ConfirmEmailData::isExpired);
+        return !getUserAuthProvider().isEmailVerified()
+                && allTokensExpired
                 && emailConfirmed == null;
     }
 
