@@ -1825,6 +1825,13 @@ public class Admin extends AbstractApiBean {
                 // className. If a class with that name isn't found (or can't be instatiated), it
                 // will return null
                 if (cmd != null) {
+                    if(ArchiverUtil.onlySingleVersionArchiving(cmd.getClass(), settingsService)) {
+                        for (DatasetVersion version : ds.getVersions()) {
+                            if ((dv != version) && version.getArchivalCopyLocation() != null) {
+                                return error(Status.CONFLICT, "Dataset already archived.");
+                            }
+                        } 
+                    }
                     new Thread(new Runnable() {
                         public void run() {
                             try {
