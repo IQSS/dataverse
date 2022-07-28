@@ -5543,10 +5543,8 @@ public class DatasetPage implements java.io.Serializable {
      */
     public void archiveVersion(Long id) {
         if (session.getUser() instanceof AuthenticatedUser) {
-            AuthenticatedUser au = ((AuthenticatedUser) session.getUser());
-
             DatasetVersion dv = datasetVersionService.retrieveDatasetVersionByVersionId(id).getDatasetVersion();
-            String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
+            String className = settingsWrapper.getValueForKey(SettingsServiceBean.Key.ArchiverClassName, null);
             AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), dv);
             if (cmd != null) {
                 try {
