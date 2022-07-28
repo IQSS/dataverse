@@ -97,6 +97,11 @@
                                                     rendered="#{!EditDatafilesPage.unlimitedUploadFileSize}">
                                         <f:param value="#{EditDatafilesPage.humanMaxFileUploadSize}"/>
                                     </h:outputFormat>
+                                    <h:outputFormat value=" #{bundle['file.selectToAdd.tipBatchLimit']}" escape="false"
+                                                    rendered="#{EditDatafilesPage.maxBatchSize > 0}">
+                                        <f:param value="#{EditDatafilesPage.humanMaxBatchUploadSize}"/>
+                                    </h:outputFormat>
+
                                 </p>
 
                                 <script>

@@ -87,7 +87,6 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
 
 import static edu.harvard.iq.dataverse.common.FileSizeUtil.bytesToHumanReadable;
 import static java.util.stream.Collectors.joining;
@@ -275,8 +274,15 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     public boolean isUnlimitedUploadFileSize() {
-
         return this.maxFileUploadSizeInBytes == null;
+    }
+
+    public String getHumanMaxBatchUploadSize() {
+        Long batchSize = getMaxBatchSize();
+        if (batchSize == null || batchSize.equals(0L)) {
+            return StringUtils.EMPTY;
+        }
+        return bytesToHumanReadable(batchSize);
     }
 
     /*
@@ -463,7 +469,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     public String getMultiUploadDetailsMessage() {
-        return BundleUtil.getStringFromBundle("dataset.message.uploadFilesSingle.message", systemConfig.getGuidesBaseUrl(session.getLocale()), systemConfig.getGuidesVersion());
+        return BundleUtil.getStringFromBundle("dataset.message.uploadFilesSingle.message",
+                systemConfig.getGuidesBaseUrl(session.getLocale()), systemConfig.getGuidesVersion());
     }
 
     public boolean isInstallationPublic() {
@@ -813,7 +820,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     private void populateDatasetUpdateFailureMessage() {
         JsfHelper.addErrorMessage(getBundleString("dataset.message.filesFailure"), "");
     }
-
 
     private String returnToDraftVersion() {
         return "/dataset.xhtml?persistentId=" + dataset.getGlobalId().asString() + "&version=DRAFT&faces-redirect=true";
