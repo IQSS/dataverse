@@ -3341,6 +3341,13 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                     if (dsv == null) {
                         return error(Status.NOT_FOUND, "Dataset version not found");
                     }
+                    if (isSingleVersionArchiving()) {
+                        for (DatasetVersion version : dsv.getDataset().getVersions()) {
+                            if ((!dsv.equals(version)) && (version.getArchivalCopyLocation() != null)) {
+                                return error(Status.CONFLICT, "Dataset already archived.");
+                            }
+                        }
+                    }
 
                     dsv.setArchivalCopyLocation(JsonUtil.prettyPrint(update));
                     dsv = datasetversionService.merge(dsv);
@@ -3384,5 +3391,21 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
+    }
+    
+    private boolean isSingleVersionArchiving() {
+        String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName, null);
+        if (className != null) {
+            Class<? extends AbstractSubmitToArchiveCommand> clazz;
+            try {
+                clazz =  Class.forName(className).asSubclass(AbstractSubmitToArchiveCommand.class);
+                return ArchiverUtil.onlySingleVersionArchiving(clazz, settingsService);
+            } catch (ClassNotFoundException e) {
+                logger.warning(":ArchiverClassName does not refer to a known Archiver");
+            } catch (ClassCastException cce) {
+                logger.warning(":ArchiverClassName does not refer to an Archiver class");
+            }
+        }
+        return false;
     }
 }
