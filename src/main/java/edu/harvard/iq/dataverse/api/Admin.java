@@ -1836,10 +1836,10 @@ public class Admin extends AbstractApiBean {
                         public void run() {
                             try {
                                 DatasetVersion dv = commandEngine.submit(cmd);
-                                if (dv.getArchivalCopyLocation() != null) {
+                                if (!dv.getArchivalCopyLocationStatus().equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE)) {
                                     logger.info(
                                             "DatasetVersion id=" + ds.getGlobalId().toString() + " v" + versionNumber
-                                                    + " submitted to Archive at: " + dv.getArchivalCopyLocation());
+                                                    + " submitted to Archive, status: " + dv.getArchivalCopyLocationStatus());
                                 } else {
                                     logger.severe("Error submitting version due to conflict/error at Archive");
                                 }
@@ -1855,7 +1855,7 @@ public class Admin extends AbstractApiBean {
                     return error(Status.INTERNAL_SERVER_ERROR, "Could not find Archiver class: " + className);
                 }
             } else {
-                return error(Status.BAD_REQUEST, "Version already archived at: " + dv.getArchivalCopyLocation());
+                return error(Status.BAD_REQUEST, "Version was already submitted for archiving.");
             }
         } catch (WrappedResponse e1) {
             return error(Status.UNAUTHORIZED, "api key required");
@@ -1922,10 +1922,10 @@ public class Admin extends AbstractApiBean {
                                         AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, request, dv);
 
                                         dv = commandEngine.submit(cmd);
-                                        if (!dv.getArchivalCopyLocation().equals("Attempted")) {
+                                        if (!dv.getArchivalCopyLocationStatus().equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE)) {
                                             successes++;
-                                            logger.info("DatasetVersion id=" + dv.getDataset().getGlobalId().toString() + " v" + dv.getFriendlyVersionNumber() + " submitted to Archive at: "
-                                                    + dv.getArchivalCopyLocation());
+                                            logger.info("DatasetVersion id=" + dv.getDataset().getGlobalId().toString() + " v" + dv.getFriendlyVersionNumber() + " submitted to Archive, status: "
+                                                    + dv.getArchivalCopyLocationStatus());
                                         } else {
                                             failures++;
                                             logger.severe("Error submitting version due to conflict/error at Archive for " + dv.getDataset().getGlobalId().toString() + " v" + dv.getFriendlyVersionNumber());
