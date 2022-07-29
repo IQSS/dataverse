@@ -74,7 +74,7 @@ To delete metadata for a Dataset, send a json-ld representation of the fields to
 
     curl -X PUT -H X-Dataverse-key:$API_TOKEN -H 'Content-Type: application/ld+json' -d '{"https://dataverse.org/schema/core#restrictions":"No restrictions"}' "$SERVER_URL/api/datasets/:persistentId/metadata/delete?persistentId=$DATASET_PID"
 
-Note, this example uses the term URI directly rather than adding an '@context' element. You can use either form in any of these API calls. 
+Note, this example uses the term URI directly rather than adding an ``@context`` element. You can use either form in any of these API calls. 
 
 You should expect a 200 ("OK") response indicating whether a draft Dataset version was created or an existing draft was updated.
 
