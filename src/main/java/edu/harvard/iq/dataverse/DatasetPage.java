@@ -4223,10 +4223,6 @@ public class DatasetPage implements java.io.Serializable {
      * See: dataset-versions.xhtml, remoteCommand 'postLoadVersionTablList'
     */
     public void postLoadSetVersionTabList(){
-        logger.info("At postLoad list: Dataset has " + dataset.getVersions().size() + " versions.");
-        for(DatasetVersion dv: dataset.getVersions()) {
-            logger.info("Version id: " + dv.getId());
-        }
 
         if (this.getVersionTabList().isEmpty() && workingVersion.isDeaccessioned()){
             setVersionTabList(resetVersionTabList());
