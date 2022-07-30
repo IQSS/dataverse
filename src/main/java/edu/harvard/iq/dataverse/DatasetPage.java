@@ -3439,10 +3439,6 @@ public class DatasetPage implements java.io.Serializable {
                 // passed to the UpdateDatasetCommand. -- L.A. Aug 2017
                 
                 FileMetadataUtil.removeFileMetadataFromList(workingVersion.getFileMetadatas(), markedForDelete);
-                
-                FileMetadataUtil.removeDataFileFromList(newFiles, markedForDelete.getDataFile());
-                FileUtil.deleteTempFile(markedForDelete.getDataFile(), dataset, ingestService);
-
             }
         }
 
