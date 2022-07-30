@@ -3503,6 +3503,10 @@ public class DatasetPage implements java.io.Serializable {
             refreshSelectedFiles(filesToDelete);
         }
 
+        if(filesToDelete.contains(dataset.getThumbnailFile().getFileMetadata())) {
+            dataset.setThumbnailFile(null);
+        }
+        
         for (FileMetadata markedForDelete : filesToDelete) {
 
             if (markedForDelete.getId() != null) {
@@ -3525,6 +3529,7 @@ public class DatasetPage implements java.io.Serializable {
                 // NOT adding the file to the filesToBeDeleted list that will be
                 // passed to the UpdateDatasetCommand. -- L.A. Aug 2017
                 
+
                 FileMetadataUtil.removeFileMetadataFromList(workingVersion.getFileMetadatas(), markedForDelete);
             }
         }
