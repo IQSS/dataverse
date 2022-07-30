@@ -3416,7 +3416,7 @@ public class DatasetPage implements java.io.Serializable {
             refreshSelectedFiles(filesToDelete);
         }
 
-        if(filesToDelete.contains(dataset.getThumbnailFile().getFileMetadata())) {
+        if((dataset.getThumbnailFile()!=null) && filesToDelete.contains(dataset.getThumbnailFile().getFileMetadata())) {
             dataset.setThumbnailFile(null);
         }
         
