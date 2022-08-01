@@ -73,6 +73,4 @@ If you have a **security issue** to report, please email `security@dataverse.org
 Indices and Tables
 ------------------
 
-* :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`
