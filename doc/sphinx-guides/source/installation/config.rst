@@ -474,7 +474,7 @@ named config in the same folder")
 Console Commands to Set Up Access Configuration
 ###############################################
 
-Begin by installing the CLI tool `pip <https://pip.pypa.io//en/latest/>`_ to install the
+Begin by installing the CLI tool `pip (package installer for Python) <https://pip.pypa.io/en/latest/>`_ to install the
 `AWS command line interface <https://aws.amazon.com/cli/>`_ if you don't have it.
 
 First, we'll get our access keys set up. If you already have your access keys configured, skip this step.
