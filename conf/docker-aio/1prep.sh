@@ -19,18 +19,21 @@ mv apache-maven-3.8.6/* maven/
 echo "export JAVA_HOME=/usr/lib/jvm/jre-openjdk" > maven/maven.sh
 echo "export M2_HOME=../maven" >> maven/maven.sh
 echo "export MAVEN_HOME=../maven" >> maven/maven.sh
-echo "export PATH=../maven/bin:${PATH}" >> maven/maven.sh
+echo "export PATH=${PATH}:../maven/bin" >> maven/maven.sh
+# echo "export PATH=../maven/bin:${PATH}" >> maven/maven.sh
 chmod 0755 maven/maven.sh
 
 # not using dvinstall.zip for setupIT.bash; but still used in install.bash for normal ops
-source maven/maven.sh && mvn clean
+source maven/maven.sh
+# need to set Maven path before trying to ca
+mvn clean
 ./scripts/installer/custom-build-number
 source maven/maven.sh && mvn package
 cd scripts/installer
 make clean
 make
 mkdir -p ../../conf/docker-aio/dv/install
-cp dvinstall.zip ../../conf/docker-aio/dv/install/
+# cp dvinstall.zip ../../conf/docker-aio/dv/install/
 
 # ITs sometimes need files server-side
 # yes, these copies could be avoided by moving the build root here. but the build 
