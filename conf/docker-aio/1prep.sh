@@ -24,6 +24,7 @@ echo "export MAVEN_HOME=$(pwd)/maven" >> maven/maven.sh
 echo "export PATH=$PATH:$(pwd)/maven/bin" >> maven/maven.sh
 chmod 0755 maven/maven.sh
 
+sudo apt-get update
 sudo apt-get install make
 
 # not using dvinstall.zip for setupIT.bash; but still used in install.bash for normal ops
