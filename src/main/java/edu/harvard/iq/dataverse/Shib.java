@@ -220,10 +220,14 @@ public class Shib implements java.io.Serializable {
 
 
         if (affiliation != null) {
-            boolean defaultShibAffiliationFeide = false;
-            boolean ShibAffiliationFeide = settingsService.isTrueForKey(SettingsServiceBean.Key.ShibAffiliationFeide, defaultShibAffiliationFeide);
-            if (ShibAffiliationFeide != false) {
-                 affiliation = affiliation.substring(affiliation.lastIndexOf(';') + 1); //patch for FEIDE returning an array
+            String ShibAffiliationOrder = settingsService.getValueForKey(SettingsServiceBean.Key.ShibAffiliationOrder);
+            if (ShibAffiliationOrder != null) {
+                if (ShibAffiliationOrder == "last") {
+                    affiliation = affiliation.substring(affiliation.lastIndexOf(';') + 1); //patch for affiliation array returning last part
+                    }
+                else if (ShibAffiliationOrder == "first") {
+                    affiliation = affiliation.substring(0,affiliation.indexOf(';') - 1); //patch for affiliation array returning first part
+                    }
             }
             affiliationToDisplayAtConfirmation = affiliation;
             friendlyNameForInstitution = affiliation;

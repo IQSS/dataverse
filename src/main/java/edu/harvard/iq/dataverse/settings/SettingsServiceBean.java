@@ -426,9 +426,9 @@ public class SettingsServiceBean {
          */
         ShibAttributeCharacterSetConversionEnabled,
         /**
-         *Return the last value of the array of affiliations names returned by FEIDE
+         *Return the last or first value of an array of affiliation names
          */
-        ShibAffiliationFeide,
+        ShibAffiliationOrder,
         /**
          * Validate physical files for all the datafiles in the dataset when publishing
          */
