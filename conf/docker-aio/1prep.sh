@@ -22,7 +22,7 @@ echo "export MAVEN_HOME=../maven" >> maven/maven.sh
 echo "export PATH=$PATH:$(pwd)/maven/bin" >> maven/maven.sh
 # echo "export PATH=../maven/bin:${PATH}" >> maven/maven.sh
 chmod 0755 maven/maven.sh
-export PATH=$PATH:$(pwd)/maven/bin
+echo "export PATH=\$PATH:$(pwd)/maven/bin"
 
 # not using dvinstall.zip for setupIT.bash; but still used in install.bash for normal ops
 source maven/maven.sh
