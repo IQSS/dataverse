@@ -24,6 +24,8 @@ echo "export MAVEN_HOME=$(pwd)/maven" >> maven/maven.sh
 echo "export PATH=$PATH:$(pwd)/maven/bin" >> maven/maven.sh
 chmod 0755 maven/maven.sh
 
+sudo apt-get install make
+
 # not using dvinstall.zip for setupIT.bash; but still used in install.bash for normal ops
 source maven/maven.sh && mvn clean
 ./scripts/installer/custom-build-number
@@ -32,7 +34,7 @@ cd scripts/installer
 make clean
 make
 mkdir -p ../../conf/docker-aio/dv/install
-# cp dvinstall.zip ../../conf/docker-aio/dv/install/
+cp dvinstall.zip ../../conf/docker-aio/dv/install/
 
 # ITs sometimes need files server-side
 # yes, these copies could be avoided by moving the build root here. but the build 
