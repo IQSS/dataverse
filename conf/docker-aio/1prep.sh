@@ -5,7 +5,7 @@
         
 sudo apt-get update                  # update the packages so `make` can be included
 sudo apt-get -y install make         # install `make` since it is not automatically included in the OS
-sudo apt-get install maven        # install `maven` since it is not automatically included in the OS
+sudo apt-get -y install maven        # install `maven` since it is not automatically included in the OS
 
 mkdir -p testdata/doc/sphinx-guides/source/_static/util/
 cp ../solr/8.8.1/schema*.xml testdata/
