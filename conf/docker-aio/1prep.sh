@@ -1,13 +1,12 @@
 #!/bin/bash
 
-# @todo - need code to install `make` since the Docker build does not automatically include it
-# - /usr/lib/jvm/jre-openjdk does not exist
+# @todo - /usr/lib/jvm/jre-openjdk does not exist
 
 # move things necessary for integration tests into build context.
 # this was based off the phoenix deployment; and is likely uglier and bulkier than necessary in a perfect world
 
 sudo apt-get update
-# sudo apt-get install make
+sudo apt-get install make     # install `make` since the Docker build may not automatically include it
 
 mkdir -p testdata/doc/sphinx-guides/source/_static/util/
 cp ../solr/8.11.1/schema*.xml testdata/
