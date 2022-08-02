@@ -2,7 +2,6 @@
 if [ ! -d dv/deps ]; then
 	mkdir -p dv/deps
 fi
-wdir=`pwd`
 
 if [ ! -e dv/deps/payara-5.2021.6.zip ]; then
 	echo "payara dependency prep"
@@ -10,10 +9,6 @@ if [ ! -e dv/deps/payara-5.2021.6.zip ]; then
 fi
 
 if [ ! -e dv/deps/solr-8.11.1dv.tgz ]; then
-	echo "solr dependency prep"
-	# schema changes *should* be the only ones...
-	cd dv/deps/	
-	wget https://archive.apache.org/dist/lucene/solr/8.11.1/solr-8.11.1.tgz -O solr-8.11.1dv.tgz
-	cd ../../
+	echo "solr dependency prep"	
+	wget https://archive.apache.org/dist/lucene/solr/8.11.1/solr-8.11.1.tgz -O dv/deps/solr-8.11.1dv.tgz
 fi
-
