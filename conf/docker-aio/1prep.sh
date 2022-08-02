@@ -18,12 +18,6 @@ cd ../../
 cp -r scripts conf/docker-aio/testdata/
 cp doc/sphinx-guides/source/_static/util/createsequence.sql conf/docker-aio/testdata/doc/sphinx-guides/source/_static/util/
 
-
-if [ ! -e dv/deps/apache-maven-3.8.6-bin.tar.gz ]; then
-  echo "maven dependency prep"
-	wget -q https://downloads.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz -O dv/deps/apache-maven-3.8.6-bin.tar.gz
-fi
-
 tar xfz dv/deps/apache-maven-3.8.6-bin.tar.gz
 mkdir maven
 mv apache-maven-3.8.6/* maven/
