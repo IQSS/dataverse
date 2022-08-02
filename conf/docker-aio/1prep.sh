@@ -18,6 +18,7 @@ cd ../../
 cp -r scripts conf/docker-aio/testdata/
 cp doc/sphinx-guides/source/_static/util/createsequence.sql conf/docker-aio/testdata/doc/sphinx-guides/source/_static/util/
 
+echo "maven dependency prep"
 wget -q https://downloads.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz -O dv/deps/apache-maven-3.8.6-bin.tar.gz
 tar xfz dv/deps/apache-maven-3.8.6-bin.tar.gz
 mkdir maven
