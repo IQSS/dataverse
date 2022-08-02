@@ -5,9 +5,10 @@
 # move things necessary for integration tests into build context.
 # this was based off the phoenix deployment; and is likely uglier and bulkier than necessary in a perfect world
 
-sudo apt-get update
-sudo apt-get install make     # install `make` since the Docker build may not automatically include it
+sudo apt-get update           # update the packages so `make` can be included
+sudo apt-get install make     # install `make` since it is not automatically included in the OS
 
+# insert test data configurations
 mkdir -p testdata/doc/sphinx-guides/source/_static/util/
 cp ../solr/8.11.1/schema*.xml testdata/
 cp ../solr/8.11.1/solrconfig.xml testdata/
@@ -31,11 +32,9 @@ chmod 0755 maven/maven.sh
 source maven/maven.sh && mvn clean
 ./scripts/installer/custom-build-number
 source maven/maven.sh && mvn package
-cd scripts/installer
+cd ./scripts/installer
 make clean
 make
-mkdir -p ../../conf/docker-aio/dv/install
-cp dvinstall.zip ../../conf/docker-aio/dv/install/
 
 # ITs sometimes need files server-side
 # yes, these copies could be avoided by moving the build root here. but the build 
