@@ -11,9 +11,6 @@ RUN yum install -y jq lsof awscli
 # for older search scripts
 RUN ln -s /usr/bin/python2 /usr/bin/python
 
-# seeing is I can pull the latest Solr image
-FROM solr:latest
-
 # copy and unpack dependencies (solr, payara)
 COPY dv /tmp/dv
 COPY testdata/schema*.xml /tmp/dv/
@@ -26,7 +23,7 @@ COPY testdata/sushi_sample_logs.json /tmp/
 COPY disableipv6.conf /etc/sysctl.d/
 RUN rm /etc/httpd/conf/*
 COPY httpd.conf /etc/httpd/conf 
-# RUN cd /opt ; tar zxf /tmp/dv/deps/solr-8.11.1dv.tgz
+RUN cd /opt ; tar zxf /tmp/dv/deps/solr-8.11.1dv.tgz
 # RUN cd /opt ; unzip /tmp/dv/deps/payara-5.2021.6.zip ; ln -s /opt/payara5 /opt/glassfish4
 
 # this copy of domain.xml is the result of running `asadmin set server.monitoring-service.module-monitoring-levels.jvm=LOW` on a default glassfish installation (aka - enable the glassfish REST monitir endpoint for the jvm`
@@ -37,9 +34,9 @@ RUN sudo -u postgres /usr/pgsql-13/bin/initdb -D /var/lib/pgsql/13/data -E 'UTF-
 
 # copy configuration related files
 RUN cp /tmp/dv/pg_hba.conf /var/lib/pgsql/13/data/
-RUN cp -r /usr/share/solr/configsets/_default /usr/share/solr/collection1
-RUN cp /tmp/dv/schema*.xml /usr/share/solr/collection1/conf/
-RUN cp /tmp/dv/solrconfig.xml /usr/share/solr/collection1/conf/solrconfig.xml
+RUN cp -r /opt/solr-8.8.1/server/solr/configsets/_default /opt/solr-8.8.1/server/solr/collection1
+RUN cp /tmp/dv/schema*.xml /opt/solr-8.8.1/server/solr/collection1/conf/
+RUN cp /tmp/dv/solrconfig.xml /opt/solr-8.8.1/server/solr/collection1/conf/solrconfig.xml
 
 # skipping payara user and solr user (run both as root)
 
