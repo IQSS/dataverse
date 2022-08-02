@@ -12,6 +12,9 @@ sudo apt-get -y install payara       # install `payara` since it is not automati
 sudo apt-get -y install solr-tomcat          # install `solr` since it is not automatically included in the OS
 sudo apt-get -y update
 
+SOLR_HOME="/usr/share/solr"         // hard code or we could try something like `SOLR_HOME=$(whereis solr | awk '{print $3}')`
+export SOLR_HOME
+
 # insert test data configurations
 mkdir -p testdata/doc/sphinx-guides/source/_static/util/
 cp ../solr/8.11.1/schema*.xml testdata/
