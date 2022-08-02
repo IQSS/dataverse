@@ -220,13 +220,22 @@ public class Shib implements java.io.Serializable {
 
 
         if (affiliation != null) {
+            String affiliationSeparator = settingsService.getValueForKey(SettingsServiceBean.Key.affiliationSeparator);
+            if (affiliationSeparator == null) {
+                affiliationSeparator = ";";
+                }
             String ShibAffiliationOrder = settingsService.getValueForKey(SettingsServiceBean.Key.ShibAffiliationOrder);
             if (ShibAffiliationOrder != null) {
                 if (ShibAffiliationOrder.equals("lastAffiliation")) {
-                    affiliation = affiliation.substring(affiliation.lastIndexOf(';') + 1); //patch for affiliation array returning last part
+                    affiliation = affiliation.substring(affiliation.lastIndexOf(affiliationSeparator) + 1); //patch for affiliation array returning last part
                     }
                 else if (ShibAffiliationOrder.equals("firstAffiliation")) {
-                    affiliation = affiliation.substring(0,affiliation.indexOf(';')); //patch for affiliation array returning first part
+                    try{
+                        affiliation = affiliation.substring(0,affiliation.indexOf(affiliationSeparator)); //patch for affiliation array returning first part
+                        }
+                    catch (Exception e){
+                        System.out.print("Affiliation dose not contain\"" + affiliationSeparator + "\"");
+                        }
                     }
             }
             affiliationToDisplayAtConfirmation = affiliation;

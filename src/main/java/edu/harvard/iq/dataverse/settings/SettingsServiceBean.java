@@ -429,6 +429,10 @@ public class SettingsServiceBean {
          *Return the last or first value of an array of affiliation names
          */
         ShibAffiliationOrder,
+         /**
+         *Split the affiliation array on given string, default ";"
+         */
+        affiliationSeparator,
         /**
          * Validate physical files for all the datafiles in the dataset when publishing
          */
