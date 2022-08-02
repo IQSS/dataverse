@@ -226,7 +226,7 @@ public class Shib implements java.io.Serializable {
                     affiliation = affiliation.substring(affiliation.lastIndexOf(';') + 1); //patch for affiliation array returning last part
                     }
                 else if (ShibAffiliationOrder.equals("firstAffiliation")) {
-                    affiliation = affiliation.substring(0,affiliation.indexOf(';') - 1); //patch for affiliation array returning first part
+                    affiliation = affiliation.substring(0,affiliation.indexOf(';')); //patch for affiliation array returning first part
                     }
             }
             affiliationToDisplayAtConfirmation = affiliation;
