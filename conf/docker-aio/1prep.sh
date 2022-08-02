@@ -22,7 +22,7 @@ wget -q https://downloads.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3
 tar xfz apache-maven-3.8.6-bin.tar.gz
 mkdir maven
 mv apache-maven-3.8.6/* maven/
-echo "export JAVA_HOME=/usr/lib/jvm/jre-openjdk" > maven/maven.sh
+echo "export JAVA_HOME=/usr/local/openjdk-11/bin/java" > maven/maven.sh                 # if getting error about where java is installed try running `whereis java` to find the directory
 echo "export M2_HOME=$(pwd)/maven" >> maven/maven.sh
 echo "export MAVEN_HOME=$(pwd)/maven" >> maven/maven.sh
 echo "export PATH=$PATH:$(pwd)/maven/bin" >> maven/maven.sh
