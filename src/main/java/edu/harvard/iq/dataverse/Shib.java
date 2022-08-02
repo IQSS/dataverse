@@ -223,20 +223,20 @@ public class Shib implements java.io.Serializable {
             String ShibAffiliationSeparator = settingsService.getValueForKey(SettingsServiceBean.Key.ShibAffiliationSeparator);
             if (ShibAffiliationSeparator == null) {
                 ShibAffiliationSeparator = ";";
-                }
+            }
             String ShibAffiliationOrder = settingsService.getValueForKey(SettingsServiceBean.Key.ShibAffiliationOrder);
             if (ShibAffiliationOrder != null) {
                 if (ShibAffiliationOrder.equals("lastAffiliation")) {
                     affiliation = affiliation.substring(affiliation.lastIndexOf(ShibAffiliationSeparator) + 1); //patch for affiliation array returning last part
-                    }
+                }
                 else if (ShibAffiliationOrder.equals("firstAffiliation")) {
                     try{
                         affiliation = affiliation.substring(0,affiliation.indexOf(ShibAffiliationSeparator)); //patch for affiliation array returning first part
-                        }
+                    }
                     catch (Exception e){
                         logger.info("Affiliation does not contain \"" + ShibAffiliationSeparator + "\"");
-                        }
                     }
+                }
             }
             affiliationToDisplayAtConfirmation = affiliation;
             friendlyNameForInstitution = affiliation;
