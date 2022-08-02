@@ -1,9 +1,13 @@
 #!/bin/bash
 
 # @todo - need code to install `make` since the Docker build does not automatically include it
+# - /usr/lib/jvm/jre-openjdk does not exist
 
 # move things necessary for integration tests into build context.
 # this was based off the phoenix deployment; and is likely uglier and bulkier than necessary in a perfect world
+
+sudo apt-get update
+# sudo apt-get install make
 
 mkdir -p testdata/doc/sphinx-guides/source/_static/util/
 cp ../solr/8.11.1/schema*.xml testdata/
@@ -23,9 +27,6 @@ echo "export M2_HOME=$(pwd)/maven" >> maven/maven.sh
 echo "export MAVEN_HOME=$(pwd)/maven" >> maven/maven.sh
 echo "export PATH=$PATH:$(pwd)/maven/bin" >> maven/maven.sh
 chmod 0755 maven/maven.sh
-
-sudo apt-get update
-sudo apt-get install make
 
 # not using dvinstall.zip for setupIT.bash; but still used in install.bash for normal ops
 source maven/maven.sh && mvn clean
