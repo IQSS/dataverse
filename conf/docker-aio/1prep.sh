@@ -7,9 +7,9 @@
 
 sudo apt-get update                  # update the packages so `make` can be included
 sudo apt-get -y install make         # install `make` since it is not automatically included in the OS
-sudo apt-get -y install maven        # install `maven` since it is not automatically included in the OS
+sudo apt-get install maven        # install `maven` since it is not automatically included in the OS
 # sudo apt-get -y install payara       # install `payara` since it is not automatically included in the OS
-sudo apt-get -y update               # we are not able to install Solr using apt-get so we need to download it manually (not ideal)
+# sudo apt-get -y update               # we are not able to install Solr using apt-get so we need to download it manually (not ideal)
 
 # insert test data configurations
 mkdir -p testdata/doc/sphinx-guides/source/_static/util/
