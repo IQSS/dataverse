@@ -5,7 +5,7 @@ RUN dnf -qy module disable postgresql
 RUN yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 
 RUN echo "fastestmirror=true" >> /etc/dnf/dnf.conf
-RUN yum install -y java-11-openjdk-devel postgresql13-server sudo epel-release unzip curl httpd python2 diffutils
+RUN yum install -y java-11-openjdk-devel postgresql13-server sudo epel-release unzip curl httpd python2 diffutils payara
 RUN yum install -y jq lsof awscli
 
 # for older search scripts
