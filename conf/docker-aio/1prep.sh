@@ -9,7 +9,7 @@ sudo apt-get update                  # update the packages so `make` can be incl
 sudo apt-get -y install make         # install `make` since it is not automatically included in the OS
 sudo apt-get -y install maven        # install `maven` since it is not automatically included in the OS
 sudo apt-get -y install payara       # install `payara` since it is not automatically included in the OS
-sudo apt-get -y install solr          # install `solr` since it is not automatically included in the OS
+sudo apt-get -y install solr-tomcat          # install `solr` since it is not automatically included in the OS
 sudo apt-get -y update
 
 # insert test data configurations
