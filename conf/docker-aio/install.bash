@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 sudo -u postgres createuser --superuser dvnapp
 #./entrypoint.bash &
+cd ./scripts/installer
 unzip dvinstall.zip
 cd dvinstall/
 echo "beginning installer"
