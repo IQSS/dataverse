@@ -1,6 +1,9 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -157,5 +160,18 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
         }
         return bagThread;
     }
-
+    
+    public static boolean isArchivable(Dataset dataset, SettingsWrapper settingsWrapper) {
+        return true;
+   }
+   
+   //Check if the chosen archiver imposes single-version-only archiving - in a View context
+   public static boolean isSingleVersion(SettingsWrapper settingsWrapper) {
+       return false;
+  }
+ 
+   //Check if the chosen archiver imposes single-version-only archiving - in the API
+   public static boolean isSingleVersion(SettingsServiceBean settingsService) {
+       return false;
+  }
 }
