@@ -1,4 +1,6 @@
 #!/bin/sh
+# download necessary dependencies
+
 if [ ! -d dv/deps ]; then
 	mkdir -p dv/deps
 fi
@@ -11,4 +13,9 @@ fi
 if [ ! -e dv/deps/solr-8.11.1dv.tgz ]; then
 	echo "solr dependency prep"	
 	wget https://archive.apache.org/dist/lucene/solr/8.11.1/solr-8.11.1.tgz -O dv/deps/solr-8.11.1dv.tgz
+fi
+
+if [ ! -e dv/deps/apache-maven-3.8.6-bin.tar.gz ]; then
+	echo "maven dependency prep"
+	wget -q https://downloads.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz  -O dv/deps/apache-maven-3.8.6-bin.tar.gz
 fi
