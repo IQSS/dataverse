@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 export LANG=en_US.UTF-8
 sudo -u postgres /usr/pgsql-13/bin/pg_ctl start -D /var/lib/pgsql/13/data &
-cd $SOLR_HOME
+cd /usr/share/solr                # hard-coding this path is not ideal
 echo "starting Solr"
 # TODO: Run Solr as non-root and remove "-force".
 bin/solr start -force
