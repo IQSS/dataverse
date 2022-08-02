@@ -432,7 +432,7 @@ public class SettingsServiceBean {
          /**
          *Split the affiliation array on given string, default ";"
          */
-        affiliationSeparator,
+        ShibAffiliationSeparator,
         /**
          * Validate physical files for all the datafiles in the dataset when publishing
          */
