@@ -10,7 +10,7 @@ n_wait=5
 cd conf/docker-aio
 ./0prep_deps.sh
 ./1prep.sh
-docker build --no-cache -t dv0 -f c8.dockerfile .		# adding `--no-cache` so docker doesn't cache docker file contents
+docker build -t dv0 -f c8.dockerfile .
 # cleanup from previous runs if necessary
 docker rm -f dv
 # start container
@@ -52,4 +52,3 @@ cd ../..
 echo "docker-aio ready to run integration tests"
 curl http://localhost:8084/api/info/version
 echo $?
-
