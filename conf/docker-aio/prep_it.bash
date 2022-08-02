@@ -8,7 +8,7 @@
 n_wait=5
 
 cd conf/docker-aio
-./0prep_deps.sh
+# ./0prep_deps.sh 				# leaving this out since the 1prep.sh script should handle everything
 ./1prep.sh
 docker build -t dv0 -f c8.dockerfile .
 # cleanup from previous runs if necessary
