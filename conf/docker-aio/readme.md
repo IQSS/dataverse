@@ -18,7 +18,7 @@ Also usable for normal development and system evaluation; not intended for produ
 
 
 ### Initial setup (aka - do once):
-- `cd conf/docker-aio` and run `./0prep_deps.sh` to created Payara and Solr tarballs in `conf/docker-aio/dv/deps`.
+- `cd conf/docker-aio` and run `./0prep_deps.sh` to create Payara and Solr tarballs in `conf/docker-aio/dv/deps`.
 
 ### Per-build:
 
