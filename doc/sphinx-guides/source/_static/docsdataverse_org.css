@@ -68,7 +68,7 @@ a.headerlink {
 #sidebar.bs-sidenav {
     background-color: #f8d5b8;
 }
-#sidebar.bs-sidenav .nav > li > a:hover, #sidebar.bs-sidenav .nav > li > a:focus {
+#sidebar.bs-sidenav .nav > li > a:hover, #sidebar.bs-sidenav .nav > li > a:focus, #sidebar.bs-sidenav .nav > li > a.current {
     background-color: #fbf4c5;
     border-right: 1px solid #dbd8e0;
     text-decoration: none;
