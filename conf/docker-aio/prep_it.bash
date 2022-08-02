@@ -7,9 +7,6 @@
 # glassfish healthy/ready retries
 n_wait=5
 
-SOLR_HOME="/usr/share/solr"         // hard code or we could try something like `SOLR_HOME=$(whereis solr | awk '{print $3}')`
-export SOLR_HOME
-
 cd conf/docker-aio
 # ./0prep_deps.sh 				# leaving this out since the 1prep.sh script should handle everything
 ./1prep.sh
