@@ -234,7 +234,7 @@ public class Shib implements java.io.Serializable {
                         affiliation = affiliation.substring(0,affiliation.indexOf(affiliationSeparator)); //patch for affiliation array returning first part
                         }
                     catch (Exception e){
-                        System.out.print("Affiliation dose not contain\"" + affiliationSeparator + "\"");
+                        System.out.print("Affiliation does not contains \"" + affiliationSeparator + "\"");
                         }
                     }
             }
