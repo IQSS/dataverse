@@ -11,8 +11,8 @@ RUN yum install -y jq lsof awscli
 # for older search scripts
 RUN ln -s /usr/bin/python2 /usr/bin/python
 
-# here we try to set an environmet variable for the SOLR home, which we could ideally do dynamically like `export SOLR_HOME=$(whereis solr | awk '{print $3}')`
-RUN export SOLR_HOME="/usr/share/solr"
+# seeing is I can pull the latest Solr image
+FROM solr:latest
 
 # copy and unpack dependencies (solr, payara)
 COPY dv /tmp/dv
@@ -37,9 +37,9 @@ RUN sudo -u postgres /usr/pgsql-13/bin/initdb -D /var/lib/pgsql/13/data -E 'UTF-
 
 # copy configuration related files
 RUN cp /tmp/dv/pg_hba.conf /var/lib/pgsql/13/data/
-RUN cp -r $SOLR_HOME/configsets/_default $SOLR_HOME/collection1
-RUN cp /tmp/dv/schema*.xml $SOLR_HOME/collection1/conf/
-RUN cp /tmp/dv/solrconfig.xml $SOLR_HOME/collection1/conf/solrconfig.xml
+RUN cp -r /usr/share/solr/configsets/_default /usr/share/solr/collection1
+RUN cp /tmp/dv/schema*.xml /usr/share/solr/collection1/conf/
+RUN cp /tmp/dv/solrconfig.xml /usr/share/solr/collection1/conf/solrconfig.xml
 
 # skipping payara user and solr user (run both as root)
 
