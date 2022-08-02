@@ -34,9 +34,9 @@ RUN sudo -u postgres /usr/pgsql-13/bin/initdb -D /var/lib/pgsql/13/data -E 'UTF-
 
 # copy configuration related files
 RUN cp /tmp/dv/pg_hba.conf /var/lib/pgsql/13/data/
-RUN cp -r /opt/solr-8.11.1/server/solr/configsets/_default /opt/solr-8.11.1/server/solr/collection1
-RUN cp /tmp/dv/schema*.xml /opt/solr-8.11.1/server/solr/collection1/conf/
-RUN cp /tmp/dv/solrconfig.xml /opt/solr-8.11.1/server/solr/collection1/conf/solrconfig.xml
+RUN cp -r $SOLR_HOME/configsets/_default $SOLR_HOME/collection1
+RUN cp /tmp/dv/schema*.xml $SOLR_HOME/collection1/conf/
+RUN cp /tmp/dv/solrconfig.xml $SOLR_HOME/collection1/conf/solrconfig.xml
 
 # skipping payara user and solr user (run both as root)
 
