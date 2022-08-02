@@ -11,6 +11,9 @@ RUN yum install -y jq lsof awscli
 # for older search scripts
 RUN ln -s /usr/bin/python2 /usr/bin/python
 
+# here we try to set an environmet variable for the SOLR home, which we could ideally do dynamically like `export SOLR_HOME=$(whereis solr | awk '{print $3}')`
+RUN export SOLR_HOME="/usr/share/solr"
+
 # copy and unpack dependencies (solr, payara)
 COPY dv /tmp/dv
 COPY testdata/schema*.xml /tmp/dv/
