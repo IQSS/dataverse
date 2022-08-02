@@ -404,7 +404,7 @@ public class DatasetPage implements java.io.Serializable {
                hasValidTermsOfAccess = true;
                return hasValidTermsOfAccess;
             } else {
-                hasValidTermsOfAccess = TermsOfUseAndAccessValidator.isTOUAValid(dataset.getEditVersion().getTermsOfUseAndAccess(), null);
+                hasValidTermsOfAccess = TermsOfUseAndAccessValidator.isTOUAValid(dataset.getLatestVersion().getTermsOfUseAndAccess(), null);
                 return hasValidTermsOfAccess;
             }
         }    
@@ -3416,6 +3416,15 @@ public class DatasetPage implements java.io.Serializable {
             refreshSelectedFiles(filesToDelete);
         }
 
+        if (dataset.getThumbnailFile() != null) {
+            for (FileMetadata fmd : filesToDelete) {
+                if (fmd.getDataFile().equals(dataset.getThumbnailFile())) {
+                    dataset.setThumbnailFile(null);
+                    break;
+                }
+            }
+        }
+        
         for (FileMetadata markedForDelete : filesToDelete) {
 
             if (markedForDelete.getId() != null) {
@@ -3439,9 +3448,7 @@ public class DatasetPage implements java.io.Serializable {
                 // passed to the UpdateDatasetCommand. -- L.A. Aug 2017
                 
                 FileMetadataUtil.removeFileMetadataFromList(workingVersion.getFileMetadatas(), markedForDelete);
-                
                 FileMetadataUtil.removeDataFileFromList(newFiles, markedForDelete.getDataFile());
-                FileUtil.deleteTempFile(markedForDelete.getDataFile(), dataset, ingestService);
 
             }
         }
