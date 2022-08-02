@@ -91,6 +91,25 @@ Publish the Release
 
 Click the "Publish release" button.
 
+Close Milestone on GitHub and Create a New One
+----------------------------------------------
+
+You can find our milestones at https://github.com/IQSS/dataverse/milestones
+
+Now that we've published the release, close the milestone and create a new one.
+
+Note that for milestones we use just the number without the "v" (e.g. "5.10.1").
+
+Announce the Release on the Dataverse Blog
+------------------------------------------
+
+Make a blog post at https://dataverse.org/blog
+
+Announce the Release on the Mailing List
+----------------------------------------
+
+Post a message at https://groups.google.com/g/dataverse-community
+
 ----
 
 Previous: :doc:`containers` | Next: :doc:`tools`
