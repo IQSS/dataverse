@@ -54,6 +54,8 @@ For any ordinary release, make the changes above in the release branch you creat
 
 If you are making a hotfix release, make the pull request against the "master" branch. Do not delete the branch after merging because we will later merge it into the "develop" branch to pick up the hotfix. More on this later.
 
+Either way, as usual, you should ensure that all tests are passing. Please note that you might need to bump the version in `jenkins.yml <https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible/blob/develop/tests/group_vars/jenkins.yml>`_ in dataverse-ansible to get the tests to run.
+
 Merge "develop" into "master"
 -----------------------------
 
