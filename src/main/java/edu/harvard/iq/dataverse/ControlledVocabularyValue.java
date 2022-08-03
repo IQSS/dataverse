@@ -148,7 +148,7 @@ public class ControlledVocabularyValue implements Serializable  {
                 return sendDefault ? strValue : null;
             }
         } catch (MissingResourceException | NullPointerException e) {
-            logger.warning("Error finding" + "controlledvocabulary." + fieldTypeName + "." + key + " in " + ((locale==null)? "defaultLang" : locale.getLanguage()) + " : " + e.getLocalizedMessage());
+            logger.warning("Error finding " + "controlledvocabulary." + fieldTypeName + "." + key + " in " + ((locale==null)? "defaultLang" : locale.getLanguage()) + " : " + e.getLocalizedMessage());
             return sendDefault ? strValue : null;
         }
     }
