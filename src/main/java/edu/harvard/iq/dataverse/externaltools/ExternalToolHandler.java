@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 
 import java.io.StringReader;
@@ -97,4 +98,16 @@ public class ExternalToolHandler extends URLTokenUtil {
         this.apiToken = apiToken;
     }
 
+    /**
+     * @return Returns Javascript that opens the explore tool in a new browser
+     * tab if the browser allows it.If not, it shows an alert that popups must
+     * be enabled in the browser.
+     */
+    public String getExploreScript() {
+        String toolUrl = this.getToolUrlWithQueryParams();
+        logger.fine("Exploring with " + toolUrl);
+        String msg = BundleUtil.getStringFromBundle("externaltools.enable.browser.popups");
+        String script = "const newWin = window.open('" + toolUrl + "', target='_blank'); if (!newWin || newWin.closed || typeof newWin.closed == \"undefined\") {alert(\"" + msg + "\");}";
+        return script;
+    }
 }
