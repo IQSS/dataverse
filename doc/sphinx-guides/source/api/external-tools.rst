@@ -11,7 +11,7 @@ Introduction
 
 External tools are additional applications the user can access or open from your Dataverse installation to preview, explore, and manipulate data files and datasets. The term "external" is used to indicate that the tool is not part of the main Dataverse Software.
 
-Once you have created the external tool itself (which is most of the work!), you need to teach a Dataverse installation how to construct URLs that your tool needs to operate. For example, if you've deployed your tool to fabulousfiletool.com your tool might want the ID of a file and the siteUrl of the Dataverse installation like this: https://fabulousfiletool.com?fileId=42&siteUrl=http://demo.dataverse.org
+Once you have created the external tool itself (which is most of the work!), you need to teach a Dataverse installation how to construct URLs that your tool needs to operate.
 
 In short, you will be creating a manifest in JSON format that describes not only how to construct URLs for your tool, but also what types of files your tool operates on, where it should appear in the Dataverse installation web interfaces, etc. 
 
@@ -53,14 +53,7 @@ External tools must be expressed in an external tool manifest file, a specific J
 Examples of Manifests
 +++++++++++++++++++++
 
-Let's look at two examples of external tool manifests (one at the file level and one at the dataset level) before we dive into how they work.
-
-External Tools for Files
-^^^^^^^^^^^^^^^^^^^^^^^^
-
-:download:`fabulousFileTool.json <../_static/installation/files/root/external-tools/fabulousFileTool.json>` is a file level both an "explore" tool and a "preview" tool that operates on tabular files:
-
-.. literalinclude:: ../_static/installation/files/root/external-tools/fabulousFileTool.json
+Let's look at an example of an external tool manifest (at the dataset level) before we dive into how they work.
 
 External Tools for Datasets
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -78,7 +71,7 @@ Terminology
     ===========================  ==========
     Term                         Definition
     ===========================  ==========
-    external tool manifest       A **JSON file** the defines the URL constructed by a Dataverse installation when users click explore or configure tool options. External tool makers are asked to host this JSON file on a website (no app store yet, sorry) and explain how to use install and use the tool. Examples include :download:`fabulousFileTool.json <../_static/installation/files/root/external-tools/fabulousFileTool.json>` and :download:`dynamicDatasetTool.json <../_static/installation/files/root/external-tools/dynamicDatasetTool.json>` as well as the real world examples above such as Data Explorer.
+    external tool manifest       A **JSON file** the defines the URL constructed by a Dataverse installation when users click explore or configure tool options. External tool makers are asked to host this JSON file on a website (no app store yet, sorry) and explain how to use install and use the tool. Examples include  :download:`dynamicDatasetTool.json <../_static/installation/files/root/external-tools/dynamicDatasetTool.json>` as well as the real world examples above such as Data Explorer.
 
     displayName                  The **name** of the tool in the Dataverse installation web interface. For example, "Data Explorer".
 
@@ -94,7 +87,7 @@ Terminology
 
     toolParameters               **Query parameters** are supported and described below.
 
-    queryParameters              **Key/value combinations** that can be appended to the toolUrl. For example, once substitution takes place (described below) the user may be redirected to ``https://fabulousfiletool.com?fileId=42&siteUrl=http://demo.dataverse.org``.
+    queryParameters              **Key/value combinations** that can be appended to the toolUrl.
 
     query parameter keys         An **arbitrary string** to associate with a value that is populated with a reserved word (described below). As the author of the tool, you have control over what "key" you would like to be passed to your tool. For example, if you want to have your tool receive and operate on the query parameter "dataverseFileId=42" instead of just "fileId=42", that's fine.
 
@@ -145,7 +138,7 @@ For example, if the ``toolName`` of your external tool is ``fabulous`` then the 
 Using Example Manifests to Get Started
 ++++++++++++++++++++++++++++++++++++++
 
-Again, you can use :download:`fabulousFileTool.json <../_static/installation/files/root/external-tools/fabulousFileTool.json>` or :download:`dynamicDatasetTool.json <../_static/installation/files/root/external-tools/dynamicDatasetTool.json>` as a starting point for your own manifest file.
+Again, you can use :download:`dynamicDatasetTool.json <../_static/installation/files/root/external-tools/dynamicDatasetTool.json>` as a starting point for your own manifest file.
 
 Testing Your External Tool
 --------------------------
