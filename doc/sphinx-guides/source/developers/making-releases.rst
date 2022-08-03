@@ -52,7 +52,7 @@ Check in the Changes Above into a Release Branch and Merge It
 
 For any ordinary release, make the changes above in the release branch you created, make a pull request, and merge it into the "develop" branch. Like usual, you can safely delete the branch after the merge is complete.
 
-If you are making a hotfix release, make the pull request against the "master" branch. Do not delete the branch after merging because we will later merge it into the "develop" branch to pick up the hotfix.
+If you are making a hotfix release, make the pull request against the "master" branch. Do not delete the branch after merging because we will later merge it into the "develop" branch to pick up the hotfix. More on this later.
 
 Merge "develop" into "master"
 -----------------------------
@@ -60,15 +60,6 @@ Merge "develop" into "master"
 Note: If you are making a hotfix release, the "develop" branch is not involved so you can skip this step.
 
 The "develop" branch should be merged into "master" before tagging.
-
-For Hotfixes, Merge Hotfix Branch into "develop" and Rename SQL Scripts
------------------------------------------------------------------------
-
-Note: this only applies to hotfixes!
-
-We've merged the hotfix into the "master" branch but now we need the fixes (and version bump) in the "develop" branch. Make a new branch off the hotfix branch and create a pull request against develop. Merge conflicts are possible and this pull request should go through review and QA like normal.
-
-Because of the hotfix version, any SQL scripts in "develop" should be renamed (from "5.11" to "5.11.1" for example). To read more about our naming conventions for SQL scripts, see :doc:`sql-upgrade-scripts`.
 
 Create a Draft Release on GitHub
 --------------------------------
@@ -111,6 +102,15 @@ Announce the Release on the Mailing List
 ----------------------------------------
 
 Post a message at https://groups.google.com/g/dataverse-community
+
+For Hotfixes, Merge Hotfix Branch into "develop" and Rename SQL Scripts
+-----------------------------------------------------------------------
+
+Note: this only applies to hotfixes!
+
+We've merged the hotfix into the "master" branch but now we need the fixes (and version bump) in the "develop" branch. Make a new branch off the hotfix branch and create a pull request against develop. Merge conflicts are possible and this pull request should go through review and QA like normal. Afterwards it's fine to delete this branch and the hotfix brach that was merged into master.
+
+Because of the hotfix version, any SQL scripts in "develop" should be renamed (from "5.11" to "5.11.1" for example). To read more about our naming conventions for SQL scripts, see :doc:`sql-upgrade-scripts`.
 
 ----
 
