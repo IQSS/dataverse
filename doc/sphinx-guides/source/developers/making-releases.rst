@@ -61,12 +61,14 @@ Note: If you are making a hotfix release, the "develop" branch is not involved s
 
 The "develop" branch should be merged into "master" before tagging.
 
-For Hotfixes, Merge Hotfix Branch into "develop"
-------------------------------------------------
+For Hotfixes, Merge Hotfix Branch into "develop" and Rename SQL Scripts
+-----------------------------------------------------------------------
 
 Note: this only applies to hotfixes!
 
 We've merged the hotfix into the "master" branch but now we need the fixes (and version bump) in the "develop" branch. Make a new branch off the hotfix branch and create a pull request against develop. Merge conflicts are possible and this pull request should go through review and QA like normal.
+
+Because of the hotfix version, any SQL scripts in "develop" should be renamed (from "5.11" to "5.11.1" for example). To read more about our naming conventions for SQL scripts, see :doc:`sql-upgrade-scripts`.
 
 Create a Draft Release on GitHub
 --------------------------------
