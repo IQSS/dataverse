@@ -5634,12 +5634,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public boolean isSomeVersionArchived() {
         if (someVersionArchived == null) {
-            someVersionArchived = false;
-            for (DatasetVersion dv : dataset.getVersions()) {
-                if (dv.getArchivalCopyLocation() != null) {
-                    someVersionArchived = true;
-                }
-            }
+            someVersionArchived = ArchiverUtil.isSomeVersionArchived(dataset);
         }
         return someVersionArchived;
     }
