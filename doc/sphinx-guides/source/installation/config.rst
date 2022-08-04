@@ -2566,7 +2566,7 @@ Number of errors to display to the user when creating DataFiles from a file uplo
 .. _:BagItHandlerEnabled:
 
 :BagItHandlerEnabled
-+++++++++++++++++++++
+++++++++++++++++++++
 
 Part of the database settings to configure the BagIt file handler. Enables the BagIt file handler. By default, the handler is disabled.
 
@@ -2849,3 +2849,8 @@ For configuration details, see :ref:`mute-notifications`.
 Overrides the default empty list of never muted notifications. Never muted notifications cannot be muted by the users. Always muted notifications are grayed out and are not adjustable by the user.
 
 For configuration details, see :ref:`mute-notifications`.
+
+:LDNMessageHosts
+++++++++++++++++
+
+The comma-separated list of hosts allowed to send Dataverse Linked Data Notification messages. See :doc:`/api/linkeddatanotification` for details. ``*`` allows messages from anywhere (not recommended for production). By default, messages are not accepted from anywhere. 
