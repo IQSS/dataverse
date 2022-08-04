@@ -81,6 +81,10 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
             } catch (URISyntaxException e) {
                 return new Failure("LDNAnnounceDatasetVersion workflow step failed: unable to parse inbox in :LDNTarget setting.");
             }
+            if(announcement==null) {
+                logger.info(context.getDataset().getGlobalId().asString() + "does not have metadata required to send LDN message. Nothing sent.");
+                return OK;
+            }
             // execute
             try (CloseableHttpResponse response = client.execute(announcement)) {
                 int code = response.getStatusLine().getStatusCode();
@@ -114,7 +118,7 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
         throw new UnsupportedOperationException("Not supported yet."); // This class does not need to resume.
     }
 
-    HttpPost buildAnnouncement(boolean b, WorkflowContext ctxt, JsonObject target) throws URISyntaxException {
+    HttpPost buildAnnouncement(boolean qb, WorkflowContext ctxt, JsonObject target) throws URISyntaxException {
 
         // First check that we have what is required
         DatasetVersion dv = ctxt.getDataset().getReleasedVersion();
@@ -126,7 +130,7 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
         }
         Set<String> reqFields = fields.keySet();
         for (DatasetField df : dvf) {
-            if (reqFields.contains(df.getDatasetFieldType().getName())) {
+            if(!df.isEmpty() && reqFields.contains(df.getDatasetFieldType().getName())) {
                 fields.put(df.getDatasetFieldType().getName(), df);
             }
         }
