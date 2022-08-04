@@ -70,7 +70,7 @@ public class LDNInbox extends AbstractApiBean {
     @Consumes("application/ld+json, application/json-ld")
     public Response acceptMessage(String body) {
         IpAddress origin = new DataverseRequest(null, httpRequest).getSourceAddress();
-        String whitelist = settingsService.get(SettingsServiceBean.Key.MessageHosts.toString(), "*");
+        String whitelist = settingsService.get(SettingsServiceBean.Key.LDNMessageHosts.toString(), "");
         // Only do something if we listen to this host
         if (whitelist.equals("*") || whitelist.contains(origin.toString())) {
             String citingPID = null;
