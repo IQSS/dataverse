@@ -444,7 +444,7 @@ public abstract class AbstractApiBean {
         String signedUrl = httpRequest.getRequestURL().toString();
         String method = httpRequest.getMethod();
         
-        boolean validated = UrlSignerUtil.isValidUrl(signedUrl, method, user, key);
+        boolean validated = UrlSignerUtil.isValidUrl(signedUrl, user, method, key);
         if (validated){
             authUser = targetUser;
         }
