@@ -122,6 +122,7 @@
                                                     value="#{manageGroupsPage.selectedGroupAddRoleAssignees}"
                                                     completeMethod="#{manageGroupsPage.completeRoleAssignee}"
                                                     var="roleAssignee"
+                                                    onkeypress="return event.keyCode !== 13;"
                                                     styleClass="DropdownPopup" panelStyleClass="DropdownPopupPanel"
                                                     itemLabel="#{roleAssignee.displayInfo.title}" itemValue="#{roleAssignee}" converter="roleAssigneeConverter">
                                         <p:column>
