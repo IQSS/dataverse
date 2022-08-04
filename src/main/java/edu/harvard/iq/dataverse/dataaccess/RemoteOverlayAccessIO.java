@@ -432,7 +432,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     private void configureStores(DataAccessRequest req, String driverId, String storageLocation) throws IOException {
-        baseUrl = System.getProperty("dataverse.files." + this.driverId + ".baseUrl");
+        baseUrl = System.getProperty("dataverse.files." + this.driverId + ".base-url");
 
         if (baseStore == null) {
             String baseDriverId = getBaseStoreIdFor(driverId);
@@ -555,7 +555,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     public static String getBaseStoreIdFor(String driverId) {
-        return System.getProperty("dataverse.files." + driverId + ".baseStore");
+        return System.getProperty("dataverse.files." + driverId + ".base-store");
     }
 
 }
