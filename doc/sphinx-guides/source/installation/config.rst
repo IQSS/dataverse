@@ -238,14 +238,14 @@ As for the "Remote only" authentication mode, it means that:
 - ``:DefaultAuthProvider`` has been set to use the desired authentication provider
 - The "builtin" authentication provider has been disabled (:ref:`api-toggle-auth-provider`). Note that disabling the "builtin" authentication provider means that the API endpoint for converting an account from a remote auth provider will not work. Converting directly from one remote authentication provider to another (i.e. from GitHub to Google) is not supported. Conversion from remote is always to "builtin". Then the user initiates a conversion from "builtin" to remote. Note that longer term, the plan is to permit multiple login options to the same Dataverse installation account per https://github.com/IQSS/dataverse/issues/3487 (so all this talk of conversion will be moot) but for now users can only use a single login option, as explained in the :doc:`/user/account` section of the User Guide. In short, "remote only" might work for you if you only plan to use a single remote authentication provider such that no conversion between remote authentication providers will be necessary.
 
-File Storage: Using a Local Filesystem and/or Swift and/or object stores and/or trusted remote services
+File Storage: Using a Local Filesystem and/or Swift and/or Object Stores and/or Trusted Remote Services
 -------------------------------------------------------------------------------------------------------
 
 By default, a Dataverse installation stores all data files (files uploaded by end users) on the filesystem at ``/usr/local/payara5/glassfish/domains/domain1/files``. This path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.\<id\>.directory`` JVM option described below.
 
 A Dataverse installation can alternately store files in a Swift or S3-compatible object store, and can now be configured to support multiple stores at once. With a multi-store configuration, the location for new files can be controlled on a per-Dataverse collection basis.
 
-Dataverse may also be configured to reference some files (e.g. large and/or sensitive data) stored in a trusted remote web-accessible system.
+A Dataverse installation may also be configured to reference some files (e.g. large and/or sensitive data) stored in a trusted remote web-accessible system.
 
 The following sections describe how to set up various types of stores and how to configure for multiple stores.
 
@@ -672,7 +672,7 @@ In addition to having the type "remote" and requiring a label, Trusted Remote St
 These and other available options are described in the table below.
 
 Remote stores can range from being a static trusted website to a sophisticated service managing access requests and logging activity
-and/or managing access to a secure enclave. For specific remote stores, consult their documentation when configuring the remote store in Dataverse.
+and/or managing access to a secure enclave. For specific remote stores, consult their documentation when configuring the remote store in your Dataverse installation.
 
 .. table::
     :align: left
