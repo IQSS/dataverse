@@ -53,14 +53,15 @@ public class UrlSignerUtil {
         }
         if (method != null) {
             signedUrl.append(firstParam ? "?" : "&").append("method=").append(method);
+            firstParam=false;
         }
-        signedUrl.append("&token=");
+        signedUrl.append(firstParam ? "?" : "&").append("token=");
         logger.fine("String to sign: " + signedUrl.toString() + "<key>");
         signedUrl.append(DigestUtils.sha512Hex(signedUrl.toString() + key));
         logger.fine("Generated Signed URL: " + signedUrl.toString());
         if (logger.isLoggable(Level.FINE)) {
             logger.fine(
-                    "URL signature is " + (isValidUrl(signedUrl.toString(), method, user, key) ? "valid" : "invalid"));
+                    "URL signature is " + (isValidUrl(signedUrl.toString(), user, method, key) ? "valid" : "invalid"));
         }
         return signedUrl.toString();
     }
@@ -86,7 +87,7 @@ public class UrlSignerUtil {
      *         the URL is only for user B) the url has expired (was used after the
      *         until timestamp)
      */
-    public static boolean isValidUrl(String signedUrl, String method, String user, String key) {
+    public static boolean isValidUrl(String signedUrl, String user, String method, String key) {
         boolean valid = true;
         try {
             URL url = new URL(signedUrl);
@@ -114,7 +115,7 @@ public class UrlSignerUtil {
                 }
             }
 
-            int index = signedUrl.indexOf("&token=");
+            int index = signedUrl.indexOf(((dateString==null && allowedMethod==null && allowedUser==null) ? "?":"&") + "token=");
             // Assuming the token is last - doesn't have to be, but no reason for the URL
             // params to be rearranged either, and this should only cause false negatives if
             // it does happen
@@ -134,7 +135,7 @@ public class UrlSignerUtil {
                 logger.fine("Method doesn't match");
                 valid = false;
             }
-            if (user != null && user.equals(allowedUser)) {
+            if (user != null && !user.equals(allowedUser)) {
                 logger.fine("User doesn't match");
                 valid = false;
             }
