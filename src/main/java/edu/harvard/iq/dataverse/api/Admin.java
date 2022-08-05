@@ -1882,7 +1882,7 @@ public class Admin extends AbstractApiBean {
             if (dsl != null) {
                 if (listonly) {
                     JsonArrayBuilder jab = Json.createArrayBuilder();
-                    logger.info("Unarchived versions found: ");
+                    logger.fine("Unarchived versions found: ");
                     int current = 0;
                     for (DatasetVersion dv : dsl) {
                         if (limit != null && current >= limit) {
@@ -1890,7 +1890,7 @@ public class Admin extends AbstractApiBean {
                         }
                         if (!latestonly || dv.equals(dv.getDataset().getLatestVersionForCopy())) {
                             jab.add(dv.getDataset().getGlobalId().toString() + ", v" + dv.getFriendlyVersionNumber());
-                            logger.info("    " + dv.getDataset().getGlobalId().toString() + ", v" + dv.getFriendlyVersionNumber());
+                            logger.fine("    " + dv.getDataset().getGlobalId().toString() + ", v" + dv.getFriendlyVersionNumber());
                             current++;
                         }
                     }
