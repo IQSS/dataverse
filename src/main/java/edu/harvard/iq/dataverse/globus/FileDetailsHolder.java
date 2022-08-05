@@ -1,18 +1,16 @@
 package edu.harvard.iq.dataverse.globus;
 
-
-
-public class fileDetailsHolder {
+public class FileDetailsHolder {
 
     private String hash;
     private String mime;
     private String storageID;
 
-    public fileDetailsHolder(String id, String hash, String mime) {
+    public FileDetailsHolder(String id, String hash, String mime) {
 
         this.storageID = id;
-        this.hash = hash ;
-        this.mime = mime ;
+        this.hash = hash;
+        this.mime = mime;
 
     }
 

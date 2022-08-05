@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.globus;
 
 import java.util.ArrayList;
 
-
 public class AccessToken implements java.io.Serializable {
 
     private String accessToken;
@@ -15,23 +14,41 @@ public class AccessToken implements java.io.Serializable {
     private String refreshToken;
     private ArrayList<AccessToken> otherTokens;
 
-    public String getAccessToken() { return accessToken; }
+    public String getAccessToken() {
+        return accessToken;
+    }
 
-    String getIdToken() { return idToken; }
+    String getIdToken() {
+        return idToken;
+    }
 
-    Long getExpiresIn() { return expiresIn; }
+    Long getExpiresIn() {
+        return expiresIn;
+    }
 
-    String getResourceServer() { return resourceServer; }
+    String getResourceServer() {
+        return resourceServer;
+    }
 
-    String getTokenType() { return tokenType; }
+    String getTokenType() {
+        return tokenType;
+    }
 
-    String getState() { return state; }
+    String getState() {
+        return state;
+    }
 
-    String getScope() {return scope; }
+    String getScope() {
+        return scope;
+    }
 
-    String getRefreshToken() { return refreshToken; }
+    String getRefreshToken() {
+        return refreshToken;
+    }
 
-    ArrayList<AccessToken> getOtherTokens() { return otherTokens; }
+    ArrayList<AccessToken> getOtherTokens() {
+        return otherTokens;
+    }
 
     public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;

@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.globus;
 
-
 public class Task {
 
     private String DATA_TYPE;
@@ -86,6 +85,8 @@ public class Task {
         this.nice_status = nice_status;
     }
 
-    public String getNice_status_short_description() { return  nice_status_short_description; }
+    public String getNice_status_short_description() {
+        return nice_status_short_description;
+    }
 
 }
