@@ -211,7 +211,7 @@ The two parameters are
 * ``:LDNAnnounceRequiredFields`` - a list of metadata fields that must exist to trigger the message. Currently, the message also includes the values for these fields but future versions may only send the dataset's persistent identifier (making the receiver responsible for making a call-back to get any metadata).
 * ``:LDNTarget`` - a JSON object containing an ``inbox`` key whose value is the URL of the target LDN inbox to which messages should be sent, e.g. ``{"id": "https://dashv7-dev.lib.harvard.edu","inbox": "https://dashv7-api-dev.lib.harvard.edu/server/ldn/inbox","type": "Service"}`` ).
 
-The supported message format is desribed by `our preliminary specification<https://docs.google.com/document/d/1dqj8_vEcIBeyDIZCaPQvp0FM1eSGO_5CSNCdXOpoUz0/edit?usp=sharing>`_. The format is expected to change in the near future to match the standard for relationship announcements being developed as part of `the COAR Notify Project<https://notify.coar-repositories.org/>`_. 
+The supported message format is desribed by `our preliminary specification <https://docs.google.com/document/d/1dqj8_vEcIBeyDIZCaPQvp0FM1eSGO_5CSNCdXOpoUz0/edit?usp=sharing>`_. The format is expected to change in the near future to match the standard for relationship announcements being developed as part of `the COAR Notify Project <https://notify.coar-repositories.org/>`_. 
 
 
 .. code:: json
