@@ -30,14 +30,15 @@ public class RemoteOverlayAccessIOTest {
 
     private Dataset dataset;
     private DataFile datafile;
-    private String logoPath = "resources/images/dataverse_project_logo.svg";
+    private DataFile badDatafile;
+    private String logoPath = "images/dataverse_project_logo.svg";
     private String pid = "10.5072/F2/ABCDEF";
 
     @BeforeEach
     public void setUp() {
         System.setProperty("dataverse.files.test.type", "remote");
         System.setProperty("dataverse.files.test.label", "testOverlay");
-        System.setProperty("dataverse.files.test.base-url", "https://demo.dataverse.org");
+        System.setProperty("dataverse.files.test.base-url", "https://demo.dataverse.org/resources");
         System.setProperty("dataverse.files.test.base-store", "file");
         System.setProperty("dataverse.files.test.download-redirect", "true");
         System.setProperty("dataverse.files.test.remote-store-name", "DemoDataCorp");
@@ -50,6 +51,9 @@ public class RemoteOverlayAccessIOTest {
         datafile.setOwner(dataset);
         datafile.setStorageIdentifier("test://" + logoPath);
 
+        badDatafile = MocksFactory.makeDataFile();
+        badDatafile.setOwner(dataset);
+        badDatafile.setStorageIdentifier("test://../.." + logoPath);
     }
 
     @AfterEach
@@ -67,7 +71,7 @@ public class RemoteOverlayAccessIOTest {
     }
 
     @Test
-    void testRemoteOverlayFile() throws IOException {
+    void testRemoteOverlayFiles() throws IOException {
         // We can read the storageIdentifier and get the driver
         assertTrue(datafile.getStorageIdentifier()
                 .startsWith(DataAccess.getStorgageDriverFromIdentifier(datafile.getStorageIdentifier())));
@@ -98,6 +102,10 @@ public class RemoteOverlayAccessIOTest {
         assertTrue(Paths
                 .get(System.getProperty("dataverse.files.file.directory", "/tmp/files"), pid, logoPath + ".auxobject")
                 .equals(remoteIO.getAuxObjectAsPath("auxobject")));
+        IOException thrown = assertThrows(IOException.class, () -> DataAccess.getStorageIO(badDatafile),
+                "Expected getStorageIO() to throw, but it didn't");
+        // 'test' is the driverId in the IOException messages
+        assertTrue(thrown.getMessage().contains("test"));
 
     }
 
