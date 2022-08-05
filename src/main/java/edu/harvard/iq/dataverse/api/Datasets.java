@@ -3329,7 +3329,9 @@ public class Datasets extends AbstractApiBean {
             return wr.getResponse();
         }
 
-        dataset.getLocks().forEach(dl -> {logger.info(dl.toString());});
+        dataset.getLocks().forEach(dl -> {
+            logger.info(dl.toString());
+        });
 
         //------------------------------------
         // (2a) Make sure dataset does not have package file

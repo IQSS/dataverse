@@ -18,8 +18,6 @@ import javax.json.JsonObject;
 import javax.json.JsonPatch;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang.StringUtils;
-
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 
@@ -1042,7 +1040,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         String finalType = FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT;
         String type = FileUtil.determineFileTypeByNameAndExtension(fileName);
 
-        if (!StringUtils.isBlank(type)) {
+        if (!type.isBlank()) {
             if (FileUtil.useRecognizedType(finalType, type)) {
                 finalType = type;
             }
