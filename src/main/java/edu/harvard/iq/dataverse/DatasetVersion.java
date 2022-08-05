@@ -65,7 +65,7 @@ import org.apache.commons.lang3.StringUtils;
 
 @NamedQueries({
     @NamedQuery(name = "DatasetVersion.findUnarchivedReleasedVersion",
-               query = "SELECT OBJECT(o) FROM DatasetVersion AS o WHERE o.releaseTime IS NOT NULL and o.archivalCopyLocation IS NULL"
+               query = "SELECT OBJECT(o) FROM DatasetVersion AS o WHERE o.dataset.harvestedFrom IS NULL and o.releaseTime IS NOT NULL and o.archivalCopyLocation IS NULL"
     )})
     
     
