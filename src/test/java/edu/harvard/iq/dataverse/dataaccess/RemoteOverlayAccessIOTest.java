@@ -74,7 +74,7 @@ public class RemoteOverlayAccessIOTest {
     void testRemoteOverlayFiles() throws IOException {
         // We can read the storageIdentifier and get the driver
         assertTrue(datafile.getStorageIdentifier()
-                .startsWith(DataAccess.getStorgageDriverFromIdentifier(datafile.getStorageIdentifier())));
+                .startsWith(DataAccess.getStorageDriverFromIdentifier(datafile.getStorageIdentifier())));
         // We can get the driver type from it's ID
         assertTrue(DataAccess.getDriverType("test").equals(System.getProperty("dataverse.files.test.type")));
         // When we get a StorageIO for the file, it is the right type

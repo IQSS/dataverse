@@ -62,18 +62,27 @@ public class DataAccess {
         return getStorageIO(dvObject, null);
     }
 
+    
+
+    public static String getStorageDriverFromIdentifier(String storageIdentifier) {
+        
+        int separatorIndex = storageIdentifier.indexOf(SEPARATOR);
+        String driverId = DEFAULT_STORAGE_DRIVER_IDENTIFIER; // default
+        if (separatorIndex > 0) {
+            driverId = storageIdentifier.substring(0, separatorIndex);
+        }
+        return driverId;
+    }
+    
     //passing DVObject instead of a datafile to accomodate for use of datafiles as well as datasets
 	public static <T extends DvObject> StorageIO<T> getStorageIO(T dvObject, DataAccessRequest req) throws IOException {
 
 		if (dvObject == null || dvObject.getStorageIdentifier() == null || dvObject.getStorageIdentifier().isEmpty()) {
 			throw new IOException("getDataAccessObject: null or invalid datafile.");
 		}
-		String storageIdentifier = dvObject.getStorageIdentifier();
-		int separatorIndex = storageIdentifier.indexOf(SEPARATOR);
-		String storageDriverId = DEFAULT_STORAGE_DRIVER_IDENTIFIER; // default
-		if (separatorIndex > 0) {
-			storageDriverId = storageIdentifier.substring(0, separatorIndex);
-		}
+
+        String storageDriverId = getStorageDriverFromIdentifier(dvObject.getStorageIdentifier());
+
 		return getStorageIO(dvObject, req, storageDriverId);
 	}
 
@@ -150,6 +159,27 @@ public class DataAccess {
     		return "tmp";
     	}
     	return System.getProperty("dataverse.files." + driverId + ".type", "Undefined");
+    }
+    
+    //This 
+    public static String getDriverPrefix(String driverId) throws IOException {
+        if(driverId.isEmpty() || driverId.equals("tmp")) {
+            return "tmp" + SEPARATOR;
+        }
+        String storageType = System.getProperty("dataverse.files." + driverId + ".type", "Undefined");
+        switch(storageType) {
+        case FILE:
+            return FileAccessIO.getDriverPrefix(driverId);
+        case S3:
+            return S3AccessIO.getDriverPrefix(driverId);
+        case SWIFT:
+            return SwiftAccessIO.getDriverPrefix(driverId);
+        default:
+            logger.warning("Could not find storage driver for id: " + driverId);
+            throw new IOException("getDriverPrefix: Unsupported storage method.");
+        }
+        
+
     }
 
     // createDataAccessObject() methods create a *new*, empty DataAccess objects,
