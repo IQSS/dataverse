@@ -119,6 +119,8 @@ We've merged the hotfix into the "master" branch but now we need the fixes (and 
 
 Because of the hotfix version, any SQL scripts in "develop" should be renamed (from "5.11" to "5.11.1" for example). To read more about our naming conventions for SQL scripts, see :doc:`sql-upgrade-scripts`.
 
+Please note that version bumps and SQL script renaming both require all open pull requests to be updated with the latest from the "develop" branch so you might want to add any SQL script renaming to the hotfix branch before you put it through QA to be merged with develop. This way, open pull requests only need to be updated once.
+
 ----
 
 Previous: :doc:`containers` | Next: :doc:`tools`
