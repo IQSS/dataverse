@@ -24,7 +24,7 @@
         <jhove.version>1.20.1</jhove.version>
         <jacoco.version>0.8.7</jacoco.version>
         <poi.version>5.2.1</poi.version>
-        <tika.version>2.3.0</tika.version>
+        <tika.version>2.4.1</tika.version>
     </properties>
     
     <!-- Versions of dependencies used both directly and transitive are managed here.
