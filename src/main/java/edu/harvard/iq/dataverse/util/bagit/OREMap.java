@@ -260,10 +260,10 @@ public class OREMap {
                 if (df.getGlobalId().asString().length() != 0) {
                     fileId = df.getGlobalId().asString();
                     fileSameAs = SystemConfig.getDataverseSiteUrlStatic()
-                            + "/api/access/datafile/:persistentId?persistentId=" + fileId;
+                            + "/api/access/datafile/:persistentId?persistentId=" + fileId + ((df.getOriginalFileFormat()!=null) ? "?format=original":"");
                 } else {
                     fileId = SystemConfig.getDataverseSiteUrlStatic() + "/file.xhtml?fileId=" + df.getId();
-                    fileSameAs = SystemConfig.getDataverseSiteUrlStatic() + "/api/access/datafile/" + df.getId();
+                    fileSameAs = SystemConfig.getDataverseSiteUrlStatic() + "/api/access/datafile/" + df.getId() + ((df.getOriginalFileFormat()!=null) ? "?format=original":"");
                 }
                 aggRes.add("@id", fileId);
                 aggRes.add(JsonLDTerm.schemaOrg("sameAs").getLabel(), fileSameAs);
