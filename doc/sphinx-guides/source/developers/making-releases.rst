@@ -100,6 +100,11 @@ Announce the Release on the Dataverse Blog
 
 Make a blog post at https://dataverse.org/blog
 
+Announce the Release on the Dataverse Roadmap
+---------------------------------------------
+
+Add an entry to the list of releases at https://www.iq.harvard.edu/roadmap-dataverse-project 
+
 Announce the Release on the Mailing List
 ----------------------------------------
 
