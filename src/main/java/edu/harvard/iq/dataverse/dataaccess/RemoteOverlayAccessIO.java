@@ -453,7 +453,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
                         break;
                     case DataAccess.FILE:
                         fullStorageLocation = baseDriverId + DataAccess.SEPARATOR
-                                + System.getProperty("dataverse.files." + baseDriverId + ".directory") + "/"
+                                + System.getProperty("dataverse.files." + baseDriverId + ".directory", "/tmp/files") + "/"
                                 + fullStorageLocation;
                         break;
                     default:
@@ -475,7 +475,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
                         break;
                     case DataAccess.FILE:
                         fullStorageLocation = baseDriverId + DataAccess.SEPARATOR
-                                + System.getProperty("dataverse.files." + baseDriverId + ".directory") + "/"
+                                + System.getProperty("dataverse.files." + baseDriverId + ".directory", "/tmp/files") + "/"
                                 + fullStorageLocation;
                         break;
                     default:
