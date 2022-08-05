@@ -198,7 +198,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
     public InputStream getInputStream() throws IOException {
         if (super.getInputStream() == null) {
             try {
-                HttpGet get = new HttpGet(baseUrl + "/" + urlPath);
+                HttpGet get = new HttpGet(generateTemporaryDownloadUrl(null, null, null));
                 CloseableHttpResponse response = getSharedHttpClient().execute(get, localContext);
 
                 int code = response.getStatusLine().getStatusCode();
