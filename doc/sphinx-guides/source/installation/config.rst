@@ -685,7 +685,7 @@ and/or managing access to a secure enclave. For specific remote stores, consult 
     dataverse.files.<id>.base-url                <?>                 **Required** All files must have URLs of the form <baseUrl>/* .             (none)
     dataverse.files.<id>.base-store              <?>                 **Required** The id of a base store (of type file, s3, or swift).           (none)
     dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download (should usually be true).                            ``false``
-    dataverse.files.<id>.secretKey               <?>                 A key used to sign download requests sent to the remote store. Optional.    (none)
+    dataverse.files.<id>.secret-key               <?>                 A key used to sign download requests sent to the remote store. Optional.    (none)
     dataverse.files.<id>.url-expiration-minutes  <?>                 If direct downloads and using signing: time until links expire. Optional.   60
     dataverse.files.<id>.remote-store-name       <?>                 A short name used in the UI to indicate where a file is located. Optional.  (none)
     dataverse.files.<id>.remote-store-url        <?>                 A url to an info page about the remote store used in the UI. Optional.      (none)

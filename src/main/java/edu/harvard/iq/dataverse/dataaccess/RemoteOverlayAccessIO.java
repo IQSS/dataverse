@@ -188,7 +188,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
             } finally {
                 EntityUtils.consume(response.getEntity());
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             logger.warning(e.getMessage());
         }
         return size;
@@ -403,7 +403,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 
         // ToDo - support remote auxiliary Files
         if (auxiliaryTag == null) {
-            String secretKey = System.getProperty("dataverse.files." + this.driverId + ".secretkey");
+            String secretKey = System.getProperty("dataverse.files." + this.driverId + ".secret-key");
             if (secretKey == null) {
                 return baseUrl + "/" + urlPath;
             } else {
@@ -494,7 +494,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         try {
           remoteStoreUrl = new URL(System.getProperty("dataverse.files." + this.driverId + ".remote-store-url"));
         } catch(MalformedURLException mfue) {
-            logger.warning("Unable to read remoteStoreUrl for driver: " + this.driverId);
+            logger.fine("Unable to read remoteStoreUrl for driver: " + this.driverId);
         }
     }
 
