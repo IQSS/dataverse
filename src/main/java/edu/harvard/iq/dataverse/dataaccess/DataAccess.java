@@ -64,7 +64,7 @@ public class DataAccess {
 
     
 
-    public static String getStorgageDriverFromIdentifier(String storageIdentifier) {
+    public static String getStorageDriverFromIdentifier(String storageIdentifier) {
         
         int separatorIndex = storageIdentifier.indexOf(SEPARATOR);
         String driverId = DEFAULT_STORAGE_DRIVER_IDENTIFIER; // default
@@ -81,7 +81,7 @@ public class DataAccess {
 			throw new IOException("getDataAccessObject: null or invalid datafile.");
 		}
 
-        String storageDriverId = getStorgageDriverFromIdentifier(dvObject.getStorageIdentifier());
+        String storageDriverId = getStorageDriverFromIdentifier(dvObject.getStorageIdentifier());
 
 		return getStorageIO(dvObject, req, storageDriverId);
 	}
