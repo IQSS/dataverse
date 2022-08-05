@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.Channel;
 import java.nio.channels.Channels;
@@ -80,8 +82,9 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         this.setIsLocalFile(false);
         configureStores(req, driverId, null);
         logger.fine("Parsing storageidentifier: " + dvObject.getStorageIdentifier());
-        // TODO: validate the storage location supplied
         urlPath = dvObject.getStorageIdentifier().substring(dvObject.getStorageIdentifier().lastIndexOf("//") + 2);
+        validatePath(urlPath);
+        
         logger.fine("Base URL: " + urlPath);
     }
 
@@ -90,10 +93,22 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         this.setIsLocalFile(false);
         configureStores(null, driverId, storageLocation);
 
-        // TODO: validate the storage location supplied
         urlPath = storageLocation.substring(storageLocation.lastIndexOf("//") + 2);
+        validatePath(urlPath);
         logger.fine("Base URL: " + urlPath);
     }
+    
+    private void validatePath(String path) throws IOException {
+        try {
+            URI absoluteURI = new URI(baseUrl + "/" + urlPath);
+            if(!absoluteURI.normalize().toString().startsWith(baseUrl)) {
+                throw new IOException("storageidentifier doesn't start with " + this.driverId + "'s base-url");
+            }
+        } catch(URISyntaxException use) {
+            throw new IOException("Could not interpret storageidentifier in remote store " + this.driverId);
+        }
+     }
+
 
     @Override
     public void open(DataAccessOption... options) throws IOException {
