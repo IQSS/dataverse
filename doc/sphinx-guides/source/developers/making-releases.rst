@@ -95,15 +95,15 @@ Now that we've published the release, close the milestone and create a new one.
 
 Note that for milestones we use just the number without the "v" (e.g. "5.10.1").
 
+Add the Release to the Dataverse Roadmap
+----------------------------------------
+
+Add an entry to the list of releases at https://www.iq.harvard.edu/roadmap-dataverse-project 
+
 Announce the Release on the Dataverse Blog
 ------------------------------------------
 
 Make a blog post at https://dataverse.org/blog
-
-Announce the Release on the Dataverse Roadmap
----------------------------------------------
-
-Add an entry to the list of releases at https://www.iq.harvard.edu/roadmap-dataverse-project 
 
 Announce the Release on the Mailing List
 ----------------------------------------
