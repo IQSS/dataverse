@@ -22,44 +22,44 @@ An example message is shown below. It indicates that a resource with the name "A
 
 .. code:: json
 
-{
-  "@context": [
-    "https://www.w3.org/ns/activitystreams",
-    "https://purl.org/coar/notify"
-  ],
-  "id": "urn:uuid:94ecae35-dcfd-4182-8550-22c7164fe23f",
-  "actor": {
-    "id": "https://research-organisation.org/dspace",
-    "name": "DSpace Repository",
-    "type": "Service"
-  },
-  "context": {
-    "IsSupplementedBy":
-      {
-        "id": "http://dev-hdc3b.lib.harvard.edu/dataset.xhtml?persistentId=doi:10.5072/FK2/GGCCDL",
-        "ietf:cite-as": "https://doi.org/10.5072/FK2/GGCCDL",
-        "type": "sorg:Dataset"
-      }
-  },
-  "object": {
-    "id": "https://research-organisation.org/dspace/item/35759679-5df3-4633-b7e5-4cf24b4d0614",
-    "ietf:cite-as": "https://research-organisation.org/authority/resolve/35759679-5df3-4633-b7e5-4cf24b4d0614",
-    "sorg:name": "An Interesting Title",
-    "type": "sorg:ScholarlyArticle"
-  },
-  "origin": {
-    "id": "https://research-organisation.org/dspace",
-    "inbox": "https://research-organisation.org/dspace/inbox/",
-    "type": "Service"
-  },
-  "target": {
-    "id": "https://research-organisation.org/dataverse",
-    "inbox": "https://research-organisation.org/dataverse/inbox/",
-    "type": "Service"
-  },
-  "type": [
-    "Announce",
-    "coar-notify:ReleaseAction"
-  ]
-}
+  {
+    "@context": [
+      "https://www.w3.org/ns/activitystreams",
+      "https://purl.org/coar/notify"
+    ],
+    "id": "urn:uuid:94ecae35-dcfd-4182-8550-22c7164fe23f",
+    "actor": {
+      "id": "https://research-organisation.org/dspace",
+      "name": "DSpace Repository",
+      "type": "Service"
+    },
+    "context": {
+      "IsSupplementedBy":
+        {
+          "id": "http://dev-hdc3b.lib.harvard.edu/dataset.xhtml?persistentId=doi:10.5072/FK2/GGCCDL",
+          "ietf:cite-as": "https://doi.org/10.5072/FK2/GGCCDL",
+          "type": "sorg:Dataset"
+        }
+    },
+    "object": {
+      "id": "https://research-organisation.org/dspace/item/35759679-5df3-4633-b7e5-4cf24b4d0614",
+      "ietf:cite-as": "https://research-organisation.org/authority/resolve/35759679-5df3-4633-b7e5-4cf24b4d0614",
+      "sorg:name": "An Interesting Title",
+      "type": "sorg:ScholarlyArticle"
+    },
+    "origin": {
+      "id": "https://research-organisation.org/dspace",
+      "inbox": "https://research-organisation.org/dspace/inbox/",
+      "type": "Service"
+    },
+    "target": {
+      "id": "https://research-organisation.org/dataverse",
+      "inbox": "https://research-organisation.org/dataverse/inbox/",
+      "type": "Service"
+    },
+    "type": [
+      "Announce",
+      "coar-notify:ReleaseAction"
+    ]
+  }
 
