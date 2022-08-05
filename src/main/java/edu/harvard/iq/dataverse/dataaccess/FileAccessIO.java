@@ -584,12 +584,8 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     }
     
     
-    private String getFilesRootDirectory() {
-        String filesRootDirectory = System.getProperty("dataverse.files." + this.driverId + ".directory");
-
-        if (filesRootDirectory == null || filesRootDirectory.equals("")) {
-            filesRootDirectory = "/tmp/files";
-        }
+    protected String getFilesRootDirectory() {
+        String filesRootDirectory = System.getProperty("dataverse.files." + this.driverId + ".directory", "/tmp/files");
         return filesRootDirectory;
     }
     
