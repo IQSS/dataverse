@@ -801,14 +801,10 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
 
     }
-    
-    public String getReminderString(Dataset dataset, boolean canPublishDataset) {
-        return getReminderString( dataset, canPublishDataset, false);
-    }
 
     //get a string to add to save success message
     //depends on page (dataset/file) and user privleges
-    public String getReminderString(Dataset dataset, boolean canPublishDataset, boolean filePage) {
+    public String getReminderString(Dataset dataset, boolean canPublishDataset, boolean filePage, boolean isValid) {
        
         String reminderString;
 
@@ -832,6 +828,10 @@ public class DatasetServiceBean implements java.io.Serializable {
                 reminderString = reminderString + " " + BundleUtil.getStringFromBundle("dataset.message.submit.remind.draft.filePage");
                 reminderString = reminderString.replace("{0}", "" + (dataset.getGlobalId().asString().concat("&version=DRAFT")));
             }
+        }
+
+        if (!isValid) {
+            reminderString = reminderString + "<br/><b style=\"color:red;\"> " + BundleUtil.getStringFromBundle("dataset.message.invalid.warning") + "</b>";
         }
 
         if (reminderString != null) {
