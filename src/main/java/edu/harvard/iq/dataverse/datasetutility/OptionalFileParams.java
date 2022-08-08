@@ -376,7 +376,7 @@ public class OptionalFileParams {
             String storageId = jsonObj.get(STORAGE_IDENTIFIER_ATTR_NAME).getAsString();
             String type = DataAccess.getDriverType(DataAccess.getStorageDriverFromIdentifier(storageId));
             if(!type.equals("tmp")&& !type.equals("Undefined")) {
-              this.storageIdentifier = jsonObj.get(STORAGE_IDENTIFIER_ATTR_NAME).getAsString();
+              this.storageIdentifier = storageId;
             }
         }
         
