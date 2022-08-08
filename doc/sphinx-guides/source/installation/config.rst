@@ -665,6 +665,8 @@ Migrating from Local Storage to S3
 
 Is currently documented on the :doc:`/developers/deployment` page.
 
+.. _trusted-remote-storage:
+
 Trusted Remote Storage
 ++++++++++++++++++++++
 
@@ -673,6 +675,8 @@ These and other available options are described in the table below.
 
 Trusted remote stores can range from being a static trusted website to a sophisticated service managing access requests and logging activity
 and/or managing access to a secure enclave. For specific remote stores, consult their documentation when configuring the remote store in your Dataverse installation.
+
+Once you have configured a trusted remote store, you can point your users to the :ref:`add-remote-file-api` section of the API Guide.
 
 .. table::
     :align: left
