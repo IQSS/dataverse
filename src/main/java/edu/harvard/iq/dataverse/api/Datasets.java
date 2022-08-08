@@ -1156,7 +1156,7 @@ public class Datasets extends AbstractApiBean {
                          */
                         try {
                             updateVersion = commandEngine.submit(archiveCommand);
-                            if (updateVersion.getArchivalCopyLocation() != null) {
+                            if (!updateVersion.getArchivalCopyLocationStatus().equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE)) {
                                 successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.success");
                             } else {
                                 successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure");
@@ -3488,7 +3488,6 @@ public class Datasets extends AbstractApiBean {
 
                     dsv.setArchivalCopyLocation(JsonUtil.prettyPrint(update));
                     dsv = datasetversionService.merge(dsv);
-                    logger.fine("location now: " + dsv.getArchivalCopyLocation());
                     logger.fine("status now: " + dsv.getArchivalCopyLocationStatus());
                     logger.fine("message now: " + dsv.getArchivalCopyLocationMessage());
 
