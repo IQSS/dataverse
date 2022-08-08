@@ -681,20 +681,20 @@ Once you have configured a trusted remote store, you can point your users to the
 .. table::
     :align: left
 
-    ===========================================  ==================  ==========================================================================  =============
+    ===========================================  ==================  ==========================================================================  ===================
     JVM Option                                   Value               Description                                                                 Default value
-    ===========================================  ==================  ==========================================================================  =============
+    ===========================================  ==================  ==========================================================================  ===================
     dataverse.files.<id>.type                    ``remote``          **Required** to mark this storage as remote.                                (none)
     dataverse.files.<id>.label                   <?>                 **Required** label to be shown in the UI for this storage.                  (none)
     dataverse.files.<id>.base-url                <?>                 **Required** All files must have URLs of the form <baseUrl>/* .             (none)
-    dataverse.files.<id>.base-store              <?>                 **Required** The id of a base store (of type file, s3, or swift).           (none)
+    dataverse.files.<id>.base-store              <?>                 **Optional** The id of a base store (of type file, s3, or swift).           (the default store)
     dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download (should usually be true).                            ``false``
-    dataverse.files.<id>.secret-key               <?>                 A key used to sign download requests sent to the remote store. Optional.    (none)
+    dataverse.files.<id>.secret-key               <?>                 A key used to sign download requests sent to the remote store. Optional.   (none)
     dataverse.files.<id>.url-expiration-minutes  <?>                 If direct downloads and using signing: time until links expire. Optional.   60
     dataverse.files.<id>.remote-store-name       <?>                 A short name used in the UI to indicate where a file is located. Optional.  (none)
     dataverse.files.<id>.remote-store-url        <?>                 A url to an info page about the remote store used in the UI. Optional.      (none)
     
-    ===========================================  ==================  ==========================================================================  =============
+    ===========================================  ==================  ==========================================================================  ===================
 
 
 
@@ -977,7 +977,7 @@ Some external tools are also ready to be translated, especially if they are usin
 
 
 Tools for Translators
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++
++++++++++++++++++++++
 
 The list below depicts a set of tools that can be used to ease the amount of work necessary for translating the Dataverse software by facilitating this collaborative effort and enabling the reuse of previous work:
 
