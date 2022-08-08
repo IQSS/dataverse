@@ -448,11 +448,24 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 
     private void configureStores(DataAccessRequest req, String driverId, String storageLocation) throws IOException {
         baseUrl = System.getProperty("dataverse.files." + this.driverId + ".base-url");
+        if (baseUrl == null) {
+            throw new IOException("dataverse.files." + this.driverId + ".base-url is required");
+        } else {
+            try {
+                new URI(baseUrl);
+            } catch (Exception e) {
+                logger.warning(
+                        "Trouble interpreting base-url for store: " + this.driverId + " : " + e.getLocalizedMessage());
+                throw new IOException("Can't interpret base-url as a URI");
+            }
+
+        }
 
         if (baseStore == null) {
             String baseDriverId = getBaseStoreIdFor(driverId);
             String fullStorageLocation = null;
-            String baseDriverType = System.getProperty("dataverse.files." + baseDriverId + ".type");
+            String baseDriverType = System.getProperty("dataverse.files." + baseDriverId + ".type", DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
+            
             if(dvObject  instanceof Dataset) {
                 baseStore = DataAccess.getStorageIO(dvObject, req, baseDriverId);
             } else {
