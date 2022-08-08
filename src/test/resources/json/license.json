@@ -4,5 +4,5 @@
   "iconUrl": "http://dataverse.org/licenses/test/1.0/icon.png",
   "shortDescription": "Dataverse Test License v1.0.",
   "active": false,
-  "sortOrder": 1
+  "sortOrder": 1000
 }
