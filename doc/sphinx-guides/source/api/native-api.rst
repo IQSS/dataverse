@@ -1411,7 +1411,37 @@ In practice, you only need one the ``dataset_id`` or the ``persistentId``. The e
     print '-' * 40
     print r.json()
     print r.status_code
+
+.. _add-remote-file-api:
     
+Add a Remote File to a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If your Dataverse installation has been configured to support :ref:`trusted-remote-storage`
+you can add files from remote URLs to datasets. These remote files appear in your Dataverse
+installation as if they were ordinary files but are stored remotely.
+
+The location of the remote file is specified in the ``storageIdentifier`` field in JSON you supply.
+The base URL of the file is contained in the "store" (e.g. "trsa" in the example below) and is followed by the
+path to the file (e.g. "themes/custom...").
+
+In the JSON example below, all fields are required except for ``description``. Other optional fields are shown under :ref:`add-file-api`.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.5072/FK2/J8SJZB
+  export JSON_DATA='{"description":"A remote image.","storageIdentifier":"trsa://themes/custom/qdr/images/CoreTrustSeal-logo-transparent.png","checksumType":"MD5","md5Hash":"509ef88afa907eaf2c17c1c8d8fde77e","label":"testlogo.png","fileName":"testlogo.png","mimeType":"image/png"}'
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X POST "$SERVER_URL/api/datasets/:persistentId/addFiles?persistentId=$PERSISTENT_ID" -F "jsonData=$JSON_DATA"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST https://demo.dataverse.org/api/datasets/:persistentId/addFiles?persistentId=doi:10.5072/FK2/J8SJZB -F 'jsonData={"description":"A remote image.","storageIdentifier":"trsa://themes/custom/qdr/images/CoreTrustSeal-logo-transparent.png","checksumType":"MD5","md5Hash":"509ef88afa907eaf2c17c1c8d8fde77e","label":"testlogo.png","fileName":"testlogo.png","mimeType":"image/png"}'
+
 Report the data (file) size of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
