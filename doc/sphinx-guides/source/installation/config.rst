@@ -157,7 +157,7 @@ and restart Payara. The prefix can be configured via the API (where it is referr
 
 Once this is done, you will be able to publish datasets and files, but the persistent identifiers will not be citable, and they will only resolve from the DataCite test environment (and then only if the Dataverse installation from which you published them is accessible - DOIs minted from your laptop will not resolve). Note that any datasets or files created using the test configuration cannot be directly migrated and would need to be created again once a valid DOI namespace is configured.
 
-To properly configure persistent identifiers for a production installation, an account and associated namespace must be acquired for a fee from a DOI or HDL provider. **DataCite** (https://www.datacite.org) is the recommended DOI provider (see https://dataverse.org/global-dataverse-community-consortium for more on joining DataCite) but **EZID** (http://ezid.cdlib.org) is an option for the University of California according to https://www.cdlib.org/cdlinfo/2017/08/04/ezid-doi-service-is-evolving/ . **Handle.Net** (https://www.handle.net) is the HDL provider.
+To properly configure persistent identifiers for a production installation, an account and associated namespace must be acquired for a fee from a DOI or HDL provider. **DataCite** (https://www.datacite.org) is the recommended DOI provider (see https://dataversecommunity.global for more on joining DataCite) but **EZID** (http://ezid.cdlib.org) is an option for the University of California according to https://www.cdlib.org/cdlinfo/2017/08/04/ezid-doi-service-is-evolving/ . **Handle.Net** (https://www.handle.net) is the HDL provider.
 
 Once you have your DOI or Handle account credentials and a namespace, configure your Dataverse installation to use them using the JVM options and database settings below.
 
@@ -600,7 +600,7 @@ Reported Working S3-Compatible Storage
   possibly slow) https://play.minio.io:9000 service.
 
 `StorJ Object Store <https://www.storj.io>`_
- StorJ is a distributed object store that can be configured with an S3 gateway. Per the S3 Storage instructions above, you'll first set up the StorJ S3 store by defining the id, type, and label. After following the general installation, set the following configurations to use a StorJ object store: ``dataverse.files.<id>.payload-signing=true`` and ``dataverse.files.<id>.chunked-encoding=false``.
+ StorJ is a distributed object store that can be configured with an S3 gateway. Per the S3 Storage instructions above, you'll first set up the StorJ S3 store by defining the id, type, and label. After following the general installation, set the following configurations to use a StorJ object store: ``dataverse.files.<id>.payload-signing=true`` and ``dataverse.files.<id>.chunked-encoding=false``. For step-by-step instructions see https://docs.storj.io/dcs/how-tos/dataverse-integration-guide/
 
  Note that for direct uploads and downloads, Dataverse redirects to the proxy-url but presigns the urls based on the ``dataverse.files.<id>.custom-endpoint-url``. Also, note that if you choose to enable ``dataverse.files.<id>.download-redirect`` the S3 URLs expire after 60 minutes by default. You can change that minute value to reflect a timeout value that’s more appropriate by using ``dataverse.files.<id>.url-expiration-minutes``.
 
@@ -697,6 +697,10 @@ Before reading about the available customization options, you might want to fami
 The image below indicates that the page layout consists of three main blocks: a header block, a content block, and a footer block:
 
 |dvPageBlocks|
+
+.. To edit, use dvBrandingCustBlocks.drawio with https://app.diagrams.net
+.. |dvPageBlocks| image:: ./img/dvBrandingCustBlocks.png
+   :class: img-responsive
 
 Installation Name/Brand Name
 ++++++++++++++++++++++++++++
@@ -937,6 +941,16 @@ Some external tools are also ready to be translated, especially if they are usin
 
 .. _dataverse-internationalization-wg: https://groups.google.com/forum/#!forum/dataverse-internationalization-wg
 
+
+Tools for Translators
++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+The list below depicts a set of tools that can be used to ease the amount of work necessary for translating the Dataverse software by facilitating this collaborative effort and enabling the reuse of previous work:
+
+- `Weblate for the Dataverse Software <https://weblate.dataverse.org/>`_, made available in the scope of the `SSHOC <https://sshopencloud.eu/>`_ project.
+
+- `easyTranslationHelper <https://github.com/universidadeaveiro/easyTranslationHelper>`_, a tool developed by `University of Aveiro <https://www.ua.pt/>`_.
+
 .. _Web-Analytics-Code:
 
 Web Analytics Code
@@ -984,11 +998,13 @@ Once this script is running, you can look in the Google Analytics console (Realt
 Configuring Licenses
 --------------------
 
-Out of the box, users select from the following licenses or terms:
+On a new Dataverse installation, users may select from the following licenses or terms:
 
 - CC0 1.0 (default)
 - CC BY 4.0
 - Custom Dataset Terms
+
+(Note that existing Dataverse installations which are upgraded from 5.9 or previous will only offer CC0 1.0, added automatically during the upgrade to version 5.10.)
 
 You have a lot of control over which licenses and terms are available. You can remove licenses and add new ones. You can decide which license is the default. You can remove "Custom Dataset Terms" as a option. You can remove all licenses and make "Custom Dataset Terms" the only option.
 
@@ -1037,6 +1053,22 @@ Disabling Custom Dataset Terms
 ++++++++++++++++++++++++++++++
 
 See :ref:`:AllowCustomTermsOfUse` for how to disable the "Custom Dataset Terms" option.
+
+.. _BagIt File Handler:
+
+BagIt File Handler
+------------------
+
+BagIt file handler detects and transforms zip files with a BagIt package format into Dataverse DataFiles. The system validates the checksums of the files in the package payload as described in the first manifest file with a hash algorithm that we support. Take a look at `BagChecksumType class <https://github.com/IQSS/dataverse/tree/develop/src/main/java/edu/harvard/iq/dataverse/util/bagit/BagChecksumType.java>`_ for the list of the currently supported hash algorithms.
+
+The checksum validation uses a thread pool to improve performance. This thread pool can be adjusted to your Dataverse installation requirements.
+
+BagIt file handler configuration settings:
+
+- :ref:`:BagItHandlerEnabled`
+- :ref:`:BagValidatorJobPoolSize`
+- :ref:`:BagValidatorMaxErrors`
+- :ref:`:BagValidatorJobWaitInterval`
 
 .. _BagIt Export:
 
@@ -1406,10 +1438,6 @@ doi.baseurlstring
 +++++++++++++++++
 
 As of this writing, "https://mds.datacite.org" (DataCite) and "https://ezid.cdlib.org" (EZID) are the main valid values.
-
-While the above two options are recommended because they have been tested by the Dataverse Project Team, it is also possible to use a DataCite Client API as a proxy to DataCite. In this case, requests made to the Client API are captured and passed on to DataCite for processing. The application will interact with the DataCite Client API exactly as if it were interacting directly with the DataCite API, with the only difference being the change to the base endpoint URL.
-
-For example, the Australian Data Archive (ADA) successfully uses the Australian National Data Service (ANDS) API (a proxy for DataCite) to mint their DOIs through their Dataverse installation using a ``doi.baseurlstring`` value of "https://researchdata.ands.org.au/api/doi/datacite" as documented at https://documentation.ands.org.au/display/DOC/ANDS+DataCite+Client+API . As ADA did for ANDS DOI minting, any DOI provider (and their corresponding DOI configuration parameters) other than DataCite must be tested with the Dataverse Software to establish whether or not it will function properly.
 
 Out of the box, the Dataverse Software is configured to use a test MDS DataCite base URL string. You can delete it like this:
 
@@ -2536,6 +2564,49 @@ To enable redirects to the zipper on a different server:
 
 ``curl -X PUT -d 'https://zipper.example.edu/cgi-bin/zipdownload' http://localhost:8080/api/admin/settings/:CustomZipDownloadServiceUrl``
 
+:CreateDataFilesMaxErrorsToDisplay
+++++++++++++++++++++++++++++++++++
+
+Number of errors to display to the user when creating DataFiles from a file upload. It defaults to 5 errors.
+
+``curl -X PUT -d '1' http://localhost:8080/api/admin/settings/:CreateDataFilesMaxErrorsToDisplay``
+
+.. _:BagItHandlerEnabled:
+
+:BagItHandlerEnabled
++++++++++++++++++++++
+
+Part of the database settings to configure the BagIt file handler. Enables the BagIt file handler. By default, the handler is disabled.
+
+``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:BagItHandlerEnabled``
+
+.. _:BagValidatorJobPoolSize:
+
+:BagValidatorJobPoolSize
+++++++++++++++++++++++++
+
+Part of the database settings to configure the BagIt file handler. The number of threads the checksum validation class uses to validate a single zip file. Defaults to 4 threads
+
+``curl -X PUT -d '10' http://localhost:8080/api/admin/settings/:BagValidatorJobPoolSize``
+
+.. _:BagValidatorMaxErrors:
+
+:BagValidatorMaxErrors
+++++++++++++++++++++++
+
+Part of the database settings to configure the BagIt file handler. The maximum number of errors allowed before the validation job aborts execution. This is to avoid processing the whole BagIt package. Defaults to 5 errors.
+
+``curl -X PUT -d '2' http://localhost:8080/api/admin/settings/:BagValidatorMaxErrors``
+
+.. _:BagValidatorJobWaitInterval:
+
+:BagValidatorJobWaitInterval
+++++++++++++++++++++++++++++
+
+Part of the database settings to configure the BagIt file handler. This is the period in seconds to check for the number of errors during validation. Defaults to 10.
+
+``curl -X PUT -d '60' http://localhost:8080/api/admin/settings/:BagValidatorJobWaitInterval``
+
 :ArchiverClassName
 ++++++++++++++++++
 
@@ -2760,6 +2831,33 @@ To remove the override and go back to the default list:
 
 ``curl -X PUT -d '' http://localhost:8080/api/admin/settings/:FileCategories``
 
+.. _:ShowMuteOptions:
+
+:ShowMuteOptions
+++++++++++++++++
+
+Allows users to mute notifications by showing additional configuration options in the Notifications tab of the account page (see :ref:`account-notifications` in the User Guide). By default, this setting is "false" and users cannot mute any notifications (this feature is not shown in the user interface).
+
+For configuration details, see :ref:`mute-notifications`.
+
+.. _:AlwaysMuted:
+
+:AlwaysMuted
+++++++++++++
+
+Overrides the default empty list of always muted notifications. Always muted notifications cannot be unmuted by the users. Always muted notifications are not shown in the notification settings for the users.
+
+For configuration details, see :ref:`mute-notifications`.
+
+.. _:NeverMuted:
+
+:NeverMuted
++++++++++++
+
+Overrides the default empty list of never muted notifications. Never muted notifications cannot be muted by the users. Always muted notifications are grayed out and are not adjustable by the user.
+
+For configuration details, see :ref:`mute-notifications`.
+
 :ControlledVocabularyCustomJavaScript
 +++++++++++++++++++++++++++++++++++++
 
@@ -2774,7 +2872,3 @@ To specify a custom script ``/covoc/js/covoc.js`` to be loaded:
 To remove the custom script:
 
 ``curl -X PUT -d '' http://localhost:8080/api/admin/settings/:ControlledVocabularyCustomJavaScript``
-
-.. To edit, use dvBrandingCustBlocks.drawio with https://app.diagrams.net
-.. |dvPageBlocks| image:: ./img/dvBrandingCustBlocks.png
-   :class: img-responsive
