@@ -24,12 +24,8 @@ import java.io.UnsupportedEncodingException;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.IOUtils;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
@@ -566,7 +562,30 @@ public class DatasetUtil {
 
     public static String getLicenseDescription(DatasetVersion dsv) {
         License license = dsv.getTermsOfUseAndAccess().getLicense();
-        return license != null ? license.getShortDescription() : BundleUtil.getStringFromBundle("license.custom.description");
+
+        if (license != null) {
+            return getLocalizedLicenseDescription(license.getName()) ;
+        } else {
+            return BundleUtil.getStringFromBundle("license.custom.description");
+        }
+    }
+
+    public static String getLocalizedLicenseDescription(String licenseName) {
+        String key = "license." + licenseName.toLowerCase().replace(" ","_") + ".description";
+         if (key != null) {
+            try {
+                String _description = BundleUtil.getStringFromPropertyFile(key, "License");
+                if (_description == null) {
+                    return BundleUtil.getStringFromBundle("license.custom.description");
+                } else {
+                    return _description;
+                }
+            } catch (MissingResourceException mre) {
+                return BundleUtil.getStringFromBundle("license.custom.description");
+            }
+        } else {
+            return BundleUtil.getStringFromBundle("license.custom.description");
+        }
     }
 
     public static String getLocaleExternalStatus(String status) {

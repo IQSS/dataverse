@@ -55,8 +55,8 @@
                                </ui:fragment>
                                <ui:fragment rendered="#{!empty termsOfUseAndAccess.license}">
                                    <p>
-                                       <img src="#{termsOfUseAndAccess.license.iconUrl}" title="#{termsOfUseAndAccess.license.shortDescription}"  style="display:none"  onload="this.style.display='inline'" />
-                                       <a href="#{termsOfUseAndAccess.license.uri}" title="#{termsOfUseAndAccess.license.shortDescription}" target="_blank">#{termsOfUseAndAccess.license.name}</a>
+                                       <img src="#{termsOfUseAndAccess.license.iconUrl}" title="#{DatasetUtil:getLocalizedLicenseDescription(termsOfUseAndAccess.license.name)}"  style="display:none"  onload="this.style.display='inline'" />
+                                       <a href="#{termsOfUseAndAccess.license.uri}" title="#{DatasetUtil:getLocalizedLicenseDescription(termsOfUseAndAccess.license.name)}" target="_blank">#{termsOfUseAndAccess.license.name}</a>
                                    </p>
                                </ui:fragment>
                            </div>
