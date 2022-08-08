@@ -943,7 +943,7 @@ Some external tools are also ready to be translated, especially if they are usin
 
 
 Tools for Translators
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++
++++++++++++++++++++++
 
 The list below depicts a set of tools that can be used to ease the amount of work necessary for translating the Dataverse software by facilitating this collaborative effort and enabling the reuse of previous work:
 
@@ -1189,12 +1189,14 @@ In the Chronopolis case, since the transfer from the DuraCloud front-end to arch
 
 A batch version of this admin api call is also available:
 
-``curl -X POST -H "X-Dataverse-key: <key>" http://localhost:8080/api/admin/archiveAllUnarchivedDatasetVersions?listonly=true&limit=10&latestonly=true``
+``curl -X POST -H "X-Dataverse-key: <key>" 'http://localhost:8080/api/admin/archiveAllUnarchivedDatasetVersions?listonly=true&limit=10&latestonly=true'``
 
 The archiveAllUnarchivedDatasetVersions call takes 3 optional configuration parameters. 
 * listonly=true will cause the API to list dataset versions that would be archived but will not take any action.
 * limit=<n> will limit the number of dataset versions archived in one api call to <= <n>. 
 * latestonly=true will limit archiving to only the latest published versions of datasets instead of archiving all unarchived versions.
+
+Note that because archiving is done asynchronously, the calls above will return OK even if the user does not have the *PublishDataset* permission on the dataset(s) involved. Failures are indocated in the log and the archivalStatus calls in the native api can be used to check the status as well.
 
 
 PostPublication Workflow

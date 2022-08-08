@@ -1849,7 +1849,7 @@ public class Admin extends AbstractApiBean {
                         }
                     }).start();
                     return ok("Archive submission using " + cmd.getClass().getCanonicalName()
-                            + " started. Processing can take significant time for large datasets. View log and/or check archive for results.");
+                            + " started. Processing can take significant time for large datasets and requires that the user have permission to publish the dataset. View log and/or check archive for results.");
                 } else {
                     logger.log(Level.SEVERE, "Could not find Archiver class: " + className);
                     return error(Status.INTERNAL_SERVER_ERROR, "Could not find Archiver class: " + className);
@@ -1940,7 +1940,7 @@ public class Admin extends AbstractApiBean {
                             logger.info("Archiving complete: " + successes + " Successes, " + failures + " Failures. See prior log messages for details.");
                         }
                     }).start();
-                    return ok("Archiving all unarchived published dataset versions using " + cmd.getClass().getCanonicalName() + ". Processing can take significant time for large datasets/ large numbers of dataset versions. View log and/or check archive for results.");
+                    return ok("Starting to archive all unarchived published dataset versions using " + cmd.getClass().getCanonicalName() + ". Processing can take significant time for large datasets/ large numbers of dataset versions  and requires that the user have permission to publish the dataset(s). View log and/or check archive for results.");
                 } else {
                     logger.log(Level.SEVERE, "Could not find Archiver class: " + className);
                     return error(Status.INTERNAL_SERVER_ERROR, "Could not find Archiver class: " + className);
