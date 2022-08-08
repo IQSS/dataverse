@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.api.Util;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.lang.reflect.Type;
@@ -371,8 +372,12 @@ public class OptionalFileParams {
         // get storage identifier as string
         // -------------------------------
         if ((jsonObj.has(STORAGE_IDENTIFIER_ATTR_NAME)) && (!jsonObj.get(STORAGE_IDENTIFIER_ATTR_NAME).isJsonNull())){
-
-            this.storageIdentifier = jsonObj.get(STORAGE_IDENTIFIER_ATTR_NAME).getAsString();
+            //Basic sanity check that driver specified is defined.
+            String storageId = jsonObj.get(STORAGE_IDENTIFIER_ATTR_NAME).getAsString();
+            String type = DataAccess.getDriverType(DataAccess.getStorageDriverFromIdentifier(storageId));
+            if(!type.equals("tmp")&& !type.equals("Undefined")) {
+              this.storageIdentifier = jsonObj.get(STORAGE_IDENTIFIER_ATTR_NAME).getAsString();
+            }
         }
         
         // -------------------------------
