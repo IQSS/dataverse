@@ -2917,6 +2917,20 @@ public class UtilIT {
                 .get("/api/datasets/" + datasetId + "/" + version + "/archivalStatus");
         return response;
     }
+
+    static Response archiveDataset(String idOrPersistentIdOfDataset, String version, String apiToken) {
+        String idInPath = idOrPersistentIdOfDataset;
+        String optionalQueryParam = "";
+        if (!NumberUtils.isNumber(idOrPersistentIdOfDataset)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + idOrPersistentIdOfDataset;
+        }
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/admin/submitDatasetVersionToArchive/" + idInPath + "/" + version + optionalQueryParam);
+        return response;
+    }
+
     static Response setDatasetVersionArchivalStatus(Integer datasetId, String version, String apiToken, String status, String message) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken).contentType("application/json; charset=utf-8").body("{\"status\":\"" + status + "\", \"message\":\"" + message + "\"}")
