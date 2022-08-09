@@ -2383,7 +2383,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                 }
             } else {
                 return error(BAD_REQUEST,
-                        "You must upload a file or provide a storageidentifier, filename, and mimetype.");
+                        "You must upload a file or provide a valid storageidentifier, filename, and mimetype.");
             }
         } else {
             newFilename = contentDispositionHeader.getFileName();
