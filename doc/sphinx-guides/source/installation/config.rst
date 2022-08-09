@@ -943,7 +943,7 @@ Some external tools are also ready to be translated, especially if they are usin
 
 
 Tools for Translators
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++
++++++++++++++++++++++
 
 The list below depicts a set of tools that can be used to ease the amount of work necessary for translating the Dataverse software by facilitating this collaborative effort and enabling the reuse of previous work:
 
@@ -1177,21 +1177,21 @@ The S3 Archiver can send Dataverse Archival Bag to a bucket at any S3 endpoint. 
 
 ``curl http://localhost:8080/api/admin/settings/:ArchiverClassName -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.S3SubmitToArchiveCommand"``
 
-``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":S3ArchiverConfig, :S3ArchiverProfile, :BagGeneratorThreads"``
+``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":S3ArchiverConfig, :BagGeneratorThreads"``
 
-The S3 Archiver defines two custom settings, a required :S3ArchiverConfig and optional :S3ArchiverProfile. It can also use the :BagGeneratorThreads setting as described in the DuraCloud Configuration section above.
+The S3 Archiver defines one custom setting, a required :S3ArchiverConfig. It can also use the :BagGeneratorThreads setting as described in the DuraCloud Configuration section above.
 
-The credentials for your S3 account, can be stored in a profile in a standard credentials file (e.g. ~/.aws/credentials) referenced via the :S3ArchiverProfile setting (will default to the default entry), or can via MicroProfile settings as described for S3 stores (dataverse.s3archiver.access-key and dataverse.s3archiver.secret-key)
+The credentials for your S3 account, can be stored in a profile in a standard credentials file (e.g. ~/.aws/credentials) referenced via "profile" key in the :S3ArchiverConfig setting (will default to the default entry), or can via MicroProfile settings as described for S3 stores (dataverse.s3archiver.access-key and dataverse.s3archiver.secret-key)
 
-The :S3ArchiverConfig setting is a json object that must include an "s3_bucket_name" and may include additional S3-related parameters as described for S3 Stores, including "connection-pool-size","custom-endpoint-url", "custom-endpoint-region", "path-style-access", "payload-signing", and "chunked-encoding".
+The :S3ArchiverConfig setting is a json object that must include an "s3_bucket_name" and may include additional S3-related parameters as described for S3 Stores, including "profile", "connection-pool-size","custom-endpoint-url", "custom-endpoint-region", "path-style-access", "payload-signing", and "chunked-encoding".
 
 \:S3ArchiverConfig - minimally includes the name of the bucket to use. For example:
 
 ``curl http://localhost:8080/api/admin/settings/:S3ArchiverConfig -X PUT -d "{"s3_bucket_name":"archival-bucket"}``
 
-\:S3ArchiverProfile - the name of an S3 profile to use. For example:
+\:S3ArchiverConfig - example to also set the name of an S3 profile to use. For example:
 
-``curl http://localhost:8080/api/admin/settings/:S3ArchiverProfile -X PUT -d "archiver"``
+``curl http://localhost:8080/api/admin/settings/:S3ArchiverConfig -X PUT -d "{"s3_bucket_name":"archival-bucket", "profile":"archiver"}``
 
 .. _Archiving API Call:
 
@@ -2684,10 +2684,8 @@ These are the bucket and project names to be used with the GoogleCloudSubmitToAr
 
 :S3ArchiverConfig
 +++++++++++++++++
-:S3ArchiverProfile
-++++++++++++++++++
 
-These are the json configuration object and S3 profile settings to be used with the S3SubmitToArchiveCommand class. Further information is in the :ref:`S3 Archiver Configuration` section above.
+This is the JSON configuration object setting to be used with the S3SubmitToArchiveCommand class. Further information is in the :ref:`S3 Archiver Configuration` section above.
 
 
 .. _:InstallationName:

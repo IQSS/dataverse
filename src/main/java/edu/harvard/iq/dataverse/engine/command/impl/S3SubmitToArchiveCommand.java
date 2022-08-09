@@ -43,7 +43,6 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand imp
 
     private static final Logger logger = Logger.getLogger(S3SubmitToArchiveCommand.class.getName());
     private static final String S3_CONFIG = ":S3ArchiverConfig";
-    private static final String S3_PROFILE = ":S3ArchiverProfile";
 
     private static final Config config = ConfigProvider.getConfig();
     protected AmazonS3 s3 = null;
@@ -60,18 +59,17 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand imp
             Map<String, String> requestedSettings) {
         logger.fine("In S3SubmitToArchiveCommand...");
         JsonObject configObject = null;
-        String profileName = requestedSettings.get(S3_PROFILE);
 
         try {
             configObject = JsonUtil.getJsonObject(requestedSettings.get(S3_CONFIG));
-            logger.fine("Profile: " + profileName + " Config: " + configObject);
+            logger.fine("Config: " + configObject);
             bucketName = configObject.getString("s3_bucket_name", null);
         } catch (Exception e) {
             logger.warning("Unable to parse " + S3_CONFIG + " setting as a Json object");
         }
-        if (configObject != null && profileName != null && bucketName != null) {
+        if (configObject != null && bucketName != null) {
 
-            s3 = createClient(configObject, profileName);
+            s3 = createClient(configObject);
             tm = TransferManagerBuilder.standard().withS3Client(s3).build();
             try {
 
@@ -173,7 +171,7 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand imp
         return spaceName;
     }
 
-    private AmazonS3 createClient(JsonObject configObject, String profileName) {
+    private AmazonS3 createClient(JsonObject configObject) {
         // get a standard client, using the standard way of configuration the
         // credentials, etc.
         AmazonS3ClientBuilder s3CB = AmazonS3ClientBuilder.standard();
@@ -236,7 +234,7 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand imp
          * profile. The default is "default" which should work when only one profile
          * exists.
          */
-        ProfileCredentialsProvider profileCredentials = new ProfileCredentialsProvider(profileName);
+        ProfileCredentialsProvider profileCredentials = new ProfileCredentialsProvider(configObject.getString("profile", "default"));
 
         // Try to retrieve credentials via Microprofile Config API, too. For production
         // use, you should not use env
