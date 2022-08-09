@@ -851,6 +851,10 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
         return false;
     }
+    
+    public boolean downloadRedirectEnabled(String auxObjectTag) {
+        return downloadRedirectEnabled();
+    }
 
     /**
      * Generates a temporary URL for a direct S3 download; 
