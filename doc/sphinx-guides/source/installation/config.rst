@@ -1187,11 +1187,11 @@ The :S3ArchiverConfig setting is a json object that must include an "s3_bucket_n
 
 \:S3ArchiverConfig - minimally includes the name of the bucket to use. For example:
 
-``curl http://localhost:8080/api/admin/settings/:S3ArchiverConfig -X PUT -d "{"s3_bucket_name":"archival-bucket"}``
+``curl http://localhost:8080/api/admin/settings/:S3ArchiverConfig -X PUT -d '{"s3_bucket_name":"archival-bucket"}'``
 
 \:S3ArchiverConfig - example to also set the name of an S3 profile to use. For example:
 
-``curl http://localhost:8080/api/admin/settings/:S3ArchiverConfig -X PUT -d "{"s3_bucket_name":"archival-bucket", "profile":"archiver"}``
+``curl http://localhost:8080/api/admin/settings/:S3ArchiverConfig -X PUT -d '{"s3_bucket_name":"archival-bucket", "profile":"archiver"}'``
 
 .. _Archiving API Call:
 
