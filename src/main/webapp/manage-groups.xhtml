@@ -76,7 +76,7 @@
                                             <span class="glyphicon glyphicon-edit"></span>
                                         </p:commandLink>
                                         <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
-                                                       action="#{manageGroupsPage.setSelectedGroup(explicitGroup)}"
+                                                       action="#{manageGroupsPage.clickDeleteGroup(explicitGroup)}"
                                                        update="@form"
                                                        oncomplete="PF('deleteConfirmation').show()"
                                                        title="#{bundle['dataverse.manageGroups.tab.action.btn.delete']}">
@@ -92,7 +92,7 @@
                             <span class="glyphicon glyphicon-warning-sign text-warning"/> <span class="text-warning">#{bundle['dataverse.manageGroups.tab.action.btn.delete.dialog.tip']}</span>
                         </p>
                         <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{manageGroupsPage.deleteGroup()}" update="manageGroupsForm,messagePanel"/>
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" rendered="#{manageGroupsPage.renderDeletePopup}"  onclick="PF('deleteConfirmation').hide()" action="#{manageGroupsPage.deleteGroup()}" update="manageGroupsForm,messagePanel"/>
                             <p:commandButton styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('deleteConfirmation').hide()"/>
                         </div>
                     </p:dialog>
@@ -122,6 +122,7 @@
                                                     value="#{manageGroupsPage.selectedGroupAddRoleAssignees}"
                                                     completeMethod="#{manageGroupsPage.completeRoleAssignee}"
                                                     var="roleAssignee"
+                                                    onkeypress="return event.keyCode !== 13;"
                                                     styleClass="DropdownPopup" panelStyleClass="DropdownPopupPanel"
                                                     itemLabel="#{roleAssignee.displayInfo.title}" itemValue="#{roleAssignee}" converter="roleAssigneeConverter">
                                         <p:column>
@@ -166,7 +167,7 @@
                         </p:dataTable>
                         <!-- Add Group Members -->
                         <div class="button-block">
-                            <p:commandButton id="saveGroup" styleClass="btn btn-default"
+                            <p:commandButton id="saveGroup" styleClass="btn btn-default" rendered="#{manageGroupsPage.getSelectedGroup()!=null}"
                                            actionListener="#{manageGroupsPage.saveExplicitGroup}"
                                            value="#{bundle.saveChanges}"
                                            update="manageGroupsForm,messagePanel">

@@ -650,14 +650,18 @@ public class FilesIT {
         //"junk" passed below is to test that it is discarded
         String updateJsonString = "{\"description\":\""+updateDescription+"\",\"categories\":[\""+updateCategory+"\"],\"forceReplace\":false ,\"junk\":\"junk\"}";
         Response updateMetadataFailResponse = UtilIT.updateFileMetadata(origFileId.toString(), updateJsonString, apiToken);
-        assertEquals(BAD_REQUEST.getStatusCode(), updateMetadataFailResponse.getStatusCode());  
-        
+        updateMetadataFailResponse.prettyPrint();
+        updateMetadataFailResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+
+        UtilIT.sleepForLock(datasetId, null, apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION);
+
         //Adding an additional fileMetadata update tests after this to ensure updating replaced files works
         msg("Update file metadata for new file");
         //"junk" passed below is to test that it is discarded
         System.out.print("params: " +  String.valueOf(newDfId) + " " + updateJsonString + " " + apiToken);
         Response updateMetadataResponse = UtilIT.updateFileMetadata(String.valueOf(newDfId), updateJsonString, apiToken);
-        assertEquals(OK.getStatusCode(), updateMetadataResponse.getStatusCode());  
+        updateMetadataResponse.prettyPrint();
+        updateMetadataResponse.then().assertThat().statusCode(OK.getStatusCode());
         //String updateMetadataResponseString = updateMetadataResponse.body().asString();
         Response getUpdatedMetadataResponse = UtilIT.getDataFileMetadataDraft(newDfId, apiToken);
         String getUpMetadataResponseString = getUpdatedMetadataResponse.body().asString();

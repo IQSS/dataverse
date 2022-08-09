@@ -87,6 +87,7 @@ import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
@@ -215,6 +216,9 @@ public class Datasets extends AbstractApiBean {
     
     @Inject
     DataverseRoleServiceBean dataverseRoleService;
+
+    @EJB
+    DatasetVersionServiceBean datasetversionService;
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -1149,7 +1153,7 @@ public class Datasets extends AbstractApiBean {
                          */
                         try {
                             updateVersion = commandEngine.submit(archiveCommand);
-                            if (updateVersion.getArchivalCopyLocation() != null) {
+                            if (!updateVersion.getArchivalCopyLocationStatus().equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE)) {
                                 successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.success");
                             } else {
                                 successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure");
@@ -2259,7 +2263,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 				eTagList.add(new PartETag(Integer.parseInt(partNo), object.getString(partNo)));
 			}
 			for(PartETag et: eTagList) {
-				logger.info("Part: " + et.getPartNumber() + " : " + et.getETag());
+				logger.fine("Part: " + et.getPartNumber() + " : " + et.getETag());
 			}
 		} catch (JsonException je) {
 			logger.info("Unable to parse eTags from: " + partETagBody);
@@ -2524,7 +2528,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         if ( dsv == null || dsv.getId() == null ) {
             throw new WrappedResponse( notFound("Dataset version " + versionNumber + " of dataset " + ds.getId() + " not found") );
         }
-        if (dsv.isReleased()) {
+        if (dsv.isReleased()&& uriInfo!=null) {
             MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, ds);
             mdcLogService.logEntry(entry);
         }
@@ -3281,5 +3285,127 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         }
         csvSB.append("\n");
         return ok(csvSB.toString(), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "datasets.status.csv");
+    }
+
+    // APIs to manage archival status
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/{version}/archivalStatus")
+    public Response getDatasetVersionArchivalStatus(@PathParam("id") String datasetId,
+            @PathParam("version") String versionNumber, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+
+        try {
+            AuthenticatedUser au = findAuthenticatedUserOrDie();
+            if (!au.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+            DataverseRequest req = createDataverseRequest(au);
+            DatasetVersion dsv = getDatasetVersionOrDie(req, versionNumber, findDatasetOrDie(datasetId), uriInfo,
+                    headers);
+
+            if (dsv.getArchivalCopyLocation() == null) {
+                return error(Status.NO_CONTENT, "This dataset version has not been archived");
+            } else {
+                JsonObject status = JsonUtil.getJsonObject(dsv.getArchivalCopyLocation());
+                return ok(status);
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/{id}/{version}/archivalStatus")
+    public Response setDatasetVersionArchivalStatus(@PathParam("id") String datasetId,
+            @PathParam("version") String versionNumber, JsonObject update, @Context UriInfo uriInfo,
+            @Context HttpHeaders headers) {
+
+        logger.fine(JsonUtil.prettyPrint(update));
+        try {
+            AuthenticatedUser au = findAuthenticatedUserOrDie();
+
+            if (!au.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+
+            if (update.containsKey(DatasetVersion.ARCHIVAL_STATUS) && update.containsKey(DatasetVersion.ARCHIVAL_STATUS_MESSAGE)) {
+                String status = update.getString(DatasetVersion.ARCHIVAL_STATUS);
+                if (status.equals(DatasetVersion.ARCHIVAL_STATUS_PENDING) || status.equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE)
+                        || status.equals(DatasetVersion.ARCHIVAL_STATUS_SUCCESS)) {
+
+                    DataverseRequest req = createDataverseRequest(au);
+                    DatasetVersion dsv = getDatasetVersionOrDie(req, versionNumber, findDatasetOrDie(datasetId),
+                            uriInfo, headers);
+
+                    if (dsv == null) {
+                        return error(Status.NOT_FOUND, "Dataset version not found");
+                    }
+                    if (isSingleVersionArchiving()) {
+                        for (DatasetVersion version : dsv.getDataset().getVersions()) {
+                            if ((!dsv.equals(version)) && (version.getArchivalCopyLocation() != null)) {
+                                return error(Status.CONFLICT, "Dataset already archived.");
+                            }
+                        }
+                    }
+
+                    dsv.setArchivalCopyLocation(JsonUtil.prettyPrint(update));
+                    dsv = datasetversionService.merge(dsv);
+                    logger.fine("status now: " + dsv.getArchivalCopyLocationStatus());
+                    logger.fine("message now: " + dsv.getArchivalCopyLocationMessage());
+
+                    return ok("Status updated");
+                }
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+
+        return error(Status.BAD_REQUEST, "Unacceptable status format");
+    }
+    
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/{version}/archivalStatus")
+    public Response deleteDatasetVersionArchivalStatus(@PathParam("id") String datasetId,
+            @PathParam("version") String versionNumber, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+
+        try {
+            AuthenticatedUser au = findAuthenticatedUserOrDie();
+            if (!au.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+
+            DataverseRequest req = createDataverseRequest(au);
+            DatasetVersion dsv = getDatasetVersionOrDie(req, versionNumber, findDatasetOrDie(datasetId), uriInfo,
+                    headers);
+            if (dsv == null) {
+                return error(Status.NOT_FOUND, "Dataset version not found");
+            }
+            dsv.setArchivalCopyLocation(null);
+            dsv = datasetversionService.merge(dsv);
+
+            return ok("Status deleted");
+
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+    
+    private boolean isSingleVersionArchiving() {
+        String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName, null);
+        if (className != null) {
+            Class<? extends AbstractSubmitToArchiveCommand> clazz;
+            try {
+                clazz =  Class.forName(className).asSubclass(AbstractSubmitToArchiveCommand.class);
+                return ArchiverUtil.onlySingleVersionArchiving(clazz, settingsService);
+            } catch (ClassNotFoundException e) {
+                logger.warning(":ArchiverClassName does not refer to a known Archiver");
+            } catch (ClassCastException cce) {
+                logger.warning(":ArchiverClassName does not refer to an Archiver class");
+            }
+        }
+        return false;
     }
 }
