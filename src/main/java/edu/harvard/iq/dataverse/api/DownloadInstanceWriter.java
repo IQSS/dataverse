@@ -130,7 +130,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
 
                         auxiliaryTag = ImageThumbConverter.THUMBNAIL_SUFFIX + (requestedSize > 0 ? requestedSize : ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
 
-                        if (isAuxiliaryObjectCached(storageIO, auxiliaryTag)) {
+                        if (storageIO.downloadRedirectEnabled(auxiliaryTag) && isAuxiliaryObjectCached(storageIO, auxiliaryTag)) {
                             auxiliaryType = ImageThumbConverter.THUMBNAIL_MIME_TYPE;
                             String fileName = storageIO.getFileName();
                             if (fileName != null) {
@@ -149,7 +149,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             auxiliaryTag = auxiliaryTag + "_" + auxVersion;
                         }
                     
-                        if (isAuxiliaryObjectCached(storageIO, auxiliaryTag)) {
+                        if (storageIO.downloadRedirectEnabled(auxiliaryTag) && isAuxiliaryObjectCached(storageIO, auxiliaryTag)) {
                             String fileExtension = getFileExtension(di.getAuxiliaryFile());
                             auxiliaryFileName = storageIO.getFileName() + "." + auxiliaryTag + fileExtension;
                             auxiliaryType = di.getAuxiliaryFile().getContentType();
@@ -172,7 +172,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                     // it has been cached already. 
 
                                     auxiliaryTag = di.getConversionParamValue();
-                                    if (isAuxiliaryObjectCached(storageIO, auxiliaryTag)) {
+                                    if (storageIO.downloadRedirectEnabled(auxiliaryTag) && isAuxiliaryObjectCached(storageIO, auxiliaryTag)) {
                                         auxiliaryType = di.getServiceFormatType(di.getConversionParam(), auxiliaryTag);
                                         auxiliaryFileName = FileUtil.replaceExtension(storageIO.getFileName(), auxiliaryTag);
                                     } else {
