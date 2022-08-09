@@ -51,10 +51,11 @@ public class RemoteStoreIT {
          * <jvm-options>-Ddataverse.files.trsa.label=trsa</jvm-options>
          * <jvm-options>-Ddataverse.files.trsa.base-url=https://qdr.syr.edu</jvm-options>
          * <jvm-options>-Ddataverse.files.trsa.base-store=file</jvm-options>
-         * <jvm-options>-Ddataverse.files.trsa.secretkey=12345</jvm-options>
-         * <jvm-options>-Ddataverse.files.trsa.url-expiration-minutes=120</jvm-options>
          *
-         * (and probably download-redirect)
+         * In practice, most installation will also enable download-redirect
+         * (below) to prevent the files from being streamed through Dataverse!
+         *
+         * <jvm-options>-Ddataverse.files.trsa.download-redirect=true</jvm-options>
          */
         JsonObjectBuilder remoteFileJson = Json.createObjectBuilder()
                 .add("description", "A remote image.")
