@@ -418,7 +418,7 @@ public class DatasetPage implements java.io.Serializable {
     
     private Boolean hasRestrictedFiles = null;
     
-    public Boolean isHasRestrictedFiles(){
+    public boolean isHasRestrictedFiles(){
         //cache in page to limit processing
         if (hasRestrictedFiles != null){
             return hasRestrictedFiles;
