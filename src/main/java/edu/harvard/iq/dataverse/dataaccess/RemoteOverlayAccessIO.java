@@ -411,6 +411,10 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         }
         return false;
     }
+    
+    public boolean downloadRedirectEnabled(String auxObjectTag) {
+        return baseStore.downloadRedirectEnabled(auxObjectTag);
+    }
 
     @Override
     public String generateTemporaryDownloadUrl(String auxiliaryTag, String auxiliaryType, String auxiliaryFileName)
