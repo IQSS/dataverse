@@ -1191,7 +1191,6 @@ The :S3ArchiverConfig setting is a JSON object that must include an "s3_bucket_n
 
 \:S3ArchiverConfig - example to also set the name of an S3 profile to use. For example:
 
-
 ``curl http://localhost:8080/api/admin/settings/:S3ArchiverConfig -X PUT -d "{"s3_bucket_name":"archival-bucket", "profile":"archiver"}``
 
 .. _Archiving API Call:
@@ -2687,6 +2686,7 @@ These are the bucket and project names to be used with the GoogleCloudSubmitToAr
 +++++++++++++++++
 
 This is the JSON configuration object setting to be used with the S3SubmitToArchiveCommand class. Further information is in the :ref:`S3 Archiver Configuration` section above.
+
 
 .. _:InstallationName:
 
