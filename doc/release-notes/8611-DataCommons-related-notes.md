@@ -28,7 +28,7 @@ Changes and fixes in this release include:
 - Administrators can configure a RemoteOverlay store to allow files that remain hosted by a remote system to be added to a dataset. (PR #7325)
 - Administrators can configure dataverse to send archival Bag copies of published dataset versions to any S3-compatible service. (PR #8751)
 - Users can see information about a dataset's parent collection(s) in the OAI-ORE metadata export. (PR #8770)
-- Users and Administrators can use the OAI-ORE metadata export to retrieve and validate the checksum of the original file for ingested tabuar files. (PR #8901)
+- Users and Administrators can now use the OAI-ORE metadata export to retrieve and assess the fixity of the the original file (for ingested tabular files) via the included checksum. (PR #8901)
 - Archiving via RDA-conformant Bags is more robust and is more configurable (PR #8773, 8747, 8699, 8609, 8606, 8610)
 - Users and administrators can see the archival status of the versions of the datasets they manage in the dataset page version table (PR #8748, #8696)
 - Administrators can configure messaging between Dataverse and other repositories that may hold related resources or services intersted in activity within Dataverse (PR #8775)
