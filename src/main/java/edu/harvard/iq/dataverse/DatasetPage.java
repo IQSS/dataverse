@@ -5630,7 +5630,7 @@ public class DatasetPage implements java.io.Serializable {
                         }
                     } catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException
                             | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-                        logger.warning("Failed to call is Archivable on configured archiver class: " + className);
+                        logger.warning("Failed to call isSingleVersion on configured archiver class: " + className);
                         e.printStackTrace();
                     }
                 }
