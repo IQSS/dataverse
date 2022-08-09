@@ -2811,6 +2811,79 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         disallowRequestAccess.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
         
     }
+    
+    /**
+     * In this test we are removing request access and showing that
+     * files cannot be restricted
+     * Not testing legacy datasets that are out of compliance 
+     * cannot be published or upload files 
+     * or have metadata updated -
+     */
+    @Test
+    public void testRestrictFilesWORequestAccess() throws IOException {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String authorUsername = UtilIT.getUsernameFromResponse(createUser);
+        String authorApiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(authorApiToken);
+        createDataverse.prettyPrint();
+        createDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, authorApiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = JsonPath.from(createDataset.asString()).getString("data.persistentId");
+        
+        //should be allowed to remove Request access before restricting file
+        Response disallowRequestAccess = UtilIT.allowAccessRequests(datasetPid, false, authorApiToken);
+        disallowRequestAccess.prettyPrint();
+        disallowRequestAccess.then().assertThat().statusCode(OK.getStatusCode());
+
+        Path pathToFile = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "data.csv");
+        String contentOfCsv = ""
+                + "name,pounds,species\n"
+                + "Marshall,40,dog\n"
+                + "Tiger,17,cat\n"
+                + "Panther,21,cat\n";
+        java.nio.file.Files.write(pathToFile, contentOfCsv.getBytes());
+
+        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile.toString(), authorApiToken);
+        uploadFile.prettyPrint();
+        uploadFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("data.csv"));
+
+        String fileId = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
+
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", authorApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
+        Response restrictFile = UtilIT.restrictFile(fileId, true, authorApiToken);
+        restrictFile.prettyPrint();
+        //shouldn't be able to restrict a file
+        restrictFile.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        
+        // OK, let's delete this dataset as well, and then delete the dataverse...
+        
+        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, authorApiToken);
+        deleteDatasetResponse.prettyPrint();
+        assertEquals(200, deleteDatasetResponse.getStatusCode());
+        
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, authorApiToken);
+        deleteDataverseResponse.prettyPrint();
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+
+        Response deleteUserResponse = UtilIT.deleteUser(authorUsername);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+
+    }
 
     /**
      * In this test we do CRUD of archivalStatus (Note this and other archiving
