@@ -1869,12 +1869,28 @@ public class UtilIT {
         return response;
     }
 
+    /**
+     * @param settingKey Include the colon like :BagItLocalPath
+     */
+    static Response deleteSetting(String settingKey) {
+        Response response = given().when().delete("/api/admin/settings/" + settingKey);
+        return response;
+    }
+
     static Response getSetting(SettingsServiceBean.Key settingKey) {
         Response response = given().when().get("/api/admin/settings/" + settingKey);
         return response;
     }
 
     static Response setSetting(SettingsServiceBean.Key settingKey, String value) {
+        Response response = given().body(value).when().put("/api/admin/settings/" + settingKey);
+        return response;
+    }
+
+    /**
+     * @param settingKey Include the colon like :BagItLocalPath
+     */
+    public static Response setSetting(String settingKey, String value) {
         Response response = given().body(value).when().put("/api/admin/settings/" + settingKey);
         return response;
     }
