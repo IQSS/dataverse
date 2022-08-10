@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import edu.harvard.iq.dataverse.DOIDataCiteRegisterService;
+import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
@@ -94,6 +96,13 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
         return super.describe() + "DatasetVersion: [" + version.getId() + " (v"
                 + version.getFriendlyVersionNumber()+")]";
     }
+    
+    String getDataCiteXml(DatasetVersion dv) {
+        DataCitation dc = new DataCitation(dv);
+        Map<String, String> metadata = dc.getDataCiteMetadata();
+        return DOIDataCiteRegisterService.getMetadataFromDvObject(dv.getDataset().getGlobalId().asString(), metadata,
+                dv.getDataset());
+    }
 
     public Thread startBagThread(DatasetVersion dv, PipedInputStream in, DigestInputStream digestInputStream2,
             String dataciteXml, ApiToken token) throws IOException, InterruptedException {
@@ -160,7 +169,7 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
         }
         return bagThread;
     }
-    
+
     public static boolean isArchivable(Dataset dataset, SettingsWrapper settingsWrapper) {
         return true;
    }
