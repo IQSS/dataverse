@@ -25,10 +25,6 @@ public class RemoteStoreIT {
 
         UtilIT.makeSuperUser(username).then().assertThat().statusCode(OK.getStatusCode());
 
-        Response createUserNoPrivs = UtilIT.createRandomUser();
-        createUserNoPrivs.then().assertThat().statusCode(OK.getStatusCode());
-        String apiTokenNoPrivs = UtilIT.getApiTokenFromResponse(createUserNoPrivs);
-
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.prettyPrint();
         createDataverseResponse.then().assertThat()
@@ -67,11 +63,10 @@ public class RemoteStoreIT {
                 .add("mimeType", "image/png");
 
         Response addRemoteFile = UtilIT.addRemoteFile(datasetId.toString(), remoteFileJson.build().toString(), apiToken);
-        System.setProperty(apiToken, username);
         addRemoteFile.prettyPrint();
         addRemoteFile.then().assertThat()
                 .statusCode(OK.getStatusCode());
-
+        System.out.println("done!");
     }
 
 }
