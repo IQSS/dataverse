@@ -676,6 +676,8 @@ These and other available options are described in the table below.
 Trusted remote stores can range from being a static trusted website to a sophisticated service managing access requests and logging activity
 and/or managing access to a secure enclave. For specific remote stores, consult their documentation when configuring the remote store in your Dataverse installation.
 
+Note that in the current implementation, activites where Dataverse needs access to data bytes, e.g. to create thumbnails or validate hash values at publication will fail if a remote store does not allow Dataverse access. Implementers of such trusted remote stores should consider using Dataverse's settings to disable ingest, validation of files at publication, etc. as needed.
+
 Once you have configured a trusted remote store, you can point your users to the :ref:`add-remote-file-api` section of the API Guide.
 
 .. table::
