@@ -943,7 +943,7 @@ Some external tools are also ready to be translated, especially if they are usin
 
 
 Tools for Translators
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++
++++++++++++++++++++++
 
 The list below depicts a set of tools that can be used to ease the amount of work necessary for translating the Dataverse software by facilitating this collaborative effort and enabling the reuse of previous work:
 
@@ -2865,4 +2865,15 @@ For configuration details, see :ref:`mute-notifications`.
 :LDNMessageHosts
 ++++++++++++++++
 
-The comma-separated list of hosts allowed to send Dataverse Linked Data Notification messages. See :doc:`/api/linkeddatanotification` for details. ``*`` allows messages from anywhere (not recommended for production). By default, messages are not accepted from anywhere. 
+The comma-separated list of hosts allowed to send Dataverse Linked Data Notification messages. See :doc:`/api/linkeddatanotification` for details. ``*`` allows messages from anywhere (not recommended for production). By default, messages are not accepted from anywhere.
+
+
+:LDN_TARGET
++++++++++++
+
+The URL of an LDN Inbox to which the LDN Announce workflow step will send messages. See :doc:`/developers/workflows` for details.
+
+:LDNAnnounceRequiredFields
+++++++++++++++++++++++++++
+
+The list of parent dataset field names for which the LDN Announce workflow step should send messages. See :doc:`/developers/workflows` for details.
