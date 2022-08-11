@@ -609,6 +609,9 @@ public class OpenAireExportUtilTest {
                 + "RelatedPublicationIDNumber1</relatedIdentifier>"
                 + "<relatedIdentifier relationType=\"IsCitedBy\" relatedIdentifierType=\"arXiv\">"
                 + "RelatedPublicationIDNumber2</relatedIdentifier>"
+                + "</relatedIdentifiers>"
+                + "<relatedIdentifier relationType=\"IsCitedBy\" relatedIdentifierType=\"CSTR\">"
+                + "RelatedPublicationIDNumber3</relatedIdentifier>"
                 + "</relatedIdentifiers>",
                 stringWriter.toString());
     }

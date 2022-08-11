@@ -110,7 +110,8 @@
 	publicationIDType	purl		13											
 	publicationIDType	upc		14											
 	publicationIDType	url		15											
-	publicationIDType	urn		16											
+	publicationIDType	urn		16									
+	publicationIDType	CSTR		17											
 	contributorType	Data Collector		0											
 	contributorType	Data Curator		1											
 	contributorType	Data Manager		2											

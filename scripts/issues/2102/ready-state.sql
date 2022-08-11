@@ -3284,6 +3284,7 @@ COPY controlledvocabalternate (id, strvalue, controlledvocabularyvalue_id, datas
 22	United States of America	472	79
 23	U.S.A.	472	79
 24	YEMEN	483	79
+25  CSTR    825  30
 \.
 
 
@@ -4116,6 +4117,7 @@ COPY controlledvocabularyvalue (id, displayorder, identifier, strvalue, datasetf
 822	29		review article	154
 823	30		translation	154
 824	31		other	154
+825 17      CSTR 30
 \.
 
 

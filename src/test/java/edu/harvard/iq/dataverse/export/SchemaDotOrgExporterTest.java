@@ -408,7 +408,8 @@ public class SchemaDotOrgExporterTest {
             new ControlledVocabularyValue(3l, "bibcode", publicationIdTypes),
             new ControlledVocabularyValue(4l, "doi", publicationIdTypes),
             new ControlledVocabularyValue(5l, "ean13", publicationIdTypes),
-            new ControlledVocabularyValue(6l, "handle", publicationIdTypes)
+            new ControlledVocabularyValue(6l, "handle", publicationIdTypes),
+            new ControlledVocabularyValue(17l, "CSTR", publicationIdTypes)
             // Etc. There are more.
         ));
         publicationChildTypes.add(datasetFieldTypeSvc.add(publicationIdTypes));

@@ -163,8 +163,10 @@
     <othrStdyMat>
       <relMat>RelatedMaterial1</relMat>
       <relMat>RelatedMaterial2</relMat>
+      <relMat>RelatedMaterial3</relMat>
       <relStdy>RelatedDatasets1</relStdy>
       <relStdy>RelatedDatasets2</relStdy>
+      <relStdy>RelatedDatasets3</relStdy>
       <relPubl>
         <citation>
           <titlStmt>
@@ -183,8 +185,18 @@
         </citation>
         <ExtLink URI="http://RelatedPublicationURL2.org"/>
       </relPubl>
+      <relPubl>
+        <citation>
+          <titlStmt>
+            <IDNo agency="CSTR">RelatedPublicationIDNumber3</IDNo>
+          </titlStmt>
+          <biblCit>RelatedPublicationCitation3</biblCit>
+        </citation>
+        <ExtLink URI="http://RelatedPublicationURL3.org"/>
+      </relPubl>
       <othRefs>OtherReferences1</othRefs>
       <othRefs>OtherReferences2</othRefs>
+      <othRefs>OtherReferences3</othRefs>
     </othrStdyMat>
     <notes>StudyLevelErrorNotes</notes>
   </stdyDscr>
