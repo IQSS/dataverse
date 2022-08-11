@@ -184,7 +184,7 @@
         <maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
         
         <!-- Container related -->
-        <fabric8-dmp.version>0.40.1</fabric8-dmp.version>
+        <fabric8-dmp.version>0.40.2</fabric8-dmp.version>
         <ct.registry>ghcr.io</ct.registry>
     </properties>
     
