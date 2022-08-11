@@ -294,6 +294,10 @@ Basic Database Settings
      - The PostgreSQL database name to use for the Dataverse installation.
      - | ``dataverse``
        | (installer sets to ``dvndb``)
+   * - dataverse.db.parameters
+     - Connection parameters, see `Postgres JDBC docs <https://jdbc.postgresql.org/documentation/head/connect.html>`_
+       Note: you don't need to provide the initial "?".
+     - *Empty string*
 
 Advanced Database Settings
 ++++++++++++++++++++++++++

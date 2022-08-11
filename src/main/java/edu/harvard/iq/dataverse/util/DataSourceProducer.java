@@ -21,7 +21,7 @@ import javax.sql.DataSource;
         // defaults must be provided in this Payara-proprietary manner.
         user = "${MPCONFIG=dataverse.db.user:dataverse}",
         password = "${MPCONFIG=dataverse.db.password}",
-        url = "jdbc:postgresql://${MPCONFIG=dataverse.db.host:localhost}:${MPCONFIG=dataverse.db.port:5432}/${MPCONFIG=dataverse.db.name:dataverse}",
+        url = "jdbc:postgresql://${MPCONFIG=dataverse.db.host:localhost}:${MPCONFIG=dataverse.db.port:5432}/${MPCONFIG=dataverse.db.name:dataverse}?${MPCONFIG=dataverse.db.parameters:}",
         
         // If we ever need to change these pool settings, we need to remove this class and create the resource
         // from web.xml. We can use MicroProfile Config in there for these values, impossible to do in the annotation.
