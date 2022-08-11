@@ -19,6 +19,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -208,13 +209,30 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
             return ((JsonString)jv).getString();
         }
         //Compound - apply type specific logic to get best Id
+        JsonObject jo = jv.asJsonObject();
         String id = null;
         switch (dft.getName()) {
         case RELATED_PUBLICATION:
             JsonLDTerm publicationIDType = null;
             JsonLDTerm publicationIDNumber = null;
             JsonLDTerm publicationURL = null;
-            JsonObject jo = jv.asJsonObject();
+            
+            Collection<DatasetFieldType> childTypes = dft.getChildDatasetFieldTypes();
+            for (DatasetFieldType cdft : childTypes) {
+                switch (cdft.getName()) {
+                case "publicationURL":
+                    publicationURL = cdft.getJsonLDTerm();
+                    break;
+                case "publicationIDType":
+                    publicationIDType = cdft.getJsonLDTerm();
+                    break;
+                case "publicationIDNumber":
+                    publicationIDNumber = cdft.getJsonLDTerm();
+                    break;
+                }
+            }
+
+            
             if (jo.containsKey(publicationURL.getLabel())) {
                 id = jo.getString(publicationURL.getLabel());
             } else if (jo.containsKey(publicationIDType.getLabel())) {
@@ -227,8 +245,10 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
                             id = number;
                         } else if (number.startsWith("doi:")) {
                             id = "https://doi.org/" + number.substring(4);
+                        } else {
+                            //Assume a raw DOI, e.g. 10.5072/FK2ABCDEF
+                            id = "https://doi.org/" + number;
                         }
-
                         break;
                     case "DASH-URN":
                         if (number.startsWith("http")) {
@@ -240,6 +260,16 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
             }
             break;
         default:
+            Collection<DatasetFieldType> childDFTs = dft.getChildDatasetFieldTypes();
+            for (DatasetFieldType cdft : childDFTs) {
+                String fieldname = cdft.getName();
+                if(fieldname.contains("URL")) {
+                    if(jo.containsKey(cdft.getJsonLDTerm().getLabel())) {
+                        id=jo.getString(cdft.getJsonLDTerm().getLabel());
+                        break;
+                    }
+                }
+            }
             break;
         }
 
