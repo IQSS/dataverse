@@ -60,8 +60,6 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
     private static final String LDN_TARGET = ":LDNTarget";
     private static final String RELATED_PUBLICATION = "publication";
 
-
-
     public LDNAnnounceDatasetVersionStep(Map<String, String> paramSet) {
         new HashMap<>(paramSet);
     }
@@ -76,7 +74,7 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
             CloseableHttpClient client = HttpClients.createDefault();
 
             // build method
-            
+
             HttpPost announcement;
             try {
                 // First check that we have what is required
@@ -84,14 +82,15 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
                 DatasetVersion dv = d.getReleasedVersion();
                 List<DatasetField> dvf = dv.getDatasetFields();
                 Map<String, DatasetField> fields = new HashMap<String, DatasetField>();
-                List<String> reqFields = Arrays.asList(((String) context.getSettings().getOrDefault(REQUIRED_FIELDS, "")).split(",\\s*"));
+                List<String> reqFields = Arrays
+                        .asList(((String) context.getSettings().getOrDefault(REQUIRED_FIELDS, "")).split(",\\s*"));
                 for (DatasetField df : dvf) {
-                    if(!df.isEmpty() && reqFields.contains(df.getDatasetFieldType().getName())) {
+                    if (!df.isEmpty() && reqFields.contains(df.getDatasetFieldType().getName())) {
                         fields.put(df.getDatasetFieldType().getName(), df);
                     }
                 }
-                //Loop through and send a message for each supported relationship
-                boolean success=false;
+                // Loop through and send a message for each supported relationship
+                boolean success = false;
                 for (JsonObject rel : getObjects(context, fields).getValuesAs(JsonObject.class)) {
                     announcement = buildAnnouncement(d, rel, target);
                     // execute
@@ -99,29 +98,30 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
                         int code = response.getStatusLine().getStatusCode();
                         if (code >= 200 && code < 300) {
                             // HTTP OK range
-                            success=true;
+                            success = true;
                             logger.fine("Successfully sent message for " + rel.toString());
                         } else {
                             String responseBody = new String(response.getEntity().getContent().readAllBytes(),
                                     StandardCharsets.UTF_8);
                             ;
-                            return new Failure((success ? "Partial failure":"") + "Error communicating with " + inboxUrl + " for relationship " + rel.toString() +". Server response: " + responseBody
-                                    + " (" + response + ").");
+                            return new Failure((success ? "Partial failure" : "") + "Error communicating with "
+                                    + inboxUrl + " for relationship " + rel.toString() + ". Server response: "
+                                    + responseBody + " (" + response + ").");
                         }
 
                     } catch (Exception ex) {
                         logger.log(Level.SEVERE, "Error communicating with remote server: " + ex.getMessage(), ex);
-                        return new Failure((success ? "Partial failure":"") + "Error executing request: " + ex.getLocalizedMessage(),
-                                "Cannot communicate with remote server.");
+                        return new Failure((success ? "Partial failure" : "") + "Error executing request: "
+                                + ex.getLocalizedMessage(), "Cannot communicate with remote server.");
                     }
 
                 }
-                //Any failure and we would have returned already.
+                // Any failure and we would have returned already.
                 return OK;
 
-                
             } catch (URISyntaxException e) {
-                return new Failure("LDNAnnounceDatasetVersion workflow step failed: unable to parse inbox in :LDNTarget setting.");
+                return new Failure(
+                        "LDNAnnounceDatasetVersion workflow step failed: unable to parse inbox in :LDNTarget setting.");
             }
         }
         return new Failure("LDNAnnounceDatasetVersion workflow step failed: :LDNTarget setting missing or invalid.");
@@ -137,11 +137,14 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
         throw new UnsupportedOperationException("Not supported yet."); // This class does not need to resume.
     }
 
-    /**Scan through all fields and return an array of relationship JsonObjects with subjectId, relationship, objectId, and @context
+    /**
+     * Scan through all fields and return an array of relationship JsonObjects with
+     * subjectId, relationship, objectId, and @context
      * 
      * @param ctxt
      * @param fields
-     * @return JsonArray of JsonObjects with subjectId, relationship, objectId, and @context
+     * @return JsonArray of JsonObjects with subjectId, relationship, objectId,
+     *         and @context
      */
     JsonArray getObjects(WorkflowContext ctxt, Map<String, DatasetField> fields) {
         JsonArrayBuilder jab = Json.createArrayBuilder();
@@ -153,33 +156,32 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
             DatasetField field = entry.getValue();
             DatasetFieldType dft = field.getDatasetFieldType();
             JsonValue jv = OREMap.getJsonLDForField(field, false, emptyCvocMap, localContext);
-            //jv is a JsonArray for multi-val fields, so loop
+            // jv is a JsonArray for multi-val fields, so loop
             if (jv != null) {
                 if (jv instanceof JsonArray) {
                     JsonArray rels = (JsonArray) jv;
                     Iterator<JsonValue> iter = rels.iterator();
-                    while(iter.hasNext()) {
-                        JsonValue jval =iter.next();
-                    jab.add(getRelationshipObject(dft, jval, d, localContext));
+                    while (iter.hasNext()) {
+                        JsonValue jval = iter.next();
+                        jab.add(getRelationshipObject(dft, jval, d, localContext));
                     }
                 } else {
                     jab.add(getRelationshipObject(dft, jv, d, localContext));
                 }
             }
-            
+
         }
         return jab.build();
     }
-    
-    private JsonObject getRelationshipObject(DatasetFieldType dft, JsonValue jval, Dataset d, Map<String, String> localContext) {
+
+    private JsonObject getRelationshipObject(DatasetFieldType dft, JsonValue jval, Dataset d,
+            Map<String, String> localContext) {
         String id = getBestId(dft, jval);
         return Json.createObjectBuilder().add("object", id).add("relationship", dft.getJsonLDTerm().getUrl())
                 .add("subject", d.getGlobalId().toURL().toString()).build();
     }
-    
 
     HttpPost buildAnnouncement(Dataset d, JsonObject rel, JsonObject target) throws URISyntaxException {
-
 
         JsonObjectBuilder job = Json.createObjectBuilder();
         JsonArrayBuilder context = Json.createArrayBuilder().add("https://purl.org/coar/notify")
@@ -204,11 +206,11 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
     }
 
     private String getBestId(DatasetFieldType dft, JsonValue jv) {
-        //Primitive value
-        if(jv instanceof JsonString) {
-            return ((JsonString)jv).getString();
+        // Primitive value
+        if (jv instanceof JsonString) {
+            return ((JsonString) jv).getString();
         }
-        //Compound - apply type specific logic to get best Id
+        // Compound - apply type specific logic to get best Id
         JsonObject jo = jv.asJsonObject();
         String id = null;
         switch (dft.getName()) {
@@ -216,7 +218,7 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
             JsonLDTerm publicationIDType = null;
             JsonLDTerm publicationIDNumber = null;
             JsonLDTerm publicationURL = null;
-            
+
             Collection<DatasetFieldType> childTypes = dft.getChildDatasetFieldTypes();
             for (DatasetFieldType cdft : childTypes) {
                 switch (cdft.getName()) {
@@ -231,8 +233,6 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
                     break;
                 }
             }
-
-            
             if (jo.containsKey(publicationURL.getLabel())) {
                 id = jo.getString(publicationURL.getLabel());
             } else if (jo.containsKey(publicationIDType.getLabel())) {
@@ -246,7 +246,7 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
                         } else if (number.startsWith("doi:")) {
                             id = "https://doi.org/" + number.substring(4);
                         } else {
-                            //Assume a raw DOI, e.g. 10.5072/FK2ABCDEF
+                            // Assume a raw DOI, e.g. 10.5072/FK2ABCDEF
                             id = "https://doi.org/" + number;
                         }
                         break;
@@ -261,18 +261,45 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
             break;
         default:
             Collection<DatasetFieldType> childDFTs = dft.getChildDatasetFieldTypes();
+            // Loop through child fields and select one
+            // The order of preference is for a field with URL in the name, followed by one
+            // with 'ID',then 'Name', and as a last resort, a field.
             for (DatasetFieldType cdft : childDFTs) {
                 String fieldname = cdft.getName();
-                if(fieldname.contains("URL")) {
-                    if(jo.containsKey(cdft.getJsonLDTerm().getLabel())) {
-                        id=jo.getString(cdft.getJsonLDTerm().getLabel());
+                if (fieldname.contains("URL")) {
+                    if (jo.containsKey(cdft.getJsonLDTerm().getLabel())) {
+                        id = jo.getString(cdft.getJsonLDTerm().getLabel());
                         break;
                     }
                 }
             }
-            break;
-        }
+            if (id == null) {
+                for (DatasetFieldType cdft : childDFTs) {
+                    String fieldname = cdft.getName();
 
+                    if (fieldname.contains("ID") || fieldname.contains("Id")) {
+                        if (jo.containsKey(cdft.getJsonLDTerm().getLabel())) {
+                            id = jo.getString(cdft.getJsonLDTerm().getLabel());
+                            break;
+                        }
+
+                    }
+                }
+            }
+            if (id == null) {
+                for (DatasetFieldType cdft : childDFTs) {
+                    String fieldname = cdft.getName();
+
+                    if (fieldname.contains("Name")) {
+                        if (jo.containsKey(cdft.getJsonLDTerm().getLabel())) {
+                            id = jo.getString(cdft.getJsonLDTerm().getLabel());
+                            break;
+                        }
+                    }
+                }
+            }
+            id = jo.getString(jo.keySet().iterator().next());
+        }
         return id;
     }
 
