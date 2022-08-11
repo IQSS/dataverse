@@ -73,8 +73,6 @@ public class LDNInbox extends AbstractApiBean {
         String whitelist = settingsService.get(SettingsServiceBean.Key.LDNMessageHosts.toString(), "");
         // Only do something if we listen to this host
         if (whitelist.equals("*") || whitelist.contains(origin.toString())) {
-            String citingPID = null;
-            String citingType = null;
             boolean sent = false;
 
             JsonObject jsonld = null;
@@ -106,85 +104,73 @@ public class LDNInbox extends AbstractApiBean {
             String objectKey = new JsonLDTerm(activityStreams, "object").getUrl();
             if (jsonld.containsKey(objectKey)) {
                 JsonObject msgObject = jsonld.getJsonObject(objectKey);
-
-                citingPID = msgObject.getJsonObject(new JsonLDTerm(ietf, "cite-as").getUrl()).getString("@id");
-                logger.fine("Citing PID: " + citingPID);
-                if (msgObject.containsKey("@type")) {
-                    citingType = msgObject.getString("@type");
-                    if (citingType.startsWith(JsonLDNamespace.schema.getUrl())) {
-                        citingType = citingType.replace(JsonLDNamespace.schema.getUrl(), "");
-                    }
-                    if (msgObject.containsKey(JsonLDTerm.schemaOrg("name").getUrl())) {
-                        name = msgObject.getString(JsonLDTerm.schemaOrg("name").getUrl());
-                    }
-                    logger.fine("Citing Type: " + citingType);
-                    String contextKey = new JsonLDTerm(activityStreams, "context").getUrl();
-
-                    if (jsonld.containsKey(contextKey)) {
-                        JsonObject context = jsonld.getJsonObject(contextKey);
-                        for (Map.Entry<String, JsonValue> entry : context.entrySet()) {
-
-                            relationship = entry.getKey().replace("_:", "");
-                            // Assuming only one for now - should check for array and loop
-                            JsonObject citedResource = (JsonObject) entry.getValue();
-                            String pid = citedResource.getJsonObject(new JsonLDTerm(ietf, "cite-as").getUrl())
-                                    .getString("@id");
-                            if (citedResource.getString("@type").equals(JsonLDTerm.schemaOrg("Dataset").getUrl())) {
-                                logger.fine("Raw PID: " + pid);
-                                if (pid.startsWith(GlobalId.DOI_RESOLVER_URL)) {
-                                    pid = pid.replace(GlobalId.DOI_RESOLVER_URL, GlobalId.DOI_PROTOCOL + ":");
-                                } else if (pid.startsWith(GlobalId.HDL_RESOLVER_URL)) {
-                                    pid = pid.replace(GlobalId.HDL_RESOLVER_URL, GlobalId.HDL_PROTOCOL + ":");
+                if (new JsonLDTerm(activityStreams, "Relationship").getUrl().equals(msgObject.getJsonString("@type"))) {
+                    // We have a relationship message - need to get the subject and object and
+                    // relationship type
+                    String subjectId = msgObject.getJsonObject(new JsonLDTerm(activityStreams, "subject").getUrl())
+                            .getString("@id");
+                    String objectId = msgObject.getJsonObject(new JsonLDTerm(activityStreams, "object").getUrl())
+                            .getString("@id");
+                    String relationshipId = msgObject
+                            .getJsonObject(new JsonLDTerm(activityStreams, "relationship").getUrl()).getString("@id");
+                    if (subjectId != null && objectId != null && relationshipId != null) {
+                        // Strip the URL part from a relationship ID/URL assuming a usable label exists
+                        // after a # char. Default is to use the whole URI.
+                        relationship = relationshipId.substring(relationship.indexOf("#") + 1);
+                        // Parse the URI as a PID and see if this Dataverse instance has this dataset
+                        String pid = GlobalId.getInternalFormOfPID(objectId);
+                        Optional<GlobalId> id = GlobalId.parse(pid);
+                        if (id.isPresent()) {
+                            Dataset dataset = datasetSvc.findByGlobalId(pid);
+                            if (dataset != null) {
+                                JsonObject citingResource = Json.createObjectBuilder().add("@id", subjectId)
+                                        .add("relationship", relationship).build();
+                                StringWriter sw = new StringWriter(128);
+                                try (JsonWriter jw = Json.createWriter(sw)) {
+                                    jw.write(citingResource);
                                 }
-                                logger.fine("Protocol PID: " + pid);
-                                Optional<GlobalId> id = GlobalId.parse(pid);
-                                Dataset dataset = datasetSvc.findByGlobalId(pid);
-                                if (dataset != null) {
-                                    JsonObject citingResource = Json.createObjectBuilder().add("@id", citingPID)
-                                            .add("@type", citingType).add("relationship", relationship)
-                                            .add("name", name).build();
-                                    StringWriter sw = new StringWriter(128);
-                                    try (JsonWriter jw = Json.createWriter(sw)) {
-                                        jw.write(citingResource);
-                                    }
-                                    String jsonstring = sw.toString();
-                                    Set<RoleAssignment> ras = roleService.rolesAssignments(dataset);
+                                String jsonstring = sw.toString();
+                                Set<RoleAssignment> ras = roleService.rolesAssignments(dataset);
 
-                                    roleService.rolesAssignments(dataset).stream()
-                                            .filter(ra -> ra.getRole().permissions()
-                                                    .contains(Permission.PublishDataset))
-                                            .flatMap(
-                                                    ra -> roleAssigneeService
-                                                            .getExplicitUsers(roleAssigneeService
-                                                                    .getRoleAssignee(ra.getAssigneeIdentifier()))
-                                                            .stream())
-                                            .distinct() // prevent double-send
-                                            .forEach(au -> {
+                                roleService.rolesAssignments(dataset).stream()
+                                        .filter(ra -> ra.getRole().permissions().contains(Permission.PublishDataset))
+                                        .flatMap(ra -> roleAssigneeService
+                                                .getExplicitUsers(
+                                                        roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()))
+                                                .stream())
+                                        .distinct() // prevent double-send
+                                        .forEach(au -> {
 
-                                                if (au.isSuperuser()) {
-                                                    userNotificationService.sendNotification(au,
-                                                            new Timestamp(new Date().getTime()),
-                                                            UserNotification.Type.DATASETMENTIONED, dataset.getId(),
-                                                            null, null, true, jsonstring);
+                                            if (au.isSuperuser()) {
+                                                userNotificationService.sendNotification(au,
+                                                        new Timestamp(new Date().getTime()),
+                                                        UserNotification.Type.DATASETMENTIONED, dataset.getId(), null,
+                                                        null, true, jsonstring);
 
-                                                }
-                                            });
-                                    sent = true;
-                                }
+                                            }
+                                        });
+                                sent = true;
                             }
+                        } else {
+                            // We don't have a dataset corresponding to the object of the relationship - do
+                            // nothing
                         }
+
+                    } else {
+                        // Can't get subject, relationship, object from message
+                        logger.info("Can't find the subject, relationship or object in the message - ignoring");
+
                     }
+                } else {
                 }
+                // This isn't a Relationship announcement message - ignore
+                logger.info("This is not a relationship announcement - ignoring message of type "
+                        + msgObject.getJsonString("@type"));
+
             }
 
             if (!sent) {
-                if (citingPID == null || citingType == null) {
-                    throw new BadRequestException(
-                            "Could not parse message to find acceptable citation link to a dataset.");
-                } else {
-                    throw new ServiceUnavailableException(
-                            "Unable to process message. Please contact the administrators.");
-                }
+                throw new ServiceUnavailableException("Unable to process message. Please contact the administrators.");
             }
         } else {
             logger.info("Ignoring message from IP address: " + origin.toString());
