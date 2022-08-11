@@ -4,7 +4,7 @@
     <fileSets>
         <!-- Get the application server (unpacked by dependency plugin) -->
         <fileSet>
-            <directory>${project.basedir}/target/payara5</directory>
+            <directory>${project.basedir}/target/payara</directory>
             <outputDirectory>appserver</outputDirectory>
         </fileSet>
         <!-- Init scripts -->

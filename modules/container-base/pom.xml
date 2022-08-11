@@ -51,6 +51,12 @@
                                             <type>zip</type>
                                             <overWrite>false</overWrite>
                                             <outputDirectory>${project.build.directory}</outputDirectory>
+                                            <fileMappers>
+                                                <org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+                                                    <pattern>^payara\d</pattern>
+                                                    <replacement>payara</replacement>
+                                                </org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+                                            </fileMappers>
                                         </artifactItem>
                                     </artifactItems>
                                 </configuration>
