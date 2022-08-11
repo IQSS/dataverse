@@ -78,7 +78,7 @@
                                     <build>
                                         <dockerFile>Dockerfile</dockerFile>
                                         <args>
-                                            <BASE_IMAGE>openjdk:${target.java.version}-jre</BASE_IMAGE>
+                                            <BASE_IMAGE>eclipse-temurin:${target.java.version}-jre</BASE_IMAGE>
                                         </args>
                                         <filter>@</filter>
                                         <assembly>
