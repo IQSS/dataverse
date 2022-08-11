@@ -44,9 +44,9 @@ import javax.sql.DataSource;
             // https://docs.payara.fish/community/docs/documentation/payara-server/jdbc/advanced-connection-pool-properties.html
             // VALIDATION
             "fish.payara.is-connection-validation-required=${MPCONFIG=dataverse.db.is-connection-validation-required:false}",
-            "fish.payara.connection-validation-method=${MPCONFIG=dataverse.db.connection-validation-method}",
-            "fish.payara.validation-table-name=${MPCONFIG=dataverse.db.validation-table-name}",
-            "fish.payara.validation-classname=${MPCONFIG=dataverse.db.validation-classname}",
+            "fish.payara.connection-validation-method=${MPCONFIG=dataverse.db.connection-validation-method:}",
+            "fish.payara.validation-table-name=${MPCONFIG=dataverse.db.validation-table-name:}",
+            "fish.payara.validation-classname=${MPCONFIG=dataverse.db.validation-classname:}",
             "fish.payara.validate-atmost-once-period-in-seconds=${MPCONFIG=dataverse.db.validate-atmost-once-period-in-seconds:0}",
             // LEAK DETECTION
             "fish.payara.connection-leak-timeout-in-seconds=${MPCONFIG=dataverse.db.connection-leak-timeout-in-seconds:0}",

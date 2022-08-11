@@ -327,13 +327,13 @@ Connection Validation
    * - dataverse.db.connection-validation-method
      - | The method of connection validation:
        | ``table|autocommit|meta-data|custom-validation``
-     - *No default*
+     - *Empty string*
    * - dataverse.db.validation-table-name
      - The name of the table used for validation if the validation method is set to ``table``
-     - *No default*
+     - *Empty string*
    * - dataverse.db.validation-classname
      - The name of the custom class used for validation if the ``validation-method`` is set to ``custom-validation``
-     - *No default*
+     - *Empty string*
    * - dataverse.db.validate-atmost-once-period-in-seconds
      - Specifies the time interval in seconds between successive requests to validate a connection at most once.
      - ``0`` (disabled)
