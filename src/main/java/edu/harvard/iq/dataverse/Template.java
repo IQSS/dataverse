@@ -272,7 +272,7 @@ public class Template implements Serializable {
         Map<String, String> instructionsMap = getInstructionsMap();
         
         List <MetadataBlock> viewMDB = new ArrayList<>();
-        List <MetadataBlock> editMDB=this.getDataverse().getMetadataBlocks(true);
+        List <MetadataBlock> editMDB=this.getDataverse().getMetadataBlocks(false);
             
         //The metadatablocks in this template include any from the Dataverse it is associated with 
         //plus any others where the template has a displayable field (i.e. from before a block was dropped in the dataverse/collection)
