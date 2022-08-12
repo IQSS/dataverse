@@ -522,7 +522,19 @@ public class SettingsServiceBean {
          * would also work) of never muted notifications that cannot be turned off by the users. AlwaysMuted setting overrides
          * Nevermuted setting warning is logged.
          */
-        NeverMuted
+        NeverMuted,
+
+        /**
+         * Determines if dataset submitted via API with invalid or incomplete metadata (for later
+         * corrections) can be subbmited for review.
+         */
+        CanReviewInvalid,
+
+        /**
+         * When set to true the filter for validity of metadata filter (dataset with incomplete or
+         * invalid metadata can be submitted via API for later corrections).
+         */
+        ShowValidityFilter
         ;
 
         @Override

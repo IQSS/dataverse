@@ -1625,7 +1625,7 @@
                             <ui:include src="datasetLicenseInfoFragment.xhtml"/>
                         </c:if>
                         <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.submit}" 
+                            <p:commandButton rendered="#{DatasetPage.validOrCanReviewInvalid}" styleClass="btn btn-default" value="#{bundle.submit}" 
                                              onclick="PF('inreview').hide();
                                                      PF('blockDatasetForm').hide();" action="#{DatasetPage.submitDataset}" immediate="true"/>
                             <button class="btn btn-link" onclick="PF('inreview').hide();PF('blockDatasetForm').hide();" type="button">

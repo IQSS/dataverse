@@ -2168,6 +2168,10 @@ public class DatasetPage implements java.io.Serializable {
         return newVersion.isValid();
     }
 
+    public boolean isValidOrCanReviewInvalid() {
+        return isValid() || settingsWrapper.canReviewInvalid();
+    }
+
     private void displayLockInfo(Dataset dataset) {
         // Various info messages, when the dataset is locked (for various reasons):
         if (dataset.isLocked() && canUpdateDataset()) {

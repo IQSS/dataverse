@@ -646,5 +646,13 @@ public class SettingsWrapper implements java.io.Serializable {
         }
         return customLicenseAllowed;
     }
+
+    public boolean canReviewInvalid() {
+        return isTrueForKey(Key.CanReviewInvalid, false);
+    }
+    
+    public boolean showValidityFilter() {
+        return isTrueForKey(Key.ShowValidityFilter, false);
+    }
 }
 
