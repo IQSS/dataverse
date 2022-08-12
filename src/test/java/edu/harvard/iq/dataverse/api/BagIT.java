@@ -1,16 +1,36 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
+import edu.harvard.iq.dataverse.engine.command.impl.LocalSubmitToArchiveCommand;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class BagIT {
 
-    /**
-     * Note: to run this test you have to configure an archiver, such as the
-     * local archiver.
-     */
+    @BeforeClass
+    public static void setUpClass() {
+
+        RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+
+        Response setArchiverClassName = UtilIT.setSetting(SettingsServiceBean.Key.ArchiverClassName, LocalSubmitToArchiveCommand.class.getCanonicalName());
+        setArchiverClassName.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response setArchiverSettings = UtilIT.setSetting(SettingsServiceBean.Key.ArchiverSettings, ":BagItLocalPath, :BagGeneratorThreads");
+        setArchiverSettings.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response setBagItLocalPath = UtilIT.setSetting(":BagItLocalPath", "/tmp");
+        setBagItLocalPath.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+    }
+
     @Test
     public void testBagItExport() {
 
@@ -44,4 +64,15 @@ public class BagIT {
         archiveDataset.then().assertThat().statusCode(OK.getStatusCode());
 
     }
+
+    @AfterClass
+    public static void tearDownClass() {
+
+        // Not checking if delete happened. Hopefully, it did.
+        UtilIT.deleteSetting(SettingsServiceBean.Key.ArchiverClassName);
+        UtilIT.deleteSetting(SettingsServiceBean.Key.ArchiverSettings);
+        UtilIT.deleteSetting(":BagItLocalPath");
+
+    }
+
 }
