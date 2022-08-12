@@ -93,6 +93,9 @@ public abstract class DvObjectContainer extends DvObject {
         }
     }
     
+    public static boolean isMetadataLanguageSet(String mdLang) {
+        return mdLang!=null && !mdLang.equals(UNDEFINED_METADATA_LANGUAGE_CODE);
+    }
     
 
     /* Dataverse collections can be configured to allow use of Curation labels and have this inheritable value to decide which set of labels to use.
