@@ -1027,7 +1027,7 @@ public class IndexServiceBean {
                     
                     /* Full-text indexing using Apache Tika */
                     if (doFullTextIndexing) {
-                        if (!dataset.isHarvested() && !fileMetadata.getDataFile().isFilePackage()) {
+                        if (!dataset.isHarvested() && !fileMetadata.getDataFile().isFilePackage()&& fileMetadata.getDataFile().getFilesize()!=0) {
                             StorageIO<DataFile> accessObject = null;
                             InputStream instream = null;
                             ContentHandler textHandler = null;
@@ -1040,8 +1040,9 @@ public class IndexServiceBean {
                                     // currently opened in the call above (see
                                     // https://github.com/IQSS/dataverse/issues/5165 - applies to files as well), so we want to get a handle so
                                     // we can close it below.
-                                    instream = accessObject.getInputStream();
-                                    if (accessObject.getSize() <= maxSize) {
+                                    long size = accessObject.getSize();
+                                    if ((size > 0) && (size <= maxSize)) {
+                                        instream = accessObject.getInputStream();
                                         AutoDetectParser autoParser = new AutoDetectParser();
                                         textHandler = new BodyContentHandler(-1);
                                         Metadata metadata = new Metadata();
@@ -1075,7 +1076,7 @@ public class IndexServiceBean {
                                         fileMetadata.getDataFile().getDisplayName(),e.getClass().getCanonicalName(), e.getLocalizedMessage()));
                                 continue;
                             } finally {
-                                IOUtils.closeQuietly(instream);
+                                accessObject.closeInputStream();
                             }
                         }
                     }
