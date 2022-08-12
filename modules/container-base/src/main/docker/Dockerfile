@@ -187,12 +187,12 @@ CMD ["sh", "-c", "${SCRIPT_DIR}/entrypoint.sh"]
 
 LABEL org.opencontainers.image.created="@git.build.time@" \
       org.opencontainers.image.authors="Research Data Management at FZJ <forschungsdaten@fz-juelich.de>" \
-      org.opencontainers.image.url="https://k8s-docs.gdcc.io" \
-      org.opencontainers.image.documentation="https://k8s-docs.gdcc.io" \
-      org.opencontainers.image.source="https://github.com/gdcc/dataverse/tree/develop%2Bct/modules/container-base" \
+      org.opencontainers.image.url="https://guides.dataverse.org/en/latest/container/" \
+      org.opencontainers.image.documentation="https://guides.dataverse.org/en/latest/container/" \
+      org.opencontainers.image.source="https://github.com/IQSS/dataverse/tree/develop/modules/container-base" \
       org.opencontainers.image.version="@project.version@" \
       org.opencontainers.image.revision="@git.commit.id.abbrev@" \
       org.opencontainers.image.vendor="Global Dataverse Community Consortium" \
       org.opencontainers.image.licenses="Apache-2.0" \
-      org.opencontainers.image.title="dataverse-k8s :: Dataverse containerized" \
+      org.opencontainers.image.title="Dataverse Base Image" \
       org.opencontainers.image.description="This container image provides an application server tuned for Dataverse software"
