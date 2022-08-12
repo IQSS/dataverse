@@ -778,7 +778,7 @@ public class AdminIT {
         assertEquals(3, statistics.size());
         assertEquals(1, (int) statistics.get("MetadataBlock"));
         assertEquals(78, (int) statistics.get("DatasetField"));
-        assertEquals(242, (int) statistics.get("Controlled Vocabulary"));
+        assertEquals(243, (int) statistics.get("Controlled Vocabulary"));
     }
 
     @Test
