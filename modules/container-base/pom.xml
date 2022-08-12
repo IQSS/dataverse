@@ -16,6 +16,18 @@
     <name>Container Base Image</name>
     <description>This module provides an application server base image to be decorated with the Dataverse app.</description>
     
+    <developers>
+        <developer>
+            <id>poikilotherm</id>
+            <name>Oliver Bertuch</name>
+            <email>github@bertuch.eu</email>
+            <timezone>Europe/Berlin</timezone>
+            <roles>
+                <role>maintainer</role>
+            </roles>
+        </developer>
+    </developers>
+    
     <properties>
         <!-- By default, this module will produce a POM only. -->
         <!-- This will be switched within the container profile! -->
