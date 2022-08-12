@@ -59,7 +59,9 @@ ENV PATH="${PATH}:${PAYARA_DIR}/bin" \
     MEM_MAX_METASPACE_SIZE="2g" \
     # Make heap dumps on OOM appear in DUMPS_DIR
     ENABLE_DUMPS=0 \
-    JVM_DUMPS_ARG="-XX:+HeapDumpOnOutOfMemoryError"
+    JVM_DUMPS_ARG="-XX:+HeapDumpOnOutOfMemoryError" \
+    ENABLE_JMX=0 \
+    ENABLE_JDWP=0
 
 ARG JATTACH_VERSION="v2.0"
 ARG JATTACH_CHECKSUM="989dc53279c7fb3ec399dbff1692647439286e5a4339c2849fd4323e998af7f8"
