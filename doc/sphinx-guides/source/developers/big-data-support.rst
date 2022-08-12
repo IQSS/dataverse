@@ -115,6 +115,24 @@ To configure the options mentioned above, an administrator must set two JVM opti
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.public=true"``
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.ingestsizelimit=<size in bytes>"``
 
+Globus File Transfer
+--------------------
+
+When configured to use a Globus accessible S3 store and interact with a community-developed Dataverse Globus app, Dataverse can support the transfer of files via Globus for upload and download. Due to differences in the access control models of Dataverse and Globus, enabling this capability on a store will disable restriction and embargo capabilities in that store.
+
+Globus transfer uses a very efficient transfer mechanism and has additional features that make it suitable for large files and large numbers of files:
+* robust file transfer capable of restarting after network or endpoint failures,
+* third-party transfer, which enables a user running Dataverse in their desktop browser to initiate transfer of their files from a remote endpoint, i.e. on a local high-performance computing cluster), directly to an S3 store managed by Dataverse.
+
+This mechanism requires use of the Globus S3 connector which requires a paid Globus subscription at the host institution. Users will need a Globus account which could be obtained via their institution or directly from Globus (no cost).
+
+The setup required to enable Globus is described in the `Community Dataverse-Globus Setup and Configuration document <https://docs.google.com/document/d/1mwY3IVv8_wTspQC0d4ddFrD2deqwr-V5iAGHgOy4Ch8/edit?usp=sharing>`_ and the references therein.
+
+As described in that document, Globus transfers can be initiated by choosing the Globus option on the dataset upload panel. (Globus, which does asynchronous transfers, is not available during dataset creation.) Analogously, Globus Transfer is one of the downloads in the file download menu.
+
+An overview of the control and data transfer interactions between components was presented at the Dataverse Community Meeting and can be viewed in the `Itegrations and Tools Session Video <https://www.youtube.com/watch?v=3ek7F_Dxcjk&list=PLLoKvRqQVbtKJFdIe-bynhnXdePwI7jpS>`_ around the 1 hr 28 min mark.
+
+
 Data Capture Module (DCM)
 -------------------------
 

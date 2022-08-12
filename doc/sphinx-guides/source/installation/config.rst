@@ -2903,3 +2903,23 @@ For configuration details, see :ref:`mute-notifications`.
 Overrides the default empty list of never muted notifications. Never muted notifications cannot be muted by the users. Always muted notifications are grayed out and are not adjustable by the user.
 
 For configuration details, see :ref:`mute-notifications`.
+
+:BasicGlobusToken
++++++++++++++++++
+
+BasicGlobusToken encodes credentials for Globus Integration - see :doc:`/developers/big-data-support` for details.
+
+:GlobusEndpoint
++++++++++++++++
+
+GlobusEndpoint is Globus endpoint id used with Globus Integration - see :doc:`/developers/big-data-support` for details.
+
+:GlobusStores
++++++++++++++
+
+A comma-separated list of the S3 stores that are configured to support Globus Integration - see :doc:`/developers/big-data-support` for details.
+
+:GlobusAppURL
++++++++++++++
+
+The URL where the Dataverse Globus app has been deployed to support Globus Integration - see :doc:`/developers/big-data-support` for details.
