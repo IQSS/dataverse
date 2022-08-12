@@ -18,6 +18,7 @@ As reported at the 2022 Dataverse Community Meeting, the Harvard Data Commons pr
 - Display of archival status within the dataset page versions table, richer status options including success, pending, and failure states, with a complete API for managing archival status.
 - Support for batch archiving via API as an alternative to the current options of configuring archiving upon publication or archiving each dataset version manually.
 - Initial support for sending and receiving Linked Data Notification messages indicating relationships between a dataset and external resources (e.g. papers or other dataset) that can be used to trigger additional actions, such as the creation of a back-link to provide, for example, bi-directional linking between a published paper and a Dataverse dataset.
+- A new capability to provide custom per field instructions in dataset templates
 
 
 
@@ -33,6 +34,7 @@ Changes and fixes in this release include:
 - Archiving via RDA-conformant Bags is more robust and is more configurable (PR #8773, #8747, #8699, #8609, #8606, #8610)
 - Users and administrators can see the archival status of the versions of the datasets they manage in the dataset page version table (PR #8748, #8696)
 - Administrators can configure messaging between their Dataverse installation and other repositories that may hold related resources or services interested in activity within that installation (PR #8775)
+- Collection managers can create templates that include custom instructions on how to fill out specific metadata fields.
 
 ## Notes for Dataverse Installation Administrators
 
@@ -79,3 +81,4 @@ If this is a new installation, please see our [Installation Guide](https://guide
 
 8\. Re-export metadata files (OAI_ORE is affected by the PRs in these release notes). Optionally, for those using the Dataverse software's BagIt-based archiving, re-archive dataset versions archived using prior versions of the Dataverse software. This will be recommended/required in a future release.
 
+9. Standard instructions for reinstalling the citation metadatablock. There are no new fields so solr changes/reindex aren't needed. This PR just adds an option to the list of publicationIdTypes
