@@ -2904,3 +2904,19 @@ For configuration details, see :ref:`mute-notifications`.
 Overrides the default empty list of never muted notifications. Never muted notifications cannot be muted by the users. Always muted notifications are grayed out and are not adjustable by the user.
 
 For configuration details, see :ref:`mute-notifications`.
+
+:LDNMessageHosts
+++++++++++++++++
+
+The comma-separated list of hosts allowed to send Dataverse Linked Data Notification messages. See :doc:`/api/linkeddatanotification` for details. ``*`` allows messages from anywhere (not recommended for production). By default, messages are not accepted from anywhere.
+
+
+:LDN_TARGET
++++++++++++
+
+The URL of an LDN Inbox to which the LDN Announce workflow step will send messages. See :doc:`/developers/workflows` for details.
+
+:LDNAnnounceRequiredFields
+++++++++++++++++++++++++++
+
+The list of parent dataset field names for which the LDN Announce workflow step should send messages. See :doc:`/developers/workflows` for details.

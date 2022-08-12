@@ -522,7 +522,11 @@ public class SettingsServiceBean {
          * would also work) of never muted notifications that cannot be turned off by the users. AlwaysMuted setting overrides
          * Nevermuted setting warning is logged.
          */
-        NeverMuted
+        NeverMuted,
+        /**
+         * LDN Inbox Allowed Hosts - a comma separated list of IP addresses allowed to submit messages to the inbox
+         */
+        LDNMessageHosts
         ;
 
         @Override
