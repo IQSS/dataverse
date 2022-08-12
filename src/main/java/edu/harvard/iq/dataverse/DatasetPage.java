@@ -418,7 +418,7 @@ public class DatasetPage implements java.io.Serializable {
     
     private Boolean hasRestrictedFiles = null;
     
-    public Boolean isHasRestrictedFiles(){
+    public boolean isHasRestrictedFiles(){
         //cache in page to limit processing
         if (hasRestrictedFiles != null){
             return hasRestrictedFiles;
@@ -2763,7 +2763,7 @@ public class DatasetPage implements java.io.Serializable {
                      */
                     try {
                         updateVersion = commandEngine.submit(archiveCommand);
-                        if (updateVersion.getArchivalCopyLocation() != null) {
+                        if (!updateVersion.getArchivalCopyLocationStatus().equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE)) {
                             successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.success");
                         } else {
                             errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure");
@@ -5571,9 +5571,14 @@ public class DatasetPage implements java.io.Serializable {
             if (cmd != null) {
                 try {
                     DatasetVersion version = commandEngine.submit(cmd);
-                    logger.info("Archived to " + version.getArchivalCopyLocation());
+                    if (!version.getArchivalCopyLocationStatus().equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE)) {
+                        logger.info(
+                                "DatasetVersion id=" + version.getId() + " submitted to Archive, status: " + dv.getArchivalCopyLocationStatus());
+                    } else {
+                        logger.severe("Error submitting version " + version.getId() + " due to conflict/error at Archive");
+                    }
                     if (version.getArchivalCopyLocation() != null) {
-                        resetVersionTabList();
+                        setVersionTabList(resetVersionTabList());
                         this.setVersionTabListForPostLoad(getVersionTabList());
                         JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("datasetversion.archive.success"));
                     } else {
@@ -5603,7 +5608,7 @@ public class DatasetPage implements java.io.Serializable {
                     archivable = ((Boolean) m.invoke(null, params) == true);
                 } catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException
                         | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-                    logger.warning("Failed to call is Archivable on configured archiver class: " + className);
+                    logger.warning("Failed to call isArchivable on configured archiver class: " + className);
                     e.printStackTrace();
                 }
             }
@@ -5639,7 +5644,7 @@ public class DatasetPage implements java.io.Serializable {
                         }
                     } catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException
                             | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-                        logger.warning("Failed to call is Archivable on configured archiver class: " + className);
+                        logger.warning("Failed to call isSingleVersion on configured archiver class: " + className);
                         e.printStackTrace();
                     }
                 }
@@ -5650,12 +5655,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public boolean isSomeVersionArchived() {
         if (someVersionArchived == null) {
-            someVersionArchived = false;
-            for (DatasetVersion dv : dataset.getVersions()) {
-                if (dv.getArchivalCopyLocation() != null) {
-                    someVersionArchived = true;
-                }
-            }
+            someVersionArchived = ArchiverUtil.isSomeVersionArchived(dataset);
         }
         return someVersionArchived;
     }
