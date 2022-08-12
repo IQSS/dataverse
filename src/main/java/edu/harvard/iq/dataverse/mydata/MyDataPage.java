@@ -14,11 +14,13 @@ import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -112,6 +114,17 @@ public class MyDataPage implements java.io.Serializable {
         } else {
             return new ArrayList<>();
         }
+    }
+    
+    public List<String[]> getValidityInfoForCheckboxes(){
+        return Arrays.asList(
+            new String[] {"true", "valid", BundleUtil.getStringFromBundle("valid")},
+            new String[] {"false", "invalid", BundleUtil.getStringFromBundle("notValid")}
+        );
+    }
+
+    public boolean showValidityFilter() {
+        return true;
     }
            
     public String getRetrieveDataFullAPIPath(){
