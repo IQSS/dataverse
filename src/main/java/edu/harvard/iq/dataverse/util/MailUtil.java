@@ -118,6 +118,8 @@ public class MailUtil {
                 return BundleUtil.getStringFromBundle("notification.email.ingestCompleted.subject", rootDvNameAsList);
             case INGESTCOMPLETEDWITHERRORS:
                 return BundleUtil.getStringFromBundle("notification.email.ingestCompletedWithErrors.subject", rootDvNameAsList);
+            case DATASETMENTIONED:
+                return BundleUtil.getStringFromBundle("notification.email.datasetWasMentioned.subject", rootDvNameAsList);
         }
         return "";
     }

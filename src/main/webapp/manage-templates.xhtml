@@ -178,6 +178,7 @@
                         <ui:include src="metadataFragment.xhtml">
                             <ui:param name="managePage" value="true"/>
                             <ui:param name="metadataBlocks" value="#{TemplatePage.template.metadataBlocksForView.entrySet().toArray()}"/>
+                            <ui:param name="template" value="#{TemplatePage.template}"/>
                         </ui:include>
                         <ui:include src="dataset-license-terms.xhtml">
                             <ui:param name="managePage" value="true"/>

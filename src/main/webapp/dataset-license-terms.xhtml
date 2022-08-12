@@ -248,7 +248,7 @@
            <div id="panelCollapseTOA" class="#{!datasetPage or DatasetPage.hasValidTermsOfAccess ? 'collapse in' : 'collapse'}">
                <div class="panel-body">
                    <ui:fragment rendered="#{empty editMode}">
-                       <div class="form-group" jsf:rendered="#{!publicStore  and DatasetPage.restrictedFileCount > 0}">
+                       <div class="form-group" jsf:rendered="#{!publicStore  and datasetPage== true and DatasetPage.hasRestrictedFiles}">
                            <label for="datasetForm:tabView:metadata_RestrictedFiles" class="col-sm-3 control-label">
                                #{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles']}
                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
@@ -274,7 +274,7 @@
                                <p><h:outputText id="metadata_TermsAccessText" value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.termsOfAccess)}" escape="false"/></p>
                            </div>
                        </div>
-                       <div class="form-group" jsf:rendered="#{!publicStore and ( datasetPage == true and DatasetPage.restrictedFileCount > 0)}">
+                       <div class="form-group" jsf:rendered="#{!publicStore and ( datasetPage == true and DatasetPage.hasRestrictedFiles)}">
                            <label for="datasetForm:tabView:metadata_RequestAccessSelected" class="col-sm-3 control-label">
                                #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
@@ -286,8 +286,8 @@
                                    <h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.notRequest']}" rendered="#{!DatasetPage.dataset.fileAccessRequest}"/>
                                </p>
                                <p jsf:rendered="#{DatasetPage.workingVersion.draft}">
-                                   <h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.request']}" rendered="#{DatasetPage.workingVersion.termsOfUseAndAccess.fileAccessRequest}"/>
-                                   <h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.notRequest']}" rendered="#{!DatasetPage.workingVersion.termsOfUseAndAccess.fileAccessRequest}"/>
+                                   <h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.request']}" rendered="#{termsOfUseAndAccess.fileAccessRequest}"/>
+                                   <h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.notRequest']}" rendered="#{!termsOfUseAndAccess.fileAccessRequest}"/>
                                </p>
                            </div>
                        </div>
@@ -295,19 +295,7 @@
                    <ui:fragment rendered="#{!empty editMode}">
                         <div class="form-group" jsf:rendered="#{!publicStore}"> 
                             <p:fragment id="termsOfAccessHelp">
-                                <ui:remove>
-                                <ui:fragment rendered="#{datasetPage == true and (!DatasetPage.dataset.editVersion.hasRestrictedFile or !DatasetPage.dataset.editVersion.termsOfUseAndAccess.fileAccessRequest)}">    
-                                    <p class="help-block">
-                                       
-                                        <h:outputText value=" #{bundle['file.dataFilesTab.terms.list.termsOfAccess.description']}"/>
-                                        <h:outputFormat value=" #{bundle['file.dataFilesTab.terms.list.termsOfAccess.description.line.2']}" escape="false">
-                                            <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                                            <f:param value="#{systemConfig.guidesVersion}"/>
-                                        </h:outputFormat>
-                                    </p>                                    
-                                </ui:fragment>
-                                </ui:remove>
-                                <ui:fragment rendered="#{DatasetPage.dataset.editVersion.hasRestrictedFile}">     
+                                <ui:fragment rendered="#{datasetPage == true and DatasetPage.hasRestrictedFiles}">
                                     <div class="alert alert-info">
                                         <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{bundle['messages.info']}</strong> –
                                         <h:outputText value=" #{bundle['file.dataFilesTab.terms.list.termsOfAccess.description']}"/>
@@ -325,13 +313,13 @@
                            </label>
                            <div class="col-sm-9">
                                 <p:selectBooleanCheckbox id="requestAccess" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}" 
-                                                        value="#{termsOfUseAndAccess.fileAccessRequest}" disabled="#{datasetPage == true and !DatasetPage.isHasRestrictedFiles()}">
+                                                        value="#{termsOfUseAndAccess.fileAccessRequest}" disabled="#{datasetPage == true and !DatasetPage.hasRestrictedFiles}">
                                    <p:ajax event="change" update="termsOfAccessHelp" />
                                </p:selectBooleanCheckbox>                                                          
                            </div>
                        </div>
                        <p:fragment id="toaValidation">
-                           <div  class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{datasetPage == true and DatasetPage.dataset.editVersion.hasRestrictedFile and empty termsOfUseAndAccess.termsOfAccess  and !termsOfUseAndAccess.fileAccessRequest}">
+                           <div  class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{datasetPage == true and DatasetPage.hasRestrictedFiles and empty termsOfUseAndAccess.termsOfAccess  and !termsOfUseAndAccess.fileAccessRequest}">
                                <span class="ui-message-error-detail">#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.warning.outofcompliance']}</span>          
                            </div>
                        </p:fragment>
@@ -343,7 +331,7 @@
                            </label>
                            <div class="col-sm-9">
                                 <p:inputTextarea  id="metadata_TermsAccess" value="#{termsOfUseAndAccess.termsOfAccess}" 
-                                                  rows="5" styleClass="form-control" disabled="#{datasetPage == true and !DatasetPage.isHasRestrictedFiles()}" />
+                                                  rows="5" styleClass="form-control" disabled="#{datasetPage == true and !DatasetPage.hasRestrictedFiles}" />
 
                            </div>
                        </div>
