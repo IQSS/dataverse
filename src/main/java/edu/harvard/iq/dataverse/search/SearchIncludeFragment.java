@@ -1386,12 +1386,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
     
     public boolean isValid(SolrSearchResult result) {
-        if (!result.isDraftState()) {
-            return true;
-        }
-        DatasetVersion version = datasetVersionService.getDatasetVersionById(result.getEntityId(), VersionState.DRAFT.toString());
-        version.setDatasetFields(version.initDatasetFields());
-        return version.isValid();
+        return result.isValid();
     }
     
     public enum SortOrder {

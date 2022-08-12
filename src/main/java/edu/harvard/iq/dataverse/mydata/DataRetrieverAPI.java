@@ -24,6 +24,7 @@ import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SortBy;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -38,6 +39,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.DefaultValue;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -269,7 +271,9 @@ public class DataRetrieverAPI extends AbstractApiBean {
             @QueryParam("mydata_search_term") String searchTerm,             
             @QueryParam("role_ids") List<Long> roleIds, 
             @QueryParam("userIdentifier") String userIdentifier,
-            @QueryParam("key") String apiToken) { //String myDataParams) {
+            @QueryParam("key") String apiToken,
+            @QueryParam("filter_validities") Boolean filterValidities,
+            @QueryParam("dataset_valid") List<Boolean> datasetValidities) { //String myDataParams) {
         //System.out.println("_YE_OLDE_QUERY_COUNTER_");
         //msgt("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
         boolean DEBUG_MODE = false;
@@ -340,6 +344,10 @@ public class DataRetrieverAPI extends AbstractApiBean {
         if (published_states != null){
             pub_states = published_states;
         }
+        List<Boolean> validities = Arrays.asList(true, false);
+        if (filterValidities != null && filterValidities){
+            validities = datasetValidities;
+        }
         
         // ---------------------------------
         // (1) Initialize filterParams and check for Errors 
@@ -347,7 +355,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         DataverseRequest dataverseRequest = createDataverseRequest(authUser);
 
         
-        MyDataFilterParams filterParams = new MyDataFilterParams(dataverseRequest, dtypes, pub_states, roleIds, searchTerm);
+        MyDataFilterParams filterParams = new MyDataFilterParams(dataverseRequest, dtypes, pub_states, roleIds, searchTerm, validities);
         if (filterParams.hasError()){
             return this.getJSONErrorString(filterParams.getErrorMessage(), filterParams.getErrorMessage());
         }

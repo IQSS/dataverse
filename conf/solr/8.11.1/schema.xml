@@ -228,6 +228,7 @@
 
     <field name="dsPersistentId" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="filePersistentId" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <field name="datasetValid" type="boolean" stored="true" indexed="true" multiValued="false"/>
     
     <!--
         METADATA SCHEMA FIELDS
@@ -467,6 +468,8 @@
     <!-- <copyField source="*_s" dest="_text_" maxChars="3000"/> -->
     <!-- <copyField source="*_ss" dest="_text_" maxChars="3000"/> -->
     <!-- <copyField source="*_i" dest="_text_" maxChars="3000"/> -->
+    
+    <copyField source="datasetValid" dest="_text_" maxChars="3000"/>
     
     <!--
         METADATA SCHEMA FIELDS

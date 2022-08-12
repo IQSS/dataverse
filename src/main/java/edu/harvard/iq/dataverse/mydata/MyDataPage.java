@@ -167,7 +167,7 @@ public class MyDataPage implements java.io.Serializable {
         HttpServletRequest httpServletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
 
         DataverseRequest dataverseRequest = new DataverseRequest(authUser, httpServletRequest);
-        this.filterParams = new MyDataFilterParams(dataverseRequest,  MyDataFilterParams.defaultDvObjectTypes, null, null, null);
+        this.filterParams = new MyDataFilterParams(dataverseRequest,  MyDataFilterParams.defaultDvObjectTypes, null, null, null, null);
         
         
         // Temp DataverseRolePermissionHelper -- not in its normal role but for creating initial checkboxes

@@ -122,6 +122,8 @@ public class SolrSearchResult {
 
 	private Long embargoEndDate;
 
+	private boolean datasetValid;
+
 	public String getDvTree() {
 		return dvTree;
 	}
@@ -1257,18 +1259,11 @@ public class SolrSearchResult {
 		this.embargoEndDate = embargoEndDate;
 	}
 
+	public void setDatasetValid(Boolean datasetValid) {
+		this.datasetValid = datasetValid == null || Boolean.valueOf(datasetValid);
+	}
+
 	public boolean isValid() {
-		if (!this.entity.isInstanceofDataset()) {
-			return true;
-		}
-        if (!this.isDraftState()) {
-            return true;
-        }
-		Dataset ds = (Dataset) this.entity;
-		ds.setOwner();
-		DatasetVersion dv = ds.getVersionFromId(this.datasetVersionId);
-        DatasetVersion newVersion = dv.cloneDatasetVersion();
-        newVersion.setDatasetFields(newVersion.initDatasetFields());
-        return newVersion.isValid();
+		return datasetValid;
     }
 }

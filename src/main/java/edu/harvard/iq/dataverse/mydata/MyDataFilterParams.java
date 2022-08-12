@@ -76,6 +76,7 @@ public class MyDataFilterParams {
     private List<String> dvObjectTypes;    
     private List<String> publicationStatuses;
     private List<Long> roleIds;
+    private List<Boolean> datasetValidities;
     
     //private ArrayList<DataverseRole> roles;
     public static final String defaultSearchTerm = "*:*";
@@ -109,6 +110,7 @@ public class MyDataFilterParams {
         }
         this.dvObjectTypes = MyDataFilterParams.allDvObjectTypes;
         this.publicationStatuses = MyDataFilterParams.allPublishedStates;
+        this.datasetValidities = Arrays.asList(true, false);
         this.searchTerm = MyDataFilterParams.defaultSearchTerm;
         this.roleIds = roleHelper.getRoleIdList();
     }
@@ -118,8 +120,9 @@ public class MyDataFilterParams {
      * @param dvObjectTypes
      * @param publicationStatuses 
      * @param searchTerm 
+     * @param datasetValidities
      */    
-    public MyDataFilterParams(DataverseRequest dataverseRequest, List<String> dvObjectTypes, List<String> publicationStatuses, List<Long> roleIds, String searchTerm){
+    public MyDataFilterParams(DataverseRequest dataverseRequest, List<String> dvObjectTypes, List<String> publicationStatuses, List<Long> roleIds, String searchTerm, List<Boolean> datasetValidities){
         if (dataverseRequest==null){
             throw new NullPointerException("MyDataFilterParams constructor: dataverseRequest cannot be null ");
         }
@@ -137,6 +140,12 @@ public class MyDataFilterParams {
             this.publicationStatuses = MyDataFilterParams.defaultPublishedStates;
         }else{
             this.publicationStatuses = publicationStatuses;
+        }
+
+        if (datasetValidities == null){
+            this.datasetValidities = Arrays.asList(true, false);
+        }else{
+            this.datasetValidities = datasetValidities;
         }
         
         // Do something here if none chosen!
@@ -192,6 +201,11 @@ public class MyDataFilterParams {
         
         if ((this.publicationStatuses == null)||(this.publicationStatuses.isEmpty())){
             this.addError("No results. Please select one of " + StringUtils.join(MyDataFilterParams.defaultPublishedStates, ", ") + ".");
+            return;
+        }
+        
+        if ((this.datasetValidities == null)||(this.datasetValidities.isEmpty())){
+            this.addError("No results. Please select one of dataset validities.");
             return;
         }
 
@@ -292,6 +306,20 @@ public class MyDataFilterParams {
         return  "(" + SearchFields.PUBLICATION_STATUS + ":" + valStr + ")";
     }
 
+    public String getSolrFragmentForDatasetValidity(){
+        if ((this.datasetValidities == null)||(this.datasetValidities.isEmpty())){
+            throw new IllegalStateException("Error encountered earlier.  Before calling this method, first check 'hasError()'");
+        }
+    
+        
+        String valStr = StringUtils.join(datasetValidities, " OR ");
+        if (this.datasetValidities.size() > 1){
+            valStr = "(" + valStr + ")";
+        }
+
+        return  "(" + SearchFields.DATASET_VALID + ":" + valStr + ")";
+    }
+
     public String getDvObjectTypesAsJSONString(){
         
         return this.getDvObjectTypesAsJSON().build().toString();
@@ -311,6 +339,22 @@ public class MyDataFilterParams {
         }
         return jsonArray;
                 
+    }
+
+        
+    /**
+     * "dataset_valid" : [ true, false ]
+     *
+     * @return
+     */
+    public JsonArrayBuilder getListofSelectedValidities(){
+
+        JsonArrayBuilder jsonArray = Json.createArrayBuilder();
+
+        for (Boolean valid : this.datasetValidities){
+            jsonArray.add(valid);
+        }
+        return jsonArray;
     }
     
     
