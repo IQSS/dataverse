@@ -10,7 +10,7 @@
         <distrbtr source="archive">Root</distrbtr>
         <distDate>2020-02-19</distDate>
       </distStmt>
-      <verStmt source="DVN">
+      <verStmt source="archive">
         <version date="2020-02-19" type="RELEASED">1</version>
       </verStmt>
       <biblCit>LastAuthor1, FirstAuthor1; LastAuthor2, FirstAuthor2, 2020, "Replication Data for: Title", https://doi.org/10.5072/FK2/WKUKGV, Root, V1</biblCit>
@@ -56,13 +56,14 @@
         <serName>SeriesName</serName>
         <serInfo>SeriesInformation</serInfo>
       </serStmt>
+      <holdings URI="https://doi.org/10.5072/FK2/WKUKGV"></holdings>
     </citation>
     <stdyInfo>
       <subject>
-        <keyword>Agricultural Sciences</keyword>
-        <keyword>Business and Management</keyword>
-        <keyword>Engineering</keyword>
-        <keyword>Law</keyword>
+        <keyword xml:lang="en">Agricultural Sciences</keyword>
+        <keyword xml:lang="en">Business and Management</keyword>
+        <keyword xml:lang="en">Engineering</keyword>
+        <keyword xml:lang="en">Law</keyword>
         <keyword vocab="KeywordVocabulary1" vocabURI="http://KeywordVocabularyURL1.org">KeywordTerm1</keyword>
         <keyword vocab="KeywordVocabulary2" vocabURI="http://KeywordVocabularyURL2.org">KeywordTerm2</keyword>
       </subject>
@@ -143,7 +144,6 @@
       <notes type="NotesType" subject="NotesSubject">NotesText</notes>
     </method>
     <dataAccs>
-      <notes type="DVN:TOU" level="dv">CC0 Waiver</notes>
       <notes type="DVN:TOA" level="dv">Terms of Access</notes>
       <setAvail>
         <accsPlac>Data Access Place</accsPlac>

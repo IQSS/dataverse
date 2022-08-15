@@ -4,10 +4,10 @@ Managing Harvesting Clients
 .. contents:: |toctitle|
 	:local:
 
-Your Dataverse as a Metadata Harvester
---------------------------------------
+Your Dataverse Installation as a Metadata Harvester
+---------------------------------------------------
 
-Harvesting is a process of exchanging metadata with other repositories. As a harvesting *client*, your Dataverse can gather metadata records from remote sources. These can be other Dataverse instances or other archives that support OAI-PMH, the standard harvesting protocol. Harvested metadata records will be indexed and made searchable by your users. Clicking on a harvested dataset in the search results takes the user to the original repository. Harvested datasets cannot be edited in your Dataverse installation.
+Harvesting is a process of exchanging metadata with other repositories. As a harvesting *client*, your Dataverse installation can gather metadata records from remote sources. These can be other Dataverse installations or other archives that support OAI-PMH, the standard harvesting protocol. Harvested metadata records will be indexed and made searchable by your users. Clicking on a harvested dataset in the search results takes the user to the original repository. Harvested datasets cannot be edited in your Dataverse installation.
 
 Harvested records can be kept in sync with the original repository through scheduled incremental updates, daily or weekly.
 Alternatively, harvests can be run on demand, by the Admin.
@@ -26,4 +26,4 @@ What if a Run Fails?
 
 Each harvesting client run logs a separate file per run to the app server's default logging directory (``/usr/local/payara5/glassfish/domains/domain1/logs/`` unless you've changed it). Look for filenames in the format  ``harvest_TARGET_YYYY_MM_DD_timestamp.log`` to get a better idea of what's going wrong.
 
-Note that you'll want to run a minimum Dataverse version of 4.6, optimally 4.18, for the best OAI-PMH interoperability.
+Note that you'll want to run a minimum of Dataverse Software 4.6, optimally 4.18 or beyond, for the best OAI-PMH interoperability.

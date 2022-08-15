@@ -8,9 +8,13 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.api.datadeposit.SwordServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
+import edu.harvard.iq.dataverse.GuestbookServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
@@ -26,6 +30,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataverse.DataverseUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.AddRoleAssigneesToExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
@@ -59,8 +64,12 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlock
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
+
+import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
+import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
 import java.io.StringReader;
@@ -84,6 +93,7 @@ import javax.json.JsonValue.ValueType;
 import javax.json.stream.JsonParsingException;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -98,11 +108,20 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
-import javax.persistence.NoResultException;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.StreamingOutput;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * A REST API for dataverses.
@@ -114,6 +133,7 @@ import javax.persistence.NoResultException;
 public class Dataverses extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Dataverses.class.getCanonicalName());
+    private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 
     @EJB
     ExplicitGroupServiceBean explicitGroupSvc;
@@ -123,6 +143,18 @@ public class Dataverses extends AbstractApiBean {
     
     @EJB
     SettingsServiceBean settingsService;
+    
+    @EJB
+    GuestbookResponseServiceBean guestbookResponseService;
+    
+    @EJB
+    GuestbookServiceBean guestbookService;
+    
+    @EJB
+    DataverseServiceBean dataverseService;
+
+    @EJB
+    SwordServiceBean swordService;
 
     @POST
     public Response addRoot(String body) {
@@ -163,24 +195,8 @@ public class Dataverses extends AbstractApiBean {
             d = execCommand(new CreateDataverseCommand(d, createDataverseRequest(u), null, null));
             return created("/dataverses/" + d.getAlias(), json(d));
         } catch (WrappedResponse ww) {
-            Throwable cause = ww.getCause();
-            StringBuilder sb = new StringBuilder();
-            if (cause == null) {
-                return ww.refineResponse("cause was null!");
-            }
-            while (cause.getCause() != null) {
-                cause = cause.getCause();
-                if (cause instanceof ConstraintViolationException) {
-                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                    for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                        sb.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ")
-                                .append(violation.getPropertyPath()).append(" at ")
-                                .append(violation.getLeafBean()).append(" - ")
-                                .append(violation.getMessage());
-                    }
-                }
-            }
-            String error = sb.toString();
+
+            String error = ConstraintViolationUtil.getErrorStringForConstraintViolations(ww.getCause());
             if (!error.isEmpty()) {
                 logger.log(Level.INFO, error);
                 return ww.refineResponse(error);
@@ -194,13 +210,7 @@ public class Dataverses extends AbstractApiBean {
             while (cause.getCause() != null) {
                 cause = cause.getCause();
                 if (cause instanceof ConstraintViolationException) {
-                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                    for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                        sb.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ")
-                                .append(violation.getPropertyPath()).append(" at ")
-                                .append(violation.getLeafBean()).append(" - ")
-                                .append(violation.getMessage());
-                    }
+                    sb.append(ConstraintViolationUtil.getErrorStringForConstraintViolations(cause));
                 }
             }
             logger.log(Level.SEVERE, sb.toString());
@@ -214,31 +224,101 @@ public class Dataverses extends AbstractApiBean {
 
     @POST
     @Path("{identifier}/datasets")
+    @Consumes("application/json")
     public Response createDataset(String jsonBody, @PathParam("identifier") String parentIdtf) {
         try {
+            logger.fine("Json is: " + jsonBody);
             User u = findUserOrDie();
             Dataverse owner = findDataverseOrDie(parentIdtf);
             Dataset ds = parseDataset(jsonBody);
             ds.setOwner(owner);
 
             if (ds.getVersions().isEmpty()) {
-                return badRequest("Please provide initial version in the dataset json");
+                return badRequest(BundleUtil.getStringFromBundle("dataverses.api.create.dataset.error.mustIncludeVersion"));
             }
             
             if (!ds.getFiles().isEmpty() && !u.isSuperuser()){
-                return badRequest("Only a superuser may add files via this api");
+                return badRequest(BundleUtil.getStringFromBundle("dataverses.api.create.dataset.error.superuserFiles"));
             }
+
+            //Throw BadRequestException if metadataLanguage isn't compatible with setting
+            DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
 
             // clean possible version metadata
             DatasetVersion version = ds.getVersions().get(0);
             version.setMinorVersionNumber(null);
             version.setVersionNumber(null);
             version.setVersionState(DatasetVersion.VersionState.DRAFT);
+            version.getTermsOfUseAndAccess().setFileAccessRequest(true);
+            version.getTermsOfUseAndAccess().setDatasetVersion(version);
 
             ds.setAuthority(null);
             ds.setIdentifier(null);
             ds.setProtocol(null);
             ds.setGlobalIdCreateTime(null);
+            Dataset managedDs = null;
+            try {
+                managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u)));
+            } catch (WrappedResponse ww) {
+                Throwable cause = ww.getCause();
+                StringBuilder sb = new StringBuilder();
+                if (cause == null) {
+                    return ww.refineResponse("cause was null!");
+                }
+                while (cause.getCause() != null) {
+                    cause = cause.getCause();
+                    if (cause instanceof ConstraintViolationException) {
+                        sb.append(ConstraintViolationUtil.getErrorStringForConstraintViolations(cause));
+                    }
+                }
+                String error = sb.toString();
+                if (!error.isEmpty()) {
+                    logger.log(Level.INFO, error);
+                    return ww.refineResponse(error);
+                }
+                return ww.getResponse();
+            }
+
+            return created("/datasets/" + managedDs.getId(),
+                    Json.createObjectBuilder()
+                            .add("id", managedDs.getId())
+                            .add("persistentId", managedDs.getGlobalIdString())
+            );
+
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+    
+    @POST
+    @Path("{identifier}/datasets")
+    @Consumes("application/ld+json, application/json-ld")
+    public Response createDatasetFromJsonLd(String jsonLDBody, @PathParam("identifier") String parentIdtf) {
+        try {
+            User u = findUserOrDie();
+            Dataverse owner = findDataverseOrDie(parentIdtf);
+            Dataset ds = new Dataset();
+
+            ds.setOwner(owner);
+            ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, false, licenseSvc);
+            
+            ds.setOwner(owner);
+
+            // clean possible dataset/version metadata
+            DatasetVersion version = ds.getVersions().get(0);
+            version.setMinorVersionNumber(null);
+            version.setVersionNumber(null);
+            version.setVersionState(DatasetVersion.VersionState.DRAFT);
+            version.getTermsOfUseAndAccess().setFileAccessRequest(true);
+            version.getTermsOfUseAndAccess().setDatasetVersion(version);
+
+            ds.setAuthority(null);
+            ds.setIdentifier(null);
+            ds.setProtocol(null);
+            ds.setGlobalIdCreateTime(null);
+            
+            //Throw BadRequestException if metadataLanguage isn't compatible with setting
+            DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
 
             Dataset managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u)));
             return created("/datasets/" + managedDs.getId(),
@@ -267,6 +347,9 @@ public class Dataverses extends AbstractApiBean {
             if (ds.getVersions().isEmpty()) {
                 return badRequest("Supplied json must contain a single dataset version.");
             }
+
+            //Throw BadRequestException if metadataLanguage isn't compatible with setting
+            DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
 
             DatasetVersion version = ds.getVersions().get(0);
             if (version.getVersionState() == null) {
@@ -325,7 +408,7 @@ public class Dataverses extends AbstractApiBean {
     // TODO decide if I merge importddi with import just below (xml and json on same api, instead of 2 api)
     @POST
     @Path("{identifier}/datasets/:importddi")
-    public Response importDatasetDdi(String xml, @PathParam("identifier") String parentIdtf, @QueryParam("pid") String pidParam, @QueryParam("release") String releaseParam) throws ImportException {
+    public Response importDatasetDdi(String xml, @PathParam("identifier") String parentIdtf, @QueryParam("pid") String pidParam, @QueryParam("release") String releaseParam) {
         try {
             User u = findUserOrDie();
             if (!u.isSuperuser()) {
@@ -335,10 +418,17 @@ public class Dataverses extends AbstractApiBean {
             Dataset ds = null;
             try {
                 ds = jsonParser().parseDataset(importService.ddiToJson(xml));
+                DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
+            } catch (JsonParseException jpe) {
+                return badRequest("Error parsing data as Json: "+jpe.getMessage());
+            } catch (ImportException e) {
+                return badRequest("Invalid DOI found in the XML: "+e.getMessage());
+            } catch (XMLStreamException e) {
+                return badRequest("Invalid file content: "+e.getMessage());
             }
-            catch (JsonParseException jpe) {
-                return badRequest("Error parsing datas as Json: "+jpe.getMessage());
-            }
+
+            swordService.addDatasetSubjectIfMissing(ds.getLatestVersion());
+
             ds.setOwner(owner);
             if (nonEmpty(pidParam)) {
                 if (!GlobalId.verifyImportCharacters(pidParam)) {
@@ -382,6 +472,61 @@ public class Dataverses extends AbstractApiBean {
                 PublishDatasetResult res = execCommand(new PublishDatasetCommand(managedDs, request, false, shouldRelease));
                 responseBld.add("releaseCompleted", res.isCompleted());
             }
+
+            return created("/datasets/" + managedDs.getId(), responseBld);
+
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+    
+    @POST
+    @Path("{identifier}/datasets/:startmigration")
+    @Consumes("application/ld+json, application/json-ld")
+    public Response recreateDataset(String jsonLDBody, @PathParam("identifier") String parentIdtf) {
+        try {
+            User u = findUserOrDie();
+            if (!u.isSuperuser()) {
+                return error(Status.FORBIDDEN, "Not a superuser");
+            }
+            Dataverse owner = findDataverseOrDie(parentIdtf);
+            
+            Dataset ds = new Dataset();
+
+            ds.setOwner(owner);
+            ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, true, licenseSvc);
+          //ToDo - verify PID is one Dataverse can manage (protocol/authority/shoulder match)
+            if(!
+            (ds.getAuthority().equals(settingsService.getValueForKey(SettingsServiceBean.Key.Authority))&& 
+            ds.getProtocol().equals(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol))&&
+            ds.getIdentifier().startsWith(settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder)))) {
+                throw new BadRequestException("Cannot recreate a dataset that has a PID that doesn't match the server's settings");
+            }
+            if(!datasetSvc.isIdentifierLocallyUnique(ds)) {
+                throw new BadRequestException("Cannot recreate a dataset whose PID is already in use");
+            }
+            
+            //Throw BadRequestException if metadataLanguage isn't compatible with setting
+            DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
+
+
+            if (ds.getVersions().isEmpty()) {
+                return badRequest("Supplied json must contain a single dataset version.");
+            }
+
+            DatasetVersion version = ds.getVersions().get(0);
+            if (!version.isPublished()) {
+                throw new BadRequestException("Cannot recreate a dataset that hasn't been published.");
+            }
+            //While the datasetversion whose metadata we're importing has been published, we consider it in draft until the API caller adds files and then completes the migration
+            version.setVersionState(DatasetVersion.VersionState.DRAFT);
+
+            DataverseRequest request = createDataverseRequest(u);
+
+            Dataset managedDs = execCommand(new ImportDatasetCommand(ds, request));
+            JsonObjectBuilder responseBld = Json.createObjectBuilder()
+                    .add("id", managedDs.getId())
+                    .add("persistentId", managedDs.getGlobalId().toString());
 
             return created("/datasets/" + managedDs.getId(), responseBld);
 
@@ -829,7 +974,49 @@ public class Dataverses extends AbstractApiBean {
                 req,
                 grpAliasInOwner))));
     }
+    
+    @GET
+    @Path("{identifier}/guestbookResponses/")
+    public Response getGuestbookResponsesByDataverse(@PathParam("identifier") String dvIdtf,
+            @QueryParam("guestbookId") Long gbId, @Context HttpServletResponse response) {
 
+        try {
+            Dataverse dv = findDataverseOrDie(dvIdtf);
+            User u = findUserOrDie();
+            DataverseRequest req = createDataverseRequest(u);
+            if (permissionSvc.request(req)
+                    .on(dv)
+                    .has(Permission.EditDataverse)) {
+            } else {
+                return error(Status.FORBIDDEN, "Not authorized");
+            }
+
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+
+        StreamingOutput stream = new StreamingOutput() {
+
+            @Override
+            public void write(OutputStream os) throws IOException,
+                    WebApplicationException {
+
+                Dataverse dv = dataverseService.findByAlias(dvIdtf);
+                Map<Integer, Object> customQandAs = guestbookResponseService.mapCustomQuestionAnswersAsStrings(dv.getId(), gbId);
+                Map<Integer, String> datasetTitles = guestbookResponseService.mapDatasetTitles(dv.getId());
+                
+                List<Object[]> guestbookResults = guestbookResponseService.getGuestbookResults(dv.getId(), gbId);
+                os.write("Guestbook, Dataset, Dataset PID, Date, Type, File Name, File Id, File PID, User Name, Email, Institution, Position, Custom Questions\n".getBytes());
+                for (Object[] result : guestbookResults) {
+                    StringBuilder sb = guestbookResponseService.convertGuestbookResponsesToCSV(customQandAs, datasetTitles, result);
+                    os.write(sb.toString().getBytes());
+
+                }
+            }
+        };
+        return Response.ok(stream).build();
+    }
+    
     @PUT
     @Path("{identifier}/groups/{aliasInOwner}")
     public Response updateGroup(ExplicitGroupDTO groupDto,

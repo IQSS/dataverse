@@ -21,7 +21,7 @@ These documentation guides are for the |version| version of Dataverse. To find g
   style/index
 
 How the Guides Are Organized
-============================
+----------------------------
 
 The guides are documentation that explain how to use Dataverse,
 which are divided into the following sections: User Guide,
@@ -35,7 +35,7 @@ project or who want to modify the code to suit their own needs. Finally, the API
 Developers that work on other applications and are interested in connecting with Dataverse through our APIs.
 
 Other Resources
-===============
+---------------
 
 **Dataverse Project Site**
 
@@ -71,7 +71,7 @@ If you have a **security issue** to report, please email `security@dataverse.org
 
 
 Indices and Tables
-==================
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`

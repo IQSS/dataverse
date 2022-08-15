@@ -17,8 +17,10 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.concurrent.Future;
@@ -52,6 +54,9 @@ public class LinkDataverseCommand extends AbstractCommand<DataverseLinkingDatave
         }
         if (linkedDataverse.getOwners().contains(linkingDataverse)) {
             throw new IllegalCommandException("Can't link a dataverse to its parents", this);
+        }
+        if (ctxt.dvLinking().alreadyLinked(linkingDataverse, linkedDataverse)) {
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataverse.linked.error.alreadyLinked", Arrays.asList(linkedDataverse.getName(), linkingDataverse.getName())), this);
         }
         
         DataverseLinkingDataverse dataverseLinkingDataverse = new DataverseLinkingDataverse();

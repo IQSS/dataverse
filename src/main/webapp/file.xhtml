@@ -18,10 +18,10 @@
             <ui:param name="pageTitle" value="#{FilePage.fileMetadata.dataFile.displayName} - #{FilePage.file.owner.owner.displayName}"/>
             <ui:param name="dataverse" value="#{FilePage.file.owner.owner}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
-            <ui:param name="showAccessFileButtonGroup" value="#{fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)
-                                                                  or (!fileDownloadHelper.canDownloadFile(FilePage.fileMetadata) and FilePage.fileMetadata.dataFile.owner.fileAccessRequest)
-                                                                  and (!FilePage.fileMetadata.datasetVersion.deaccessioned
-                                                                        or (FilePage.fileMetadata.datasetVersion.deaccessioned and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)))}"/>
+            <!-- NOTE removed fileAccessRequest logic in order to always display the file access btn -->
+            <ui:param name="showAccessFileButtonGroup" value="#{!FilePage.fileMetadata.datasetVersion.deaccessioned
+                                                                or (FilePage.fileMetadata.datasetVersion.deaccessioned
+                                                                and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset))}"/>
             <ui:define name="meta_header">
             <meta name="description" content="#{FilePage.fileMetadata.description}"/>
             </ui:define>
@@ -42,13 +42,19 @@
                             <div class="row">
                                 <div id="file-title-block" class="col-xs-12 margin-bottom-half">
                                     <span class="file-title-label">#{FilePage.fileMetadata.label}</span>
-
-                                    <ui:fragment rendered="#{FilePage.fileMetadata.dataFile.ingestProblem and FilePage.canUpdateDataset()}">
-                                        <!-- Ingest Problem - this is the infamous "red triangle" error. As of 4.2, we only want to show it to the owner of the dataset: -->
-                                        <span class="ingest-warning" data-toggle="popover" data-container="body" data-trigger="hover" data-placement="bottom" data-html="true" data-title="&lt;span class='text-danger h5'&gt;#{bundle['file.ingestFailed.header']}&lt;/span&gt;" data-content="&lt;span class='text-danger'&gt;#{bundle['file.ingestFailed.message']} #{FilePage.fileMetadata.dataFile.ingestReportMessage}&lt;/span&gt;">
-                                            <span class="glyphicon glyphicon-warning-sign text-danger"/>
+                                    
+                                    <!-- FILE LEVEL MSGs -->
+                                    <div class="bg-info text-info text-center margin-bottom-half" jsf:rendered="#{FilePage.fileMetadata.dataFile.ingestProblem and FilePage.canUpdateDataset()}">
+                                        <!-- Ingest failed -->
+                                        <span class="glyphicon glyphicon-info-sign"/>
+                                        <span> #{bundle['file.ingestFailed.header']}&#160;</span>
+                                        <span>
+                                            <a tabindex="0" role="button" class="glyphicon glyphicon-question-sign tooltip-icon"
+                                               data-toggle="popover" data-placement="auto top" data-trigger="focus" data-html="true"
+                                               data-content="#{FilePage.ingestMessage} #{FilePage.fileMetadata.dataFile.ingestReportMessage}"/>
                                         </span>
-                                    </ui:fragment>
+                                    </div>
+                                    <!-- END: FILE LEVEL MSGs -->
 
                                     <p class="help-block">
                                         <h:outputFormat value="#{bundle['file.citation.notice']}" escape="false">
@@ -57,14 +63,18 @@
                                     </p>
 
                                     <div id="title-label-block" class="margin-top-half">
+                                    
                                         <!-- Restricted File Icon -->
-                                        <span class="glyphicon glyphicon-lock text-danger" jsf:rendered="#{FilePage.fileMetadata.restricted and !(fileDownloadHelper.canDownloadFile(FilePage.fileMetadata))}"/>
-                                        <span class="icon-unlock text-success" jsf:rendered="#{FilePage.fileMetadata.restricted  and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata) }"/>
+                                        <span class="glyphicon glyphicon-lock text-danger" title="#{bundle['restricted']}" data-toggle="tooltip" jsf:rendered="#{FilePage.fileMetadata.restricted and !(fileDownloadHelper.canDownloadFile(FilePage.fileMetadata))}"/>
+                                        <span class="icon-unlock text-success" title="#{bundle['restrictedaccess']}" data-toggle="tooltip" jsf:rendered="#{FilePage.fileMetadata.restricted  and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata) }"/>
+                                        
                                         <!-- DATASET Publication Status -->
                                         <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{FilePage.fileMetadata.datasetVersion.draft}"/>
+                                        <h:outputText value="#{bundle['embargoed']}" styleClass="label label-primary" rendered="#{dataFileServiceBean.isActivelyEmbargoed(FilePage.fileMetadata)}"/>
                                         <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{FilePage.fileMetadata.datasetVersion.inReview}"/>
                                         <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}"/>   
                                         <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}"/>
+                                        <h:outputText value="#{FilePage.fileMetadata.datasetVersion.externalStatusLabel}" styleClass="label label-info" rendered="#{FilePage.fileMetadata.datasetVersion.externalStatusLabel!=null  and FilePage.canPublishDataset()}"/>
                                         <!-- DATASET VERSION NUMBER -->
                                         <h:outputText styleClass="label label-default" rendered="#{FilePage.fileMetadata.datasetVersion.released and !(FilePage.fileMetadata.datasetVersion.draft or FilePage.fileMetadata.datasetVersion.inReview)}"
                                                       value="#{bundle['file.DatasetVersion']} #{FilePage.fileMetadata.datasetVersion.versionNumber}.#{FilePage.fileMetadata.datasetVersion.minorVersionNumber}"/> 
@@ -84,14 +94,14 @@
                                         <div class="clearfix #{FilePage.fileMetadata.datasetVersion.deaccessioned ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation bg-citation-file'}">
                                             <div class="citation #{FilePage.fileMetadata.datasetVersion.deaccessioned ? '' : 'margin-bottom'}">
                                                 <span id="citation-select-2" onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
-                                                    <h:outputText value="#{FilePage.fileMetadata.dataFile.isIdentifierRegistered() ? FilePage.fileMetadata.getDirectFileCitation(true) : FilePage.fileMetadata.getFileCitation(true)}" escape="false"/>
+                                                    <h:outputText value="#{FilePage.fileMetadata.dataFile.isIdentifierRegistered() ? FilePage.fileMetadata.getDirectFileCitation(true, FilePage.anonymizedAccess) : FilePage.fileMetadata.getFileCitation(true, FilePage.anonymizedAccess)}" escape="false"/>
                                                 </span>
                                                 <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}" 
                                                       data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
                                                 <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.dataset.released and FilePage.fileMetadata.datasetVersion.draft}" 
                                                       data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
                                             </div>
-                                            <div class="pull-left row col-sm-8 padding-none">
+                                            <div class="pull-left row col-sm-9 padding-none" jsf:rendered="#{!FilePage.anonymizedAccess}">
                                                 <div class="col-sm-3 col-md-4 col-lg-3 btn-group margin-bottom citation-download" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
                                                     <button type="button" class="btn btn-link dropdown-toggle padding-none downloadCitation" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                          #{bundle['file.cite.file.downloadBtn']} <span class="caret"></span>
@@ -128,7 +138,7 @@
                                         <div class="clearfix #{FilePage.fileMetadata.datasetVersion.deaccessioned ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">
                                             <div class="citation #{FilePage.fileMetadata.datasetVersion.deaccessioned ? '' : 'margin-bottom'}">
                                                 <span class="citation-select" onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
-                                                    <h:outputText value="#{FilePage.fileMetadata.datasetVersion.getCitation(true)}" escape="false"/>
+                                                    <h:outputText value="#{FilePage.fileMetadata.datasetVersion.getCitation(true, FilePage.anonymizedAccess)}" escape="false"/>
                                                 </span>
                                                 <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}" 
                                                       data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
@@ -137,7 +147,7 @@
                                                 <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}" 
                                                       data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.deassessioned']}"/>
                                             </div>
-                                            <div class="pull-left row col-sm-8 padding-none">
+                                            <div class="pull-left row col-sm-9 padding-none"  jsf:rendered="#{!FilePage.anonymizedAccess}">
                                                 <div class="col-sm-3 col-md-4 col-lg-3 btn-group margin-bottom citation-download" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
                                                     <button type="button" class="btn btn-link dropdown-toggle padding-none downloadCitation" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                         #{bundle['dataset.cite.downloadBtn']} <span class="caret"></span>
@@ -194,6 +204,7 @@
                                                                 <ui:param name="isFilePg" value="true"/>
                                                                 <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
                                                                 <ui:param name="exploreTools" value="#{FilePage.exploreTools}"/>
+                                                                <ui:param name="anonymized" value="#{FilePage.anonymizedAccess}"/>
                                                             </ui:include>
                                                         </ui:fragment>
                                                         <!-- END: Explore/Download/Request Button Block -->
@@ -207,96 +218,28 @@
                                                 <!-- Edit Button Group -->
                                                 <div class="btn-group" jsf:rendered="#{dataverseSession.user.authenticated
                                                                          and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset) 
-                                                                         and (dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile))}">
-                                                    <p:commandLink styleClass="btn btn-default btn-access btn-edit" onclick="PF('fileAlreadyReplacedPrevious').show()"
+                                                                         and FilePage.deletedFile}">
+                                                    <p:commandLink styleClass="btn btn-default btn-access btn-edit" onclick="PF('fileAlreadyDeletedPrevious').show()"
                                                                    title="#{bundle['file.editBtn']}">
                                                         #{bundle['file.editBtn']}
-                                                    </p:commandLink>
+                                                    </p:commandLink>                                                   
                                                 </div>
                                                 <div class="btn-group" jsf:rendered="#{dataverseSession.user.authenticated
                                                                          and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)
-                                                                         and !(dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile))}">
+                                                                         and FilePage.hasValidTermsOfAccess
+                                                                         and !FilePage.deletedFile}">
                                                     <button type="button" id="editFile" class="btn btn-default btn-access btn-edit dropdown-toggle #{FilePage.lockedFromEdits ? 'disabled' : ''}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
                                                             disabled="#{FilePage.lockedFromEdits ? 'disabled' : ''}">
                                                         #{bundle['file.editBtn']} <span class="caret"></span>
                                                     </button>
                                                     <ul class="dropdown-menu pull-right text-left">
-
-                                                        <!-- Map Data/Set Up Button Block -->
-                                                        <ui:fragment rendered="#{dataverseSession.user.authenticated and FilePage.canUpdateDataset() 
-                                                                                 and (FilePage.getConfigureTools().size() > 0
-                                                                                 or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(FilePage.fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(FilePage.fileMetadata))}">		
-                                                            <ui:include src="file-configure-dropdown-fragment.xhtml">
-                                                                <ui:param name="configureTools" value="#{FilePage.getConfigureTools()}"/>
-                                                                <ui:param name="isFilePg" value="true"/>
-                                                                <ui:param name="fileId" value="#{FilePage.fileMetadata.dataFile.id}"/>
-                                                                <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>		
-                                                                <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>		
-                                                            </ui:include>		
-                                                        </ui:fragment>
-                                                        <!-- END: Map Data/Set Up Button Block -->
-
-                                                        <ui:fragment rendered="#{systemConfig.provCollectionEnabled}">
-                                                            <li class="#{FilePage.lockedFromEdits ? 'disabled' : ''}">
-                                                                <p:commandLink id="fileProvenanceButton"
-                                                                           update="editProvenancePopup"
-                                                                           oncomplete="PF('editProvenancePopup').show();bind_bsui_components();">
-                                                                           <f:actionListener binding="#{provPopupFragmentBean.updatePopupState(fileMetadata, true)}" /> <!--clearProvenanceUpdates() -->
-                                                                            #{bundle['file.provenance']} 
-                                                                </p:commandLink>
-                                                            </li> 
-                                                        </ui:fragment>
-                                                        <li>
-                                                            <h:outputLink value="/editdatafiles.xhtml?selectedFileIds=#{FilePage.fileMetadata.dataFile.id}&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;mode=SINGLE&#38;version=#{FilePage.version}">
-                                                                <h:outputText id="editFile-Multi-Link" value="#{bundle['file.dataFilesTab.metadata.header']}"/>
-                                                            </h:outputLink>
-                                                        </li>
-                                                        <ui:fragment rendered="#{!settingsWrapper.publicInstall}">
-                                                            <ui:fragment rendered="#{!FilePage.fileMetadata.dataFile.filePackage and !FilePage.fileMetadata.restricted}">
-                                                                <li>
-                                                                    <p:commandLink onclick="PF('accessPopup').show()">
-                                                                        <h:outputText value="#{bundle['file.restrict']}"/>
-                                                                    </p:commandLink>
-                                                                </li>
-                                                            </ui:fragment>
-                                                            <ui:fragment rendered="#{!FilePage.fileMetadata.dataFile.filePackage and FilePage.fileMetadata.restricted}">
-                                                                <li>
-                                                                    <p:commandLink update="@form" actionListener="#{FilePage.restrictFile(false)}">
-                                                                        <h:outputText value="#{bundle['file.unrestrict']}"/>
-                                                                    </p:commandLink>
-                                                                </li>
-                                                            </ui:fragment>     
-                                                        </ui:fragment>
-                                                        <ui:fragment rendered="#{FilePage.fileMetadata.dataFile.released and FilePage.draftReplacementFile == false and !FilePage.fileMetadata.dataFile.filePackage}">                                        
-                                                        <li><!-- start: replace file link -->
-                                                            <h:outputLink value="/editdatafiles.xhtml?mode=SINGLE_REPLACE&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;fid=#{FilePage.fileMetadata.dataFile.id}&#38;version=#{FilePage.version}">
-                                                                 <h:outputText value="#{bundle['file.replace']}"/>
-                                                            </h:outputLink>
-                                                        <!-- end replace file link --></li>
-                                                        </ui:fragment>
-                                                        <ui:fragment rendered="#{ !FilePage.fileMetadata.dataFile.filePackage and ((FilePage.fileMetadata.dataFile.released and FilePage.draftReplacementFile == true) or (!FilePage.fileMetadata.dataFile.released and FilePage.fileMetadata.datasetVersion.dataset.released)) }">                                        
-                                                        <li><!-- start: already replaced replace file link -->
-                                                            <p:commandLink title="#{bundle['file.delete']}" onclick="PF('fileAlreadyReplacedDraft').show();">
-                                                                <h:outputText value="#{bundle['file.replace']}"/>
-                                                            </p:commandLink>
-                                                        <!-- end replace file link --></li>
-                                                        </ui:fragment>
-
-                                                        <!-- TO-DO #3488 ADD EDIT FILE TAGS LINK -->
-                                                        <ui:fragment rendered="#{false}">
-                                                            <li>
-                                                                <p:commandLink onclick="PF('fileTagsPopup').show()"><!-- TODO #3488 ADD EDIT FILE TAGS POPUP -->
-                                                                    <h:outputText value="#{bundle['file.tags']}"/>
-                                                                </p:commandLink>
-                                                            </li>
-                                                        </ui:fragment>
-                                                        <ui:fragment rendered="#{!FilePage.fileMetadata.dataFile.released or !FilePage.fileMetadata.dataFile.filePackage}"> 
-                                                            <li>
-                                                                <p:commandLink title="#{bundle['file.delete']}" onclick="PF('deleteFileConfirmation').show();">
-                                                                    <h:outputText value= "#{bundle['file.delete']}"/>
-                                                                </p:commandLink>
-                                                            </li>
-                                                        </ui:fragment>
+                                                        <ui:include src="file-edit-button-fragment.xhtml">
+                                                            <ui:param name="datasetVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
+                                                            <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>
+                                                            <ui:param name="configureTools" value="#{FilePage.configureTools}"/>
+                                                            <ui:param name="bean" value="#{FilePage}"/>
+                                                            <ui:param name="unrestrictFileAction" value="restrictFile"/>
+                                                        </ui:include>
                                                     </ul>
                                                 </div>
                                                 <!-- END: Edit Button Group -->
@@ -325,7 +268,7 @@
                                     <!-- END: ActionButtonBlock -->
                                 </div>
 
-                                <div class="col-xs-12 col-sm-12 col-md-4 col-lg-3 pull-right margin-bottom" 
+                                <div style="clear:right;" class="col-xs-12 col-sm-12 col-md-4 col-lg-3 pull-right margin-bottom" 
                                      jsf:rendered="#{!(widgetWrapper.widgetView or FilePage.fileMetadata.dataFile.filePackage or FilePage.fileMetadata.datasetVersion.deaccessioned)}">
                                     <!-- Metrics -->
                                     <div id="metrics-block">
@@ -385,7 +328,7 @@
                     <!-- END Top Button/Citation Blocks -->
                     <div id="contentTabs">
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{FilePage.selectedTabIndex}">
-                            <p:ajax event="tabChange" listener="#{FilePage.tabChanged}" oncomplete="bind_bsui_components();" update="@this" />
+                            <p:ajax event="tabChange" listener="#{FilePage.tabChanged}" update="@this" />
                             <p:tab id="accessTab" class="padding-none" title="#{bundle['file.dataFilesTab.dataAccess']}"
                                    rendered="#{settingsWrapper.rsyncDownload and FilePage.fileMetadata.dataFile.filePackage and systemConfig.rsyncDownload
                                         and !FilePage.fileMetadata.getDataFile().getOwner().getStorageIdentifier().startsWith('s3://') }">
@@ -398,14 +341,29 @@
                                 </ui:include>
                             </p:tab>
                             <p:tab id="previewTab" title="#{bundle['file.previewTab.header']}" 
-                                   rendered="#{FilePage.toolsWithPreviews.size() > 0 and FilePage.previewAllowed}">
+                                   rendered="#{FilePage.toolsWithPreviews.size() > 0 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
+                                <!-- PREVIEW TERMS/GUESTBOOK FORM -->
+                                <ui:fragment rendered="#{FilePage.downloadPopupRequired and !FilePage.termsMet}">
+                                    <ui:include src="file-download-popup-fragment.xhtml">
+                                        <ui:param name="popupContext" value="previewTab"/>
+                                        <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
+                                        <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
+                                        <ui:param name="hasRestrictedFile" value="#{FilePage.fileMetadata.restricted}"/>
+                                        <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
+                                        <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
+                                        <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
+                                        <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
+                                    </ui:include>
+                                </ui:fragment>
+                                <!-- PREVIEW EXTERNAL TOOL -->
+                                <ui:fragment rendered="#{(!FilePage.downloadPopupRequired) or (FilePage.downloadPopupRequired and FilePage.termsMet)}">
                                 <div class="btn-toolbar margin-bottom" role="toolbar" aria-label="#{bundle['file.previewTab.button.label']}">
                                     <!-- Preview Button Group -->
-                                    <div class="btn-group" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 1 and fileDownloadHelper.isPreviewAllowed(FilePage.fileMetadata)}">
+                                    <div class="btn-group" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 1 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
                                         <button type="button" id="selectTool" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                             <span class="glyphicon glyphicon-eye-open"/> #{bundle['file.previewTab.button.label']} <span class="caret"></span>
                                         </button>
-                                        <ul class="dropdown-menu" role="menu">
+                                        <ul class="dropdown-menu">
                                             <ui:repeat value="#{FilePage.toolsWithPreviews}" var="tool">
                                                 <li>
                                                     <h:commandLink action="#{FilePage.setSelectedTool(tool)}">
@@ -418,18 +376,18 @@
                                     <!-- END: Preview Button Group -->
                                     <div class="btn-group" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 0 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
                                         <!-- Modular/Configured Explore Tool -->
-                                        <h:commandLink rendered="#{!FilePage.selectedTool.worldMapTool and !downloadPopupRequired}" 
+                                        <h:commandLink rendered="#{!downloadPopupRequired}" 
                                                          type="submit"
                                                          styleClass="btn btn-default #{(FilePage.fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
                                                          disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
                                                          action="#{FilePage.fileDownloadService.explore(FilePage.guestbookResponse, FilePage.fileMetadata, FilePage.selectedTool)}">
-                                            <span class="glyphicon glyphicon-equalizer"></span> 
-                                            <h:outputFormat value="#{bundle['file.previewTab.exploreBtn']}">
+                                            <span class="glyphicon glyphicon-#{FilePage.selectedTool.exploreTool ? 'equalizer' : 'new-window'}"></span>
+                                            <h:outputFormat value="#{FilePage.selectedTool.exploreTool ? bundle['file.previewTab.exploreBtn'] : bundle['file.previewTab.openBtn']}">
                                                 <f:param value="#{bundle.explore}"/>
                                                 <f:param value="#{FilePage.selectedTool.getDisplayNameLang()}"/>
                                             </h:outputFormat>
                                         </h:commandLink>
-                                        <p:commandLink rendered="#{!FilePage.selectedTool.worldMapTool and downloadPopupRequired}"
+                                        <p:commandLink rendered="#{downloadPopupRequired}"
                                                          action="#{FilePage.guestbookResponseService.modifyDatafileAndFormat(FilePage.guestbookResponse, FilePage.fileMetadata, 'externalTool', FilePage.selectedTool)}"
                                                          styleClass="btn btn-default"
                                                          disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
@@ -437,44 +395,19 @@
                                                          process="@this"
                                                          update="@widgetVar(downloadPopup)"
                                                          oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-                                            <span class="glyphicon glyphicon-equalizer"></span> 
-                                            <h:outputFormat value="#{bundle['file.previewTab.exploreBtn']}">
+                                            <span class="glyphicon glyphicon-#{FilePage.selectedTool.exploreTool ? 'equalizer' : 'new-window'}"></span>
+                                            <h:outputFormat value="#{FilePage.selectedTool.exploreTool ? bundle['file.previewTab.exploreBtn'] : bundle['file.previewTab.openBtn']}">
                                                 <f:param value="#{bundle.explore}"/>
                                                 <f:param value="#{FilePage.selectedTool.getDisplayNameLang()}"/>
                                             </h:outputFormat>
                                         </p:commandLink>
-                                        <!-- Modular/Configured Explore Tool -->
-                                        <!-- WorldMap Explore -->
-                                        <h:commandLink rendered="#{FilePage.selectedTool.worldMapTool and !downloadPopupRequired}" 
-                                                       styleClass="btn btn-default #{(FilePage.fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
-                                                       disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
-                                                       action="#{FilePage.fileDownloadService.startWorldMapDownloadLink(FilePage.guestbookResponse, FilePage.fileMetadata )}" target="_blank" rel="noopener">
-                                            <span class="glyphicon glyphicon-equalizer"></span> 
-                                            <h:outputFormat value="#{bundle['file.previewTab.exploreBtn']}">
-                                                <f:param value="#{bundle.explore}"/>
-                                                <f:param value="#{bundle['file.mapData.worldMap']}"/>
-                                            </h:outputFormat>
-                                        </h:commandLink>
-                                        <p:commandLink rendered="#{FilePage.selectedTool.worldMapTool and downloadPopupRequired}"
-                                                         styleClass="btn btn-default #{(FilePage.fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
-                                                         disabled="#{FilePage.fileMetadata.dataFile.ingestInProgress  or lockedFromDownload}"
-                                                         process="@this"
-                                                         action="#{FilePage.guestbookResponseService.modifyDatafileAndFormat(FilePage.guestbookResponse, FilePage.fileMetadata, 'worldMap')}"
-                                                         update="@widgetVar(downloadPopup)"
-                                                         oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-                                            <span class="glyphicon glyphicon-equalizer"></span> 
-                                            <h:outputFormat value="#{bundle['file.previewTab.exploreBtn']}">
-                                                <f:param value="#{bundle.explore}"/>
-                                                <f:param value="#{bundle['file.mapData.worldMap']}"/>
-                                            </h:outputFormat>
-                                        </p:commandLink>
-                                        <!-- END WorldMap Explore -->
                                     </div>
                                 </div>
-                                <!-- FRAME -->
-                                <div id="previewPresentation" class="embed-responsive embed-responsive-16by9" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 0 and fileDownloadHelper.isPreviewAllowed(FilePage.fileMetadata)}">
+                                <!-- FRAME EXTERNAL TOOL EMBED -->
+                                <div id="previewPresentation" class="embed-responsive embed-responsive-16by9" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 0 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
                                     <iframe role="presentation" title="#{bundle['file.previewTab.presentation']}" src="#{FilePage.preview(FilePage.selectedTool)}"></iframe>
                                 </div>
+                                </ui:fragment>
                             </p:tab>
                             <p:tab id="metadataMapTab" class="padding-none" title="#{bundle['file.dataFilesTab.metadata.header']}"
                                    rendered="#{(!FilePage.fileMetadata.datasetVersion.deaccessioned or 
@@ -483,17 +416,17 @@
                                 <div class="button-block tab-header margin-bottom text-right">
                                     <!-- Add + Edit Metadata Button -->
                                     <h:outputLink styleClass="btn btn-default btn-access #{FilePage.lockedFromEdits ? 'disabled' : ''}"
-                                                  value="/editdatafiles.xhtml?selectedFileIds=#{FilePage.fileMetadata.dataFile.id}&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;mode=SINGLE"
+                                                  value="/editdatafiles.xhtml?selectedFileIds=#{FilePage.fileMetadata.dataFile.id}&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;referrer=FILE"
                                                   rendered="#{!widgetWrapper.widgetView and (dataverseSession.user.authenticated
                                                      and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)
-                                                     and !(dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile)))}"
+                                                     and !FilePage.deletedFile)}"
                                                   disabled="#{FilePage.lockedFromEdits ? 'disabled' : ''}">
                                         <span class="glyphicon glyphicon-pencil"/> #{bundle['file.dataFilesTab.metadata.addBtn']}
                                     </h:outputLink>
                                     <div class="btn-group" jsf:rendered="#{!widgetWrapper.widgetView and (dataverseSession.user.authenticated
                                                          and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset) 
-                                                         and (dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile)))}">
-                                        <button class="btn btn-default btn-access #{FilePage.lockedFromEdits ? 'disabled' : ''}" onclick="PF('fileAlreadyReplacedPrevious').show()" type="button"
+                                                         and (FilePage.deletedFile))}">
+                                        <button class="btn btn-default btn-access #{FilePage.lockedFromEdits ? 'disabled' : ''}" onclick="PF('fileAlreadyDeletedPrevious').show()" type="button"
                                                 disabled="#{FilePage.lockedFromEdits ? 'disabled' : ''}">
                                             <span class="glyphicon glyphicon-pencil"/> #{bundle['file.dataFilesTab.metadata.addBtn']}
                                         </button>
@@ -519,148 +452,160 @@
                                         #{bundle['file.metadataTab.fileMetadata.header']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
                                     </div>
                                     <div id="panelCollapseFMD" class="collapse in">
-                                        <div class="panel-body">
-                                            <div class="form-group">
-                                                <label for="preview-square" class="col-sm-3 control-label">
-                                                    #{bundle['file.metadata.preview']}
-                                                </label>
-                                                <div id="file-preview-icon-block" class="col-sm-9">
-                                                    <div id="border-block" style="border:0;">
-                                                        <div id="preview-square">
-                                                            <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(FilePage.fileMetadata.dataFile)} text-muted" jsf:rendered="#{!FilePage.isThumbnailAvailable(FilePage.fileMetadata)}"/>
-                                                            <p:graphicImage styleClass="img-responsive" value="/api/access/datafile/#{FilePage.fileId}?imageThumb=400" 
-                                                                            alt="#{FilePage.fileMetadata.label}" rendered="#{FilePage.isThumbnailAvailable(FilePage.fileMetadata)}"/>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div id="fileCategoriesBlock" class="form-group" jsf:rendered="#{!(empty FilePage.fileMetadata.categoriesByName) or !(empty FilePage.fileMetadata.dataFile.tags)}">
-                                                <label for="file-tags" class="col-sm-3 control-label">
-                                                    #{bundle['file.metadata.filetags']}
-                                                </label>
-                                                <div id="file-tags" class="col-sm-9">
-                                                    <ui:repeat value="#{FilePage.fileMetadata.categoriesByName}" var="tag" rendered="#{!(empty FilePage.fileMetadata.categoriesByName)}">
-                                                        <h:outputText value="#{tag}" styleClass="label label-default"/>
-                                                    </ui:repeat>
-                                                    <ui:repeat value="#{FilePage.fileMetadata.dataFile.tags}" var="tag">
-                                                        <h:outputText value="#{tag.typeLabel}" styleClass="label label-info"/>
-                                                    </ui:repeat>
-                                                </div>
-                                            </div>
-                                            <div class="form-group" jsf:rendered="#{FilePage.file.identifier != null}">
-                                                <label for="metadata_persistentId" class="col-sm-3 control-label">
-                                                    #{bundle['file.metadata.persistentId']}
-                                                </label>
-                                                <div class="col-sm-9">
-                                                    #{FilePage.file.getGlobalId()}
-                                                </div>
-                                            </div>
-                                            <!--Only show Public download url if identifier is available -->
-                                            <div class="form-group" jsf:rendered="#{FilePage.publiclyDownloadable and !FilePage.fileMetadata.dataFile.filePackage}">
-                                                <label class="col-sm-3 control-label">                                                   
-                                                   #{bundle['file.metadataTab.fileMetadata.downloadUrl.label']}
-                                                </label>
-                                                <div class="col-sm-9">
-                                                    <p class="help-block">
-                                                        <h:outputFormat value="#{bundle['file.metadataTab.fileMetadata.downloadUrl.info']}" escape="false">
-                                                            <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                                                            <f:param value="#{systemConfig.guidesVersion}"/>
-                                                        </h:outputFormat>
-                                                    </p>
-                                                    <code><h:outputText value="#{FilePage.publicDownloadUrl}"/></code>
-                                                </div>
-                                            </div>
-                                            <div class="form-group" jsf:rendered="#{!(empty FilePage.file.unf)}">
-                                                <label class="col-sm-3 control-label">
-                                                   #{bundle['file.metadataTab.fileMetadata.unf.label']}
-                                                </label>
-                                                <div class="col-sm-9">
-                                                    <h:outputText value="#{FilePage.file.unf}"/>
-                                                </div>
-                                            </div>
-                                            <div class="form-group" jsf:rendered="#{!(empty FilePage.file.checksumValue)}">
-                                                <label class="col-sm-3 control-label">                                                   
-                                                   #{FilePage.file.tabularData ? FilePage.file.originalChecksumType : FilePage.file.checksumType}
-                                                </label>
-                                                <div class="col-sm-9">
-                                                    <h:outputText value="#{FilePage.file.checksumValue}"/>
-                                                </div>
-                                            </div>
-                                            <div class="form-group" jsf:rendered="#{FilePage.file.released}">
-                                                <label class="col-sm-3 control-label">
-                                                   #{bundle['file.metadataTab.fileMetadata.publicationDate.label']}
-                                                </label>
-                                                <div class="col-sm-9">
-                                                    <h:outputText value="#{FilePage.file.publicationDateFormattedYYYYMMDD}"/>
-                                                </div>
-                                            </div>
-                                            <div class="form-group" jsf:rendered="#{!(empty FilePage.file.friendlySize)}">
-                                                <label class="col-sm-3 control-label">
-                                                   #{bundle['file.metadataTab.fileMetadata.size.label']}
-                                                </label>
-                                                <div class="col-sm-9">
-                                                    <h:outputText value="#{FilePage.file.friendlySize}"/>
-                                                </div>
-                                            </div>
-                                            <div class="form-group" jsf:rendered="#{!(empty FilePage.file.friendlyType)}">
-                                                <label class="col-sm-3 control-label">
-                                                   #{bundle['file.metadataTab.fileMetadata.type.label']}
-                                                </label>
-                                                <div class="col-sm-9">
-                                                    <h:outputText value="#{FilePage.file.friendlyType}"/>
-                                                </div>
-                                            </div>
-                                            <div class="form-group" jsf:rendered="#{!(empty FilePage.file.dataTable.varQuantity)}">
-                                                <label class="col-sm-3 control-label">
-                                                   #{bundle['file.metaData.dataFile.dataTab.variables']}
-                                                </label>
-                                                <div class="col-sm-9">
-                                                    <h:outputText value="#{FilePage.file.dataTable.varQuantity}"/>
-                                                </div>
-                                            </div>
-                                            <div class="form-group" jsf:rendered="#{!(empty FilePage.file.dataTable.caseQuantity)}">
-                                                <label class="col-sm-3 control-label">
-                                                   #{bundle['file.metaData.dataFile.dataTab.observations']}
-                                                </label>
-                                                <div class="col-sm-9">
-                                                    <h:outputText value="#{FilePage.file.dataTable.caseQuantity}"/>
-                                                </div>
-                                            </div>
-                                            <div class="form-group" jsf:rendered="#{!empty FilePage.fileMetadata.directoryLabel}">
-                                                <label class="col-sm-3 control-label">
-                                                   #{bundle['file.metadataTab.fileMetadata.hierarchy.label']}
-                                                </label>
-                                                <div class="col-sm-9">
-                                                    <h:outputText value="#{FilePage.fileMetadata.directoryLabel}/"/>
-                                                </div>
-                                            </div>
-                                            <div class="form-group" jsf:rendered="#{!(empty FilePage.fileMetadata.description)}">
-                                                <label class="col-sm-3 control-label">
-                                                   #{bundle['file.metadataTab.fileMetadata.description.label']}
-                                                </label>
-                                                <div class="col-sm-9">
-                                                    <h:outputText value="#{FilePage.fileMetadata.description}"/>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <label class="col-sm-3 control-label">
-                                                   #{bundle['file.metadataTab.fileMetadata.depositDate.label']}
-                                                </label>
-                                                <div class="col-sm-9">
-                                                    <h:outputText value="#{FilePage.file.createDateFormattedYYYYMMDD}"/> 
-                                                </div>
-                                            </div>
+                                        <div class="panel-body metadata-container">
+                                            <table class="metadata">
+                                                <tbody>
+                                                    <tr id="filePreviewBlock">
+                                                        <th scope="row">
+                                                            #{bundle['file.metadata.preview']}
+                                                        </th>
+                                                        <td>
+                                                            <div id="file-preview-icon-block">
+                                                                <div id="border-block" style="border:0;">
+                                                                    <div id="preview-square">
+                                                                        <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(FilePage.fileMetadata.dataFile)} text-muted" jsf:rendered="#{!FilePage.isThumbnailAvailable(FilePage.fileMetadata)}"/>
+                                                                        <p:graphicImage styleClass="img-responsive" value="/api/access/datafile/#{FilePage.fileId}?imageThumb=400" 
+                                                                                        alt="#{FilePage.fileMetadata.label}" rendered="#{FilePage.isThumbnailAvailable(FilePage.fileMetadata)}"/>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr id="fileCategoriesBlock" jsf:rendered="#{!(empty FilePage.fileMetadata.categoriesByName) or !(empty FilePage.fileMetadata.dataFile.tags)}">
+                                                        <th scope="row">
+                                                            #{bundle['file.metadata.filetags']}
+                                                        </th>
+                                                        <td>
+                                                            <div id="file-tags">
+                                                                <ui:repeat value="#{FilePage.fileMetadata.categoriesByName}" var="tag" rendered="#{!(empty FilePage.fileMetadata.categoriesByName)}">
+                                                                    <h:outputText value="#{tag}" styleClass="label label-default"/>
+                                                                </ui:repeat>
+                                                                <ui:repeat value="#{FilePage.fileMetadata.dataFile.tags}" var="tag">
+                                                                    <h:outputText value="#{tag.typeLabel}" styleClass="label label-info"/>
+                                                                </ui:repeat>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr id="filePersistentIdBlock" jsf:rendered="#{FilePage.file.identifier != null}">
+                                                        <th scope="row">
+                                                            #{bundle['file.metadata.persistentId']}
+                                                        </th>
+                                                        <td>#{FilePage.file.getGlobalId()}</td>
+                                                    </tr>
+                                                    <tr id="fileDownloadUrlBlock" jsf:rendered="#{FilePage.publiclyDownloadable and !FilePage.fileMetadata.dataFile.filePackage}">
+                                                        <!--Only show Public download url if identifier is available -->
+                                                        <th scope="row">
+                                                            #{bundle['file.metadataTab.fileMetadata.downloadUrl.label']}
+                                                        </th>
+                                                        <td>
+                                                            <p class="help-block">
+                                                                <h:outputFormat value="#{bundle['file.metadataTab.fileMetadata.downloadUrl.info']}" escape="false">
+                                                                    <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                                                    <f:param value="#{systemConfig.guidesVersion}"/>
+                                                                </h:outputFormat>
+                                                            </p>
+                                                            <code><h:outputText value="#{FilePage.publicDownloadUrl}"/></code>
+                                                        </td>
+                                                    </tr>
+                                                    <tr id="fileUnfBlock" jsf:rendered="#{!(empty FilePage.file.unf)}">
+                                                        <th scope="row">
+                                                            #{bundle['file.metadataTab.fileMetadata.unf.label']}
+                                                        </th>
+                                                        <td>#{FilePage.file.unf}</td>
+                                                    </tr>
+                                                    <tr id="fileChecksumBlock" jsf:rendered="#{!(empty FilePage.file.checksumValue)}">
+                                                        <th scope="row">
+                                                            #{FilePage.file.tabularData ? FilePage.file.originalChecksumType : FilePage.file.checksumType}
+                                                        </th>
+                                                        <td class="checksum-block">#{FilePage.file.checksumValue}</td>
+                                                    </tr>
+                                                    <tr id="fileDepositDateBlock">
+                                                        <th scope="row">
+                                                            #{bundle['file.metadataTab.fileMetadata.depositDate.label']}
+                                                        </th>
+                                                        <td>#{FilePage.file.createDateFormattedYYYYMMDD}</td>
+                                                    </tr>
+                                                    <tr id="metadataReleaseDateBlock" jsf:rendered="#{FilePage.file.released}">
+                                                        <th scope="row">
+                                                            #{bundle['file.metadataTab.fileMetadata.metadataReleaseDate.label']}
+                                                        </th>
+                                                        <td>#{FilePage.file.publicationDateFormattedYYYYMMDD}
+                                                        </td>
+                                                    </tr>
+                                                    <tr id="fileEPublicationDateBlock" jsf:rendered="#{FilePage.file.released or !(empty FilePage.file.embargo)}">
+                                                        <th scope="row">
+                                                            #{bundle['file.metadataTab.fileMetadata.publicationDate.label']}
+                                                        </th>
+                                                        <td>#{!(empty FilePage.file.embargo) ? FilePage.embargoPhrase: ''} #{!(empty FilePage.file.embargo) ? FilePage.file.embargo.dateAvailable : FilePage.file.publicationDateFormattedYYYYMMDD}
+                                                        </td>
+                                                    </tr>
+                                                    <tr id="fileEmbargoBlock" jsf:rendered="#{!(empty FilePage.file.embargo) and ! (empty FilePage.file.embargo.reason)}">
+                                                        <th scope="row">
+                                                            #{bundle['file.metadataTab.fileMetadata.embargoReason.label']}
+                                                        </th>
+                                                        <td>#{FilePage.file.embargo.reason}
+                                                        </td>
+                                                    </tr>
+                                                    <tr id="fileSizeBlock" jsf:rendered="#{!(empty FilePage.file.friendlySize)}">
+                                                        <th scope="row">
+                                                            #{bundle['file.metadataTab.fileMetadata.size.label']}
+                                                        </th>
+                                                        <td>#{FilePage.file.friendlySize}</td>
+                                                    </tr>
+                                                    <tr id="fileTypeBlock" jsf:rendered="#{!(empty FilePage.file.friendlyType)}">
+                                                        <th scope="row">
+                                                            #{bundle['file.metadataTab.fileMetadata.type.label']}
+                                                        </th>
+                                                        <td>#{FilePage.file.friendlyType}</td>
+                                                    </tr>
+                                                    <tr id="fileVariablesBlock" jsf:rendered="#{!(empty FilePage.file.dataTable.varQuantity)}">
+                                                        <th scope="row">
+                                                            #{bundle['file.metaData.dataFile.dataTab.variables']}
+                                                        </th>
+                                                        <td>#{FilePage.file.dataTable.varQuantity}</td>
+                                                    </tr>
+                                                    <tr id="fileObservationsBlock" jsf:rendered="#{!(empty FilePage.file.dataTable.caseQuantity)}">
+                                                        <th scope="row">
+                                                            #{bundle['file.metaData.dataFile.dataTab.observations']}
+                                                        </th>
+                                                        <td>#{FilePage.file.dataTable.caseQuantity}</td>
+                                                    </tr>
+                                                    <tr id="filePathBlock" jsf:rendered="#{!empty FilePage.fileMetadata.directoryLabel}">
+                                                        <th scope="row">
+                                                            #{bundle['file.metadataTab.fileMetadata.hierarchy.label']}
+                                                        </th>
+                                                        <td>#{FilePage.fileMetadata.directoryLabel}/</td>
+                                                    </tr>
+                                                    <tr id="fileDescriptionBlock" jsf:rendered="#{!(empty FilePage.fileMetadata.description)}">
+                                                        <th scope="row">
+                                                            #{bundle['file.metadataTab.fileMetadata.description.label']}
+                                                        </th>
+                                                        <td>#{FilePage.fileMetadata.description}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </div>
                                 </div>
                             </p:tab>
                             <p:tab id="versionsTab" title="#{bundle['file.dataFilesTab.versions']}">
                                 <!-- Versions -->
-                                <ui:include src="file-versions.xhtml"></ui:include>
+                                <ui:include src="file-versions.xhtml">
+                                  <ui:param name="anonymized" value="#{FilePage.anonymizedAccess}"/>
+                                </ui:include>
                             </p:tab>
                         </p:tabView>
                     </div>
                     <!-- POPUPS -->
+                    <ui:include src="file-edit-popup-fragment.xhtml" rendered="#{dataverseSession.user.authenticated and FilePage.canUpdateDataset()}">
+                        <ui:param name="datasetVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
+                        <ui:param name="bean" value="#{FilePage}"/>
+                        <ui:param name="restrictFileAction" value="restrictFile"/>
+                        <ui:param name="deleteFileAction" value="deleteFile"/>
+                        <ui:param name="saveEmbargoAction" value="saveEmbargo"/>
+                        <ui:param name="updateElements" value=":fileForm:embargoInputs"/>
+                        
+                    </ui:include> 
                     <p:dialog id="shareDialog" header="#{bundle['file.share.title']}" widgetVar="shareDialog" modal="true" rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
                         <p class="help-block">#{bundle['file.share.tip']}</p>
                         <div id="sharrre-widget" data-text="#{bundle['file.share.text']}" data-url="#{systemConfig.dataverseSiteUrl}/file.xhtml?#{empty FilePage.fileMetadata.dataFile.globalIdString ? 'fileId' : 'persistentId'}=#{empty FilePage.fileMetadata.dataFile.globalIdString ? FilePage.fileMetadata.dataFile.id : FilePage.fileMetadata.dataFile.globalIdString}&amp;version=#{FilePage.fileMetadata.datasetVersion.friendlyVersionNumber}"></div>
@@ -669,24 +614,13 @@
                                 #{bundle.close}
                             </button>
                         </div>
-                    </p:dialog>
-                    <p:dialog id="deleteFileConfirm" styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteFileConfirmation" modal="true">
-                        <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.immediate']}</p>
-                        <ui:fragment rendered="#{FilePage.fileMetadata.dataFile.owner.released}">
-                            <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
-                        </ui:fragment>
-                        <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle['file.delete']}" onclick="PF('deleteFileConfirmation').hide()" 
-                                             action="#{FilePage.deleteFile()}"/>
-                            <button class="btn btn-link" onclick="PF('deleteFileConfirmation').hide()" type="button">
-                                #{bundle.cancel}
-                            </button>
-                        </div>
-                    </p:dialog>
+                    </p:dialog>                                                              
                     <p:dialog id="downloadPopup" styleClass="largePopUp" header="#{bundle['file.downloadDialog.header']}" widgetVar="downloadPopup" modal="true">
                          <ui:include src="file-download-popup-fragment.xhtml">
+                            <ui:param name="popupContext" value="downloadFile"/>
                             <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
                             <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
+                            <ui:param name="hasRestrictedFile" value="#{FilePage.fileMetadata.restricted}"/>
                             <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
                             <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
                             <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
@@ -702,14 +636,15 @@
                             <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
                             <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
                         </ui:include>
-                    </p:dialog>
+                    </p:dialog>                  
                     <p:dialog id="requestAccessPopup" styleClass="largePopUp" header="#{bundle['file.requestAccess']}" widgetVar="requestAccessPopup" modal="true">
                         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                         <ui:include src="file-request-access-popup-fragment.xhtml">
                             <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
+                            <ui:param name="someActivelyEmbargoedFiles" value="#{FilePage.cantRequestDueToEmbargo}"/>
                             <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
                         </ui:include>
-                    </p:dialog>
+                    </p:dialog>                    
                     <p:dialog id="mapDataDialog" header="#{bundle['file.mapData.unpublished.header']}" widgetVar="mapDataDialog" modal="true">
                         <p class="help-block">
                             <span class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['file.mapData.unpublished.message']}</span>
@@ -719,14 +654,7 @@
                                 #{bundle.close}
                             </button>
                         </div>
-                    </p:dialog>
-                    <p:dialog id="configureToolPopup" styleClass="smallPopUp" header="#{configureFragmentBean.configurePopupToolHandler.externalTool.getDisplayNameLang()}" widgetVar="configureToolPopup" modal="true"
-                                rendered="#{dataverseSession.user.authenticated and FilePage.canUpdateDataset()}">
-                        <ui:include src="file-configure-popup-fragment.xhtml">
-                            <ui:param name="externalTools" value="#{FilePage.getExternalTools()}"/>
-                            <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>
-                        </ui:include>
-                    </p:dialog>
+                    </p:dialog>                    
                     <ui:include rendered="#{systemConfig.provCollectionEnabled}" src="provenance-popups-fragment.xhtml">
                         <ui:param name="saveInPopup" value="true"/>
                     </ui:include>
@@ -745,70 +673,7 @@
                                 #{bundle.close}
                             </button>
                         </div>
-                    </p:dialog>
-                    <p:dialog id="accessPopup" styleClass="smallPopUp" header="#{bundle['file.restrictions']}" widgetVar="accessPopup" modal="true">
-                        <p:focus context="accessPopup"/>
-                        <p class="help-block">
-                            #{bundle['file.restrictions.description']}
-                        </p>
-                        <ui:fragment rendered="#{FilePage.worldMapPermissionHelper.hasMapLayerMetadata(FilePage.fileMetadata)}">
-                        <p class="help-block">
-                            <span class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"></span> #{bundle['file.restrictions.worldmap.warning']}</span>
-                        </p>
-                        </ui:fragment>
-                        <div class="form-horizontal">
-                            <div class="form-group">
-                                <label for="metadata_TermsAccess" class="col-sm-3 control-label">
-                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
-                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}"></span>
-                                </label>
-                                <div class="col-sm-9">
-                                    <p:inputTextarea value="#{FilePage.fileMetadata.datasetVersion.termsOfUseAndAccess.termsOfAccess}" autoResize="false" rows="5" styleClass="form-control" widgetVar="inputtoa"/>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="metadata_RequestAccess" class="col-sm-3 control-label">
-                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
-                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                         data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}"></span>
-                                </label>
-                                <div class="col-sm-9">
-                                    <p:selectBooleanCheckbox id="requestAccess" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}"
-                                                             value="#{FilePage.fileMetadata.datasetVersion.termsOfUseAndAccess.fileAccessRequest}" widgetVar="inputfar"/>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('accessPopup').hide();" update=":messagePanel" action="#{FilePage.restrictFile(true)}"/>
-                            <button class="btn btn-link" onclick="PF('accessPopup').hide();" type="button">
-                                #{bundle.cancel}
-                            </button>
-                        </div>
-                    </p:dialog>
-                    <p:dialog id="fileAlreadyReplacedDraft" styleClass="smallPopUp"
-                              header="#{bundle['file.replaced.warning.header']}" widgetVar="fileAlreadyReplacedDraft" modal="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['file.replaced.warning.draft.warningMessage']}</p>
-                        <div class="button-block">
-                            <button class="btn btn-default" onclick="PF('fileAlreadyReplacedDraft').hide();" type="button">
-                                #{bundle.close}
-                            </button>
-                        </div>
-                    </p:dialog>
-                    <p:dialog id="fileAlreadyReplacedPrevious" styleClass="smallPopUp"
-                              header="#{bundle['file.replaced.warning.header']}" widgetVar="fileAlreadyReplacedPrevious" modal="true">
-                        <ui:fragment rendered="#{dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) }">
-                            <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['file.replaced.warning.previous.warningMessage']}</p>
-                        </ui:fragment>
-                        <ui:fragment rendered="#{!dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile)}">
-                            <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['file.alreadyDeleted.previous.warningMessage']}</p>
-                        </ui:fragment>
-                        <div class="button-block">
-                            <button class="btn btn-default" onclick="PF('fileAlreadyReplacedPrevious').hide();" type="button">
-                                #{bundle.close}
-                            </button>
-                        </div>
-                    </p:dialog>
+                    </p:dialog>                 
                     <p:dialog id="computeAccessDenied" styleClass="smallPopUp" header="#{bundle['dataset.compute.computeBtn']}" widgetVar="computeAccessDeniedPopup" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['file.compute.fileAccessDenied']}</p>
                         <div class="button-block">
@@ -818,6 +683,13 @@
                         </div>
                     </p:dialog>
                 </h:form>
+                <script>
+                    //<![CDATA[
+                    function editTerms(){                             
+                        PF('accessPopup').show();
+                    }
+                    //]]>
+                </script>
             </ui:define>
         </ui:composition>
     </h:body>

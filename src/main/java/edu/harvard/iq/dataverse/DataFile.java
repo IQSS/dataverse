@@ -7,7 +7,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
-import edu.harvard.iq.dataverse.api.WorldMapRelatedData;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
@@ -19,7 +18,6 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
 import edu.harvard.iq.dataverse.util.StringUtil;
-import edu.harvard.iq.dataverse.worldmapauth.WorldMapToken;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
@@ -34,21 +32,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
-import javax.persistence.Entity;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import javax.validation.constraints.Pattern;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -59,6 +43,10 @@ import org.hibernate.validator.constraints.NotBlank;
 @NamedQueries({
 	@NamedQuery( name="DataFile.removeFromDatasetVersion",
 		query="DELETE FROM FileMetadata f WHERE f.datasetVersion.id=:versionId and f.dataFile.id=:fileId"),
+        @NamedQuery(name = "DataFile.findByCreatorId",
+                query = "SELECT o FROM DataFile o WHERE o.creator.id=:creatorId"),
+        @NamedQuery(name = "DataFile.findByReleaseUserId",
+                query = "SELECT o FROM DataFile o WHERE o.releaseUser.id=:releaseUserId"),
         @NamedQuery(name="DataFile.findDataFileByIdProtocolAuth", 
                 query="SELECT s FROM DataFile s WHERE s.identifier=:identifier AND s.protocol=:protocol AND s.authority=:authority"),
         @NamedQuery(name="DataFile.findDataFileThatReplacedId", 
@@ -193,6 +181,9 @@ public class DataFile extends DvObject implements Comparable {
     private List<DataTable> dataTables;
     
     @OneToMany(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<AuxiliaryFile> auxiliaryFiles;
+   
+    @OneToMany(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<IngestReport> ingestReports;
     
     @OneToOne(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
@@ -214,18 +205,23 @@ public class DataFile extends DvObject implements Comparable {
     public void setGuestbookResponses(List<GuestbookResponse> guestbookResponses) {
         this.guestbookResponses = guestbookResponses;
     }
-    
-    // The WorldMap LayerMetadata and AuthToken are here to facilitate a
-    // clean cascade delete when the DataFile is deleted:
-    @OneToOne(mappedBy="dataFile", orphanRemoval = true, cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private MapLayerMetadata mapLayerMetadata;    
-    @OneToMany(mappedBy="dataFile", orphanRemoval = true, cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private List<WorldMapToken> worldMapTokens;
-    
+
     private char ingestStatus = INGEST_STATUS_NONE; 
     
     @OneToOne(mappedBy = "thumbnailFile")
     private Dataset thumbnailForDataset;
+
+    @ManyToOne
+    @JoinColumn(name="embargo_id")
+    private Embargo embargo;
+
+    public Embargo getEmbargo() {
+        return embargo;
+    }
+
+    public void setEmbargo(Embargo embargo) {
+        this.embargo = embargo;
+    }
 
     public DataFile() {
         this.fileMetadatas = new ArrayList<>();
@@ -245,15 +241,54 @@ public class DataFile extends DvObject implements Comparable {
     */
    
     @Transient
-    private boolean deleted;
+    private Boolean deleted;
 
-    public boolean isDeleted() {
+    public Boolean getDeleted() {
         return deleted;
     }
 
-    public void setDeleted(boolean deleted) {
+    public void setDeleted(Boolean deleted) {
         this.deleted = deleted;
     }
+    
+    /*
+    For use during file upload so that the user may delete 
+    files that have already been uploaded to the current dataset version
+    */
+    
+    @Transient
+    private boolean markedAsDuplicate;
+
+    public boolean isMarkedAsDuplicate() {
+        return markedAsDuplicate;
+    }
+
+    public void setMarkedAsDuplicate(boolean markedAsDuplicate) {
+        this.markedAsDuplicate = markedAsDuplicate;
+    }
+    
+    @Transient
+    private String duplicateFilename;
+
+    public String getDuplicateFilename() {
+        return duplicateFilename;
+    }
+
+    public void setDuplicateFilename(String duplicateFilename) {
+        this.duplicateFilename = duplicateFilename;
+    }
+
+    public List<AuxiliaryFile> getAuxiliaryFiles() {
+        return auxiliaryFiles;
+    }
+
+    public void setAuxiliaryFiles(List<AuxiliaryFile> auxiliaryFiles) {
+        this.auxiliaryFiles = auxiliaryFiles;
+    }
+    
+    
+    
+    
        
     /**
      * All constructors should use this method
@@ -683,21 +718,7 @@ public class DataFile extends DvObject implements Comparable {
     public void setAsThumbnailForDataset(Dataset dataset) {
         thumbnailForDataset = dataset;
     }
-    
-    /**
-     * URL to use with the WorldMapRelatedData API
-     * Used within dataset.xhtml
-     * 
-     * @param dataverseUserID
-     * @return URL for "Map It" functionality
-     */
-    public String getMapItURL(Long dataverseUserID){
-        if (dataverseUserID==null){
-            return null;
-        }
-        return WorldMapRelatedData.getMapItURL(this.getId(), dataverseUserID);
-    }
-        
+
     /*
         8/10/2014 - Using the current "open access" url
     */
@@ -739,12 +760,6 @@ public class DataFile extends DvObject implements Comparable {
     }
     
     public boolean isHarvested() {
-        
-        // (storageIdentifier is not nullable - so no need to check for null
-        // pointers below):
-        if (this.getStorageIdentifier().startsWith("http://") || this.getStorageIdentifier().startsWith("https://")) {
-            return true;
-        }
         
         Dataset ownerDataset = this.getOwner();
         if (ownerDataset != null) {

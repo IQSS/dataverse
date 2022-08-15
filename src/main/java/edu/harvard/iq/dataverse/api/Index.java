@@ -36,6 +36,7 @@ import edu.harvard.iq.dataverse.search.SearchFilesServiceBean;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.SortBy;
+import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import java.io.IOException;
@@ -43,7 +44,10 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -70,7 +74,7 @@ public class Index extends AbstractApiBean {
     @EJB
     IndexServiceBean indexService;
     @EJB
-    IndexBatchServiceBean indexAllService;
+    IndexBatchServiceBean indexBatchService;
     @EJB
     SolrIndexServiceBean solrIndexService;
     @EJB
@@ -148,7 +152,7 @@ public class Index extends AbstractApiBean {
                 availablePartitionIdsBuilder.add(i);
             }
 
-            JsonObjectBuilder preview = indexAllService.indexAllOrSubsetPreview(numPartitions, partitionIdToProcess, skipIndexed);
+            JsonObjectBuilder preview = indexBatchService.indexAllOrSubsetPreview(numPartitions, partitionIdToProcess, skipIndexed);
             if (previewOnly) {
                 preview.add("args", args);
                 preview.add("availablePartitionIds", availablePartitionIdsBuilder);
@@ -162,7 +166,7 @@ public class Index extends AbstractApiBean {
              * @todo How can we expose the String returned from "index all" via
              * the API?
              */
-            Future<JsonObjectBuilder> indexAllFuture = indexAllService.indexAllOrSubset(numPartitions, partitionIdToProcess, skipIndexed, previewOnly);
+            Future<JsonObjectBuilder> indexAllFuture = indexBatchService.indexAllOrSubset(numPartitions, partitionIdToProcess, skipIndexed, previewOnly);
             JsonObject workloadPreview = preview.build().getJsonObject("previewOfPartitionWorkload");
             int dataverseCount = workloadPreview.getInt("dataverseCount");
             int datasetCount = workloadPreview.getInt("datasetCount");
@@ -178,10 +182,7 @@ public class Index extends AbstractApiBean {
                 sb.append(cause.getClass().getCanonicalName() + " ");
                 sb.append(cause.getMessage()).append(" ");
                 if (cause instanceof ConstraintViolationException) {
-                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                    for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                        sb.append("(invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ").append(violation.getPropertyPath()).append(" at ").append(violation.getLeafBean()).append(" - ").append(violation.getMessage()).append(")");
-                    }
+                    sb.append(ConstraintViolationUtil.getErrorStringForConstraintViolations(cause));
                 } else if (cause instanceof NullPointerException) {
                     for (int i = 0; i < 2; i++) {
                         StackTraceElement stacktrace = cause.getStackTrace()[i];
@@ -282,10 +283,7 @@ public class Index extends AbstractApiBean {
                 sb.append(cause.getClass().getCanonicalName()).append(" ");
                 sb.append(cause.getMessage()).append(" ");
                 if (cause instanceof ConstraintViolationException) {
-                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                    for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                        sb.append("(invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ").append(violation.getPropertyPath()).append(" at ").append(violation.getLeafBean()).append(" - ").append(violation.getMessage()).append(")");
-                    }
+                    sb.append(ConstraintViolationUtil.getErrorStringForConstraintViolations(cause));
                 } else if (cause instanceof NullPointerException) {
                     for (int i = 0; i < 2; i++) {
                         StackTraceElement stacktrace = cause.getStackTrace()[i];
@@ -377,100 +375,59 @@ public class Index extends AbstractApiBean {
             return ok(indexResponse.getMessage());
         }
     }
-
+    /**
+     * Checks whether there are inconsistencies between the Solr index and 
+     * the database, and reports back the status by content type
+     * @param sync - optional parameter, if set, then run the command 
+     * synchronously. Else, return immediately, and report the status in server.log
+     * @return status report
+     */
     @GET
     @Path("status")
-    public Response indexStatus() {
-        JsonObjectBuilder contentInDatabaseButStaleInOrMissingFromSolr = getContentInDatabaseButStaleInOrMissingFromSolr();
-
-        JsonObjectBuilder contentInSolrButNotDatabase;
-        try {
-            contentInSolrButNotDatabase = getContentInSolrButNotDatabase();
-        } catch (SearchException ex) {
-            return error(Response.Status.INTERNAL_SERVER_ERROR, "Can not determine index status. " + ex.getLocalizedMessage() + ". Is Solr down? Exception: " + ex.getCause().getLocalizedMessage());
+    public Response indexStatus(@QueryParam("sync") String sync) {
+        Future<JsonObjectBuilder> result = indexBatchService.indexStatus();
+        if (sync != null) {
+            try {
+                JsonObjectBuilder status = result.get();
+                return ok(status);
+            } catch (InterruptedException | ExecutionException e) {
+                return AbstractApiBean.error(Status.INTERNAL_SERVER_ERROR, "indexStatus method interrupted: " + e.getLocalizedMessage());
+            }
+        } else {
+            return ok("Index Status Batch Job initiated, check log for job status.");
         }
-
-        JsonObjectBuilder permissionsInDatabaseButStaleInOrMissingFromSolr = getPermissionsInDatabaseButStaleInOrMissingFromSolr();
-        JsonObjectBuilder permissionsInSolrButNotDatabase = getPermissionsInSolrButNotDatabase();
-
-        JsonObjectBuilder data = Json.createObjectBuilder()
-                .add("contentInDatabaseButStaleInOrMissingFromIndex", contentInDatabaseButStaleInOrMissingFromSolr)
-                .add("contentInIndexButNotDatabase", contentInSolrButNotDatabase)
-                .add("permissionsInDatabaseButStaleInOrMissingFromIndex", permissionsInDatabaseButStaleInOrMissingFromSolr)
-                .add("permissionsInIndexButNotDatabase", permissionsInSolrButNotDatabase);
-
-        return ok(data);
     }
-
-    private JsonObjectBuilder getContentInDatabaseButStaleInOrMissingFromSolr() {
-        List<Dataverse> stateOrMissingDataverses = indexService.findStaleOrMissingDataverses();
-        List<Dataset> staleOrMissingDatasets = indexService.findStaleOrMissingDatasets();
-        JsonArrayBuilder jsonStateOrMissingDataverses = Json.createArrayBuilder();
-        for (Dataverse dataverse : stateOrMissingDataverses) {
-            jsonStateOrMissingDataverses.add(dataverse.getId());
+     /**
+     * Deletes "orphan" Solr documents (that don't match anything in the database).
+     * @param sync - optional parameter, if set, then run the command 
+     * synchronously. Else, return immediately, and report the results in server.log
+     * @return what documents, if anything, was deleted
+     */
+    @GET
+    @Path("clear-orphans")
+    /**
+     * Checks whether there are inconsistencies between the Solr index and the
+     * database, and reports back the status by content type
+     *
+     * @param sync - optional parameter, if !=null, then run the command
+     * synchronously. Else, return immediately, and report the status in
+     * server.log
+     * @return
+     */
+    public Response clearOrphans(@QueryParam("sync") String sync) {
+        Future<JsonObjectBuilder> result = indexBatchService.clearOrphans();
+        if (sync != null) {
+            try {
+                JsonObjectBuilder status = result.get();
+                return ok(status);
+            } catch (InterruptedException | ExecutionException e) {
+                return AbstractApiBean.error(Status.INTERNAL_SERVER_ERROR, "indexStatus method interrupted: " + e.getLocalizedMessage());
+            }
+        } else {
+            return ok("Clear Orphans Batch Job initiated, check log for job status.");
         }
-        JsonArrayBuilder datasetsInDatabaseButNotSolr = Json.createArrayBuilder();
-        for (Dataset dataset : staleOrMissingDatasets) {
-            datasetsInDatabaseButNotSolr.add(dataset.getId());
-        }
-        JsonObjectBuilder contentInDatabaseButStaleInOrMissingFromSolr = Json.createObjectBuilder()
-                /**
-                 * @todo What about files? Currently files are always indexed
-                 * along with their parent dataset
-                 */
-                .add("dataverses", jsonStateOrMissingDataverses.build().size())
-                .add("datasets", datasetsInDatabaseButNotSolr.build().size());
-        return contentInDatabaseButStaleInOrMissingFromSolr;
     }
-
-    private JsonObjectBuilder getContentInSolrButNotDatabase() throws SearchException {
-        List<Long> dataversesInSolrOnly = indexService.findDataversesInSolrOnly();
-        List<Long> datasetsInSolrOnly = indexService.findDatasetsInSolrOnly();
-        List<Long> filesInSolrOnly = indexService.findFilesInSolrOnly();
-        JsonArrayBuilder dataversesInSolrButNotDatabase = Json.createArrayBuilder();
-        for (Long dataverseId : dataversesInSolrOnly) {
-            dataversesInSolrButNotDatabase.add(dataverseId);
-        }
-        JsonArrayBuilder datasetsInSolrButNotDatabase = Json.createArrayBuilder();
-        for (Long datasetId : datasetsInSolrOnly) {
-            datasetsInSolrButNotDatabase.add(datasetId);
-        }
-        JsonArrayBuilder filesInSolrButNotDatabase = Json.createArrayBuilder();
-        for (Long fileId : filesInSolrOnly) {
-            filesInSolrButNotDatabase.add(fileId);
-        }
-        JsonObjectBuilder contentInSolrButNotDatabase = Json.createObjectBuilder()
-                /**
-                 * @todo What about files? Currently files are always indexed
-                 * along with their parent dataset
-                 */
-                .add("dataverses", dataversesInSolrButNotDatabase.build().size())
-                .add("datasets", datasetsInSolrButNotDatabase.build().size())
-                .add("files", filesInSolrButNotDatabase.build().size());
-        return contentInSolrButNotDatabase;
-    }
-
-    private JsonObjectBuilder getPermissionsInDatabaseButStaleInOrMissingFromSolr() {
-        List<Long> staleOrMissingPermissions;
-        staleOrMissingPermissions = solrIndexService.findPermissionsInDatabaseButStaleInOrMissingFromSolr();
-        JsonArrayBuilder stalePermissionList = Json.createArrayBuilder();
-        for (Long dvObjectId : staleOrMissingPermissions) {
-            stalePermissionList.add(dvObjectId);
-        }
-        return Json.createObjectBuilder()
-                .add("dvobjects", stalePermissionList.build().size());
-    }
-
-    private JsonObjectBuilder getPermissionsInSolrButNotDatabase() {
-        List<Long> staleOrMissingPermissions = solrIndexService.findPermissionsInSolrNoLongerInDatabase();
-        JsonArrayBuilder stalePermissionList = Json.createArrayBuilder();
-        for (Long dvObjectId : staleOrMissingPermissions) {
-            stalePermissionList.add(dvObjectId);
-        }
-        return Json.createObjectBuilder()
-                .add("dvobjects", stalePermissionList.build().size());
-    }
-
+  
     /**
      * We use the output of this method to generate our Solr schema.xml
      *
@@ -485,6 +442,7 @@ public class Index extends AbstractApiBean {
         StringBuilder sb = new StringBuilder();
 
         for (DatasetFieldType datasetField : datasetFieldService.findAllOrderedByName()) {
+            //ToDo - getSolrField() creates/returns a new object - just get it once and re-use
             String nameSearchable = datasetField.getSolrField().getNameSearchable();
             SolrField.SolrType solrType = datasetField.getSolrField().getSolrType();
             String type = solrType.getType();
@@ -533,7 +491,7 @@ public class Index extends AbstractApiBean {
         }
 
         sb.append("---\n");
-
+        //ToDo - this is the same for loop as above - could combine into one by using a second string buffer and appending the latter one after the loop. 
         for (DatasetFieldType datasetField : datasetFieldService.findAllOrderedByName()) {
             String nameSearchable = datasetField.getSolrField().getNameSearchable();
             String nameFacetable = datasetField.getSolrField().getNameFacetable();

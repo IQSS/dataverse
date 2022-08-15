@@ -111,12 +111,6 @@ config=read_config_file(configFile)
 # expected dataverse defaults
 apiUrl = "http://localhost:8080/api"
 
-# there's now a single driver that works for all supported versions:
-# jodbc.postgresql.org recommends 4.2 for Java 8.
-# updated drivers may be obtained from
-#  https://jdbc.postgresql.org/download.html
-pgJdbcDriver = "postgresql-42.2.12.jar"
-
 # 0. A few preliminary checks:                                                                                   
 # 0a. OS flavor:
  
@@ -233,9 +227,9 @@ if not pgOnly:
    warfileVersion = ""
    if not os.path.isfile(warfile):
       # get dataverse version from pom.xml
-      tree = ET.ElementTree(file='../../pom.xml')
+      tree = ET.ElementTree(file='../../modules/dataverse-parent/pom.xml')
       for elem in tree.iter("*"):
-         if elem.tag == '{http://maven.apache.org/POM/4.0.0}version':
+         if elem.tag == '{http://maven.apache.org/POM/4.0.0}revision':
             warfileVersion = elem.text
          # only want the first, the rest are dependencies
             break
@@ -244,17 +238,6 @@ if not pgOnly:
       if not os.path.isfile(warfile):
          sys.exit("Sorry, I can't seem to find an appropriate warfile.\nAre you running the installer from the right directory?")
    print(warfile+" available to deploy. Good.")
-
-   # 1b. check for reference_data.sql
-   referenceData = '../database/reference_data.sql'
-   if not os.path.isfile(referenceData):
-      # if it's not there, then we're probably running out of the 
-      # unzipped installer bundle, so it should be right here in the current directory:
-      referenceData = 'reference_data.sql'
-      if not os.path.isfile(referenceData):
-         sys.exit("Can't find reference_data.sql!\nAre you running the installer from the right directory?")
-
-   print("found "+referenceData+"... good")
 
    # 1c. check if jq is available
    # (but we're only doing it if it's not that weird "pod name" mode)
@@ -269,8 +252,8 @@ if not pgOnly:
    # 1d. check java version
    java_version = subprocess.check_output(["java", "-version"], stderr=subprocess.STDOUT).decode()
    print("Found java version "+java_version)
-   if not re.search("1.8", java_version):
-      sys.exit("Dataverse requires Java 1.8. Please install it, or make sure it's in your PATH, and try again")
+   if not re.search('(1.8|11)', java_version):
+      sys.exit("Dataverse requires OpenJDK 1.8 or 11. Please make sure it's in your PATH, and try again.")
 
    # 1e. check if the setup scripts - setup-all.sh, are available as well, maybe?
    # @todo (?)
@@ -452,26 +435,6 @@ else:
 print("Setting App. Server heap size (Xmx) to "+str(gfHeap)+" Megabytes")
 config.set('glassfish','GLASSFISH_HEAP', str(gfHeap))
 
-# 4b1. PostgresQL driver:
-pg_driver_jarpath = "pgdriver/"+pgJdbcDriver
-
-try:
-   copy2(pg_driver_jarpath, gfJarPath)
-   print("Copied "+pgJdbcDriver+" into "+gfJarPath)
-except:
-   print("Couldn't copy "+pgJdbcDriver+" into "+gfJarPath+". Check its permissions?")
-
-# 4b2. JSF patch for Payara:
-
-jsf_patch_path = "jsfpatch/jakarta.faces_dv.jar"
-
-try:
-   # overwrite the jar file supplied with Payara:
-   copy2(jsf_patch_path, gfModulePath+"/jakarta.faces.jar")
-   print("Copied "+jsf_patch_path+" into "+gfModulePath)
-except:
-   print("Couldn't copy "+jsf_patch_path+" into "+gfModulePath+". Check its permissions?")
-
 # 4c. create payara admin credentials file
 
 userHomeDir = pwd.getpwuid(os.getuid())[5]
@@ -512,7 +475,9 @@ if re.match(gfDomain+" not running", domain_status):
 
 # 4e. check if asadmin login works
 #gf_adminpass_status = subprocess.check_output([asadmincmd, "login", "--user="+gfAdminUser, "--passwordfile "+gfClientFile])
-gfAdminLoginStatus = subprocess.call([asadmincmd, "login", "--user="+gfAdminUser])
+
+if not nonInteractive:
+   gfAdminLoginStatus = subprocess.call([asadmincmd, "login", "--user="+gfAdminUser])
 
 # 4f. configure glassfish by running the standalone shell script that executes the asadmin commands as needed.
 
@@ -566,22 +531,6 @@ if returnCode != 0:
    sys.exit("Failed to deploy the application!")
 # @todo: restart/try to deploy again if it failed?
 # @todo: if asadmin deploy says it was successful, verify that the application is running... if not - repeat the above?
-
-# 6. Import reference data
-print("importing reference data...")
-# open the new postgresQL connection (as the application user):
-conn_string="dbname='"+pgDb+"' user='"+pgUser+"' password='"+pgPassword+"' host='"+pgHost+"'"
-conn = psycopg2.connect(conn_string)
-conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-cur = conn.cursor()
-try:
-   cur.execute(open(referenceData, "r").read())
-   print("done.")
-except: 
-   print("WARNING: failed to import reference data!")
-
-cur.close()
-conn.close()
 
 # 7. RUN SETUP SCRIPTS AND CONFIGURE EXTRA SETTINGS
 # (note that we may need to change directories, depending on whether this is a dev., or release installer)

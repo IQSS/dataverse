@@ -1,66 +1,81 @@
 #!/bin/bash
 echo "Installing dependencies for Dataverse"
 
-# Add JQ
+# wget seems to be missing in box 'bento/centos-8.2'
+dnf install -qy wget
+
+# python3 and psycopg2 for the Dataverse installer
+dnf install -qy python3 python3-psycopg2
+
+# JQ
 echo "Installing jq for the setup scripts"
-wget http://stedolan.github.io/jq/download/linux64/jq
-chmod +x jq
-# this is where EPEL puts it
-sudo mv jq /usr/bin/jq
+dnf install -qy epel-release
+dnf install -qy jq
 
 echo "Adding Shibboleth yum repo"
 cp /dataverse/conf/vagrant/etc/yum.repos.d/shibboleth.repo /etc/yum.repos.d
-cp /dataverse/conf/vagrant/etc/yum.repos.d/epel-apache-maven.repo /etc/yum.repos.d
 # Uncomment this (and other shib stuff below) if you want
 # to use Vagrant (and maybe PageKite) to test Shibboleth.
 #yum install -y shibboleth shibboleth-embedded-ds
 
-# java configuration et al
-yum install -y java-1.8.0-openjdk-devel apache-maven httpd mod_ssl unzip
-alternatives --set java /usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java
-alternatives --set javac /usr/lib/jvm/java-1.8.0-openjdk.x86_64/bin/javac
+# java configuration et alia
+dnf install -qy java-11-openjdk-devel httpd mod_ssl unzip
+alternatives --set java /usr/lib/jvm/jre-11-openjdk/bin/java
 java -version
-javac -version
 
-# switching to postgresql-9.6 per #4709
-yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
-yum makecache fast
-yum install -y postgresql96-server
-/usr/pgsql-9.6/bin/postgresql96-setup initdb
-/usr/bin/systemctl stop postgresql-9.6
-cp /dataverse/conf/vagrant/var/lib/pgsql/data/pg_hba.conf /var/lib/pgsql/9.6/data/pg_hba.conf
-/usr/bin/systemctl start postgresql-9.6
-/usr/bin/systemctl enable postgresql-9.6
+# maven included in centos8 requires 1.8.0 - download binary instead
+wget -q https://archive.apache.org/dist/maven/maven-3/3.8.2/binaries/apache-maven-3.8.2-bin.tar.gz
+tar xfz apache-maven-3.8.2-bin.tar.gz
+mkdir /opt/maven
+mv apache-maven-3.8.2/* /opt/maven/
+echo "export JAVA_HOME=/usr/lib/jvm/jre-openjdk" > /etc/profile.d/maven.sh
+echo "export M2_HOME=/opt/maven" >> /etc/profile.d/maven.sh
+echo "export MAVEN_HOME=/opt/maven" >> /etc/profile.d/maven.sh
+echo "export PATH=/opt/maven/bin:${PATH}" >> /etc/profile.d/maven.sh
+chmod 0755 /etc/profile.d/maven.sh
 
-GLASSFISH_USER=dataverse
-echo "Ensuring Unix user '$GLASSFISH_USER' exists"
-useradd $GLASSFISH_USER || :
+# disable centos8 postgresql module and install postgresql13-server
+dnf -qy module disable postgresql
+dnf install -qy https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+dnf install -qy postgresql13-server
+/usr/pgsql-13/bin/postgresql-13-setup initdb
+/usr/bin/systemctl stop postgresql-13
+cp /dataverse/conf/vagrant/var/lib/pgsql/data/pg_hba.conf /var/lib/pgsql/13/data/pg_hba.conf
+/usr/bin/systemctl start postgresql-13
+/usr/bin/systemctl enable postgresql-13
+
+PAYARA_USER=dataverse
+echo "Ensuring Unix user '$PAYARA_USER' exists"
+useradd $PAYARA_USER || :
 SOLR_USER=solr
 echo "Ensuring Unix user '$SOLR_USER' exists"
 useradd $SOLR_USER || :
 DOWNLOAD_DIR='/dataverse/downloads'
-GLASSFISH_ZIP="$DOWNLOAD_DIR/payara-5.201.zip"
-SOLR_TGZ="$DOWNLOAD_DIR/solr-7.7.2.tgz"
-if [ ! -f $GLASSFISH_ZIP ] || [ ! -f $SOLR_TGZ ]; then
-    echo "Couldn't find $GLASSFISH_ZIP or $SOLR_TGZ! Running download script...."
+PAYARA_ZIP="$DOWNLOAD_DIR/payara-5.2021.6.zip"
+SOLR_TGZ="$DOWNLOAD_DIR/solr-8.11.1.tgz"
+if [ ! -f $PAYARA_ZIP ] || [ ! -f $SOLR_TGZ ]; then
+    echo "Couldn't find $PAYARA_ZIP or $SOLR_TGZ! Running download script...."
     cd $DOWNLOAD_DIR && ./download.sh && cd
     echo "Done running download script."
 fi
-GLASSFISH_USER_HOME=~dataverse
-GLASSFISH_ROOT=$GLASSFISH_USER_HOME/payara5
-if [ ! -d $GLASSFISH_ROOT ]; then
-  echo "Copying $GLASSFISH_ZIP to $GLASSFISH_USER_HOME and unzipping"
-  su $GLASSFISH_USER -s /bin/sh -c "cp $GLASSFISH_ZIP $GLASSFISH_USER_HOME"
-  su $GLASSFISH_USER -s /bin/sh -c "cd $GLASSFISH_USER_HOME && unzip -q $GLASSFISH_ZIP"
+PAYARA_USER_HOME=~dataverse
+PAYARA_ROOT=/usr/local/payara5
+if [ ! -d $PAYARA_ROOT ]; then
+  echo "Copying $PAYARA_ZIP to $PAYARA_USER_HOME and unzipping"
+  su $PAYARA_USER -s /bin/sh -c "cp $PAYARA_ZIP $PAYARA_USER_HOME"
+  su $PAYARA_USER -s /bin/sh -c "cd $PAYARA_USER_HOME && unzip -q $PAYARA_ZIP"
+  # default.config defaults to /usr/local/payara5 so let's go with that
+  rsync -a $PAYARA_USER_HOME/payara5/ $PAYARA_ROOT/
 else
-  echo "$GLASSFISH_ROOT already exists"
+  echo "$PAYARA_ROOT already exists"
 fi
+
 #service shibd start
-service httpd stop
+/usr/bin/systemctl stop httpd
 cp /dataverse/conf/httpd/conf.d/dataverse.conf /etc/httpd/conf.d/dataverse.conf
 mkdir -p /var/www/dataverse/error-documents
 cp /dataverse/conf/vagrant/var/www/dataverse/error-documents/503.html /var/www/dataverse/error-documents
-service httpd start
+/usr/bin/systemctl start httpd
 #curl -k --sslv3 https://pdurbin.pagekite.me/Shibboleth.sso/Metadata > /tmp/pdurbin.pagekite.me
 #cp -a /etc/shibboleth/shibboleth2.xml /etc/shibboleth/shibboleth2.xml.orig
 #cp -a /etc/shibboleth/attribute-map.xml /etc/shibboleth/attribute-map.xml.orig
@@ -72,6 +87,7 @@ service httpd start
 #service shibd restart
 #curl -k --sslv3 https://pdurbin.pagekite.me/Shibboleth.sso/Metadata > /downloads/pdurbin.pagekite.me
 #service httpd restart
+
 echo "#########################################################################################"
 echo "# This is a Vagrant test box, so we're disabling firewalld. 			      #
 echo "# Re-enable it with $ sudo systemctl enable firewalld && sudo systemctl start firewalld #"

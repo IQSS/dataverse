@@ -21,11 +21,11 @@ This guide documents the functionality only available to superusers (such as "da
    timers
    make-data-count
    integrations
-   geoconnect-worldmap
    user-administration
    dataverses-datasets
    solr-search-index
    ip-groups
+   mail-groups
    monitoring
    reporting-tools-and-queries
    maintenance

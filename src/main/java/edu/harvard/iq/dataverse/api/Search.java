@@ -35,7 +35,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * User-facing documentation:
@@ -71,6 +71,7 @@ public class Search extends AbstractApiBean {
             @QueryParam("show_api_urls") boolean showApiUrls,
             @QueryParam("show_my_data") boolean showMyData,
             @QueryParam("query_entities") boolean queryEntities,
+            @QueryParam("metadata_fields") List<String> metadataFields,
             @Context HttpServletResponse response
     ) {
 
@@ -156,7 +157,7 @@ public class Search extends AbstractApiBean {
             JsonArrayBuilder itemsArrayBuilder = Json.createArrayBuilder();
             List<SolrSearchResult> solrSearchResults = solrQueryResponse.getSolrSearchResults();
             for (SolrSearchResult solrSearchResult : solrSearchResults) {
-                itemsArrayBuilder.add(solrSearchResult.toJsonObject(showRelevance, showEntityIds, showApiUrls));
+                itemsArrayBuilder.add(solrSearchResult.toJsonObject(showRelevance, showEntityIds, showApiUrls, metadataFields));
             }
 
             JsonObjectBuilder spelling_alternatives = Json.createObjectBuilder();

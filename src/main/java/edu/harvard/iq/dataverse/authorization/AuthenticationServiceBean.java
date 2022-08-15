@@ -30,10 +30,13 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
+import edu.harvard.iq.dataverse.engine.command.impl.RevokeAllRolesCommand;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetData;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetServiceBean;
+import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
+import edu.harvard.iq.dataverse.workflow.PendingWorkflowInvocation;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -53,7 +56,7 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
-import javax.ejb.Singleton;
+import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -67,27 +70,20 @@ import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 
 /**
- * The AuthenticationManager is responsible for registering and listing
- * AuthenticationProviders. There's a single instance per application. 
+ * AuthenticationService is for general authentication-related operations.
+ * It's no longer responsible for registering and listing
+ * AuthenticationProviders! A dedicated singleton has been created for that
+ * purpose - AuthenticationProvidersRegistrationServiceBean - and all the 
+ * related code has been moved there. 
  * 
- * Register the providers in the {@link #startup()} method.
  */
 @Named
-@Singleton
+@Stateless
 public class AuthenticationServiceBean {
     private static final Logger logger = Logger.getLogger(AuthenticationServiceBean.class.getName());
     
-    /**
-     * Where all registered authentication providers live.
-     */
-    final Map<String, AuthenticationProvider> authenticationProviders = new HashMap<>();
-    
-    /**
-     * Index of all OAuth2 providers. They also live in {@link #authenticationProviders}.
-     */
-    final Map<String, AbstractOAuth2AuthenticationProvider> oAuth2authenticationProviders = new HashMap<>();
-    
-    final Map<String, AuthenticationProviderFactory> providerFactories = new HashMap<>();
+    @EJB
+    AuthenticationProvidersRegistrationServiceBean authProvidersRegistrationService;
     
     @EJB
     BuiltinUserServiceBean builtinUserServiceBean;
@@ -127,110 +123,33 @@ public class AuthenticationServiceBean {
     
     @EJB 
     ExplicitGroupServiceBean explicitGroupService;
-        
+
+    @EJB
+    SavedSearchServiceBean savedSearchService;
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-    
-    @PostConstruct
-    public void startup() {
         
-        // First, set up the factories
-        try {
-            registerProviderFactory( new BuiltinAuthenticationProviderFactory(builtinUserServiceBean, passwordValidatorService, this) );
-            registerProviderFactory( new ShibAuthenticationProviderFactory() );
-            registerProviderFactory( new OAuth2AuthenticationProviderFactory() );
-            registerProviderFactory( new OIDCAuthenticationProviderFactory() );
         
-        } catch (AuthorizationSetupException ex) { 
-            logger.log(Level.SEVERE, "Exception setting up the authentication provider factories: " + ex.getMessage(), ex);
-        }
-        
-        // Now, load the providers.
-        em.createNamedQuery("AuthenticationProviderRow.findAllEnabled", AuthenticationProviderRow.class)
-                .getResultList().forEach((row) -> {
-                    try {
-                        registerProvider( loadProvider(row) );
-                        
-                    } catch ( AuthenticationProviderFactoryNotFoundException e ) {
-                        logger.log(Level.SEVERE, "Cannot find authentication provider factory with alias '" + e.getFactoryAlias() + "'",e);
-                        
-                    } catch (AuthorizationSetupException ex) {
-                        logger.log(Level.SEVERE, "Exception setting up the authentication provider '" + row.getId() + "': " + ex.getMessage(), ex);
-                    }
-        });
-    }
-    
-    public void registerProviderFactory(AuthenticationProviderFactory aFactory) 
-            throws AuthorizationSetupException 
-    {
-        if ( providerFactories.containsKey(aFactory.getAlias()) ) {
-            throw new AuthorizationSetupException(
-                    "Duplicate alias " + aFactory.getAlias() + " for authentication provider factory.");
-        }
-        providerFactories.put( aFactory.getAlias(), aFactory);
-        logger.log( Level.FINE, "Registered Authentication Provider Factory {0} as {1}", 
-                new Object[]{aFactory.getInfo(), aFactory.getAlias()});
-    }
-    
-    /**
-     * Tries to load and {@link AuthenticationProvider} using the passed {@link AuthenticationProviderRow}.
-     * @param aRow The row to load the provider from.
-     * @return The provider, if successful
-     * @throws AuthenticationProviderFactoryNotFoundException If the row specifies a non-existent factory
-     * @throws AuthorizationSetupException If the factory failed to instantiate a provider from the row.
-     */
-    public AuthenticationProvider loadProvider( AuthenticationProviderRow aRow )
-                throws AuthenticationProviderFactoryNotFoundException, AuthorizationSetupException {
-        AuthenticationProviderFactory fact = getProviderFactory(aRow.getFactoryAlias());
-        
-        if ( fact == null ) throw new AuthenticationProviderFactoryNotFoundException(aRow.getFactoryAlias());
-        
-        return fact.buildProvider(aRow);
-    }
-    
-    public void registerProvider(AuthenticationProvider aProvider) throws AuthorizationSetupException {
-        if ( authenticationProviders.containsKey(aProvider.getId()) ) {
-            throw new AuthorizationSetupException(
-                    "Duplicate id " + aProvider.getId() + " for authentication provider.");
-        }
-        authenticationProviders.put( aProvider.getId(), aProvider);
-        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "registerProvider")
-            .setInfo(aProvider.getId() + ":" + aProvider.getInfo().getTitle()));
-        if ( aProvider instanceof AbstractOAuth2AuthenticationProvider ) {
-            oAuth2authenticationProviders.put(aProvider.getId(), (AbstractOAuth2AuthenticationProvider) aProvider);
-        }
-        
-    }
-    
     public AbstractOAuth2AuthenticationProvider getOAuth2Provider( String id ) {
-        return oAuth2authenticationProviders.get(id);
+        return authProvidersRegistrationService.getOAuth2AuthProvidersMap().get(id);
     }
     
     public Set<AbstractOAuth2AuthenticationProvider> getOAuth2Providers() {
-        return new HashSet<>(oAuth2authenticationProviders.values());
-    }
-    
-    public void deregisterProvider( String id ) {
-        oAuth2authenticationProviders.remove( id );
-        if ( authenticationProviders.remove(id) != null ) {
-            actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "deregisterProvider")
-                .setInfo(id));
-            logger.log(Level.INFO,"Deregistered provider {0}", new Object[]{id});
-            logger.log(Level.INFO,"Providers left {0}", new Object[]{getAuthenticationProviderIds()});
-        }
+        return new HashSet<>(authProvidersRegistrationService.getOAuth2AuthProvidersMap().values());
     }
     
     public Set<String> getAuthenticationProviderIds() {
-        return authenticationProviders.keySet();
+        return authProvidersRegistrationService.getAuthenticationProvidersMap().keySet();
     }
 
     public Collection<AuthenticationProvider> getAuthenticationProviders() {
-        return authenticationProviders.values();
+        return authProvidersRegistrationService.getAuthenticationProvidersMap().values();
     }
     
     public <T extends AuthenticationProvider> Set<String> getAuthenticationProviderIdsOfType( Class<T> aClass ) {
         Set<String> retVal = new TreeSet<>();
-        for ( Map.Entry<String, AuthenticationProvider> p : authenticationProviders.entrySet() ) {
+        for ( Map.Entry<String, AuthenticationProvider> p : authProvidersRegistrationService.getAuthenticationProvidersMap().entrySet() ) {
             if ( aClass.isAssignableFrom( p.getValue().getClass() ) ) {
                 retVal.add( p.getKey() );
             }
@@ -239,11 +158,11 @@ public class AuthenticationServiceBean {
     }
     
     public AuthenticationProviderFactory getProviderFactory( String alias ) {
-        return providerFactories.get(alias);
+        return authProvidersRegistrationService.getProviderFactoriesMap().get(alias);
     }
     
     public AuthenticationProvider getAuthenticationProvider( String id ) {
-        return authenticationProviders.get( id );
+        return authProvidersRegistrationService.getAuthenticationProvidersMap().get( id );
     }
     
     public AuthenticatedUser findByID(Object pk){
@@ -263,7 +182,7 @@ public class AuthenticationServiceBean {
     }
     
     public boolean isOrcidEnabled() {
-        return oAuth2authenticationProviders.values().stream().anyMatch( s -> s.getId().toLowerCase().contains("orcid") );
+        return authProvidersRegistrationService.getOAuth2AuthProvidersMap().values().stream().anyMatch( s -> s.getId().toLowerCase().contains("orcid") );
     }
     
     /**
@@ -280,10 +199,7 @@ public class AuthenticationServiceBean {
      * 
      * Before calling this method, make sure you've deleted all the stuff tied
      * to the user, including stuff they've created, role assignments, group
-     * assignments, etc.
-     * 
-     * Longer term, the intention is to have a "disableAuthenticatedUser"
-     * method/command. See https://github.com/IQSS/dataverse/issues/2419
+     * assignments, etc. See the "removeAuthentictedUserItems" (sic) method.
      */
     public void deleteAuthenticatedUser(Object pk) {
         AuthenticatedUser user = em.find(AuthenticatedUser.class, pk);
@@ -293,6 +209,7 @@ public class AuthenticationServiceBean {
             if (apiToken != null) {
                 em.remove(apiToken);
             }
+            // @todo: this should be handed down to the service instead of doing it here.
             ConfirmEmailData confirmEmailData = confirmEmailService.findSingleConfirmEmailDataByUser(user);
             if (confirmEmailData != null) {
                 /**
@@ -389,7 +306,7 @@ public class AuthenticationServiceBean {
             // yay! see if we already have this user.
             AuthenticatedUser user = lookupUser(authenticationProviderId, resp.getUserId());
 
-            if (user != null){
+            if (user != null && !user.isDeactivated()) {
                 user = userService.updateLastLogin(user);
             }
             
@@ -436,7 +353,7 @@ public class AuthenticationServiceBean {
     }
     
     public AuthenticationProvider lookupProvider( AuthenticatedUser user )  {
-        return authenticationProviders.get(user.getAuthenticatedUserLookup().getAuthenticationProviderId());
+        return authProvidersRegistrationService.getAuthenticationProvidersMap().get(user.getAuthenticatedUserLookup().getAuthenticationProviderId());
     }
     
     public ApiToken findApiToken(String token) {
@@ -456,42 +373,32 @@ public class AuthenticationServiceBean {
         TypedQuery<ApiToken> typedQuery = em.createNamedQuery("ApiToken.findByUser", ApiToken.class);
         typedQuery.setParameter("user", au);
         List<ApiToken> tokens = typedQuery.getResultList();
-        Timestamp latest = new Timestamp(java.time.Instant.now().getEpochSecond()*1000);
         if (tokens.isEmpty()) {
             // Normal case - no token exists
             return null;
         }
         if (tokens.size() == 1) {
             // Normal case - one token that may or may not have expired
-            ApiToken token = tokens.get(0);
-            if (token.getExpireTime().before(latest)) {
-                // Don't return an expired token which is unusable, delete it instead
-                em.remove(token);
-                return null;
-            } else {
-                return tokens.get(0);
-            }
+            return tokens.get(0);
         } else {
             // We have more than one due to https://github.com/IQSS/dataverse/issues/6389 or
-            // similar, so we should delete all but one token.
-            // Since having an expired token also makes no sense, if we only have an expired
-            // token, remove that as well
-            ApiToken goodToken = null;
+            // similar, so we should delete all but one token - pick the latest.
+            ApiToken newestToken = null;
             for (ApiToken token : tokens) {
-                Timestamp time = token.getExpireTime();
-                if (time.before(latest)) {
-                    em.remove(token);
+                if (newestToken == null) {
+                    newestToken = token;
                 } else {
-                    if(goodToken != null) {
-                      em.remove(goodToken);
-                      goodToken = null;
+                    Timestamp time = token.getExpireTime();
+                    if (time.before(newestToken.getExpireTime())) {
+                        em.remove(token);
+                    } else {
+                        em.remove(newestToken);
+                        newestToken = token;
                     }
-                    latest = time;
-                    goodToken = token;
                 }
             }
-            // Null if there are no un-expired ones
-            return goodToken;
+            // Null if there are no tokens
+            return newestToken;
         }
     }
     
@@ -533,7 +440,32 @@ public class AuthenticationServiceBean {
             }
         }
         
-        return tkn.getAuthenticatedUser();
+        AuthenticatedUser user = tkn.getAuthenticatedUser();
+        if (!user.isDeactivated()) {
+            return user;
+        } else {
+            logger.info("attempted access with token from deactivated user: " + apiToken);
+            return null;
+        }
+    }
+    
+    public AuthenticatedUser lookupUserForWorkflowInvocationID(String wfId) {
+        try {
+            PendingWorkflowInvocation pwfi = em.find(PendingWorkflowInvocation.class, wfId);
+            if (pwfi == null) {
+                return null;
+            }
+            if (pwfi.getUserId().startsWith(AuthenticatedUser.IDENTIFIER_PREFIX)) {
+                if (pwfi.getLocalData().containsKey(PendingWorkflowInvocation.AUTHORIZED)
+                        && Boolean.parseBoolean(pwfi.getLocalData().get(PendingWorkflowInvocation.AUTHORIZED))) {
+                    return getAuthenticatedUser(
+                            pwfi.getUserId().substring(AuthenticatedUser.IDENTIFIER_PREFIX.length()));
+                }
+            }
+        } catch (NoResultException ex) {
+            return null;
+        }
+        return null;
     }
     
     /*
@@ -564,6 +496,10 @@ public class AuthenticationServiceBean {
         if (!datasetVersionService.getDatasetVersionUsersByAuthenticatedUser(au).isEmpty()) {
             reasons.add(BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.versionUser"));
         }
+
+        if (!savedSearchService.findByAuthenticatedUser(au).isEmpty()) {
+            reasons.add(BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.savedSearches"));
+        }
         
         if (!reasons.isEmpty()) {
             retVal = BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.prefix", Arrays.asList(au.getIdentifier()));
@@ -582,7 +518,8 @@ public class AuthenticationServiceBean {
 
         deletePendingAccessRequests(au);
         
-        
+        deleteBannerMessages(au);
+               
         if (!explicitGroupService.findGroups(au).isEmpty()) {
             for(ExplicitGroup explicitGroup: explicitGroupService.findGroups(au)){
                 explicitGroup.removeByRoleAssgineeIdentifier(au.getIdentifier());
@@ -591,12 +528,17 @@ public class AuthenticationServiceBean {
         
     }
     
+    private void deleteBannerMessages(AuthenticatedUser  au){
+        
+       em.createNativeQuery("delete from userbannermessage where user_id  = "+au.getId()).executeUpdate();
+        
+    }
+    
     private void deletePendingAccessRequests(AuthenticatedUser  au){
         
        em.createNativeQuery("delete from fileaccessrequests where authenticated_user_id  = "+au.getId()).executeUpdate();
         
     }
-    
     
     public AuthenticatedUser save( AuthenticatedUser user ) {
         em.persist(user);
@@ -694,9 +636,8 @@ public class AuthenticationServiceBean {
         authenticatedUser.setAuthenticatedUserLookup(auusLookup);
 
         if (ShibAuthenticationProvider.PROVIDER_ID.equals(auusLookup.getAuthenticationProviderId())) {
-            Timestamp emailConfirmedNow = new Timestamp(new Date().getTime());
             // Email addresses for Shib users are confirmed by the Identity Provider.
-            authenticatedUser.setEmailConfirmed(emailConfirmedNow);
+            authenticatedUser.updateEmailConfirmedToNow();
             authenticatedUser = save(authenticatedUser);
         } else {
             /* @todo Rather than creating a token directly here it might be
@@ -723,6 +664,7 @@ public class AuthenticationServiceBean {
     
     public AuthenticatedUser updateAuthenticatedUser(AuthenticatedUser user, AuthenticatedUserDisplayInfo userDisplayInfo) {
         user.applyDisplayInfo(userDisplayInfo);
+        user.updateEmailConfirmedToNow();
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "updateUser")
             .setInfo(user.getIdentifier()));
         return update(user);
@@ -738,7 +680,7 @@ public class AuthenticationServiceBean {
     
     
     public Set<AuthenticationProviderFactory> listProviderFactories() {
-        return new HashSet<>( providerFactories.values() ); 
+        return new HashSet<>( authProvidersRegistrationService.getProviderFactoriesMap().values() ); 
     }
     
     public Timestamp getCurrentTimestamp() {

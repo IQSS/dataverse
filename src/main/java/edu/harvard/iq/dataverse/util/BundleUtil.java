@@ -67,8 +67,12 @@ public class BundleUtil {
         }
     }
 
-    public static String getStringFromPropertyFile(String key, String propertyFileName  ) throws MissingResourceException {
-        ResourceBundle bundle = getResourceBundle(propertyFileName);
+    public static String getStringFromPropertyFile(String key, String propertyFileName) throws MissingResourceException {
+        return getStringFromPropertyFile(key, propertyFileName, null);
+    }
+    
+    public static String getStringFromPropertyFile(String key, String propertyFileName, Locale locale) throws MissingResourceException {
+        ResourceBundle bundle = getResourceBundle(propertyFileName,locale);
         if (bundle == null) {
             return null;
         }
@@ -89,10 +93,16 @@ public class BundleUtil {
         }
 
         if (filesRootDirectory == null || filesRootDirectory.isEmpty()) {
-            bundle = ResourceBundle.getBundle("propertyFiles/" +propertyFileName, currentLocale);
+            bundle = ResourceBundle.getBundle("propertyFiles/" + propertyFileName, currentLocale);
         } else {
-            ClassLoader loader = getClassLoader(filesRootDirectory);
-            bundle = ResourceBundle.getBundle(propertyFileName, currentLocale, loader);
+            try {
+                ClassLoader loader = getClassLoader(filesRootDirectory);
+                bundle = ResourceBundle.getBundle(propertyFileName, currentLocale, loader);
+            } catch (MissingResourceException mre) {
+                logger.warning("No property file named " + propertyFileName + "_" + currentLocale.getLanguage()
+                        + " found in " + filesRootDirectory + ", using untranslated values");
+                bundle = ResourceBundle.getBundle("propertyFiles/" + propertyFileName, currentLocale);
+            }
         }
 
         return bundle ;

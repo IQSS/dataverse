@@ -126,6 +126,7 @@ public class FileMetadata implements Serializable {
         fmd.setDescription( getDescription() );
         fmd.setLabel( getLabel() );
         fmd.setRestricted( isRestricted() );
+        fmd.setDirectoryLabel(getDirectoryLabel());
         
         return fmd;
     }
@@ -374,23 +375,19 @@ public class FileMetadata implements Serializable {
         }
         return "";
     }
-     
-    public String getFileCitation(){
-         return getFileCitation(false);
-     }
-     
 
-    
-     
-    public String getFileCitation(boolean html){
-         return new DataCitation(this).toString(html);
-     }
-    
-    public String getDirectFileCitation(boolean html){
-    	return new DataCitation(this, true).toString(html);
+    public String getFileCitation(){
+        return getFileCitation(false, false);
     }
-    
-        
+
+    public String getFileCitation(boolean html, boolean anonymized){
+         return new DataCitation(this).toString(html, anonymized);
+    }
+
+    public String getDirectFileCitation(boolean html, boolean anonymized){
+        return new DataCitation(this, true).toString(html, anonymized);
+    }
+
     public DatasetVersion getDatasetVersion() {
         return datasetVersion;
     }
@@ -449,6 +446,17 @@ public class FileMetadata implements Serializable {
     public void setVersion(Long version) {
         this.version = version;
     }
+    
+    @Transient
+    private boolean inPriorVersion;
+
+    public boolean isInPriorVersion() {
+        return inPriorVersion;
+    }
+
+    public void setInPriorVersion(boolean inPriorVersion) {
+        this.inPriorVersion = inPriorVersion;
+    }
 
     @Transient
     private boolean selected;
@@ -460,6 +468,7 @@ public class FileMetadata implements Serializable {
     public void setSelected(boolean selected) {
         this.selected = selected;
     }
+    
     
     @Transient
     private boolean restrictedUI;
@@ -523,7 +532,7 @@ public class FileMetadata implements Serializable {
     
     public boolean compareContent(FileMetadata other){
          FileVersionDifference diffObj = new FileVersionDifference(this, other, false);
-         return diffObj.compareMetadata(this, other);
+         return diffObj.isSame();
     }
     
     @Override
@@ -560,6 +569,16 @@ public class FileMetadata implements Serializable {
                 return comp;
             }
             return o1.getLabel().toUpperCase().compareTo(o2.getLabel().toUpperCase());
+        }
+    };
+    
+    public static final Comparator<FileMetadata> compareByFullPath = new Comparator<FileMetadata>() {
+        @Override
+        public int compare(FileMetadata o1, FileMetadata o2) {
+            String folder1 = StringUtil.isEmpty(o1.getDirectoryLabel()) ? "" : o1.getDirectoryLabel().toUpperCase() + "/";
+            String folder2 = StringUtil.isEmpty(o2.getDirectoryLabel()) ? "" : o2.getDirectoryLabel().toUpperCase() + "/";
+            
+            return folder1.concat(o1.getLabel().toUpperCase()).compareTo(folder2.concat(o2.getLabel().toUpperCase()));
         }
     };
     

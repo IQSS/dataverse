@@ -60,6 +60,11 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         // base class - default to nothing.
     }
     
+
+    protected void postDBFlush( Dataset theDataset, CommandContext ctxt ) throws CommandException {
+        // base class - default to nothing.
+    }
+    
     protected abstract void handlePid( Dataset theDataset, CommandContext ctxt ) throws CommandException ;
     
     @Override
@@ -96,7 +101,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
             theDataset.setAuthority(ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound));
         }
         if (theDataset.getStorageIdentifier() == null) {
-        	String driverId = theDataset.getDataverseContext().getEffectiveStorageDriverId();
+        	String driverId = theDataset.getEffectiveStorageDriverId();
         	theDataset.setStorageIdentifier(driverId  + "://" + theDataset.getAuthorityForFileStorage() + "/" + theDataset.getIdentifierForFileStorage());
         }
         if (theDataset.getIdentifier()==null) {
@@ -123,6 +128,10 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         // Now we need the acutal dataset id, so we can start indexing.
         ctxt.em().flush();
         
+        //Use for code that requires database ids
+        postDBFlush(theDataset, ctxt);
+        
+        // TODO: this needs to be moved in to an onSuccess method; not adding to this PR as its out of scope
         // TODO: switch to asynchronous version when JPA sync works
         // ctxt.index().asyncIndexDataset(theDataset.getId(), true); 
         try{
@@ -132,9 +141,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
             failureLogText += "\r\n" + e.getLocalizedMessage();
             LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, theDataset);
         }
-         
-        ctxt.solrIndex().indexPermissionsOnSelfAndChildren(theDataset.getId());
-        
+                 
         return theDataset;
     }
 

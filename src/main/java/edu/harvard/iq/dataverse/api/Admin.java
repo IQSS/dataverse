@@ -1,5 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.BannerMessage;
+import edu.harvard.iq.dataverse.BannerMessageServiceBean;
+import edu.harvard.iq.dataverse.BannerMessageText;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
@@ -8,12 +11,14 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.EMailValidator;
+import edu.harvard.iq.dataverse.validation.EMailValidator;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.Template;
+import edu.harvard.iq.dataverse.TemplateServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
@@ -50,7 +55,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 
 import java.io.InputStream;
 import java.io.StringReader;
@@ -68,10 +72,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthenticationProvidersRegistrationServiceBean;
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
@@ -81,8 +86,9 @@ import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.MergeInAccountCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.ChangeUserIdentifierCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeactivateUserCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteRoleCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteTemplateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -91,13 +97,19 @@ import edu.harvard.iq.dataverse.userdata.UserListResult;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+
 import java.io.IOException;
 import java.io.OutputStream;
 
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.rolesToJson;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import javax.inject.Inject;
+import javax.json.JsonArray;
 import javax.persistence.Query;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
@@ -114,6 +126,8 @@ public class Admin extends AbstractApiBean {
 
 	private static final Logger logger = Logger.getLogger(Admin.class.getName());
 
+        @EJB
+        AuthenticationProvidersRegistrationServiceBean authProvidersRegistrationSvc;
 	@EJB
 	BuiltinUserServiceBean builtinUserService;
 	@EJB
@@ -128,6 +142,8 @@ public class Admin extends AbstractApiBean {
 	DataFileServiceBean fileService;
 	@EJB
 	DatasetServiceBean datasetService;
+        @EJB
+	DataverseServiceBean dataverseService;
 	@EJB
 	DatasetVersionServiceBean datasetversionService;
         @Inject
@@ -142,7 +158,10 @@ public class Admin extends AbstractApiBean {
         DatasetVersionServiceBean datasetVersionService;
         @EJB
         ExplicitGroupServiceBean explicitGroupService;
-        
+        @EJB
+        BannerMessageServiceBean bannerMessageService;
+        @EJB
+        TemplateServiceBean templateService;
 
 	// Make the session available
 	@Inject
@@ -195,6 +214,75 @@ public class Admin extends AbstractApiBean {
 		settingsSvc.delete(name, lang);
 		return ok("Setting " + name + " - " + lang + " deleted.");
 	}
+        
+    @Path("template/{id}")
+    @DELETE
+    public Response deleteTemplate(@PathParam("id") long id) {
+        
+        AuthenticatedUser superuser = authSvc.getAdminUser();
+        if (superuser == null) {
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Cannot find superuser to execute DeleteTemplateCommand.");
+        }
+
+        Template doomed = templateService.find(id);
+        if (doomed == null) {
+            return error(Response.Status.NOT_FOUND, "Template with id " + id + " -  not found.");
+        }
+
+        Dataverse dv = doomed.getDataverse();
+        List <Dataverse> dataverseWDefaultTemplate = templateService.findDataversesByDefaultTemplateId(doomed.getId());
+
+        try {
+            commandEngine.submit(new DeleteTemplateCommand(createDataverseRequest(superuser), dv, doomed, dataverseWDefaultTemplate));
+        } catch (CommandException ex) {
+            Logger.getLogger(Admin.class.getName()).log(Level.SEVERE, null, ex);
+            return error(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
+        }
+
+        return ok("Template " + doomed.getName() + " deleted.");
+    }
+    
+    
+    @Path("templates")
+    @GET
+    public Response findAllTemplates() {
+        return findTemplates("");
+    }
+    
+    @Path("templates/{alias}")
+    @GET
+    public Response findTemplates(@PathParam("alias") String alias) {
+        List<Template> templates;
+
+            if (alias.isEmpty()) {
+                templates = templateService.findAll();
+            } else {
+                try{
+                    Dataverse owner = findDataverseOrDie(alias);
+                    templates = templateService.findByOwnerId(owner.getId());
+                } catch (WrappedResponse r){
+                    return r.getResponse();
+                }
+            }
+
+            JsonArrayBuilder container = Json.createArrayBuilder();
+            for (Template t : templates) {
+                JsonObjectBuilder bld = Json.createObjectBuilder();
+                bld.add("templateId", t.getId());
+                bld.add("templateName", t.getName());
+                Dataverse loopowner = t.getDataverse();
+                if (loopowner != null) {
+                    bld.add("owner", loopowner.getDisplayName());
+                } else {
+                    bld.add("owner", "This an orphan template, it may be safely removed");
+                }
+                container.add(bld);
+            }
+
+            return ok(container);
+
+        
+    }
 
 	@Path("authenticationProviderFactories")
 	@GET
@@ -223,9 +311,9 @@ public class Admin extends AbstractApiBean {
 				managed = row;
 			}
 			if (managed.isEnabled()) {
-				AuthenticationProvider provider = authSvc.loadProvider(managed);
-				authSvc.deregisterProvider(provider.getId());
-				authSvc.registerProvider(provider);
+				AuthenticationProvider provider = authProvidersRegistrationSvc.loadProvider(managed);
+				authProvidersRegistrationSvc.deregisterProvider(provider.getId());
+				authProvidersRegistrationSvc.registerProvider(provider);
 			}
 			return created("/api/admin/authenticationProviders/" + managed.getId(), json(managed));
 		} catch (AuthorizationSetupException e) {
@@ -271,7 +359,7 @@ public class Admin extends AbstractApiBean {
 				return ok(String.format("Authentication provider '%s' already enabled", id));
 			}
 			try {
-				authSvc.registerProvider(authSvc.loadProvider(row));
+				authProvidersRegistrationSvc.registerProvider(authProvidersRegistrationSvc.loadProvider(row));
 				return ok(String.format("Authentication Provider %s enabled", row.getId()));
 
 			} catch (AuthenticationProviderFactoryNotFoundException ex) {
@@ -285,7 +373,7 @@ public class Admin extends AbstractApiBean {
 
 		} else {
 			// disable a provider
-			authSvc.deregisterProvider(id);
+			authProvidersRegistrationSvc.deregisterProvider(id);
 			return ok("Authentication Provider '" + id + "' disabled. "
 					+ (authSvc.getAuthenticationProviderIds().isEmpty()
 							? "WARNING: no enabled authentication providers left."
@@ -309,7 +397,7 @@ public class Admin extends AbstractApiBean {
 	@DELETE
 	@Path("authenticationProviders/{id}/")
 	public Response deleteAuthenticationProvider(@PathParam("id") String id) {
-		authSvc.deregisterProvider(id);
+		authProvidersRegistrationSvc.deregisterProvider(id);
 		AuthenticationProviderRow row = em.find(AuthenticationProviderRow.class, id);
 		if (row != null) {
 			em.remove(row);
@@ -321,15 +409,15 @@ public class Admin extends AbstractApiBean {
 						: ""));
 	}
 
-	@GET
-	@Path("authenticatedUsers/{identifier}/")
-	public Response getAuthenticatedUser(@PathParam("identifier") String identifier) {
-		AuthenticatedUser authenticatedUser = authSvc.getAuthenticatedUser(identifier);
-		if (authenticatedUser != null) {
-			return ok(json(authenticatedUser));
-		}
-		return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
-	}
+    @GET
+    @Path("authenticatedUsers/{identifier}/")
+    public Response getAuthenticatedUserByIdentifier(@PathParam("identifier") String identifier) {
+        AuthenticatedUser authenticatedUser = authSvc.getAuthenticatedUser(identifier);
+        if (authenticatedUser != null) {
+            return ok(json(authenticatedUser));
+        }
+        return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
+    }
 
     @DELETE
     @Path("authenticatedUsers/{identifier}/")
@@ -368,12 +456,42 @@ public class Admin extends AbstractApiBean {
         authSvc.removeAuthentictedUserItems(au);
         
         authSvc.deleteAuthenticatedUser(au.getId());
-        return ok("AuthenticatedUser " + au.getIdentifier() + " deleted. ");
+        return ok("AuthenticatedUser " + au.getIdentifier() + " deleted.");
+    }
 
-    }  
-    
+    @POST
+    @Path("authenticatedUsers/{identifier}/deactivate")
+    public Response deactivateAuthenticatedUser(@PathParam("identifier") String identifier) {
+        AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
+        if (user != null) {
+            return deactivateAuthenticatedUser(user);
+        }
+        return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
+    }
 
-        
+    @POST
+    @Path("authenticatedUsers/id/{id}/deactivate")
+    public Response deactivateAuthenticatedUserById(@PathParam("id") Long id) {
+        AuthenticatedUser user = authSvc.findByID(id);
+        if (user != null) {
+            return deactivateAuthenticatedUser(user);
+        }
+        return error(Response.Status.BAD_REQUEST, "User " + id + " not found.");
+    }
+
+    private Response deactivateAuthenticatedUser(AuthenticatedUser userToDisable) {
+        AuthenticatedUser superuser = authSvc.getAdminUser();
+        if (superuser == null) {
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Cannot find superuser to execute DeactivateUserCommand.");
+        }
+        try {
+            execCommand(new DeactivateUserCommand(createDataverseRequest(superuser), userToDisable));
+            return ok("User " + userToDisable.getIdentifier() + " deactivated.");
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
 	@POST
 	@Path("publishDataverseAsCreator/{id}")
 	public Response publishDataverseAsCreator(@PathParam("id") long id) {
@@ -616,7 +734,7 @@ public class Admin extends AbstractApiBean {
 		String overwriteEmail = randomUser.get("email");
 		overwriteEmail = newEmailAddressToUse;
 		logger.info("overwriteEmail: " + overwriteEmail);
-		boolean validEmail = EMailValidator.isEmailValid(overwriteEmail, null);
+		boolean validEmail = EMailValidator.isEmailValid(overwriteEmail);
 		if (!validEmail) {
 			// See https://github.com/IQSS/dataverse/issues/2998
 			return error(Response.Status.BAD_REQUEST, "invalid email: " + overwriteEmail);
@@ -647,6 +765,10 @@ public class Admin extends AbstractApiBean {
 			boolean knowsExistingPassword = false;
 			BuiltinUser oldBuiltInUser = builtinUserService.findByUserName(builtInUserToConvert.getUserIdentifier());
 			if (oldBuiltInUser != null) {
+                                if (builtInUserToConvert.isDeactivated()) {
+                                        problems.add("builtin account has been deactivated");
+                                        return error(Status.BAD_REQUEST, problems.build().toString());
+                                }
 				String usernameOfBuiltinAccountToConvert = oldBuiltInUser.getUserName();
 				response.add("old username", usernameOfBuiltinAccountToConvert);
 				AuthenticatedUser authenticatedUser = authSvc.canLogInAsBuiltinUser(usernameOfBuiltinAccountToConvert,
@@ -769,7 +891,7 @@ public class Admin extends AbstractApiBean {
 		String overwriteEmail = randomUser.get("email");
 		overwriteEmail = newEmailAddressToUse;
 		logger.info("overwriteEmail: " + overwriteEmail);
-		boolean validEmail = EMailValidator.isEmailValid(overwriteEmail, null);
+		boolean validEmail = EMailValidator.isEmailValid(overwriteEmail);
 		if (!validEmail) {
 			// See https://github.com/IQSS/dataverse/issues/2998
 			return error(Response.Status.BAD_REQUEST, "invalid email: " + overwriteEmail);
@@ -881,6 +1003,17 @@ public class Admin extends AbstractApiBean {
 		}
 	}
 
+    @DELETE
+    @Path("roles/{id}")
+    public Response deleteRole(@PathParam("id") String id) {
+
+        return response(req -> {
+            DataverseRole doomed = findRoleOrDie(id);
+            execCommand(new DeleteRoleCommand(req, doomed));
+            return ok("role " + doomed.getName() + " deleted.");
+        });
+    }
+
 	@Path("superuser/{identifier}")
 	@POST
 	public Response toggleSuperuser(@PathParam("identifier") String identifier) {
@@ -888,6 +1021,9 @@ public class Admin extends AbstractApiBean {
 				.setInfo(identifier);
 		try {
 			AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
+                        if (user.isDeactivated()) {
+                            return error(Status.BAD_REQUEST, "You cannot make a deactivated user a superuser.");
+                        }
 
 			user.setSuperuser(!user.isSuperuser());
 
@@ -1666,27 +1802,44 @@ public class Admin extends AbstractApiBean {
 
     }
 
-    @GET
-    @Path("/submitDataVersionToArchive/{id}/{version}")
-    public Response submitDatasetVersionToArchive(@PathParam("id") String dsid, @PathParam("version") String versionNumber) {
+    @POST
+    @Path("/submitDatasetVersionToArchive/{id}/{version}")
+    public Response submitDatasetVersionToArchive(@PathParam("id") String dsid,
+            @PathParam("version") String versionNumber) {
 
         try {
             AuthenticatedUser au = findAuthenticatedUserOrDie();
-            session.setUser(au);
+
             Dataset ds = findDatasetOrDie(dsid);
 
             DatasetVersion dv = datasetversionService.findByFriendlyVersionNumber(ds.getId(), versionNumber);
             if (dv.getArchivalCopyLocation() == null) {
                 String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
-                AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), dv);
+                // Note - the user is being sent via the createDataverseRequest(au) call to the
+                // back-end command where it is used to get the API Token which is
+                // then used to retrieve files (e.g. via S3 direct downloads) to create the Bag
+                AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className,
+                        createDataverseRequest(au), dv);
+                // createSubmitToArchiveCommand() tries to find and instantiate an non-abstract
+                // implementation of AbstractSubmitToArchiveCommand based on the provided
+                // className. If a class with that name isn't found (or can't be instatiated), it
+                // will return null
                 if (cmd != null) {
+                    if(ArchiverUtil.onlySingleVersionArchiving(cmd.getClass(), settingsService)) {
+                        for (DatasetVersion version : ds.getVersions()) {
+                            if ((dv != version) && version.getArchivalCopyLocation() != null) {
+                                return error(Status.CONFLICT, "Dataset already archived.");
+                            }
+                        } 
+                    }
                     new Thread(new Runnable() {
                         public void run() {
                             try {
                                 DatasetVersion dv = commandEngine.submit(cmd);
-                                if (dv.getArchivalCopyLocation() != null) {
-                                    logger.info("DatasetVersion id=" + ds.getGlobalId().toString() + " v" + versionNumber + " submitted to Archive at: "
-                                            + dv.getArchivalCopyLocation());
+                                if (!dv.getArchivalCopyLocationStatus().equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE)) {
+                                    logger.info(
+                                            "DatasetVersion id=" + ds.getGlobalId().toString() + " v" + versionNumber
+                                                    + " submitted to Archive, status: " + dv.getArchivalCopyLocationStatus());
                                 } else {
                                     logger.severe("Error submitting version due to conflict/error at Archive");
                                 }
@@ -1695,13 +1848,105 @@ public class Admin extends AbstractApiBean {
                             }
                         }
                     }).start();
-                    return ok("Archive submission using " + cmd.getClass().getCanonicalName() + " started. Processing can take significant time for large datasets. View log and/or check archive for results.");
+                    return ok("Archive submission using " + cmd.getClass().getCanonicalName()
+                            + " started. Processing can take significant time for large datasets and requires that the user have permission to publish the dataset. View log and/or check archive for results.");
                 } else {
                     logger.log(Level.SEVERE, "Could not find Archiver class: " + className);
                     return error(Status.INTERNAL_SERVER_ERROR, "Could not find Archiver class: " + className);
                 }
             } else {
-                return error(Status.BAD_REQUEST, "Version already archived at: " + dv.getArchivalCopyLocation());
+                return error(Status.BAD_REQUEST, "Version was already submitted for archiving.");
+            }
+        } catch (WrappedResponse e1) {
+            return error(Status.UNAUTHORIZED, "api key required");
+        }
+    }
+
+    
+    /**
+     * Iteratively archives all unarchived dataset versions
+     * @param
+     * listonly - don't archive, just list unarchived versions
+     * limit - max number to process
+     * lastestonly - only archive the latest versions
+     * @return
+     */
+    @POST
+    @Path("/archiveAllUnarchivedDatasetVersions")
+    public Response archiveAllUnarchivedDatasetVersions(@QueryParam("listonly") boolean listonly, @QueryParam("limit") Integer limit, @QueryParam("latestonly") boolean latestonly) {
+
+        try {
+            AuthenticatedUser au = findAuthenticatedUserOrDie();
+
+            List<DatasetVersion> dsl = datasetversionService.getUnarchivedDatasetVersions();
+            if (dsl != null) {
+                if (listonly) {
+                    JsonArrayBuilder jab = Json.createArrayBuilder();
+                    logger.fine("Unarchived versions found: ");
+                    int current = 0;
+                    for (DatasetVersion dv : dsl) {
+                        if (limit != null && current >= limit) {
+                            break;
+                        }
+                        if (!latestonly || dv.equals(dv.getDataset().getLatestVersionForCopy())) {
+                            jab.add(dv.getDataset().getGlobalId().toString() + ", v" + dv.getFriendlyVersionNumber());
+                            logger.fine("    " + dv.getDataset().getGlobalId().toString() + ", v" + dv.getFriendlyVersionNumber());
+                            current++;
+                        }
+                    }
+                    return ok(jab); 
+                }
+                String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
+                // Note - the user is being sent via the createDataverseRequest(au) call to the
+                // back-end command where it is used to get the API Token which is
+                // then used to retrieve files (e.g. via S3 direct downloads) to create the Bag
+                final DataverseRequest request = createDataverseRequest(au);
+                // createSubmitToArchiveCommand() tries to find and instantiate an non-abstract
+                // implementation of AbstractSubmitToArchiveCommand based on the provided
+                // className. If a class with that name isn't found (or can't be instatiated, it
+                // will return null
+                AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, request, dsl.get(0));
+                if (cmd != null) {
+                    //Found an archiver to use
+                    new Thread(new Runnable() {
+                        public void run() {
+                            int total = dsl.size();
+                            int successes = 0;
+                            int failures = 0;
+                            for (DatasetVersion dv : dsl) {
+                                if (limit != null && (successes + failures) >= limit) {
+                                    break;
+                                }
+                                if (!latestonly || dv.equals(dv.getDataset().getLatestVersionForCopy())) {
+                                    try {
+                                        AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, request, dv);
+
+                                        dv = commandEngine.submit(cmd);
+                                        if (!dv.getArchivalCopyLocationStatus().equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE)) {
+                                            successes++;
+                                            logger.info("DatasetVersion id=" + dv.getDataset().getGlobalId().toString() + " v" + dv.getFriendlyVersionNumber() + " submitted to Archive, status: "
+                                                    + dv.getArchivalCopyLocationStatus());
+                                        } else {
+                                            failures++;
+                                            logger.severe("Error submitting version due to conflict/error at Archive for " + dv.getDataset().getGlobalId().toString() + " v" + dv.getFriendlyVersionNumber());
+                                        }
+                                    } catch (CommandException ex) {
+                                        failures++;
+                                        logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
+                                    }
+                                }
+                                logger.fine(successes + failures + " of " + total + " archive submissions complete");
+                            }
+                            logger.info("Archiving complete: " + successes + " Successes, " + failures + " Failures. See prior log messages for details.");
+                        }
+                    }).start();
+                    return ok("Starting to archive all unarchived published dataset versions using " + cmd.getClass().getCanonicalName() + ". Processing can take significant time for large datasets/ large numbers of dataset versions  and requires that the user have permission to publish the dataset(s). View log and/or check archive for results.");
+                } else {
+                    logger.log(Level.SEVERE, "Could not find Archiver class: " + className);
+                    return error(Status.INTERNAL_SERVER_ERROR, "Could not find Archiver class: " + className);
+                }
+            } else {
+                return error(Status.BAD_REQUEST, "No unarchived published dataset versions found");
             }
         } catch (WrappedResponse e1) {
             return error(Status.UNAUTHORIZED, "api key required");
@@ -1831,5 +2076,169 @@ public class Admin extends AbstractApiBean {
     	JsonObjectBuilder bld = jsonObjectBuilder();
     	DataAccess.getStorageDriverLabels().entrySet().forEach(s -> bld.add(s.getKey(), s.getValue()));
 		return ok(bld);
+    }
+    
+    @GET
+    @Path("/dataverse/{alias}/curationLabelSet")
+    public Response getCurationLabelSet(@PathParam("alias") String alias) throws WrappedResponse {
+        Dataverse dataverse = dataverseSvc.findByAlias(alias);
+        if (dataverse == null) {
+            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
+        }
+        try {
+            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        // Note that this returns what's set directly on this dataverse. If
+        // null/SystemConfig.DEFAULTCURATIONLABELSET, the user would have to recurse the
+        // chain of parents to find the effective curationLabelSet
+        return ok(dataverse.getCurationLabelSetName());
+    }
+
+    @PUT
+    @Path("/dataverse/{alias}/curationLabelSet")
+    public Response setCurationLabelSet(@PathParam("alias") String alias, @QueryParam("name") String name) throws WrappedResponse {
+        Dataverse dataverse = dataverseSvc.findByAlias(alias);
+        if (dataverse == null) {
+            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
+        }
+        try {
+            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        if (SystemConfig.CURATIONLABELSDISABLED.equals(name) || SystemConfig.DEFAULTCURATIONLABELSET.equals(name)) {
+            dataverse.setCurationLabelSetName(name);
+            return ok("Curation Label Set Name set to: " + name);
+        } else {
+            for (String setName : systemConfig.getCurationLabels().keySet()) {
+                if (setName.equals(name)) {
+                    dataverse.setCurationLabelSetName(name);
+                    return ok("Curation Label Set Name set to: " + setName);
+                }
+            }
+        }
+        return error(Response.Status.BAD_REQUEST,
+                "No Curation Label Set found for : " + name);
+    }
+
+    @DELETE
+    @Path("/dataverse/{alias}/curationLabelSet")
+    public Response resetCurationLabelSet(@PathParam("alias") String alias) throws WrappedResponse {
+        Dataverse dataverse = dataverseSvc.findByAlias(alias);
+        if (dataverse == null) {
+            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
+        }
+        try {
+            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        dataverse.setCurationLabelSetName(SystemConfig.DEFAULTCURATIONLABELSET);
+        return ok("Curation Label Set reset to default: " + SystemConfig.DEFAULTCURATIONLABELSET);
+    }
+
+    @GET
+    @Path("/dataverse/curationLabelSets")
+    public Response listCurationLabelSets() throws WrappedResponse {
+        try {
+            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        JsonObjectBuilder bld = Json.createObjectBuilder();
+
+        systemConfig.getCurationLabels().entrySet().forEach(s -> {
+            JsonArrayBuilder labels = Json.createArrayBuilder();
+            Arrays.asList(s.getValue()).forEach(l -> labels.add(l));
+            bld.add(s.getKey(), labels);
+        });
+        return ok(bld);
+    }
+    
+    @POST
+    @Path("/bannerMessage")
+    public Response addBannerMessage(JsonObject jsonObject) throws WrappedResponse {
+
+        BannerMessage toAdd = new BannerMessage();
+        try {
+            String dismissible = jsonObject.getString("dismissibleByUser");
+
+            boolean dismissibleByUser = false;
+            if (dismissible.equals("true")) {
+                dismissibleByUser = true;
+            }
+            toAdd.setDismissibleByUser(dismissibleByUser);
+            toAdd.setBannerMessageTexts(new ArrayList());
+            toAdd.setActive(true);
+            JsonArray jsonArray = jsonObject.getJsonArray("messageTexts");
+            for (int i = 0; i < jsonArray.size(); i++) {
+                JsonObject obj = (JsonObject) jsonArray.get(i);
+                String message = obj.getString("message");
+                String lang = obj.getString("lang");
+                BannerMessageText messageText = new BannerMessageText();
+                messageText.setMessage(message);
+                messageText.setLang(lang);
+                messageText.setBannerMessage(toAdd);
+                toAdd.getBannerMessageTexts().add(messageText);
+            }
+                bannerMessageService.save(toAdd);
+                return ok("Banner Message added successfully.");
+
+        } catch (Exception e) {
+            logger.warning("Unexpected Exception: " + e.getMessage());
+            return error(Status.BAD_REQUEST, "Add Banner Message unexpected exception: " + e.getMessage());
+        }
+
+    }
+    
+    @DELETE
+    @Path("/bannerMessage/{id}")
+    public Response deleteBannerMessage(@PathParam("id") Long id) throws WrappedResponse {
+ 
+        BannerMessage message = em.find(BannerMessage.class, id);
+        if (message == null){
+            return error(Response.Status.NOT_FOUND, "Message id = "  + id + " not found.");
+        }
+        bannerMessageService.deleteBannerMessage(id);
+        
+        return ok("Message id =  " + id + " deleted.");
+
+    }
+    
+    @PUT
+    @Path("/bannerMessage/{id}/deactivate")
+    public Response deactivateBannerMessage(@PathParam("id") Long id) throws WrappedResponse {
+        BannerMessage message = em.find(BannerMessage.class, id);
+        if (message == null){
+            return error(Response.Status.NOT_FOUND, "Message id = "  + id + " not found.");
+        }
+        bannerMessageService.deactivateBannerMessage(id);
+        
+        return ok("Message id =  " + id + " deactivated.");
+
+    }
+    
+    @GET
+    @Path("/bannerMessage")
+    public Response getBannerMessages(@PathParam("id") Long id) throws WrappedResponse {
+
+        return ok(bannerMessageService.findAllBannerMessages().stream()
+                .map(m -> jsonObjectBuilder().add("id", m.getId()).add("displayValue", m.getDisplayValue()))
+                .collect(toJsonArray()));
+
     }
 }

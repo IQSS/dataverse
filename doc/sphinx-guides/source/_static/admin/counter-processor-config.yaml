@@ -2,7 +2,7 @@
 # 4-digit year and 2-digit month and day
 # /usr/local/payara5/glassfish/domains/domain1/logs/counter_2019-01-11.log
 #log_name_pattern: sample_logs/counter_(yyyy-mm-dd).log
-log_name_pattern: /usr/local/payara5/glassfish/domains/domain1/logs/counter_(yyyy-mm-dd).log
+log_name_pattern: /usr/local/payara5/glassfish/domains/domain1/logs/mdc/counter_(yyyy-mm-dd).log
 
 # path_types regular expressions allow matching to classify page urls as either an investigation or request
 # based on specific URL structure for your system.
@@ -47,7 +47,8 @@ output_file: /tmp/make-data-count-report
 output_format: json
 
 # the name of the platform that goes into your reports
-# FIXME: Change "platform" to the brand of your Dataverse installation.
+# FIXME: Change "platform" to match the name of your Dataverse installation. Examples
+# are "Harvard Dataverse" for Harvard University or "LibraData" for the University of Virginia.
 platform: LibreScholar
 
 # Don't put your api token in here if you're going to commit it, but put in separate secrets.yaml in same

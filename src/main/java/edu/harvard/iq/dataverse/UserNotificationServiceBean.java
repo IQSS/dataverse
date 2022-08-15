@@ -8,11 +8,17 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
+
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -33,6 +39,9 @@ public class UserNotificationServiceBean {
     MailServiceBean mailService;
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+
+    @EJB
+    SettingsServiceBean settingsService;
     
     public List<UserNotification> findByUser(Long userId) {
         TypedQuery<UserNotification> query = em.createQuery("select un from UserNotification un where un.user.id =:userId order by un.sendDate desc", UserNotification.class);
@@ -83,6 +92,11 @@ public class UserNotificationServiceBean {
         em.remove(em.merge(userNotification));
     }
 
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void sendNotificationInNewTransaction(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId) {
+        sendNotification(dataverseUser, sendDate, type, objectId, "");
+    }
+    
     public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId) {
         sendNotification(dataverseUser, sendDate, type, objectId, "");
     }
@@ -96,20 +110,47 @@ public class UserNotificationServiceBean {
     }
 
     public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId, String comment, AuthenticatedUser requestor, boolean isHtmlContent) {
+        sendNotification(dataverseUser, sendDate, type, objectId, comment, requestor, isHtmlContent, null);
+    }
+    public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId, String comment, AuthenticatedUser requestor, boolean isHtmlContent, String additionalInfo) {
         UserNotification userNotification = new UserNotification();
         userNotification.setUser(dataverseUser);
         userNotification.setSendDate(sendDate);
         userNotification.setType(type);
         userNotification.setObjectId(objectId);
         userNotification.setRequestor(requestor);
+        userNotification.setAdditionalInfo(additionalInfo);
 
-        if (mailService.sendNotificationEmail(userNotification, comment, requestor, isHtmlContent)) {
+        if (!isEmailMuted(userNotification) && mailService.sendNotificationEmail(userNotification, comment, requestor, isHtmlContent)) {
             logger.fine("email was sent");
             userNotification.setEmailed(true);
-            save(userNotification);
         } else {
             logger.fine("email was not sent");
+        }
+        if (!isNotificationMuted(userNotification)) {
             save(userNotification);
         }
+    }
+
+    public boolean isEmailMuted(UserNotification userNotification) {
+        final Type type = userNotification.getType();
+        final AuthenticatedUser user = userNotification.getUser();
+        final boolean alwaysMuted = settingsService.containsCommaSeparatedValueForKey(Key.AlwaysMuted, type.name());
+        final boolean neverMuted = settingsService.containsCommaSeparatedValueForKey(Key.NeverMuted, type.name());
+        if (alwaysMuted && neverMuted) {
+            logger.warning("Both; AlwaysMuted and NeverMuted are set for " + type.name() + ", email is muted");
+        }
+        return alwaysMuted || (!neverMuted && user.hasEmailMuted(type));
+    }
+    
+    public boolean isNotificationMuted(UserNotification userNotification) {
+        final Type type = userNotification.getType();
+        final AuthenticatedUser user = userNotification.getUser();
+        final boolean alwaysMuted = settingsService.containsCommaSeparatedValueForKey(Key.AlwaysMuted, type.name());
+        final boolean neverMuted = settingsService.containsCommaSeparatedValueForKey(Key.NeverMuted, type.name());
+        if (alwaysMuted && neverMuted) {
+            logger.warning("Both; AlwaysMuted and NeverMuted are set for " + type.name() + ", notification is muted");
+        }
+        return alwaysMuted || (!neverMuted && user.hasNotificationMuted(type));
     }
 }

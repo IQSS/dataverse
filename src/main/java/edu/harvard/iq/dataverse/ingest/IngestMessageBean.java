@@ -23,6 +23,7 @@ package edu.harvard.iq.dataverse.ingest;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -45,7 +46,13 @@ import javax.jms.ObjectMessage;
  * 
  * @author Leonid Andreev 
  */
-@MessageDriven(mappedName = "jms/DataverseIngest", activationConfig =  {@ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"), @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue")})
+@MessageDriven(
+    mappedName = "java:app/jms/queue/ingest",
+    activationConfig =  {
+        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
+        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue")
+    }
+)
 public class IngestMessageBean implements MessageListener {
     private static final Logger logger = Logger.getLogger(IngestMessageBean.class.getCanonicalName());
     @EJB DatasetServiceBean datasetService;
@@ -90,10 +97,13 @@ public class IngestMessageBean implements MessageListener {
                     if (ingestService.ingestAsTabular(datafile_id)) {
                         //Thread.sleep(10000);
                         logger.fine("Finished ingest job;");
-                        sbIngestedFiles.append(String.format("<li>%s</li>", datafile.getCurrentName()));
+                        // We used to list the successfully ingested files in the "success"
+                        // and "mixed success and failure" emails. Now we never list successfully
+                        // ingested files so this line is commented out.
+                        // sbIngestedFiles.append(String.format("<li>%s</li>", datafile.getCurrentName()));
                     } else {
                         logger.warning("Error occurred during ingest job for file id " + datafile_id + "!");
-                        sbIngestedFiles.append(String.format("<li>%s (Error)</li>", datafile.getCurrentName()));
+                        sbIngestedFiles.append(String.format("<li>%s</li>", datafile.getCurrentName()));
                         ingestWithErrors = true;
                     }
 
@@ -112,7 +122,7 @@ public class IngestMessageBean implements MessageListener {
 
                             ingestWithErrors = true;
 
-                            sbIngestedFiles.append(String.format("<li>%s (Error)</li>", datafile.getCurrentName()));
+                            sbIngestedFiles.append(String.format("<li>%s</li>", datafile.getCurrentName()));
 
                             datafile.SetIngestProblem();
                             IngestReport errorReport = new IngestReport();

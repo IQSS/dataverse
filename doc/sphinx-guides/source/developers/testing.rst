@@ -2,7 +2,7 @@
 Testing
 =======
 
-In order to keep our codebase healthy, the Dataverse project encourages developers to write automated tests in the form of unit tests and integration tests. We also welcome ideas for how to improve our automated testing.
+In order to keep our codebase healthy, the Dataverse Project encourages developers to write automated tests in the form of unit tests and integration tests. We also welcome ideas for how to improve our automated testing.
 
 .. contents:: |toctitle|
 	:local:
@@ -30,18 +30,16 @@ Unit Tests
 
 Creating unit tests for your code is a helpful way to test what you've built piece by piece.
 
-Unit tests can be executed without runtime dependencies on PostgreSQL, Solr, or any other external system. They are the lowest level of testing and are executed constantly on developers' laptops as part of the build process and via continous integration services in the cloud.
+Unit tests can be executed without runtime dependencies on PostgreSQL, Solr, or any other external system. They are the lowest level of testing and are executed constantly on developers' laptops as part of the build process and via continuous integration services in the cloud.
 
 A unit test should execute an operation of your code in a controlled fashion. You must make an assertion of what the expected response gives back. It's important to test optimistic output and assertions (the "happy path"), as well as unexpected input that leads to failure conditions. Know how your program should handle anticipated errors/exceptions and confirm with your test(s) that it does so properly.
 
 Unit Test Automation Overview
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We use a variety of tools to write, execute, and measure the code coverage of unit tests, including Maven, JUnit, Jacoco, GitHub, Travis, and Coveralls. We'll explain the role of each tool below, but here's an overview of what you can expect from the automation we've set up.
+We use a variety of tools to write, execute, and measure the code coverage of unit tests, including Maven, JUnit, Jacoco, GitHub, and Coveralls. We'll explain the role of each tool below, but here's an overview of what you can expect from the automation we've set up.
 
-As you prepare to make a pull request, as described in the :doc:`version-control` section, you will be working on a new branch you create from the "develop" branch. Let's say your branch is called ``1012-private-url``. As you work, you are constantly invoking Maven to build the war file. When you do a "clean and build" in Netbeans, Maven runs all the unit tests (anything ending with ``Test.java``) and the runs the results through a tool called Jacoco that calculates code coverage. When you push your branch to GitHub and make a pull request, a web service called Travis CI runs Maven and Jacoco on your branch and pushes the results to Coveralls, which is a web service that tracks changes to code coverage over time.
-
-To make this more concrete, observe that https://github.com/IQSS/dataverse/pull/3111 has comments from a GitHub user called ``coveralls`` saying things like "Coverage increased (+0.5%) to 5.547% when pulling dd6ceb1 on 1012-private-url into be5b26e on develop." Clicking on the comment should lead you to a URL such as https://coveralls.io/builds/7013870 which shows how code coverage has gone up or down. That page links to a page such as https://travis-ci.org/IQSS/dataverse/builds/144840165 which shows the build on the Travis side that pushed the results ton Coveralls.
+As you prepare to make a pull request, as described in the :doc:`version-control` section, you will be working on a new branch you create from the "develop" branch. Let's say your branch is called ``1012-private-url``. As you work, you are constantly invoking Maven to build the war file. When you do a "clean and build" in Netbeans, Maven runs all the unit tests (anything ending with ``Test.java``) and then runs the results through a tool called Jacoco that calculates code coverage. When you push your branch to GitHub and make a pull request, GitHub Actions runs Maven and Jacoco on your branch and pushes the results to Coveralls, which is a web service that tracks changes to code coverage over time. Note that we have configured Coveralls to not mark small decreases in code coverage as a failure. You can find the Coveralls reports at https://coveralls.io/github/IQSS/dataverse
 
 The main takeaway should be that we care about unit testing enough to measure the changes to code coverage over time using automation. Now let's talk about how you can help keep our code coverage up by writing unit tests with JUnit.
 
@@ -102,30 +100,28 @@ In addition, there is a writeup on "The Testable Command" at https://github.com/
 Running Non-Essential (Excluded) Unit Tests
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You should be aware that some unit tests have been deemed "non-essential" and have been annotated with ``@Category(NonEssentialTests.class)`` and are excluded from the "dev" Maven profile, which is the default profile. All unit tests (that have not been annotated with ``@Ignore``), including these non-essential tests, are run from continuous integration systems such as Jenkins and Travis CI with the following ``mvn`` command that invokes a non-default profile:
+You should be aware that some unit tests have been deemed "non-essential" and have been annotated with ``@Category(NonEssentialTests.class)`` and are excluded from the "dev" Maven profile, which is the default profile. All unit tests (that have not been annotated with ``@Ignore``), including these non-essential tests, are run from continuous integration systems such as Jenkins and GitHub Actions with the following ``mvn`` command that invokes a non-default profile:
 
 ``mvn test -P all-unit-tests``
-
-Typically https://travis-ci.org/IQSS/dataverse will show a higher number of unit tests executed because it uses the profile above.
 
 Generally speaking, unit tests have been flagged as non-essential because they are slow or because they require an Internet connection. You should not feel obligated to run these tests continuously but you can use the ``mvn`` command above to run them. To iterate on the unit test in Netbeans and execute it with "Run -> Test File", you must temporarily comment out the annotation flagging the test as non-essential.
 
 Integration Tests
 -----------------
 
-Unit tests are fantastic for low level testing of logic but aren't especially real-world-applicable because they do not exercise Dataverse as it runs in production with a database and other runtime dependencies. We test in-depth by also writing integration tests to exercise a running system.
+Unit tests are fantastic for low level testing of logic but aren't especially real-world-applicable because they do not exercise the Dataverse Software as it runs in production with a database and other runtime dependencies. We test in-depth by also writing integration tests to exercise a running system.
 
 Unfortunately, the term "integration tests" can mean different things to
-different people. For our purposes, an integration test can have to flavors:
+different people. For our purposes, an integration test can have two flavors:
 
 1. Be an API Test:
 
-   - Exercise Dataverse APIs.
+   - Exercise the Dataverse Software APIs.
    - Running not automatically on developers' laptops.
-   - Operate on an installation of Dataverse that is running and able to talk to both PostgreSQL and Solr.
+   - Operate on a Dataverse installation that is running and able to talk to both PostgreSQL and Solr.
    - Written using REST Assured.
 
-2. Be a `Testcontainers <https://testcontainers.org>`_ Test:
+2. Be a `Testcontainers <https://testcontainers.org>`__ Test:
 
    - Operates any dependencies via the Testcontainers API, using containers.
    - Written as a JUnit test, using all things necessary to test.
@@ -135,70 +131,65 @@ different people. For our purposes, an integration test can have to flavors:
 Running the Full API Test Suite Using EC2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To run the API test suite in an EC2 instance you should first follow the steps in the :doc:`deployment` section to get set up for AWS in general and EC2 in particular.
+**Prerequisite:** To run the API test suite in an EC2 instance you should first follow the steps in the :doc:`deployment` section to get set up with the AWS binary to launch EC2 instances. If you're here because you just want to spin up a branch, you'll still want to follow the AWS deployment setup steps, but may find the `ec2-create README.md <https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible/blob/master/ec2/README.md>`_ Quick Start section helpful.
 
-You may always retrieve a current copy of the ec2-create-instance.sh script and accompanying group_var.yml file from the `dataverse-ansible repo<https://github.com/IQSS/dataverse-ansible/>`_:
+You may always retrieve a current copy of the ec2-create-instance.sh script and accompanying group_var.yml file from the `dataverse-ansible repo <https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible/>`_. Since we want to run the test suite, let's grab the group_vars used by Jenkins:
 
-- `ec2-create-instance.sh<https://raw.githubusercontent.com/IQSS/dataverse-ansible/master/ec2/ec2-create-instance.sh>`_
-- `main.yml<https://raw.githubusercontent.com/IQSS/dataverse-ansible/master/defaults/main.yml>`_
+- `ec2-create-instance.sh <https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/ec2/ec2-create-instance.sh>`_
+- `jenkins.yml <https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/tests/group_vars/jenkins.yml>`_
 
-Edit ``main.yml`` to set the desired GitHub repo, branch, and to ensure that the API test suite is enabled:
+Edit ``jenkins.yml`` to set the desired GitHub repo and branch, and to adjust any other options to meet your needs:
 
 - ``dataverse_repo: https://github.com/IQSS/dataverse.git``
 - ``dataverse_branch: develop``
 - ``dataverse.api.test_suite: true``
+- ``dataverse.unittests.enabled: true``
 - ``dataverse.sampledata.enabled: true``
 
-If you wish, you may pass the local path of a logging directory, which will tell ec2-create-instance.sh to `grab various logs <https://github.com/IQSS/dataverse-ansible/blob/master/ec2/ec2-create-instance.sh#L185>`_ for your review.
+If you wish, you may pass the script a ``-l`` flag with a local relative path in which the script will `copy various logs <https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible/blob/master/ec2/ec2-create-instance.sh#L185>`_ at the end of the test suite for your review.
 
 Finally, run the script:
 
 .. code-block:: bash
 
-  $ ./ec2-create-instance.sh -g main.yml -l log_dir
-
-Near the beginning and at the end of the ec2-create-instance.sh output you will see instructions for connecting to the instance via SSH. If you are actively working on a branch and want to refresh the warfile after each commit, you may wish to call a `redeploy.sh <https://github.com/IQSS/dataverse-ansible/blob/master/templates/redeploy.sh.j2>`_ script placed by the Ansible role, which will do a "git pull" against your branch, build the warfile, deploy the warfile, then restart the app server. By default this script is written to /tmp/dataverse/redeploy.sh. You may invoke the script by appending it to the SSH command in ec2-create's output:
-
-.. code-block:: bash
-
-  $ ssh -i your_pem.pem user@ec2-host.aws.com /tmp/dataverse/redeploy.sh
+  $ ./ec2-create-instance.sh -g jenkins.yml -l log_dir
 
 Running the full API test suite using Docker
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To run the full suite of integration tests on your laptop, we recommend using the "all in one" Docker configuration described in ``conf/docker-aio/readme.txt`` in the root of the repo.
+To run the full suite of integration tests on your laptop, we recommend using the "all in one" Docker configuration described in ``conf/docker-aio/readme.md`` in the root of the repo.
 
 Alternatively, you can run tests against the app server running on your laptop by following the "getting set up" steps below.
 
 Getting Set Up to Run REST Assured Tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Unit tests are run automatically on every build, but dev environments and servers require special setup to run REST Assured tests. In short, Dataverse needs to be placed into an insecure mode that allows arbitrary users and datasets to be created and destroyed. This differs greatly from the out-of-the-box behavior of Dataverse, which we strive to keep secure for sysadmins installing the software for their institutions in a production environment.
+Unit tests are run automatically on every build, but dev environments and servers require special setup to run REST Assured tests. In short, the Dataverse Software needs to be placed into an insecure mode that allows arbitrary users and datasets to be created and destroyed. This differs greatly from the out-of-the-box behavior of the Dataverse Software, which we strive to keep secure for sysadmins installing the software for their institutions in a production environment.
 
-The :doc:`dev-environment` section currently refers developers here for advice on getting set up to run REST Assured tests, but we'd like to add some sort of "dev" flag to the installer to put Dataverse in "insecure" mode, with lots of scary warnings that this dev mode should not be used in production.
+The :doc:`dev-environment` section currently refers developers here for advice on getting set up to run REST Assured tests, but we'd like to add some sort of "dev" flag to the installer to put the Dataverse Software in "insecure" mode, with lots of scary warnings that this dev mode should not be used in production.
 
 The instructions below assume a relatively static dev environment on a Mac. There is a newer "all in one" Docker-based approach documented in the :doc:`/developers/containers` section under "Docker" that you may like to play with as well.
 
 The Burrito Key
 ^^^^^^^^^^^^^^^
 
-For reasons that have been lost to the mists of time, Dataverse really wants you to to have a burrito. Specifically, if you're trying to run REST Assured tests and see the error "Dataverse config issue: No API key defined for built in user management", you must run the following curl command (or make an equivalent change to your database):
+For reasons that have been lost to the mists of time, the Dataverse Software really wants you to to have a burrito. Specifically, if you're trying to run REST Assured tests and see the error "Dataverse config issue: No API key defined for built in user management", you must run the following curl command (or make an equivalent change to your database):
 
 ``curl -X PUT -d 'burrito' http://localhost:8080/api/admin/settings/BuiltinUsers.KEY``
 
-Without this "burrito" key in place, REST Assured will not be able to create users. We create users to create objects we want to test, such as dataverses, datasets, and files.
+Without this "burrito" key in place, REST Assured will not be able to create users. We create users to create objects we want to test, such as Dataverse collections, datasets, and files.
 
-Root Dataverse Permissions
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+Root Dataverse Collection Permissions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In your browser, log in as dataverseAdmin (password: admin) and click the "Edit" button for your root dataverse. Navigate to Permissions, then the Edit Access button. Under "Who can add to this dataverse?" choose "Anyone with a Dataverse account can add sub dataverses and datasets" if it isn't set to this already.
+In your browser, log in as dataverseAdmin (password: admin) and click the "Edit" button for your root Dataverse collection. Navigate to Permissions, then the Edit Access button. Under "Who can add to this Dataverse collection?" choose "Anyone with a Dataverse installation account can add sub Dataverse collections and datasets" if it isn't set to this already.
 
 Alternatively, this same step can be done with this script: ``scripts/search/tests/grant-authusers-add-on-root``
 
-Publish Root Dataverse
-^^^^^^^^^^^^^^^^^^^^^^
+Publish Root Dataverse Collection
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The root dataverse must be published for some of the REST Assured tests to run.
+The root Dataverse collection must be published for some of the REST Assured tests to run.
 
 dataverse.siteUrl
 ^^^^^^^^^^^^^^^^^
@@ -235,7 +226,7 @@ Remember, it’s only a test (and it's not graded)! Some guidelines to bear in m
 - Let the code do the labor; automate everything that happens when you run your test file.
 - Just as with any development, if you’re stuck: ask for help!
 
-To execute existing integration tests on your local Dataverse, a helpful command line tool to use is `Maven <http://maven.apache.org/ref/3.1.0/maven-embedder/cli.html>`_. You should have Maven installed as per the `Development Environment <http://guides.dataverse.org/en/latest/developers/dev-environment.html>`_ guide, but if not it’s easily done via Homebrew: ``brew install maven``.
+To execute existing integration tests on your local Dataverse installation, a helpful command line tool to use is `Maven <http://maven.apache.org/ref/3.1.0/maven-embedder/cli.html>`_. You should have Maven installed as per the `Development Environment <http://guides.dataverse.org/en/latest/developers/dev-environment.html>`_ guide, but if not it’s easily done via Homebrew: ``brew install maven``.
 
 Once installed, you may run commands with ``mvn [options] [<goal(s)>] [<phase(s)>]``.
 
@@ -251,14 +242,14 @@ Once installed, you may run commands with ``mvn [options] [<goal(s)>] [<phase(s)
 
   ``mvn test -Dtest=FileMetadataIT -Ddataverse.test.baseurl='http://localhost:8080'``
 
-To see the full list of tests used by the Docker option mentioned above, see :download:`run-test-suite.sh <../../../../conf/docker-aio/run-test-suite.sh>`.
+If you are adding a new test class, be sure to add it to :download:`tests/integration-tests.txt <../../../../tests/integration-tests.txt>` so that our automated testing knows about it.
 
 
 Writing and Using a Testcontainers Test
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Most scenarios of integration testing involve having dependent services running.
-This is where `Testcontainers <https://www.testcontainers.org>`_ kicks in by
+This is where `Testcontainers <https://www.testcontainers.org>`__ kicks in by
 providing a JUnit interface to drive them before and after executing your tests.
 
 Test scenarios are endless. Some examples are migration scripts, persistance,
@@ -398,11 +389,11 @@ The script requires a file called ``files.txt`` to operate and database IDs for 
 Continuous Integration
 ----------------------
 
-The Dataverse Project currently makes use of two Continuous Integration platforms, Travis and Jenkins.
-
-Travis builds are configured via :download:`.travis.yml <../../../../.travis.yml>` and a `GitHub webhook <https://docs.travis-ci.com/user/notifications/#configuring-webhook-notifications>`; build output is viewable at https://travis-ci.org/IQSS/dataverse/builds
+The Dataverse Project currently makes use of two Continuous Integration platforms, Jenkins and GitHub Actions.
 
 Our Jenkins config is a work in progress and may be viewed at https://github.com/IQSS/dataverse-jenkins/ A corresponding GitHub webhook is required. Build output is viewable at https://jenkins.dataverse.org/
+
+GitHub Actions jobs can be found in ``.github/workflows``.
 
 As always, pull requests to improve our continuous integration configurations are welcome.
 
@@ -410,7 +401,7 @@ Enhance build time by caching dependencies
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In the future, CI builds in ephemeral build environments and Docker builds can benefit from caching all dependencies and plugins.
-As Dataverse is a huge project, build times can be enhanced by avoiding re-downloading everything when the Maven POM is unchanged.
+As the Dataverse Project is a huge project, build times can be enhanced by avoiding re-downloading everything when the Maven POM is unchanged.
 To seed the cache, use the following Maven goal before using Maven in (optional) offline mode in your scripts:
 
 .. code:: shell
@@ -443,22 +434,15 @@ How to Run the Phoenix Tests
 - Log into Jenkins and click "Build Now" at https://build.hmdc.harvard.edu:8443/job/phoenix.dataverse.org-build-develop/
 - Wait for all three chained Jenkins jobs to complete and note if they passed or failed. If you see a failure, open a GitHub issue or at least get the attention of some developers.
 
-List of Tests Run Against the Phoenix Server
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-We haven't thought much about a good way to publicly list the "IT" classes that are executed against the phoenix server. (Currently your best bet is to look at the ``Executing Maven`` line at the top of the "Full Log" of "Console Output" of ``phoenix.dataverse.org-apitest-develop`` Jenkins job mentioned above.) We endeavor to keep the list of tests in the "all-in-one" Docker environment described above in sync with the list of tests configured in Jenkins. That is to say, refer to :download:`run-test-suite.sh <../../../../conf/docker-aio/run-test-suite.sh>` mentioned in ``conf/docker-aio/readme.txt`` for the current list of IT tests that are expected to pass. Here's a dump of that file:
-
-.. literalinclude:: ../../../../conf/docker-aio/run-test-suite.sh
-
 Accessibility Testing
 ---------------------
 
 Accessibility Policy
 ~~~~~~~~~~~~~~~~~~~~
 
-Dataverse aims to improve the user experience for those with disabilities, and are in the process of following the recommendations of the `Harvard University Digital Accessibility Policy <https://accessibility.huit.harvard.edu/digital-accessibility-policy>`__,  which use the Worldwide Web Consortium’s Web Content Accessibility Guidelines version 2.1, Level AA Conformance (WCAG 2.1 Level AA) as the standard.
+The Dataverse Project aims to improve the user experience for those with disabilities, and are in the process of following the recommendations of the `Harvard University Digital Accessibility Policy <https://accessibility.huit.harvard.edu/digital-accessibility-policy>`__,  which use the Worldwide Web Consortium’s Web Content Accessibility Guidelines version 2.1, Level AA Conformance (WCAG 2.1 Level AA) as the standard.
 
-To report an accessibility issue with Dataverse, you can create a new issue in our GitHub repo at: https://github.com/IQSS/dataverse/issues/
+To report an accessibility issue with the Dataverse Software, you can create a new issue in our GitHub repo at: https://github.com/IQSS/dataverse/issues/
 
 Accessibility Tools
 ~~~~~~~~~~~~~~~~~~~
@@ -487,7 +471,6 @@ Future Work on Integration Tests
 - Automate testing of dataverse-client-python: https://github.com/IQSS/dataverse-client-python/issues/10
 - Work with @leeper on testing the R client: https://github.com/IQSS/dataverse-client-r
 - Review and attempt to implement "API Test Checklist" from @kcondon at https://docs.google.com/document/d/199Oq1YwQ4pYCguaeW48bIN28QAitSk63NbPYxJHCCAE/edit?usp=sharing
-- Attempt to use @openscholar approach for running integration tests using Travis https://github.com/openscholar/openscholar/blob/SCHOLAR-3.x/.travis.yml (probably requires using Ubuntu rather than CentOS)
 - Generate code coverage reports for **integration** tests: https://github.com/pkainulainen/maven-examples/issues/3 and http://www.petrikainulainen.net/programming/maven/creating-code-coverage-reports-for-unit-and-integration-tests-with-the-jacoco-maven-plugin/
 - Consistent logging of API Tests. Show test name at the beginning and end and status codes returned.
 - expected passing and known/expected failing integration tests: https://github.com/IQSS/dataverse/issues/4438
@@ -500,21 +483,20 @@ Browser-Based Testing
 Installation Testing
 ~~~~~~~~~~~~~~~~~~~~
 
-- Run `vagrant up` on a server to test the installer: http://guides.dataverse.org/en/latest/developers/tools.html#vagrant . We haven't been able to get this working in Travis: https://travis-ci.org/IQSS/dataverse/builds/96292683 . Perhaps it would be possible to use AWS as a provider from Vagrant judging from https://circleci.com/gh/critical-alert/circleci-vagrant/6 .
-- Work with @lwo to automate testing of https://github.com/IQSS/dataverse-puppet . Consider using Travis: https://github.com/IQSS/dataverse-puppet/issues/10
-- Work with @donsizemore to automate testing of https://github.com/IQSS/dataverse-ansible with Travis or similar.
+- Run `vagrant up` on a server to test the installer
+- Work with @donsizemore to automate testing of https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible
 
 Future Work on Load/Performance Testing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - Clean up and copy stress tests code, config, and docs into main repo from https://github.com/IQSS/dataverse-helper-scripts/tree/master/src/stress_tests
-- Marcel Duran created a command-line wrapper for the WebPagetest API that can be used to test performance in your continuous integration pipeline (TAP, Jenkins, Travis-CI, etc): https://github.com/marcelduran/webpagetest-api/wiki/Test-Specs#jenkins-integration
+- Marcel Duran created a command-line wrapper for the WebPagetest API that can be used to test performance in your continuous integration pipeline (TAP, Jenkins, etc.): https://github.com/marcelduran/webpagetest-api/wiki/Test-Specs#jenkins-integration
 - Create top-down checklist, building off the "API Test Coverage" spreadsheet at https://github.com/IQSS/dataverse/issues/3358#issuecomment-256400776
 
 Future Work on Accessibility Testing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Using https://github.com/IQSS/dataverse-ansible and hooks available from accessibily testing tools, automate the running of accessibility tools on PRs so that developers will receive quicker feedback on proposed code changes that reduce the accessibility of the application.
+- Using https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible and hooks available from accessibility testing tools, automate the running of accessibility tools on PRs so that developers will receive quicker feedback on proposed code changes that reduce the accessibility of the application.
 
 ----
 

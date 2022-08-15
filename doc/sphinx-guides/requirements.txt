@@ -1,2 +1,7 @@
-# match version used by Jenkins
-Sphinx==1.5.6
+# current version as of this writing
+Sphinx==3.5.4
+# Necessary workaround for ReadTheDocs for Sphinx 3.x - unnecessary as of Sphinx 4.5+
+Jinja2>=3.0.2,<3.1
+
+# Sphinx - Additional modules
+sphinx-icon==0.1.2

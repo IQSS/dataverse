@@ -12,6 +12,7 @@
 # GLASSFISH_DOMAIN
 # ASADMIN_OPTS
 # MEM_HEAP_SIZE
+# GLASSFISH_REQUEST_TIMEOUT
 #
 # database configuration: 
 # DB_PORT
@@ -31,8 +32,8 @@
 # DOI_PASSWORD
 # DOI_BASEURL
 #
-# Base URL the Make Data Count: 
-# DOI_MDCBASEURL
+# Base URL the DataCite REST API (Make Data Count, /pids API): 
+# DOI_DATACITERESTAPIURL
 #
 # other local configuration:
 # HOST_ADDRESS
@@ -72,7 +73,7 @@ function preliminary_setup()
   ./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:+DisableExplicitGC"
 
   # alias passwords
-  for alias in "rserve_password_alias ${RSERVE_PASS}" "doi_password_alias ${DOI_PASSWORD}" "db_password_alias ${DB_PASS}"
+  for alias in "rserve_password_alias ${RSERVE_PASS}" "doi_password_alias ${DOI_PASSWORD}" "dataverse.db.password ${DB_PASS}"
   do
       set -- $alias
       echo "AS_ADMIN_ALIASPASSWORD=$2" > /tmp/$1.txt
@@ -110,32 +111,16 @@ function preliminary_setup()
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.baseurlstring=$DOI_BASEURL_ESC"
 
   # jvm-options use colons as separators, escape as literal
-  DOI_MDCBASEURL_ESC=`echo $DOI_MDCBASEURL | sed -e 's/:/\\\:/'`
-  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.mdcbaseurlstring=$DOI_MDCBASEURL_ESC"
+  DOI_DATACITERESTAPIURL_ESC=`echo $DOI_DATACITERESTAPIURL | sed -e 's/:/\\\:/'`
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.dataciterestapiurlstring=$DOI_DATACITERESTAPIURL_ESC"
 
   ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.timerServer=true"
+
   # enable comet support
   ./asadmin $ASADMIN_OPTS set server-config.network-config.protocols.protocol.http-listener-1.http.comet-support-enabled="true"
 
-  ./asadmin $ASADMIN_OPTS delete-connector-connection-pool --cascade=true jms/__defaultConnectionFactory-Connection-Pool 
-
-  # no need to explicitly delete the connector resource for the connection pool deleted in the step 
-  # above - the cascade delete takes care of it.
-  #./asadmin $ASADMIN_OPTS delete-connector-resource jms/__defaultConnectionFactory-Connection-Pool
-
-  # http://docs.oracle.com/cd/E19798-01/821-1751/gioce/index.html
-  ./asadmin $ASADMIN_OPTS create-connector-connection-pool --steadypoolsize 1 --maxpoolsize 250 --poolresize 2 --maxwait 60000 --raname jmsra --connectiondefinition javax.jms.QueueConnectionFactory jms/IngestQueueConnectionFactoryPool
-
-  # http://docs.oracle.com/cd/E18930_01/html/821-2416/abllx.html#giogt
-  ./asadmin $ASADMIN_OPTS create-connector-resource --poolname jms/IngestQueueConnectionFactoryPool --description "ingest connector resource" jms/IngestQueueConnectionFactory
-
-  # http://docs.oracle.com/cd/E18930_01/html/821-2416/ablmc.html#giolr
-  ./asadmin $ASADMIN_OPTS create-admin-object --restype javax.jms.Queue --raname jmsra --description "sample administered object" --property Name=DataverseIngest jms/DataverseIngest
-
-  # no need to explicitly create the resource reference for the connection factory created above -
-  # the "create-connector-resource" creates the reference automatically.
-  #./asadmin $ASADMIN_OPTS create-resource-ref --target Cluster1 jms/IngestQueueConnectionFactory
-
+  # bump the http-listener timeout from 900 to 3600
+  ./asadmin $ASADMIN_OPTS set server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds="${GLASSFISH_REQUEST_TIMEOUT}"
 
   # so we can front with apache httpd ( ProxyPass / ajp://localhost:8009/ )
   ./asadmin $ASADMIN_OPTS create-network-listener --protocol http-listener-1 --listenerport 8009 --jkenabled true jk-connector
@@ -145,22 +130,11 @@ function final_setup(){
         ./asadmin $ASADMIN_OPTS delete-jvm-options -Xmx512m
         ./asadmin $ASADMIN_OPTS create-jvm-options "-Xmx${MEM_HEAP_SIZE}m"
 
-
-        ./asadmin $ASADMIN_OPTS create-jdbc-connection-pool --restype javax.sql.DataSource \
-                                        --datasourceclassname org.postgresql.ds.PGPoolingDataSource \
-                                        --property create=true:User=$DB_USER:PortNumber=$DB_PORT:databaseName=$DB_NAME:ServerName=$DB_HOST \
-                                        dvnDbPool
-
-       ./asadmin $ASADMIN_OPTS set resources.jdbc-connection-pool.dvnDbPool.property.password='${ALIAS=db_password_alias}'
-
-        ###
-        # Create data sources
-        ./asadmin $ASADMIN_OPTS create-jdbc-resource --connectionpoolid dvnDbPool jdbc/VDCNetDS
-
-        ###
-        # Set up the data source for the timers
-
-        ./asadmin $ASADMIN_OPTS set configs.config.server-config.ejb-container.ejb-timer-service.timer-datasource=jdbc/VDCNetDS
+         # Set up the database connection properties
+        ./asadmin $ASADMIN_OPTS create-system-properties "dataverse.db.user=${DB_USER}"
+        ./asadmin $ASADMIN_OPTS create-system-properties "dataverse.db.host=${DB_HOST}"
+        ./asadmin $ASADMIN_OPTS create-system-properties "dataverse.db.port=${DB_PORT}"
+        ./asadmin $ASADMIN_OPTS create-system-properties "dataverse.db.name=${DB_NAME}"
 
         ./asadmin $ASADMIN_OPTS create-jvm-options "\-Djavax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl"
 

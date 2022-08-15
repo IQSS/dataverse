@@ -67,6 +67,8 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.sav.SAVFileReade
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.por.PORFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.por.PORFileReaderSpi;
 import edu.harvard.iq.dataverse.util.*;
+
+import org.apache.commons.io.IOUtils;
 //import edu.harvard.iq.dvn.unf.*;
 import org.dataverse.unf.*;
 import java.io.BufferedInputStream;
@@ -134,9 +136,9 @@ public class IngestServiceBean {
     @EJB
     SystemConfig systemConfig;
 
-    @Resource(mappedName = "jms/DataverseIngest")
+    @Resource(lookup = "java:app/jms/queue/ingest")
     Queue queue;
-    @Resource(mappedName = "jms/IngestQueueConnectionFactory")
+    @Resource(lookup = "java:app/jms/factory/ingest")
     QueueConnectionFactory factory;
     
 
@@ -152,8 +154,11 @@ public class IngestServiceBean {
     // attached to the Dataset via some cascade path (for example, via 
     // DataFileCategory objects, if any were already assigned to the files). 
     // It must be called before we attempt to permanently save the files in 
-    // the database by calling the Save command on the dataset and/or version. 
-	public List<DataFile> saveAndAddFilesToDataset(DatasetVersion version, List<DataFile> newFiles) {
+    // the database by calling the Save command on the dataset and/or version.
+    public List<DataFile> saveAndAddFilesToDataset(DatasetVersion version,
+                                                   List<DataFile> newFiles,
+                                                   DataFile fileToReplace,
+                                                   boolean tabIngest) {
 		List<DataFile> ret = new ArrayList<>();
 
 		if (newFiles != null && newFiles.size() > 0) {
@@ -162,9 +167,7 @@ public class IngestServiceBean {
 			// we tried to make the file names unique on upload, but then
 			// the user may have edited them on the "add files" page, and
 			// renamed FOOBAR-1.txt back to FOOBAR.txt...
-
-			IngestUtil.checkForDuplicateFileNamesFinal(version, newFiles);
-
+            IngestUtil.checkForDuplicateFileNamesFinal(version, newFiles, fileToReplace);
 			Dataset dataset = version.getDataset();
 
 			for (DataFile dataFile : newFiles) {
@@ -327,7 +330,7 @@ public class IngestServiceBean {
 					String fileName = fileMetadata.getLabel();
 
 					boolean metadataExtracted = false;
-					if (FileUtil.canIngestAsTabular(dataFile)) {
+					if (tabIngest && FileUtil.canIngestAsTabular(dataFile)) {
 						/*
 						 * Note that we don't try to ingest the file right away - instead we mark it as
 						 * "scheduled for ingest", then at the end of the save process it will be queued
@@ -822,12 +825,13 @@ public class IngestServiceBean {
                 localFile = storageIO.getFileSystemPath().toFile();
                 inputStream = new BufferedInputStream(storageIO.getInputStream());
             } else {
-                ReadableByteChannel dataFileChannel = storageIO.getReadChannel();
-                localFile = File.createTempFile("tempIngestSourceFile", ".tmp");
-                FileChannel tempIngestSourceChannel = new FileOutputStream(localFile).getChannel();
-
-                tempIngestSourceChannel.transferFrom(dataFileChannel, 0, storageIO.getSize());
                 
+                localFile = File.createTempFile("tempIngestSourceFile", ".tmp");
+				try (ReadableByteChannel dataFileChannel = storageIO.getReadChannel();
+						FileChannel tempIngestSourceChannel = new FileOutputStream(localFile).getChannel();) {
+
+					tempIngestSourceChannel.transferFrom(dataFileChannel, 0, storageIO.getSize());
+				}
                 inputStream = new BufferedInputStream(new FileInputStream(localFile));
                 logger.fine("Saved "+storageIO.getSize()+" bytes in a local temp file.");
             }
@@ -894,6 +898,8 @@ public class IngestServiceBean {
             logger.warning("Ingest failure (Exception " + unknownEx.getClass() + "): "+unknownEx.getMessage()+".");
             return false;
             
+        } finally {
+        	IOUtils.closeQuietly(inputStream);
         }
 
         String originalContentType = dataFile.getContentType();
@@ -1055,12 +1061,11 @@ public class IngestServiceBean {
         if (storageIO.isLocalFile()) {
             inputStream = new BufferedInputStream(storageIO.getInputStream());
         } else {
-            ReadableByteChannel dataFileChannel = storageIO.getReadChannel();
-            File tempFile = File.createTempFile("tempIngestSourceFile", ".tmp");
-            FileChannel tempIngestSourceChannel = new FileOutputStream(tempFile).getChannel();
-            
-            tempIngestSourceChannel.transferFrom(dataFileChannel, 0, storageIO.getSize());
-            
+        	File tempFile = File.createTempFile("tempIngestSourceFile", ".tmp");
+			try (ReadableByteChannel dataFileChannel = storageIO.getReadChannel();
+					FileChannel tempIngestSourceChannel = new FileOutputStream(tempFile).getChannel();) {
+				tempIngestSourceChannel.transferFrom(dataFileChannel, 0, storageIO.getSize());
+			}
             inputStream = new BufferedInputStream(new FileInputStream(tempFile));
             logger.fine("Saved "+storageIO.getSize()+" bytes in a local temp file.");
         }
@@ -1800,10 +1805,14 @@ public class IngestServiceBean {
                     if (savedOriginalFile == null) {
                         tempFileRequired = true;
 
-                        ReadableByteChannel savedOriginalChannel = (ReadableByteChannel) storageIO.openAuxChannel(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
-                        savedOriginalFile = File.createTempFile("tempSavedOriginal", ".tmp");
-                        FileChannel tempSavedOriginalChannel = new FileOutputStream(savedOriginalFile).getChannel();
-                        tempSavedOriginalChannel.transferFrom(savedOriginalChannel, 0, storageIO.getAuxObjectSize(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION));
+						savedOriginalFile = File.createTempFile("tempSavedOriginal", ".tmp");
+						try (ReadableByteChannel savedOriginalChannel = (ReadableByteChannel) storageIO
+								.openAuxChannel(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+								FileChannel tempSavedOriginalChannel = new FileOutputStream(savedOriginalFile)
+										.getChannel();) {
+							tempSavedOriginalChannel.transferFrom(savedOriginalChannel, 0,
+									storageIO.getAuxObjectSize(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION));
+						}
 
                     }
                 } catch (Exception ex) {

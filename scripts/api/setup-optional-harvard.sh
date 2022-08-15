@@ -33,11 +33,6 @@ echo  "- Google Analytics setting"
 curl -X PUT -d true "$SERVER/admin/settings/:ScrubMigrationData"
 echo  "- Enabling Shibboleth"
 curl -X POST -H "Content-type: application/json" http://localhost:8080/api/admin/authenticationProviders --upload-file ../../doc/sphinx-guides/source/_static/installation/files/etc/shibboleth/shibAuthProvider.json
-echo  "- Enabling TwoRavens"
-curl -X POST -H 'Content-type: application/json' --upload-file ../../doc/sphinx-guides/source/_static/installation/files/root/external-tools/twoRavens.json http://localhost:8080/api/admin/externalTools
-echo  "- Enabling Geoconnect"
-curl -s -X PUT -d true "$SERVER/admin/settings/:GeoconnectCreateEditMaps"
-curl -s -X PUT -d true "$SERVER/admin/settings/:GeoconnectViewMaps"
 echo  "- Setting system email"
 curl -X PUT -d "Harvard Dataverse Support <support@dataverse.harvard.edu>" http://localhost:8080/api/admin/settings/:SystemEmail
 curl -X PUT -d ", The President &#38; Fellows of Harvard College" http://localhost:8080/api/admin/settings/:FooterCopyright
@@ -55,5 +50,5 @@ curl http://localhost:8080/api/admin/datasetfield/load -X POST --data-binary @da
 curl http://localhost:8080/api/admin/datasetfield/load -X POST --data-binary @data/metadatablocks/customCHIA.tsv -H "Content-type: text/tab-separated-values"
 curl http://localhost:8080/api/admin/datasetfield/load -X POST --data-binary @data/metadatablocks/customDigaai.tsv -H "Content-type: text/tab-separated-values"
 curl http://localhost:8080/api/admin/datasetfield/load -X POST --data-binary @data/metadatablocks/custom_hbgdki.tsv -H "Content-type: text/tab-separated-values"
-echo "Because you have loaded custom metadata blocks, you need to update the include files pulled in by Solr's schema.xml. On the Solr server, you can try running the updateSchemaMDB.sh script mentioned in the Metadata Customization section of the Admin Guide or follow the manual steps listed there."
+echo "Because you have loaded custom metadata blocks, you need to update the include files pulled in by Solr's schema.xml. On the Solr server, you can try running the update-fields.sh script mentioned in the Metadata Customization section of the Admin Guide or follow the manual steps listed there."
 echo

@@ -1,7 +1,8 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
@@ -22,8 +23,7 @@ public class RevokeRoleCommand extends AbstractVoidCommand {
 	private final RoleAssignment toBeRevoked;
 
 	public RevokeRoleCommand(RoleAssignment toBeRevoked, DataverseRequest aRequest) {
-        // for data file check permission on owning dataset
-        super(aRequest, toBeRevoked.getDefinitionPoint() instanceof DataFile ? toBeRevoked.getDefinitionPoint().getOwner() : toBeRevoked.getDefinitionPoint());
+        super(aRequest, toBeRevoked.getDefinitionPoint());
 		this.toBeRevoked = toBeRevoked;
 	}
 	
@@ -34,9 +34,13 @@ public class RevokeRoleCommand extends AbstractVoidCommand {
         
     @Override
     public Map<String, Set<Permission>> getRequiredPermissions() {
-        // for data file check permission on owning dataset
+        DvObject defPoint = toBeRevoked.getDefinitionPoint();
         return Collections.singletonMap("",
-                toBeRevoked.getDefinitionPoint() instanceof Dataverse ? Collections.singleton(Permission.ManageDataversePermissions)
-                : Collections.singleton(Permission.ManageDatasetPermissions));
-    }	
+                defPoint instanceof Dataverse ? Collections.singleton(Permission.ManageDataversePermissions)
+                : defPoint instanceof Dataset ? Collections.singleton(Permission.ManageDatasetPermissions): Collections.singleton(Permission.ManageFilePermissions));
+    }
+    
+    @Override public String describe() { 
+	    return toBeRevoked.getAssigneeIdentifier() + " has had the role: " + toBeRevoked.getRole() + " REVOKED on " + toBeRevoked.getDefinitionPoint().accept(DvObject.NameIdPrinter); 
+    }
 }

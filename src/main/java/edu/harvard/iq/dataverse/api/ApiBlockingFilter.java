@@ -25,7 +25,7 @@ import javax.servlet.http.HttpServletResponse;
  * @author michael
  */
 public class ApiBlockingFilter implements javax.servlet.Filter {
-    private static final String UNBLOCK_KEY_QUERYPARAM = "unblock-key";
+    public static final String UNBLOCK_KEY_QUERYPARAM = "unblock-key";
             
     interface BlockPolicy {
         public void doBlock(ServletRequest sr, ServletResponse sr1, FilterChain fc) throws IOException, ServletException;
@@ -163,7 +163,8 @@ public class ApiBlockingFilter implements javax.servlet.Filter {
             if (settingsSvc.isTrueForKey(SettingsServiceBean.Key.AllowCors, true )) {
                 ((HttpServletResponse) sr1).addHeader("Access-Control-Allow-Origin", "*");
                 ((HttpServletResponse) sr1).addHeader("Access-Control-Allow-Methods", "PUT, GET, POST, DELETE, OPTIONS");
-                ((HttpServletResponse) sr1).addHeader("Access-Control-Allow-Headers", "Content-Type, X-Dataverse-Key");
+                ((HttpServletResponse) sr1).addHeader("Access-Control-Allow-Headers", "Accept, Content-Type, X-Dataverse-Key, Range");
+                ((HttpServletResponse) sr1).addHeader("Access-Control-Expose-Headers", "Accept-Ranges, Content-Range, Content-Encoding");
             }
             fc.doFilter(sr, sr1);
         } catch ( ServletException se ) {

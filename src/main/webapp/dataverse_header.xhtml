@@ -11,13 +11,13 @@
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
     <o:resourceInclude path="/CustomizationFilesServlet?customFileType=header" rendered="#{!widgetWrapper.widgetView}"/>
     <o:importFunctions type="edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers" />
-    <ui:param name="showAddDataverseLink" value="#{permissionServiceBean.userOn(AuthenticatedUsers:get(),dataverseServiceBean.findRootDataverse()).canIssueCommand('CreateDataverseCommand') }"/>
-    <ui:param name="showAddDatasetLink" value="#{permissionServiceBean.userOn(AuthenticatedUsers:get(),dataverseServiceBean.findRootDataverse()).canIssueCommand('AbstractCreateDatasetCommand') }"/>
+    <ui:param name="showAddDataverseLink" value="#{permissionsWrapper.authUsersCanCreateDataversesInDataverse(settingsWrapper.rootDataverse)}"/>
+    <ui:param name="showAddDatasetLink" value="#{permissionsWrapper.authUsersCanCreateDatasetsInDataverse(settingsWrapper.rootDataverse)}"/>
     <ui:param name="showAddDataGroup" value="#{showAddDataverseLink or showAddDatasetLink}"/>
 
-    <div id="dataverse-header-block">
+    <nav id="dataverse-header-block">
         <!-- Navbar Panel -->
-        <nav id="navbarFixed" class="navbar navbar-default navbar-fixed-top" jsf:rendered="#{!widgetWrapper.widgetView}">
+        <div id="navbarFixed" class="navbar navbar-default navbar-fixed-top" jsf:rendered="#{!widgetWrapper.widgetView}">
             <div class="container">
                 <div class="navbar-header">
                     <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar" aria-pressed="false">
@@ -28,10 +28,10 @@
                     </button>
                     <a href="/">
                         <ui:fragment rendered="#{empty settingsWrapper.get(':LogoCustomizationFile')}">
-                            <span class="navbar-brand" tabindex="1"><span id="icon-dataverse" class="icon-dataverse"></span> #{bundle.dataverse}</span>
+                            <span class="navbar-brand"><span id="icon-dataverse" class="icon-dataverse"></span> #{bundle.dataverse}</span>
                         </ui:fragment>
                         <h:graphicImage rendered="#{!empty settingsWrapper.get(':LogoCustomizationFile')}"
-                            url="#{settingsWrapper.get(':LogoCustomizationFile')}" styleClass="navbar-brand custom-logo" alt="#{of:format1(bundle['alt.homepage'], dataverseServiceBean.findRootDataverse().name)}"/>
+                            url="#{settingsWrapper.get(':LogoCustomizationFile')}" styleClass="navbar-brand custom-logo" alt="#{of:format1(bundle['alt.homepage'], settingsWrapper.rootDataverse.name)}"/>
                     </a>
                 </div>
                 <div class="collapse navbar-collapse" id="topNavBar">
@@ -40,12 +40,12 @@
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">#{bundle['dataverse.results.btn.addData']} <b class="caret"></b></a>
                             <ul class="dropdown-menu">
                                 <li jsf:rendered="#{showAddDataverseLink}">
-                                    <h:outputLink value="/dataverse.xhtml?ownerId=#{dataverseServiceBean.findRootDataverse().id}">
+                                    <h:outputLink value="/dataverse.xhtml?ownerId=#{settingsWrapper.rootDataverse.id}">
                                         <h:outputText value="#{bundle['dataverse.results.btn.addData.newDataverse']}"/>
                                     </h:outputLink>
                                 </li>
                                 <li jsf:rendered="#{showAddDatasetLink}">
-                                    <h:outputLink value="/dataset.xhtml?ownerId=#{dataverseServiceBean.findRootDataverse().id}">
+                                    <h:outputLink value="/dataset.xhtml?ownerId=#{settingsWrapper.rootDataverse.id}">
                                         <h:outputText value="#{bundle['dataverse.results.btn.addData.newDataset']}"/>
                                     </h:outputLink>
                                 </li>
@@ -54,18 +54,19 @@
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">#{bundle.search} <b class="caret"></b></a>
                             <ul class="dropdown-menu navbar-search">
-                                <form class="form-inline" role="search">
-                                    <label class="sr-only" for="navbarsearch">#{bundle.search}</label>
-                                    <div class="input-group">
-                                        <input id="navbarsearch" type="text" class="form-control" size="28" value="" placeholder="#{bundle['header.search.title']}"/>
-                                        <span class="input-group-btn">
-                                            <button type="submit" class="btn btn-default" onclick="window.location = '/dataverse/#{dataverseServiceBean.findRootDataverse().alias}&#63;q=' + document.getElementById('navbarsearch').value;
-                                                    return false;">
-                                                <span class="glyphicon glyphicon-search"/> #{bundle.find}
-                                            </button>
-                                        </span>
-                                    </div>
-                                </form>
+                                <li>
+                                    <form class="form-inline" role="search">
+                                        <label id="searchNavLabel" class="sr-only" for="navbarsearch">#{bundle.search}</label>
+                                        <div class="input-group">
+                                            <input id="navbarsearch" type="text" class="form-control" size="28" value="" placeholder="#{bundle['header.search.title']}" />
+                                            <span class="input-group-btn">
+                                                <button type="submit" title="#{bundle.find}" class="btn btn-default bootstrap-button-tooltip" aria-labelledby="searchNavLabel" onclick="window.location='/dataverse/#{settingsWrapper.rootDataverse.alias}&#63;q=' + document.getElementById('navbarsearch').value;return false;">
+                                                    <span class="glyphicon glyphicon-search no-text"/>
+                                                </button>
+                                            </span>
+                                        </div>
+                                    </form>
+                                </li>
                             </ul>
                         </li>
                         <li jsf:rendered="#{!empty settingsWrapper.get(':NavbarAboutUrl')}">
@@ -74,7 +75,7 @@
                             </h:outputLink>
                         </li>
                         <li>
-                            <h:outputLink value="#{settingsWrapper.get(':NavbarGuidesUrl', settingsWrapper.guidesBaseUrl.concat('/').concat(systemConfig.guidesVersion).concat('/user'))}" target="_blank" rel="noopener">
+                            <h:outputLink value="#{settingsWrapper.get(':NavbarGuidesUrl', settingsWrapper.guidesBaseUrl.concat('/').concat(settingsWrapper.guidesVersion).concat('/user'))}" target="_blank" rel="noopener">
                                 <h:outputText value="#{bundle['header.guides.user']}"/>
                             </h:outputLink>
                         </li>
@@ -84,15 +85,17 @@
                             </h:outputLink>
                         </li>
                         <ui:fragment rendered="#{empty settingsWrapper.get(':NavbarSupportUrl')}">
-                            <o:form useRequestURI="true" class="navbar-form navbar-left navbar-form-link">
-                                <p:commandLink oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}" id="headerSupportLink">
-                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
-                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
-                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
-                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
-                                    <h:outputText value="#{bundle['header.support']}"/>
-                                </p:commandLink>
-                            </o:form>
+                            <li>
+                                <o:form useRequestURI="true" class="navbar-form navbar-left navbar-form-link">
+                                    <p:commandLink oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}" id="headerSupportLink">
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                                        <h:outputText value="#{bundle['header.support']}"/>
+                                    </p:commandLink>
+                                </o:form>
+                            </li>
                         </ui:fragment>
                         <li class="dropdown" jsf:rendered="#{settingsWrapper.localesConfigured}">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" title="#{bundle.language}">#{dataverseSession.localeTitle} <b class="caret"></b></a>
@@ -121,7 +124,7 @@
                         </ui:fragment>
                         <ui:fragment rendered="#{dataverseSession.user.authenticated}">
                             <li class="dropdown accountName">
-                                <a href="#" id="lnk_header_account_dropdown" class="dropdown-toggle" data-toggle="dropdown" role="menu" aria-haspopup="true" aria-expanded="false">
+                                <a href="#" id="lnk_header_account_dropdown" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-labelledby="userDisplayInfoTitle" aria-expanded="false">
                                     <ui:fragment rendered="#{dataverseSession.user.superuser}">
                                         <span class="glyphicon glyphicon-user text-danger"></span>
                                     </ui:fragment>
@@ -167,7 +170,7 @@
                                     </li>
                                     <li class="divider"></li>
                                     <li jsf:rendered="#{dataverseSession.user.superuser}" tabindex="-1">
-                                        <h:outputLink value="/dashboard.xhtml?dataverseId=#{dataverseServiceBean.findRootDataverse().id}">
+                                        <h:outputLink value="/dashboard.xhtml?dataverseId=#{settingsWrapper.rootDataverse.id}">
                                             <h:outputText value="#{bundle['header.dashboard']}" />
                                         </h:outputLink>
                                     </li>
@@ -185,7 +188,7 @@
                     </ul>
                 </div>
             </div>
-        </nav>
+        </div>
         <!-- Noscript Error -->
         <noscript>
             <div id="noscript-alert" class="bg-danger">
@@ -194,22 +197,26 @@
                 </div>
             </div>
         </noscript>
-        <!-- Status Alert -->
+        <!-- Banner Message -->
         <o:form class="form-inline">
-            <div id="status-alert" class="bg-warning" jsf:rendered="#{!empty settingsWrapper.get(':StatusMessageText') and !empty settingsWrapper.get(':StatusMessageHeader') and !dataverseSession.isStatusDismissed()}">
-                <div class="alert alert-dismissible container text-warning">
-                    <p:commandButton class="close" id="closeButton" actionListener="#{dataverseSession.setStatusDismissed(true)}" update="@form" value="&#215;"/>
-                    <h:outputText styleClass="highlightBold" value="#{!empty settingsWrapper.get(':StatusMessageHeader') ? settingsWrapper.get(':StatusMessageHeader') : bundle['header.status.header']}"/>
-                    <h:outputText rendered="#{!empty settingsWrapper.get(':StatusMessageText')}" value=" – #{settingsWrapper.get(':StatusMessageText')}" escape="false"/>
-                </div>
-            </div>
+            <ui:fragment rendered="#{!empty dataverseHeaderFragment.bannerMessages}">
+                <ui:repeat value="#{dataverseHeaderFragment.bannerMessages}" var="message" varStatus="status">                
+                    <div id="status-alert" class="bg-warning" jsf:rendered="#{!empty message.displayValue }">
+                        <div class="alert alert-dismissible container text-warning">
+                            <p:commandButton class="close" id="closeButton" actionListener="#{dataverseSession.dismissMessage(message)}" update="@form" value="&#215;"/>
+                            <h:outputText rendered="#{!empty message.displayValue }" value=" #{message.displayValue }" escape="false"/>
+                        </div>
+                    </div>
+                </ui:repeat>
+            </ui:fragment>
         </o:form>
+        
         <!-- Header Panel -->
         <!-- FIXME: Rather than hard-coding "FFFFFF", get it from the backend (ThemeWidgetFragment.DEFAULT_BACKGROUND_COLOR). -->
         <div id="dataverseHeader" class="container bg-muted"
                 style="background:##{!empty dataverse.dataverseTheme.backgroundColor ? dataverse.dataverseTheme.backgroundColor : 'FFFFFF'};"
                 jsf:rendered="#{showDataverseHeader and !widgetWrapper.widgetView and !dataverseHeaderFragment.isRootDataverseThemeDisabled(dataverse)}">
-             <o:importFunctions type="org.apache.commons.lang.StringEscapeUtils"/>
+             <o:importFunctions type="org.apache.commons.text.StringEscapeUtils"/>
             <!-- FIXME: Rather than hard-coding "FFFFFF", get it from the backend (ThemeWidgetFragment.DEFAULT_LOGO_BACKGROUND_COLOR). -->
             <div class="dataverseHeaderLogo" style="text-align:#{!empty dataverse.dataverseTheme.logoAlignment ? dataverse.dataverseTheme.logoAlignment : 'center'};background:##{!empty dataverse.dataverseTheme.logoBackgroundColor ? dataverse.dataverseTheme.logoBackgroundColor : 'FFFFFF'};"
                  jsf:rendered="#{!empty dataverse.dataverseTheme.logo and dataverse.dataverseTheme.logoFormat == 'RECTANGLE'}">
@@ -223,21 +230,21 @@
                     <h:outputText styleClass="dataverseHeaderDataverseName" value="#{bundle.newDataverse}"/>
                 </div>
                 <div class="dataverseHeaderCell dataverseHeaderName" jsf:rendered="#{editModeDataverse != 'CREATE'}">
-                    <a href="/dataverse/#{dataverse.alias}" class="dataverseHeaderDataverseName" style="color:##{!empty dataverse.dataverseTheme.linkColor ? dataverse.dataverseTheme.linkColor : '428bca'};">#{dataverse.name}</a>
-                    <h:outputText style="color:##{!empty dataverse.dataverseTheme.textColor ? dataverse.dataverseTheme.textColor : '888888'};" value=" (#{dataverse.affiliation})" rendered="#{!empty dataverse.affiliation}"/>
+                    <a href="/dataverse/#{dataverse.alias}" class="dataverseHeaderDataverseName" style="color:##{!empty dataverse.dataverseTheme.linkColor ? dataverse.dataverseTheme.linkColor : '428bca'};"><h1>#{dataverse.name}</h1></a>
+                    <h:outputText style="color:##{!empty dataverse.dataverseTheme.textColor ? dataverse.dataverseTheme.textColor : '666666'};" value=" (#{dataverse.affiliation})" rendered="#{!empty dataverse.affiliation}"/>
                     <h:outputText value="#{bundle.unpublished}" styleClass="label label-warning label-unpublished" rendered="#{!dataverse.released}"/>
                 </div>
                 <div class="dataverseHeaderCell dataverseHeaderTagline" jsf:rendered="#{!empty dataverse.dataverseTheme.tagline and empty dataverse.dataverseTheme.linkUrl}">
-                    <h:outputText escape="false" style="color:##{!empty dataverse.dataverseTheme.textColor ? dataverse.dataverseTheme.textColor : '888888'};" value="#{StringEscapeUtils:escapeHtml(dataverse.dataverseTheme.tagline)}" />
+                    <h:outputText escape="false" style="color:##{!empty dataverse.dataverseTheme.textColor ? dataverse.dataverseTheme.textColor : '666666'};" value="#{StringEscapeUtils:escapeHtml4(dataverse.dataverseTheme.tagline)}" />
                 </div>
                 <div class="dataverseHeaderCell dataverseHeaderLink" jsf:rendered="#{!empty dataverse.dataverseTheme.tagline and !empty dataverse.dataverseTheme.linkUrl}">
                     <h:outputLink value="#{dataverse.dataverseTheme.linkUrl}" style="color:##{!empty dataverse.dataverseTheme.linkColor ? dataverse.dataverseTheme.linkColor : '428bca'};" target="_blank" rel="noopener">
-                        <h:outputText value="#{StringEscapeUtils:escapeHtml(dataverse.dataverseTheme.tagline)}" escape="false"/>
+                        <h:outputText value="#{StringEscapeUtils:escapeHtml4(dataverse.dataverseTheme.tagline)}" escape="false"/>
                     </h:outputLink>
                 </div>
             </div>
         </div>
-        <p:fragment id="breadCrumbPanel" rendered="#{dataverseHeaderFragment.breadcrumbs.size() > 2 or (dataverseHeaderFragment.breadcrumbs.size() > 1 and dataverseHeaderFragment.breadcrumbs[1].dvObject.instanceofDataverse)}">
+        <p:fragment id="breadCrumbPanel" rendered="#{dataverseHeaderFragment.breadcrumbs.size() > 1}">
         <div id="breadcrumbNavBlock" class="container" jsf:rendered="#{dataverseHeaderFragment.breadcrumbs.size() > 1}">
             <ui:repeat value="#{dataverseHeaderFragment.breadcrumbs}" var="breadcrumb" varStatus="status">
                 <h:outputText value=" > " styleClass="breadcrumbCarrot" rendered="#{!status.first}"/>
@@ -296,7 +303,7 @@
                     </a>
                 </ui:fragment>
             </div>
-            <div class="dropdown-menu" role="menu" aria-labelledby="breadcrumbLnk#{status.index}" rendered="#{dataverseHeaderFragment.hasVisibleChildren(dv)}">
+            <div class="dropdown-menu" aria-labelledby="breadcrumbLnk#{status.index}" rendered="#{dataverseHeaderFragment.hasVisibleChildren(dv)}">
                 <p:tree value="#{dataverseHeaderFragment.getDataverseTree(dv)}" var="node"  cache="true" id="tree">
                     <p:treeNode>
                         <h:outputText value="#{node.name}" styleClass="breadcrumbActive" rendered="#{dataverse.id == node.id and dataset == null}"/>
@@ -316,5 +323,5 @@
                 <iqbs:messages id="messages" collapsible="true" />
             </div>
         </p:fragment>
-    </div>
+    </nav>
 </ui:composition>

@@ -5,7 +5,8 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.AbstractGlobalIdServiceBean.GlobalIdMetadataTemplate;
+import edu.harvard.iq.dataverse.branding.BrandingUtil;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,13 +20,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
-import javax.xml.transform.Source;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import javax.xml.transform.Source;
+import org.apache.commons.text.StringEscapeUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -125,20 +125,11 @@ public class DOIDataCiteRegisterService {
             } else {
                 rc.setUrl(target);
             }
-            try {
-                DataCiteRESTfullClient client = getClient();
-                retString = client.postMetadata(xmlMetadata);
-            } catch (UnsupportedEncodingException ex) {
-                Logger.getLogger(DOIDataCiteRegisterService.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        } else {
-            try {
-                DataCiteRESTfullClient client = getClient();
-                retString = client.postMetadata(xmlMetadata);
-            } catch (UnsupportedEncodingException ex) {
-                Logger.getLogger(DOIDataCiteRegisterService.class.getName()).log(Level.SEVERE, null, ex);
-            }
         }
+
+        DataCiteRESTfullClient client = getClient();
+        retString = client.postMetadata(xmlMetadata);
+
         return retString;
     }
 
@@ -156,22 +147,12 @@ public class DOIDataCiteRegisterService {
             } else {
                 rc.setUrl(target);
             }
-            try {
-                DataCiteRESTfullClient client = getClient();
-                retString = client.postMetadata(xmlMetadata);
-                client.postUrl(identifier.substring(identifier.indexOf(":") + 1), target);
-            } catch (UnsupportedEncodingException ex) {
-                Logger.getLogger(DOIDataCiteRegisterService.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        } else {
-            try {
-                DataCiteRESTfullClient client = getClient();
-                retString = client.postMetadata(xmlMetadata);
-                client.postUrl(identifier.substring(identifier.indexOf(":") + 1), target);
-            } catch (UnsupportedEncodingException ex) {
-                Logger.getLogger(DOIDataCiteRegisterService.class.getName()).log(Level.SEVERE, null, ex);
-            }
         }
+        
+        DataCiteRESTfullClient client = getClient();
+        retString = client.postMetadata(xmlMetadata);
+        client.postUrl(identifier.substring(identifier.indexOf(":") + 1), target);
+
         return retString;
     }
     
@@ -229,7 +210,7 @@ public class DOIDataCiteRegisterService {
         metadataTemplate.setAuthors(dataset.getLatestVersion().getDatasetAuthors());
         if (dvObject.isInstanceofDataset()) {
             //While getDescriptionPlainText strips < and > from HTML, it leaves '&' (at least so we need to xml escape as well
-            String description = StringEscapeUtils.escapeXml(dataset.getLatestVersion().getDescriptionPlainText());
+            String description = StringEscapeUtils.escapeXml10(dataset.getLatestVersion().getDescriptionPlainText());
             if (description.isEmpty() || description.equals(DatasetField.NA_VALUE)) {
                 description = AbstractGlobalIdServiceBean.UNAVAILABLE;
             }
@@ -239,7 +220,7 @@ public class DOIDataCiteRegisterService {
             DataFile df = (DataFile) dvObject;
             //Note: File metadata is not escaped like dataset metadata is, so adding an xml escape here.
             //This could/should be removed if the datafile methods add escaping
-            String fileDescription = StringEscapeUtils.escapeXml(df.getDescription());
+            String fileDescription = StringEscapeUtils.escapeXml10(df.getDescription());
             metadataTemplate.setDescription(fileDescription == null ? AbstractGlobalIdServiceBean.UNAVAILABLE : fileDescription);
             String datasetPid = df.getOwner().getGlobalId().asString();
             metadataTemplate.setDatasetIdentifier(datasetPid);
@@ -252,7 +233,7 @@ public class DOIDataCiteRegisterService {
         String title = dvObject.getCurrentName();
         if(dvObject.isInstanceofDataFile()) {
             //Note file title is not currently escaped the way the dataset title is, so adding it here.
-            title = StringEscapeUtils.escapeXml(title);
+            title = StringEscapeUtils.escapeXml10(title);
         }
         
         if (title.isEmpty() || title.equals(DatasetField.NA_VALUE)) {
@@ -260,7 +241,7 @@ public class DOIDataCiteRegisterService {
         }
         
         metadataTemplate.setTitle(title);
-        String producerString = dataset.getLatestVersion().getRootDataverseNameforCitation();
+        String producerString = BrandingUtil.getRootDataverseCollectionName();
         if (producerString.isEmpty() || producerString.equals(DatasetField.NA_VALUE)) {
             producerString = AbstractGlobalIdServiceBean.UNAVAILABLE;
         }

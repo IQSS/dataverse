@@ -5,23 +5,25 @@ then
     EC2_HTTP_LOCATION="<EC2 INSTANCE HTTP ADDRESS>"
 fi
 
-DATAVERSE_APP_DIR=/usr/local/glassfish4/glassfish/domains/domain1/applications/dataverse; export DATAVERSE_APP_DIR
+DATAVERSE_APP_DIR=/usr/local/payara5/glassfish/domains/domain1/applications/dataverse; export DATAVERSE_APP_DIR
 
-# restart glassfish: 
+# restart app server
 
-echo "Restarting Glassfish..."
+echo "Restarting app server..."
+
+# still "glassfish" until Ansible is updated
 
 systemctl restart glassfish
 
 echo "done."
 
-# obtain the pid of the running glassfish process:
+# obtain the pid of the running app server process:
 
-GLASSFISH_PID=`ps awux | grep ^glassfi | awk '{print $2}' `; export GLASSFISH_PID 
+APP_SERVER_PID=`ps awux | grep ^dataver | awk '{print $2}' `; export APP_SERVER_PID
 
-if [ ${GLASSFISH_PID}"x" = "x" ]
+if [ ${APP_SERVER_PID}"x" = "x" ]
 then
-    echo "Failed to obtain the process id of the running Glassfish process!"
+    echo "Failed to obtain the process id of the running app server process!"
     exit 1;
 fi
 
@@ -34,7 +36,7 @@ yum -y install gnuplot >/dev/null
 
 GPLOT=gplot-1.11/gplot.pl; export GPLOT
 GPLOTDIST=https://pilotfiber.dl.sourceforge.net/project/gplot/gplot/gplot-1.11.tar.gz; export GPLOTDIST
-(cd /tmp; curl --insecure ${GPLOTDIST} 2>/dev/null | tar xzf - ${GPLOT} >/dev/null)
+(cd /tmp; curl -L --insecure ${GPLOTDIST} 2>/dev/null | tar xzf - ${GPLOT} >/dev/null)
 
 
 # Bombard the application with some GET requests. 
@@ -97,7 +99,7 @@ do
 
         # after every {repeat_outer} number of GETs, run jmap and save the output in a temp file:
 
-	sudo -u glassfish jmap -histo ${GLASSFISH_PID} > /tmp/jmap.histo.out
+	sudo -u dataverse jmap -histo ${APP_SERVER_PID} > /tmp/jmap.histo.out
 	
         # select the dataverse classes from the histo output: 
 	#grep '  edu\.harvard\.iq\.dataverse' /tmp/jmap.histo.out
@@ -119,7 +121,7 @@ do
 	echo 
 
         # run jstat to check on GC: 
-	sudo -u glassfish jstat -gcutil ${GLASSFISH_PID} 1000 1 2>/dev/null
+	sudo -u dataverse jstat -gcutil ${APP_SERVER_PID} 1000 1 2>/dev/null
 
 	echo 
 

@@ -20,10 +20,13 @@ public class ExternalToolHandlerTest {
     // TODO: It would probably be better to split these into individual tests.
     @Test
     public void testGetToolUrlWithOptionalQueryParameters() {
-        ExternalTool.Type type = ExternalTool.Type.EXPLORE;
+        List<ExternalToolType> externalToolTypes = new ArrayList<>();
+        ExternalToolType externalToolType = new ExternalToolType();
+        externalToolType.setType(ExternalTool.Type.EXPLORE);
+        externalToolTypes.add(externalToolType);
         ExternalTool.Scope scope = ExternalTool.Scope.FILE;
         String toolUrl = "http://example.com";
-        ExternalTool externalTool = new ExternalTool("displayName", "toolName", "description", type, scope, toolUrl, "{}", DataFileServiceBean.MIME_TYPE_TSV_ALT);
+        ExternalTool externalTool = new ExternalTool("displayName", "toolName", "description", externalToolTypes, scope, toolUrl, "{}", DataFileServiceBean.MIME_TYPE_TSV_ALT);
 
         // One query parameter, not a reserved word, no {fileId} (required) used.
         externalTool.setToolParameters(Json.createObjectBuilder()

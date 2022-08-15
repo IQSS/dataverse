@@ -15,7 +15,8 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import org.apache.commons.lang.StringUtils;
+import edu.harvard.iq.dataverse.validation.EMailValidator;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -190,12 +191,12 @@ public class Shib implements java.io.Serializable {
             }
         }
 
-        if (!EMailValidator.isEmailValid(emailAddressInAssertion, null)) {
+        if (!EMailValidator.isEmailValid(emailAddressInAssertion)) {
             String msg = "The SAML assertion contained an invalid email address: \"" + emailAddressInAssertion + "\".";
             logger.info(msg);
             msg=BundleUtil.getStringFromBundle("shib.invalidEmailAddress",   Arrays.asList(emailAddressInAssertion));
             String singleEmailAddress = ShibUtil.findSingleValue(emailAddressInAssertion);
-            if (EMailValidator.isEmailValid(singleEmailAddress, null)) {
+            if (EMailValidator.isEmailValid(singleEmailAddress)) {
                 msg = "Multiple email addresses were asserted by the Identity Provider (" + emailAddressInAssertion + " ). These were sorted and the first was chosen: " + singleEmailAddress;
                 logger.info(msg);
                 emailAddress = singleEmailAddress;
@@ -338,6 +339,10 @@ public class Shib implements java.io.Serializable {
         logger.fine("builtin username: " + builtinUsername);
         AuthenticatedUser builtInUserToConvert = authSvc.canLogInAsBuiltinUser(builtinUsername, builtinPassword);
         if (builtInUserToConvert != null) {
+            if (builtInUserToConvert.isDeactivated()) {
+                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("shib.convert.fail.deactivated"));
+                return null;
+            }
             // TODO: Switch from authSvc.convertBuiltInToShib to authSvc.convertBuiltInUserToRemoteUser
             AuthenticatedUser au = authSvc.convertBuiltInToShib(builtInUserToConvert, shibAuthProvider.getId(), userIdentifier);
             if (au != null) {
@@ -358,8 +363,8 @@ public class Shib implements java.io.Serializable {
 
     private void logInUserAndSetShibAttributes(AuthenticatedUser au) {
         au.setShibIdentityProvider(shibIdp);
+        // setUser checks for deactivated users.
         session.setUser(au);
-        session.configureSessionTimeout();
         logger.fine("Groups for user " + au.getId() + " (" + au.getIdentifier() + "): " + getGroups(au));
     }
 

@@ -1,9 +1,9 @@
 Apps
 ====
 
-The introduction of Dataverse APIs has fostered the development of a variety of software applications that are listed in the :doc:`/admin/integrations`, :doc:`/admin/external-tools`, and :doc:`/admin/reporting-tools` sections of the Admin Guide.
+The introduction of Dataverse Software APIs has fostered the development of a variety of software applications that are listed in the :doc:`/admin/integrations`, :doc:`/admin/external-tools`, and :doc:`/admin/reporting-tools-and-queries` sections of the Admin Guide.
 
-The apps below are open source and demonstrate how to use Dataverse APIs. Some of these apps are built on :doc:`/api/client-libraries` that are available for Dataverse APIs in Python, Javascript, R, and Java.
+The apps below are open source and demonstrate how to use Dataverse Software APIs. Some of these apps are built on :doc:`/api/client-libraries` that are available for Dataverse Software APIs in Python, Javascript, R, and Java.
 
 .. contents:: |toctitle|
 	:local:
@@ -16,7 +16,7 @@ Data Explorer
 
 Data Explorer is a GUI which lists the variables in a tabular data file allowing searching, charting and cross tabulation analysis.
 
-https://github.com/scholarsportal/Dataverse-Data-Explorer
+https://github.com/scholarsportal/Dataverse-Data-Explorer-v2
 
 Data Curation Tool
 ~~~~~~~~~~~~~~~~~~
@@ -28,21 +28,14 @@ https://github.com/scholarsportal/Dataverse-Data-Curation-Tool
 File Previewers
 ~~~~~~~~~~~~~~~
 
-File Previewers are tools that display the content of files - including audio, html, Hypothes.is annotations, images, PDF, text, video - allowing them to be viewed without downloading.
+File Previewers are tools that display the content of files - including audio, html, Hypothes.is annotations, images, PDF, text, video, GeoJSON - allowing them to be viewed without downloading.
 
-https://github.com/GlobalDataverseCommunityConsortium/dataverse-previewers
-
-TwoRavens
-~~~~~~~~~
-
-TwoRavens is a system of interlocking statistical tools for data exploration, analysis, and meta-analysis.
-
-https://github.com/IQSS/TwoRavens
+https://github.com/gdcc/dataverse-previewers
 
 Python
 ------
 
-Please note that there are multiple Python modules for Dataverse APIs listed in the :doc:`client-libraries` section.
+Please note that there are multiple Python modules for Dataverse Software APIs listed in the :doc:`client-libraries` section.
 
 dataverse-sample-data
 ~~~~~~~~~~~~~~~~~~~~~
@@ -54,28 +47,21 @@ https://github.com/IQSS/dataverse-sample-data
 Texas Digital Library dataverse-reports
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Dataverse Reports for Texas Digital Library generates and emails statistical reports for an installation of Dataverse using the native API and database queries.
+Dataverse Installation Reports from Texas Digital Library generates and emails statistical reports for a Dataverse installation using the native API and database queries.
 
 https://github.com/TexasDigitalLibrary/dataverse-reports
 
 OSF
 ~~~
 
-OSF allows you to view, download, and upload files to and from a Dataverse dataset from an Open Science Framework (OSF) project.
+OSF allows you to view, download, and upload files to and from a dataset in a Dataverse installation from an Open Science Framework (OSF) project.
 
 https://github.com/CenterForOpenScience/osf.io/tree/develop/addons/dataverse
-
-GeoConnect
-~~~~~~~~~~
-
-GeoConnect allows Dataverse files to be visualized on http://worldmap.harvard.edu with the "Explore" button. Read more about it in the :doc:`/user/data-exploration/worldmap` section of the User Guide.
-
-https://github.com/IQSS/geoconnect
 
 dataverse-metrics
 ~~~~~~~~~~~~~~~~~
 
-dataverse-metrics aggregates and visualizes metrics across multiple Dataverse installations but can also be used with a single installation
+dataverse-metrics aggregates and visualizes metrics across multiple Dataverse installations but can also be used with a single installation.
 
 https://github.com/IQSS/dataverse-metrics
 
@@ -97,26 +83,33 @@ repo2docker
 ~~~~~~~~~~~
 
 repo2docker is a command line tool that allows you to create and start a
-Docker image from a code repository that follows the [reproducible executable environment specification](https://repo2docker.readthedocs.io/en/latest/specification.html). repo2docker supports Dataverse DOIs to find and retrieve datasets.
+Docker image from a code repository that follows the [reproducible executable environment specification](https://repo2docker.readthedocs.io/en/latest/specification.html). repo2docker supports Dataverse installation DOIs to find and retrieve datasets.
 
 https://github.com/jupyter/repo2docker/blob/master/repo2docker/contentproviders/dataverse.py
+
+dataverse-migration-scripts
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This series of Python scripts offers a starting point for migrating datasets from one Dataverse installation to another. Multiple parts of the process are handled in these scripts, including adding users, collections, and multiple versions of datasets. These scripts were developed to migrate data from version 4.20 to 5.1, but may provide a helpful starting point for other software versions. The :doc:`migration APIs </developers/dataset-migration-api>` added in version 5.6 are not used. You can find more details in the repository, as well as `this Google group thread <https://groups.google.com/g/dataverse-community/c/4yy3U5RtUAs/m/OLogk12NBgAJ>`_.
+
+https://github.com/scholarsportal/dataverse-migration-scripts
 
 Java
 ----
 
-Please note that there is a Java library for Dataverse APIs listed in the :doc:`client-libraries` section.
+Please note that there is a Java library for Dataverse Software APIs listed in the :doc:`client-libraries` section.
 
 DVUploader
 ~~~~~~~~~~
 
-The open-source DVUploader tool is a stand-alone command-line Java application that uses the Dataverse API to upload files to a specified Dataset. Files can be specified by name, or the DVUploader can upload all files in a directory or recursively from a directory tree. The DVUploader can also verify that uploaded files match their local sources by comparing the local and remote fixity checksums. Source code, release 1.0.0- jar file, and documentation are available on GitHub. DVUploader's creation was supported by the Texas Digital Library.
+The open-source DVUploader tool is a stand-alone command-line Java application that uses the Dataverse Software API to upload files to a specified Dataset. Files can be specified by name, or the DVUploader can upload all files in a directory or recursively from a directory tree. The DVUploader can also verify that uploaded files match their local sources by comparing the local and remote fixity checksums. Source code, the latest release - jar file, and documentation are available on GitHub. DVUploader's creation was supported by the Texas Digital Library.
 
-https://github.com/IQSS/dataverse-uploader
+https://github.com/GlobalDataverseCommunityConsortium/dataverse-uploader
 
 Dataverse for Android
 ~~~~~~~~~~~~~~~~~~~~~
 
-Dataverse for Android makes use of Dataverse's Search API.
+Dataverse Software on Android makes use of a Dataverse installation's Search API.
 
 https://github.com/IQSS/dataverse-android
 
@@ -126,13 +119,13 @@ PHP
 OJS
 ~~~
 
-The Open Journal Systems (OJS) Dataverse Plugin adds data sharing and preservation to the OJS publication process.
+The Open Journal Systems (OJS) Dataverse Software Plugin adds data sharing and preservation to the OJS publication process.
 
 https://github.com/pkp/ojs/tree/ojs-stable-2_4_8/plugins/generic/dataverse
 
 OpenScholar
 ~~~~~~~~~~~
 
-The Dataverse module from OpenScholar allows Dataverse widgets to be easily embedded in its web pages:
+The Dataverse Software module from OpenScholar allows a Dataverse installation's widgets to be easily embedded in its web pages:
 
 https://github.com/openscholar/openscholar/tree/SCHOLAR-3.x/openscholar/modules/os_features/os_dataverse

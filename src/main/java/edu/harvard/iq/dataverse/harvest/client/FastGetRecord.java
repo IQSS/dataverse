@@ -385,7 +385,7 @@ public class FastGetRecord {
             } catch (XMLStreamException ex) {
                 //Logger.getLogger("global").log(Level.SEVERE, null, ex);
                 if (this.errorMessage == null) {
-                    this.errorMessage = "Malformed GetRecord response: " + oaiResponseHeader;
+                    this.errorMessage = "Malformed GetRecord response; baseURL=" + baseURL + ", identifier=" + identifier + ", metadataPrefix=" + metadataPrefix;
                 }
 
                 // delete the temp metadata file; we won't need it:
@@ -413,10 +413,7 @@ public class FastGetRecord {
             }
 
             if (!(metadataWritten) && !(this.isDeleted())) {
-                if (oaiResponseHeader.length() > 64) {
-                    oaiResponseHeader = oaiResponseHeader.substring(0, 32) + "...";
-                }
-                this.errorMessage = "Failed to parse GetRecord response; "+oaiResponseHeader;
+                this.errorMessage = "Failed to parse GetRecord response; baseURL=" + baseURL + ", identifier=" + identifier + ", metadataPrefix=" + metadataPrefix;
                 //savedMetadataFile.delete();
             }
 

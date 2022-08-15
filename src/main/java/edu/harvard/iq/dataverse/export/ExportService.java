@@ -2,6 +2,9 @@ package edu.harvard.iq.dataverse.export;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.Embargo;
+import edu.harvard.iq.dataverse.FileMetadata;
+
 import static edu.harvard.iq.dataverse.GlobalIdServiceBean.logger;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
@@ -20,15 +23,18 @@ import java.io.OutputStream;
 import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.JsonObject;
@@ -45,28 +51,12 @@ public class ExportService {
 
     private static ExportService service;
     private ServiceLoader<Exporter> loader;
-    static SettingsServiceBean settingsService;
 
     private ExportService() {
         loader = ServiceLoader.load(Exporter.class);
     }
 
-    /**
-     * @deprecated Use `getInstance(SettingsServiceBean settingsService)`
-     * instead. For privacy reasons, we need to pass in settingsService so that
-     * we can make a decision whether not not to exclude email addresses. No new
-     * code should call this method and it would be nice to remove calls from
-     * existing code.
-     */
-    @Deprecated
     public static synchronized ExportService getInstance() {
-        return getInstance(null);
-    }
-
-    public static synchronized ExportService getInstance(SettingsServiceBean settingsService) {
-        ExportService.settingsService = settingsService;
-        // We pass settingsService into the JsonPrinter so it can check the :ExcludeEmailFromExport setting in calls to JsonPrinter.jsonAsDatasetDto().
-        JsonPrinter.setSettingsService(settingsService);
         if (service == null) {
             service = new ExportService();
         }
@@ -75,7 +65,7 @@ public class ExportService {
 
     public List< String[]> getExportersLabels() {
         List<String[]> retList = new ArrayList<>();
-        Iterator<Exporter> exporters = ExportService.getInstance(null).loader.iterator();
+        Iterator<Exporter> exporters = ExportService.getInstance().loader.iterator();
         while (exporters.hasNext()) {
             Exporter e = exporters.next();
             String[] temp = new String[2];
@@ -89,16 +79,71 @@ public class ExportService {
     public InputStream getExport(Dataset dataset, String formatName) throws ExportException, IOException {
         // first we will try to locate an already existing, cached export 
         // for this format: 
+        
         InputStream exportInputStream = getCachedExportFormat(dataset, formatName);
 
+        // The DDI export is limited for restricted and actively embargoed files (no
+        // data/file description sections).and when an embargo ends, we need to refresh
+        // this export.
+        boolean clearCachedExport = false;
+        if (formatName.equals(DDIExporter.PROVIDER_NAME) && (exportInputStream != null)) {
+            // We want ddi and there was a cached version
+            LocalDate exportLocalDate = null;
+            Date lastExportDate = dataset.getLastExportTime();
+            // if lastExportDate == null, assume it's not set because were exporting for the
+            // first time now (e.g. during publish) and therefore no changes are needed
+            if (lastExportDate != null) {
+                exportLocalDate = lastExportDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                logger.fine("Last export date: " + exportLocalDate.toString());
+                // Track which embargoes we've already checked
+                Set<Long> embargoIds = new HashSet<Long>();
+                // Check for all files in the latest released version
+                for (FileMetadata fm : dataset.getLatestVersionForCopy().getFileMetadatas()) {
+                    // ToDo? This loop is necessary because we have not stored the date when the
+                    // next embargo in this datasetversion will end. If we knew that (another
+                    // dataset/datasetversion column), we could make
+                    // one check that nextembargoEnd exists and is after the last export and before
+                    // now versus scanning through files until we potentially find such an embargo.
+                    Embargo e = fm.getDataFile().getEmbargo();
+                    if(e!=null) {
+                    logger.fine("Datafile:  " + fm.getDataFile().getId());
+                    logger.fine("Embargo end date: "+ e.getFormattedDateAvailable());
+                    }
+                    if (e != null && !embargoIds.contains(e.getId()) && e.getDateAvailable().isAfter(exportLocalDate)
+                            && e.getDateAvailable().isBefore(LocalDate.now())) {
+                        logger.fine("Request that the ddi export be cleared.");
+                        // The file has been embargoed and the embargo ended after the last export and
+                        // before the current date, so we need to remove the cached DDI export and make
+                        // it refresh
+                        clearCachedExport = true;
+                        break;
+                    } else if(e!=null) {
+                        logger.fine("adding embargo to checked list: " + e.getId());
+                        embargoIds.add(e.getId());
+                    }
+                }
+            }
+            if (clearCachedExport) {
+                try {
+                    exportInputStream.close();
+                    clearCachedExport(dataset, formatName);
+                } catch (Exception ex) {
+                    logger.warning("Failure deleting DDI export format for dataset id: " + dataset.getId()
+                            + " after embargo expiration: " + ex.getLocalizedMessage());
+                } finally {
+                    exportInputStream = null;
+                }
+            }
+        }
+        
         if (exportInputStream != null) {
             return exportInputStream;
         }
 
-        // if it doesn't exist, we'll try to run the export: 
+        // if it doesn't exist, we'll try to run the export:
         exportFormat(dataset, formatName);
 
-        // and then try again: 
+        // and then try again:
         exportInputStream = getCachedExportFormat(dataset, formatName);
 
         if (exportInputStream != null) {
@@ -168,13 +213,16 @@ public class ExportService {
                 cacheExport(releasedVersion, formatName, datasetAsJson, e);
 
             }
+            // Finally, if we have been able to successfully export in all available 
+            // formats, we'll increment the "last exported" time stamp: 
+            dataset.setLastExportTime(new Timestamp(new Date().getTime()));
+            
         } catch (ServiceConfigurationError serviceError) {
             throw new ExportException("Service configuration error during export. " + serviceError.getMessage());
+        } catch (RuntimeException e) {
+            //e.printStackTrace();
+            throw new ExportException("Unknown runtime exception exporting metadata. " + (e.getMessage() == null ? "" : e.getMessage()));
         }
-        // Finally, if we have been able to successfully export in all available 
-        // formats, we'll increment the "last exported" time stamp: 
-
-        dataset.setLastExportTime(new Timestamp(new Date().getTime()));
 
     }
 
@@ -217,6 +265,9 @@ public class ExportService {
         } catch (IllegalStateException e) {
             throw new ExportException("No published version found during export. " + dataset.getGlobalId().toString());
         }
+        
+        //As with exportAll, we should update the lastexporttime for the dataset
+        dataset.setLastExportTime(new Timestamp(new Date().getTime()));
     }
     
 

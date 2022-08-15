@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.api.dto.*;  
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
@@ -40,6 +41,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.xml.stream.XMLInputFactory;
+import net.handle.hdllib.HandleException;
+import net.handle.hdllib.HandleResolver;
 
 
 /**
@@ -64,6 +67,8 @@ public class ImportGenericServiceBean {
     
     @EJB
     SettingsServiceBean settingsService;
+    @EJB
+    LicenseServiceBean licenseService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -101,7 +106,7 @@ public class ImportGenericServiceBean {
             logger.fine(json);
             JsonReader jsonReader = Json.createReader(new StringReader(json));
             JsonObject obj = jsonReader.readObject();
-            DatasetVersion dv = new JsonParser(datasetFieldSvc, blockService, settingsService).parseDatasetVersion(obj, datasetVersion);
+            DatasetVersion dv = new JsonParser(datasetFieldSvc, blockService, settingsService, licenseService).parseDatasetVersion(obj, datasetVersion);
         } catch (XMLStreamException ex) {
             //Logger.getLogger("global").log(Level.SEVERE, null, ex);
             throw new EJBException("ERROR occurred while parsing XML fragment  ("+xmlToParse.substring(0, 64)+"...); ", ex);
@@ -112,50 +117,6 @@ public class ImportGenericServiceBean {
                 if (xmlr != null) { xmlr.close(); }
             } catch (XMLStreamException ex) {}
         }
-    }
-    
-    public void importXML(File xmlFile, String foreignFormat, DatasetVersion datasetVersion) {
-        
-        FileInputStream in = null;
-        XMLStreamReader xmlr = null;
-
-        // look up the foreign metadata mapping for this format:
-        
-        ForeignMetadataFormatMapping mappingSupported = findFormatMappingByName (foreignFormat);
-        if (mappingSupported == null) {
-            throw new EJBException("Unknown/unsupported foreign metadata format "+foreignFormat);
-        }
-        
-        try {
-            in = new FileInputStream(xmlFile);
-            XMLInputFactory xmlFactory = javax.xml.stream.XMLInputFactory.newInstance();
-            xmlr =  xmlFactory.createXMLStreamReader(in);
-            DatasetDTO datasetDTO = processXML(xmlr, mappingSupported);
-
-            Gson gson = new Gson();
-            String json = gson.toJson(datasetDTO.getDatasetVersion());
-            logger.info("Json:\n"+json);
-            JsonReader jsonReader = Json.createReader(new StringReader(json));
-            JsonObject obj = jsonReader.readObject();
-            DatasetVersion dv = new JsonParser(datasetFieldSvc, blockService, settingsService).parseDatasetVersion(obj, datasetVersion);
-        } catch (FileNotFoundException ex) {
-            //Logger.getLogger("global").log(Level.SEVERE, null, ex);
-            throw new EJBException("ERROR occurred in mapDDI: File Not Found!");
-        } catch (XMLStreamException ex) {
-            //Logger.getLogger("global").log(Level.SEVERE, null, ex);
-            throw new EJBException("ERROR occurred while parsing XML (file "+xmlFile.getAbsolutePath()+"); ", ex);
-        } catch (JsonParseException ex) {
-            Logger.getLogger(ImportGenericServiceBean.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            try {
-                if (xmlr != null) { xmlr.close(); }
-            } catch (XMLStreamException ex) {}
-
-            try {
-                if (in != null) { in.close();}
-            } catch (IOException ex) {}
-        }
-
     }
 
     public DatasetDTO processXML( XMLStreamReader xmlr, ForeignMetadataFormatMapping foreignFormatMapping) throws XMLStreamException {
@@ -366,31 +327,51 @@ public class ImportGenericServiceBean {
     }
     
     private String getOtherIdFromDTO(DatasetVersionDTO datasetVersionDTO) {
+        List<String> otherIds = new ArrayList<>();
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
             if ("citation".equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.otherId.equals(fieldDTO.getTypeName())) {
-                        String otherId = "";
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             for (FieldDTO next : foo) {
                                 if (DatasetFieldConstant.otherIdValue.equals(next.getTypeName())) {
-                                    otherId =  next.getSinglePrimitive();
+                                    otherIds.add(next.getSinglePrimitive());
                                 }
-                            }
-                            if (!otherId.isEmpty()){
-                                return otherId;
                             }
                         }
                     }
                 }
             }
         }
+        if (!otherIds.isEmpty()) {
+            // We prefer doi or hdl identifiers like "doi:10.7910/DVN/1HE30F"
+            for (String otherId : otherIds) {
+                if (otherId.startsWith(GlobalId.DOI_PROTOCOL) || otherId.startsWith(GlobalId.HDL_PROTOCOL) || otherId.startsWith(GlobalId.DOI_RESOLVER_URL) || otherId.startsWith(GlobalId.HDL_RESOLVER_URL) || otherId.startsWith(GlobalId.HTTP_DOI_RESOLVER_URL) || otherId.startsWith(GlobalId.HTTP_HDL_RESOLVER_URL) || otherId.startsWith(GlobalId.DXDOI_RESOLVER_URL) || otherId.startsWith(GlobalId.HTTP_DXDOI_RESOLVER_URL)) {
+                    return otherId;
+                }
+            }
+            // But identifiers without hdl or doi like "10.6084/m9.figshare.12725075.v1" are also allowed
+            for (String otherId : otherIds) {
+                try {
+                    HandleResolver hr = new HandleResolver();
+                    hr.resolveHandle(otherId);
+                    return GlobalId.HDL_PROTOCOL + ":" + otherId;
+                } catch (HandleException e) {
+                    logger.fine("Not a valid handle: " + e.toString());
+                }
+            }
+        }
         return null;
     }
     
-    private String reassignIdentifierAsGlobalId(String identifierString, DatasetDTO datasetDTO) {
+    /* This is a general parser that can take DOI and Handle Ids, in their local or
+     * URL forms (e.g. doi:... or https://doi.org/...) and parse them into
+     * protocol/authority/identifier parts that are assigned to the datasetDTO.
+     * The name reflects the original purpose but it is now used in ImportDDIServiceBean as well.
+     */
+    public String reassignIdentifierAsGlobalId(String identifierString, DatasetDTO datasetDTO) {
 
         int index1 = identifierString.indexOf(':');
         int index2 = identifierString.indexOf('/');
@@ -408,15 +389,17 @@ public class ImportGenericServiceBean {
             
             // We also recognize global identifiers formatted as global resolver URLs:
             
-            if (identifierString.startsWith(GlobalId.HDL_RESOLVER_URL)) {
+            if (identifierString.startsWith(GlobalId.HDL_RESOLVER_URL) || identifierString.startsWith(GlobalId.HTTP_HDL_RESOLVER_URL)) {
                 logger.fine("Processing Handle identifier formatted as a resolver URL: "+identifierString);
                 protocol = GlobalId.HDL_PROTOCOL;
-                index1 = GlobalId.HDL_RESOLVER_URL.length() - 1;
+                index1 = (identifierString.startsWith(GlobalId.HDL_RESOLVER_URL)) ? GlobalId.HDL_RESOLVER_URL.length() - 1 : GlobalId.HTTP_HDL_RESOLVER_URL.length() - 1;
                 index2 = identifierString.indexOf("/", index1 + 1);
-            } else if (identifierString.startsWith(GlobalId.DOI_RESOLVER_URL)) {
+            } else if (identifierString.startsWith(GlobalId.DOI_RESOLVER_URL) || identifierString.startsWith(GlobalId.HTTP_DOI_RESOLVER_URL) || identifierString.startsWith(GlobalId.DXDOI_RESOLVER_URL) || identifierString.startsWith(GlobalId.HTTP_DXDOI_RESOLVER_URL)) {
                 logger.fine("Processing DOI identifier formatted as a resolver URL: "+identifierString);
                 protocol = GlobalId.DOI_PROTOCOL;
-                index1 = GlobalId.DOI_RESOLVER_URL.length() - 1; 
+                identifierString = identifierString.replace(GlobalId.DXDOI_RESOLVER_URL, GlobalId.DOI_RESOLVER_URL);
+                identifierString = identifierString.replace(GlobalId.HTTP_DXDOI_RESOLVER_URL, GlobalId.HTTP_DOI_RESOLVER_URL);
+                index1 = (identifierString.startsWith(GlobalId.DOI_RESOLVER_URL)) ? GlobalId.DOI_RESOLVER_URL.length() - 1 : GlobalId.HTTP_DOI_RESOLVER_URL.length() - 1;
                 index2 = identifierString.indexOf("/", index1 + 1);
             } else {
                 logger.warning("HTTP Url in supplied as the identifier is neither a Handle nor DOI resolver: "+identifierString);
@@ -530,34 +513,6 @@ public class ImportGenericServiceBean {
         return datasetDTO;
     }
     
-     public void importDCTerms(String xmlToParse, DatasetVersion datasetVersion, DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService) {
-        DatasetDTO datasetDTO = this.initializeDataset();
-        try {
-            // Read docDescr and studyDesc into DTO objects.
-            Map<String, String> fileMap = mapDCTerms(xmlToParse, datasetDTO);
-            // 
-            // convert DTO to Json, 
-            Gson gson = new Gson();
-            String json = gson.toJson(datasetDTO.getDatasetVersion());
-            JsonReader jsonReader = Json.createReader(new StringReader(json));
-            JsonObject obj = jsonReader.readObject();
-            //and call parse Json to read it into a datasetVersion
-            DatasetVersion dv = new JsonParser(datasetFieldSvc, blockService, settingsService).parseDatasetVersion(obj, datasetVersion);
-        } catch (XMLStreamException | JsonParseException e) {
-            // EMK TODO: exception handling
-            e.printStackTrace();
-        }
-        
-        //EMK TODO:  Call methods for reading FileMetadata and related objects from xml, return list of FileMetadata objects.
-        /*try {
-            
-         Map<String, DataTable> dataTableMap = new DataTableImportDDI().processDataDscr(xmlr);
-         } catch(Exception e) {
-            
-         }*/
-        // Save Dataset and DatasetVersion in database
-    }
-
     public Map<String, String> mapDCTerms(String xmlToParse, DatasetDTO datasetDTO) throws XMLStreamException {
 
         Map<String, String> filesMap = new HashMap<>();

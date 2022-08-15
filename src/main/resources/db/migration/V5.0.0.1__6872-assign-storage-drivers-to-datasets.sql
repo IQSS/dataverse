@@ -1,0 +1,1 @@
+ALTER TABLE dataset ADD COLUMN  IF NOT EXISTS storagedriver VARCHAR(255);

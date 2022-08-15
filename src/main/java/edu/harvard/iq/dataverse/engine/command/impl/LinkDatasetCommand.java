@@ -50,6 +50,9 @@ public class LinkDatasetCommand extends AbstractCommand<DatasetLinkingDataverse>
         if (linkedDataset.getOwner().getOwners().contains(linkingDataverse)) {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.link.not.to.parent.dataverse"), this);
         }
+        if (ctxt.dsLinking().alreadyLinked(linkingDataverse, linkedDataset)) {
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.link.not.already.linked"), this);
+        }
        
         DatasetLinkingDataverse datasetLinkingDataverse = new DatasetLinkingDataverse();
         datasetLinkingDataverse.setDataset(linkedDataset);

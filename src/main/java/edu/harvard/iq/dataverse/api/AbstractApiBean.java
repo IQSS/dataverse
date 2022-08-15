@@ -18,7 +18,6 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
-import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
@@ -27,6 +26,7 @@ import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -41,6 +41,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.metrics.MetricsServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.locality.StorageSiteServiceBean;
@@ -63,6 +64,7 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -70,13 +72,15 @@ import javax.json.JsonReader;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
-import static org.apache.commons.lang.StringUtils.isNumeric;
+import static org.apache.commons.lang3.StringUtils.isNumeric;
 
 /**
  * Base class for API beans
@@ -87,9 +91,11 @@ public abstract class AbstractApiBean {
     private static final Logger logger = Logger.getLogger(AbstractApiBean.class.getName());
     private static final String DATAVERSE_KEY_HEADER_NAME = "X-Dataverse-key";
     private static final String PERSISTENT_ID_KEY=":persistentId";
+    private static final String ALIAS_KEY=":alias";
     public static final String STATUS_ERROR = "ERROR";
     public static final String STATUS_OK = "OK";
     public static final String STATUS_WF_IN_PROGRESS = "WORKFLOW_IN_PROGRESS";
+    public static final String DATAVERSE_WORKFLOW_INVOCATION_HEADER_NAME = "X-Dataverse-invocationID";
 
     /**
      * Utility class to convey a proper error response using Java's exceptions.
@@ -176,6 +182,9 @@ public abstract class AbstractApiBean {
     protected MetadataBlockServiceBean metadataBlockSvc;
 
     @EJB
+    protected LicenseServiceBean licenseSvc;
+
+    @EJB
     protected UserServiceBean userSvc;
 
 	@EJB
@@ -210,9 +219,6 @@ public abstract class AbstractApiBean {
 
     @EJB
     protected DatasetVersionServiceBean datasetVersionSvc;
-
-    @EJB
-    protected MapLayerMetadataServiceBean mapLayerMetadataSrv;
 
     @EJB
     protected SystemConfig systemConfig;
@@ -264,7 +270,7 @@ public abstract class AbstractApiBean {
     private final LazyRef<JsonParser> jsonParserRef = new LazyRef<>(new Callable<JsonParser>() {
         @Override
         public JsonParser call() throws Exception {
-            return new JsonParser(datasetFieldSvc, metadataBlockSvc,settingsSvc);
+            return new JsonParser(datasetFieldSvc, metadataBlockSvc,settingsSvc, licenseSvc);
         }
     });
 
@@ -313,6 +319,13 @@ public abstract class AbstractApiBean {
                 
         return headerParamApiKey!=null ? headerParamApiKey : queryParamApiKey;
     }
+    
+    protected String getRequestWorkflowInvocationID() {
+        String headerParamWFKey = httpRequest.getHeader(DATAVERSE_WORKFLOW_INVOCATION_HEADER_NAME);
+        String queryParamWFKey = httpRequest.getParameter("invocationID");
+                
+        return headerParamWFKey!=null ? headerParamWFKey : queryParamWFKey;
+    }
 
     /* ========= *\
      *  Finders  *
@@ -348,14 +361,25 @@ public abstract class AbstractApiBean {
      */
     protected User findUserOrDie() throws WrappedResponse {
         final String requestApiKey = getRequestApiKey();
-        if (requestApiKey == null) {
+        final String requestWFKey = getRequestWorkflowInvocationID();
+        if (requestApiKey == null && requestWFKey == null) {
             return GuestUser.get();
         }
         PrivateUrlUser privateUrlUser = privateUrlSvc.getPrivateUrlUserFromToken(requestApiKey);
+        // For privateUrlUsers restricted to anonymized access, all api calls are off-limits except for those used in the UI
+        // to download the file or image thumbs
         if (privateUrlUser != null) {
+            if (privateUrlUser.hasAnonymizedAccess()) {
+                String pathInfo = httpRequest.getPathInfo();
+                String prefix= "/access/datafile/";
+                if (!(pathInfo.startsWith(prefix) && !pathInfo.substring(prefix.length()).contains("/"))) {
+                    logger.info("Anonymized access request for " + pathInfo);
+                    throw new WrappedResponse(error(Status.UNAUTHORIZED, "API Access not allowed with this Key"));
+                }
+            }
             return privateUrlUser;
         }
-        return findAuthenticatedUserOrDie(requestApiKey);
+        return findAuthenticatedUserOrDie(requestApiKey, requestWFKey);
     }
 
     /**
@@ -371,18 +395,33 @@ public abstract class AbstractApiBean {
      * @throws edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse in case said user is not found.
      */
     protected AuthenticatedUser findAuthenticatedUserOrDie() throws WrappedResponse {
-        return findAuthenticatedUserOrDie(getRequestApiKey());
+        return findAuthenticatedUserOrDie(getRequestApiKey(), getRequestWorkflowInvocationID());
     }
 
 
-    private AuthenticatedUser findAuthenticatedUserOrDie( String key ) throws WrappedResponse {
-        AuthenticatedUser authUser = authSvc.lookupUser(key);
-        if ( authUser != null ) {
-            authUser = userSvc.updateLastApiUseTime(authUser);
+    private AuthenticatedUser findAuthenticatedUserOrDie( String key, String wfid ) throws WrappedResponse {
+        if (key != null) {
+            // No check for deactivated user because it's done in authSvc.lookupUser.
+            AuthenticatedUser authUser = authSvc.lookupUser(key);
 
-            return authUser;
+            if (authUser != null) {
+                authUser = userSvc.updateLastApiUseTime(authUser);
+
+                return authUser;
+            }
+            else {
+                throw new WrappedResponse(badApiKey(key));
+            }
+        } else if (wfid != null) {
+            AuthenticatedUser authUser = authSvc.lookupUserForWorkflowInvocationID(wfid);
+            if (authUser != null) {
+                return authUser;
+            } else {
+                throw new WrappedResponse(badWFKey(wfid));
+            }
         }
-        throw new WrappedResponse( badApiKey(key) );
+        //Just send info about the apiKey - workflow users will learn about invocationId elsewhere
+        throw new WrappedResponse(badApiKey(null));
     }
 
     protected Dataverse findDataverseOrDie( String dvIdtf ) throws WrappedResponse {
@@ -460,6 +499,37 @@ public abstract class AbstractApiBean {
             } catch (NumberFormatException nfe) {
                 throw new WrappedResponse(
                         badRequest(BundleUtil.getStringFromBundle("find.datafile.error.datafile.not.found.bad.id", Collections.singletonList(id))));
+            }
+        }
+    }
+       
+    protected DataverseRole findRoleOrDie(String id) throws WrappedResponse {
+        DataverseRole role;
+        if (id.equals(ALIAS_KEY)) {
+            String alias = getRequestParameter(ALIAS_KEY.substring(1));
+            try {
+                return em.createNamedQuery("DataverseRole.findDataverseRoleByAlias", DataverseRole.class)
+                        .setParameter("alias", alias)
+                        .getSingleResult();
+
+            //Should not be a multiple result exception due to table constraint
+            } catch (NoResultException nre) {
+                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataverse.role.error.role.not.found.alias", Collections.singletonList(alias))));
+            }
+
+        } else {
+
+            try {
+                role = rolesSvc.find(Long.parseLong(id));
+                if (role == null) {
+                    throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataverse.role.error.role.not.found.id", Collections.singletonList(id))));
+                } else {
+                    return role;
+                }
+
+            } catch (NumberFormatException nfe) {
+                throw new WrappedResponse(
+                        badRequest(BundleUtil.getStringFromBundle("find.dataverse.role.error.role.not.found.bad.id", Collections.singletonList(id))));
             }
         }
     }
@@ -652,7 +722,15 @@ public abstract class AbstractApiBean {
     protected Response ok( JsonArrayBuilder bld ) {
         return Response.ok(Json.createObjectBuilder()
             .add("status", STATUS_OK)
-            .add("data", bld).build()).build();
+            .add("data", bld).build())
+            .type(MediaType.APPLICATION_JSON).build();
+    }
+    
+    protected Response ok( JsonArray ja ) {
+        return Response.ok(Json.createObjectBuilder()
+            .add("status", STATUS_OK)
+            .add("data", ja).build())
+            .type(MediaType.APPLICATION_JSON).build();
     }
 
     protected Response ok( JsonObjectBuilder bld ) {
@@ -662,11 +740,28 @@ public abstract class AbstractApiBean {
             .type(MediaType.APPLICATION_JSON)
             .build();
     }
+    
+    protected Response ok( JsonObject jo ) {
+        return Response.ok( Json.createObjectBuilder()
+                .add("status", STATUS_OK)
+                .add("data", jo).build() )
+                .type(MediaType.APPLICATION_JSON)
+                .build();    
+    }
 
     protected Response ok( String msg ) {
         return Response.ok().entity(Json.createObjectBuilder()
             .add("status", STATUS_OK)
             .add("data", Json.createObjectBuilder().add("message",msg)).build() )
+            .type(MediaType.APPLICATION_JSON)
+            .build();
+    }
+    
+    protected Response ok( String msg, JsonObjectBuilder bld  ) {
+        return Response.ok().entity(Json.createObjectBuilder()
+            .add("status", STATUS_OK)
+            .add("message", Json.createObjectBuilder().add("message",msg))     
+            .add("data", bld).build())      
             .type(MediaType.APPLICATION_JSON)
             .build();
     }
@@ -680,10 +775,15 @@ public abstract class AbstractApiBean {
     /**
      * @param data Payload to return.
      * @param mediaType Non-JSON media type.
+     * @param downloadFilename - add Content-Disposition header to suggest filename if not null
      * @return Non-JSON response, such as a shell script.
      */
-    protected Response ok(String data, MediaType mediaType) {
-        return Response.ok().entity(data).type(mediaType).build();
+    protected Response ok(String data, MediaType mediaType, String downloadFilename) {
+        ResponseBuilder res =Response.ok().entity(data).type(mediaType);
+        if(downloadFilename != null) {
+            res = res.header("Content-Disposition", "attachment; filename=" + downloadFilename);
+        }
+        return res.build();
     }
 
     protected Response created( String uri, JsonObjectBuilder bld ) {
@@ -723,9 +823,14 @@ public abstract class AbstractApiBean {
     }
     
     protected Response badApiKey( String apiKey ) {
-        return error(Status.UNAUTHORIZED, (apiKey != null ) ? "Bad api key " : "Please provide a key query parameter (?key=XXX) or via the HTTP header " + DATAVERSE_KEY_HEADER_NAME );
+        return error(Status.UNAUTHORIZED, (apiKey != null ) ? "Bad api key " : "Please provide a key query parameter (?key=XXX) or via the HTTP header " + DATAVERSE_KEY_HEADER_NAME);
     }
 
+    protected Response badWFKey( String wfId ) {
+        String message = (wfId != null ) ? "Bad workflow invocationId " : "Please provide an invocationId query parameter (?invocationId=XXX) or via the HTTP header " + DATAVERSE_WORKFLOW_INVOCATION_HEADER_NAME;
+        return error(Status.UNAUTHORIZED, message );
+    }
+    
     protected Response permissionError( PermissionException pe ) {
         return permissionError( pe.getMessage() );
     }

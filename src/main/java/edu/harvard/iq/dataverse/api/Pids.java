@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataset;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.DeletePidCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReservePidCommand;
@@ -15,6 +14,8 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -45,11 +46,17 @@ public class Pids extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.errors.invalidApiToken"));
         }
-        String baseUrl = System.getProperty("doi.baseurlstringnext");
+        String baseUrl = systemConfig.getDataCiteRestApiUrlString();
         String username = System.getProperty("doi.username");
         String password = System.getProperty("doi.password");
-        JsonObjectBuilder result = PidUtil.queryDoi(persistentId, baseUrl, username, password);
-        return ok(result);
+        try {
+            JsonObjectBuilder result = PidUtil.queryDoi(persistentId, baseUrl, username, password);
+            return ok(result);
+        } catch (NotFoundException ex) {
+            return error(ex.getResponse().getStatusInfo().toEnum(), ex.getLocalizedMessage());
+        } catch (InternalServerErrorException ex) {
+            return error(ex.getResponse().getStatusInfo().toEnum(), ex.getLocalizedMessage());
+        }
     }
 
     @GET
@@ -104,6 +111,12 @@ public class Pids extends AbstractApiBean {
     public Response deletePid(@PathParam("id") String idSupplied) {
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
+            //Restrict to never-published datasets (that should have draft/nonpublic pids). The underlying code will invalidate
+            //pids that have been made public by a pid-specific method, but it's not clear that invalidating such a pid via an api that doesn't
+            //destroy the dataset is a good idea.
+            if(dataset.isReleased()) {
+            	return badRequest("Not allowed for Datasets that have been published.");
+            }
             execCommand(new DeletePidCommand(createDataverseRequest(findUserOrDie()), dataset));
             return ok(BundleUtil.getStringFromBundle("pids.api.deletePid.success", Arrays.asList(dataset.getGlobalId().asString())));
         } catch (WrappedResponse ex) {

@@ -1,0 +1,13 @@
+{
+  "dismissibleByUser": "false",
+  "messageTexts": [
+  {
+    "lang": "en",
+    "message": "Banner Message added via API"
+  },
+  {
+    "lang": "fr",
+    "message": "Message de bannière ajouté via l'API"
+  }
+  ]
+}

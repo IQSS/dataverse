@@ -24,10 +24,10 @@ pipeline {
             env.EC2_REPO = env.GIT_URL
           }
         }
-	sh '/usr/bin/curl -O https://raw.githubusercontent.com/IQSS/dataverse-ansible/master/ec2/ec2-create-instance.sh'
+	sh '/usr/bin/curl -O https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/develop/ec2/ec2-create-instance.sh'
 	sh '/bin/rm -f groupvars.yml'
-	sh '/usr/bin/curl -o groupvars.yml https://raw.githubusercontent.com/IQSS/dataverse-ansible/master/tests/group_vars/jenkins.yml'
-	sh '/usr/bin/bash ec2-create-instance.sh -b ${CHANGE_BRANCH} -r ${EC2_REPO} -t jenkins_delete_me -l target -g groupvars.yml -s t2.large -d'
+	sh '/usr/bin/curl -o groupvars.yml https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/develop/tests/group_vars/jenkins.yml'
+	sh '/usr/bin/bash ec2-create-instance.sh -b ${CHANGE_BRANCH} -r ${EC2_REPO} -t jenkins_delete_me -l target -g groupvars.yml -s t3a.large -d'
       }
     }
 
@@ -41,6 +41,13 @@ pipeline {
 	  sourcePattern: 'src/main/java',
 	  exclusionPattern: 'src/test*']
 	)
+        script {
+          if (fileExists('./ansible_complete')) {
+            sh '/bin/rm ./ansible_complete'
+          } else {
+            error('Ansible run terminated abnormally, failing build.')
+          }
+        }
       }
     }
   }

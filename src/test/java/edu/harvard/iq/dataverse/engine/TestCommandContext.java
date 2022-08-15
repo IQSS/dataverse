@@ -221,11 +221,6 @@ public class TestCommandContext implements CommandContext {
     }
 
     @Override
-    public MapLayerMetadataServiceBean mapLayerMetadata() {
-        return null;
-    }
-
-    @Override
     public DataCaptureModuleServiceBean dataCaptureModule() {
         return null;
     }
