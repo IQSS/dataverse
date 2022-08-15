@@ -1,6 +1,6 @@
-# Signposting for DV 5.9
+# Signposting for Dataverse
 
-This branch adds [Signposting](https://signposting.org/) support to DV 5.9.
+This branch adds [Signposting](https://signposting.org/) support to Dataverse
 
 There are 2 Signposting profile levels, level 1 and level 2. In this implementation, 
  * level 1 links are shown in 
@@ -14,13 +14,6 @@ config items.
 
 ```json
 {
-  "license": {
-    "CC0": "https://creativecommons.org/licenses/cc0/"
-  },
-  "describedby": {
-    "doi": "https://doi.org/",
-    "type": "application/vnd.citationstyles.csl+json"
-  },
   "useDefaultFileType": true,
   "defaultFileTypeValue": "https://schema.org/Dataset",
   "maxItems": 5,
@@ -28,9 +21,6 @@ config items.
 }
 ```
 
- * The `license` is a `dict` contains the URI for `CC0`. Please note, this option is not used anymore, should be set through MultiLicense. 
- * `describedby` is required by [Signposting](https://signposting.org/). It shows the link to the metadata 
-which describes the resources that is the origin of the link.
  * `useDefaultFileType` and `defaultFileTypeValue` are used in combination to provide extra `Dataset` type to DV 
    datasets. `AboutPage` is required by `Signposting`, hence always present in the datasets. Whilst a second type 
    could be configured to better reflect the actual scholarly type of the dataset. 
