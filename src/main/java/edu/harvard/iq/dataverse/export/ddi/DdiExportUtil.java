@@ -93,6 +93,7 @@ public class DdiExportUtil {
     
     public static final String NOTE_TYPE_CONTENTTYPE = "DATAVERSE:CONTENTTYPE";
     public static final String NOTE_SUBJECT_CONTENTTYPE = "Content/MIME Type";
+    public static final String CITATION_BLOCK_NAME = "citation";
 
     public static String datasetDtoAsJson2ddi(String datasetDtoAsJson) {
         logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson));
@@ -281,11 +282,22 @@ public class DdiExportUtil {
     }
 
     private static void writeOtherStudyMaterial(XMLStreamWriter xmlw , DatasetVersionDTO version) throws XMLStreamException {
+        List<String> relMaterials;
+        List<String> relDatasets;
+        List<String> relReferences;
+        try {
+            relMaterials = dto2PrimitiveList(version, DatasetFieldConstant.relatedMaterial);
+            relDatasets = dto2PrimitiveList(version, DatasetFieldConstant.relatedDatasets);
+            relReferences = dto2PrimitiveList(version, DatasetFieldConstant.otherReferences); 
+        } catch (Exception e) {
+            logger.warning("Exporting dataset to DDI failed for related materials element: " + e.getMessage());
+            return;
+        }
         xmlw.writeStartElement("othrStdyMat");
-        writeFullElementList(xmlw, "relMat", dto2PrimitiveList(version, DatasetFieldConstant.relatedMaterial));
-        writeFullElementList(xmlw, "relStdy", dto2PrimitiveList(version, DatasetFieldConstant.relatedDatasets));
+        writeFullElementList(xmlw, "relMat", relMaterials);
+        writeFullElementList(xmlw, "relStdy", relDatasets);
         writeRelPublElement(xmlw, version);
-        writeFullElementList(xmlw, "othRefs", dto2PrimitiveList(version, DatasetFieldConstant.otherReferences));
+        writeFullElementList(xmlw, "othRefs", relReferences);
         xmlw.writeEndElement(); //othrStdyMat
     }
 
@@ -437,7 +449,7 @@ public class DdiExportUtil {
                         }
                     }
                     if (DatasetFieldConstant.kindOfData.equals(fieldDTO.getTypeName())) {
-                        writeMultipleElement(xmlw, "dataKind", fieldDTO);                     
+                        writeMultipleElement(xmlw, "dataKind", fieldDTO, lang);
                     }
                 }
             }
@@ -496,7 +508,7 @@ public class DdiExportUtil {
                                 }  
                                 if (DatasetFieldConstant.southLatitude.equals(next.getTypeName())) {
                                     writeFullElement(xmlw, "southBL", next.getSinglePrimitive());
-                                }                               
+                                }
 
                             }
                             xmlw.writeEndElement();
@@ -510,20 +522,21 @@ public class DdiExportUtil {
             if("socialscience".equals(key)){                
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.universe.equals(fieldDTO.getTypeName())) {
-                        writeMultipleElement(xmlw, "universe", fieldDTO);
+                        writeMultipleElement(xmlw, "universe", fieldDTO, lang);
                     }
                     if (DatasetFieldConstant.unitOfAnalysis.equals(fieldDTO.getTypeName())) {
                         writeI18NElementList(xmlw, "anlyUnit", fieldDTO.getMultipleVocab(), "unitOfAnalysis", fieldDTO.getTypeClass(), "socialscience", lang);
                     }
-                }              
+                }
             }
         }
         xmlw.writeEndElement(); //sumDscr     
     }
     
-    private static void writeMultipleElement(XMLStreamWriter xmlw, String element, FieldDTO fieldDTO) throws XMLStreamException {
+    private static void writeMultipleElement(XMLStreamWriter xmlw, String element, FieldDTO fieldDTO, String lang) throws XMLStreamException {
         for (String value : fieldDTO.getMultiplePrimitive()) {
-            writeFullElement(xmlw, element, value);
+            //Write multiple lang vals for controlled vocab, otherwise don't include any lang tag
+            writeFullElement(xmlw, element, value, fieldDTO.isControlledVocabularyField() ? lang : null);
         }
     }
     
@@ -541,37 +554,47 @@ public class DdiExportUtil {
     private static void writeMethodElement(XMLStreamWriter xmlw , DatasetVersionDTO version, String lang) throws XMLStreamException{
         xmlw.writeStartElement("method");
         xmlw.writeStartElement("dataColl");
-        writeI18NElement(xmlw, "timeMeth", version, DatasetFieldConstant.timeMethod,lang); 
-        writeFullElement(xmlw, "dataCollector", dto2Primitive(version, DatasetFieldConstant.dataCollector));         
-        writeFullElement(xmlw, "collectorTraining", dto2Primitive(version, DatasetFieldConstant.collectorTraining));   
-        writeFullElement(xmlw, "frequenc", dto2Primitive(version, DatasetFieldConstant.frequencyOfDataCollection));      
+        writeI18NElement(xmlw, "timeMeth", version, DatasetFieldConstant.timeMethod,lang);
+        writeI18NElement(xmlw, "dataCollector", version, DatasetFieldConstant.dataCollector, lang);
+        writeI18NElement(xmlw, "collectorTraining", version, DatasetFieldConstant.collectorTraining, lang);   
+        writeI18NElement(xmlw, "frequenc", version, DatasetFieldConstant.frequencyOfDataCollection, lang);
         writeI18NElement(xmlw, "sampProc", version, DatasetFieldConstant.samplingProcedure, lang);
 
         writeTargetSampleElement(xmlw, version);
 
-        writeFullElement(xmlw, "deviat", dto2Primitive(version, DatasetFieldConstant.deviationsFromSampleDesign));
+        writeI18NElement(xmlw, "deviat", version, DatasetFieldConstant.deviationsFromSampleDesign, lang);
 
         xmlw.writeStartElement("sources");
         writeFullElementList(xmlw, "dataSrc", dto2PrimitiveList(version, DatasetFieldConstant.dataSources));
-        writeFullElement(xmlw, "srcOrig", dto2Primitive(version, DatasetFieldConstant.originOfSources));
-        writeFullElement(xmlw, "srcChar", dto2Primitive(version, DatasetFieldConstant.characteristicOfSources));
-        writeFullElement(xmlw, "srcDocu", dto2Primitive(version, DatasetFieldConstant.accessToSources));
+        writeI18NElement(xmlw, "srcOrig", version, DatasetFieldConstant.originOfSources, lang);
+        writeI18NElement(xmlw, "srcChar", version, DatasetFieldConstant.characteristicOfSources, lang);
+        writeI18NElement(xmlw, "srcDocu", version, DatasetFieldConstant.accessToSources, lang);
         xmlw.writeEndElement(); //sources
 
-        writeI18NElement(xmlw, "collMode", version, DatasetFieldConstant.collectionMode, lang); 
+        FieldDTO collModeFieldDTO = dto2FieldDTO(version, DatasetFieldConstant.collectionMode, "socialscience");
+        if (collModeFieldDTO != null) {
+            // This field was made multiple as of 5.10
+            // Below is a backward compatibility check allowing export to work in 
+            // an instance where the metadata block has not been updated yet.
+            if (collModeFieldDTO.getMultiple()) {
+                writeI18NElementList(xmlw, "collMode", collModeFieldDTO.getMultipleVocab(), DatasetFieldConstant.collectionMode, collModeFieldDTO.getTypeClass(), "socialscience", lang);
+            } else {
+                writeI18NElement(xmlw, "collMode", version, DatasetFieldConstant.collectionMode, lang);
+            }
+        }
         writeI18NElement(xmlw, "resInstru", version, DatasetFieldConstant.researchInstrument, lang); 
-        writeFullElement(xmlw, "collSitu", dto2Primitive(version, DatasetFieldConstant.dataCollectionSituation)); 
-        writeFullElement(xmlw, "actMin", dto2Primitive(version, DatasetFieldConstant.actionsToMinimizeLoss));
-        writeFullElement(xmlw, "conOps", dto2Primitive(version, DatasetFieldConstant.controlOperations));
-        writeFullElement(xmlw, "weight", dto2Primitive(version, DatasetFieldConstant.weighting));  
-        writeFullElement(xmlw, "cleanOps", dto2Primitive(version, DatasetFieldConstant.cleaningOperations));
+        writeI18NElement(xmlw, "collSitu", version, DatasetFieldConstant.dataCollectionSituation, lang);
+        writeI18NElement(xmlw, "actMin", version, DatasetFieldConstant.actionsToMinimizeLoss, lang);
+        writeI18NElement(xmlw, "conOps", version, DatasetFieldConstant.controlOperations, lang);
+        writeI18NElement(xmlw, "weight", version, DatasetFieldConstant.weighting, lang);  
+        writeI18NElement(xmlw, "cleanOps", version, DatasetFieldConstant.cleaningOperations, lang);
 
         xmlw.writeEndElement(); //dataColl
         xmlw.writeStartElement("anlyInfo");
         //writeFullElement(xmlw, "anylInfo", dto2Primitive(version, DatasetFieldConstant.datasetLevelErrorNotes));
-        writeFullElement(xmlw, "respRate", dto2Primitive(version, DatasetFieldConstant.responseRate));  
-        writeFullElement(xmlw, "EstSmpErr", dto2Primitive(version, DatasetFieldConstant.samplingErrorEstimates));
-        writeFullElement(xmlw, "dataAppr", dto2Primitive(version, DatasetFieldConstant.otherDataAppraisal)); 
+        writeI18NElement(xmlw, "respRate", version, DatasetFieldConstant.responseRate, lang);
+        writeI18NElement(xmlw, "EstSmpErr", version, DatasetFieldConstant.samplingErrorEstimates, lang);
+        writeI18NElement(xmlw, "dataAppr", version, DatasetFieldConstant.otherDataAppraisal, lang); 
         xmlw.writeEndElement(); //anlyInfo
         writeNotesElement(xmlw, version);
         
@@ -581,18 +604,20 @@ public class DdiExportUtil {
     private static void writeSubjectElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String lang) throws XMLStreamException{ 
         
         //Key Words and Topic Classification
-        
-        xmlw.writeStartElement("subject");        
+        Locale defaultLocale = Locale.getDefault();
+        xmlw.writeStartElement("subject");
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
-            if ("citation".equals(key)) {
+            if (CITATION_BLOCK_NAME.equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
-                    if (DatasetFieldConstant.subject.equals(fieldDTO.getTypeName())){
-                        writeI18NElementList(xmlw, "keyword", fieldDTO.getMultipleVocab(), "subject", fieldDTO.getTypeClass(), "citation", lang);
+                    if (DatasetFieldConstant.subject.equals(fieldDTO.getTypeName())) {
+                        writeI18NElementList(xmlw, "keyword", fieldDTO.getMultipleVocab(), "subject",
+                                fieldDTO.getTypeClass(), "citation", lang);
                     }
-                    
+
                     if (DatasetFieldConstant.keyword.equals(fieldDTO.getTypeName())) {
+                        boolean isCVV = false;
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String keywordValue = "";
                             String keywordVocab = "";
@@ -600,30 +625,57 @@ public class DdiExportUtil {
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.keywordValue.equals(next.getTypeName())) {
-                                    keywordValue =  next.getSinglePrimitive();
+                                    if (next.isControlledVocabularyField()) {
+                                        isCVV = true;
+                                    }
+                                    keywordValue = next.getSinglePrimitive();
                                 }
                                 if (DatasetFieldConstant.keywordVocab.equals(next.getTypeName())) {
-                                    keywordVocab =  next.getSinglePrimitive();
+                                    keywordVocab = next.getSinglePrimitive();
                                 }
                                 if (DatasetFieldConstant.keywordVocabURI.equals(next.getTypeName())) {
-                                    keywordURI =  next.getSinglePrimitive();
+                                    keywordURI = next.getSinglePrimitive();
                                 }
                             }
-                            if (!keywordValue.isEmpty()){
-                                xmlw.writeStartElement("keyword"); 
-                                if(!keywordVocab.isEmpty()){
-                                   writeAttribute(xmlw,"vocab",keywordVocab); 
+                            if (!keywordValue.isEmpty()) {
+                                xmlw.writeStartElement("keyword");
+                                if (!keywordVocab.isEmpty()) {
+                                    writeAttribute(xmlw, "vocab", keywordVocab);
                                 }
-                                if(!keywordURI.isEmpty()){
-                                   writeAttribute(xmlw,"vocabURI",keywordURI);
-                                } 
-                                xmlw.writeCharacters(keywordValue);
-                                xmlw.writeEndElement(); //Keyword
+                                if (!keywordURI.isEmpty()) {
+                                    writeAttribute(xmlw, "vocabURI", keywordURI);
+                                }
+                                if (lang != null && isCVV) {
+                                    writeAttribute(xmlw, "xml:lang", defaultLocale.getLanguage());
+                                    xmlw.writeCharacters(ControlledVocabularyValue.getLocaleStrValue(keywordValue,
+                                            DatasetFieldConstant.keywordValue, CITATION_BLOCK_NAME, defaultLocale,
+                                            true));
+                                } else {
+                                    xmlw.writeCharacters(keywordValue);
+                                }
+                                xmlw.writeEndElement(); // Keyword
+                                if (lang != null && isCVV && !defaultLocale.getLanguage().equals(lang)) {
+                                    String translatedValue = ControlledVocabularyValue.getLocaleStrValue(keywordValue,
+                                            DatasetFieldConstant.keywordValue, CITATION_BLOCK_NAME, new Locale(lang),
+                                            false);
+                                    if (translatedValue != null) {
+                                        xmlw.writeStartElement("keyword");
+                                        if (!keywordVocab.isEmpty()) {
+                                            writeAttribute(xmlw, "vocab", keywordVocab);
+                                        }
+                                        if (!keywordURI.isEmpty()) {
+                                            writeAttribute(xmlw, "vocabURI", keywordURI);
+                                        }
+                                        writeAttribute(xmlw, "xml:lang", lang);
+                                        xmlw.writeCharacters(translatedValue);
+                                        xmlw.writeEndElement(); // Keyword
+                                    }
+                                }
                             }
-
                         }
                     }
                     if (DatasetFieldConstant.topicClassification.equals(fieldDTO.getTypeName())) {
+                        boolean isCVV = false;
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String topicClassificationValue = "";
                             String topicClassificationVocab = "";
@@ -631,34 +683,63 @@ public class DdiExportUtil {
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.topicClassValue.equals(next.getTypeName())) {
-                                    topicClassificationValue =  next.getSinglePrimitive();
+                                    // Currently getSingleVocab() is the same as getSinglePrimitive() so this works
+                                    // for either case
+                                    topicClassificationValue = next.getSinglePrimitive();
+                                    if (next.isControlledVocabularyField()) {
+                                        isCVV = true;
+                                    }
                                 }
                                 if (DatasetFieldConstant.topicClassVocab.equals(next.getTypeName())) {
-                                    topicClassificationVocab =  next.getSinglePrimitive();
+                                    topicClassificationVocab = next.getSinglePrimitive();
                                 }
                                 if (DatasetFieldConstant.topicClassVocabURI.equals(next.getTypeName())) {
-                                    topicClassificationURI =  next.getSinglePrimitive();
+                                    topicClassificationURI = next.getSinglePrimitive();
                                 }
                             }
-                            if (!topicClassificationValue.isEmpty()){
-                                xmlw.writeStartElement("topcClas"); 
-                                if(!topicClassificationVocab.isEmpty()){
-                                   writeAttribute(xmlw,"vocab",topicClassificationVocab); 
-                                } 
-                                if(!topicClassificationURI.isEmpty()){
-                                   writeAttribute(xmlw,"vocabURI",topicClassificationURI);
-                                } 
-                                xmlw.writeCharacters(topicClassificationValue);
-                                xmlw.writeEndElement(); //topcClas
+                            if (!topicClassificationValue.isEmpty()) {
+                                xmlw.writeStartElement("topcClas");
+                                if (!topicClassificationVocab.isEmpty()) {
+                                    writeAttribute(xmlw, "vocab", topicClassificationVocab);
+                                }
+                                if (!topicClassificationURI.isEmpty()) {
+                                    writeAttribute(xmlw, "vocabURI", topicClassificationURI);
+                                }
+                                if (lang != null && isCVV) {
+                                    writeAttribute(xmlw, "xml:lang", defaultLocale.getLanguage());
+                                    xmlw.writeCharacters(ControlledVocabularyValue.getLocaleStrValue(
+                                            topicClassificationValue, DatasetFieldConstant.topicClassValue,
+                                            CITATION_BLOCK_NAME, defaultLocale, true));
+                                } else {
+                                    xmlw.writeCharacters(topicClassificationValue);
+                                }
+                                xmlw.writeEndElement(); // topcClas
+                                if (lang != null && isCVV && !defaultLocale.getLanguage().equals(lang)) {
+                                    String translatedValue = ControlledVocabularyValue.getLocaleStrValue(
+                                            topicClassificationValue, DatasetFieldConstant.topicClassValue,
+                                            CITATION_BLOCK_NAME, new Locale(lang), false);
+                                    if (translatedValue != null) {
+                                        xmlw.writeStartElement("topcClas");
+                                        if (!topicClassificationVocab.isEmpty()) {
+                                            writeAttribute(xmlw, "vocab", topicClassificationVocab);
+                                        }
+                                        if (!topicClassificationURI.isEmpty()) {
+                                            writeAttribute(xmlw, "vocabURI", topicClassificationURI);
+                                        }
+                                        writeAttribute(xmlw, "xml:lang", lang);
+                                        xmlw.writeCharacters(translatedValue);
+                                        xmlw.writeEndElement(); // topcClas
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
-        }        
+        }
         xmlw.writeEndElement(); // subject       
     }
-    
+
     private static void writeAuthorsElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException {
 
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
@@ -1338,7 +1419,7 @@ public class DdiExportUtil {
             for (FieldDTO fieldDTO : value.getFields()) {
                 if (datasetFieldTypeName.equals(fieldDTO.getTypeName())) {
                     String rawVal = fieldDTO.getSinglePrimitive();
-                    if (fieldDTO.getTypeClass().equals("controlledVocabulary")) {
+                    if (fieldDTO.isControlledVocabularyField()) {
                         return ControlledVocabularyValue.getLocaleStrValue(rawVal, datasetFieldTypeName, value.getName(),
                                 locale, false);
                     }
@@ -1359,7 +1440,19 @@ public class DdiExportUtil {
         }
         return null;
     }
-
+    
+    private static FieldDTO dto2FieldDTO(DatasetVersionDTO datasetVersionDTO, String datasetFieldTypeName, String metadataBlockName) {
+        MetadataBlockDTO block = datasetVersionDTO.getMetadataBlocks().get(metadataBlockName);
+        if (block != null) {
+            for (FieldDTO fieldDTO : block.getFields()) {
+                if (datasetFieldTypeName.equals(fieldDTO.getTypeName())) {
+                    return fieldDTO;
+                }
+            }
+        }
+        return null;
+    }
+        
     private static void writeFullElementList(XMLStreamWriter xmlw, String name, List<String> values) throws XMLStreamException {
         //For the simplest Elements we can 
         if (values != null && !values.isEmpty()) {
@@ -1412,9 +1505,10 @@ public class DdiExportUtil {
         String val = dto2Primitive(version, fieldTypeName);
         Locale defaultLocale = Locale.getDefault();
         // Get the language-specific value for the default language
+        // A null value is returned if this is not a CVV field
         String localeVal = dto2Primitive(version, fieldTypeName, defaultLocale);
         String requestedLocaleVal = null;
-        if (lang != null && !defaultLocale.getLanguage().equals(lang)) {
+        if (lang != null && localeVal != null && !defaultLocale.getLanguage().equals(lang)) {
             // Also get the value in the requested locale/lang if that's not the default
             // lang.
             requestedLocaleVal = dto2Primitive(version, fieldTypeName, new Locale(lang));

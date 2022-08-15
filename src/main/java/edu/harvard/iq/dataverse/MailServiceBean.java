@@ -16,6 +16,8 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
 import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -38,6 +40,8 @@ import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+
+import edu.harvard.iq.dataverse.validation.EMailValidator;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -167,7 +171,7 @@ public class MailServiceBean implements java.io.Serializable {
         return sent;
     }
 
-    private InternetAddress getSystemAddress() {
+    public InternetAddress getSystemAddress() {
        String systemEmail = settingsService.getValueForKey(Key.SystemEmail);
        return MailUtil.parseSystemAddress(systemEmail);
     }
@@ -188,7 +192,7 @@ public class MailServiceBean implements java.io.Serializable {
                 logger.severe(ex.getMessage());
             }
             msg.setFrom(fromAddress);
-            if (EMailValidator.isEmailValid(reply, null)) {
+            if (EMailValidator.isEmailValid(reply)) {
             	// But set the reply-to address to direct replies to the requested 'from' party if it is a valid email address
                 msg.setReplyTo(new Address[] {new InternetAddress(reply)});
             } else {
@@ -606,12 +610,32 @@ public class MailServiceBean implements java.io.Serializable {
                 ));
 
                 return ingestedCompletedWithErrorsMessage;
+            case DATASETMENTIONED:
+                String additionalInfo = userNotification.getAdditionalInfo();
+                dataset = (Dataset) targetObject;
+                javax.json.JsonObject citingResource = null;
+                citingResource = JsonUtil.getJsonObject(additionalInfo);
+                
+
+                pattern = BundleUtil.getStringFromBundle("notification.email.datasetWasMentioned");
+                Object[] paramArrayDatasetMentioned = {
+                        userNotification.getUser().getName(),
+                        BrandingUtil.getInstallationBrandName(), 
+                        citingResource.getString("@type"),
+                        citingResource.getString("@id"),
+                        citingResource.getString("name"),
+                        citingResource.getString("relationship"), 
+                        systemConfig.getDataverseSiteUrl(),
+                        dataset.getGlobalId().toString(), 
+                        dataset.getDisplayName()};
+                messageText = MessageFormat.format(pattern, paramArrayDatasetMentioned);
+                return messageText;
         }
 
         return "";
     }
 
-    private Object getObjectOfNotification (UserNotification userNotification){
+    public Object getObjectOfNotification (UserNotification userNotification){
         switch (userNotification.getType()) {
             case ASSIGNROLE:
             case REVOKEROLE:
@@ -630,6 +654,7 @@ public class MailServiceBean implements java.io.Serializable {
             case GRANTFILEACCESS:
             case REJECTFILEACCESS:
             case DATASETCREATED:
+            case DATASETMENTIONED:
                 return datasetService.find(userNotification.getObjectId());
             case CREATEDS:
             case SUBMITTEDDS:

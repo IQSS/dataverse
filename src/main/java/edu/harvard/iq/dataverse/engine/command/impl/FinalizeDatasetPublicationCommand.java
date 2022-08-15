@@ -84,7 +84,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             validateDataFiles(theDataset, ctxt);
             // (this will throw a CommandException if it fails)
         }
-
+        
+        validateOrDie(theDataset.getLatestVersion(), false);
+        
 		/*
 		 * Try to register the dataset identifier. For PID providers that have registerWhenPublished == false (all except the FAKE provider at present)
 		 * the registerExternalIdentifier command will make one try to create the identifier if needed (e.g. if reserving at dataset creation wasn't done/failed).
@@ -254,30 +256,23 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             }
         }
 
-        exportMetadata(dataset);
-                
-        ctxt.datasets().updateLastExportTimeStamp(dataset.getId());
-
-        return retVal;
-    }
-
-    /**
-     * Attempting to run metadata export, for all the formats for which we have
-     * metadata Exporters.
-     */
-    private void exportMetadata(Dataset dataset) {
-
+        // Metadata export:
+        
         try {
             ExportService instance = ExportService.getInstance();
             instance.exportAllFormats(dataset);
-
+            dataset = ctxt.datasets().merge(dataset); 
         } catch (Exception ex) {
             // Something went wrong!
             // Just like with indexing, a failure to export is not a fatal
             // condition. We'll just log the error as a warning and keep
             // going:
-            logger.log(Level.WARNING, "Dataset publication finalization: exception while exporting:{0}", ex.getMessage());
-        }
+            logger.warning("Finalization: exception caught while exporting: "+ex.getMessage());
+            // ... but it is important to only update the export time stamp if the 
+            // export was indeed successful.
+        }        
+        
+        return retVal;
     }
 
     /**

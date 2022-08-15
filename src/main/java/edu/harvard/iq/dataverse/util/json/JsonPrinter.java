@@ -23,14 +23,11 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import edu.harvard.iq.dataverse.util.SignpostingResources;
-import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 
-import java.net.URISyntaxException;
 import java.util.*;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -136,8 +133,8 @@ public class JsonPrinter {
                 .add("lockType", lock.getReason().toString())
                 .add("date", lock.getStartTime().toString())
                 .add("user", lock.getUser().getUserIdentifier())
+                .add("dataset", lock.getDataset().getGlobalId().asString())
                 .add("message", lock.getInfo());
-
     }
     
     public static JsonObjectBuilder json( RoleAssigneeDisplayInfo d ) {
@@ -202,6 +199,14 @@ public class JsonPrinter {
             bld.add(JsonPrinter.json(r));
         }
         return bld;
+    }
+
+    public static <E extends Enum> JsonArrayBuilder enumsToJson(Collection<E> collection) {
+        JsonArrayBuilder arr = Json.createArrayBuilder();
+        for (E entry : collection) {
+            arr.add(entry.name());
+        }
+        return arr;
     }
 
     public static JsonObjectBuilder json(DataverseRole role) {
@@ -334,7 +339,7 @@ public class JsonPrinter {
                 .add("UNF", dsv.getUNF()).add("archiveTime", format(dsv.getArchiveTime()))
                 .add("lastUpdateTime", format(dsv.getLastUpdateTime())).add("releaseTime", format(dsv.getReleaseTime()))
                 .add("createTime", format(dsv.getCreateTime()));
-        License license = dsv.getTermsOfUseAndAccess().getLicense();
+        License license = DatasetUtil.getLicense(dsv);;
         if (license != null) {
             // Standard license
             bld.add("license", jsonObjectBuilder()
@@ -798,7 +803,7 @@ public class JsonPrinter {
             .add("name", license.getName())
             .add("shortDescription", license.getShortDescription())
             .add("uri", license.getUri().toString())
-            .add("iconUrl", license.getIconUrl().toString())
+            .add("iconUrl", license.getIconUrl() == null ? null : license.getIconUrl().toString())
             .add("active", license.isActive())
             .add("isDefault", license.isDefault());
     }

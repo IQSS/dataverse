@@ -8,6 +8,8 @@ import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
@@ -85,7 +87,7 @@ public class OREMap {
         localContext.putIfAbsent(JsonLDNamespace.schema.getPrefix(), JsonLDNamespace.schema.getUrl());
 
         Dataset dataset = version.getDataset();
-        String id = dataset.getGlobalId().asString();
+        String id = dataset.getGlobalId().toURL().toExternalForm();
         JsonArrayBuilder fileArray = Json.createArrayBuilder();
         // The map describes an aggregation
         JsonObjectBuilder aggBuilder = Json.createObjectBuilder();
@@ -95,82 +97,11 @@ public class OREMap {
         for (DatasetField field : fields) {
             if (!field.isEmpty()) {
                 DatasetFieldType dfType = field.getDatasetFieldType();
-                if (excludeEmail && DatasetFieldType.FieldType.EMAIL.equals(dfType.getFieldType())) {
-                    continue;
+                JsonLDTerm fieldName = dfType.getJsonLDTerm();
+                JsonValue jv = getJsonLDForField(field, excludeEmail, cvocMap, localContext);
+                if(jv!=null) {
+                    aggBuilder.add(fieldName.getLabel(), jv);
                 }
-                JsonLDTerm fieldName = getTermFor(dfType);
-                if (fieldName.inNamespace()) {
-                    localContext.putIfAbsent(fieldName.getNamespace().getPrefix(), fieldName.getNamespace().getUrl());
-                } else {
-                    localContext.putIfAbsent(fieldName.getLabel(), fieldName.getUrl());
-                }
-                JsonArrayBuilder vals = Json.createArrayBuilder();
-                if (!dfType.isCompound()) {
-                    for (String val : field.getValues_nondisplay()) {
-                        if (cvocMap.containsKey(dfType.getId())) {
-                            try {
-                            JsonObject cvocEntry = cvocMap.get(dfType.getId());
-                            if (cvocEntry.containsKey("retrieval-filtering")) {
-                                JsonObject filtering = cvocEntry.getJsonObject("retrieval-filtering");
-                                JsonObject context = filtering.getJsonObject("@context");
-                                for (String prefix : context.keySet()) {
-                                    localContext.putIfAbsent(prefix, context.getString(prefix));
-                                }
-                                vals.add(datasetFieldService.getExternalVocabularyValue(val));
-                            } else {
-                                vals.add(val);
-                            }
-                            } catch(Exception e) {
-                                logger.warning("Couldn't interpret value for : " + val + " : " + e.getMessage());
-                                logger.log(Level.FINE, ExceptionUtils.getStackTrace(e));
-                                vals.add(val);
-                            }
-                        } else {
-                            vals.add(val);
-                        }
-                    }
-                } else {
-                    // ToDo: Needs to be recursive (as in JsonPrinter?)
-                    for (DatasetFieldCompoundValue dscv : field.getDatasetFieldCompoundValues()) {
-                        // compound values are of different types
-                        JsonObjectBuilder child = Json.createObjectBuilder();
-
-                        for (DatasetField dsf : dscv.getChildDatasetFields()) {
-                            DatasetFieldType dsft = dsf.getDatasetFieldType();
-                            if (excludeEmail && DatasetFieldType.FieldType.EMAIL.equals(dsft.getFieldType())) {
-                                continue;
-                            }
-                            // which may have multiple values
-                            if (!dsf.isEmpty()) {
-                                // Add context entry
-                                // ToDo - also needs to recurse here?
-                                JsonLDTerm subFieldName = getTermFor(dfType, dsft);
-                                if (subFieldName.inNamespace()) {
-                                    localContext.putIfAbsent(subFieldName.getNamespace().getPrefix(),
-                                            subFieldName.getNamespace().getUrl());
-                                } else {
-                                    localContext.putIfAbsent(subFieldName.getLabel(), subFieldName.getUrl());
-                                }
-
-                                List<String> values = dsf.getValues_nondisplay();
-                                if (values.size() > 1) {
-                                    JsonArrayBuilder childVals = Json.createArrayBuilder();
-
-                                    for (String val : dsf.getValues_nondisplay()) {
-                                        childVals.add(val);
-                                    }
-                                    child.add(subFieldName.getLabel(), childVals);
-                                } else {
-                                    child.add(subFieldName.getLabel(), values.get(0));
-                                }
-                            }
-                        }
-                        vals.add(child);
-                    }
-                }
-                // Add metadata value to aggregation, suppress array when only one value
-                JsonArray valArray = vals.build();
-                aggBuilder.add(fieldName.getLabel(), (valArray.size() != 1) ? valArray : valArray.get(0));
             }
         }
         // Add metadata related to the Dataset/DatasetVersion
@@ -213,8 +144,14 @@ public class OREMap {
         }
 
         aggBuilder.add(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel(),
-                BrandingUtil.getRootDataverseCollectionName());
+                BrandingUtil.getInstallationBrandName());
 
+        aggBuilder.add(JsonLDTerm.schemaOrg("isPartOf").getLabel(), getDataverseDescription(dataset.getOwner()));
+        String mdl = dataset.getMetadataLanguage();
+        if(!mdl.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
+            aggBuilder.add(JsonLDTerm.schemaOrg("inLanguage").getLabel(), mdl);
+        }
+        
         // The aggregation aggregates aggregatedresources (Datafiles) which each have
         // their own entry and metadata
         JsonArrayBuilder aggResArrayBuilder = Json.createArrayBuilder();
@@ -315,6 +252,17 @@ public class OREMap {
         }
     }
 
+    private JsonObjectBuilder getDataverseDescription(Dataverse dv) {
+        //Schema.org is already in local context, no updates needed as long as we only use chemaOrg and "@id" here
+        JsonObjectBuilder dvjob = Json.createObjectBuilder().add(JsonLDTerm.schemaOrg("name").getLabel(), dv.getCurrentName()).add("@id", dv.getLocalURL());
+        addIfNotNull(dvjob, JsonLDTerm.schemaOrg("description"), dv.getDescription());
+        Dataverse owner = dv.getOwner();
+        if(owner!=null) {
+            dvjob.add(JsonLDTerm.schemaOrg("isPartOf").getLabel(), getDataverseDescription(owner));
+        }
+        return dvjob;
+    }
+
     /*
      * Simple methods to only add an entry to JSON if the value of the term is
      * non-null. Methods created for string, JsonValue, boolean, and long
@@ -359,11 +307,11 @@ public class OREMap {
     }
 
     public JsonLDTerm getContactNameTerm() {
-        return getTermFor(DatasetFieldConstant.datasetContact, DatasetFieldConstant.datasetContactName);
+        return getTermFor(DatasetFieldConstant.datasetContactName);
     }
 
     public JsonLDTerm getContactEmailTerm() {
-        return getTermFor(DatasetFieldConstant.datasetContact, DatasetFieldConstant.datasetContactEmail);
+        return getTermFor(DatasetFieldConstant.datasetContactEmail);
     }
 
     public JsonLDTerm getDescriptionTerm() {
@@ -371,64 +319,101 @@ public class OREMap {
     }
 
     public JsonLDTerm getDescriptionTextTerm() {
-        return getTermFor(DatasetFieldConstant.description, DatasetFieldConstant.descriptionText);
+        return getTermFor(DatasetFieldConstant.descriptionText);
     }
 
     private JsonLDTerm getTermFor(String fieldTypeName) {
-        for (DatasetField dsf : version.getDatasetFields()) {
+        //Could call datasetFieldService.findByName(fieldTypeName) - is that faster/prefereable?
+        for (DatasetField dsf : version.getFlatDatasetFields()) {
             DatasetFieldType dsft = dsf.getDatasetFieldType();
             if (dsft.getName().equals(fieldTypeName)) {
-                return getTermFor(dsft);
+                return dsft.getJsonLDTerm();
             }
         }
         return null;
     }
+    
+    public static JsonValue getJsonLDForField(DatasetField field, Boolean excludeEmail, Map<Long, JsonObject> cvocMap,
+            Map<String, String> localContext) {
 
-    private JsonLDTerm getTermFor(DatasetFieldType dsft) {
-        if (dsft.getUri() != null) {
-            return new JsonLDTerm(dsft.getTitle(), dsft.getUri());
-        } else {
-            String namespaceUri = dsft.getMetadataBlock().getNamespaceUri();
-            if (namespaceUri == null) {
-                namespaceUri = SystemConfig.getDataverseSiteUrlStatic() + "/schema/" + dsft.getMetadataBlock().getName()
-                        + "#";
-            }
-            JsonLDNamespace blockNamespace = JsonLDNamespace.defineNamespace(dsft.getMetadataBlock().getName(), namespaceUri);
-            return new JsonLDTerm(blockNamespace, dsft.getTitle());
+        DatasetFieldType dfType = field.getDatasetFieldType();
+        if (excludeEmail && DatasetFieldType.FieldType.EMAIL.equals(dfType.getFieldType())) {
+            return null;
         }
-    }
 
-    private JsonLDTerm getTermFor(DatasetFieldType dfType, DatasetFieldType dsft) {
-        if (dsft.getUri() != null) {
-            return new JsonLDTerm(dsft.getTitle(), dsft.getUri());
+        JsonLDTerm fieldName = dfType.getJsonLDTerm();
+        if (fieldName.inNamespace()) {
+            localContext.putIfAbsent(fieldName.getNamespace().getPrefix(), fieldName.getNamespace().getUrl());
         } else {
-            // Use metadatablock URI or custom URI for this field based on the path
-            String subFieldNamespaceUri = dfType.getMetadataBlock().getNamespaceUri();
-            if (subFieldNamespaceUri == null) {
-                subFieldNamespaceUri = SystemConfig.getDataverseSiteUrlStatic() + "/schema/"
-                        + dfType.getMetadataBlock().getName() + "/";
-            }
-            subFieldNamespaceUri = subFieldNamespaceUri + dfType.getName() + "#";
-            JsonLDNamespace fieldNamespace = JsonLDNamespace.defineNamespace(dfType.getName(), subFieldNamespaceUri);
-            return new JsonLDTerm(fieldNamespace, dsft.getTitle());
+            localContext.putIfAbsent(fieldName.getLabel(), fieldName.getUrl());
         }
-    }
+        JsonArrayBuilder vals = Json.createArrayBuilder();
+        if (!dfType.isCompound()) {
+            for (String val : field.getValues_nondisplay()) {
+                if (cvocMap.containsKey(dfType.getId())) {
+                    try {
+                        JsonObject cvocEntry = cvocMap.get(dfType.getId());
+                        if (cvocEntry.containsKey("retrieval-filtering")) {
+                            JsonObject filtering = cvocEntry.getJsonObject("retrieval-filtering");
+                            JsonObject context = filtering.getJsonObject("@context");
+                            for (String prefix : context.keySet()) {
+                                localContext.putIfAbsent(prefix, context.getString(prefix));
+                            }
+                            vals.add(datasetFieldService.getExternalVocabularyValue(val));
+                        } else {
+                            vals.add(val);
+                        }
+                    } catch (Exception e) {
+                        logger.warning("Couldn't interpret value for : " + val + " : " + e.getMessage());
+                        logger.log(Level.FINE, ExceptionUtils.getStackTrace(e));
+                        vals.add(val);
+                    }
+                } else {
+                    vals.add(val);
+                }
+            }
+        } else {
+            // ToDo: Needs to be recursive (as in JsonPrinter?)
+            for (DatasetFieldCompoundValue dscv : field.getDatasetFieldCompoundValues()) {
+                // compound values are of different types
+                JsonObjectBuilder child = Json.createObjectBuilder();
 
-    private JsonLDTerm getTermFor(String type, String subType) {
-        for (DatasetField dsf : version.getDatasetFields()) {
-            DatasetFieldType dsft = dsf.getDatasetFieldType();
-            if (dsft.getName().equals(type)) {
-                for (DatasetFieldCompoundValue dscv : dsf.getDatasetFieldCompoundValues()) {
-                    for (DatasetField subField : dscv.getChildDatasetFields()) {
-                        DatasetFieldType subFieldType = subField.getDatasetFieldType();
-                        if (subFieldType.getName().equals(subType)) {
-                            return getTermFor(dsft, subFieldType);
+                for (DatasetField dsf : dscv.getChildDatasetFields()) {
+                    DatasetFieldType dsft = dsf.getDatasetFieldType();
+                    if (excludeEmail && DatasetFieldType.FieldType.EMAIL.equals(dsft.getFieldType())) {
+                        continue;
+                    }
+                    // which may have multiple values
+                    if (!dsf.isEmpty()) {
+                        // Add context entry
+                        // ToDo - also needs to recurse here?
+                        JsonLDTerm subFieldName = dsft.getJsonLDTerm();
+                        if (subFieldName.inNamespace()) {
+                            localContext.putIfAbsent(subFieldName.getNamespace().getPrefix(),
+                                    subFieldName.getNamespace().getUrl());
+                        } else {
+                            localContext.putIfAbsent(subFieldName.getLabel(), subFieldName.getUrl());
+                        }
+
+                        List<String> values = dsf.getValues_nondisplay();
+                        if (values.size() > 1) {
+                            JsonArrayBuilder childVals = Json.createArrayBuilder();
+
+                            for (String val : dsf.getValues_nondisplay()) {
+                                childVals.add(val);
+                            }
+                            child.add(subFieldName.getLabel(), childVals);
+                        } else {
+                            child.add(subFieldName.getLabel(), values.get(0));
                         }
                     }
                 }
+                vals.add(child);
             }
         }
-        return null;
+        // Add metadata value to aggregation, suppress array when only one value
+        JsonArray valArray = vals.build();
+        return (valArray.size() != 1) ? valArray : valArray.get(0);
     }
 
     public static void injectSettingsService(SettingsServiceBean settingsSvc, DatasetFieldServiceBean datasetFieldSvc) {
