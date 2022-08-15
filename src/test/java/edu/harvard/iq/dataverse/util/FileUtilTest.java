@@ -303,11 +303,30 @@ public class FileUtilTest {
         }*/
 
         @Test
+<<<<<<< HEAD
         public void testDetermineFileType() {
             File file = new File("src/test/resources/images/coffeeshop.png");
+=======
+        public void testDetermineFileTypeByExtension() {
+            File file = new File("src/main/webapp/resources/images/cc0.png");
+>>>>>>> refs/remotes/IQSS/develop
             if (file.exists()) {
                 try {
                     assertEquals("image/png", FileUtil.determineFileType(file, "coffeshop.png"));
+                } catch (IOException ex) {
+                    Logger.getLogger(FileUtilTest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } else {
+                fail("File does not exist: " + file.toPath().toString());
+            }
+        }
+
+        @Test
+        public void testDetermineFileTypeByName() {
+            File file = new File("src/test/resources/fileutil/Makefile");
+            if (file.exists()) {
+                try {
+                    assertEquals("text/x-makefile", FileUtil.determineFileType(file, "Makefile"));
                 } catch (IOException ex) {
                     Logger.getLogger(FileUtilTest.class.getName()).log(Level.SEVERE, null, ex);
                 }

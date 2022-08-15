@@ -118,8 +118,7 @@ public class BagValidator {
                 FileChecksumValidationJob validationJob = new FileChecksumValidationJob(inputStreamProvider.get(), filePath, fileChecksum, manifestChecksums.getType(), fileValidationResult);
                 executor.execute(validationJob);
             } else {
-                fileValidationResult.setError();
-                fileValidationResult.setMessage(getMessage("bagit.validation.file.not.found", filePath, fileDataProvider.getName()));
+                fileValidationResult.setError(getMessage("bagit.validation.file.not.found", filePath, fileDataProvider.getName()));
             }
 
         }
@@ -148,7 +147,8 @@ public class BagValidator {
         return Executors.newFixedThreadPool(validatorJobPoolSize);
     }
 
-    private String getMessage(String propertyKey, Object... parameters){
+    // Visible for testing
+    String getMessage(String propertyKey, Object... parameters){
         List<String> parameterList = Arrays.stream(parameters).map(param -> param.toString()).collect(Collectors.toList());
         return BundleUtil.getStringFromBundle(propertyKey, parameterList);
     }

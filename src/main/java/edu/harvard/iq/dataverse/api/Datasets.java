@@ -1159,7 +1159,7 @@ public class Datasets extends AbstractApiBean {
                          */
                         try {
                             updateVersion = commandEngine.submit(archiveCommand);
-                            if (updateVersion.getArchivalCopyLocation() != null) {
+                            if (!updateVersion.getArchivalCopyLocationStatus().equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE)) {
                                 successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.success");
                             } else {
                                 successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure");
@@ -1599,8 +1599,7 @@ public class Datasets extends AbstractApiBean {
         User user = session.getUser();
         String persistentId;
         try {
-            if (getDatasetVersionOrDie(createDataverseRequest(user), versionId, findDatasetOrDie(id), uriInfo, headers)
-                    .getTermsOfUseAndAccess().getLicense() != null) {
+            if (DatasetUtil.getLicense(getDatasetVersionOrDie(createDataverseRequest(user), versionId, findDatasetOrDie(id), uriInfo, headers)) != null) {
                 return error(Status.NOT_FOUND, "This Dataset has no custom license");
             }
             persistentId = getRequestParameter(":persistentId".substring(1));
@@ -3368,10 +3367,16 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                     if (dsv == null) {
                         return error(Status.NOT_FOUND, "Dataset version not found");
                     }
+                    if (isSingleVersionArchiving()) {
+                        for (DatasetVersion version : dsv.getDataset().getVersions()) {
+                            if ((!dsv.equals(version)) && (version.getArchivalCopyLocation() != null)) {
+                                return error(Status.CONFLICT, "Dataset already archived.");
+                            }
+                        }
+                    }
 
                     dsv.setArchivalCopyLocation(JsonUtil.prettyPrint(update));
                     dsv = datasetversionService.merge(dsv);
-                    logger.fine("location now: " + dsv.getArchivalCopyLocation());
                     logger.fine("status now: " + dsv.getArchivalCopyLocationStatus());
                     logger.fine("message now: " + dsv.getArchivalCopyLocationMessage());
 
@@ -3411,5 +3416,21 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
+    }
+    
+    private boolean isSingleVersionArchiving() {
+        String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName, null);
+        if (className != null) {
+            Class<? extends AbstractSubmitToArchiveCommand> clazz;
+            try {
+                clazz =  Class.forName(className).asSubclass(AbstractSubmitToArchiveCommand.class);
+                return ArchiverUtil.onlySingleVersionArchiving(clazz, settingsService);
+            } catch (ClassNotFoundException e) {
+                logger.warning(":ArchiverClassName does not refer to a known Archiver");
+            } catch (ClassCastException cce) {
+                logger.warning(":ArchiverClassName does not refer to an Archiver class");
+            }
+        }
+        return false;
     }
 }

@@ -28,11 +28,11 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Embargo;
 import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
@@ -53,6 +53,7 @@ import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatTableC
 import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatLink;
 import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatTableCellAlignRight;
 import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatTableRow;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -487,7 +488,7 @@ public class FileUtil implements java.io.Serializable  {
         // step 4: 
         // Additional processing; if we haven't gotten much useful information 
         // back from Jhove, we'll try and make an educated guess based on 
-        // the file extension:
+        // the file name and extension:
 
         if ( fileExtension != null) {
             logger.fine("fileExtension="+fileExtension);
@@ -496,13 +497,18 @@ public class FileUtil implements java.io.Serializable  {
                 if (fileType != null && fileType.startsWith("text/plain") && STATISTICAL_FILE_EXTENSION.containsKey(fileExtension)) {
                     fileType = STATISTICAL_FILE_EXTENSION.get(fileExtension);
                 } else {
-                    fileType = determineFileTypeByExtension(fileName);
+                    fileType = determineFileTypeByNameAndExtension(fileName);
                 }
 
                 logger.fine("mime type recognized by extension: "+fileType);
             }
         } else {
             logger.fine("fileExtension is null");
+            String fileTypeByName = lookupFileTypeFromPropertiesFile(fileName);
+            if(!StringUtil.isEmpty(fileTypeByName)) {
+                logger.fine(String.format("mime type: %s recognized by filename: %s", fileTypeByName, fileName));
+                fileType = fileTypeByName;
+            }
         }
 
         // step 5: 
@@ -552,7 +558,7 @@ public class FileUtil implements java.io.Serializable  {
         return fileType;
     }
 
-    public static String determineFileTypeByExtension(String fileName) {
+    public static String determineFileTypeByNameAndExtension(String fileName) {
         String mimetypesFileTypeMapResult = MIME_TYPE_MAP.getContentType(fileName);
         logger.fine("MimetypesFileTypeMap type by extension, for " + fileName + ": " + mimetypesFileTypeMapResult);
         if (mimetypesFileTypeMapResult != null) {
@@ -567,14 +573,19 @@ public class FileUtil implements java.io.Serializable  {
     }
 
     public static String lookupFileTypeFromPropertiesFile(String fileName) {
-        String fileExtension = FilenameUtils.getExtension(fileName);
+        String fileKey = FilenameUtils.getExtension(fileName);
         String propertyFileName = "MimeTypeDetectionByFileExtension";
+        if(fileKey == null || fileKey.isEmpty()) {
+            fileKey = fileName;
+            propertyFileName = "MimeTypeDetectionByFileName";
+
+        }
         String propertyFileNameOnDisk = propertyFileName + ".properties";
         try {
-            logger.fine("checking " + propertyFileNameOnDisk + " for file extension " + fileExtension);
-            return BundleUtil.getStringFromPropertyFile(fileExtension, propertyFileName);
+            logger.fine("checking " + propertyFileNameOnDisk + " for file key " + fileKey);
+            return BundleUtil.getStringFromPropertyFile(fileKey, propertyFileName);
         } catch (MissingResourceException ex) {
-            logger.info(fileExtension + " is a file extension Dataverse doesn't know about. Consider adding it to the " + propertyFileNameOnDisk + " file.");
+            logger.info(fileKey + " is a filename/extension Dataverse doesn't know about. Consider adding it to the " + propertyFileNameOnDisk + " file.");
             return null;
         }
     }
@@ -877,7 +888,7 @@ public class FileUtil implements java.io.Serializable  {
                     }
 
                     datafiles.add(datafile);
-                    return CreateDataFileResult.success(finalType, datafiles);
+                    return CreateDataFileResult.success(fileName, finalType, datafiles);
                 }
 
                 // If it's a ZIP file, we are going to unpack it and create multiple
@@ -1053,7 +1064,7 @@ public class FileUtil implements java.io.Serializable  {
                         logger.warning("Could not remove temp file " + tempFile.getFileName().toString());
                     }
                     // and return:
-                    return CreateDataFileResult.success(finalType, datafiles);
+                    return CreateDataFileResult.success(fileName, finalType, datafiles);
                 }
 
             } else if (finalType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)) {
@@ -1069,7 +1080,7 @@ public class FileUtil implements java.io.Serializable  {
                 boolean didProcessWork = shpIngestHelper.processFile();
                 if (!(didProcessWork)) {
                     logger.severe("Processing of zipped shapefile failed.");
-                    return CreateDataFileResult.error(finalType);
+                    return CreateDataFileResult.error(fileName, finalType);
                 }
 
                 try {
@@ -1130,11 +1141,11 @@ public class FileUtil implements java.io.Serializable  {
                         logger.warning("Unable to delete: " + tempFile.toString() + "due to Security Exception: "
                                 + se.getMessage());
                     }
-                    return CreateDataFileResult.success(finalType, datafiles);
+                    return CreateDataFileResult.success(fileName, finalType, datafiles);
                 } else {
                     logger.severe("No files added from directory of rezipped shapefiles");
                 }
-                return CreateDataFileResult.error(finalType);
+                return CreateDataFileResult.error(fileName, finalType);
 
             } else if (finalType.equals(FileUtil.MIME_TYPE_HYPOTHESIS_ANNOTATIONS)) {
                 // ToDo - parse and if rows total > 200 report error (we've only retrieved the
@@ -1157,7 +1168,7 @@ public class FileUtil implements java.io.Serializable  {
         } else {
             // Default to suppliedContentType if set or the overall undetermined default if a contenttype isn't supplied
             finalType = StringUtils.isBlank(suppliedContentType) ? FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT : suppliedContentType;
-            String type = determineFileTypeByExtension(fileName);
+            String type = determineFileTypeByNameAndExtension(fileName);
             if (!StringUtils.isBlank(type)) {
                 //Use rules for deciding when to trust browser supplied type
                 if (useRecognizedType(finalType, type)) {
@@ -1188,10 +1199,10 @@ public class FileUtil implements java.io.Serializable  {
             }
             datafiles.add(datafile);
 
-            return CreateDataFileResult.success(finalType, datafiles);
+            return CreateDataFileResult.success(fileName, finalType, datafiles);
         }
 
-        return CreateDataFileResult.error(finalType);
+        return CreateDataFileResult.error(fileName, finalType);
     }   // end createDataFiles
 
 	private static boolean useRecognizedType(String suppliedContentType, String recognizedType) {
@@ -1543,7 +1554,7 @@ public class FileUtil implements java.io.Serializable  {
         }
         // 1. License and Terms of Use:
         if (datasetVersion.getTermsOfUseAndAccess() != null) {
-            License license = datasetVersion.getTermsOfUseAndAccess().getLicense();
+            License license = DatasetUtil.getLicense(datasetVersion);
             if ((license == null && StringUtils.isNotBlank(datasetVersion.getTermsOfUseAndAccess().getTermsOfUse()))
                     || (license != null && !license.isDefault())) {
                 logger.fine("Popup required because of license or terms of use.");

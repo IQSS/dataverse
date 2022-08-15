@@ -103,6 +103,7 @@
 	subject	Other	D12	9											
 	publicationIDType	ark		0											
 	publicationIDType	arXiv		1											
+<<<<<<< HEAD
 	publicationIDType	doi		2											
 	publicationIDType	handle		3											
 	publicationIDType	isbn		4											
@@ -110,6 +111,24 @@
 	publicationIDType	pmid		6											
 	publicationIDType	url		7											
 	publicationIDType	urn		8											
+=======
+	publicationIDType	bibcode		2											
+	publicationIDType	doi		3											
+	publicationIDType	ean13		4											
+	publicationIDType	eissn		5											
+	publicationIDType	handle		6											
+	publicationIDType	isbn		7											
+	publicationIDType	issn		8											
+	publicationIDType	istc		9											
+	publicationIDType	lissn		10											
+	publicationIDType	lsid		11											
+	publicationIDType	pmid		12											
+	publicationIDType	purl		13											
+	publicationIDType	upc		14											
+	publicationIDType	url		15											
+	publicationIDType	urn		16											
+	publicationIDType	DASH-NRS		17											
+>>>>>>> refs/remotes/IQSS/develop
 	contributorType	Data Collector		0											
 	contributorType	Data Curator		1											
 	contributorType	Data Manager		2											

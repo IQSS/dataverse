@@ -176,8 +176,6 @@ public class TemplatePage implements java.io.Serializable {
     }
 
     public String save(String redirectPage) {
-
-        //SEK - removed dead code 1/6/2015
         
         boolean create = false;
         Command<Void> cmd;
@@ -187,6 +185,8 @@ public class TemplatePage implements java.io.Serializable {
 
             DatasetFieldUtil.tidyUpFields( template.getDatasetFields(), false );
 
+            template.updateInstructions();
+            
             if (editMode == EditMode.CREATE) {
                 template.setCreateTime(new Timestamp(new Date().getTime()));
                 template.setUsageCount(new Long(0));
@@ -248,6 +248,12 @@ public class TemplatePage implements java.io.Serializable {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
         }
         return "/manage-templates.xhtml?dataverseId=" + dataverse.getId() + "&faces-redirect=true"; 
+    }
+    
+    //Get the cutstom instructions defined for a give fieldType
+    public String getInstructionsLabelFor(String fieldType) {
+        String fieldInstructions = template.getInstructionsMap().get(fieldType);
+        return (fieldInstructions!=null && !fieldInstructions.isBlank()) ? fieldInstructions : BundleUtil.getStringFromBundle("template.instructions.empty.label");
     }
 
 }

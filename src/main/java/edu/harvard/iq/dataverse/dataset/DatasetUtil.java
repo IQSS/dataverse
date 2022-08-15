@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
@@ -596,14 +597,23 @@ public class DatasetUtil {
         
     }
 
+    public static License getLicense(DatasetVersion dsv) {
+        License license = null;
+        TermsOfUseAndAccess tua = dsv.getTermsOfUseAndAccess();
+        if(tua!=null) {
+            license = tua.getLicense();
+        }
+        return license;
+    }
+
     public static String getLicenseName(DatasetVersion dsv) {
-        License license = dsv.getTermsOfUseAndAccess().getLicense();
+        License license = DatasetUtil.getLicense(dsv);
         return license != null ? license.getName()
                 : BundleUtil.getStringFromBundle("license.custom");
     }
 
     public static String getLicenseURI(DatasetVersion dsv) {
-        License license = dsv.getTermsOfUseAndAccess().getLicense();
+        License license = DatasetUtil.getLicense(dsv);
         // Return the URI
         // For standard licenses, just return the stored URI
         return (license != null) ? license.getUri().toString()
@@ -618,12 +628,12 @@ public class DatasetUtil {
     }
 
     public static String getLicenseIcon(DatasetVersion dsv) {
-        License license = dsv.getTermsOfUseAndAccess().getLicense();
+        License license = DatasetUtil.getLicense(dsv);
         return license != null && license.getIconUrl() != null ? license.getIconUrl().toString() : null;
     }
 
     public static String getLicenseDescription(DatasetVersion dsv) {
-        License license = dsv.getTermsOfUseAndAccess().getLicense();
+        License license = DatasetUtil.getLicense(dsv);
         return license != null ? license.getShortDescription() : BundleUtil.getStringFromBundle("license.custom.description");
     }
 

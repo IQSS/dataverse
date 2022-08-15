@@ -38,7 +38,7 @@ At present, one potential drawback for direct-upload is that files are only part
 
 
 **IMPORTANT:** One additional step that is required to enable direct uploads via a Dataverse installation and for direct download to work with previewers is to allow cross site (CORS) requests on your S3 store. 
-The example below shows how to enable CORS rules (to support upload and download) on a bucket using the AWS CLI command line tool. Note that you may want to limit the AllowedOrigins and/or AllowedHeaders further.  https://github.com/GlobalDataverseCommunityConsortium/dataverse-previewers/wiki/Using-Previewers-with-download-redirects-from-S3 has some additional information about doing this.
+The example below shows how to enable CORS rules (to support upload and download) on a bucket using the AWS CLI command line tool. Note that you may want to limit the AllowedOrigins and/or AllowedHeaders further.  https://github.com/gdcc/dataverse-previewers/wiki/Using-Previewers-with-download-redirects-from-S3 has some additional information about doing this.
 
 ``aws s3api put-bucket-cors --bucket <BUCKET_NAME> --cors-configuration file://cors.json``
 
