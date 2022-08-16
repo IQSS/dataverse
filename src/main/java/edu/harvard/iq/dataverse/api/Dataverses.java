@@ -774,6 +774,10 @@ public class Dataverses extends AbstractApiBean {
         try {
             final boolean blockFacetsRoot = parseBooleanOrDie(body);
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            if(dataverse.isMetadataBlockFacetRoot() == blockFacetsRoot) {
+                return ok(String.format("No update needed, dataverse already consistent with new value. DataverseId: %s blockFacetsRoot: %s", dvIdtf, blockFacetsRoot));
+            }
+
             execCommand(new UpdateMetadataBlockFacetRootCommand(createDataverseRequest(findUserOrDie()), dataverse, blockFacetsRoot));
             return ok(String.format("Metadata block facets root updated. DataverseId: %s blockFacetsRoot: %s", dvIdtf, blockFacetsRoot));
 

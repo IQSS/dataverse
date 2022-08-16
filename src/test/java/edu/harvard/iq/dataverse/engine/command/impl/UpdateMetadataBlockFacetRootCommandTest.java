@@ -33,7 +33,7 @@ public class UpdateMetadataBlockFacetRootCommandTest {
     }
 
     @Test
-    public void should_set_metadataBlockFacetRoot_and_not_update_metadata_block_facets_when_root_value_does_not_change() throws CommandException {
+    public void should_not_update_dataverse_when_root_value_does_not_change() throws CommandException {
         boolean metadataBlockFacetRoot = true;
         Mockito.when(dataverse.isMetadataBlockFacetRoot()).thenReturn(metadataBlockFacetRoot);
         UpdateMetadataBlockFacetRootCommand target = new UpdateMetadataBlockFacetRootCommand(dataverseRequest, dataverse, metadataBlockFacetRoot);
@@ -42,9 +42,8 @@ public class UpdateMetadataBlockFacetRootCommandTest {
         target.execute(context);
 
         Mockito.verify(dataverse).isMetadataBlockFacetRoot();
-        Mockito.verify(dataverse).setMetadataBlockFacetRoot(metadataBlockFacetRoot);
         Mockito.verifyNoMoreInteractions(dataverse);
-        Mockito.verify(context.dataverses()).save(dataverse);
+        Mockito.verifyZeroInteractions(context.dataverses());
     }
 
     @Test

@@ -215,8 +215,18 @@ public class DataversesTest {
     }
 
     @Test
-    public void updateMetadataBlockFacetsRoot_should_return_200_when_dataverse_is_found() throws Exception{
+    public void updateMetadataBlockFacetsRoot_should_return_200_and_make_no_update_when_dataverse_is_found_and_facet_root_has_not_changed() {
+        // VALID_DATAVERSE.metadataBlockFacetRoot is true
         Response result = target.updateMetadataBlockFacetsRoot(VALID_DATAVERSE.getAlias(), "true");
+
+        MatcherAssert.assertThat(result.getStatus(), Matchers.is(200));
+        Mockito.verifyZeroInteractions(engineSvc);
+    }
+
+    @Test
+    public void updateMetadataBlockFacetsRoot_should_return_200_and_execute_command_when_dataverse_is_found_and_facet_root_has_changed() throws Exception {
+        // VALID_DATAVERSE.metadataBlockFacetRoot is true
+        Response result = target.updateMetadataBlockFacetsRoot(VALID_DATAVERSE.getAlias(), "false");
 
         MatcherAssert.assertThat(result.getStatus(), Matchers.is(200));
         ArgumentCaptor<UpdateMetadataBlockFacetRootCommand> updateRootCommand = ArgumentCaptor.forClass(UpdateMetadataBlockFacetRootCommand.class);

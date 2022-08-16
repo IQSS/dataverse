@@ -45,11 +45,12 @@ public class UpdateMetadataBlockFacetRootCommand extends AbstractCommand<Dataver
                 }).collect(Collectors.toList());
             }
             editedDv.setMetadataBlockFacets(newBlockFacets);
+
+            editedDv.setMetadataBlockFacetRoot(metadataBlockFacetRoot);
+            return ctxt.dataverses().save(editedDv);
         }
 
-        editedDv.setMetadataBlockFacetRoot(metadataBlockFacetRoot);
-        Dataverse updated = ctxt.dataverses().save(editedDv);
-        return updated;
+        return editedDv;
     }
 
     // Visible for testing
