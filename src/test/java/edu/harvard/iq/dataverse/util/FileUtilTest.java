@@ -303,13 +303,8 @@ public class FileUtilTest {
         }*/
 
         @Test
-<<<<<<< HEAD
         public void testDetermineFileType() {
             File file = new File("src/test/resources/images/coffeeshop.png");
-=======
-        public void testDetermineFileTypeByExtension() {
-            File file = new File("src/main/webapp/resources/images/cc0.png");
->>>>>>> refs/remotes/IQSS/develop
             if (file.exists()) {
                 try {
                     assertEquals("image/png", FileUtil.determineFileType(file, "coffeshop.png"));
