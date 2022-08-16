@@ -251,7 +251,9 @@ The fully expanded example above (without environment variables) looks like this
 Set Metadata Block Facets for a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Set the ``metadataBlockFacetRoot`` to ``true`` and assign the metadata blocks that will appear in the ``Dataset Features`` facet category for a given Dataverse collection identified by ``id``:
+Sets the metadata blocks that will appear in the ``Dataset Features`` facet category for a given Dataverse collection identified by ``id``.
+
+To clear the metadata blocks set by a parent dataverse, submit an empty array (e.g. ``[]``):
 
 .. code-block:: bash
 
@@ -269,10 +271,12 @@ The fully expanded example above (without environment variables) looks like this
 
 Where :download:`metadata-block-facets.json <../_static/api/metadata-block-facets.json>` contains a JSON encoded list of metadata block names (e.g. ``["socialscience","geospatial"]``). This endpoint supports an empty list (e.g. ``[]``)
 
-Delete Metadata Block Facets Configured for a Dataverse Collection
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Configure a Dataverse Collection to Inherit Its Metadata Block Facets from Its Parent
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Deletes the metadata block facet configuration for a given Dataverse collection ``id``:
+Set whether the Dataverse collection is a metadata block facet root, or does it uses its parent metadata block facets. Possible values are ``true`` and ``false`` (both are valid JSON expressions).
+
+When updating the root to false, it will clear any metadata block facets from the dataverse. When updating to true, it will copy the metadata block facets from the parent dataverse:
 
 .. code-block:: bash
 
@@ -280,13 +284,13 @@ Deletes the metadata block facet configuration for a given Dataverse collection 
   export SERVER_URL=https://demo.dataverse.org
   export ID=root
 
-  curl -H X-Dataverse-key:$API_TOKEN -X DELETE $SERVER_URL/api/dataverses/$ID/metadatablockfacets
+  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/dataverses/$ID/metadatablockfacets/isRoot -d 'true'
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X DELETE https://demo.dataverse.org/api/dataverses/root/metadatablockfacets
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST https://demo.dataverse.org/api/dataverses/root/metadatablockfacets/isRoot -d 'true'
 
 Create a New Role in a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

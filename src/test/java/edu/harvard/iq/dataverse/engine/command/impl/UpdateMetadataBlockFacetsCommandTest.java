@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DataverseMetadataBlockFacet;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -31,8 +32,19 @@ public class UpdateMetadataBlockFacetsCommandTest {
         dataverse = Mockito.mock(Dataverse.class);
     }
 
+    @Test(expected = IllegalCommandException.class)
+    public void should_throw_IllegalCommandException_when_dataverse_is_not_metadata_facet_root() throws CommandException {
+        Mockito.when(dataverse.isMetadataBlockFacetRoot()).thenReturn(false);
+
+        UpdateMetadataBlockFacetsCommand target = new UpdateMetadataBlockFacetsCommand(dataverseRequest, dataverse, Collections.emptyList());
+
+        CommandContext context = Mockito.mock(CommandContext.class, Mockito.RETURNS_DEEP_STUBS);
+        target.execute(context);
+    }
+
     @Test
-    public void should_set_metadataBlockFacetRoot_to_true_and_update_facets() throws CommandException {
+    public void should_update_facets() throws CommandException {
+        Mockito.when(dataverse.isMetadataBlockFacetRoot()).thenReturn(true);
         DataverseMetadataBlockFacet metadataBlockFacet = new DataverseMetadataBlockFacet();
         metadataBlockFacet.setId(MocksFactory.nextId());
         List<DataverseMetadataBlockFacet> metadataBlockFacets = Arrays.asList(metadataBlockFacet);
@@ -42,7 +54,6 @@ public class UpdateMetadataBlockFacetsCommandTest {
         CommandContext context = Mockito.mock(CommandContext.class, Mockito.RETURNS_DEEP_STUBS);
         target.execute(context);
 
-        Mockito.verify(dataverse).setMetadataBlockFacetRoot(true);
         Mockito.verify(dataverse).setMetadataBlockFacets(metadataBlockFacets);
         Mockito.verify(context.dataverses()).save(dataverse);
     }

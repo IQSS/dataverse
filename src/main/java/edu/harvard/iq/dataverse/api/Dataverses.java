@@ -13,13 +13,11 @@ import edu.harvard.iq.dataverse.api.datadeposit.SwordServiceBean;
 import edu.harvard.iq.dataverse.api.dto.DataverseMetadataBlockFacetDTO;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.GuestbookServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.dto.ExplicitGroupDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
@@ -43,7 +41,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseLinkingDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteExplicitGroupCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteMetadataBlockFacetsCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateMetadataBlockFacetRootCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataverseStorageSizeCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetExplicitGroupCommand;
@@ -74,7 +72,6 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
-import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
 import java.io.StringReader;
@@ -96,7 +93,6 @@ import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
 import javax.json.stream.JsonParsingException;
-import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
@@ -119,7 +115,6 @@ import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -746,11 +741,15 @@ public class Dataverses extends AbstractApiBean {
         try {
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
 
+            if(!dataverse.isMetadataBlockFacetRoot()) {
+                return badRequest(String.format("Dataverse: %s must have metadata block facet root set to true", dvIdtf));
+            }
+
             List<DataverseMetadataBlockFacet> metadataBlockFacets = new LinkedList<>();
             for(String metadataBlockName: metadataBlockNames) {
                 MetadataBlock metadataBlock = findMetadataBlock(metadataBlockName);
                 if (metadataBlock == null) {
-                    return error(Response.Status.BAD_REQUEST, String.format("Invalid metadata block name: %s", metadataBlockName));
+                    return badRequest(String.format("Invalid metadata block name: %s", metadataBlockName));
                 }
 
                 DataverseMetadataBlockFacet metadataBlockFacet = new DataverseMetadataBlockFacet();
@@ -767,13 +766,16 @@ public class Dataverses extends AbstractApiBean {
         }
     }
 
-    @DELETE
-    @Path("{identifier}/metadatablockfacets")
-    public Response deleteMetadataBlockFacets(@PathParam("identifier") String dvIdtf) {
+    @POST
+    @Path("{identifier}/metadatablockfacets/isRoot")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateMetadataBlockFacetsRoot(@PathParam("identifier") String dvIdtf, String body) {
         try {
+            final boolean blockFacetsRoot = parseBooleanOrDie(body);
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
-            execCommand(new DeleteMetadataBlockFacetsCommand(createDataverseRequest(findUserOrDie()), dataverse));
-            return ok(String.format("Metadata block facets deleted. DataverseId: %s", dvIdtf));
+            execCommand(new UpdateMetadataBlockFacetRootCommand(createDataverseRequest(findUserOrDie()), dataverse, blockFacetsRoot));
+            return ok(String.format("Metadata block facets root updated. DataverseId: %s blockFacetsRoot: %s", dvIdtf, blockFacetsRoot));
 
         } catch (WrappedResponse ex) {
             return ex.getResponse();
