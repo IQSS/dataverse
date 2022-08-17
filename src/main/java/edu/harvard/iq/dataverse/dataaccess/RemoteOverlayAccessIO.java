@@ -363,14 +363,13 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
           fullStorageLocation = fullStorageLocation.substring(0, fullStorageLocation.indexOf("//"));
         }
         if (this.getDvObject() instanceof Dataset) {
-            fullStorageLocation = this.getDataset().getAuthorityForFileStorage() + "/"
-                    + this.getDataset().getIdentifierForFileStorage() + "/" + fullStorageLocation;
+            throw new IOException("RemoteOverlayAccessIO: Datasets are not a supported dvObject");
         } else if (this.getDvObject() instanceof DataFile) {
-            fullStorageLocation = this.getDataFile().getOwner().getAuthorityForFileStorage() + "/"
-                    + this.getDataFile().getOwner().getIdentifierForFileStorage() + "/" + fullStorageLocation;
+            fullStorageLocation = StorageIO.getDriverPrefix(this.driverId) + fullStorageLocation;
         } else if (dvObject instanceof Dataverse) {
             throw new IOException("RemoteOverlayAccessIO: Dataverses are not a supported dvObject");
         }
+        logger.fine("fullStorageLocation: " + fullStorageLocation);
         return fullStorageLocation;
     }
 
