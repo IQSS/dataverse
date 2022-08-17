@@ -31,6 +31,7 @@ public class RemoteOverlayAccessIOTest {
     private Dataset dataset;
     private DataFile datafile;
     private DataFile badDatafile;
+    private String baseStoreId="182ad2bda2f-c3508e719076";
     private String logoPath = "images/dataverse_project_logo.svg";
     private String pid = "10.5072/F2/ABCDEF";
 
@@ -49,11 +50,11 @@ public class RemoteOverlayAccessIOTest {
         dataset = MocksFactory.makeDataset();
         dataset.setGlobalId(GlobalId.parse("doi:" + pid).get());
         datafile.setOwner(dataset);
-        datafile.setStorageIdentifier("test://" + logoPath);
+        datafile.setStorageIdentifier("test://" + baseStoreId + "//" + logoPath);
 
         badDatafile = MocksFactory.makeDataFile();
         badDatafile.setOwner(dataset);
-        badDatafile.setStorageIdentifier("test://../.." + logoPath);
+        badDatafile.setStorageIdentifier("test://" + baseStoreId + "//../.." + logoPath);
     }
 
     @AfterEach
@@ -99,8 +100,11 @@ public class RemoteOverlayAccessIOTest {
         remoteIO.open(DataAccessOption.READ_ACCESS);
         assertTrue(remoteIO.getSize() > 0);
         // If we ask for the path for an aux file, it is correct
+        System.out.println(Paths
+                .get(System.getProperty("dataverse.files.file.directory", "/tmp/files"), pid, baseStoreId + ".auxobject").toString());
+        System.out.println(remoteIO.getAuxObjectAsPath("auxobject").toString());
         assertTrue(Paths
-                .get(System.getProperty("dataverse.files.file.directory", "/tmp/files"), pid, logoPath + ".auxobject")
+                .get(System.getProperty("dataverse.files.file.directory", "/tmp/files"), pid, baseStoreId + ".auxobject")
                 .equals(remoteIO.getAuxObjectAsPath("auxobject")));
         IOException thrown = assertThrows(IOException.class, () -> DataAccess.getStorageIO(badDatafile),
                 "Expected getStorageIO() to throw, but it didn't");
