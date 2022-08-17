@@ -358,10 +358,6 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         if(driverIndex >=0) {
           fullStorageLocation = fullStorageLocation.substring(fullStorageLocation.lastIndexOf(DataAccess.SEPARATOR) + DataAccess.SEPARATOR.length());
         }
-        int suffixIndex = fullStorageLocation.indexOf("//");
-        if(suffixIndex >=0) {
-          fullStorageLocation = fullStorageLocation.substring(0, fullStorageLocation.indexOf("//"));
-        }
         if (this.getDvObject() instanceof Dataset) {
             throw new IOException("RemoteOverlayAccessIO: Datasets are not a supported dvObject");
         } else if (this.getDvObject() instanceof DataFile) {
@@ -495,8 +491,13 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 
                 } else if (storageLocation != null) {
                     // <remoteDriverId>://<baseStorageIdentifier>//<baseUrlPath>
-                    String storageId = storageLocation.substring(storageLocation.indexOf(DataAccess.SEPARATOR + DataAccess.SEPARATOR.length()));
-                    fullStorageLocation = storageId.substring(0, storageId.indexOf("//"));
+                    //remoteDriverId:// is removed if coming through directStorageIO
+                    int index = storageLocation.indexOf(DataAccess.SEPARATOR);
+                    if(index > 0) {
+                        storageLocation = storageLocation.substring(index + DataAccess.SEPARATOR.length());
+                    }
+                    //THe base store needs the baseStoreIdentifier and not the relative URL
+                    fullStorageLocation = storageLocation.substring(0, storageLocation.indexOf("//"));
 
                     switch (baseDriverType) {
                     case DataAccess.S3:
