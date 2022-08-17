@@ -127,6 +127,8 @@ public class DataAccess {
             return new S3AccessIO<>(storageLocation, storageDriverId);
         case SWIFT:
             return new SwiftAccessIO<>(storageLocation, storageDriverId);
+        case REMOTE:
+            return new RemoteOverlayAccessIO<>(storageLocation, storageDriverId);
         default:
         	logger.warning("Could not find storage driver for: " + fullStorageLocation);
         	throw new IOException("getDirectStorageIO: Unsupported storage method.");
@@ -322,5 +324,22 @@ public class DataAccess {
             logger.fine("out: " + newStorageIdentifier);
         }
         return newStorageIdentifier;
+    }
+    
+    public static boolean uploadToDatasetAllowed(Dataset d, String storageIdentifier) {
+        boolean allowed=true;
+        String driverId = DataAccess.getStorageDriverFromIdentifier(storageIdentifier);
+        String effectiveDriverId = d.getEffectiveStorageDriverId();
+        if(!effectiveDriverId.equals(driverId)) {
+            if(getDriverType(driverId).equals(REMOTE)) {
+                String baseDriverId = RemoteOverlayAccessIO.getBaseStoreIdFor(driverId);
+                if(!effectiveDriverId.equals(baseDriverId)) {
+                    allowed = false;
+                }
+            } else {
+                allowed=false;
+            }
+        }
+        return allowed;
     }
 }

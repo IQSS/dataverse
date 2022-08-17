@@ -132,7 +132,6 @@ As described in that document, Globus transfers can be initiated by choosing the
 
 An overview of the control and data transfer interactions between components was presented at the Dataverse Community Meeting and can be viewed in the `Itegrations and Tools Session Video <https://www.youtube.com/watch?v=3ek7F_Dxcjk&list=PLLoKvRqQVbtKJFdIe-bynhnXdePwI7jpS>`_ around the 1 hr 28 min mark.
 
-
 Data Capture Module (DCM)
 -------------------------
 

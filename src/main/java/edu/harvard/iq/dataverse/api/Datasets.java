@@ -2377,6 +2377,11 @@ public class Datasets extends AbstractApiBean {
             if (optionalFileParams.hasStorageIdentifier()) {
                 newStorageIdentifier = optionalFileParams.getStorageIdentifier();
                 newStorageIdentifier = DataAccess.expandStorageIdentifierIfNeeded(newStorageIdentifier);
+                
+                if(!DataAccess.uploadToDatasetAllowed(dataset,  newStorageIdentifier)) {
+                    return error(BAD_REQUEST,
+                            "Dataset store configuration does not allow provided storageIdentifier.");
+                }
                 if (optionalFileParams.hasFileName()) {
                     newFilename = optionalFileParams.getFileName();
                     if (optionalFileParams.hasMimetype()) {
@@ -2385,7 +2390,7 @@ public class Datasets extends AbstractApiBean {
                 }
             } else {
                 return error(BAD_REQUEST,
-                        "You must upload a file or provide a storageidentifier, filename, and mimetype.");
+                        "You must upload a file or provide a valid storageidentifier, filename, and mimetype.");
             }
         } else {
             newFilename = contentDispositionHeader.getFileName();

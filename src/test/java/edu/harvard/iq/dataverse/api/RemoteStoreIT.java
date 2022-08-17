@@ -25,10 +25,6 @@ public class RemoteStoreIT {
 
         UtilIT.makeSuperUser(username).then().assertThat().statusCode(OK.getStatusCode());
 
-        Response createUserNoPrivs = UtilIT.createRandomUser();
-        createUserNoPrivs.then().assertThat().statusCode(OK.getStatusCode());
-        String apiTokenNoPrivs = UtilIT.getApiTokenFromResponse(createUserNoPrivs);
-
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.prettyPrint();
         createDataverseResponse.then().assertThat()
@@ -51,10 +47,11 @@ public class RemoteStoreIT {
          * <jvm-options>-Ddataverse.files.trsa.label=trsa</jvm-options>
          * <jvm-options>-Ddataverse.files.trsa.base-url=https://qdr.syr.edu</jvm-options>
          * <jvm-options>-Ddataverse.files.trsa.base-store=file</jvm-options>
-         * <jvm-options>-Ddataverse.files.trsa.secretkey=12345</jvm-options>
-         * <jvm-options>-Ddataverse.files.trsa.url-expiration-minutes=120</jvm-options>
          *
-         * (and probably download-redirect)
+         * In practice, most installation will also enable download-redirect
+         * (below) to prevent the files from being streamed through Dataverse!
+         *
+         * <jvm-options>-Ddataverse.files.trsa.download-redirect=true</jvm-options>
          */
         JsonObjectBuilder remoteFileJson = Json.createObjectBuilder()
                 .add("description", "A remote image.")
@@ -66,11 +63,10 @@ public class RemoteStoreIT {
                 .add("mimeType", "image/png");
 
         Response addRemoteFile = UtilIT.addRemoteFile(datasetId.toString(), remoteFileJson.build().toString(), apiToken);
-        System.setProperty(apiToken, username);
         addRemoteFile.prettyPrint();
         addRemoteFile.then().assertThat()
                 .statusCode(OK.getStatusCode());
-
+        System.out.println("done!");
     }
 
 }
