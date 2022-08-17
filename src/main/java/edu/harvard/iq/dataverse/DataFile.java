@@ -608,7 +608,7 @@ public class DataFile extends DvObject implements Comparable {
         if (filesize != null) {
             return FileSizeChecker.bytesToHumanReadable(filesize);
         } else {
-            return BundleUtil.getStringFromBundle("file.sizeNotAvilable");
+            return BundleUtil.getStringFromBundle("file.sizeNotAvailable");
         }
     }
 
