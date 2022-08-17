@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:o="http://omnifaces.org/ui"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:jsf="http://xmlns.jcp.org/jsf">
+<h:head>
+</h:head>
+
+<h:body>
+    <f:metadata>
+        <f:viewAction action="#{FailedLogin.init()}"/>
+    </f:metadata>
+    <ui:composition template="/dataverse_template.xhtml">
+        <ui:param name="pageTitle" value="#{bundle['failed.login.title']}"/>
+        <ui:param name="showDataverseHeader" value="false"/>
+        <ui:param name="showMessagePanel" value="#{false}"/>
+        <ui:define name="body">
+            <p:messages>
+                <p:autoUpdate/>
+            </p:messages>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>

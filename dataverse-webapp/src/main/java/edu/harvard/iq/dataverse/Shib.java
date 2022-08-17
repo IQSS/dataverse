@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.authorization.UserIdentifier;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
@@ -357,12 +356,11 @@ public class Shib implements java.io.Serializable {
         visibleTermsOfUse = false;
         ShibAuthenticationProvider shibAuthProvider = new ShibAuthenticationProvider();
         String lookupStringPerAuthProvider = userPersistentId;
-        UserIdentifier userIdentifier = new UserIdentifier(lookupStringPerAuthProvider, internalUserIdentifer);
         logger.debug("builtin username: " + builtinUsername);
         AuthenticatedUser builtInUserToConvert = authSvc.canLogInAsBuiltinUser(builtinUsername, builtinPassword);
         if (builtInUserToConvert != null) {
             // TODO: Switch from authSvc.convertBuiltInToShib to authSvc.convertBuiltInUserToRemoteUser
-            AuthenticatedUser au = authSvc.convertBuiltInToShib(builtInUserToConvert, shibAuthProvider.getId(), userIdentifier);
+            AuthenticatedUser au = authSvc.convertBuiltInUserToRemoteUser(builtInUserToConvert, shibAuthProvider.getId(), lookupStringPerAuthProvider);
             if (au != null) {
                 authSvc.updateAuthenticatedUser(au, displayInfo);
                 logInUserAndSetShibAttributes(au);

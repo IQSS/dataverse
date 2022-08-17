@@ -56,7 +56,9 @@
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.firstName.tip']}"></span>
                                 </label>
                                 <div class="col-sm-4">
-                                    <p:inputText id="givenName" styleClass="form-control" value="#{ExternalIdpFirstLoginPage.newUser.displayInfo.firstName}"/>
+                                    <p:inputText id="givenName" styleClass="form-control"
+                                                 value="#{ExternalIdpFirstLoginPage.newUser.displayInfo.firstName}"
+                                                 disabled="#{ExternalIdpFirstLoginPage.disableSamlFilledFields}"/>
                                     <p:message for="givenName" display="text"/>
                                 </div>
                             </div>
@@ -68,7 +70,9 @@
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.lastName.tip']}"></span>
                                 </label>
                                 <div class="col-sm-4">
-                                    <p:inputText id="familyName" styleClass="form-control" value="#{ExternalIdpFirstLoginPage.newUser.displayInfo.lastName}"/>
+                                    <p:inputText id="familyName" styleClass="form-control"
+                                                 value="#{ExternalIdpFirstLoginPage.newUser.displayInfo.lastName}"
+                                                 disabled="#{ExternalIdpFirstLoginPage.disableSamlFilledFields}"/>
                                     <p:message for="familyName" display="text"/>
                                 </div>
                             </div>
@@ -80,7 +84,10 @@
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.email.tip']}"></span>
                                 </label>
                                 <div class="col-sm-4" jsf:rendered="#{ExternalIdpFirstLoginPage.getEmailsToPickFrom().size() lt 2}">
-                                    <p:inputText id="selectedEmailZeroOrOneToPickFrom" styleClass="form-control" value="#{ExternalIdpFirstLoginPage.selectedEmail}" validator="#{ExternalIdpFirstLoginPage.validateUserEmail}"/>
+                                    <p:inputText id="selectedEmailZeroOrOneToPickFrom" styleClass="form-control"
+                                                 value="#{ExternalIdpFirstLoginPage.selectedEmail}"
+                                                 validator="#{ExternalIdpFirstLoginPage.validateUserEmail}"
+                                                 disabled="#{ExternalIdpFirstLoginPage.disableSamlFilledFields}"/>
                                     <p:message for="selectedEmailZeroOrOneToPickFrom" display="text"/>
                                 </div>
                                 <div class="col-sm-4" jsf:rendered="#{ExternalIdpFirstLoginPage.getEmailsToPickFrom().size() gt 1}">

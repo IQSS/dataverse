@@ -12,11 +12,14 @@ import com.onelogin.saml2.util.Constants;
 import com.onelogin.saml2.util.Util;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.SamlDataUpdateService;
+import edu.harvard.iq.dataverse.authorization.SamlLoginIssue;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.common.ExternalIdpUserRecord;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.users.SamlSessionRegistry;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import io.vavr.control.Either;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,11 +45,14 @@ public class SamlAuthenticationServlet extends HttpServlet {
     private static final String SAML_DISABLED = "SAML authentication is currently disabled.";
 
     public static final String NEW_USER_SESSION_PARAM = "NewUser";
+    public static final String USER_TO_CONVERT_SESSION_PARAM = "UserToConvert";
+    public static final String SAML_LOGIN_ISSUE_SESSION_PARAM = "SamlLoginIssues";
 
     private AuthenticationServiceBean authenticationService;
     private DataverseSession session;
     private SystemConfig systemConfig;
     private SamlConfigurationService samlConfigurationService;
+    private SamlDataUpdateService samlDataUpdateService;
     private SamlSessionRegistry samlSessionRegistry;
 
     // -------------------- CONSTURCTORS --------------------
@@ -54,11 +60,12 @@ public class SamlAuthenticationServlet extends HttpServlet {
     @Inject
     public SamlAuthenticationServlet(AuthenticationServiceBean authenticationService, DataverseSession session,
                                      SystemConfig systemConfig, SamlConfigurationService samlConfigurationService,
-                                     SamlSessionRegistry samlSessionRegistry) {
+                                     SamlDataUpdateService samlDataUpdateService, SamlSessionRegistry samlSessionRegistry) {
         this.authenticationService = authenticationService;
         this.session = session;
         this.systemConfig = systemConfig;
         this.samlConfigurationService = samlConfigurationService;
+        this.samlDataUpdateService = samlDataUpdateService;
         this.samlSessionRegistry = samlSessionRegistry;
     }
 
@@ -120,7 +127,7 @@ public class SamlAuthenticationServlet extends HttpServlet {
         }
     }
 
-    private void login(HttpServletRequest request, HttpServletResponse response) {
+    private void login(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
             SamlResponse samlResponse =
                     new SamlResponse(samlConfigurationService.buildSpSettings(), ServletUtils.makeHttpRequest(request));
@@ -128,26 +135,43 @@ public class SamlAuthenticationServlet extends HttpServlet {
 
             Auth auth = new Auth(samlConfigurationService.buildSettings(entityId), request, response);
             auth.processResponse();
-            if (auth.isAuthenticated()) {
-                SamlUserData userData = SamlUserDataFactory.create(auth);
-                ExternalIdpUserRecord userRecord = userData.toExternalIdpUserRecord();
-                UserRecordIdentifier userRecordId = userRecord.toUserRecordIdentifier();
-                AuthenticatedUser user = authenticationService.lookupUser(userRecordId);
-                if (user != null) {
-                    session.setUser(user);
-                    samlSessionRegistry.register(session);
-                    user.setSamlIdPEntityId(userData.getIdpEntityId());
-                    String relayState = request.getParameter("RelayState");
-                    response.sendRedirect(StringUtils.isNotBlank(relayState)
-                            ? relayState
-                            : systemConfig.getDataverseSiteUrl());
+            if (!auth.isAuthenticated()) {
+                redirectOnLoginIssue(request, response, new SamlLoginIssue(SamlLoginIssue.Type.AUTHENTICATION_ERROR));
+                return;
+            }
+            SamlUserData userData = SamlUserDataFactory.create(auth);
+            ExternalIdpUserRecord userRecord = userData.toExternalIdpUserRecord();
+            UserRecordIdentifier userRecordId = userRecord.toUserRecordIdentifier();
+            AuthenticatedUser user = authenticationService.lookupUser(userRecordId);
+            if (user == null) {
+                boolean emailExists = authenticationService.getAuthenticatedUserByEmail(userData.getEmail()) != null;
+                if (emailExists) {
+                    request.getSession().setAttribute(USER_TO_CONVERT_SESSION_PARAM, userData);
+                    response.sendRedirect("/convertAccount.xhtml");
                 } else {
                     request.getSession().setAttribute(NEW_USER_SESSION_PARAM, userRecord);
                     response.sendRedirect("/firstLogin.xhtml");
                 }
+                return;
             }
+            Either<SamlLoginIssue, AuthenticatedUser> updateResult = systemConfig.isReadonlyMode()
+                    ? Either.right(user) // Let user in and don't update if system is in read-only state
+                    : samlDataUpdateService.updateUserIfNeeded(user, userData);
+            if (updateResult.isLeft()) {
+                redirectOnLoginIssue(request, response, updateResult.getLeft());
+                return;
+            }
+            AuthenticatedUser updatedUser = updateResult.get();
+            session.setUser(updatedUser);
+            samlSessionRegistry.register(session);
+            updatedUser.setSamlIdPEntityId(userData.getIdpEntityId());
+            String relayState = request.getParameter("RelayState");
+            response.sendRedirect(StringUtils.isNotBlank(relayState)
+                    ? relayState
+                    : systemConfig.getDataverseSiteUrl());
         } catch (Exception e) {
-            logger.warn("SAML Authentication exception: ", e);
+            logger.warn("Exception during SAML Authentication: ", e);
+            redirectOnLoginIssue(request, response, new SamlLoginIssue(SamlLoginIssue.Type.AUTHENTICATION_ERROR));
         }
     }
 
@@ -236,5 +260,11 @@ public class SamlAuthenticationServlet extends HttpServlet {
             parameters.put("Signature", signature);
         }
         return parameters;
+    }
+    
+    private void redirectOnLoginIssue(HttpServletRequest request, HttpServletResponse response, SamlLoginIssue issue)
+            throws IOException {
+        request.getSession().setAttribute(SAML_LOGIN_ISSUE_SESSION_PARAM, issue);
+        response.sendRedirect("/failedLogin.xhtml");
     }
 }

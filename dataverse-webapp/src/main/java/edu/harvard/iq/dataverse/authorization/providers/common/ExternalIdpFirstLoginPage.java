@@ -125,6 +125,8 @@ public class ExternalIdpFirstLoginPage implements Serializable {
 
     private Boolean notificationLanguageSelectionEnabled;
 
+    private Boolean disableSamlFilledFields = false;
+
     // -------------------- GETTERS --------------------
 
     public AuthenticationProvider getAuthProvider() {
@@ -159,6 +161,10 @@ public class ExternalIdpFirstLoginPage implements Serializable {
         return notificationLanguageSelectionEnabled;
     }
 
+    public Boolean getDisableSamlFilledFields() {
+        return disableSamlFilledFields;
+    }
+
     // -------------------- LOGIC --------------------
 
     /**
@@ -185,13 +191,12 @@ public class ExternalIdpFirstLoginPage implements Serializable {
             return redirectToHome();
         }
         if (newUser == null) {
-            // If new user tries to sign up with SAML then
-            // the user data is stored in the http session
-            HttpSession httpSession = (HttpSession) FacesContext.getCurrentInstance()
-                    .getExternalContext()
-                    .getSession(false);
+            // If new user tries to sign up with SAML then the user data
+            // will is stored in the http session
+            HttpSession httpSession = JsfHelper.getCurrentSession();
             if (httpSession != null) {
                 newUser = (ExternalIdpUserRecord) httpSession.getAttribute(SamlAuthenticationServlet.NEW_USER_SESSION_PARAM);
+                disableSamlFilledFields = true;
                 httpSession.removeAttribute(SamlAuthenticationServlet.NEW_USER_SESSION_PARAM);
             }
         }

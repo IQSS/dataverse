@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:jsf="http://xmlns.jcp.org/jsf">
+<h:head>
+</h:head>
+
+<h:body>
+    <f:metadata>
+        <f:viewAction action="#{SamlConvertAccount.init()}"/>
+    </f:metadata>
+    <ui:composition template="/dataverse_template.xhtml">
+        <ui:param name="pageTitle" value="#{bundle['saml.convert.title']}"/>
+        <ui:param name="showDataverseHeader" value="false"/>
+        <ui:param name="showMessagePanel" value="#{true}"/>
+        <ui:define name="body">
+            <h2>#{bundle['saml.convert.askToConvert']}</h2>
+            <div class="alert alert-info messagePanel">
+                <p>
+                    <span class="glyphicon glyphicon-info-sign"/>
+                    <h:outputText value=" #{bundle['saml.convert.welcomeExistingUserMessage']}"/>
+                </p>
+            </div>
+            <div class="alert alert-danger messagePanel" jsf:rendered="#{SamlConvertAccount.passwordRejected}">
+                <p>
+                    <span class="glyphicon glyphicon-exclamation-sign"/>
+                    <h:outputText value=" #{bundle['saml.convert.passwordRejected']}" escape="false"/>
+                </p>
+            </div>
+            <h:form styleClass="form-horizontal">
+                <div class="form-group">
+                        <label class="col-sm-3 control-label">
+                            #{bundle.email}
+                        </label>
+                        <div class="col-sm-9">
+                            <p class="form-control-static">
+                                #{SamlConvertAccount.email}
+                            </p>
+                        </div>
+                </div>
+                <div class="form-group">
+                    <label for="builtinPassword" class="col-sm-3 control-label">
+                        #{bundle['saml.convert.currentDataversePassword']}
+                    </label>
+                    <div class="col-sm-3">
+                        <p:password id="builtinPassword" styleClass="form-control"
+                                    value="#{SamlConvertAccount.builtinPassword}" autocomplete="off"/>
+                        <!-- browsers will in general not respect autocomplete="foo", but scanners will
+                        still flag it as a potential problem -->
+                        <p class="help-block">
+                            <a href="passwordreset.xhtml">#{bundle['login.forgot.text']}</a>
+                        </p>
+                    </div>
+                </div>
+                <ui:include src="termsofuse.xhtml">
+                    <ui:param name="consents" value="#{SamlConvertAccount.consents}"/>
+                </ui:include>
+
+                <div class="form-group">
+                    <div class="col-sm-12 button-block">
+                        <h:commandButton styleClass="btn btn-default" value="#{bundle['saml.convert.btn.convertAccount']}"
+                                         action="#{SamlConvertAccount.confirmAndConvertAccount()}"/>
+                    </div>
+                </div>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>

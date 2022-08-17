@@ -23,7 +23,6 @@ import edu.harvard.iq.dataverse.api.dto.UserListResultDTO;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.authorization.UserIdentifier;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationProviderFactoryNotFoundException;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
@@ -622,7 +621,7 @@ public class Admin extends AbstractApiBean {
         String idPEntityId = randomUser.get("idp");
         String notUsed = null;
         String separator = "|";
-        UserIdentifier newUserIdentifierInLookupTable = new UserIdentifier(idPEntityId + separator + eppn, notUsed);
+        String newUserIdentifierInLookupTable = idPEntityId + separator + eppn;
         String overwriteFirstName = randomUser.get("firstName");
         String overwriteLastName = randomUser.get("lastName");
         String overwriteEmail = randomUser.get("email");
@@ -665,7 +664,7 @@ public class Admin extends AbstractApiBean {
                                                                                     password);
                 if (authenticatedUser != null) {
                     knowsExistingPassword = true;
-                    AuthenticatedUser convertedUser = authSvc.convertBuiltInToShib(builtInUserToConvert, shibProviderId,
+                    AuthenticatedUser convertedUser = authSvc.convertBuiltInUserToRemoteUser(builtInUserToConvert, shibProviderId,
                                                                                    newUserIdentifierInLookupTable);
                     if (convertedUser != null) {
                         /**
@@ -776,7 +775,7 @@ public class Admin extends AbstractApiBean {
         String separator = "|";
         // UserIdentifier newUserIdentifierInLookupTable = new
         // UserIdentifier(idPEntityId + separator + eppn, notUsed);
-        UserIdentifier newUserIdentifierInLookupTable = new UserIdentifier(newPersistentUserIdInLookupTable, notUsed);
+        String newUserIdentifierInLookupTable = newPersistentUserIdInLookupTable;
         String overwriteFirstName = randomUser.get("firstName");
         String overwriteLastName = randomUser.get("lastName");
         String overwriteEmail = randomUser.get("email");

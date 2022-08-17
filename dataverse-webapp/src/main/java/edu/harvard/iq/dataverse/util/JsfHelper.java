@@ -6,10 +6,10 @@ import org.primefaces.PrimeFaces;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
+import javax.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiPredicate;
-import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,8 +20,8 @@ import java.util.logging.Logger;
  */
 public class JsfHelper {
     private static final Logger logger = Logger.getLogger(JsfHelper.class.getName());
-    
-    
+
+
     public static void addFlashSuccessMessage(String message) {
         addMessage("successMessage", new FacesMessage(BundleUtil.getStringFromBundle("messages.success"), message), true);
     }
@@ -36,13 +36,13 @@ public class JsfHelper {
     public static void addFlashErrorMessage(String message, String detail) {
         addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, message, detail), true);
     }
-    
+
     public static void addErrorMessage(String message) {
         addErrorMessage(BundleUtil.getStringFromBundle("messages.error"), message);
     }
     public static void addErrorMessage(String message, String detail) {
         PrimeFaces.current().ajax().addCallbackParam("hasErrorMessage", true);
-        
+
         addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, message, detail), false);
     }
 
@@ -53,8 +53,8 @@ public class JsfHelper {
     public static void addFlashWarningMessage(String message, String detail) {
         addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, message, detail), true);
     }
-    
-    
+
+
     public static void addWarningMessage(String message, String detail) {
         addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, message, detail), false);
     }
@@ -71,6 +71,10 @@ public class JsfHelper {
     public static void addComponentErrorMessage(String componentId, String summary, String detail) {
         FacesContext.getCurrentInstance().addMessage(componentId,
                                                      new FacesMessage(FacesMessage.SEVERITY_ERROR, summary, detail));
+    }
+
+    public static HttpSession getCurrentSession() {
+        return (HttpSession) FacesContext.getCurrentInstance().getExternalContext().getSession(false);
     }
 
     public <T extends Enum<T>> T enumValue(String param, Class<T> enmClass, T defaultValue) {
@@ -107,7 +111,7 @@ public class JsfHelper {
         }
         return Optional.empty();
     }
-    
+
     // -------------------- PRIVATE --------------------
 
     private static void addMessage(String componentId, FacesMessage facesMessage, boolean isFlash) {
