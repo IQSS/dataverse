@@ -2374,6 +2374,11 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
             if (optionalFileParams.hasStorageIdentifier()) {
                 newStorageIdentifier = optionalFileParams.getStorageIdentifier();
                 newStorageIdentifier = DataAccess.expandStorageIdentifierIfNeeded(newStorageIdentifier);
+                
+                if(!DataAccess.uploadToDatasetAllowed(dataset,  newStorageIdentifier)) {
+                    return error(BAD_REQUEST,
+                            "Dataset store configuration does not allow provided storageIdentifier.");
+                }
                 if (optionalFileParams.hasFileName()) {
                     newFilename = optionalFileParams.getFileName();
                     if (optionalFileParams.hasMimetype()) {

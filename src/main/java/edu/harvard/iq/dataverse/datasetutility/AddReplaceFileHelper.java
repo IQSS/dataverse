@@ -2046,6 +2046,9 @@ public class AddReplaceFileHelper{
                         if (optionalFileParams.hasStorageIdentifier()) {
                             newStorageIdentifier = optionalFileParams.getStorageIdentifier();
                             newStorageIdentifier = DataAccess.expandStorageIdentifierIfNeeded(newStorageIdentifier);
+                            if(!DataAccess.uploadToDatasetAllowed(dataset,  newStorageIdentifier)) {
+                                addErrorSevere("Dataset store configuration does not allow provided storageIdentifier.");
+                            }
                             if (optionalFileParams.hasFileName()) {
                                 newFilename = optionalFileParams.getFileName();
                                 if (optionalFileParams.hasMimetype()) {
@@ -2054,14 +2057,10 @@ public class AddReplaceFileHelper{
                             }
 
                             msgt("ADD!  = " + newFilename);
-
-                            runAddFileByDataset(dataset,
-                                    newFilename,
-                                    newFileContentType,
-                                    newStorageIdentifier,
-                                    null,
-                                    optionalFileParams, true);
-
+                            if (!hasError()) {
+                                runAddFileByDataset(dataset, newFilename, newFileContentType, newStorageIdentifier,
+                                        null, optionalFileParams, true);
+                            }
                             if (hasError()) {
                                 JsonObjectBuilder fileoutput = Json.createObjectBuilder()
                                         .add("storageIdentifier", newStorageIdentifier)
@@ -2085,8 +2084,8 @@ public class AddReplaceFileHelper{
                                             .add("fileDetails", successresult.getJsonArray("files").getJsonObject(0));
                                     jarr.add(fileoutput);
                                 }
-                            }
                             successNumberofFiles = successNumberofFiles + 1;
+                            }
                         } else {
                             JsonObjectBuilder fileoutput = Json.createObjectBuilder()
                                     .add("errorMessage", "You must provide a storageidentifier, filename, and mimetype.")

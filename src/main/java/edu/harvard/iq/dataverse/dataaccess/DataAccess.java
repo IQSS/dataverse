@@ -323,4 +323,21 @@ public class DataAccess {
         }
         return newStorageIdentifier;
     }
+    
+    public static boolean uploadToDatasetAllowed(Dataset d, String storageIdentifier) {
+        boolean allowed=true;
+        String driverId = DataAccess.getStorageDriverFromIdentifier(storageIdentifier);
+        String effectiveDriverId = d.getEffectiveStorageDriverId();
+        if(!effectiveDriverId.equals(driverId)) {
+            if(getDriverType(driverId).equals(REMOTE)) {
+                String baseDriverId = RemoteOverlayAccessIO.getBaseStoreIdFor(driverId);
+                if(!effectiveDriverId.equals(baseDriverId)) {
+                    allowed = false;
+                }
+            } else {
+                allowed=false;
+            }
+        }
+        return allowed;
+    }
 }
