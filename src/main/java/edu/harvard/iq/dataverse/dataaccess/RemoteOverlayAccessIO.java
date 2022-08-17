@@ -469,7 +469,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
                 baseStore = DataAccess.getStorageIO(dvObject, req, baseDriverId);
             } else {
                 if (this.getDvObject() != null) {
-                    fullStorageLocation = getStorageLocation();
+                    fullStorageLocation = getStoragePath();
 
                     // S3 expects <id>://<bucketname>/<key>
                     switch (baseDriverType) {
@@ -530,6 +530,31 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
 
+    //Convenience method to assemble the path, starting with the DOI authority/identifier/, that is needed to create a base store via DataAccess.getDirectStorageIO - the caller has to add the store type specific prefix required.
+    private String getStoragePath() throws IOException {
+        String fullStoragePath = dvObject.getStorageIdentifier();
+        logger.fine("storageidentifier: " + fullStoragePath);
+        int driverIndex = fullStoragePath.lastIndexOf(DataAccess.SEPARATOR);
+        if(driverIndex >=0) {
+          fullStoragePath = fullStoragePath.substring(fullStoragePath.lastIndexOf(DataAccess.SEPARATOR) + DataAccess.SEPARATOR.length());
+        }
+        int suffixIndex = fullStoragePath.indexOf("//");
+        if(suffixIndex >=0) {
+          fullStoragePath = fullStoragePath.substring(0, suffixIndex);
+        }
+        if (this.getDvObject() instanceof Dataset) {
+            fullStoragePath = this.getDataset().getAuthorityForFileStorage() + "/"
+                    + this.getDataset().getIdentifierForFileStorage() + "/" + fullStoragePath;
+        } else if (this.getDvObject() instanceof DataFile) {
+            fullStoragePath = this.getDataFile().getOwner().getAuthorityForFileStorage() + "/"
+                    + this.getDataFile().getOwner().getIdentifierForFileStorage() + "/" + fullStoragePath; 
+        }else if (dvObject instanceof Dataverse) {
+            throw new IOException("RemoteOverlayAccessIO: Dataverses are not a supported dvObject");
+        }
+        logger.fine("fullStoragePath: " + fullStoragePath);
+        return fullStoragePath;
+    }
+    
     public CloseableHttpClient getSharedHttpClient() {
         if (httpclient == null) {
             try {
