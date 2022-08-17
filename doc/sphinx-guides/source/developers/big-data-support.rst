@@ -87,7 +87,7 @@ jsonData normally includes information such as a file description, tags, provena
 
 The allowed checksum algorithms are defined by the edu.harvard.iq.dataverse.DataFile.CheckSumType class and currently include MD5, SHA-1, SHA-256, and SHA-512
 
-(The remote store leverages the same JSON upload syntax as the last step in direct upload to S3 described in the  :doc:`/developers/s3-direct-upload-api` (which itself is just a variant of the standard file add API call syntax where the file location (storageIdentifier) is sent instead of sending the file bytes)).
+(The remote store leverages the same JSON upload syntax as the last step in direct upload to S3 described in the :ref:`Adding the Uploaded file to the Dataset <direct-add-to-dataset-api>` section of the :doc:`/developers/s3-direct-upload-api`.)
 
 .. code-block:: bash
 
