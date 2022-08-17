@@ -68,9 +68,11 @@ For very large, and/or very sensitive data, it may not make sense to transfer or
 
 With this storage option Dataverse stores a URL reference for the file rather than transferring the file bytes to a store managed directly by Dataverse. Basic configuration for a remote store is described at :ref:`file-storage` in the Configuration Guide.
 
-Once the store is configured, it can be assigned to a collection or individual datasets as with other stores. In a dataset using this store, users can reference remote files, currently only via API, which will then appear the same basic way as other datafiles. If the store has been configured with a remote-store-name or remote-store-url, the dataset file table will include this information for remote files. (Users can also upload smaller files via the UI or API which will be stored in the configured base store.)
+Once the store is configured, it can be assigned to a collection or individual datasets as with other stores. In a dataset using this store, users can reference remote files which will then appear the same basic way as other datafiles. 
 
-The remote store leverages the same upload syntax as the :doc:`/developers/s3-direct-upload-api` (which itself uses the standard file upload API call):
+Currently, remote files can only be added via the API. Users can also upload smaller files via the UI or API which will be stored in the configured base store.
+
+If the store has been configured with a remote-store-name or remote-store-url, the dataset file table will include this information for remote files. These provide a visual indicator that the files are not managed directly by Dataverse and are stored/managed by a remote trusted store.
 
 Rather than sending the file bytes, metadata for the remote file is added using the "jsonData" parameter.
 jsonData normally includes information such as a file description, tags, provenance, whether the file is restricted, etc. For remote references, the jsonData object must also include values for:
@@ -84,6 +86,8 @@ jsonData normally includes information such as a file description, tags, provena
   * "checksum" - Json Object with "@type" field specifying the algorithm used and "@value" field with the value from that algorithm, both Strings 
 
 The allowed checksum algorithms are defined by the edu.harvard.iq.dataverse.DataFile.CheckSumType class and currently include MD5, SHA-1, SHA-256, and SHA-512
+
+(The remote store leverages the same JSON upload syntax as the last step in direct upload to S3 described in the  :doc:`/developers/s3-direct-upload-api` (which itself is just a variant of the standard file add API call syntax where the file location (storageIdentifier) is sent instead of sending the file bytes)).
 
 .. code-block:: bash
 
