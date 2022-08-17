@@ -14,6 +14,7 @@ import javax.inject.Named;
 import java.io.Serializable;
 import java.util.Locale;
 import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 /**
@@ -23,19 +24,31 @@ import java.util.logging.Logger;
 @SessionScoped
 public class DataverseSession implements Serializable {
 
-    @EJB
-    ActionLogServiceBean logSvc;
-
-    @Inject
-    SystemConfig systemConfig;
-
     private static final Logger logger = Logger.getLogger(DataverseSession.class.getCanonicalName());
+
+    private ActionLogServiceBean logSvc;
+    private SystemConfig systemConfig;
 
     /* Note that on logout, variables must be cleared manually in DataverseHeaderFragment*/
     private User user;
     private boolean statusDismissed = false;
     private String localeCode;
     private int filesPerPage;
+
+    private final UUID sessionId;
+
+    // -------------------- CONSTRUCTORS --------------------
+
+    public DataverseSession() {
+        this.sessionId = UUID.randomUUID();
+    }
+
+    @Inject
+    public DataverseSession(ActionLogServiceBean logSvc, SystemConfig systemConfig) {
+        this();
+        this.logSvc = logSvc;
+        this.systemConfig = systemConfig;
+    }
 
     // -------------------- GETTERS --------------------
 
@@ -45,6 +58,10 @@ public class DataverseSession implements Serializable {
         }
 
         return user;
+    }
+
+    public UUID getSessionId() {
+        return sessionId;
     }
 
     public boolean isStatusDismissed() {

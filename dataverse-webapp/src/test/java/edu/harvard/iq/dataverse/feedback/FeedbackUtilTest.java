@@ -62,7 +62,7 @@ public class FeedbackUtilTest {
     public static void setUpClass() throws IOException, JsonParseException, AddressException {
 
         if (weKnowHowToCreateMockAuthenticatedUsers) {
-            dataverseSessionAuthenticated = new DataverseSession();
+            dataverseSessionAuthenticated = new DataverseSession(null, null);
             AuthenticatedUser authenticatedUser = MocksFactory.makeAuthenticatedUser("First", "Last");
             dataverseSessionAuthenticated.setUser(authenticatedUser);
         }

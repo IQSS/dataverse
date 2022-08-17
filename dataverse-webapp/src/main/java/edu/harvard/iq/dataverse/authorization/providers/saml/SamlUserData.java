@@ -19,6 +19,11 @@ public class SamlUserData {
 
     SamlUserData() { }
 
+    public SamlUserData(String id, String idpEntityId) {
+        this.id = id;
+        this.idpEntityId = idpEntityId;
+    }
+
     // -------------------- GETTERS --------------------
 
     public String getId() {

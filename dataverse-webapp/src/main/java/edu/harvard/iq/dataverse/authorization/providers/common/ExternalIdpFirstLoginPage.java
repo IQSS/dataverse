@@ -185,8 +185,8 @@ public class ExternalIdpFirstLoginPage implements Serializable {
             return redirectToHome();
         }
         if (newUser == null) {
-            // If new user tries to sign up with SAML then the user data
-            // will is stored in the http session
+            // If new user tries to sign up with SAML then
+            // the user data is stored in the http session
             HttpSession httpSession = (HttpSession) FacesContext.getCurrentInstance()
                     .getExternalContext()
                     .getSession(false);

@@ -12,18 +12,20 @@ import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.persistence.user.UserNotificationRepository;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
-import edu.harvard.iq.dataverse.settings.SettingsWrapper;
+import edu.harvard.iq.dataverse.users.SamlSessionRegistry;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.lang.StringUtils;
 import org.omnifaces.cdi.ViewScoped;
 
-import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,47 +34,55 @@ import java.util.logging.Logger;
  */
 @ViewScoped
 @Named
-public class DataverseHeaderFragment implements java.io.Serializable {
+public class DataverseHeaderFragment implements Serializable {
 
     private static final Logger logger = Logger.getLogger(DataverseHeaderFragment.class.getName());
 
-    @EJB
-    DataverseDao dataverseDao;
-
-    @Inject
-    SettingsServiceBean settingsService;
-
-    @EJB
-    SystemConfig systemConfig;
-
-    @EJB
-    DataFileServiceBean datafileService;
-
-    @Inject
-    DataverseSession dataverseSession;
-
-    @Inject
-    SettingsWrapper settingsWrapper;
-
-    @Inject
-    NavigationWrapper navigationWrapper;
-
-    @EJB
-    UserNotificationRepository userNotificationRepository;
-
-    @Inject
-    ConfirmEmailServiceBean confirmEmailService;
-
-    @Inject
+    private DataverseDao dataverseDao;
+    private SettingsServiceBean settingsService;
+    private SystemConfig systemConfig;
+    private DataFileServiceBean datafileService;
+    private DataverseSession dataverseSession;
+    private NavigationWrapper navigationWrapper;
+    private UserNotificationRepository userNotificationRepository;
+    private ConfirmEmailServiceBean confirmEmailService;
     private WidgetWrapper widgetWrapper;
+    private SamlSessionRegistry samlSessionRegistry;
 
-    List<Breadcrumb> breadcrumbs = new ArrayList<>();
+    private List<Breadcrumb> breadcrumbs = new ArrayList<>();
 
     private Long unreadNotificationCount;
+
+    // -------------------- CONSTRUCTORS --------------------
+
+    @Deprecated
+    public DataverseHeaderFragment() { }
+
+    @Inject
+    public DataverseHeaderFragment(DataverseDao dataverseDao, SettingsServiceBean settingsService,
+                                   SystemConfig systemConfig, DataFileServiceBean datafileService,
+                                   DataverseSession dataverseSession, NavigationWrapper navigationWrapper,
+                                   UserNotificationRepository userNotificationRepository, ConfirmEmailServiceBean confirmEmailService,
+                                   WidgetWrapper widgetWrapper, SamlSessionRegistry samlSessionRegistry) {
+        this.dataverseDao = dataverseDao;
+        this.settingsService = settingsService;
+        this.systemConfig = systemConfig;
+        this.datafileService = datafileService;
+        this.dataverseSession = dataverseSession;
+        this.navigationWrapper = navigationWrapper;
+        this.userNotificationRepository = userNotificationRepository;
+        this.confirmEmailService = confirmEmailService;
+        this.widgetWrapper = widgetWrapper;
+        this.samlSessionRegistry = samlSessionRegistry;
+    }
+
+    // -------------------- GETTERS --------------------
 
     public List<Breadcrumb> getBreadcrumbs() {
         return breadcrumbs;
     }
+
+    // -------------------- LOGIC --------------------
 
     public void initBreadcrumbs(DvObject dvObject) {
         if (dvObject == null) {
@@ -161,46 +171,8 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         }
     }
 
-    private Breadcrumb buildBreadcrumbForDvObject(DvObject dvObject) {
-        if (dvObject.isInstanceofDataverse()) {
-            return buildBreadcrumbForDataverse((Dataverse) dvObject);
-        } else if (dvObject.isInstanceofDataset()) {
-            return buildBreadcrumbForDataset((Dataset) dvObject, null);
-        } else if (dvObject.isInstanceofDataFile()) {
-            return buildBreadcrumbForDatafile((DataFile) dvObject, null);
-        }
-        throw new IllegalArgumentException("Unknown dvObject type: " + dvObject.getClass().getName());
-    }
-
-    private Breadcrumb buildBreadcrumbForDataverse(Dataverse dataverse) {
-        String dataverseUrl = "/dataverse/" + dataverse.getAlias();
-        if (widgetWrapper.isWidgetTarget(dataverse)) {
-            dataverseUrl = widgetWrapper.wrapURL(dataverseUrl);
-        }
-        boolean openInNewTab = widgetWrapper.isWidgetView() && !widgetWrapper.isWidgetTarget(dataverse);
-
-        return new Breadcrumb(dataverseUrl, dataverse.getDisplayName(), openInNewTab);
-    }
-    private Breadcrumb buildBreadcrumbForDataset(Dataset dataset, String optionalUrlExtension) {
-        String dataverseUrl = "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + (optionalUrlExtension == null ? "" : optionalUrlExtension);
-        if (widgetWrapper.isWidgetTarget(dataset)) {
-            dataverseUrl = widgetWrapper.wrapURL(dataverseUrl);
-        }
-        boolean openInNewTab = widgetWrapper.isWidgetView() && !widgetWrapper.isWidgetTarget(dataset);
-
-        return new Breadcrumb(dataverseUrl, dataset.getDisplayName(), openInNewTab);
-    }
-    private Breadcrumb buildBreadcrumbForDatafile(DataFile datafile, String optionalUrlExtension) {
-        String dataverseUrl = "/file.xhtml?fileId=" + datafile.getId() + (optionalUrlExtension == null ? "" : optionalUrlExtension);
-        if (widgetWrapper.isWidgetTarget(datafile)) {
-            dataverseUrl = widgetWrapper.wrapURL(dataverseUrl);
-        }
-        boolean openInNewTab = widgetWrapper.isWidgetView() && !widgetWrapper.isWidgetTarget(datafile);
-
-        return new Breadcrumb(dataverseUrl, datafile.getDisplayName(), openInNewTab);
-    }
-
     public String logout() {
+        samlSessionRegistry.unregister(dataverseSession);
         dataverseSession.setUser(null);
         dataverseSession.setStatusDismissed(false);
 
@@ -218,10 +190,6 @@ public class DataverseHeaderFragment implements java.io.Serializable {
 
         logger.log(Level.INFO, "Sending user to = " + redirectPage);
         return redirectPage + (!redirectPage.contains("?") ? "?" : "&") + "faces-redirect=true";
-    }
-
-    private String redirectToRoot() {
-        return "dataverse.xhtml?alias=" + dataverseDao.findRootDataverse().getAlias();
     }
 
     public boolean isSignupAllowed() {
@@ -258,8 +226,49 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         breadcrumbs.add(new Breadcrumb(text));
     }
 
-    // inner class used for breadcrumbs
-    public static class Breadcrumb implements java.io.Serializable {
+    // -------------------- PRIVATE --------------------
+
+    private Breadcrumb buildBreadcrumbForDvObject(DvObject dvObject) {
+        if (dvObject.isInstanceofDataverse()) {
+            return buildBreadcrumbForDataverse((Dataverse) dvObject);
+        } else if (dvObject.isInstanceofDataset()) {
+            return buildBreadcrumbForDataset((Dataset) dvObject, null);
+        } else if (dvObject.isInstanceofDataFile()) {
+            return buildBreadcrumbForDatafile((DataFile) dvObject, null);
+        }
+        throw new IllegalArgumentException("Unknown dvObject type: " + dvObject.getClass().getName());
+    }
+
+    private <T extends DvObject> Breadcrumb buildBreadcrumb(T dvObject, String optionalUrlExtension,
+                                                            Function<T, String> urlCreator) {
+        String url = urlCreator.apply(dvObject) + (optionalUrlExtension == null ? "" : optionalUrlExtension);
+        if (widgetWrapper.isWidgetTarget(dvObject)) {
+            url = widgetWrapper.wrapURL(url);
+        }
+        boolean openInNewTab = widgetWrapper.isWidgetView() && !widgetWrapper.isWidgetTarget(dvObject);
+        return new Breadcrumb(url, dvObject.getDisplayName(), openInNewTab);
+    }
+
+    private Breadcrumb buildBreadcrumbForDataverse(Dataverse dataverse) {
+        return buildBreadcrumb(dataverse, null, d -> "/dataverse/" + d.getAlias());
+    }
+
+    private Breadcrumb buildBreadcrumbForDataset(Dataset dataset, String optionalUrlExtension) {
+        return buildBreadcrumb(dataset, optionalUrlExtension, d -> "/dataset.xhtml?persistentId=" + d.getGlobalIdString());
+    }
+
+    private Breadcrumb buildBreadcrumbForDatafile(DataFile datafile, String optionalUrlExtension) {
+        return buildBreadcrumb(datafile, optionalUrlExtension, d -> "/file.xhtml?fileId=" + d.getId());
+    }
+
+    private String redirectToRoot() {
+        return "dataverse.xhtml?alias=" + dataverseDao.findRootDataverse().getAlias();
+    }
+
+
+    // -------------------- INNER CLASSES --------------------
+
+    public static class Breadcrumb implements Serializable {
 
         private final String breadcrumbText;
         private final String url;

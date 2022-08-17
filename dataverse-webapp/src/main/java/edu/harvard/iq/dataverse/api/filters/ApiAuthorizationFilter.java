@@ -16,6 +16,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -40,7 +41,7 @@ public class ApiAuthorizationFilter implements Filter {
     // -------------------- CONSTRUCTORS ---------------------
 
     @Inject
-    public ApiAuthorizationFilter(DataverseSession session, AuthenticationServiceBean authenticationService, 
+    public ApiAuthorizationFilter(DataverseSession session, AuthenticationServiceBean authenticationService,
                                   UserServiceBean userService, SystemConfig systemConfig) {
         this.session = session;
         this.authenticationService = authenticationService;
@@ -55,7 +56,7 @@ public class ApiAuthorizationFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         FilterLogIn filterLogIn = logInUserByTokenIfNeeded(request);
         chain.doFilter(servletRequest, response);
-        filterLogIn.logOut(request);
+        filterLogIn.logOut(request, session);
     }
 
     @Override
@@ -90,16 +91,19 @@ public class ApiAuthorizationFilter implements Filter {
     // -------------------- INNER CLASSES ---------------------
 
     private enum FilterLogIn {
-        NONE(r -> { }),
-        TOKEN_LOG_IN(r -> r.getSession().invalidate());
+        NONE((r, ds) -> { }),
+        TOKEN_LOG_IN((r, ds) -> {
+            r.getSession().invalidate();
+            ds.setUser(null);
+        });
 
-        private final Consumer<HttpServletRequest> logout;
+        private final BiConsumer<HttpServletRequest, DataverseSession> logout;
 
-        public void logOut(HttpServletRequest request) {
-            logout.accept(request);
+        public void logOut(HttpServletRequest request, DataverseSession dataverseSession) {
+            logout.accept(request, dataverseSession);
         }
 
-        FilterLogIn(Consumer<HttpServletRequest> logout) {
+        FilterLogIn(BiConsumer<HttpServletRequest, DataverseSession> logout) {
             this.logout = logout;
         }
     }

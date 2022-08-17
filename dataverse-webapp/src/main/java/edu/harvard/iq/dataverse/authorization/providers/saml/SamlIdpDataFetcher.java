@@ -15,7 +15,6 @@ import java.io.Reader;
 import java.net.URL;
 import java.sql.Timestamp;
 import java.time.Clock;
-import java.util.Date;
 import java.util.stream.Collectors;
 
 @Stateless
@@ -77,6 +76,7 @@ public class SamlIdpDataFetcher {
 
     // -------------------- INNER CLASSES --------------------
 
+    @FunctionalInterface
     public interface XmlFetcher {
         String fetchXml(String url) throws Exception;
     }
