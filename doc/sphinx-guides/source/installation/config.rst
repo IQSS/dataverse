@@ -943,7 +943,7 @@ Some external tools are also ready to be translated, especially if they are usin
 
 
 Tools for Translators
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++
++++++++++++++++++++++
 
 The list below depicts a set of tools that can be used to ease the amount of work necessary for translating the Dataverse software by facilitating this collaborative effort and enabling the reuse of previous work:
 
@@ -1098,18 +1098,22 @@ BagIt file handler configuration settings:
 BagIt Export
 ------------
 
-Your Dataverse installation may be configured to submit a copy of published Datasets, packaged as `Research Data Alliance conformant <https://www.rd-alliance.org/system/files/Research%20Data%20Repository%20Interoperability%20WG%20-%20Final%20Recommendations_reviewed_0.pdf>`_ zipped `BagIt <https://tools.ietf.org/html/draft-kunze-bagit-17>`_ bags to `Chronopolis <https://libraries.ucsd.edu/chronopolis/>`_ via `DuraCloud <https://duraspace.org/duracloud/>`_ or alternately to any folder on the local filesystem.
+Your Dataverse installation may be configured to submit a copy of published Datasets, packaged as `Research Data Alliance conformant <https://www.rd-alliance.org/system/files/Research%20Data%20Repository%20Interoperability%20WG%20-%20Final%20Recommendations_reviewed_0.pdf>`_ zipped `BagIt <https://tools.ietf.org/html/draft-kunze-bagit-17>`_ archival Bags (sometimes called BagPacks) to `Chronopolis <https://libraries.ucsd.edu/chronopolis/>`_ via `DuraCloud <https://duraspace.org/duracloud/>`_ or alternately to any folder on the local filesystem.
+
+These archival Bags include all of the files and metadata in a given dataset version and are sufficient to recreate the dataset, e.g. in a new Dataverse instance, or postentially in another RDA-conformant repository.
 
 The Dataverse Software offers an internal archive workflow which may be configured as a PostPublication workflow via an admin API call to manually submit previously published Datasets and prior versions to a configured archive such as Chronopolis. The workflow creates a `JSON-LD <http://www.openarchives.org/ore/0.9/jsonld>`_ serialized `OAI-ORE <https://www.openarchives.org/ore/>`_ map file, which is also available as a metadata export format in the Dataverse Software web interface.
 
-At present, the DPNSubmitToArchiveCommand, LocalSubmitToArchiveCommand, and GoogleCloudSubmitToArchive are the only implementations extending the AbstractSubmitToArchiveCommand and using the configurable mechanisms discussed below.
+At present, archiving classes include the DuraCloudSubmitToArchiveCommand, LocalSubmitToArchiveCommand, GoogleCloudSubmitToArchive, and S3SubmitToArchiveCommand , which all extend the AbstractSubmitToArchiveCommand and use the configurable mechanisms discussed below. (A DRSSubmitToArchiveCommand, which works with Harvard's DRS also exists and, while specific to DRS, is a useful example of how Archivers can support single-version-only semantics and support archiving only from specified collections (with collection specific parameters)). 
+
+All current options support the archival status APIs and the same status is available in the dataset page version table (for contributors/those who could view the unpublished dataset, with more detail available to superusers).
 
 .. _Duracloud Configuration:
 
 Duracloud Configuration
 +++++++++++++++++++++++
 
-Also note that while the current Chronopolis implementation generates the bag and submits it to the archive's DuraCloud interface, the step to make a 'snapshot' of the space containing the Bag (and verify it's successful submission) are actions a curator must take in the DuraCloud interface.
+Also note that while the current Chronopolis implementation generates the archival Bag and submits it to the archive's DuraCloud interface, the step to make a 'snapshot' of the space containing the archival Bag (and verify it's successful submission) are actions a curator must take in the DuraCloud interface.
 
 The minimal configuration to support an archiver integration involves adding a minimum of two Dataverse Software Keys and any required Payara jvm options. The example instructions here are specific to the DuraCloud Archiver\:
 
@@ -1133,7 +1137,7 @@ It also can use one setting that is common to all Archivers: :BagGeneratorThread
 
 ``curl http://localhost:8080/api/admin/settings/:BagGeneratorThreads -X PUT -d '8'``
 
-By default, the Bag generator zips two datafiles at a time when creating the Bag. This setting can be used to lower that to 1, i.e. to decrease system load, or to increase it, e.g. to 4 or 8, to speed processing of many small files.
+By default, the Bag generator zips two datafiles at a time when creating the archival Bag. This setting can be used to lower that to 1, i.e. to decrease system load, or to increase it, e.g. to 4 or 8, to speed processing of many small files.
 
 Archivers may require JVM options as well. For the Chronopolis archiver, the username and password associated with your organization's Chronopolis/DuraCloud account should be configured in Payara:
 
@@ -1150,7 +1154,7 @@ ArchiverClassName - the fully qualified class to be used for archiving. For exam
 
 ``curl -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.LocalSubmitToArchiveCommand" http://localhost:8080/api/admin/settings/:ArchiverClassName``
 
-\:BagItLocalPath - the path to where you want to store BagIt. For example\:
+\:BagItLocalPath - the path to where you want to store the archival Bags. For example\:
 
 ``curl -X PUT -d /home/path/to/storage http://localhost:8080/api/admin/settings/:BagItLocalPath``
 
@@ -1165,7 +1169,7 @@ ArchiverClassName - the fully qualified class to be used for archiving. For exam
 Google Cloud Configuration
 ++++++++++++++++++++++++++
 
-The Google Cloud Archiver can send Dataverse Project Bags to a bucket in Google's cloud, including those in the 'Coldline' storage class (cheaper, with slower access) 
+The Google Cloud Archiver can send Dataverse Archival Bags to a bucket in Google's cloud, including those in the 'Coldline' storage class (cheaper, with slower access) 
 
 ``curl http://localhost:8080/api/admin/settings/:ArchiverClassName -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.GoogleCloudSubmitToArchiveCommand"``
 
@@ -1189,14 +1193,39 @@ For example:
 
 ``cp <your key file> /usr/local/payara5/glassfish/domains/domain1/files/googlecloudkey.json``
 
+.. _S3 Archiver Configuration:
+
+S3 Configuration
+++++++++++++++++
+
+The S3 Archiver can send Dataverse Archival Bag to a bucket at any S3 endpoint. The configuration for the S3 Archiver is independent of any S3 store that may be configured in Dataverse and may, for example, leverage colder (cheaper, slower access) storage. 
+
+``curl http://localhost:8080/api/admin/settings/:ArchiverClassName -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.S3SubmitToArchiveCommand"``
+
+``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":S3ArchiverConfig, :BagGeneratorThreads"``
+
+The S3 Archiver defines one custom setting, a required :S3ArchiverConfig. It can also use the :BagGeneratorThreads setting as described in the DuraCloud Configuration section above.
+
+The credentials for your S3 account, can be stored in a profile in a standard credentials file (e.g. ~/.aws/credentials) referenced via "profile" key in the :S3ArchiverConfig setting (will default to the default entry), or can via MicroProfile settings as described for S3 stores (dataverse.s3archiver.access-key and dataverse.s3archiver.secret-key)
+
+The :S3ArchiverConfig setting is a JSON object that must include an "s3_bucket_name" and may include additional S3-related parameters as described for S3 Stores, including "profile", "connection-pool-size","custom-endpoint-url", "custom-endpoint-region", "path-style-access", "payload-signing", and "chunked-encoding".
+
+\:S3ArchiverConfig - minimally includes the name of the bucket to use. For example:
+
+``curl http://localhost:8080/api/admin/settings/:S3ArchiverConfig -X PUT -d '{"s3_bucket_name":"archival-bucket"}'``
+
+\:S3ArchiverConfig - example to also set the name of an S3 profile to use. For example:
+
+``curl http://localhost:8080/api/admin/settings/:S3ArchiverConfig -X PUT -d '{"s3_bucket_name":"archival-bucket", "profile":"archiver"}'``
+
 .. _Archiving API Call:
 
-API Call
-++++++++
+API Calls
++++++++++
 
-Once this configuration is complete, you, as a user with the *PublishDataset* permission, should be able to use the API call to manually submit a DatasetVersion for processing:
+Once this configuration is complete, you, as a user with the *PublishDataset* permission, should be able to use the admin API call to manually submit a DatasetVersion for processing:
 
-``curl -H "X-Dataverse-key: <key>" http://localhost:8080/api/admin/submitDataVersionToArchive/{id}/{version}``
+``curl -X POST -H "X-Dataverse-key: <key>" http://localhost:8080/api/admin/submitDatasetVersionToArchive/{id}/{version}``
 
 where:
 
@@ -1204,9 +1233,21 @@ where:
 
 ``{version}`` is the friendly version number, e.g. "1.2".
 
-The submitDataVersionToArchive API (and the workflow discussed below) attempt to archive the dataset version via an archive specific method. For Chronopolis, a DuraCloud space named for the dataset (it's DOI with ':' and '.' replaced with '-') is created and two files are uploaded to it: a version-specific datacite.xml metadata file and a BagIt bag containing the data and an OAI-ORE map file. (The datacite.xml file, stored outside the Bag as well as inside is intended to aid in discovery while the ORE map file is 'complete', containing all user-entered metadata and is intended as an archival record.)
+The submitDatasetVersionToArchive API (and the workflow discussed below) attempt to archive the dataset version via an archive specific method. For Chronopolis, a DuraCloud space named for the dataset (it's DOI with ':' and '.' replaced with '-') is created and two files are uploaded to it: a version-specific datacite.xml metadata file and a BagIt bag containing the data and an OAI-ORE map file. (The datacite.xml file, stored outside the Bag as well as inside is intended to aid in discovery while the ORE map file is 'complete', containing all user-entered metadata and is intended as an archival record.)
 
 In the Chronopolis case, since the transfer from the DuraCloud front-end to archival storage in Chronopolis can take significant time, it is currently up to the admin/curator to submit a 'snap-shot' of the space within DuraCloud and to monitor its successful transfer. Once transfer is complete the space should be deleted, at which point the Dataverse Software API call can be used to submit a Bag for other versions of the same Dataset. (The space is reused, so that archival copies of different Dataset versions correspond to different snapshots of the same DuraCloud space.).
+
+A batch version of this admin api call is also available:
+
+``curl -X POST -H "X-Dataverse-key: <key>" 'http://localhost:8080/api/admin/archiveAllUnarchivedDatasetVersions?listonly=true&limit=10&latestonly=true'``
+
+The archiveAllUnarchivedDatasetVersions call takes 3 optional configuration parameters. 
+* listonly=true will cause the API to list dataset versions that would be archived but will not take any action.
+* limit=<n> will limit the number of dataset versions archived in one api call to <= <n>. 
+* latestonly=true will limit archiving to only the latest published versions of datasets instead of archiving all unarchived versions.
+
+Note that because archiving is done asynchronously, the calls above will return OK even if the user does not have the *PublishDataset* permission on the dataset(s) involved. Failures are indocated in the log and the archivalStatus calls in the native api can be used to check the status as well.
+
 
 PostPublication Workflow
 ++++++++++++++++++++++++
@@ -2597,7 +2638,7 @@ Number of errors to display to the user when creating DataFiles from a file uplo
 .. _:BagItHandlerEnabled:
 
 :BagItHandlerEnabled
-+++++++++++++++++++++
+++++++++++++++++++++
 
 Part of the database settings to configure the BagIt file handler. Enables the BagIt file handler. By default, the handler is disabled.
 
@@ -2673,6 +2714,12 @@ This is the local file system path to be used with the LocalSubmitToArchiveComma
 +++++++++++++++++++
 
 These are the bucket and project names to be used with the GoogleCloudSubmitToArchiveCommand class. Further information is in the :ref:`Google Cloud Configuration` section above.
+
+:S3ArchiverConfig
++++++++++++++++++
+
+This is the JSON configuration object setting to be used with the S3SubmitToArchiveCommand class. Further information is in the :ref:`S3 Archiver Configuration` section above.
+
 
 .. _:InstallationName:
 
@@ -2880,3 +2927,19 @@ For configuration details, see :ref:`mute-notifications`.
 Overrides the default empty list of never muted notifications. Never muted notifications cannot be muted by the users. Always muted notifications are grayed out and are not adjustable by the user.
 
 For configuration details, see :ref:`mute-notifications`.
+
+:LDNMessageHosts
+++++++++++++++++
+
+The comma-separated list of hosts allowed to send Dataverse Linked Data Notification messages. See :doc:`/api/linkeddatanotification` for details. ``*`` allows messages from anywhere (not recommended for production). By default, messages are not accepted from anywhere.
+
+
+:LDN_TARGET
++++++++++++
+
+The URL of an LDN Inbox to which the LDN Announce workflow step will send messages. See :doc:`/developers/workflows` for details.
+
+:LDNAnnounceRequiredFields
+++++++++++++++++++++++++++
+
+The list of parent dataset field names for which the LDN Announce workflow step should send messages. See :doc:`/developers/workflows` for details.
