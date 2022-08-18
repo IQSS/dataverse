@@ -14,7 +14,7 @@ As reported at the 2022 Dataverse Community Meeting, the Harvard Data Commons pr
 - Workflow (add Aday's notes here or reword to separate the Objective 2 work)
 - Support for Archiving to any S3 store using Dataverse's RDA-conformant BagIT file format (a BagPack).
 - Improved error handling and performance in archival bag creation and new options such as only supporting archiving of one dataset version.
-- Additions/corrections to the OAI-ORE metadata format (which is included in archival bags) such as referencing the name/mimeType/size/checksum/download URL or the original file for ingested files, the inclusion of metadata about the parent collection(s) of an archived dataset version and use of the URL form of PIDs.
+- Additions/corrections to the OAI-ORE metadata format (which is included in archival bags) such as referencing the name/mimeType/size/checksum/download URL of the original file for ingested files, the inclusion of metadata about the parent collection(s) of an archived dataset version, and use of the URL form of PIDs.
 - Display of archival status within the dataset page versions table, richer status options including success, pending, and failure states, with a complete API for managing archival status.
 - Support for batch archiving via API as an alternative to the current options of configuring archiving upon publication or archiving each dataset version manually.
 - Initial support for sending and receiving Linked Data Notification messages indicating relationships between a dataset and external resources (e.g. papers or other dataset) that can be used to trigger additional actions, such as the creation of a back-link to provide, for example, bi-directional linking between a published paper and a Dataverse dataset.
