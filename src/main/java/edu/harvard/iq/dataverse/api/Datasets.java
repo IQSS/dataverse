@@ -1592,8 +1592,7 @@ public class Datasets extends AbstractApiBean {
         User user = session.getUser();
         String persistentId;
         try {
-            if (getDatasetVersionOrDie(createDataverseRequest(user), versionId, findDatasetOrDie(id), uriInfo, headers)
-                    .getTermsOfUseAndAccess().getLicense() != null) {
+            if (DatasetUtil.getLicense(getDatasetVersionOrDie(createDataverseRequest(user), versionId, findDatasetOrDie(id), uriInfo, headers)) != null) {
                 return error(Status.NOT_FOUND, "This Dataset has no custom license");
             }
             persistentId = getRequestParameter(":persistentId".substring(1));
@@ -1908,7 +1907,7 @@ public class Datasets extends AbstractApiBean {
                         String message = wr.getMessage();
                         return error(Response.Status.INTERNAL_SERVER_ERROR, "Uploaded files have passed checksum validation but something went wrong while attempting to put the files into Dataverse. Message was '" + message + "'.");
                     }
-                } else if(storageDriverType.equals("s3")) {
+                } else if(storageDriverType.equals(DataAccess.S3)) {
                     
                     logger.log(Level.INFO, "S3 storage driver used for DCM (dataset id={0})", dataset.getId());
                     try {
@@ -2371,40 +2370,45 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         String newFilename = null;
         String newFileContentType = null;
         String newStorageIdentifier = null;
-		if (null == contentDispositionHeader) {
-			if (optionalFileParams.hasStorageIdentifier()) {
-				newStorageIdentifier = optionalFileParams.getStorageIdentifier();
-				// ToDo - check that storageIdentifier is valid
-				if (optionalFileParams.hasFileName()) {
-					newFilename = optionalFileParams.getFileName();
-					if (optionalFileParams.hasMimetype()) {
-						newFileContentType = optionalFileParams.getMimeType();
-					}
-				}
-			} else {
-				return error(BAD_REQUEST,
-						"You must upload a file or provide a storageidentifier, filename, and mimetype.");
-			}
-		} else {
-			newFilename = contentDispositionHeader.getFileName();
-                        // Let's see if the form data part has the mime (content) type specified. 
-                        // Note that we don't want to rely on formDataBodyPart.getMediaType() - 
-                        // because that defaults to "text/plain" when no "Content-Type:" header is 
-                        // present. Instead we'll go through the headers, and see if "Content-Type:" 
-                        // is there. If not, we'll default to "application/octet-stream" - the generic
-                        // unknown type. This will prompt the application to run type detection and 
-                        // potentially find something more accurate.
-                        //newFileContentType = formDataBodyPart.getMediaType().toString();
+        if (null == contentDispositionHeader) {
+            if (optionalFileParams.hasStorageIdentifier()) {
+                newStorageIdentifier = optionalFileParams.getStorageIdentifier();
+                newStorageIdentifier = DataAccess.expandStorageIdentifierIfNeeded(newStorageIdentifier);
+                
+                if(!DataAccess.uploadToDatasetAllowed(dataset,  newStorageIdentifier)) {
+                    return error(BAD_REQUEST,
+                            "Dataset store configuration does not allow provided storageIdentifier.");
+                }
+                if (optionalFileParams.hasFileName()) {
+                    newFilename = optionalFileParams.getFileName();
+                    if (optionalFileParams.hasMimetype()) {
+                        newFileContentType = optionalFileParams.getMimeType();
+                    }
+                }
+            } else {
+                return error(BAD_REQUEST,
+                        "You must upload a file or provide a valid storageidentifier, filename, and mimetype.");
+            }
+        } else {
+            newFilename = contentDispositionHeader.getFileName();
+            // Let's see if the form data part has the mime (content) type specified.
+            // Note that we don't want to rely on formDataBodyPart.getMediaType() -
+            // because that defaults to "text/plain" when no "Content-Type:" header is
+            // present. Instead we'll go through the headers, and see if "Content-Type:"
+            // is there. If not, we'll default to "application/octet-stream" - the generic
+            // unknown type. This will prompt the application to run type detection and
+            // potentially find something more accurate.
+            // newFileContentType = formDataBodyPart.getMediaType().toString();
 
-                        for (String header : formDataBodyPart.getHeaders().keySet()) {
-                            if (header.equalsIgnoreCase("Content-Type")) {
-                                newFileContentType = formDataBodyPart.getHeaders().get(header).get(0);
-                            }
-                        }
-                        if (newFileContentType == null) {
-                            newFileContentType = FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT;
-                        }
-		}
+            for (String header : formDataBodyPart.getHeaders().keySet()) {
+                if (header.equalsIgnoreCase("Content-Type")) {
+                    newFileContentType = formDataBodyPart.getHeaders().get(header).get(0);
+                }
+            }
+            if (newFileContentType == null) {
+                newFileContentType = FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT;
+            }
+        }
 
         
         //-------------------
@@ -2912,7 +2916,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         }
         if (!user.isSuperuser()) {
             return error(Response.Status.FORBIDDEN, "Superusers only.");
-    	}
+        }
         
         Dataset dataset; 
         
@@ -2930,7 +2934,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                 return ok("Storage driver set to: " + store.getKey() + "/" + store.getValue());
             }
         }
-    	return error(Response.Status.BAD_REQUEST,
+        return error(Response.Status.BAD_REQUEST,
             "No Storage Driver found for : " + storageDriverLabel);
     }
     
@@ -2948,7 +2952,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         }
         if (!user.isSuperuser()) {
             return error(Response.Status.FORBIDDEN, "Superusers only.");
-    	}
+        }
         
         Dataset dataset; 
         
@@ -2960,7 +2964,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         
         dataset.setStorageDriverId(null);
         datasetService.merge(dataset);
-    	return ok("Storage reset to default: " + DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
+        return ok("Storage reset to default: " + DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
     }
 
     @GET
