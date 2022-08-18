@@ -52,7 +52,7 @@
     -->
     <!-- TODO: Housekeeping is utterly needed. -->
     <dependencies>
-    
+
         <!-- This dependency ensures the lib is on the classpath. That way, anything coming from
              SLF4J should flow through our usual ways of using java.util.logging.
              (Which makes it also configurable using those mechanisms.) No direct use intended. -->
@@ -357,7 +357,7 @@
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.9</version>
+            <version>1.15</version>
         </dependency>
         <!-- JavaSwift/JOSS: for accessing OpenStack cloud storage -->
         <dependency>
@@ -516,7 +516,19 @@
           <artifactId>google-cloud-storage</artifactId>
           <!-- no version here as managed in <dependencyManagement> of parent for convergence! -->
         </dependency>
-        
+        <!-- JWT support, currently in DRSSubmitToArchiveCommand-->
+        <!-- https://mvnrepository.com/artifact/com.auth0/java-jwt -->
+        <dependency>
+          <groupId>com.auth0</groupId>
+          <artifactId>java-jwt</artifactId>
+          <version>3.19.1</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/io.github.erdtman/java-json-canonicalization -->
+        <dependency>
+          <groupId>io.github.erdtman</groupId>
+          <artifactId>java-json-canonicalization</artifactId>
+          <version>1.1</version>
+        </dependency>
         
         <!-- TESTING DEPENDENCIES -->
         <dependency>
