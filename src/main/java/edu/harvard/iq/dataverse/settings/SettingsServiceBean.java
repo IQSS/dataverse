@@ -523,6 +523,10 @@ public class SettingsServiceBean {
          * Nevermuted setting warning is logged.
          */
         NeverMuted,
+        /**
+         * LDN Inbox Allowed Hosts - a comma separated list of IP addresses allowed to submit messages to the inbox
+         */
+        LDNMessageHosts,
 
         /**
          * Determines if dataset submitted via API with invalid or incomplete metadata (for later

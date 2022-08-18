@@ -655,4 +655,3 @@ public class SettingsWrapper implements java.io.Serializable {
         return isTrueForKey(Key.ShowValidityFilter, false);
     }
 }
-
