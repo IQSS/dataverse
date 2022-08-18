@@ -1153,7 +1153,7 @@ public class Datasets extends AbstractApiBean {
                          */
                         try {
                             updateVersion = commandEngine.submit(archiveCommand);
-                            if (updateVersion.getArchivalCopyLocation() != null) {
+                            if (!updateVersion.getArchivalCopyLocationStatus().equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE)) {
                                 successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.success");
                             } else {
                                 successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure");
@@ -1592,8 +1592,7 @@ public class Datasets extends AbstractApiBean {
         User user = session.getUser();
         String persistentId;
         try {
-            if (getDatasetVersionOrDie(createDataverseRequest(user), versionId, findDatasetOrDie(id), uriInfo, headers)
-                    .getTermsOfUseAndAccess().getLicense() != null) {
+            if (DatasetUtil.getLicense(getDatasetVersionOrDie(createDataverseRequest(user), versionId, findDatasetOrDie(id), uriInfo, headers)) != null) {
                 return error(Status.NOT_FOUND, "This Dataset has no custom license");
             }
             persistentId = getRequestParameter(":persistentId".substring(1));
@@ -3352,7 +3351,6 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 
                     dsv.setArchivalCopyLocation(JsonUtil.prettyPrint(update));
                     dsv = datasetversionService.merge(dsv);
-                    logger.fine("location now: " + dsv.getArchivalCopyLocation());
                     logger.fine("status now: " + dsv.getArchivalCopyLocationStatus());
                     logger.fine("message now: " + dsv.getArchivalCopyLocationMessage());
 
