@@ -42,9 +42,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-//import org.apache.commons.httpclient.Header;
-//import org.apache.commons.httpclient.methods.GetMethod;
-
 
 /**
  *
@@ -82,19 +79,10 @@ public abstract class StorageIO<T extends DvObject> {
 
     protected boolean isReadAccess = false;
     protected boolean isWriteAccess = false;
-    
     //A  public store is one in which files may be accessible outside Dataverse and therefore accessible without regard to Dataverse's access controls related to restriction and embargoes.
     //Currently, this is just used to warn users at upload time rather than disable restriction/embargo. 
     static protected Map<String, Boolean> driverPublicAccessMap = new HashMap<String, Boolean>();
-
-    public static boolean isPublicStore(String driverId) {
-        //Read once and cache
-        if(!driverPublicAccessMap.containsKey(driverId)) {
-            driverPublicAccessMap.put(driverId, Boolean.parseBoolean(System.getProperty("dataverse.files." + driverId + ".public")));
-        }
-        return driverPublicAccessMap.get(driverId);
-    }
-
+    
     public boolean canRead() {
         return isReadAccess;
     }
@@ -601,6 +589,15 @@ public abstract class StorageIO<T extends DvObject> {
     
     public String generateTemporaryDownloadUrl(String auxiliaryTag, String auxiliaryType, String auxiliaryFileName) throws IOException {
         throw new UnsupportedDataAccessOperationException("Direct download not implemented for this storage type");
+    }
+    
+
+    public static boolean isPublicStore(String driverId) {
+        //Read once and cache
+        if(!driverPublicAccessMap.containsKey(driverId)) {
+            driverPublicAccessMap.put(driverId, Boolean.parseBoolean(System.getProperty("dataverse.files." + driverId + ".public")));
+        }
+        return driverPublicAccessMap.get(driverId);
     }
     
     public static String getDriverPrefix(String driverId) {
