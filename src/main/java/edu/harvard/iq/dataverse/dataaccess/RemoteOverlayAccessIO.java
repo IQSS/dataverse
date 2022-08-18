@@ -611,8 +611,23 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 
     }
 
+    protected static boolean isValidIdentifier(String driverId, String storageId) {
+        String urlPath = storageId.substring(storageId.lastIndexOf("//") + 2);
+        String baseUrl = System.getProperty("dataverse.files." + driverId + ".base-url");
+        try {
+            URI absoluteURI = new URI(baseUrl + "/" + urlPath);
+            if(!absoluteURI.normalize().toString().startsWith(baseUrl)) {
+                logger.warning("storageidentifier doesn't start with " + driverId + "'s base-url: " + storageId);
+                return false;
+            }
+        } catch(URISyntaxException use) {
+            logger.warning("Could not interpret storageidentifier in remote store " + driverId + " : " + storageId);
+            return false;
+        }
+        return true;
+    }
+
     public static String getBaseStoreIdFor(String driverId) {
         return System.getProperty("dataverse.files." + driverId + ".base-store");
     }
-
 }
