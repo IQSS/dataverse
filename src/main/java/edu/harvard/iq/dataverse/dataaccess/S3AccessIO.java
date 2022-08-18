@@ -937,9 +937,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                     // them for some servers, we check whether the protocol is in the url and then
                     // normalizing to use the part without the protocol
                     String endpointServer = endpoint;
-                    int protocolEnd = endpoint.indexOf("://");
+                    int protocolEnd = endpoint.indexOf(DataAccess.SEPARATOR);
                     if (protocolEnd >=0 ) {
-                        endpointServer = endpoint.substring(protocolEnd + 3);
+                        endpointServer = endpoint.substring(protocolEnd + DataAccess.SEPARATOR.length());
                     }
                     logger.fine("Endpoint: " + endpointServer);
                     // We're then replacing 
@@ -998,9 +998,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 // them for some servers, we check whether the protocol is in the url and then
                 // normalizing to use the part without the protocol
                 String endpointServer = endpoint;
-                int protocolEnd = endpoint.indexOf("://");
+                int protocolEnd = endpoint.indexOf(DataAccess.SEPARATOR);
                 if (protocolEnd >=0 ) {
-                    endpointServer = endpoint.substring(protocolEnd + 3);
+                    endpointServer = endpoint.substring(protocolEnd + DataAccess.SEPARATOR.length());
                 }
                 logger.fine("Endpoint: " + endpointServer);
                 // We're then replacing 
@@ -1274,5 +1274,37 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     public void setMainDriver(boolean mainDriver) {
         this.mainDriver = mainDriver;
     }
+    
+    public static String getDriverPrefix(String driverId) {
+        return driverId+ DataAccess.SEPARATOR + getBucketName(driverId) + ":";
+    }
+    
+    //Confirm inputs are of the form s3://demo-dataverse-bucket:176e28068b0-1c3f80357c42
+    protected static boolean isValidIdentifier(String driverId, String storageId) {
+        String storageBucketAndId = storageId.substring(storageId.lastIndexOf("//") + 2);
+        String bucketName = getBucketName(driverId);
+        if(bucketName==null) {
+            logger.warning("No bucket defined for " + driverId);
+            return false;
+        }
+        int index = storageBucketAndId.lastIndexOf(":");
+        if(index<=0) {
+            logger.warning("No bucket defined in submitted identifier: " + storageId);
+            return false;
+        }
+        String idBucket = storageBucketAndId.substring(0, index);
+        String id = storageBucketAndId.substring(index+1);
+        System.out.println(id);
+        if(!bucketName.equals(idBucket)) {
+            logger.warning("Incorrect bucket in submitted identifier: " + storageId);
+            return false;
+        }
+        if (!usesStandardNamePattern(id)) {
+            logger.warning("Unacceptable identifier pattern in submitted identifier: " + storageId);
+            return false;
+        }
+        return true;
+    }
+    
 
 }
