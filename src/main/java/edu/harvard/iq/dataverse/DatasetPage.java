@@ -2163,10 +2163,11 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public boolean isValid() {
-        if (!workingVersion.isDraft()) {
+        DatasetVersion version = dataset.getLatestVersion();
+        if (!version.isDraft()) {
             return true;
         }
-        DatasetVersion newVersion = workingVersion.cloneDatasetVersion();
+        DatasetVersion newVersion = version.cloneDatasetVersion();
         newVersion.setDatasetFields(newVersion.initDatasetFields());
         return newVersion.isValid();
     }

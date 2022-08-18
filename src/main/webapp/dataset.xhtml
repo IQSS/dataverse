@@ -44,6 +44,7 @@
             <ui:param name="publishDataset" value="#{DatasetPage.publishDatasetPopup()}"/>
             <ui:param name="releaseDraft" value="#{DatasetPage.releaseDraftPopup()}"/>
             <ui:param name="releaseBoth" value="#{DatasetPage.publishBothPopup()}"/>
+            <ui:param name="valid" value="#{DatasetPage.valid}"/>
             <ui:define name="meta_header">
                 <ui:fragment rendered="#{!DatasetPage.anonymizedAccess}">
                     <meta name="description" content="#{DatasetPage.description}"/>
@@ -1620,7 +1621,7 @@
                         <p class="text-warning">
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.submitMessage']}
                         </p>
-                        <p rendered="#{!valid}" class="text-warning">
+                        <p jsf:rendered="#{!valid}" class="text-warning">
                             <span class="glyphicon glyphicon-warning-sign"/><b style="color:red;"> #{bundle['dataset.message.invalid.warning']}</b>
                         </p>
                         <c:if test="#{showSubmitForReviewLink}">
@@ -1639,8 +1640,8 @@
                     <p:dialog id="publishDataset" width="70%" header="#{bundle['dataset.publish.header']}" widgetVar="publishDataset" modal="true">
                         <ui:fragment rendered="#{publishDataset}">
                             <div class="form-group">
-                                <p rendered="#{valid}" class="col-sm-12 text-warning">#{bundle['dataset.publish.tip']}</p>
-                                <p rendered="#{!valid}" class="col-sm-12 text-warning"><b style="color:red;">#{bundle['dataset.message.invalid.warning']}</b></p>
+                                <p jsf:rendered="#{valid}" class="col-sm-12 text-warning">#{bundle['dataset.publish.tip']}</p>
+                                <p jsf:rendered="#{!valid}" class="col-sm-12 text-warning"><b style="color:red;">#{bundle['dataset.message.invalid.warning']}</b></p>
                                 <p class="col-sm-12 help-block">#{bundle['dataset.publish.terms.tip']}</p>
                             </div>
                         </ui:fragment>
