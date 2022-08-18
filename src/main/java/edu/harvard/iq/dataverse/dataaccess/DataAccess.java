@@ -342,4 +342,27 @@ public class DataAccess {
         }
         return allowed;
     }
+
+
+    //Method to verify that a submitted storageIdentifier (i.e. in direct/remote uploads) is consistent with the store's configuration.
+    public static boolean isValidDirectStorageIdentifier(String storageId) {
+        String driverId = DataAccess.getStorageDriverFromIdentifier(storageId);
+        String storageType = DataAccess.getDriverType(driverId);
+        if (storageType.equals("tmp") || storageType.equals("Undefined")) {
+            return false;
+        }
+        switch (storageType) {
+        case FILE:
+            return FileAccessIO.isValidIdentifier(driverId, storageId);
+        case SWIFT:
+            return SwiftAccessIO.isValidIdentifier(driverId, storageId);
+        case S3:
+            return S3AccessIO.isValidIdentifier(driverId, storageId);
+        case REMOTE:
+            return RemoteOverlayAccessIO.isValidIdentifier(driverId, storageId);
+        default:
+            logger.warning("Request to validate for storage driver: " + driverId);
+        }
+        return false;
+    }
 }

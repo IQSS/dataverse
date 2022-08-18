@@ -37,6 +37,8 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 //import org.apache.commons.httpclient.Header;
@@ -590,5 +592,19 @@ public abstract class StorageIO<T extends DvObject> {
     
     public static String getDriverPrefix(String driverId) {
         return driverId+ DataAccess.SEPARATOR;
+    }
+    
+    //Check that storageIdentifier is consistent with store's config
+    //False will prevent direct uploads
+    protected static boolean isValidIdentifier(String driverId, String storageId) {
+        return true;
+    }
+    
+    //Utility to verify the standard UUID pattern for stored files.
+    protected static boolean usesStandardNamePattern(String identifier) {
+
+        Pattern r = Pattern.compile("^[a-f,0-9]{11}-[a-f,0-9]{12}$");
+        Matcher m = r.matcher(identifier);
+        return m.find();
     }
 }
