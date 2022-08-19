@@ -601,7 +601,7 @@ public abstract class StorageIO<T extends DvObject> {
     //Check that storageIdentifier is consistent with store's config
     //False will prevent direct uploads
     protected static boolean isValidIdentifier(String driverId, String storageId) {
-        return true;
+        return false;
     }
     
     //Utility to verify the standard UUID pattern for stored files.
