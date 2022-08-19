@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.api.Util;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.lang.reflect.Type;
@@ -371,8 +372,15 @@ public class OptionalFileParams {
         // get storage identifier as string
         // -------------------------------
         if ((jsonObj.has(STORAGE_IDENTIFIER_ATTR_NAME)) && (!jsonObj.get(STORAGE_IDENTIFIER_ATTR_NAME).isJsonNull())){
+            // Basic sanity check that driver specified is defined and the overall
+            // identifier is consistent with that store's config. Note that being able to
+            // specify a driver that does not support direct uploads is currently used with
+            // out-of-band uploads, e.g. for bulk migration.
+            String storageId = jsonObj.get(STORAGE_IDENTIFIER_ATTR_NAME).getAsString();
+            if (DataAccess.isValidDirectStorageIdentifier(storageId)) {
+                this.storageIdentifier = storageId;
+            }
 
-            this.storageIdentifier = jsonObj.get(STORAGE_IDENTIFIER_ATTR_NAME).getAsString();
         }
         
         // -------------------------------
@@ -396,7 +404,7 @@ public class OptionalFileParams {
         // -------------------------------
         if ((jsonObj.has(LEGACY_CHECKSUM_ATTR_NAME)) && (!jsonObj.get(LEGACY_CHECKSUM_ATTR_NAME).isJsonNull())){
 
-            this.checkSumValue = jsonObj.get(LEGACY_CHECKSUM_ATTR_NAME).getAsString();
+            this.checkSumValue = jsonObj.get(LEGACY_CHECKSUM_ATTR_NAME).getAsString().toLowerCase();
             this.checkSumType= ChecksumType.MD5;
         }
         // -------------------------------
@@ -404,7 +412,7 @@ public class OptionalFileParams {
         // -------------------------------
         else if ((jsonObj.has(CHECKSUM_OBJECT_NAME)) && (!jsonObj.get(CHECKSUM_OBJECT_NAME).isJsonNull())){
 
-            this.checkSumValue = ((JsonObject) jsonObj.get(CHECKSUM_OBJECT_NAME)).get(CHECKSUM_OBJECT_VALUE).getAsString();
+            this.checkSumValue = ((JsonObject) jsonObj.get(CHECKSUM_OBJECT_NAME)).get(CHECKSUM_OBJECT_VALUE).getAsString().toLowerCase();
             this.checkSumType = ChecksumType.fromString(((JsonObject) jsonObj.get(CHECKSUM_OBJECT_NAME)).get(CHECKSUM_OBJECT_TYPE).getAsString());
 
         }
