@@ -680,6 +680,16 @@ public class UtilIT {
         return requestSpecification.post("/api/datasets/" + datasetId + "/add");
     }
 
+    static Response addRemoteFile(String datasetId, String jsonAsString, String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .multiPart("datasetId", datasetId);
+        if (jsonAsString != null) {
+            requestSpecification.multiPart("jsonData", jsonAsString);
+        }
+        return requestSpecification.post("/api/datasets/" + datasetId + "/add");
+    }
+
     static Response uploadAuxFile(Long fileId, String pathToFile, String formatTag, String formatVersion, String mimeType, boolean isPublic, String type, String apiToken) {
         String nullOrigin = null;
         return uploadAuxFile(fileId, pathToFile, formatTag, formatVersion, mimeType, isPublic, type, nullOrigin, apiToken);
