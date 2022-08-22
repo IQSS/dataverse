@@ -302,6 +302,7 @@ public class FileAccessIOTest {
         //The tests here don't use a valid identifier string
         assertFalse(DataAccess.isValidDirectStorageIdentifier(dataFile.getStorageIdentifier()));
         //bad store id
+        assertTrue(System.getProperty("dataverse.files.filetest.type")==null);
         assertFalse(DataAccess.isValidDirectStorageIdentifier("file://" + FileUtil.generateStorageIdentifier()));
         //breakout
         assertFalse(DataAccess.isValidDirectStorageIdentifier("filetest://../" + FileUtil.generateStorageIdentifier()));
