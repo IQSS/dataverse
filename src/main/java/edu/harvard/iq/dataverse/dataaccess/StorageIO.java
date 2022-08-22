@@ -30,12 +30,15 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.nio.channels.Channel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 //import org.apache.commons.httpclient.Header;
@@ -66,7 +69,7 @@ public abstract class StorageIO<T extends DvObject> {
             this.req = new DataAccessRequest();
         }
         if (this.driverId == null) {
-            this.driverId = "file";
+            this.driverId = DataAccess.FILE;
         }
     }
 
@@ -183,7 +186,7 @@ public abstract class StorageIO<T extends DvObject> {
     public abstract void deleteAllAuxObjects() throws IOException;
 
     private DataAccessRequest req;
-    private InputStream in;
+    private InputStream in = null;
     private OutputStream out; 
     protected Channel channel;
     protected DvObject dvObject;
@@ -222,6 +225,8 @@ public abstract class StorageIO<T extends DvObject> {
     private String swiftFileName;
 
     private String remoteUrl;
+    protected String remoteStoreName = null;
+    protected URL remoteStoreUrl = null;
     
     // For HTTP-based downloads:
     /*private GetMethod method = null;
@@ -330,6 +335,14 @@ public abstract class StorageIO<T extends DvObject> {
         return swiftContainerName;
     }
 
+    public String getRemoteStoreName() {
+        return remoteStoreName;
+    }
+
+    public URL getRemoteStoreUrl() {
+        return remoteStoreUrl;
+    }
+    
     /*public GetMethod getHTTPMethod() {
         return method;
     }
@@ -564,4 +577,34 @@ public abstract class StorageIO<T extends DvObject> {
 		    return true;
 		}
 	}
+
+    public boolean downloadRedirectEnabled() {
+        return false;
+    }
+
+    public boolean downloadRedirectEnabled(String auxObjectTag) {
+        return false;
+    }
+    
+    public String generateTemporaryDownloadUrl(String auxiliaryTag, String auxiliaryType, String auxiliaryFileName) throws IOException {
+        throw new UnsupportedDataAccessOperationException("Direct download not implemented for this storage type");
+    }
+    
+    public static String getDriverPrefix(String driverId) {
+        return driverId+ DataAccess.SEPARATOR;
+    }
+    
+    //Check that storageIdentifier is consistent with store's config
+    //False will prevent direct uploads
+    protected static boolean isValidIdentifier(String driverId, String storageId) {
+        return true;
+    }
+    
+    //Utility to verify the standard UUID pattern for stored files.
+    protected static boolean usesStandardNamePattern(String identifier) {
+
+        Pattern r = Pattern.compile("^[a-f,0-9]{11}-[a-f,0-9]{12}$");
+        Matcher m = r.matcher(identifier);
+        return m.find();
+    }
 }

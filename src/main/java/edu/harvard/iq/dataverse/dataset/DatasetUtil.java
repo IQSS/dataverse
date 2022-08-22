@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
@@ -457,12 +458,12 @@ public class DatasetUtil {
     }
     
     public static boolean isAppropriateStorageDriver(Dataset dataset){
-        // ToDo - rsync was written before multiple store support and currently is hardcoded to use the "s3" store. 
+        // ToDo - rsync was written before multiple store support and currently is hardcoded to use the DataAccess.S3 store. 
         // When those restrictions are lifted/rsync can be configured per store, this test should check that setting
         // instead of testing for the 's3" store,
         //This method is used by both the dataset and edit files page so one change here
         //will fix both
-       return dataset.getEffectiveStorageDriverId().equals("s3");
+       return dataset.getEffectiveStorageDriverId().equals(DataAccess.S3);
     }
     
     /**
@@ -538,14 +539,23 @@ public class DatasetUtil {
         
     }
 
+    public static License getLicense(DatasetVersion dsv) {
+        License license = null;
+        TermsOfUseAndAccess tua = dsv.getTermsOfUseAndAccess();
+        if(tua!=null) {
+            license = tua.getLicense();
+        }
+        return license;
+    }
+
     public static String getLicenseName(DatasetVersion dsv) {
-        License license = dsv.getTermsOfUseAndAccess().getLicense();
+        License license = DatasetUtil.getLicense(dsv);
         return license != null ? license.getName()
                 : BundleUtil.getStringFromBundle("license.custom");
     }
 
     public static String getLicenseURI(DatasetVersion dsv) {
-        License license = dsv.getTermsOfUseAndAccess().getLicense();
+        License license = DatasetUtil.getLicense(dsv);
         // Return the URI
         // For standard licenses, just return the stored URI
         return (license != null) ? license.getUri().toString()
@@ -560,12 +570,12 @@ public class DatasetUtil {
     }
 
     public static String getLicenseIcon(DatasetVersion dsv) {
-        License license = dsv.getTermsOfUseAndAccess().getLicense();
+        License license = DatasetUtil.getLicense(dsv);
         return license != null && license.getIconUrl() != null ? license.getIconUrl().toString() : null;
     }
 
     public static String getLicenseDescription(DatasetVersion dsv) {
-        License license = dsv.getTermsOfUseAndAccess().getLicense();
+        License license = DatasetUtil.getLicense(dsv);
         return license != null ? license.getShortDescription() : BundleUtil.getStringFromBundle("license.custom.description");
     }
 

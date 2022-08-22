@@ -1,0 +1,16 @@
+{
+  "name": "LDN Announce workflow",
+  "steps": [
+    {
+      "provider":":internal",
+      "stepType":"ldnannounce",
+      "parameters": {
+        "stepName":"LDN Announce"
+      },
+      "requiredSettings": {
+        ":LDNAnnounceRequiredFields": "string",
+        ":LDNTarget": "string"
+      }
+    }
+  ]
+}
