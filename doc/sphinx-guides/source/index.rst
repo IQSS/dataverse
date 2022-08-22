@@ -19,17 +19,20 @@ These documentation guides are for the |version| version of Dataverse. To find g
   installation/index
   developers/index
   style/index
+  container/index
 
 How the Guides Are Organized
 ----------------------------
 
 The guides are documentation that explain how to use Dataverse,
 which are divided into the following sections: User Guide,
-Installation Guide, Developer Guide, API Guide and Style Guide. The User Guide is further divided into primary activities: finding & using
+Installation Guide, Developer Guide, API Guide, Style Guide and Container Guide.
+The User Guide is further divided into primary activities: finding & using
 data, adding Datasets, administering dataverses or Datasets, and Dataset exploration/visualizations. Details
 on all of the above tasks can be found in the Users Guide. The
 Installation Guide is for people or organizations who want to host their
-own Dataverse. The Developer Guide contains instructions for
+own Dataverse. The Container Guide adds to this information on container-based installations.
+The Developer Guide contains instructions for
 people who want to contribute to the Open Source Dataverse
 project or who want to modify the code to suit their own needs. Finally, the API Guide is for
 Developers that work on other applications and are interested in connecting with Dataverse through our APIs.
