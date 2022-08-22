@@ -96,7 +96,8 @@
 	subject	Other	D12	13											
 	publicationIDType	ark		0											
 	publicationIDType	arXiv		1											
-	publicationIDType	bibcode		2											
+	publicationIDType	bibcode		2								
+	publicationIDType	cstr		17											
 	publicationIDType	doi		3											
 	publicationIDType	ean13		4											
 	publicationIDType	eissn		5											
@@ -110,8 +111,7 @@
 	publicationIDType	purl		13											
 	publicationIDType	upc		14											
 	publicationIDType	url		15											
-	publicationIDType	urn		16									
-	publicationIDType	CSTR		17											
+	publicationIDType	urn		16												
 	contributorType	Data Collector		0											
 	contributorType	Data Curator		1											
 	contributorType	Data Manager		2											
