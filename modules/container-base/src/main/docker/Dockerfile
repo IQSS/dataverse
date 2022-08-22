@@ -25,10 +25,11 @@ FROM $BASE_IMAGE
 
 # Default payara ports to expose
 # 4848: admin console
-# 9009: debug port (JPDA)
+# 9009: debug port (JDWP)
 # 8080: http
 # 8181: https
-EXPOSE 4848 9009 8080 8181
+# 8686: JMX
+EXPOSE 4848 9009 8080 8181 8686
 
 ENV HOME_DIR="/opt/payara"
 ENV PAYARA_DIR="${HOME_DIR}/appserver" \
@@ -60,7 +61,7 @@ ENV PATH="${PATH}:${PAYARA_DIR}/bin" \
     # Make heap dumps on OOM appear in DUMPS_DIR
     ENABLE_DUMPS=0 \
     JVM_DUMPS_ARG="-XX:+HeapDumpOnOutOfMemoryError" \
-    ENABLE_JMX=0 \
+    ENABLE_JMX=1 \
     ENABLE_JDWP=0
 
 ARG JATTACH_VERSION="v2.1"
