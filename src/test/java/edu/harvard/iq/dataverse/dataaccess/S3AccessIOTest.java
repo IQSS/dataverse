@@ -30,7 +30,7 @@ public class S3AccessIOTest {
     @Mock
     private AmazonS3 s3client;
     
-    private S3AccessIO<Dataset> dataSetAccess;
+    private StorageIO<Dataset> dataSetAccess;
     private S3AccessIO<DataFile> dataFileAccess;
     private Dataset dataSet;
     private DataFile dataFile;
