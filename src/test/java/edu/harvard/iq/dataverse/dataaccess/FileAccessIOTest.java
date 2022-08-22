@@ -302,8 +302,14 @@ public class FileAccessIOTest {
         //The tests here don't use a valid identifier string
         assertFalse(DataAccess.isValidDirectStorageIdentifier(dataFile.getStorageIdentifier()));
         //bad store id
-        assertTrue(System.getProperty("dataverse.files.filetest.type")==null);
+        String defaultType = System.getProperty("dataverse.files.file.type");
+        //Assure file isn't a defined store before test and reset afterwards if it was
+        System.clearProperty("dataverse.files.file.type");
         assertFalse(DataAccess.isValidDirectStorageIdentifier("file://" + FileUtil.generateStorageIdentifier()));
+        if(defaultType!=null) {
+            System.out.println("dataverse.files.file.type reset to " + defaultType);
+            System.setProperty("dataverse.files.file.type", defaultType);
+        }
         //breakout
         assertFalse(DataAccess.isValidDirectStorageIdentifier("filetest://../" + FileUtil.generateStorageIdentifier()));
         
