@@ -166,7 +166,32 @@ public class OREMap {
                 } else {
                     addIfNotNull(aggRes, JsonLDTerm.schemaOrg("description"), df.getDescription());
                 }
-                addIfNotNull(aggRes, JsonLDTerm.schemaOrg("name"), fmd.getLabel()); // "label" is the filename
+                String fileName = fmd.getLabel();// "label" is the filename
+                long fileSize = df.getFilesize();
+                String mimeType = df.getContentType();
+                String currentIngestedName = null;
+                boolean ingested=df.getOriginalFileName()!= null || df.getOriginalFileSize()!=null || df.getOriginalFileFormat()!=null;
+                if(ingested) {
+                    if(df.getOriginalFileName()!=null) {
+                        currentIngestedName= fileName;
+                        fileName = df.getOriginalFileName();
+                    } else {
+                        logger.warning("Missing Original file name for id: " + df.getId());
+                    }
+                    if(df.getOriginalFileSize()!=null) {
+                        fileSize = df.getOriginalFileSize();
+                    } else {
+                        logger.warning("Missing Original file size for id: " + df.getId());
+                    }
+                    if(df.getOriginalFileFormat()!=null) {
+                        mimeType = df.getOriginalFileFormat();
+                    } else {
+                        logger.warning("Missing Original file format for id: " + df.getId());
+                    }
+
+                    
+                }
+                addIfNotNull(aggRes, JsonLDTerm.schemaOrg("name"), fileName); 
                 addIfNotNull(aggRes, JsonLDTerm.restricted, fmd.isRestricted());
                 addIfNotNull(aggRes, JsonLDTerm.directoryLabel, fmd.getDirectoryLabel());
                 addIfNotNull(aggRes, JsonLDTerm.schemaOrg("version"), fmd.getVersion());
@@ -189,21 +214,20 @@ public class OREMap {
                 if (df.getGlobalId().asString().length() != 0) {
                     fileId = df.getGlobalId().asString();
                     fileSameAs = SystemConfig.getDataverseSiteUrlStatic()
-                            + "/api/access/datafile/:persistentId?persistentId=" + fileId;
+                            + "/api/access/datafile/:persistentId?persistentId=" + fileId + (ingested ? "&format=original":"");
                 } else {
                     fileId = SystemConfig.getDataverseSiteUrlStatic() + "/file.xhtml?fileId=" + df.getId();
-                    fileSameAs = SystemConfig.getDataverseSiteUrlStatic() + "/api/access/datafile/" + df.getId();
+                    fileSameAs = SystemConfig.getDataverseSiteUrlStatic() + "/api/access/datafile/" + df.getId() + (ingested ? "?format=original":"");
                 }
                 aggRes.add("@id", fileId);
                 aggRes.add(JsonLDTerm.schemaOrg("sameAs").getLabel(), fileSameAs);
                 fileArray.add(fileId);
 
                 aggRes.add("@type", JsonLDTerm.ore("AggregatedResource").getLabel());
-                addIfNotNull(aggRes, JsonLDTerm.schemaOrg("fileFormat"), df.getContentType());
-                addIfNotNull(aggRes, JsonLDTerm.filesize, df.getFilesize());
+                addIfNotNull(aggRes, JsonLDTerm.schemaOrg("fileFormat"), mimeType);
+                addIfNotNull(aggRes, JsonLDTerm.filesize, fileSize);
                 addIfNotNull(aggRes, JsonLDTerm.storageIdentifier, df.getStorageIdentifier());
-                addIfNotNull(aggRes, JsonLDTerm.originalFileFormat, df.getOriginalFileFormat());
-                addIfNotNull(aggRes, JsonLDTerm.originalFormatLabel, df.getOriginalFormatLabel());
+                addIfNotNull(aggRes, JsonLDTerm.currentIngestedName, currentIngestedName);
                 addIfNotNull(aggRes, JsonLDTerm.UNF, df.getUnf());
                 addIfNotNull(aggRes, JsonLDTerm.rootDataFileId, df.getRootDataFileId());
                 addIfNotNull(aggRes, JsonLDTerm.previousDataFileId, df.getPreviousDataFileId());
