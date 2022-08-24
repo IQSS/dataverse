@@ -6,7 +6,6 @@ Container Guide
 .. toctree::
 
   base-image
-  app-image
 
 Running Dataverse software in containers is quite different than in a :doc:`classic installation <../installation/prep>`.
 
