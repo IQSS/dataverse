@@ -241,7 +241,7 @@ public class HarvestingServerIT {
         Response exportSetResponse = UtilIT.exportOaiSet(setName);
         assertEquals(200, exportSetResponse.getStatusCode());
         //SEK 09/04/2019 resonable wait time for export OAI? #6128
-        Thread.sleep(5000L);
+        Thread.sleep(10000L);
         
         Response getSet = given()
                 .get(apiPath);
