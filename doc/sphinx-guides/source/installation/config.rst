@@ -2972,4 +2972,4 @@ Determines if dataset submitted via API with invalid or incomplete metadata (for
 :ShowValidityFilter
 +++++++++++++++++++
 
-When set to true, the filter for validity of metadata is shown in "My Data" page. It is set to "false" by default.
+When set to true, the filter for validity of metadata is shown in "My Data" page. It is set to "false" by default. When you wish to use this filter, you must reindex the datasets first, otherwise datasets with valid metadata will not be shown in the results.
