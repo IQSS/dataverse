@@ -18,8 +18,8 @@ These documentation guides are for the |version| version of Dataverse. To find g
   api/index
   installation/index
   developers/index
-  style/index
   container/index
+  style/index
 
 How the Guides Are Organized
 ----------------------------

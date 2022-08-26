@@ -13,8 +13,9 @@ Both approaches have pros and cons. These days (2022) containers are very often 
 but there is an ever rising move for running applications in the cloud using container technology.
 
 **NOTE:**
-**As the "Institute for Quantitative Social Sciences" at Harvard is running their installations in the classic
-deployment way, the container support is mostly created and maintained by the Dataverse community.**
+**As the Institute for Quantitative Social Sciences (IQSS) at Harvard is running their installations in the classic
+deployment way, the container support is mostly created and maintained by the Dataverse community on a best-effort
+basis.**
 
 This guide is *not* about installation on technology like Docker Swarm, Kubernetes, Rancher or other
 solutions to run containers in production. There is the `Dataverse on K8s project <https://k8s-docs.gdcc.io>`_ for this

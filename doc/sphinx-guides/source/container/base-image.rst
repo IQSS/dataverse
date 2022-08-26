@@ -1,11 +1,21 @@
 Application Base Image
 ======================
 
+.. contents:: |toctitle|
+    :local:
+
 Within the main repository, you may find the base image's files at ``<git root>/modules/container-base``.
 This Maven module uses the `Maven Docker Plugin <https://dmp.fabric8.io>`_ to build and ship the image.
 
-Contents
-++++++++
+**NOTE: This image is created, maintained and supported by the Dataverse community on a best-effort basis.**
+IQSS will not offer you support how to deploy or run it, please reach out to the community for help on using it.
+You might be interested in taking a look at :doc:`../developers/containers`, linking you to some (community-based)
+efforts.
+
+
+
+Image Contents
+++++++++++++++
 
 The base image provides:
 
