@@ -225,8 +225,23 @@ The default ports that are exposed by this image are:
 
 
 
-Hints
-+++++
+Publishing and Updates
+++++++++++++++++++++++
+
+This image is sourced within the main upstream code repository of the Dataverse software. Development and maintenance
+happens there (again, by the community).
+
+To make reusing most simple, the image is built with a Github Action within the IQSS repository and then pushed
+to `Docker Hub gdcc/base repository <https://hub.docker.com/r/gdcc/base>`_. It is built and pushed on every edit to
+its sources plus uncached scheduled nightly builds to make sure security updates are finding their way in.
+
+Note: for the Github Action to be able to push to Docker Hub, two repository secrets
+(DOCKERHUB_USERNAME, DOCKERHUB_TOKEN) have been added by IQSS admins to their repository.
+
+
+
+Other Hints
++++++++++++
 
 By default, ``domain1`` is enabled to use the ``G1GC`` garbage collector.
 
