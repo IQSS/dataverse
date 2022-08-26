@@ -223,7 +223,13 @@ public class HarvestingServerIT {
         logger.info("identifier: " + identifier);
 
         // Let's try and create an OAI set with the dataset we have just 
-        // created and published: 
+        // created and published:
+        // - however, publish command is executed asynchronously, i.e. it may 
+        // still be running after we received the OK from the publish API. 
+        // So let's give it a couple of extra seconds to finish, to make sure 
+        // the dataset is published, exported and indexed - because the OAI
+        // set create API requires all of the above.
+        Thread.sleep(3000L);
         String setName = identifier;
         String setQuery = "dsPersistentId:" + identifier;
         String apiPath = String.format("/api/harvest/server/oaisets/%s", setName);
