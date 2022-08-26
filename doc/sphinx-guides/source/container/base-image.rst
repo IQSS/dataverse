@@ -50,11 +50,13 @@ Or move to the module and execute:
 
 Some additional notes, using Maven parameters to change the build and use ...:
 
+- | ... a different image name and tag: add ``-Dbase.image=name:tag``.
+  | *Note:* default is ``gdcc/base:${target.java.version}-jre``
 - ... a different Payara version: add ``-Dpayara.version=V.YYYY.R``.
 - | ... a different Temurin JRE version ``A``: add ``-Dtarget.java.version=A`` (i.e. ``11``, ``17``, ...).
   | *Note:* must resolve to an available Docker tag ``A-jre`` of Eclipse Temurin!
     (See also `Docker Hub search example <https://hub.docker.com/_/eclipse-temurin/tags?page=1&name=11-jre>`_)
-- ... a different Java Distribution: add ``-Ddocker.buildArg.BASE_IMAGE="name:tag"`` with precise reference to an
+- ... a different Java Distribution: add ``-Djava.image="name:tag"`` with precise reference to an
   image available from local or remote (e. g. Docker Hub).
 
 

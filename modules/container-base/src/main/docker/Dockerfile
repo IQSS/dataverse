@@ -20,8 +20,8 @@
 #
 
 # Make the Java base image and version configurable (useful for trying newer Java versions and flavors)
-ARG BASE_IMAGE="eclipse-temurin:11-jre"
-FROM $BASE_IMAGE
+ARG JAVA_IMAGE="eclipse-temurin:11-jre"
+FROM $JAVA_IMAGE
 
 # Default payara ports to expose
 # 4848: admin console

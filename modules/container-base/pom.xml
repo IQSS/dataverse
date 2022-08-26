@@ -39,6 +39,8 @@
             <id>ct</id>
             <properties>
                 <packaging.type>docker-build</packaging.type>
+                <base.image>gdcc/base:${target.java.version}-jre</base.image>
+                <java.image>eclipse-temurin:${target.java.version}-jre</java.image>
             </properties>
             
             <build>
@@ -85,8 +87,7 @@
                             <images>
                                 <image>
                                     <alias>base</alias>
-                                    <name>%g/base:jdk${target.java.version}</name>
-                                    <registry>${ct.registry}</registry>
+                                    <name>${base.image}</name>
                                     <build>
                                         <buildx>
                                             <platforms>
@@ -96,7 +97,7 @@
                                         </buildx>
                                         <dockerFile>Dockerfile</dockerFile>
                                         <args>
-                                            <BASE_IMAGE>eclipse-temurin:${target.java.version}-jre</BASE_IMAGE>
+                                            <JAVA_IMAGE>${java.image}</JAVA_IMAGE>
                                         </args>
                                         <filter>@</filter>
                                         <assembly>
