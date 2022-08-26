@@ -1,4 +1,6 @@
-The dataset export has been updated to eliminate the export of "undefined" as a metadata language.
+Under "bug fixes":
+
+Small bugs have been fixed in the dataset export in the JSON and DDI formats; eliminating the export of "undefined" as a metadata language in the former, and a duplicate keyword tag in the latter. 
 
 Run ReExportall to update Exports
 
