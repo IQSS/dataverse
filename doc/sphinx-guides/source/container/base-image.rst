@@ -140,9 +140,11 @@ provides. These are mostly based on environment variables (very common with cont
       - String
       - Can be fine tuned for more grained controls of dumping behaviour.
     * - ``ENABLE_JMX``
-      - ``1``
+      - ``0``
       - Bool, ``0|1``
-      - Enable JMX - Payara enables this by default, hard to deactivate.
+      - Allow insecure JMX connections, enable AMX and tune all JMX monitoring levels to ``HIGH``.
+        See also `Payara Docs - Basic Monitoring <https://docs.payara.fish/community/docs/Technical%20Documentation/Payara%20Server%20Documentation/Logging%20and%20Monitoring/Monitoring%20Service/Basic%20Monitoring%20Configuration.html>`_.
+        A basic JMX service is enabled by default in Payara, exposing basic JVM MBeans, but especially no Payara MBeans.
     * - ``ENABLE_JDWP``
       - ``0``
       - Bool, ``0|1``
@@ -255,6 +257,9 @@ included and activated by default since Java 8u192, Java 11 LTS and later. If yo
 you can read about those in a few places like https://developers.redhat.com/articles/2022/04/19/java-17-whats-new-openjdks-container-awareness,
 https://www.eclipse.org/openj9/docs/xxusecontainersupport, etc. The other memory defaults are inspired
 from `run-java-sh recommendations`_.
+
+*Note: the build process used the newer ``buildx`` feature of Docker to provide multiarch images.*
+
 
 
 .. _Pre/postboot script docs: https://docs.payara.fish/community/docs/Technical%20Documentation/Payara%20Micro%20Documentation/Payara%20Micro%20Configuration%20and%20Management/Micro%20Management/Asadmin%20Commands/Pre%20and%20Post%20Boot%20Commands.html

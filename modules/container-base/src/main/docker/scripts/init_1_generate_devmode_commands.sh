@@ -23,8 +23,9 @@ echo "# Dataverse preboot configuration for Payara" > "${DV_PREBOOT}"
 # See also https://blog.payara.fish/monitoring-payara-server-with-jconsole
 # To still use it, you can use a sidecar container proxying or using JMX via localhost without SSL.
 if [ "${ENABLE_JMX}" = "1" ]; then
-  echo "Enabling unsecured JMX on 0.0.0.0:8686. You'll need a sidecar for this, as access is allowed from same machine only (without SSL)."
+  echo "Enabling unsecured JMX on 0.0.0.0:8686, enabling AMX and tuning monitoring levels to HIGH. You'll need a sidecar for this, as access is allowed from same machine only (without SSL)."
   { \
+    echo "set configs.config.server-config.amx-configuration.enabled=true"
     echo "set configs.config.server-config.monitoring-service.module-monitoring-levels.jvm=HIGH"
     echo "set configs.config.server-config.monitoring-service.module-monitoring-levels.connector-service=HIGH"
     echo "set configs.config.server-config.monitoring-service.module-monitoring-levels.connector-connection-pool=HIGH"
@@ -41,7 +42,6 @@ if [ "${ENABLE_JMX}" = "1" ]; then
     echo "set configs.config.server-config.monitoring-service.module-monitoring-levels.web-container=HIGH"
     echo "set configs.config.server-config.monitoring-service.module-monitoring-levels.orb=HIGH"
     echo "set configs.config.server-config.monitoring-service.module-monitoring-levels.deployment=HIGH"
-    #echo "set configs.config.server-config.admin-service.jmx-connector.system.address=127.0.0.1"
     echo "set configs.config.server-config.admin-service.jmx-connector.system.security-enabled=false"
   } >> "${DV_PREBOOT}"
 fi

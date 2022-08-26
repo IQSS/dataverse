@@ -61,7 +61,7 @@ ENV PATH="${PATH}:${PAYARA_DIR}/bin" \
     # Make heap dumps on OOM appear in DUMPS_DIR
     ENABLE_DUMPS=0 \
     JVM_DUMPS_ARG="-XX:+HeapDumpOnOutOfMemoryError" \
-    ENABLE_JMX=1 \
+    ENABLE_JMX=0 \
     ENABLE_JDWP=0 \
     ENABLE_RELOAD=0
 
