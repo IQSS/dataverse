@@ -42,11 +42,11 @@ Assuming you have `Docker <https://docs.docker.com/engine/install/>`_, `Docker D
 
 Simply execute the Maven modules packaging target with activated "container profile. Either from the projects Git root:
 
-``mvn -Pct -f modules/container-base package``
+``mvn -Pct -f modules/container-base install``
 
 Or move to the module and execute:
 
-``cd modules/container-base && mvn -Pct package``
+``cd modules/container-base && mvn -Pct install``
 
 Some additional notes, using Maven parameters to change the build and use ...:
 

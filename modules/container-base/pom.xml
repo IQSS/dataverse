@@ -108,6 +108,25 @@
                             </images>
                         </configuration>
                     </plugin>
+                    
+                    <!--
+                      This is here as a workaround to install the generated POM,
+                      so we can pick this modules build up as a dependency in others.
+                      
+                      See also https://github.com/fabric8io/docker-maven-plugin/issues/1537
+                    -->
+                    <plugin>
+                        <artifactId>maven-install-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>default-install</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>install</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
