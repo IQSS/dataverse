@@ -112,6 +112,7 @@ COPY --chown=payara:payara maven/appserver ${PAYARA_DIR}/
 COPY --chown=payara:payara maven/scripts ${SCRIPT_DIR}/
 
 # Configure the domain to be container and production ready
+# -- This is mostly inherited from the "production domain template", experience with Dataverse and https://blog.payara.fish/fine-tuning-payara-server-5-in-production
 RUN true && \
     # Set admin password
     echo "AS_ADMIN_PASSWORD=" > /tmp/password-change-file.txt && \
@@ -140,6 +141,7 @@ RUN true && \
     ### PRODUCTION READINESS
     ${ASADMIN} create-jvm-options '-XX\:+UseG1GC' && \
     ${ASADMIN} create-jvm-options '-XX\:+UseStringDeduplication' && \
+    ${ASADMIN} create-jvm-options '-XX\:+DisableExplicitGC' && \
     ${ASADMIN} create-jvm-options '-XX\:MaxGCPauseMillis=${ENV=MEM_MAX_GC_PAUSE_MILLIS}' && \
     ${ASADMIN} create-jvm-options '-XX\:MetaspaceSize=${ENV=MEM_METASPACE_SIZE}' && \
     ${ASADMIN} create-jvm-options '-XX\:MaxMetaspaceSize=${ENV=MEM_MAX_METASPACE_SIZE}' && \
@@ -156,8 +158,12 @@ RUN true && \
     ${ASADMIN} set server-config.network-config.protocols.protocol.http-listener-2.http.file-cache.enabled="true" && \
     ${ASADMIN} set default-config.network-config.protocols.protocol.http-listener-1.http.file-cache.enabled="true" && \
     ${ASADMIN} set default-config.network-config.protocols.protocol.http-listener-2.http.file-cache.enabled="true" && \
-    # Enlarge EJB pools (cannot do this for server-config as set does not create new entries)
+    # Disable the HTTPS listener (we are always fronting our appservers with a reverse proxy handling SSL)
+    ${ASADMIN} set configs.config.server-config.network-config.network-listeners.network-listener.http-listener-2.enabled="false" && \
+    # Enlarge and tune EJB pools (cannot do this for server-config as set does not create new entries) \
+    ${ASADMIN} set default-config.ejb-container.pool-resize-quantity="2" && \
     ${ASADMIN} set default-config.ejb-container.max-pool-size="128" && \
+    ${ASADMIN} set default-config.ejb-container.steady-pool-size="10" && \
     # Misc settings
     ${ASADMIN} create-system-properties fish.payara.classloading.delegate="false" && \
     ${ASADMIN} create-system-properties jersey.config.client.readTimeout="300000" && \
@@ -176,6 +182,8 @@ RUN true && \
     ### CLEANUP
     # Stop domain
     ${ASADMIN} stop-domain "${DOMAIN_NAME}" && \
+    # Disable JSP servlet dynamic reloads \
+    sed -i 's#<servlet-class>org.apache.jasper.servlet.JspServlet</servlet-class>#<servlet-class>org.apache.jasper.servlet.JspServlet</servlet-class>\n    <init-param>\n      <param-name>development</param-name>\n      <param-value>false</param-value>\n    </init-param>\n    <init-param>\n      <param-name>genStrAsCharArray</param-name>\n      <param-value>true</param-value>\n    </init-param>#' "${DOMAIN_DIR}/config/default-web.xml" && \
     # Cleanup old CA certificates to avoid unnecessary log clutter during startup
     ${SCRIPT_DIR}/removeExpiredCaCerts.sh && \
     # Delete generated files
