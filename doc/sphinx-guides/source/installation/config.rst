@@ -2962,14 +2962,14 @@ The list of parent dataset field names for which the LDN Announce workflow step 
 :AllowInvalidMetadataThroughAPI
 +++++++++++++++++++++++++++++++
 
-When set to true, dataset with incomplete or invalid metadata can be submitted via API for later corrections.
+When set to true, dataset with incomplete or invalid metadata can be submitted via API for later corrections. See :ref:`create-dataverse-api` for details.
 
 :CanReviewInvalid
 +++++++++++++++++++++++++++++++
 
-Determines if dataset submitted via API with invalid or incomplete metadata (for later corrections) can be submitted for review.
+Determines if dataset submitted via API with invalid or incomplete metadata (for later corrections) can be submitted for review. It is set to "false" by default.
 
 :ShowValidityFilter
 +++++++++++++++++++
 
-When set to true the, filter for validity of metadata filter is shown in my data page.
+When set to true the, filter for validity of metadata filter is shown in "My Data" page. It is set to "false" by default.
