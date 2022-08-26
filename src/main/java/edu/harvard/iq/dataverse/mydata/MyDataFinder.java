@@ -398,12 +398,16 @@ public class MyDataFinder {
      *
      * @return
      */
-    public JsonObjectBuilder getSelectedFilterParamsAsJSON(){
+    public JsonObjectBuilder getSelectedFilterParamsAsJSON() {
 
         JsonObjectBuilder jsonData = Json.createObjectBuilder();
         jsonData.add("publication_statuses", this.filterParams.getListofSelectedPublicationStatuses())
-                .add("role_names", this.getListofSelectedRoles())
-                .add("dataset_valid", this.filterParams.getListofSelectedValidities());
+                .add("role_names", this.getListofSelectedRoles());
+
+        JsonArrayBuilder selVal = this.filterParams.getListofSelectedValidities();
+        if (selVal != null) {
+            jsonData.add("dataset_valid", selVal);
+        }
 
         return jsonData;
     }

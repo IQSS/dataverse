@@ -344,7 +344,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         if (published_states != null){
             pub_states = published_states;
         }
-        List<Boolean> validities = Arrays.asList(true, false);
+        List<Boolean> validities = null;
         if (filterValidities != null && filterValidities){
             validities = datasetValidities;
         }

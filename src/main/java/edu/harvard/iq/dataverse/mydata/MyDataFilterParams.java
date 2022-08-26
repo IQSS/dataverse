@@ -110,7 +110,7 @@ public class MyDataFilterParams {
         }
         this.dvObjectTypes = MyDataFilterParams.allDvObjectTypes;
         this.publicationStatuses = MyDataFilterParams.allPublishedStates;
-        this.datasetValidities = Arrays.asList(true, false);
+        this.datasetValidities = null;
         this.searchTerm = MyDataFilterParams.defaultSearchTerm;
         this.roleIds = roleHelper.getRoleIdList();
     }
@@ -142,11 +142,7 @@ public class MyDataFilterParams {
             this.publicationStatuses = publicationStatuses;
         }
 
-        if (datasetValidities == null){
-            this.datasetValidities = Arrays.asList(true, false);
-        }else{
-            this.datasetValidities = datasetValidities;
-        }
+        this.datasetValidities = datasetValidities;
         
         // Do something here if none chosen!
         this.roleIds = roleIds;
@@ -201,11 +197,6 @@ public class MyDataFilterParams {
         
         if ((this.publicationStatuses == null)||(this.publicationStatuses.isEmpty())){
             this.addError("No results. Please select one of " + StringUtils.join(MyDataFilterParams.defaultPublishedStates, ", ") + ".");
-            return;
-        }
-        
-        if ((this.datasetValidities == null)||(this.datasetValidities.isEmpty())){
-            this.addError("No results. Please select one of dataset validities.");
             return;
         }
 
@@ -307,8 +298,8 @@ public class MyDataFilterParams {
     }
 
     public String getSolrFragmentForDatasetValidity(){
-        if ((this.datasetValidities == null)||(this.datasetValidities.isEmpty())){
-            throw new IllegalStateException("Error encountered earlier.  Before calling this method, first check 'hasError()'");
+        if ((this.datasetValidities == null) || (this.datasetValidities.isEmpty())){
+            return "";
         }
     
         
@@ -348,6 +339,9 @@ public class MyDataFilterParams {
      * @return
      */
     public JsonArrayBuilder getListofSelectedValidities(){
+        if (this.datasetValidities == null || this.datasetValidities.isEmpty()) {
+            return null;
+        }
 
         JsonArrayBuilder jsonArray = Json.createArrayBuilder();
 
