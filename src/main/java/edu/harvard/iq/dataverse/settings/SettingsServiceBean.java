@@ -540,7 +540,7 @@ public class SettingsServiceBean {
         CanReviewInvalid,
 
         /**
-         * When set to true, the filter for validity of metadata filter is shown in my data page.
+         * When set to true, the filter for validity of metadata is shown in "My Data" page.
          */
         ShowValidityFilter
         ;
