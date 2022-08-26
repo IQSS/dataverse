@@ -526,6 +526,39 @@ To create a dataset, you must supply a JSON file that contains at least the foll
 - Description Text
 - Subject
 
+Alternatively, you can turn off the validation of the dataset by using the optional "doNotValidate" parameter. This parameter works only when the ":AllowInvalidMetadataThroughAPI" setting is set to "ture". Your solr configuration must be up-to-date with the "schema.xml" file for this feature to work.
+
+Providing the "doNotValidate" query parameter with value "true" turns off the validation of metadata. In this case, only the "Author Name" is required. For example, a minimal json would look like this:
+
+.. code-block:: bash
+
+  {
+    "datasetVersion": {
+      "metadataBlocks": {
+        "citation": {
+          "fields": [
+            {
+              "value": [
+                {
+                  "authorName": {
+                    "value": "Finch, Fiona",
+                    "typeClass": "primitive",
+                    "multiple": false,
+                    "typeName": "authorName"
+                  }
+                }
+              ],
+              "typeClass": "compound",
+              "multiple": true,
+              "typeName": "author"
+            }
+          ],
+          "displayName": "Citation Metadata"
+        }
+      }
+    }
+  }
+
 As a starting point, you can download :download:`dataset-finch1.json <../../../../scripts/search/tests/data/dataset-finch1.json>` and modify it to meet your needs. (:download:`dataset-create-new-all-default-fields.json <../../../../scripts/api/data/dataset-finch1_fr.json>` is a variant of this file that includes setting the metadata language (see :ref:`:MetadataLanguages`) to French (fr). In addition to this minimal example, you can download :download:`dataset-create-new-all-default-fields.json <../../../../scripts/api/data/dataset-create-new-all-default-fields.json>` which populates all of the metadata fields that ship with a Dataverse installation.)
 
 The curl command below assumes you have kept the name "dataset-finch1.json" and that this file is in your current working directory.

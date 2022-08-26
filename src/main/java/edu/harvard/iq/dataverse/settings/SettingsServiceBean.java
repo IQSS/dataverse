@@ -529,18 +529,18 @@ public class SettingsServiceBean {
         LDNMessageHosts,
 
         /**
-         * When set to true dataset with incomplete or invalid metadata can be submitted via API for later corrections.
+         * When set to true, dataset with incomplete or invalid metadata can be submitted via API for later corrections.
          */
         AllowInvalidMetadataThroughAPI,
 
         /**
          * Determines if dataset submitted via API with invalid or incomplete metadata (for later
-         * corrections) can be subbmited for review.
+         * corrections) can be submitted for review.
          */
         CanReviewInvalid,
 
         /**
-         * When set to true the filter for validity of metadata filter is shown in my data page.
+         * When set to true, the filter for validity of metadata filter is shown in my data page.
          */
         ShowValidityFilter
         ;

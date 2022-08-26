@@ -2958,3 +2958,18 @@ The URL of an LDN Inbox to which the LDN Announce workflow step will send messag
 ++++++++++++++++++++++++++
 
 The list of parent dataset field names for which the LDN Announce workflow step should send messages. See :doc:`/developers/workflows` for details.
+
+:AllowInvalidMetadataThroughAPI
++++++++++++++++++++++++++++++++
+
+When set to true, dataset with incomplete or invalid metadata can be submitted via API for later corrections.
+
+:CanReviewInvalid
++++++++++++++++++++++++++++++++
+
+Determines if dataset submitted via API with invalid or incomplete metadata (for later corrections) can be submitted for review.
+
+:ShowValidityFilter
++++++++++++++++++++
+
+When set to true the, filter for validity of metadata filter is shown in my data page.
