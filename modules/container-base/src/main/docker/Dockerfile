@@ -170,6 +170,8 @@ RUN true && \
     ### CLEANUP
     # Stop domain
     ${ASADMIN} stop-domain "${DOMAIN_NAME}" && \
+    # Cleanup old CA certificates to avoid unnecessary log clutter during startup
+    ${SCRIPT_DIR}/removeExpiredCaCerts.sh && \
     # Delete generated files
     rm -rf \
         "/tmp/password-change-file.txt" \
