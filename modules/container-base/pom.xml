@@ -108,6 +108,42 @@
                             </images>
                         </configuration>
                     </plugin>
+    
+                    <!--
+                      Flatten the generated POM before installing it, so modules depending on us are not
+                      trying to lookup the parent POM, which isn't of much use to them anyway.
+                    -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>flatten-maven-plugin</artifactId>
+                        <version>1.2.7</version>
+                        <configuration>
+                            <updatePomFile>true</updatePomFile>
+                            <flattenMode>oss</flattenMode>
+                            <pomElements>
+                                <distributionManagement>remove</distributionManagement>
+                                <repositories>remove</repositories>
+                            </pomElements>
+                        </configuration>
+                        <executions>
+                            <!-- enable flattening -->
+                            <execution>
+                                <id>flatten</id>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>flatten</goal>
+                                </goals>
+                            </execution>
+                            <!-- ensure proper cleanup -->
+                            <execution>
+                                <id>flatten.clean</id>
+                                <phase>clean</phase>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
                     
                     <!--
                       This is here as a workaround to install the generated POM,
