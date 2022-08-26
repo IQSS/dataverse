@@ -70,6 +70,8 @@ ARG PKGS="jq imagemagick curl unzip wget acl dirmngr gpg lsof procps netcat tini
 ARG ASADMIN="${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE}"
 
 ### PART 1: SYSTEM ###
+ARG UID=1000
+ARG GID=1000
 USER root
 WORKDIR /
 SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
@@ -78,8 +80,8 @@ RUN true && \
     mkdir -p "${HOME_DIR}" "${PAYARA_DIR}" "${DEPLOY_DIR}" "${CONFIG_DIR}" "${SCRIPT_DIR}" && \
     mkdir -p "${DOCROOT_DIR}" "${SECRETS_DIR}" "${DUMPS_DIR}" && \
     # Create user
-    addgroup --gid 1000 payara && \
-    adduser --system --uid 1000 --no-create-home --shell /bin/bash --home "${HOME_DIR}" --gecos "" --ingroup payara payara && \
+    addgroup --gid ${GID} payara && \
+    adduser --system --uid ${UID} --no-create-home --shell /bin/bash --home "${HOME_DIR}" --gecos "" --ingroup payara payara && \
     echo payara:payara | chpasswd && \
     # Set permissions
     chown -R payara: "${HOME_DIR}" && \

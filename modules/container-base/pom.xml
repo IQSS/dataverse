@@ -41,6 +41,8 @@
                 <packaging.type>docker-build</packaging.type>
                 <base.image>gdcc/base:${target.java.version}-jre</base.image>
                 <java.image>eclipse-temurin:${target.java.version}-jre</java.image>
+                <base.image.uid>1000</base.image.uid>
+                <base.image.gid>1000</base.image.gid>
             </properties>
             
             <build>
@@ -98,6 +100,8 @@
                                         <dockerFile>Dockerfile</dockerFile>
                                         <args>
                                             <JAVA_IMAGE>${java.image}</JAVA_IMAGE>
+                                            <UID>${base.image.uid}</UID>
+                                            <GID>${base.image.gid}</GID>
                                         </args>
                                         <filter>@</filter>
                                         <assembly>

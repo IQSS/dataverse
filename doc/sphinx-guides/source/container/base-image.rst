@@ -58,7 +58,7 @@ Some additional notes, using Maven parameters to change the build and use ...:
     (See also `Docker Hub search example <https://hub.docker.com/_/eclipse-temurin/tags?page=1&name=11-jre>`_)
 - ... a different Java Distribution: add ``-Djava.image="name:tag"`` with precise reference to an
   image available from local or remote (e. g. Docker Hub).
-
+- ... a different UID/GID for the ``payara`` user/group: add ``-Dbase.image.uid=1234`` (or ``.gid``)
 
 
 Tunables
