@@ -14,6 +14,7 @@ set -euo pipefail
 # 0. Init variables
 ENABLE_JMX=${ENABLE_JMX:-0}
 ENABLE_JDWP=${ENABLE_JDWP:-0}
+ENABLE_RELOAD=${ENABLE_RELOAD:-0}
 
 DV_PREBOOT=${PAYARA_DIR}/dataverse_preboot
 echo "# Dataverse preboot configuration for Payara" > "${DV_PREBOOT}"
@@ -51,7 +52,13 @@ if [ "${ENABLE_JDWP}" = "1" ]; then
   export PAYARA_ARGS="${PAYARA_ARGS} --debug=true"
 fi
 
-# 3. Add the commands to the existing preboot file, but insert BEFORE deployment
+# 3. Enable hot reload
+if [ "${ENABLE_RELOAD}" = "1" ]; then
+  echo "Enabling hot reload of deployments."
+  echo "set configs.config.server-config.admin-service.das-config.dynamic-reload-enabled=true" >> "${DV_PREBOOT}"
+fi
+
+# 4. Add the commands to the existing preboot file, but insert BEFORE deployment
 TMP_PREBOOT=$(mktemp)
 cat "${DV_PREBOOT}" "${PREBOOT_COMMANDS}" > "${TMP_PREBOOT}"
 mv "${TMP_PREBOOT}" "${PREBOOT_COMMANDS}"

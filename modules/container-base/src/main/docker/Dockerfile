@@ -62,7 +62,8 @@ ENV PATH="${PATH}:${PAYARA_DIR}/bin" \
     ENABLE_DUMPS=0 \
     JVM_DUMPS_ARG="-XX:+HeapDumpOnOutOfMemoryError" \
     ENABLE_JMX=1 \
-    ENABLE_JDWP=0
+    ENABLE_JDWP=0 \
+    ENABLE_RELOAD=0
 
 ARG JATTACH_VERSION="v2.1"
 ARG JATTACH_CHECKSUM="07885fdc782e02e7302c6d190f54c3930afa10a38140365adf54076ec1086a8e"
@@ -143,6 +144,9 @@ RUN true && \
     ${ASADMIN} create-jvm-options '-XX\:MetaspaceSize=${ENV=MEM_METASPACE_SIZE}' && \
     ${ASADMIN} create-jvm-options '-XX\:MaxMetaspaceSize=${ENV=MEM_MAX_METASPACE_SIZE}' && \
     ${ASADMIN} create-jvm-options '-XX\:+IgnoreUnrecognizedVMOptions' && \
+    # Disable autodeploy and hot reload
+    ${ASADMIN} set configs.config.server-config.admin-service.das-config.dynamic-reload-enabled="false" && \
+    ${ASADMIN} set configs.config.server-config.admin-service.das-config.autodeploy-enabled="false" && \
     # Enlarge thread pools
     ${ASADMIN} set server-config.thread-pools.thread-pool.http-thread-pool.max-thread-pool-size="50" && \
     ${ASADMIN} set server-config.thread-pools.thread-pool.http-thread-pool.max-queue-size="" && \

@@ -148,6 +148,11 @@ provides. These are mostly based on environment variables (very common with cont
       - Bool, ``0|1``
       - Enable the "Java Debug Wire Protocol" to attach a remote debugger to the JVM in this container.
         Listens on port 9009 when enabled. Search the internet for numerous tutorials to use it.
+    * - ``ENABLE_RELOAD``
+      - ``0``
+      - Bool, ``0|1``
+      - Enable the dynamic "hot" reloads of files when changed in a deployment. Useful for development,
+        when new artifacts are copied into the running domain.
     * - ``DATAVERSE_HTTP_TIMEOUT``
       - ``900``
       - Seconds
