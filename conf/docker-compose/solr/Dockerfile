@@ -1,5 +1,5 @@
 # https://hub.docker.com/_/solr
-FROM solr:8.11.1
+FROM solr:8.11.2
 
 # https://guides.dataverse.org/en/latest/installation/prerequisites.html#solr
 
