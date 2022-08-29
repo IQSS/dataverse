@@ -43,6 +43,8 @@ jobs:
                   key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
                   restore-keys: ${{ runner.os }}-m2
 
+            - name: Set up QEMU for multi-arch builds
+              uses: docker/setup-qemu-action@v2
             - name: Build base container image
               run: mvn -f modules/container-base -Pct package -Dtarget.java.version=${{ matrix.jdk }}
 
