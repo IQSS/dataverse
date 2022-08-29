@@ -148,7 +148,7 @@ public class OREMap {
 
         aggBuilder.add(JsonLDTerm.schemaOrg("isPartOf").getLabel(), getDataverseDescription(dataset.getOwner()));
         String mdl = dataset.getMetadataLanguage();
-        if(!mdl.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
+        if (DvObjectContainer.isMetadataLanguageSet(mdl)) {
             aggBuilder.add(JsonLDTerm.schemaOrg("inLanguage").getLabel(), mdl);
         }
         
