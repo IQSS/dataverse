@@ -27,9 +27,9 @@ FROM $JAVA_IMAGE
 # 4848: admin console
 # 9009: debug port (JDWP)
 # 8080: http
-# 8181: https
+# 8181: https - but http-listener-2 is disabled here!
 # 8686: JMX
-EXPOSE 4848 9009 8080 8181 8686
+EXPOSE 4848 9009 8080 8686
 
 ENV HOME_DIR="/opt/payara"
 ENV PAYARA_DIR="${HOME_DIR}/appserver" \

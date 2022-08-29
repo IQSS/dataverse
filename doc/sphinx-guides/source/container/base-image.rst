@@ -225,11 +225,12 @@ Exposed Ports
 The default ports that are exposed by this image are:
 
 - 8080 - HTTP listener
-- 8181 - HTTPS listener
 - 4848 - Admin Service HTTPS listener
 - 8686 - JMX listener
 - 9009 - "Java Debug Wire Protocol" port (when ``ENABLE_JDWP=1``)
 
+The HTTPS listener (on port 8181) becomes deactivated during the build, as we will always need to reverse-proxy the
+application server and handle SSL/TLS termination at this point. Save the memory and some CPU cycles!
 
 
 Publishing and Updates
