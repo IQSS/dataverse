@@ -4,11 +4,13 @@ on:
         paths:
             - tests/shell/**
             - conf/solr/**
+            - modules/container-base/**
             # add more when more specs are written relying on data
     pull_request:
         paths:
             - tests/shell/**
             - conf/solr/**
+            - modules/container-base/**
             # add more when more specs are written relying on data
 env:
     SHELLSPEC_VERSION: 0.28.1

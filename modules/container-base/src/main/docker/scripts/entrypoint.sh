@@ -7,6 +7,7 @@
 ##########################################################################################################
 
 for f in "${SCRIPT_DIR}"/init_* "${SCRIPT_DIR}"/init.d/*; do
+      # shellcheck disable=SC1090
       case "$f" in
         *.sh)  echo "[Entrypoint] running $f"; . "$f" ;;
         *)     echo "[Entrypoint] ignoring $f" ;;
