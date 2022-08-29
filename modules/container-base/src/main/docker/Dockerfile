@@ -16,7 +16,9 @@
 #
 # We are not using upstream Payara images because:
 #  - Using same base image as Solr (https://hub.docker.com/_/solr) is reducing pulls
-#  - Their image is less optimised for production usage by design choices
+#  - Their image is less optimised for production usage and Dataverse by design choices
+#  - We provide multi-arch images
+#  - We provide some tweaks for development and monitoring
 #
 
 # Make the Java base image and version configurable (useful for trying newer Java versions and flavors)
