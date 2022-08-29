@@ -512,10 +512,11 @@ public class GlobusServiceBean implements java.io.Serializable {
 
         if (user instanceof AuthenticatedUser) {
             apiToken = authSvc.findApiTokenByUser((AuthenticatedUser) user);
-        }
-        if ((apiToken == null) || (apiToken.getExpireTime().before(new Date()))) {
-            logger.fine("Created apiToken for user: " + user.getIdentifier());
-            apiToken = authSvc.generateApiTokenForUser((AuthenticatedUser) user);
+
+            if ((apiToken == null) || (apiToken.getExpireTime().before(new Date()))) {
+                logger.fine("Created apiToken for user: " + user.getIdentifier());
+                apiToken = authSvc.generateApiTokenForUser((AuthenticatedUser) user);
+            }
         }
         String storePrefix = "";
         String driverId = d.getEffectiveStorageDriverId();
