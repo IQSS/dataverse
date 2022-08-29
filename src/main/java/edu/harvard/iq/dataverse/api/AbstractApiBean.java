@@ -630,6 +630,9 @@ public abstract class AbstractApiBean {
             return engineSvc.submit(cmd);
 
         } catch (IllegalCommandException ex) {
+                if (ex.getMessage().contains("Validation Failed") && ex.getMessage().contains("Terms Of Use and Access")){
+                    throw new WrappedResponse( ex, conflict(ex.getMessage() ) );
+                }
             throw new WrappedResponse( ex, forbidden(ex.getMessage() ) );
         } catch (PermissionException ex) {
             /**
@@ -820,6 +823,10 @@ public abstract class AbstractApiBean {
     
     protected Response forbidden( String msg ) {
         return error( Status.FORBIDDEN, msg );
+    }
+    
+    protected Response conflict( String msg ) {
+        return error( Status.CONFLICT, msg );
     }
     
     protected Response badApiKey( String apiKey ) {

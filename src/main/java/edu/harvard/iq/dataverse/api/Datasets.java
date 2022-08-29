@@ -596,7 +596,7 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/versions/{versionId}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response updateDraftVersion( String jsonBody, @PathParam("id") String id,  @PathParam("versionId") String versionId ){
-        
+      
         if ( ! ":draft".equals(versionId) ) {
             return error( Response.Status.BAD_REQUEST, "Only the :draft version can be updated");
         }
@@ -1935,6 +1935,7 @@ public class Datasets extends AbstractApiBean {
                                 cmd = new UpdateDatasetVersionCommand(dataset, new DataverseRequest(authenticatedUser, (HttpServletRequest) null));
                                 commandEngine.submit(cmd);
                             } catch (CommandException ex) {
+                                System.out.print("returning error:" + ex.getMessage());
                                 return error(Response.Status.INTERNAL_SERVER_ERROR, "CommandException updating DatasetVersion from batch job: " + ex.getMessage());
                             }
                         } else {
@@ -2439,6 +2440,9 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 
 
         if (addFileHelper.hasError()){
+            if (Response.Status.CONFLICT.equals(addFileHelper.getHttpErrorCode())){
+                return conflict(addFileHelper.getErrorMessagesAsString("\n"));
+            }
             return error(addFileHelper.getHttpErrorCode(), addFileHelper.getErrorMessagesAsString("\n"));
         }else{
             String successMsg = BundleUtil.getStringFromBundle("file.addreplace.success.add");

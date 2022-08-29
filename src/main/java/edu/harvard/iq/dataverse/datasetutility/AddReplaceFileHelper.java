@@ -615,7 +615,7 @@ public class AddReplaceFileHelper{
         if (!this.step_050_checkForConstraintViolations()){
             return false;            
         }
-        
+
         msgt("step_055_loadOptionalFileParams");
         if (!this.step_055_loadOptionalFileParams(optionalFileParams)){
             return false;            
@@ -1515,8 +1515,12 @@ public class AddReplaceFileHelper{
         // violations found: gather all error messages
         // -----------------------------------------------------------   
         List<String> errMsgs = new ArrayList<>();
-        for (ConstraintViolation violation : constraintViolations){
-            this.addError(violation.getMessage());
+        for (ConstraintViolation violation : constraintViolations) {
+            if (workingVersion.getTermsOfUseAndAccess().getValidationMessage() != null) {
+                addError(Response.Status.CONFLICT,workingVersion.getTermsOfUseAndAccess().getValidationMessage());
+            } else {
+                this.addError(violation.getMessage());
+            }
         }
         
         return this.hasError();
