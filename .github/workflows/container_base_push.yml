@@ -1,0 +1,54 @@
+---
+name: Container Base Module
+
+on:
+    push:
+        branches:
+            - 'develop'
+        paths:
+            - 'modules/container-base/**'
+            - 'modules/dataverse-parent/pom.xml'
+    pull_request:
+        branches:
+            - 'develop'
+        paths:
+            - 'modules/container-base/**'
+            - 'modules/dataverse-parent/pom.xml'
+
+
+jobs:
+    build:
+        name: Build image
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            packages: read
+        strategy:
+            matrix:
+                jdk: [ '11' ]
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v2
+
+            - name: Set up JDK ${{ matrix.jdk }}
+              uses: actions/setup-java@v2
+              with:
+                  java-version: ${{ matrix.jdk }}
+                  distribution: 'adopt'
+            - name: Cache Maven packages
+              uses: actions/cache@v2
+              with:
+                  path: ~/.m2
+                  key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+                  restore-keys: ${{ runner.os }}-m2
+
+            - name: Build base container image
+              run: mvn -f modules/container-base -Pct package -Dtarget.java.version=${{ matrix.jdk }}
+
+            - if: ${{ github.event_name == 'push' }} # run only if this is a push - PRs have no access to secrets
+              name: Log in to the Container registry
+              uses: docker/login-action@v1
+              with:
+                  username: ${{ secrets.DOCKERHUB_USERNAME }}
+                  password: ${{ secrets.DOCKERHUB_TOKEN }}
