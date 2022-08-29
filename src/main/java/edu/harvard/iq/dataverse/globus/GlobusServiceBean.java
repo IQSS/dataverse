@@ -524,7 +524,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         } catch (Exception e) {
             logger.warning("GlobusAppUrlForDataset: Failed to get storePrefix for " + driverId);
         }
-        URLTokenUtil tokenUtil = new URLTokenUtil(d, apiToken, localeCode);
+        URLTokenUtil tokenUtil = new URLTokenUtil(d, df, apiToken, localeCode);
         String appUrl = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusAppUrl, "http://localhost") + "/"
                 + (upload ? "upload" : "download")
                 + "?datasetPid={datasetPid}&siteUrl={siteUrl}&apiToken={apiToken}&datasetId={datasetId}&datasetVersion={datasetVersion}&dvLocale={localeCode}"
