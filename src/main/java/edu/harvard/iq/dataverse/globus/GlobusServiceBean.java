@@ -1041,7 +1041,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         String finalType = FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT;
         String type = FileUtil.determineFileTypeByNameAndExtension(fileName);
 
-        if (!type.isBlank()) {
+        if (type!=null && !type.isBlank()) {
             if (FileUtil.useRecognizedType(finalType, type)) {
                 finalType = type;
             }
