@@ -5,6 +5,10 @@ FROM solr:8.11.2
 
 USER root
 
+RUN apt-get update && \
+    apt-get -y upgrade && \
+    rm -rf /var/lib/apt/lists/*
+
 COPY *.xml /
 
 # increase the number of file descriptors and max processes
