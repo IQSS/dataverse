@@ -1,5 +1,5 @@
 # https://hub.docker.com/_/traefik
-FROM traefik:v2.6
+FROM traefik:v2.8
 
 # Add certs to OS truststore
 COPY *.crt /usr/local/share/ca-certificates/
