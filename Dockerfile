@@ -14,7 +14,7 @@ WORKDIR /
 RUN useradd --create-home --shell /bin/bash dataverse
 
 # https://guides.dataverse.org/en/5.8/installation/prerequisites.html
-RUN wget https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2022.1/payara-5.2022.1.zip
+RUN wget https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2022.3/payara-5.2022.3.zip
 
 RUN unzip payara-5.2022.1.zip && \
   mv payara5 /usr/local && \
