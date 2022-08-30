@@ -26,6 +26,8 @@ jobs:
         strategy:
             matrix:
                 jdk: [ '11' ]
+        # Only run in upstream repo - avoid unnecessary runs in forks
+        if: ${{ github.repository_owner == 'IQSS' }}
 
         steps:
             - name: Checkout repository
