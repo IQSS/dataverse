@@ -74,6 +74,9 @@ RUN cd /dataverse/ && \
   export JAVA_HOME="/usr/lib/jvm/java-11-openjdk-${dpkgArch}" && \
   mvn package -DskipTests --no-transfer-progress
 
+# delete the cached dependencies so we don't get any inaccurate "false flags" on container scanning for security issues
+RUN rm -rf ~/.m2/
+
 USER root
 COPY --chown=dataverse:dataverse ./conf/docker-compose/dataverse/startup.sh /startup.sh
 RUN chmod +x /startup.sh && dos2unix /startup.sh
