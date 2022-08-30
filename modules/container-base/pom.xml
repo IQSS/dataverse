@@ -39,7 +39,8 @@
             <id>ct</id>
             <properties>
                 <packaging.type>docker-build</packaging.type>
-                <base.image>gdcc/base:${target.java.version}-jre</base.image>
+                <base.image>gdcc/base:${base.image.tag}</base.image>
+                <base.image.tag>develop</base.image.tag>
                 <java.image>eclipse-temurin:${target.java.version}-jre</java.image>
                 <base.image.uid>1000</base.image.uid>
                 <base.image.gid>1000</base.image.gid>
