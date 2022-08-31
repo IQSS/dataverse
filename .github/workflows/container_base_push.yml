@@ -5,16 +5,21 @@ on:
     push:
         branches:
             - 'develop'
+            - 'master'
         paths:
             - 'modules/container-base/**'
             - 'modules/dataverse-parent/pom.xml'
     pull_request:
         branches:
             - 'develop'
+            - 'master'
         paths:
             - 'modules/container-base/**'
             - 'modules/dataverse-parent/pom.xml'
 
+env:
+    IMAGE_TAG: develop
+    REGISTRY: docker.io
 
 jobs:
     build:
@@ -45,10 +50,8 @@ jobs:
                   key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
                   restore-keys: ${{ runner.os }}-m2
 
-            - name: Set up QEMU for multi-arch builds
-              uses: docker/setup-qemu-action@v2
-            - name: Build base container image
-              run: mvn -f modules/container-base -Pct package -Dtarget.java.version=${{ matrix.jdk }}
+            - name: Build base container image with local architecture
+              run: mvn -f modules/container-base -Pct package
 
             - if: ${{ github.event_name == 'push' }} # run only if this is a push - PRs have no access to secrets
               name: Log in to the Container registry
@@ -56,3 +59,12 @@ jobs:
               with:
                   username: ${{ secrets.DOCKERHUB_USERNAME }}
                   password: ${{ secrets.DOCKERHUB_TOKEN }}
+            - if: ${{ github.event_name == 'push' }} # run only if this is a push - multi-arch makes no sense with PR
+              name: Set up QEMU for multi-arch builds
+              uses: docker/setup-qemu-action@v2
+            - name: Re-set image tag based on branch
+              if: ${{ github.ref == 'master' }}
+              run: echo "IMAGE_TAG=release"
+            - if: ${{ github.event_name == 'push' }} # run only if this is a push - tag push will only succeed in upstream
+              name: Deploy multi-arch base container image to Docker Hub
+              run: mvn -f modules/container-base -Pct deploy -Dbase.image.tag=${{ env.IMAGE_TAG }} -Ddocker.registry=${{ env.REGISTRY }}
