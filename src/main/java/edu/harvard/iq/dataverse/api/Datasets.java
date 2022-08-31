@@ -1935,7 +1935,6 @@ public class Datasets extends AbstractApiBean {
                                 cmd = new UpdateDatasetVersionCommand(dataset, new DataverseRequest(authenticatedUser, (HttpServletRequest) null));
                                 commandEngine.submit(cmd);
                             } catch (CommandException ex) {
-                                System.out.print("returning error:" + ex.getMessage());
                                 return error(Response.Status.INTERNAL_SERVER_ERROR, "CommandException updating DatasetVersion from batch job: " + ex.getMessage());
                             }
                         } else {
@@ -2440,6 +2439,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 
 
         if (addFileHelper.hasError()){
+            //conlict response satus added for 8859
             if (Response.Status.CONFLICT.equals(addFileHelper.getHttpErrorCode())){
                 return conflict(addFileHelper.getErrorMessagesAsString("\n"));
             }

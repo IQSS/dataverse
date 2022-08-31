@@ -1516,6 +1516,10 @@ public class AddReplaceFileHelper{
         // -----------------------------------------------------------   
         List<String> errMsgs = new ArrayList<>();
         for (ConstraintViolation violation : constraintViolations) {
+            /*
+            for 8859 return conflict response status if the validation fails
+            due to terms of use/access out of compliance
+            */
             if (workingVersion.getTermsOfUseAndAccess().getValidationMessage() != null) {
                 addError(Response.Status.CONFLICT,workingVersion.getTermsOfUseAndAccess().getValidationMessage());
             } else {
