@@ -163,11 +163,11 @@ public class LDNInbox extends AbstractApiBean {
 
                     }
                 } else {
-                }
+                
                 // This isn't a Relationship announcement message - ignore
                 logger.info("This is not a relationship announcement - ignoring message of type "
                         + msgObject.getJsonString("@type"));
-
+                }
             }
 
             if (!sent) {
