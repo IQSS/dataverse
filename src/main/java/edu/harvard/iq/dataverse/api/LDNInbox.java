@@ -104,15 +104,13 @@ public class LDNInbox extends AbstractApiBean {
             String objectKey = new JsonLDTerm(activityStreams, "object").getUrl();
             if (jsonld.containsKey(objectKey)) {
                 JsonObject msgObject = jsonld.getJsonObject(objectKey);
-                if (new JsonLDTerm(activityStreams, "Relationship").getUrl().equals(msgObject.getJsonString("@type"))) {
+                if (new JsonLDTerm(activityStreams, "Relationship").getUrl().equals(msgObject.getJsonString("type"))) {
                     // We have a relationship message - need to get the subject and object and
                     // relationship type
-                    String subjectId = msgObject.getJsonObject(new JsonLDTerm(activityStreams, "subject").getUrl())
-                            .getString("@id");
-                    String objectId = msgObject.getJsonObject(new JsonLDTerm(activityStreams, "object").getUrl())
-                            .getString("@id");
+                    String subjectId = msgObject.getString((new JsonLDTerm(activityStreams, "subject").getUrl());
+                    String objectId = msgObject.getString(new JsonLDTerm(activityStreams, "object").getUrl());
                     String relationshipId = msgObject
-                            .getJsonObject(new JsonLDTerm(activityStreams, "relationship").getUrl()).getString("@id");
+                            .getString(new JsonLDTerm(activityStreams, "relationship").getUrl());
                     if (subjectId != null && objectId != null && relationshipId != null) {
                         // Strip the URL part from a relationship ID/URL assuming a usable label exists
                         // after a # char. Default is to use the whole URI.
