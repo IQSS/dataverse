@@ -3324,10 +3324,10 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/{id}/{version}/archivalStatus")
     public Response setDatasetVersionArchivalStatus(@PathParam("id") String datasetId,
-            @PathParam("version") String versionNumber, JsonObject update, @Context UriInfo uriInfo,
+            @PathParam("version") String versionNumber, String newStatus, @Context UriInfo uriInfo,
             @Context HttpHeaders headers) {
 
-        logger.fine(JsonUtil.prettyPrint(update));
+        logger.fine(newStatus);
         try {
             AuthenticatedUser au = findAuthenticatedUserOrDie();
 
@@ -3336,7 +3336,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
             }
             
             //Verify we have valid json after removing any HTML tags (the status gets displayed in the UI, so we want plain text).
-            update= JsonUtil.getJsonObject(MarkupChecker.stripAllTags(JsonUtil.prettyPrint(update)));
+            JsonObject update= JsonUtil.getJsonObject(MarkupChecker.stripAllTags(newStatus));
             
             if (update.containsKey(DatasetVersion.ARCHIVAL_STATUS) && update.containsKey(DatasetVersion.ARCHIVAL_STATUS_MESSAGE)) {
                 String status = update.getString(DatasetVersion.ARCHIVAL_STATUS);
@@ -3368,8 +3368,9 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
             }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
+        } catch (JsonException| IllegalStateException ex) {
+            return error(Status.BAD_REQUEST, "Unable to parse provided JSON");
         }
-
         return error(Status.BAD_REQUEST, "Unacceptable status format");
     }
     
