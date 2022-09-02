@@ -13,7 +13,7 @@ import java.util.logging.Logger;
  * Handler of {@link PermissionReindexEvent} events.
  * It assures that changes in permissions will be reflected
  * in solr index.
- * 
+ *
  * @author madryk
  */
 @ApplicationScoped

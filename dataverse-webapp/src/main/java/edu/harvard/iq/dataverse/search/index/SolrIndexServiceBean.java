@@ -12,6 +12,8 @@ import org.apache.solr.common.SolrInputDocument;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
@@ -61,17 +63,18 @@ public class SolrIndexServiceBean {
     private Set<Long> collectDvObjectIds(List<PermissionsSolrDoc> solrDocs) {
         return solrDocs.stream().map(doc -> doc.getDvObjectId()).collect(Collectors.toSet());
     }
-    
+
     /**
      * We use the database to determine direct children since there is no
      * inheritance
      */
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public IndexResponse indexPermissionsOnSelfAndChildren(DvObject definitionPoint) {
 
         List<PermissionsSolrDoc> definitionPoints = solrDocFactory.determinePermissionsDocsOnSelfAndChildren(definitionPoint);
 
         Set<Long> affectedDvObjectIds = collectDvObjectIds(definitionPoints);
-        
+
         try {
             persistToSolr(definitionPoints);
 
@@ -81,11 +84,11 @@ public class SolrIndexServiceBean {
 
             return new IndexResponse("Number of dvObject permissions indexed for " + definitionPoint
                     + " (is:" + affectedDvObjectIds.size());
-            
+
         } catch (SolrServerException | IOException ex) {
             return new IndexResponse("problem indexing");
         }
-        
+
     }
 
     public IndexResponse indexPermissionsForOneDvObject(DvObject dvObject) {
@@ -100,7 +103,7 @@ public class SolrIndexServiceBean {
             if (!systemConfig.isReadonlyMode()) {
                 dvObjectService.updatePermissionIndexTime(dvObject.getId());
             }
-            
+
             return new IndexResponse("attempted to index permissions for DvObject " + dvObject.getId() + " and update permission index time was sucessfull");
         } catch (SolrServerException | IOException ex) {
             return new IndexResponse("problem indexing");
@@ -115,7 +118,7 @@ public class SolrIndexServiceBean {
 
         try {
             persistToSolr(definitionPoints);
-            
+
             if (!systemConfig.isReadonlyMode()) {
                 dvObjectService.updatePermissionIndexTime(affectedDvObjectIds);
             }

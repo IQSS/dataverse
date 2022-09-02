@@ -12,11 +12,14 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
 import javax.inject.Inject;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+
+import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
 
 @Stateless
 public class PermissionsSolrDocFactory {
@@ -72,6 +75,7 @@ public class PermissionsSolrDocFactory {
      * datasets and datafiles will be returned alongside with
      * {@link PermissionsSolrDoc}s of the given dataverse.
      */
+    @TransactionAttribute(REQUIRES_NEW)
     public List<PermissionsSolrDoc> determinePermissionsDocsOnSelfAndChildren(DvObject dvObject) {
         List<PermissionsSolrDoc> definitionPoints = new ArrayList<>();
 
