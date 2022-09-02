@@ -332,7 +332,7 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(Dataset ds) {
-        return jsonObjectBuilder()
+        JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", ds.getId())
                 .add("identifier", ds.getIdentifier())
                 .add("persistentUrl", ds.getPersistentURL())
@@ -340,8 +340,11 @@ public class JsonPrinter {
                 .add("authority", ds.getAuthority())
                 .add("publisher", BrandingUtil.getInstallationBrandName())
                 .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
-                .add("storageIdentifier", ds.getStorageIdentifier())
-                .add("metadataLanguage", ds.getMetadataLanguage());
+                .add("storageIdentifier", ds.getStorageIdentifier());
+        if (DvObjectContainer.isMetadataLanguageSet(ds.getMetadataLanguage())) {
+            bld.add("metadataLanguage", ds.getMetadataLanguage());
+        }
+        return bld;
     }
 
     public static JsonObjectBuilder json(FileDetailsHolder ds) {
