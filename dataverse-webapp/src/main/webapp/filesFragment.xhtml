@@ -426,6 +426,7 @@
                     <iqbs:fileDownloadButtons
                         fileMetadata="#{fileMetadata}"
                         lockedFromDownload="#{datasetFilesTab.lockedFromDownload}"
+                        previewTools="#{datasetFilesTab.getPreviewToolsForDataFile(fileMetadata.dataFile.id)}"
                         exploreTools="#{datasetFilesTab.getExploreToolsForDataFile(fileMetadata.dataFile.id)}"
                         downloadRequestFunction="#{fileDownloadHelper.requestDownload}"
                         updateOnDownloadRequest="@widgetVar(downloadPackagePopup)"

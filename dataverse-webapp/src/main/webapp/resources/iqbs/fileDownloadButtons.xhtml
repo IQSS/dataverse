@@ -13,7 +13,7 @@
 
     <composite:attribute name="lockedFromDownload" />
     <composite:attribute name="exploreTools" />
-
+    <composite:attribute name="previewTools" />
     <composite:attribute name="downloadRequestFunction" method-signature="java.lang.String downloadRequestFunction()"/>
     <composite:attribute name="updateOnDownloadRequest" />
 
@@ -52,6 +52,23 @@
             </div>
         </div>
     </ui:fragment>
+
+    <!--"Preview" button -->
+    <div class="btn-group"
+         jsf:rendered="#{canDownloadFile
+            and not empty cc.attrs.previewTools
+            and not fileMetadata.datasetVersion.deaccessioned
+            and not fileMetadata.datasetVersion.dataset.hasActiveEmbargo()}">
+        <a class="btn btn-default" href="#{(empty fileMetadata.dataFile.globalIdString
+                ? widgetWrapper.wrapURL('/file.xhtml?fileId='.concat(fileMetadata.dataFile.id)
+                    .concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))
+                : widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(fileMetadata.dataFile.globalIdString)
+                    .concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber)))
+                .concat('#contentTabs')}">
+            <span class="glyphicon glyphicon-eye-open"/> #{bundle.preview}
+        </a>
+    </div>
+
 
     <!--"Explore" button (dropdown of tools)-->
     <!--exploreTools is set as a ui:param by the file and dataset pages-->
@@ -95,115 +112,110 @@
     </div>
 
     <ui:fragment rendered="#{canDownloadFile}">
+        <ui:fragment rendered="#{cc.attrs.fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload and !(cc.attrs.fileMetadata.dataFile.tabularData)}">
+            <p:commandLink id="packageDownloadPopupButton"
+                           styleClass="btn btn-default btn-download"
+                           process="@this"
+                           actionListener="#{RequestedDownloadType.initDownloadTypeForPackage(cc.attrs.fileMetadata)}"
+                           action="#{cc.attrs.downloadRequestFunction}"
+                           update="#{cc.attrs.updateOnDownloadRequest}">
+                <!-- package data file: -->
+                <span class="glyphicon glyphicon-download-alt" aria-hidden="true"/> #{bundle['file.download.header']}
+            </p:commandLink>
+        </ui:fragment>
 
-    <ui:fragment rendered="#{cc.attrs.fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload and !(cc.attrs.fileMetadata.dataFile.tabularData)}">
+        <ui:fragment rendered="#{!(cc.attrs.fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload) and !(cc.attrs.fileMetadata.dataFile.tabularData)}">
+            <p:commandLink id="standardFileDownloadButton"
+                           styleClass="btn btn-default btn-download"
+                           process="@this"
+                           actionListener="#{RequestedDownloadType.initDownloadType(cc.attrs.fileMetadata)}"
+                           action="#{cc.attrs.downloadRequestFunction}"
+                           update="#{cc.attrs.updateOnDownloadRequest}"
+                           oncomplete="if (args &amp;&amp; args.apiDownloadLink) { refreshAndClickDownloadLink(args.apiDownloadLink); }">
+                <!-- non-tabular data file: -->
+                <span class="glyphicon glyphicon-download-alt" aria-hidden="true"/> #{bundle['file.download.header']}
+            </p:commandLink>
+        </ui:fragment>
 
-    <p:commandLink id="packageDownloadPopupButton"
-                   styleClass="btn btn-default btn-download"
-                   process="@this"
-                   actionListener="#{RequestedDownloadType.initDownloadTypeForPackage(cc.attrs.fileMetadata)}"
-                   action="#{cc.attrs.downloadRequestFunction}"
-                   update="#{cc.attrs.updateOnDownloadRequest}">
-        <!-- package data file: -->
-        <span class="glyphicon glyphicon-download-alt" aria-hidden="true"/> #{bundle['file.download.header']}
-    </p:commandLink>
-
-    </ui:fragment>
-
-    <ui:fragment rendered="#{!(cc.attrs.fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload) and !(cc.attrs.fileMetadata.dataFile.tabularData)}">
-
-    <p:commandLink id="standardFileDownloadButton"
-                   styleClass="btn btn-default btn-download"
-                   process="@this"
-                   actionListener="#{RequestedDownloadType.initDownloadType(cc.attrs.fileMetadata)}"
-                   action="#{cc.attrs.downloadRequestFunction}"
-                   update="#{cc.attrs.updateOnDownloadRequest}"
-                   oncomplete="if (args &amp;&amp; args.apiDownloadLink) { refreshAndClickDownloadLink(args.apiDownloadLink); }">
-        <!-- non-tabular data file: -->
-        <span class="glyphicon glyphicon-download-alt" aria-hidden="true"/> #{bundle['file.download.header']}
-    </p:commandLink>
-
-    </ui:fragment>
-
-    <div class="btn-group" jsf:rendered="#{cc.attrs.fileMetadata.dataFile.tabularData }">
-        <!-- Download Dropdown -->
-        <button type="button" class="btn btn-default btn-download dropdown-toggle" data-toggle="dropdown"
-                aria-haspopup="true" aria-expanded="false">
-            <span class="glyphicon glyphicon-download-alt"/> #{bundle['file.download.header']} <span class="caret"/>
-        </button>
-        <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
-            <li jsf:rendered="#{!(cc.attrs.fileMetadata.dataFile.originalFormatLabel == 'UNKNOWN')}">
-                <p:commandLink id="tabularOriginalDownloadPopupButton"
-                               process="@this"
-                               pt:role="menuitem"
-                               actionListener="#{RequestedDownloadType.initDownloadTypeForOriginal(cc.attrs.fileMetadata)}"
-                               action="#{cc.attrs.downloadRequestFunction}"
-                               update="#{cc.attrs.updateOnDownloadRequest}"
-                               oncomplete="if (args &amp;&amp; args.apiDownloadLink) { refreshAndClickDownloadLink(args.apiDownloadLink); }">
-                    <h:outputFormat value="#{bundle['file.downloadBtn.format.original']}">
-                        <f:param value="#{cc.attrs.fileMetadata.dataFile.originalFormatLabel}"/>
-                    </h:outputFormat>
-                </p:commandLink>
-            </li>
-            <li>
-                <p:commandLink id="tabularTabDownloadPopupButton"
-                               process="@this"
-                               pt:role="menuitem"
-                               actionListener="#{RequestedDownloadType.initDownloadTypeForTab(cc.attrs.fileMetadata)}"
-                               action="#{cc.attrs.downloadRequestFunction}"
-                               update="#{cc.attrs.updateOnDownloadRequest}"
-                               oncomplete="if (args &amp;&amp; args.apiDownloadLink) { refreshAndClickDownloadLink(args.apiDownloadLink); }">
-                    #{bundle['file.downloadBtn.format.tab']}
-                </p:commandLink>
-            </li>
-            <ui:fragment rendered="#{!(cc.attrs.fileMetadata.dataFile.originalFormatLabel == 'RData')}">
-                <li>
-                    <p:commandLink id="tabularRdataDownloadPopupButton"
-                                   pt:role="menuitem"
+        <div class="btn-group" jsf:rendered="#{cc.attrs.fileMetadata.dataFile.tabularData }">
+            <!-- Download Dropdown -->
+            <button type="button" class="btn btn-default btn-download dropdown-toggle" data-toggle="dropdown"
+                    aria-haspopup="true" aria-expanded="false">
+                <span class="glyphicon glyphicon-download-alt"/> #{bundle['file.download.header']} <span class="caret"/>
+            </button>
+            <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
+                <li jsf:rendered="#{!(cc.attrs.fileMetadata.dataFile.originalFormatLabel == 'UNKNOWN')}">
+                    <p:commandLink id="tabularOriginalDownloadPopupButton"
                                    process="@this"
-                                   actionListener="#{RequestedDownloadType.initDownloadTypeForRdata(cc.attrs.fileMetadata)}"
+                                   pt:role="menuitem"
+                                   actionListener="#{RequestedDownloadType.initDownloadTypeForOriginal(cc.attrs.fileMetadata)}"
                                    action="#{cc.attrs.downloadRequestFunction}"
                                    update="#{cc.attrs.updateOnDownloadRequest}"
                                    oncomplete="if (args &amp;&amp; args.apiDownloadLink) { refreshAndClickDownloadLink(args.apiDownloadLink); }">
-                        #{bundle['file.downloadBtn.format.rdata']}
+                        <h:outputFormat value="#{bundle['file.downloadBtn.format.original']}">
+                            <f:param value="#{cc.attrs.fileMetadata.dataFile.originalFormatLabel}"/>
+                        </h:outputFormat>
                     </p:commandLink>
                 </li>
-            </ui:fragment>
-            <li>
-                <p:commandLink pt:role="menuitem"
-                               process="@this"
-                               actionListener="#{RequestedDownloadType.initDownloadTypeForVar(cc.attrs.fileMetadata)}"
-                               action="#{cc.attrs.downloadRequestFunction}"
-                               update="#{cc.attrs.updateOnDownloadRequest}"
-                               oncomplete="if (args &amp;&amp; args.apiDownloadLink) { refreshAndClickDownloadLink(args.apiDownloadLink); }">
-                    #{bundle['file.downloadBtn.format.var']}
-                </p:commandLink>
-            </li>
-            <li class="dropdown-submenu pull-left">
-                <a tabindex="-1" class="no-focus">#{bundle['file.downloadBtn.format.citation']}</a>
-                <ul class="dropdown-menu" role="menu">
+                <li>
+                    <p:commandLink id="tabularTabDownloadPopupButton"
+                                   process="@this"
+                                   pt:role="menuitem"
+                                   actionListener="#{RequestedDownloadType.initDownloadTypeForTab(cc.attrs.fileMetadata)}"
+                                   action="#{cc.attrs.downloadRequestFunction}"
+                                   update="#{cc.attrs.updateOnDownloadRequest}"
+                                   oncomplete="if (args &amp;&amp; args.apiDownloadLink) { refreshAndClickDownloadLink(args.apiDownloadLink); }">
+                        #{bundle['file.downloadBtn.format.tab']}
+                    </p:commandLink>
+                </li>
+                <ui:fragment rendered="#{!(cc.attrs.fileMetadata.dataFile.originalFormatLabel == 'RData')}">
                     <li>
-                        <h:commandLink id="risLinkFile" actionListener="#{fileDownloadService.downloadDatafileCitationRIS(cc.attrs.fileMetadata)}"
-                                role="menuitem">
-                            <h:outputText value="#{bundle['dataset.cite.downloadBtn.ris']}" />
-                        </h:commandLink>
+                        <p:commandLink id="tabularRdataDownloadPopupButton"
+                                       pt:role="menuitem"
+                                       process="@this"
+                                       actionListener="#{RequestedDownloadType.initDownloadTypeForRdata(cc.attrs.fileMetadata)}"
+                                       action="#{cc.attrs.downloadRequestFunction}"
+                                       update="#{cc.attrs.updateOnDownloadRequest}"
+                                       oncomplete="if (args &amp;&amp; args.apiDownloadLink) { refreshAndClickDownloadLink(args.apiDownloadLink); }">
+                            #{bundle['file.downloadBtn.format.rdata']}
+                        </p:commandLink>
                     </li>
-                    <li>
-                        <h:commandLink id="endNoteLinkFile" action="#{fileDownloadService.downloadDatafileCitationXML(cc.attrs.fileMetadata)}"
-                                role="menuitem">
-                            <h:outputText value="#{bundle['dataset.cite.downloadBtn.xml']}" />
-                        </h:commandLink>
-                    </li>
-                    <li>
-                        <h:commandLink id="bibLinkFile" action="#{fileDownloadService.downloadDatafileCitationBibtex(cc.attrs.fileMetadata)}"
-                                role="menuitem">
-                            <h:outputText value="#{bundle['dataset.cite.downloadBtn.bib']}" />
-                        </h:commandLink>
-                    </li>
-                </ul>
-            </li>
-        </ul>
-    </div>
+                </ui:fragment>
+                <li>
+                    <p:commandLink pt:role="menuitem"
+                                   process="@this"
+                                   actionListener="#{RequestedDownloadType.initDownloadTypeForVar(cc.attrs.fileMetadata)}"
+                                   action="#{cc.attrs.downloadRequestFunction}"
+                                   update="#{cc.attrs.updateOnDownloadRequest}"
+                                   oncomplete="if (args &amp;&amp; args.apiDownloadLink) { refreshAndClickDownloadLink(args.apiDownloadLink); }">
+                        #{bundle['file.downloadBtn.format.var']}
+                    </p:commandLink>
+                </li>
+                <li class="dropdown-submenu pull-left">
+                    <a tabindex="-1" class="no-focus">#{bundle['file.downloadBtn.format.citation']}</a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li>
+                            <h:commandLink id="risLinkFile" actionListener="#{fileDownloadService.downloadDatafileCitationRIS(cc.attrs.fileMetadata)}"
+                                    role="menuitem">
+                                <h:outputText value="#{bundle['dataset.cite.downloadBtn.ris']}" />
+                            </h:commandLink>
+                        </li>
+                        <li>
+                            <h:commandLink id="endNoteLinkFile" action="#{fileDownloadService.downloadDatafileCitationXML(cc.attrs.fileMetadata)}"
+                                    role="menuitem">
+                                <h:outputText value="#{bundle['dataset.cite.downloadBtn.xml']}" />
+                            </h:commandLink>
+                        </li>
+                        <li>
+                            <h:commandLink id="bibLinkFile" action="#{fileDownloadService.downloadDatafileCitationBibtex(cc.attrs.fileMetadata)}"
+                                    role="menuitem">
+                                <h:outputText value="#{bundle['dataset.cite.downloadBtn.bib']}" />
+                            </h:commandLink>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
 
     </ui:fragment>
 

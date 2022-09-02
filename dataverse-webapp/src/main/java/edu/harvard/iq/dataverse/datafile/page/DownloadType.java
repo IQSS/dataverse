@@ -10,7 +10,7 @@ import edu.harvard.iq.dataverse.util.FileUtil.ApiDownloadType;
  * <p>
  * Note that is different than {@link GuestbookResponse#getDownloadtype()}.
  * {@link GuestbookResponse#getDownloadtype()} contains less detailed information.
- * 
+ *
  * @author madryk
  */
 public enum DownloadType {
@@ -21,21 +21,22 @@ public enum DownloadType {
     VAR(ApiDownloadType.VAR, null),
     WORLDMAP(null, null),
     EXTERNALTOOL(null, null),
+    PREVIEW(null, null),
     PACKAGE(null, null);
-    
+
     private ApiDownloadType apiDownloadEquivalent;
     private ApiBatchDownloadType apiBatchDownloadEquivalent;
-    
-    
+
+
     // -------------------- CONSTRUCTORS --------------------
-    
+
     private DownloadType(ApiDownloadType apiDownloadEquivalent, ApiBatchDownloadType apiBatchDownloadEquivalent) {
         this.apiDownloadEquivalent = apiDownloadEquivalent;
         this.apiBatchDownloadEquivalent = apiBatchDownloadEquivalent;
     }
 
     // -------------------- GETTERS --------------------
-    
+
     /**
      * Returns type of api download that is compatible with
      * this download type or {@literal null} if download type
@@ -53,16 +54,16 @@ public enum DownloadType {
     public ApiBatchDownloadType getApiBatchDownloadEquivalent() {
         return apiBatchDownloadEquivalent;
     }
-    
+
     // -------------------- LOGIC --------------------
-    
+
     /**
      * Returns true if this download type can be performed by api download
      */
     public boolean isCompatibleWithApiDownload() {
         return apiDownloadEquivalent != null;
     }
-    
+
     /**
      * Returns true if this download type can be performed by batch api download
      */

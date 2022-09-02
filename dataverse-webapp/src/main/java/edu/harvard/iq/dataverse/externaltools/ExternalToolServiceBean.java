@@ -5,21 +5,17 @@ import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool;
 import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool.ReservedWord;
 import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool.Type;
+import edu.harvard.iq.dataverse.persistence.datafile.ExternalToolRepository;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.NonUniqueResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
 import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -30,74 +26,48 @@ public class ExternalToolServiceBean {
 
     private static final Logger logger = Logger.getLogger(ExternalToolServiceBean.class.getCanonicalName());
 
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
+    private ExternalToolRepository repository;
+
+    // -------------------- CONSTRUCTORS --------------------
+
+    @Deprecated
+    public ExternalToolServiceBean() { }
+
+    @Inject
+    public ExternalToolServiceBean(ExternalToolRepository repository) {
+        this.repository = repository;
+    }
 
     // -------------------- LOGIC --------------------
 
     public List<ExternalTool> findAll() {
-        TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o ORDER BY o.id", ExternalTool.class);
-        return typedQuery.getResultList();
+        return repository.findAll();
     }
 
-
     /**
-     * @param type
      * @return A list of tools or an empty list.
      */
     public List<ExternalTool> findByType(Type type) {
-        return findByType(type, null);
+        return repository.findByType(type, null);
     }
 
     /**
-     * @param type
-     * @param contentType - mimetype
      * @return A list of tools or an empty list.
      */
     public List<ExternalTool> findByType(Type type, String contentType) {
-
-        List<ExternalTool> externalTools = new ArrayList<>();
-
-        //If contentType==null, get all tools of the given ExternalTool.Type
-        TypedQuery<ExternalTool> typedQuery = contentType != null ? em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type AND o.contentType = :contentType", ExternalTool.class) :
-                em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type", ExternalTool.class);
-        typedQuery.setParameter("type", type);
-        if (contentType != null) {
-            typedQuery.setParameter("contentType", contentType);
-        }
-        List<ExternalTool> toolsFromQuery = typedQuery.getResultList();
-        if (toolsFromQuery != null) {
-            externalTools = toolsFromQuery;
-        }
-        return externalTools;
-    }
-
-
-    public ExternalTool findById(long id) {
-        TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.id = :id", ExternalTool.class);
-        typedQuery.setParameter("id", id);
-        try {
-            ExternalTool externalTool = typedQuery.getSingleResult();
-            return externalTool;
-        } catch (NoResultException | NonUniqueResultException ex) {
-            return null;
-        }
+        return repository.findByType(type, contentType);
     }
 
     public boolean delete(long doomedId) {
-        ExternalTool doomed = findById(doomedId);
-        try {
-            em.remove(doomed);
+        if (repository.findById(doomedId).isPresent()) {
+            repository.deleteById(doomedId);
             return true;
-        } catch (Exception ex) {
-            logger.info("Could not delete external tool with id of " + doomedId);
-            return false;
         }
+        return false;
     }
 
     public ExternalTool save(ExternalTool externalTool) {
-        em.persist(externalTool);
-        return em.merge(externalTool);
+        return repository.save(externalTool);
     }
 
     /**
@@ -117,7 +87,7 @@ public class ExternalToolServiceBean {
     /**
      * This method takes a list of tools, a file and a dataset version and
      * returns which tools that file supports. The list of tools is passed in
-     * so it doesn't hit the database each time
+     * so it doesn't query the database each time
      */
     public List<ExternalTool> findExternalToolsByFileAndVersion(
             List<ExternalTool> allExternalTools, DataFile file, DatasetVersion datasetVersion) {
@@ -132,18 +102,22 @@ public class ExternalToolServiceBean {
                 .collect(Collectors.toList());
     }
 
-    public static ExternalTool parseAddExternalToolManifest(String manifest) {
+    public List<ExternalTool> findExternalTools(Type type, String contentType, DataFile file, DatasetVersion version) {
+        return findExternalToolsByFileAndVersion(findByType(type, contentType), file, version);
+    }
+
+    public ExternalTool parseAddExternalToolManifest(String manifest) {
         if (manifest == null || manifest.isEmpty()) {
             throw new IllegalArgumentException("External tool manifest was null or empty!");
         }
         JsonReader jsonReader = Json.createReader(new StringReader(manifest));
         JsonObject jsonObject = jsonReader.readObject();
-        //Note: ExternalToolServiceBeanTest tests are dependent on the order of these retrievals
+        // Note: ExternalToolServiceBeanTest tests are dependent on the order of these retrievals
         String displayName = getRequiredTopLevelField(jsonObject, ExternalTool.DISPLAY_NAME);
         String description = getRequiredTopLevelField(jsonObject, ExternalTool.DESCRIPTION);
         String typeUserInput = getRequiredTopLevelField(jsonObject, ExternalTool.TYPE);
         String contentType = getOptionalTopLevelField(jsonObject, ExternalTool.CONTENT_TYPE);
-        //Legacy support - assume tool manifests without any mimetype are for tabular data
+        // Legacy support - assume tool manifests without any mimetype are for tabular data
         if (contentType == null) {
             contentType = TextMimeType.TSV_ALT.getMimeValue();
         }
@@ -189,7 +163,7 @@ public class ExternalToolServiceBean {
         return released && !embargoed && !restricted;
     }
 
-    private static String getRequiredTopLevelField(JsonObject jsonObject, String key) {
+    private String getRequiredTopLevelField(JsonObject jsonObject, String key) {
         try {
             return jsonObject.getString(key);
         } catch (NullPointerException ex) {
@@ -197,13 +171,11 @@ public class ExternalToolServiceBean {
         }
     }
 
-    private static String getOptionalTopLevelField(JsonObject jsonObject, String key) {
+    private String getOptionalTopLevelField(JsonObject jsonObject, String key) {
         try {
             return jsonObject.getString(key);
         } catch (NullPointerException ex) {
             return null;
         }
     }
-
-
 }

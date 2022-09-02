@@ -36,7 +36,7 @@ import static java.util.stream.Collectors.toList;
  * <li>downloadPopup</li>
  * <li>downloadPackagePopup</li>
  * </ul>
- * 
+ *
  * @author skraffmi
  */
 @ViewScoped
@@ -44,9 +44,9 @@ import static java.util.stream.Collectors.toList;
 public class FileDownloadHelper implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(FileDownloadHelper.class.getCanonicalName());
-    
+
     private DataverseSession session;
-    
+
     private PermissionsWrapper permissionsWrapper;
 
     private FileDownloadServiceBean fileDownloadService;
@@ -56,12 +56,12 @@ public class FileDownloadHelper implements java.io.Serializable {
     private RequestedDownloadType requestedDownloadType;
 
     // -------------------- CONSTRUCTORS --------------------
-    
+
     @Deprecated
     public FileDownloadHelper() {
-        
+
     }
-    
+
     @Inject
     public FileDownloadHelper(DataverseSession session, PermissionsWrapper permissionsWrapper,
                               FileDownloadServiceBean fileDownloadService, GuestbookResponseServiceBean guestbookResponseService,
@@ -72,12 +72,12 @@ public class FileDownloadHelper implements java.io.Serializable {
         this.guestbookResponseService = guestbookResponseService;
         this.requestedDownloadType = requestedDownloadType;
     }
-    
+
     // -------------------- LOGIC --------------------
 
     /**
      * Writes guestbook response and start download
-     * 
+     *
      * @param userProvidedGuestbookResponse - guestbook response with values
      * that should be provided by user (already validated) (that is name, email, custom question responses, etc.)
      */
@@ -85,12 +85,12 @@ public class FileDownloadHelper implements java.io.Serializable {
 
         DownloadType fileFormat = requestedDownloadType.getFileFormat();
         List<FileMetadata> fileMetadatas = requestedDownloadType.getFileMetadatas();
-        
+
         userProvidedGuestbookResponse.setDownloadtype(buildGuestbookResponseDownloadType(fileFormat, requestedDownloadType.getTool()));
-        
-        for (FileMetadata fileMetadata: fileMetadatas) {
+
+        for (FileMetadata fileMetadata : fileMetadatas) {
             DataFile dataFile = fileMetadata.getDataFile();
-            
+
             if (dataFile.isReleased()) {
                 userProvidedGuestbookResponse.setDataFile(fileMetadata.getDataFile());
                 fileDownloadService.writeGuestbookResponseRecord(userProvidedGuestbookResponse);
@@ -99,23 +99,32 @@ public class FileDownloadHelper implements java.io.Serializable {
 
         startDownloadAccordingToType(fileMetadatas, fileFormat, requestedDownloadType.getTool(), true);
     }
-    
+
+    public void writeGuestbookResponseForPreview(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, ExternalTool previewer) {
+        guestbookResponse.setDownloadtype(buildGuestbookResponseDownloadType(DownloadType.PREVIEW, previewer));
+        DataFile dataFile = fileMetadata.getDataFile();
+        if (dataFile.isReleased()) {
+            guestbookResponse.setDataFile(dataFile);
+            fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
+        }
+    }
+
     /**
      * Initializes {@link RequestedDownloadType} object and start
      * downloading process using {@link #requestDownload()}.
-     * 
+     *
      * @param fileMetadatas - files to download
      * @param requestedOriginalDownload - true if should download original format of files
      * or false for default download
      */
     public void requestDownloadWithFiles(List<FileMetadata> fileMetadatas, boolean requestedOriginalDownload) {
-        
+
         if (requestedOriginalDownload) {
             requestedDownloadType.initMultiOriginalDownloadType(fileMetadatas);
         } else {
             requestedDownloadType.initMultiDownloadType(fileMetadatas);
         }
-        
+
         requestDownload();
     }
 
@@ -128,7 +137,7 @@ public class FileDownloadHelper implements java.io.Serializable {
 
         return StringUtils.EMPTY;
     }
-    
+
     /**
      * Starts downloading process according on values stored in {@link RequestedDownloadType}.
      * <p>
@@ -136,10 +145,10 @@ public class FileDownloadHelper implements java.io.Serializable {
      * directly otherwise.
      */
     public String requestDownload() {
-        
+
         List<FileMetadata> fileMetadatas = requestedDownloadType.getFileMetadatas();
         DownloadType fileFormat = requestedDownloadType.getFileFormat();
-        
+
         if (FileUtil.isDownloadPopupRequired(fileMetadatas.get(0).getDatasetVersion())) {
             PrimefacesUtil.showDialog("downloadPopup");
             return StringUtils.EMPTY;
@@ -186,7 +195,7 @@ public class FileDownloadHelper implements java.io.Serializable {
                     fileMetadatas.stream().map(x -> x.getDataFile().getId()).collect(toList()), guestbookRecordsAlreadyWritten,
                     fileFormat.getApiBatchDownloadEquivalent());
             PrimeFaces.current().ajax().addCallbackParam("apiDownloadLink", filesDownloadUrl);
-            
+
             return;
         }
 
@@ -222,15 +231,16 @@ public class FileDownloadHelper implements java.io.Serializable {
             fileDownloadService.writeGuestbookResponseRecord(downloadOnlyGuestbook);
         }
     }
-    
-    private String buildGuestbookResponseDownloadType(DownloadType fileFormat, ExternalTool tool) {
 
-        if (fileFormat == DownloadType.WORLDMAP) {
-            return "WorldMap";
+    private String buildGuestbookResponseDownloadType(DownloadType fileFormat, ExternalTool tool) {
+        switch (fileFormat) {
+            case WORLDMAP:
+                return "WorldMap";
+            case EXTERNALTOOL:
+            case PREVIEW:
+                return tool.getDisplayName();
+            default:
+                return "Download";
         }
-        if (fileFormat == DownloadType.EXTERNALTOOL) {
-            return tool.getDisplayName();
-        }
-        return "Download";
     }
 }

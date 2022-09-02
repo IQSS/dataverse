@@ -30,13 +30,19 @@ import java.util.stream.Collectors;
  */
 @Stateless
 public class ExternalToolHandler {
-
     private static final Logger logger = Logger.getLogger(ExternalToolHandler.class.getCanonicalName());
 
-    @Inject
     private SystemConfig systemConfig;
 
+    // -------------------- CONSTRUCTORS --------------------
 
+    @Deprecated
+    public ExternalToolHandler() { }
+
+    @Inject
+    public ExternalToolHandler(SystemConfig systemConfig) {
+        this.systemConfig = systemConfig;
+    }
 
     // -------------------- LOGIC --------------------
 

@@ -155,8 +155,10 @@ public class DatasetFilesTab implements Serializable {
 
     private List<ExternalTool> configureTools = new ArrayList<>();
     private List<ExternalTool> exploreTools = new ArrayList<>();
+    private List<ExternalTool> previewTools = new ArrayList<>();
     private Map<Long, List<ExternalTool>> configureToolsByFileId = new HashMap<>();
     private Map<Long, List<ExternalTool>> exploreToolsByFileId = new HashMap<>();
+    private Map<Long, List<ExternalTool>> previewToolsByFileId = new HashMap<>();
     private DataTable fileDataTable;
 
     private List<FileMetadata> selectedDownloadableFiles;
@@ -182,9 +184,7 @@ public class DatasetFilesTab implements Serializable {
     // -------------------- CONSTRUCTORS --------------------
 
     @Deprecated
-    public DatasetFilesTab() {
-
-    }
+    public DatasetFilesTab() { }
 
     @Inject
     public DatasetFilesTab(FileDownloadHelper fileDownloadHelper, DataFileServiceBean datafileService,
@@ -256,6 +256,7 @@ public class DatasetFilesTab implements Serializable {
 
         configureTools = externalToolService.findByType(ExternalTool.Type.CONFIGURE);
         exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE);
+        previewTools = externalToolService.findByType(ExternalTool.Type.PREVIEW);
 
         guestbookResponseDialog.initForDatasetVersion(workingVersion);
 
@@ -381,7 +382,6 @@ public class DatasetFilesTab implements Serializable {
         // - check download permission here (should be cached - so it's free!)
         // - only then check if the thumbnail is available/exists.
         // then cache the results!
-
         Long dataFileId = fileMetadata.getDataFile().getId();
 
         if (datafileThumbnailsMap.containsKey(dataFileId)) {
@@ -398,11 +398,9 @@ public class DatasetFilesTab implements Serializable {
             return false;
         }
 
+        String thumbnailAsBase64 = imageThumbConverter.getImageThumbnailAsBase64(fileMetadata.getDataFile(),
+                ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
 
-        String thumbnailAsBase64 = imageThumbConverter.getImageThumbnailAsBase64(fileMetadata.getDataFile(), ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
-
-
-        //if (datafileService.isThumbnailAvailable(fileMetadata.getDataFile())) {
         if (!StringUtil.isEmpty(thumbnailAsBase64)) {
             datafileThumbnailsMap.put(dataFileId, thumbnailAsBase64);
             return true;
@@ -410,11 +408,9 @@ public class DatasetFilesTab implements Serializable {
 
         datafileThumbnailsMap.put(dataFileId, "");
         return false;
-
     }
 
     public void downloadRsyncScript() {
-
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("application/download");
@@ -437,15 +433,14 @@ public class DatasetFilesTab implements Serializable {
 
         // If the script has been successfully downloaded, lock the dataset:
         String lockInfoMessage = "script downloaded";
-        DatasetLock lock = datasetFilesTabFacade.addDatasetLock(dataset.getId(), DatasetLock.Reason.DcmUpload, session.getUser() != null ?
-                ((AuthenticatedUser) session.getUser()).getId() :
-                null, lockInfoMessage);
+        DatasetLock lock = datasetFilesTabFacade.addDatasetLock(dataset.getId(), DatasetLock.Reason.DcmUpload,
+                session.getUser() != null ? ((AuthenticatedUser) session.getUser()).getId() : null,
+                lockInfoMessage);
         if (lock != null) {
             dataset.addLock(lock);
         } else {
             logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", dataset.getId());
         }
-
     }
 
     public String getDataFileThumbnailAsBase64(FileMetadata fileMetadata) {
@@ -463,11 +458,7 @@ public class DatasetFilesTab implements Serializable {
     }
 
     public boolean isRequestAccessPopupRequired(DatasetVersion workingVersion, List<FileMetadata> restrictedFiles) {
-        if (!workingVersion.isReleased()) {
-            return false;
-        }
-
-        return !restrictedFiles.isEmpty();
+        return workingVersion.isReleased() && !restrictedFiles.isEmpty();
     }
 
     public List<ExternalTool> getConfigureToolsForDataFile(Long fileId) {
@@ -476,6 +467,10 @@ public class DatasetFilesTab implements Serializable {
 
     public List<ExternalTool> getExploreToolsForDataFile(Long fileId) {
         return getCachedToolsForDataFile(fileId, ExternalTool.Type.EXPLORE);
+    }
+
+    public List<ExternalTool> getPreviewToolsForDataFile(Long fileId) {
+        return getCachedToolsForDataFile(fileId, ExternalTool.Type.PREVIEW);
     }
 
     public boolean shouldAllowRestrictedFileRequest() {
@@ -490,14 +485,12 @@ public class DatasetFilesTab implements Serializable {
     private void updateMultipleFileOptionFlags() {
 
         boolean versionContainsNonDownloadableFiles = datasetFilesTabFacade.isVersionContainsNonDownloadableFiles(workingVersion.getId());
-
         boolean versionContainsDownloadableFiles = datasetFilesTabFacade.isVersionContainsDownloadableFiles(workingVersion.getId());
 
         if (versionContainsNonDownloadableFiles) {
             fileAccessRequestMultiButtonRequired = session.getUser().isAuthenticated();
             fileAccessRequestMultiSignUpButtonRequired = !session.getUser().isAuthenticated();
         }
-
         downloadButtonAvailable = versionContainsDownloadableFiles;
     }
 
@@ -509,9 +502,7 @@ public class DatasetFilesTab implements Serializable {
         }
 
         boolean anyFileAccessPopupRequired = false;
-
         fileDownloadRequestHelper.clearRequestAccessFiles();
-
 
         List<FileMetadata> restrictedSelectedFiles = fileMetadataService.findRestrictedFileMetadata(selectedFileIds);
 
@@ -521,7 +512,6 @@ public class DatasetFilesTab implements Serializable {
                                    .forEach(fileDownloadRequestHelper::addFileForRequestAccess);
             anyFileAccessPopupRequired = true;
         }
-
 
         if (anyFileAccessPopupRequired) {
             PrimefacesUtil.showDialog(REQUEST_ACCESS_DIALOG);
@@ -609,10 +599,8 @@ public class DatasetFilesTab implements Serializable {
     /* This method handles saving both "tabular file tags" and
      * "file categories" (which are also considered "tags" in 4.0)
      */
-    public void saveFileTagsAndCategories(Collection<FileMetadata> selectedFiles,
-                                          Collection<String> selectedFileMetadataTags,
-                                          Collection<String> selectedDataFileTags,
-                                          boolean removeUnusedTags) {
+    public void saveFileTagsAndCategories(Collection<FileMetadata> selectedFiles, Collection<String> selectedFileMetadataTags,
+                                          Collection<String> selectedDataFileTags, boolean removeUnusedTags) {
 
         if (bulkUpdateCheckVersion()) {
             workingVersion = fetchEditDatasetVersion();
@@ -621,10 +609,7 @@ public class DatasetFilesTab implements Serializable {
         }
 
         DatasetVersion updatedVersion = datasetFilesTabFacade.updateFileTagsAndCategories(workingVersion.getId(),
-                                                                                          selectedFiles,
-                                                                                          selectedFileMetadataTags,
-                                                                                          selectedDataFileTags);
-
+                                              selectedFiles, selectedFileMetadataTags, selectedDataFileTags);
         addSuccessMessage();
 
         if (removeUnusedTags) {
@@ -641,13 +626,11 @@ public class DatasetFilesTab implements Serializable {
 
     public String deleteFilesAndSave() {
         bulkFileDeleteInProgress = true;
-        if (bulkUpdateCheckVersion()) {
-            filesToBeDeleted = fetchSelectedFilesForVersion(fetchEditDatasetVersion()).stream()
-                                                                  .map(FileMetadata::getDataFile)
-                                                                  .collect(toList());
-        } else {
-            filesToBeDeleted = datafileService.findDataFilesByFileMetadataIds(selectedFileIds);
-        }
+        filesToBeDeleted = bulkUpdateCheckVersion()
+                ? fetchSelectedFilesForVersion(fetchEditDatasetVersion()).stream()
+                    .map(FileMetadata::getDataFile)
+                    .collect(toList())
+                : datafileService.findDataFilesByFileMetadataIds(selectedFileIds);
 
         return save(workingVersion);
     }
@@ -665,7 +648,6 @@ public class DatasetFilesTab implements Serializable {
             DatasetVersion updatedVersion = datasetFilesTabFacade.updateTermsOfUse(workingVersion.getId(), termsOfUse, fetchedFileMetadata);
             save(updatedVersion);
         }
-
         return returnToDraftVersion();
     }
 
@@ -689,8 +671,8 @@ public class DatasetFilesTab implements Serializable {
     public boolean isLockedFromDownload() {
         if (lockedFromDownloadVar == null) {
             try {
-                permissionService.checkDownloadFileLock(dataset, dvRequestService.getDataverseRequest(), new CreateNewDatasetCommand(dataset, dvRequestService
-                        .getDataverseRequest()));
+                permissionService.checkDownloadFileLock(dataset, dvRequestService.getDataverseRequest(),
+                        new CreateNewDatasetCommand(dataset, dvRequestService.getDataverseRequest()));
                 lockedFromDownloadVar = false;
             } catch (IllegalCommandException ex) {
                 lockedFromDownloadVar = true;
@@ -703,8 +685,8 @@ public class DatasetFilesTab implements Serializable {
     public boolean isLockedFromEdits() {
         if (lockedFromEditsVar == null) {
             try {
-                permissionService.checkEditDatasetLock(dataset, dvRequestService.getDataverseRequest(), new UpdateDatasetVersionCommand(dataset, dvRequestService
-                        .getDataverseRequest()));
+                permissionService.checkEditDatasetLock(dataset, dvRequestService.getDataverseRequest(),
+                        new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest()));
                 lockedFromEditsVar = false;
             } catch (IllegalCommandException ex) {
                 lockedFromEditsVar = true;
@@ -748,14 +730,13 @@ public class DatasetFilesTab implements Serializable {
             return fetchSelectedFilesForVersion(fetchEditDatasetVersion());
         }
 
-        return selectedFileIds.isEmpty() ?
-                new ArrayList<>() :
-                fileMetadataService.findFileMetadata(selectedFileIds.toArray(new Long[0]));
+        return selectedFileIds.isEmpty()
+                ? new ArrayList<>()
+                : fileMetadataService.findFileMetadata(selectedFileIds.toArray(new Long[0]));
     }
 
     public int getFileSize() {
         fileSize = fileSize == null ? datasetFilesTabFacade.fileSize(workingVersion.getId()) : fileSize;
-
         return fileSize;
     }
 
@@ -808,32 +789,25 @@ public class DatasetFilesTab implements Serializable {
     private Tuple2<List<FileMetadata>, List<Long>> selectFileMetadatasForDisplayWithPaging(String searchTerm) {
 
         List<Long> searchResultsIdList = datafileService
-                .findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(workingVersion.getId(),
-                                                                      searchTerm,
-                                                                      new FileSortFieldAndOrder("", SortOrder.asc))
+                .findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(workingVersion.getId(), searchTerm,
+                        new FileSortFieldAndOrder("", SortOrder.asc))
                 .stream()
                 .map(Integer::longValue)
                 .collect(toList());
 
         if (searchTerm != null && !searchTerm.equals("")) {
-            List<FileMetadata> accessibleFileMetadataSorted = fileMetadataService.findSearchedAccessibleFileMetadataSorted(workingVersion
-                                                                                                                                   .getId(),
-                                                                                                                           filePaginatorPage,
-                                                                                                                           rowsPerPage,
-                                                                                                                           searchTerm);
+            List<FileMetadata> accessibleFileMetadataSorted = fileMetadataService.findSearchedAccessibleFileMetadataSorted(
+                    workingVersion.getId(), filePaginatorPage, rowsPerPage, searchTerm);
             return Tuple.of(accessibleFileMetadataSorted, searchResultsIdList);
-
         }
 
         return Tuple.of(getAccessibleFilesMetadataWithPaging(), searchResultsIdList);
     }
 
     private List<FileMetadata> getAccessibleFilesMetadataWithPaging() {
-        if (permissionsWrapper.canViewUnpublishedDataset(dataset) && !workingVersion.getDataset().hasActiveEmbargo()) {
-            return fileMetadataService.findAccessibleFileMetadataSorted(workingVersion
-                                                                                .getId(),
-                                                                        filePaginatorPage,
-                                                                        rowsPerPage);
+        if (permissionsWrapper.canViewUnpublishedDataset(dataset)
+                && !workingVersion.getDataset().hasActiveEmbargo()) {
+            return fileMetadataService.findAccessibleFileMetadataSorted(workingVersion.getId(), filePaginatorPage, rowsPerPage);
         }
 
         return Lists.newArrayList();
@@ -851,21 +825,22 @@ public class DatasetFilesTab implements Serializable {
                 cachedToolsByFileId = configureToolsByFileId;
                 externalTools = configureTools;
                 break;
+            case PREVIEW:
+                cachedToolsByFileId = previewToolsByFileId;
+                externalTools = previewTools;
             default:
                 break;
         }
         List<ExternalTool> cachedTools = cachedToolsByFileId.get(fileId);
-        if (cachedTools != null) { //if already queried before and added to list
+        if (cachedTools != null) { // if already queried before and added to list
             return cachedTools;
         }
         DataFile dataFile = datafileService.find(fileId);
         cachedTools = externalToolService.findExternalToolsByFileAndVersion(externalTools, dataFile, workingVersion);
-        cachedToolsByFileId.put(fileId, cachedTools); //add to map so we don't have to do the lifting again
+        cachedToolsByFileId.put(fileId, cachedTools); // add to map so we don't have to do the lifting again
         return cachedTools;
     }
 
-
-    // helper Method
     private String joinDataFileIdsFromFileMetadata() {
         return datafileService.findDataFilesByFileMetadataIds(selectedFileIds).stream()
                               .map(dataFile -> dataFile.getId().toString())
@@ -894,7 +869,6 @@ public class DatasetFilesTab implements Serializable {
     Remove unused file tags
     When updating datafile tags see if any custom tags are not in use.
     Remove them
-
     */
     private void removeUnusedFileTagsFromDataset() {
         categoriesByName = new ArrayList<>(datasetFilesTabFacade.fetchCategoriesByName(workingVersion.getId()));
@@ -963,7 +937,7 @@ public class DatasetFilesTab implements Serializable {
             populateDatasetUpdateFailureMessage();
             return returnToDraftVersion();
         } catch (CommandException ex) {
-            //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", " - " + ex.toString()));
+            // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", " - " + ex.toString()));
             logger.log(Level.SEVERE, "CommandException, when attempting to update the dataset: " + ex.getMessage(), ex);
             populateDatasetUpdateFailureMessage();
             return returnToDraftVersion();
@@ -979,7 +953,7 @@ public class DatasetFilesTab implements Serializable {
             datafileService.finalizeFileDeletes(deleteStorageLocations);
         }
 
-        if(printBannerMessage) {
+        if (printBannerMessage) {
             // must have been a bulk file update or delete:
             if (bulkFileDeleteInProgress) {
                 JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileDeleteSuccess"));
@@ -1017,8 +991,7 @@ public class DatasetFilesTab implements Serializable {
     /**
      * Workaround for LazyDataModel in order to preserve selection across pages.
      */
-    public void setSelectedFileMetadataForView(List<FileMetadata> selectedFileMetadataForView) {
-    }
+    public void setSelectedFileMetadataForView(List<FileMetadata> selectedFileMetadataForView) { }
 
     public void setSelectAllFiles(boolean selectAllFiles) {
         this.selectAllFiles = selectAllFiles;
@@ -1027,6 +1000,4 @@ public class DatasetFilesTab implements Serializable {
     public void setFileLabelSearchTerm(String fileLabelSearchTerm) {
         this.fileLabelSearchTerm = StringUtils.trimToEmpty(fileLabelSearchTerm);
     }
-
-
 }

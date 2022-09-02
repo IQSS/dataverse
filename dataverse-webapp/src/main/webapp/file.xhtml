@@ -200,7 +200,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- END topDatasetBlock -->
                     <div id="fileImageTitle" class="row">
                         <div id="file-preview-icon-block" class="col-sm-4">
@@ -408,6 +408,30 @@
                         <!-- Metadata -->
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{FilePage.selectedTabIndex}">
                             <p:ajax event="tabChange" listener="#{FilePage.tabChanged}"  update="@this" />
+
+                            <!-- PREVIEW TAB -->
+                            <p:tab id="previewTab" class="padding-none" title="#{bundle.preview}"
+                                rendered="#{not empty FilePage.previewTools
+                                            and fileDownloadHelper.canUserDownloadFile(FilePage.fileMetadata)
+                                            and not FilePage.fileMetadata.datasetVersion.deaccessioned
+                                            and not FilePage.fileMetadata.datasetVersion.dataset.hasActiveEmbargo()}">
+                                <ui:fragment rendered="#{FilePage.downloadPopupRequired and !FilePage.guestbookResponseProvided}">
+                                    <ui:include src="file-download-popup-fragment.xhtml">
+                                        <ui:param name="type" value="preview"/>
+                                    </ui:include>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{!FilePage.downloadPopupRequired or FilePage.guestbookResponseProvided}">
+                                    <div class="row">
+                                        <a class="btn btn-default" href="#{FilePage.previewUrl}" target="_blank" rel="noopener noreferrer">
+                                            #{bundle['file.previewTab.open.in.new.window.btn.text']} <span class="glyphicon glyphicon-new-window"></span>
+                                        </a>
+                                    </div>
+                                    <div id="previewPresentation" class="embed-responsive embed-responsive-16by9">
+                                        <iframe role="presentation" title="#{bundle['file.previewTab.presentation']}" src="#{FilePage.previewUrl}"></iframe>
+                                    </div>
+                                </ui:fragment>
+                            </p:tab>
+
                             <p:tab id="accessTab" class="padding-none" title="#{bundle['file.dataFilesTab.dataAccess']}"
                                    rendered="#{settingsWrapper.rsyncDownload and FilePage.fileMetadata.dataFile.filePackage and systemConfig.rsyncDownload
                                         and !FilePage.fileMetadata.getDataFile().getOwner().getStorageIdentifier().startsWith('s3://') }">
@@ -648,7 +672,7 @@
                         </div>
                     </p:dialog>
                 </h:form>
-                
+
                 <script type="text/javascript">
 
                     function refreshAndClickDownloadLink(apiDownloadLink) {

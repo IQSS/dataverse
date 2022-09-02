@@ -11,16 +11,16 @@
         <p class="help-block">
             #{bundle['file.downloadDialog.tip']}
         </p>
-        
+
         <p class="help-block">
             <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
             <h:outputText value=" #{bundle['common.forms.asterisk.tip']}"/>
         </p>
-        
+
         <div class="form-horizontal">
             <p:fragment rendered="#{GuestbookResponseDialog.downloadPopupRequired}" id="guestbookUIFragment">
                 <p:focus context="guestbookUIFragment" rendered="#{facesContext.validationFailed}" />
-                
+
                 <p:fragment>
                     <div class="form-group">
                         <h:outputLabel styleClass="col-sm-3 control-label" for="guestbookuser_nameText">
@@ -53,7 +53,7 @@
 
                                 <o:validator validatorId="javax.faces.Length" maximum="255"
                                     message="#{bundle['dataset.guestbookResponse.guestbook.responseTooLong']}" />
-                        </p:inputText>  
+                        </p:inputText>
                         <p:message id="emailMessages" for="guestbookuser_email" display="text"/>
                     </div>
                 </div>
@@ -67,7 +67,7 @@
                                      value="#{GuestbookResponseDialog.guestbookResponse.institution}"
                                      required="#{GuestbookResponseDialog.guestbook.institutionRequired}"
                                      requiredMessage="#{bundle['requiredField']}">
-                                     
+
                                 <o:validator validatorId="javax.faces.Length" maximum="255"
                                     message="#{bundle['dataset.guestbookResponse.guestbook.responseTooLong']}" />
                         </p:inputText>
@@ -85,7 +85,7 @@
                                      pt:aria-required="#{GuestbookResponseDialog.guestbook.positionRequired}"
                                      required="#{GuestbookResponseDialog.guestbook.positionRequired}"
                                      requiredMessage="#{bundle['requiredField']}">
-                                     
+
                                 <o:validator validatorId="javax.faces.Length" maximum="255"
                                     message="#{bundle['dataset.guestbookResponse.guestbook.responseTooLong']}" />
                         </p:inputText>
@@ -105,7 +105,7 @@
                                         <h:outputText value="#{customQuestionResponse.customQuestion.questionString}" />
                                         <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{customQuestionResponse.customQuestion.required}" />
                                     </p:outputLabel>
-                                    
+
                                     <p:inputText id="customQuestionResponse"
                                                  styleClass="form-control" value="#{customQuestionResponse.response}"
                                                  pt:aria-required="#{customQuestionResponse.customQuestion.required}"
@@ -122,7 +122,7 @@
                                         <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true" />
                                         <f:selectItems value="#{customQuestionResponse.responseSelectItems}" />
                                     </p:selectOneMenu>
-                                    
+
                                     <p:message id="cqMessages"
                                                for="#{customQuestionResponse.customQuestion.questionType=='text' ? 'customQuestionResponse' : 'customQuestionResponseSelect'}"
                                                display="text"/>
@@ -135,14 +135,20 @@
         </div>
         <div class="button-block">
             <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}"
+                             rendered="#{type ne 'preview'}"
                            actionListener="#{GuestbookResponseDialog.saveAndStartDownload()}"
                            process="@widgetVar(downloadPopup)"
                            update="guestbookUIFragment @widgetVar(downloadPackagePopup)"
                            oncomplete="if (args &amp;&amp; !args.validationFailed) { PF('downloadPopup').hide(); }
-                                       if (args &amp;&amp; args.apiDownloadLink) { $('#currentDownloadRequestLink').attr('href', args.apiDownloadLink); $('#currentDownloadRequestLink')[0].click(); }"
-                           >
-            </p:commandButton>
-            
-            <button type="button" class="btn btn-default" onclick="PF('downloadPopup').hide();" value="#{bundle.cancel}">#{bundle.cancel}</button>
+                                       if (args &amp;&amp; args.apiDownloadLink) { $('#currentDownloadRequestLink').attr('href', args.apiDownloadLink); $('#currentDownloadRequestLink')[0].click(); }"/>
+            <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}"
+                            rendered="#{type eq 'preview'}"
+                            actionListener="#{FilePage.showPreview(GuestbookResponseDialog.guestbookResponse)}"
+                            process="previewTab"
+                            update="fileForm:tabView"/>
+            <button jsf:rendered="#{type ne 'preview'}" type="button" class="btn btn-default"
+                    onclick="PF('downloadPopup').hide();" value="#{bundle.cancel}">
+                #{bundle.cancel}
+            </button>
         </div>
 </ui:composition>

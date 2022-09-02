@@ -60,6 +60,13 @@
             <meta property="article:published_time" content="#{DatasetPage.workingVersion.publicationDateAsString}"/>
         </ui:define>
         <ui:define name="body">
+            <script>
+                window.onpageshow = function(event) {
+                    if (event.persisted) {
+                        window.location.reload();
+                    }
+                };
+            </script>
             <c:set var="conditionallyDisable" value="#{(DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview) or (settingsWrapper.dataCiteInstallation and DatasetPage.dataset.globalIdCreateTime == null) ? 'disabled' : ''}"/>
             <o:importFunctions type="edu.harvard.iq.dataverse.common.MarkupChecker"/>
             <f:metadata>

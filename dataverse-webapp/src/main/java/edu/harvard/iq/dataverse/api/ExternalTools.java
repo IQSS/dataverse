@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.persistence.ActionLogRecord;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool;
+import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool.Type;
 
 import javax.inject.Inject;
 import javax.json.Json;
@@ -19,26 +20,32 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import java.util.List;
 
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-
 @Path("admin/externalTools")
 public class ExternalTools extends AbstractApiBean {
 
-    @Inject
     private ActionLogServiceBean actionLogSvc;
-
-    @Inject
     private ExternalToolServiceBean externalToolService;
+    private DataFileServiceBean fileSvc;
+
+    // -------------------- CONSTRUCTORS --------------------
+
+    public ExternalTools() { }
 
     @Inject
-    private DataFileServiceBean fileSvc;
+    public ExternalTools(ActionLogServiceBean actionLogSvc, ExternalToolServiceBean externalToolService, DataFileServiceBean fileSvc) {
+        this.actionLogSvc = actionLogSvc;
+        this.externalToolService = externalToolService;
+        this.fileSvc = fileSvc;
+    }
+
+    // -------------------- LOGIC --------------------
 
     @GET
     public Response getExternalTools() {
         JsonArrayBuilder jab = Json.createArrayBuilder();
-        externalToolService.findAll().forEach((externalTool) -> {
+        for (ExternalTool externalTool : externalToolService.findAll()) {
             jab.add(externalTool.toJson());
-        });
+        }
         return ok(jab);
     }
 
@@ -46,15 +53,17 @@ public class ExternalTools extends AbstractApiBean {
     @ApiWriteOperation
     public Response addExternalTool(String manifest) {
         try {
-            ExternalTool externalTool = ExternalToolServiceBean.parseAddExternalToolManifest(manifest);
+            ExternalTool externalTool = externalToolService.parseAddExternalToolManifest(manifest);
+            if (previewerOfSameContentAlreadyRegistered(externalTool)) {
+                return badRequest("There's already a previewer for content type of " + externalTool.getContentType() + ". It must be removed before adding new.");
+            }
             ExternalTool saved = externalToolService.save(externalTool);
             Long toolId = saved.getId();
             actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.ExternalTool, "addExternalTool").setInfo("External tool added with id " + toolId + "."));
             return ok(saved.toJson());
         } catch (Exception ex) {
-            return error(BAD_REQUEST, ex.getMessage());
+            return badRequest(ex.getMessage());
         }
-
     }
 
     @DELETE
@@ -62,11 +71,9 @@ public class ExternalTools extends AbstractApiBean {
     @Path("{id}")
     public Response deleteExternalTool(@PathParam("id") long externalToolIdFromUser) {
         boolean deleted = externalToolService.delete(externalToolIdFromUser);
-        if (deleted) {
-            return ok("Deleted external tool with id of " + externalToolIdFromUser);
-        } else {
-            return error(BAD_REQUEST, "Could not not delete external tool with id of " + externalToolIdFromUser);
-        }
+        return deleted
+                ? ok("Deleted external tool with id of " + externalToolIdFromUser)
+                : badRequest("Could not not delete external tool with id of " + externalToolIdFromUser);
     }
 
     // TODO: Rather than only supporting looking up files by their database IDs, consider supporting persistent identifiers.
@@ -75,7 +82,7 @@ public class ExternalTools extends AbstractApiBean {
     public Response getExternalToolsByFile(@PathParam("id") Long fileIdFromUser) {
         DataFile dataFile = fileSvc.find(fileIdFromUser);
         if (dataFile == null) {
-            return error(BAD_REQUEST, "Could not find datafile with id " + fileIdFromUser);
+            return badRequest("Could not find datafile with id " + fileIdFromUser);
         }
         JsonArrayBuilder tools = Json.createArrayBuilder();
 
@@ -84,8 +91,15 @@ public class ExternalTools extends AbstractApiBean {
         for (ExternalTool tool : toolsByFile) {
             tools.add(tool.toJson());
         }
-
         return ok(tools);
     }
 
+    // -------------------- PRIVATE --------------------
+
+    private boolean previewerOfSameContentAlreadyRegistered(ExternalTool externalTool) {
+        return externalTool.getType() == Type.PREVIEW
+                && externalToolService.findByType(Type.PREVIEW)
+                    .stream()
+                    .anyMatch(p -> p.getContentType().equals(externalTool.getContentType()));
+    }
 }

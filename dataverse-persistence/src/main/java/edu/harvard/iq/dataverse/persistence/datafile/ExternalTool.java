@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.persistence.datafile;
 
+import edu.harvard.iq.dataverse.persistence.JpaEntity;
+
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.Column;
@@ -11,6 +13,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 /**
  * A specification or definition for how an external tool is intended to
@@ -18,7 +21,7 @@ import java.util.Arrays;
  * an {@link ExternalToolHandler}.
  */
 @Entity
-public class ExternalTool implements Serializable {
+public class ExternalTool implements Serializable, JpaEntity<Long> {
 
     public static final String DISPLAY_NAME = "displayName";
     public static final String DESCRIPTION = "description";
@@ -93,9 +96,9 @@ public class ExternalTool implements Serializable {
     }
 
     public enum Type {
-
         EXPLORE("explore"),
-        CONFIGURE("configure");
+        CONFIGURE("configure"),
+        PREVIEW("preview");
 
         private final String text;
 
@@ -104,14 +107,15 @@ public class ExternalTool implements Serializable {
         }
 
         public static Type fromString(String text) {
-            if (text != null) {
-                for (Type type : Type.values()) {
-                    if (text.equals(type.text)) {
-                        return type;
-                    }
+            for (Type type : Type.values()) {
+                if (type.text.equals(text)) {
+                    return type;
                 }
             }
-            throw new IllegalArgumentException("Type must be one of these values: " + Arrays.asList(Type.values()) + ".");
+            throw new IllegalArgumentException(String.format("Type must be one of these values: %s.",
+                    Arrays.stream(Type.values())
+                            .map(Type::toString)
+                            .collect(Collectors.joining(", "))));
         }
 
         @Override
