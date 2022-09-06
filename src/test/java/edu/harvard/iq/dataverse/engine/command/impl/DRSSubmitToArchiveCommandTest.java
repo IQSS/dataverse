@@ -1,14 +1,8 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.branding.BrandingUtil;
-import edu.harvard.iq.dataverse.branding.BrandingUtilTest;
-
 import org.erdtman.jcs.JsonCanonicalizer;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
@@ -20,12 +14,12 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
 
-/**
- *
- * @author michael
- */
+
 public class DRSSubmitToArchiveCommandTest {
 
+    /* Simple test of JWT encode/decode functionality
+     * 
+     */
     @Test
     public void createJWT() throws CommandException {
 
@@ -118,6 +112,7 @@ public class DRSSubmitToArchiveCommandTest {
             System.out.println(jwt.getPayload());
         } catch (Exception e) {
             System.out.println(e.getLocalizedMessage());
+            //Any exception is a failure, otherwise decoding worked.
             Assert.fail(e.getLocalizedMessage());
         }
 
