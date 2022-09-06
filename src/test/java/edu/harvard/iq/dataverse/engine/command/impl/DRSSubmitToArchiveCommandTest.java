@@ -10,7 +10,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.security.KeyFactory;
 import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
+//import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
 
@@ -50,7 +50,6 @@ public class DRSSubmitToArchiveCommandTest {
                 + "J73YadnpU82C+7OnaTTCDVPfXYgPFLpE9xKFKkRFacgUbEnvZ2i0zSUquH0RAyaK"
                 + "tJ0d/dnd5TQUccAZwT8Nrw0=";
 
-        //Todo - not in pkcs8 form
         String pubKeyString = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAs0sI/nP7okc+QDog1rFe"
                 + "acSa3c5Q0VdjyisERgs4b9TBD8EArxaesGUQ4AhOBH6VVLgcjSJ1dXjn6wY8CJca"
                 + "fIb/UT2AgLDwhVeOlS3mbK/BTn76iOiLMGKgd6sHYuTVvgriUS4ExST/O1+RoKCL"
@@ -90,7 +89,7 @@ public class DRSSubmitToArchiveCommandTest {
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
             RSAPrivateKey privKey = (RSAPrivateKey) keyFactory.generatePrivate(keySpec);
-            RSAPublicKey publicKey;
+            //RSAPublicKey publicKey;
             /*
              * If public key is needed: encoded = Base64.decodeBase64(publicKeyPEM);
              * 
