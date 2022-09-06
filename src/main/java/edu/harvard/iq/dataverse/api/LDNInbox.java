@@ -23,12 +23,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.io.StringWriter;
+import java.net.URI;
+import java.net.URL;
 import java.sql.Timestamp;
 import java.util.logging.Logger;
 
 import javax.ejb.EJB;
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 import javax.json.JsonWriter;
 import javax.servlet.http.HttpServletRequest;
@@ -40,6 +43,13 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 
 @Path("inbox")
 public class LDNInbox extends AbstractApiBean {
@@ -99,8 +109,9 @@ public class LDNInbox extends AbstractApiBean {
             }
             //To Do - lower level for PR
             logger.info(JsonUtil.prettyPrint(jsonld));
-            String relationship = "isRelatedTo";
+            //String relationship = "isRelatedTo";
             String name = null;
+            String itemType = null;
             JsonLDNamespace activityStreams = JsonLDNamespace.defineNamespace("as",
                     "https://www.w3.org/ns/activitystreams#");
             JsonLDNamespace ietf = JsonLDNamespace.defineNamespace("ietf", "http://www.iana.org/assignments/relation/");
@@ -112,25 +123,69 @@ public class LDNInbox extends AbstractApiBean {
                     // relationship type
                     String subjectId = msgObject.getJsonObject(new JsonLDTerm(activityStreams, "subject").getUrl()).getString("@id");
                     String objectId = msgObject.getJsonObject(new JsonLDTerm(activityStreams, "object").getUrl()).getString("@id");
+                    // Best-effort to get name by following redirects and looing for a 'name' field in the returned json
+                    try (CloseableHttpClient client = HttpClients.createDefault()) {
+                        logger.fine("Getting " + subjectId);
+                        HttpGet get = new HttpGet(new URI(subjectId));
+                        get.addHeader("Accept", "application/json");
+                        
+                        int statusCode=0;
+                        do {
+                            CloseableHttpResponse response = client.execute(get);
+                            statusCode = response.getStatusLine().getStatusCode();
+                            switch (statusCode) {
+                            case 302:
+                            case 303:
+                                String location=response.getFirstHeader("location").getValue();
+                                logger.fine("Redirecting to: " + location);
+                                get = new HttpGet(location);
+                                get.addHeader("Accept", "application/json");
+                                
+                                break;
+                            case 200: 
+                                String responseString = EntityUtils.toString(response.getEntity(), "UTF-8");
+                                logger.fine("Received: " + responseString);
+                                JsonObject job = JsonUtil.getJsonObject(responseString);
+                                name = job.getString("name", null);
+                                itemType = job.getString("type", null);
+                                break;
+                            default:
+                                logger.fine("Received " + statusCode + " when accessing " + objectId);
+                            }
+                        } while(statusCode == 302);
+                    } catch (Exception e) {
+                        logger.fine("Unable to get name from " + objectId);
+                        logger.fine(e.getLocalizedMessage());
+                    }
                     String relationshipId = msgObject
                             .getJsonObject(new JsonLDTerm(activityStreams, "relationship").getUrl()).getString("@id");
                     if (subjectId != null && objectId != null && relationshipId != null) {
                         // Strip the URL part from a relationship ID/URL assuming a usable label exists
                         // after a # char. Default is to use the whole URI.
-                        relationship = relationshipId.substring(relationship.indexOf("#") + 1);
+                        int index = relationshipId.indexOf("#");
+                        logger.fine("Found # at " + index + " in " + relationshipId);
+                        String relationship = relationshipId.substring(index + 1);
                         // Parse the URI as a PID and see if this Dataverse instance has this dataset
                         String pid = GlobalId.getInternalFormOfPID(objectId);
                         Optional<GlobalId> id = GlobalId.parse(pid);
                         if (id.isPresent()) {
                             Dataset dataset = datasetSvc.findByGlobalId(pid);
                             if (dataset != null) {
-                                JsonObject citingResource = Json.createObjectBuilder().add("@id", subjectId)
-                                        .add("relationship", relationship).build();
+                                JsonObjectBuilder citingResourceBuilder = Json.createObjectBuilder().add("@id", subjectId)
+                                        .add("relationship", relationship);
+                                if(name!=null && !name.isBlank()) {
+                                    citingResourceBuilder.add("name",name);
+                                }
+                                if(itemType!=null && !itemType.isBlank()) {
+                                    citingResourceBuilder.add("@type",itemType.substring(0,1).toUpperCase() + itemType.substring(1));
+                                }
+                                JsonObject citingResource  = citingResourceBuilder.build();
                                 StringWriter sw = new StringWriter(128);
                                 try (JsonWriter jw = Json.createWriter(sw)) {
                                     jw.write(citingResource);
                                 }
                                 String jsonstring = sw.toString();
+                                logger.fine("Storing: " + jsonstring);
                                 Set<RoleAssignment> ras = roleService.rolesAssignments(dataset);
 
                                 roleService.rolesAssignments(dataset).stream()
