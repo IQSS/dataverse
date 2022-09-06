@@ -18,13 +18,12 @@ authentication providers, harvesters and others.
 Simple Configuration Options
 ----------------------------
 
-Developers have accessed the simple properties via
+Developers can access simple properties via:
 
-1. ``JvmSettings.<SETTING NAME>.lookup(...)`` for JVM system property settings
-2. ``SettingsServiceBean.get(...)`` for database settings and
+1. ``JvmSettings.<SETTING NAME>.lookup(...)`` for JVM system property settings.
+2. ``SettingsServiceBean.get(...)`` for database settings.
 3. ``SystemConfig.xxx()`` for specially treated settings, maybe mixed from 1 and 2 and other sources.
-4. ``SettingsWrapper`` must be used to obtain settings from 2 and 3 in frontend JSF (xhtml) pages. Please see the note
-   on how to :ref:`avoid common efficiency issues with JSF render logic expressions
+4. ``SettingsWrapper`` for use in frontend JSF (xhtml) pages to obtain settings from 2 and 3. Using the wrapper is a must for performance as explained in :ref:`avoid common efficiency issues with JSF render logic expressions
    <avoid-efficiency-issues-with-render-logic-expressions>`.
 5. ``System.getProperty()`` only for very special use cases not covered by ``JvmSettings``.
 
@@ -34,7 +33,6 @@ happiness to all the system administrators out there. This will be done by adopt
 
 So far we streamlined configuration of these Dataverse Software parts:
 
-- ✅ Version information
 - ✅ Database Connection
 
 Complex Configuration Options
@@ -86,19 +84,18 @@ supporting the old way of setting them.
 Adding a JVM Setting
 ^^^^^^^^^^^^^^^^^^^^
 
-Whenever a new options gets added or an existing configuration migrated to
+Whenever a new option gets added or an existing configuration gets migrated to
 ``edu.harvard.iq.dataverse.settings.JvmSettings``, you will attach the setting to an existing scope or create new
 sub-scopes first.
 
 - Scopes and settings are organised in a tree-like structure within a single enum ``JvmSettings``.
 - The root scope is "dataverse".
 - All sub-scopes are below that.
-- Scopes are parted by singular dots.
-- A scope may be a placeholder, filled with a variable during lookup. (Named object mapping)
+- Scopes are separated by dots (periods).
+- A scope may be a placeholder, filled with a variable during lookup. (Named object mapping.)
 
 Any consumer of the setting can choose to use one of the fluent ``lookup()`` methods, which hides away alias handling,
-conversion etc from consuming code. See also the detailed JavaDoc for these methods.
-
+conversion etc from consuming code. See also the detailed Javadoc for these methods.
 
 Moving or Replacing a JVM Setting
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

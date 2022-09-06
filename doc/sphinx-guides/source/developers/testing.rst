@@ -86,7 +86,7 @@ Our codebase provides little helpers to ease dealing with state during tests.
 Some tests might need to change something which should be restored after the test ran.
 
 For unit tests, the most interesting part is to set a JVM setting just for the current test.
-Please use ``@JvmSetting(key = JvmSettings.XXX, value = "")`` annotation on a test method or
+Please use the ``@JvmSetting(key = JvmSettings.XXX, value = "")`` annotation on a test method or
 a test class to set and clear the property automatically.
 
 To set arbitrary system properties for the current test, a similar extension
