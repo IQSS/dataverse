@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.license.License;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -41,6 +40,8 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
@@ -61,6 +62,13 @@ import org.apache.commons.lang3.StringUtils;
  *
  * @author skraffmiller
  */
+
+@NamedQueries({
+    @NamedQuery(name = "DatasetVersion.findUnarchivedReleasedVersion",
+               query = "SELECT OBJECT(o) FROM DatasetVersion AS o WHERE o.dataset.harvestedFrom IS NULL and o.releaseTime IS NOT NULL and o.archivalCopyLocation IS NULL"
+    )})
+    
+    
 @Entity
 @Table(indexes = {@Index(columnList="dataset_id")},
         uniqueConstraints = @UniqueConstraint(columnNames = {"dataset_id,versionnumber,minorversionnumber"}))
@@ -97,12 +105,12 @@ public class DatasetVersion implements Serializable {
     public static final int VERSION_NOTE_MAX_LENGTH = 1000;
     
     //Archival copies: Status message required components
-    public static final String STATUS = "status";
-    public static final String MESSAGE = "message";
+    public static final String ARCHIVAL_STATUS = "status";
+    public static final String ARCHIVAL_STATUS_MESSAGE = "message";
     //Archival Copies: Allowed Statuses
-    public static final String PENDING = "pending";
-    public static final String SUCCESS = "success";
-    public static final String FAILURE = "failure";
+    public static final String ARCHIVAL_STATUS_PENDING = "pending";
+    public static final String ARCHIVAL_STATUS_SUCCESS = "success";
+    public static final String ARCHIVAL_STATUS_FAILURE = "failure";
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -162,6 +170,11 @@ public class DatasetVersion implements Serializable {
     // removed pending further investigation (v4.13)
     private String archiveNote;
     
+    // Originally a simple string indicating the location of the archival copy. As
+    // of v5.12, repurposed to provide a more general json archival status (failure,
+    // pending, success) and message (serialized as a string). The archival copy
+    // location is now expected as the contents of the message for the status
+    // 'success'. See the /api/datasets/{id}/{version}/archivalStatus API calls for more details
     @Column(nullable=true, columnDefinition = "TEXT")
     private String archivalCopyLocation;
     
@@ -336,14 +349,14 @@ public class DatasetVersion implements Serializable {
         populateArchivalStatus(false);
         
         if(archivalStatus!=null) {
-            return archivalStatus.getString(STATUS);
+            return archivalStatus.getString(ARCHIVAL_STATUS);
         } 
         return null;
     }
     public String getArchivalCopyLocationMessage() {
         populateArchivalStatus(false);
         if(archivalStatus!=null) {
-            return archivalStatus.getString(MESSAGE);
+            return archivalStatus.getString(ARCHIVAL_STATUS_MESSAGE);
         } 
         return null;
     }
@@ -355,7 +368,7 @@ public class DatasetVersion implements Serializable {
             archivalStatus = JsonUtil.getJsonObject(archivalCopyLocation);
                 } catch(Exception e) {
                     logger.warning("DatasetVersion id: " + id + "has a non-JsonObject value, parsing error: " + e.getMessage());
-                    logger.info(archivalCopyLocation);
+                    logger.fine(archivalCopyLocation);
                 }
             }
         }

@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.Ma
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.IOException;
@@ -313,9 +314,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd, localeCode);
         // Persist the name of the tool (i.e. "Data Explorer", etc.)
         guestbookResponse.setDownloadtype(externalTool.getDisplayName());
-        String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
-        logger.fine("Exploring with " + toolUrl);
-        PrimeFaces.current().executeScript("window.open('"+toolUrl + "', target='_blank');");
+        PrimeFaces.current().executeScript(externalToolHandler.getExploreScript());
         // This is the old logic from TwoRavens, null checks and all.
         if (guestbookResponse != null && guestbookResponse.isWriteResponse()
                 && ((fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)) {
@@ -561,12 +560,12 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     
     public String getDirectStorageLocatrion(String storageLocation) {
         String storageDriverId;
-        int separatorIndex = storageLocation.indexOf("://");
+        int separatorIndex = storageLocation.indexOf(DataAccess.SEPARATOR);
         if ( separatorIndex > 0 ) {
             storageDriverId = storageLocation.substring(0,separatorIndex);
         
             String storageType = DataAccess.getDriverType(storageDriverId);
-            if ("file".equals(storageType) || "s3".equals(storageType)) {
+            if (DataAccess.FILE.equals(storageType) || DataAccess.S3.equals(storageType)) {
                 return storageType.concat(storageLocation.substring(separatorIndex));
             }
         }

@@ -247,15 +247,16 @@ public class Template implements Serializable {
     }
 
     private void initMetadataBlocksForCreate() {
-        metadataBlocksForView.clear();
         metadataBlocksForEdit.clear();
         for (MetadataBlock mdb : this.getDataverse().getMetadataBlocks()) {
             List<DatasetField> datasetFieldsForEdit = new ArrayList<>();
             for (DatasetField dsf : this.getDatasetFields()) {
+
                 if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) {
                     datasetFieldsForEdit.add(dsf);
                 }
             }
+
             if (!datasetFieldsForEdit.isEmpty()) {
                 metadataBlocksForEdit.put(mdb, sortDatasetFields(datasetFieldsForEdit));
             }
@@ -270,26 +271,26 @@ public class Template implements Serializable {
 
         Map<String, String> instructionsMap = getInstructionsMap();
         
-        List <MetadataBlock> actualMDB = new ArrayList<>();
+        List <MetadataBlock> viewMDB = new ArrayList<>();
+        List <MetadataBlock> editMDB=this.getDataverse().getMetadataBlocks(false);
             
         //The metadatablocks in this template include any from the Dataverse it is associated with 
         //plus any others where the template has a displayable field (i.e. from before a block was dropped in the dataverse/collection)
-        actualMDB.addAll(this.getDataverse().getMetadataBlocks());
+        viewMDB.addAll(this.getDataverse().getMetadataBlocks(true));
         for (DatasetField dsf : filledInFields) {
             if (!dsf.isEmptyForDisplay()) {
                 MetadataBlock mdbTest = dsf.getDatasetFieldType().getMetadataBlock();
-                if (!actualMDB.contains(mdbTest)) {
-                    actualMDB.add(mdbTest);
+                if (!viewMDB.contains(mdbTest)) {
+                    viewMDB.add(mdbTest);
                 }
             }
         }
 
-        for (MetadataBlock mdb : actualMDB) {
+        for (MetadataBlock mdb : viewMDB) {
+
             List<DatasetField> datasetFieldsForView = new ArrayList<>();
-            List<DatasetField> datasetFieldsForEdit = new ArrayList<>();
             for (DatasetField dsf : this.getDatasetFields()) {
                 if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) {
-                    datasetFieldsForEdit.add(dsf);
                     //For viewing, show the field if it has a value or custom instructions
                     if (!dsf.isEmpty() || instructionsMap.containsKey(dsf.getDatasetFieldType().getName())) {
                         datasetFieldsForView.add(dsf);
@@ -300,10 +301,20 @@ public class Template implements Serializable {
             if (!datasetFieldsForView.isEmpty()) {
                 metadataBlocksForView.put(mdb, sortDatasetFields(datasetFieldsForView));
             }
-            if (!datasetFieldsForEdit.isEmpty()) {
-                metadataBlocksForEdit.put(mdb, sortDatasetFields(datasetFieldsForEdit));
-            }
+
         }
+        
+        for (MetadataBlock mdb : editMDB) {
+            List<DatasetField> datasetFieldsForEdit = new ArrayList<>();
+            this.setDatasetFields(initDatasetFields());
+            for (DatasetField dsf : this.getDatasetFields() ) {
+                if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) { 
+                    datasetFieldsForEdit.add(dsf);
+                }
+            }
+            metadataBlocksForEdit.put(mdb, sortDatasetFields(datasetFieldsForEdit));
+        }
+        
     }
 
     // TODO: clean up init methods and get them to work, cascading all the way down.

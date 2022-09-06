@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -1491,7 +1492,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 //datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
                 CreateDataFileResult createDataFilesResult = FileUtil.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream", null, null, systemConfig);
                 datafiles = createDataFilesResult.getDataFiles();
-                errorMessage = editDataFilesPageHelper.getHtmlErrorMessage(createDataFilesResult);
+                Optional.ofNullable(editDataFilesPageHelper.getHtmlErrorMessage(createDataFilesResult)).ifPresent(errorMessage -> errorMessages.add(errorMessage));
 
             } catch (IOException ex) {
                 this.logger.log(Level.SEVERE, "Error during ingest of DropBox file {0} from link {1}", new Object[]{fileName, fileLink});
@@ -1745,12 +1746,13 @@ public class EditDatafilesPage implements java.io.Serializable {
             uploadedFiles.clear();
             uploadInProgress.setValue(false);
         }
-        if(errorMessage != null) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.uploadFailure"), errorMessage));
-            PrimeFaces.current().ajax().update(":messagePanel");
-        }
+
         // refresh the warning message below the upload component, if exists:
         if (uploadComponentId != null) {
+            if(!errorMessages.isEmpty()) {
+                FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR,  BundleUtil.getStringFromBundle("dataset.file.uploadFailure"), editDataFilesPageHelper.consolidateHtmlErrorMessages(errorMessages)));
+            }
+
             if (uploadWarningMessage != null) {
                 if (existingFilesWithDupeContent != null || newlyUploadedFilesWithDupeContent != null) {
                     setWarningMessageForAlreadyExistsPopUp(uploadWarningMessage);
@@ -1797,7 +1799,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         multipleDupesNew = false;
         uploadWarningMessage = null;
         uploadSuccessMessage = null;
-        errorMessage = null;
+        errorMessages = new ArrayList<>();
     }
 
     private String warningMessageForFileTypeDifferentPopUp;
@@ -1948,7 +1950,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     private String uploadWarningMessage = null;
-    private String errorMessage = null;
+    private List<String> errorMessages = new ArrayList<>();
     private String uploadSuccessMessage = null;
     private String uploadComponentId = null;
 
@@ -2020,7 +2022,11 @@ public class EditDatafilesPage implements java.io.Serializable {
             // zip file.
             CreateDataFileResult createDataFilesResult = FileUtil.createDataFiles(workingVersion, uFile.getInputStream(), uFile.getFileName(), uFile.getContentType(), null, null, systemConfig);
             dFileList = createDataFilesResult.getDataFiles();
-            errorMessage = editDataFilesPageHelper.getHtmlErrorMessage(createDataFilesResult);
+            String createDataFilesError = editDataFilesPageHelper.getHtmlErrorMessage(createDataFilesResult);
+            if(createDataFilesError != null) {
+                errorMessages.add(createDataFilesError);
+                uploadComponentId = event.getComponent().getClientId();
+            }
 
         } catch (IOException ioex) {
             logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ioex.getMessage());
@@ -2072,8 +2078,12 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (!checksumTypeString.isBlank()) {
             checksumType = ChecksumType.fromString(checksumTypeString);
         }
+
+        //Should only be one colon with curent design
         int lastColon = fullStorageIdentifier.lastIndexOf(':');
-        String storageLocation = fullStorageIdentifier.substring(0, lastColon) + "/" + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + fullStorageIdentifier.substring(lastColon + 1);
+        String storageLocation = fullStorageIdentifier.substring(0,lastColon) + "/" + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + fullStorageIdentifier.substring(lastColon+1);
+        storageLocation = DataAccess.expandStorageIdentifierIfNeeded(storageLocation);
+
         if (uploadInProgress.isFalse()) {
             uploadInProgress.setValue(true);
         }
@@ -2127,7 +2137,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                     //datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
                     CreateDataFileResult createDataFilesResult = FileUtil.createDataFiles(workingVersion, null, fileName, contentType, fullStorageIdentifier, checksumValue, checksumType, systemConfig);
                     datafiles = createDataFilesResult.getDataFiles();
-                    errorMessage = editDataFilesPageHelper.getHtmlErrorMessage(createDataFilesResult);
+                    Optional.ofNullable(editDataFilesPageHelper.getHtmlErrorMessage(createDataFilesResult)).ifPresent(errorMessage -> errorMessages.add(errorMessage));
                 } catch (IOException ex) {
                     logger.log(Level.SEVERE, "Error during ingest of file {0}", new Object[]{fileName});
                 }
@@ -3038,7 +3048,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     public boolean rsyncUploadSupported() {
-        // ToDo - rsync was written before multiple store support and currently is hardcoded to use the "s3" store. 
+        // ToDo - rsync was written before multiple store support and currently is hardcoded to use the DataAccess.S3 store. 
         // When those restrictions are lifted/rsync can be configured per store, the test in the 
         // Dataset Util method should be updated
         if (settingsWrapper.isRsyncUpload() && !DatasetUtil.isAppropriateStorageDriver(dataset)) {

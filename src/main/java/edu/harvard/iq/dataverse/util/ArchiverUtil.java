@@ -5,8 +5,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.logging.Logger;
 
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -59,4 +59,17 @@ public class ArchiverUtil {
         }
         return (AbstractSubmitToArchiveCommand.isSingleVersion(settingsService));
     }
+
+    public static boolean isSomeVersionArchived(Dataset dataset) {
+        boolean someVersionArchived = false;
+        for (DatasetVersion dv : dataset.getVersions()) {
+            if (dv.getArchivalCopyLocation() != null) {
+                someVersionArchived = true;
+                break;
+            }
+        }
+
+        return someVersionArchived;
+    }
+
 }

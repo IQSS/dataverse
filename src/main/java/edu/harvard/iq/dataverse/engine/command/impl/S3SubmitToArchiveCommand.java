@@ -20,7 +20,9 @@ import java.io.FileInputStream;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
@@ -42,8 +44,7 @@ import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand implements Command<DatasetVersion> {
 
     private static final Logger logger = Logger.getLogger(S3SubmitToArchiveCommand.class.getName());
-    private static final String S3_CONFIG = ":S3ArchivalConfig";
-    private static final String S3_PROFILE = ":S3ArchivalProfile";
+    private static final String S3_CONFIG = ":S3ArchiverConfig";
 
     private static final Config config = ConfigProvider.getConfig();
     protected AmazonS3 s3 = null;
@@ -60,19 +61,24 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand imp
             Map<String, String> requestedSettings) {
         logger.fine("In S3SubmitToArchiveCommand...");
         JsonObject configObject = null;
-        String profileName = requestedSettings.get(S3_PROFILE);
 
-        logger.fine("Profile: " + profileName + " Config: " + configObject);
         try {
             configObject = JsonUtil.getJsonObject(requestedSettings.get(S3_CONFIG));
+            logger.fine("Config: " + configObject);
             bucketName = configObject.getString("s3_bucket_name", null);
         } catch (Exception e) {
             logger.warning("Unable to parse " + S3_CONFIG + " setting as a Json object");
         }
-        if (configObject != null && profileName != null && bucketName != null) {
+        if (configObject != null && bucketName != null) {
 
-            s3 = createClient(configObject, profileName);
+            s3 = createClient(configObject);
             tm = TransferManagerBuilder.standard().withS3Client(s3).build();
+            
+            //Set a failure status that will be updated if we succeed
+            JsonObjectBuilder statusObject = Json.createObjectBuilder();
+            statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
+            statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, "Bag not transferred");
+            
             try {
 
                 Dataset dataset = dv.getDataset();
@@ -131,7 +137,8 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand imp
                             // view it as an admin)
 
                             // Unsigned URL - gives location but not access without creds
-                            dv.setArchivalCopyLocation(s3.getUrl(bucketName, bagKey).toString());
+                            statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_SUCCESS);
+                            statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, s3.getUrl(bucketName, bagKey).toString());
                         } else {
                             logger.warning("Could not write local Bag file " + fileName);
                             return new Failure("S3 Archiver fail writing temp local bag");
@@ -149,6 +156,8 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand imp
                 return new Failure("S3 Archiver Submission Failure",
                         e.getLocalizedMessage() + ": check log for details");
 
+            } finally {
+                dv.setArchivalCopyLocation(statusObject.build().toString());
             }
             return WorkflowStepResult.OK;
         } else {
@@ -173,7 +182,7 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand imp
         return spaceName;
     }
 
-    private AmazonS3 createClient(JsonObject configObject, String profileName) {
+    private AmazonS3 createClient(JsonObject configObject) {
         // get a standard client, using the standard way of configuration the
         // credentials, etc.
         AmazonS3ClientBuilder s3CB = AmazonS3ClientBuilder.standard();
@@ -232,11 +241,11 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand imp
         s3CB.setChunkedEncodingDisabled(!s3chunkedEncoding);
 
         /**
-         * Pass in a string value if this storage driver should use a non-default AWS S3
+         * Pass in a string value if this archiver should use a non-default AWS S3
          * profile. The default is "default" which should work when only one profile
          * exists.
          */
-        ProfileCredentialsProvider profileCredentials = new ProfileCredentialsProvider(profileName);
+        ProfileCredentialsProvider profileCredentials = new ProfileCredentialsProvider(configObject.getString("profile", "default"));
 
         // Try to retrieve credentials via Microprofile Config API, too. For production
         // use, you should not use env
