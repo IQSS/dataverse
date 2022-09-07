@@ -2440,7 +2440,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 
 
         if (addFileHelper.hasError()){
-            //conlict response satus added for 8859
+            //conflict response status added for 8859
             if (Response.Status.CONFLICT.equals(addFileHelper.getHttpErrorCode())){
                 return conflict(addFileHelper.getErrorMessagesAsString("\n"));
             }
