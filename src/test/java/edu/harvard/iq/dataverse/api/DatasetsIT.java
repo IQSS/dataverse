@@ -58,6 +58,7 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.core.Response.Status;
+import static javax.ws.rs.core.Response.Status.CONFLICT;
 
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -2867,7 +2868,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response restrictFile = UtilIT.restrictFile(fileId, true, authorApiToken);
         restrictFile.prettyPrint();
         //shouldn't be able to restrict a file
-        restrictFile.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        restrictFile.then().assertThat().statusCode(CONFLICT.getStatusCode());
         
         // OK, let's delete this dataset as well, and then delete the dataverse...
         

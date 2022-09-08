@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.datasetutility.NoFilesException;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDraftFileMetadataIfAvailableCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RedetectFileTypeCommand;
@@ -146,6 +147,12 @@ public class Files extends AbstractApiBean {
         // update the dataset
         try {
             engineSvc.submit(new UpdateDatasetVersionCommand(dataFile.getOwner(), dataverseRequest));
+        } catch (IllegalCommandException ex) {
+            //special case where terms of use are out of compliance
+            if (ex.getMessage().toLowerCase().contains("terms of use")) {
+                return conflict(ex.getMessage());
+            }
+            return error(BAD_REQUEST, "Problem saving datafile " + dataFile.getDisplayName() + ": " + ex.getLocalizedMessage());
         } catch (CommandException ex) {
             return error(BAD_REQUEST, "Problem saving datafile " + dataFile.getDisplayName() + ": " + ex.getLocalizedMessage());
         }
