@@ -5,4 +5,4 @@ can be set using any [MicroProfile Config Source](https://docs.payara.fish/commu
 
 Currently this change is only relevant to developers but as settings are migrated to the new "lookup" pattern documented in the [Consuming Configuration](https://guides.dataverse.org/en/latest/developers/configuration.html) section of the Developer Guide, anyone installing the Dataverse software will have much greater flexibility when configuring those settings, especially within containers. These changes will be announced in future releases.
 
-Please note that an upgrade to Payara 5.2022.3 or higher may be required. Payara 5.2021.5 threw exceptions, as explained in PR #8823.
+Please note that an upgrade to Payara 5.2021.8 or higher is required to make use of this. Payara 5.2021.5 threw exceptions, as explained in PR #8823.
