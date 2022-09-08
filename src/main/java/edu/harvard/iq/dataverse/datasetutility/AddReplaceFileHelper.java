@@ -19,12 +19,10 @@ import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.api.Files;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.AbstractCreateDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
@@ -32,6 +30,7 @@ import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.file.CreateDataFileResult;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,7 +41,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,7 +56,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.io.IOUtils;
 import org.ocpsoft.common.util.Strings;
 
@@ -1206,7 +1203,7 @@ public class AddReplaceFileHelper{
         workingVersion = dataset.getEditVersion();
         clone =   workingVersion.cloneDatasetVersion();
         try {
-            initialFileList = FileUtil.createDataFiles(workingVersion,
+            CreateDataFileResult result = FileUtil.createDataFiles(workingVersion,
                     this.newFileInputStream,
                     this.newFileName,
                     this.newFileContentType,
@@ -1214,6 +1211,7 @@ public class AddReplaceFileHelper{
                     this.newCheckSum,
                     this.newCheckSumType,
                     this.systemConfig);
+            initialFileList = result.getDataFiles();
 
         } catch (IOException ex) {
             if (!Strings.isNullOrEmpty(ex.getMessage())) {
@@ -2047,6 +2045,10 @@ public class AddReplaceFileHelper{
                         String newStorageIdentifier = null;
                         if (optionalFileParams.hasStorageIdentifier()) {
                             newStorageIdentifier = optionalFileParams.getStorageIdentifier();
+                            newStorageIdentifier = DataAccess.expandStorageIdentifierIfNeeded(newStorageIdentifier);
+                            if(!DataAccess.uploadToDatasetAllowed(dataset,  newStorageIdentifier)) {
+                                addErrorSevere("Dataset store configuration does not allow provided storageIdentifier.");
+                            }
                             if (optionalFileParams.hasFileName()) {
                                 newFilename = optionalFileParams.getFileName();
                                 if (optionalFileParams.hasMimetype()) {
@@ -2055,14 +2057,10 @@ public class AddReplaceFileHelper{
                             }
 
                             msgt("ADD!  = " + newFilename);
-
-                            runAddFileByDataset(dataset,
-                                    newFilename,
-                                    newFileContentType,
-                                    newStorageIdentifier,
-                                    null,
-                                    optionalFileParams, true);
-
+                            if (!hasError()) {
+                                runAddFileByDataset(dataset, newFilename, newFileContentType, newStorageIdentifier,
+                                        null, optionalFileParams, true);
+                            }
                             if (hasError()) {
                                 JsonObjectBuilder fileoutput = Json.createObjectBuilder()
                                         .add("storageIdentifier", newStorageIdentifier)
@@ -2086,8 +2084,8 @@ public class AddReplaceFileHelper{
                                             .add("fileDetails", successresult.getJsonArray("files").getJsonObject(0));
                                     jarr.add(fileoutput);
                                 }
-                            }
                             successNumberofFiles = successNumberofFiles + 1;
+                            }
                         } else {
                             JsonObjectBuilder fileoutput = Json.createObjectBuilder()
                                     .add("errorMessage", "You must provide a storageidentifier, filename, and mimetype.")

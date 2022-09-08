@@ -369,7 +369,7 @@ public class ImageThumbConverter {
         try {
             cached = storageIO.isAuxObjectCached(THUMBNAIL_SUFFIX + size);
         } catch (Exception ioex) {
-            logger.fine("caught Exception while checking for a cached thumbnail (file " + storageIO.getDataFile().getStorageIdentifier() + ")");
+            logger.fine("caught Exception while checking for a cached thumbnail (file " + storageIO.getDataFile().getStorageIdentifier() + "): " + ioex.getMessage());
             return false;
         }
 

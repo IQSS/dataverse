@@ -871,11 +871,6 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
     }
 
-    public void updateLastExportTimeStamp(Long datasetId) {
-        Date now = new Date();
-        em.createNativeQuery("UPDATE Dataset SET lastExportTime='"+now.toString()+"' WHERE id="+datasetId).executeUpdate();
-    }
-
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public int clearAllExportTimes() {
         Query clearExportTimes = em.createQuery("UPDATE Dataset SET lastExportTime = NULL");

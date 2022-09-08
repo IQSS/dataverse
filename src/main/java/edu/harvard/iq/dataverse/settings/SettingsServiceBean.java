@@ -21,12 +21,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.StringReader;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -505,7 +507,26 @@ public class SettingsServiceBean {
         /*
          * Include "Custom Terms" as an item in the license drop-down or not.
          */
-        AllowCustomTermsOfUse
+        AllowCustomTermsOfUse,
+        /*
+         * Allow users to mute notifications or not.
+         */
+        ShowMuteOptions,
+        /*
+         * List (comma separated, e.g., "ASSIGNROLE,REVOKEROLE", extra whitespaces are trimmed such that "ASSIGNROLE, REVOKEROLE"
+         * would also work) of always muted notifications that cannot be turned on by the users.
+         */
+        AlwaysMuted,
+        /*
+         * List (comma separated, e.g., "ASSIGNROLE,REVOKEROLE", extra whitespaces are trimmed such that "ASSIGNROLE, REVOKEROLE"
+         * would also work) of never muted notifications that cannot be turned off by the users. AlwaysMuted setting overrides
+         * Nevermuted setting warning is logged.
+         */
+        NeverMuted,
+        /**
+         * LDN Inbox Allowed Hosts - a comma separated list of IP addresses allowed to submit messages to the inbox
+         */
+        LDNMessageHosts
         ;
 
         @Override
@@ -714,6 +735,15 @@ public class SettingsServiceBean {
 
     public boolean isFalseForKey( Key key, boolean defaultValue ) {
         return ! isTrue( key.toString(), defaultValue );
+    }
+
+    public boolean containsCommaSeparatedValueForKey(Key key, String value) {
+        final String tokens = getValueForKey(key);
+        if (tokens == null || tokens.isEmpty()) {
+            return false;
+        }
+        return Collections.list(new StringTokenizer(tokens, ",")).stream()
+            .anyMatch(token -> ((String) token).trim().equals(value));
     }
             
     public void deleteValueForKey( Key name ) {

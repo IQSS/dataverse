@@ -93,7 +93,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
 
                 // Before we do anything else, check if this download can be handled 
                 // by a redirect to remote storage (only supported on S3, as of 5.4):
-                if (storageIO instanceof S3AccessIO && ((S3AccessIO) storageIO).downloadRedirectEnabled()) {
+                if (storageIO.downloadRedirectEnabled()) {
 
                     // Even if the above is true, there are a few cases where a  
                     // redirect is not applicable. 
@@ -120,7 +120,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
 
                         auxiliaryTag = ImageThumbConverter.THUMBNAIL_SUFFIX + (requestedSize > 0 ? requestedSize : ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
 
-                        if (isAuxiliaryObjectCached(storageIO, auxiliaryTag)) {
+                        if (storageIO.downloadRedirectEnabled(auxiliaryTag) && isAuxiliaryObjectCached(storageIO, auxiliaryTag)) {
                             auxiliaryType = ImageThumbConverter.THUMBNAIL_MIME_TYPE;
                             String fileName = storageIO.getFileName();
                             if (fileName != null) {
@@ -139,7 +139,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             auxiliaryTag = auxiliaryTag + "_" + auxVersion;
                         }
                     
-                        if (isAuxiliaryObjectCached(storageIO, auxiliaryTag)) {
+                        if (storageIO.downloadRedirectEnabled(auxiliaryTag) && isAuxiliaryObjectCached(storageIO, auxiliaryTag)) {
                             String fileExtension = getFileExtension(di.getAuxiliaryFile());
                             auxiliaryFileName = storageIO.getFileName() + "." + auxiliaryTag + fileExtension;
                             auxiliaryType = di.getAuxiliaryFile().getContentType();
@@ -162,7 +162,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                     // it has been cached already. 
 
                                     auxiliaryTag = di.getConversionParamValue();
-                                    if (isAuxiliaryObjectCached(storageIO, auxiliaryTag)) {
+                                    if (storageIO.downloadRedirectEnabled(auxiliaryTag) && isAuxiliaryObjectCached(storageIO, auxiliaryTag)) {
                                         auxiliaryType = di.getServiceFormatType(di.getConversionParam(), auxiliaryTag);
                                         auxiliaryFileName = FileUtil.replaceExtension(storageIO.getFileName(), auxiliaryTag);
                                     } else {
@@ -188,21 +188,20 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         // [attempt to] redirect: 
                         String redirect_url_str;
                         try {
-                            redirect_url_str = ((S3AccessIO) storageIO).generateTemporaryS3Url(auxiliaryTag, auxiliaryType, auxiliaryFileName);
+                            redirect_url_str = storageIO.generateTemporaryDownloadUrl(auxiliaryTag, auxiliaryType, auxiliaryFileName);
                         } catch (IOException ioex) {
+                            logger.warning("Unable to generate downloadURL for " + dataFile.getId() + ": " + auxiliaryTag);
+                            //Setting null will let us try to get the file/aux file w/o redirecting 
                             redirect_url_str = null;
                         }
 
-                        if (redirect_url_str == null) {
-                            throw new ServiceUnavailableException();
-                        }
-
                         logger.fine("Data Access API: direct S3 url: " + redirect_url_str);
+
                         URI redirect_uri;
 
                         try {
                             redirect_uri = new URI(redirect_url_str);
-                        } catch (URISyntaxException ex) {
+                        } catch (URISyntaxException|NullPointerException ex) {
                             logger.info("Data Access API: failed to create S3 redirect url (" + redirect_url_str + ")");
                             redirect_uri = null;
                         }
@@ -434,6 +433,9 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                 
                                 offset = ranges.get(0).getStart();
                                 leftToRead = rangeContentSize;
+                                httpHeaders.add("Accept-Ranges", "bytes");
+                                httpHeaders.add("Content-Range", "bytes "+offset+"-"+(offset+rangeContentSize-1)+"/"+contentSize);
+
                             }
                         } else {
                             // Content size unknown, must be a dynamically

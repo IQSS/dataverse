@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -60,6 +61,8 @@ import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+
+import edu.harvard.iq.dataverse.util.file.CreateDataFileResult;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
 import javax.json.Json;
@@ -143,6 +146,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     LicenseServiceBean licenseServiceBean;
     @Inject
     DataFileCategoryServiceBean dataFileCategoryService;
+    @Inject
+    EditDataFilesPageHelper editDataFilesPageHelper;
 
     private Dataset dataset = new Dataset();
 
@@ -1485,7 +1490,9 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // for example, multiple files can be extracted from an uncompressed
                 // zip file.
                 //datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
-                datafiles = FileUtil.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream", null, null, systemConfig);
+                CreateDataFileResult createDataFilesResult = FileUtil.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream", null, null, systemConfig);
+                datafiles = createDataFilesResult.getDataFiles();
+                Optional.ofNullable(editDataFilesPageHelper.getHtmlErrorMessage(createDataFilesResult)).ifPresent(errorMessage -> errorMessages.add(errorMessage));
 
             } catch (IOException ex) {
                 this.logger.log(Level.SEVERE, "Error during ingest of DropBox file {0} from link {1}", new Object[]{fileName, fileLink});
@@ -1739,8 +1746,13 @@ public class EditDatafilesPage implements java.io.Serializable {
             uploadedFiles.clear();
             uploadInProgress.setValue(false);
         }
+
         // refresh the warning message below the upload component, if exists:
         if (uploadComponentId != null) {
+            if(!errorMessages.isEmpty()) {
+                FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR,  BundleUtil.getStringFromBundle("dataset.file.uploadFailure"), editDataFilesPageHelper.consolidateHtmlErrorMessages(errorMessages)));
+            }
+
             if (uploadWarningMessage != null) {
                 if (existingFilesWithDupeContent != null || newlyUploadedFilesWithDupeContent != null) {
                     setWarningMessageForAlreadyExistsPopUp(uploadWarningMessage);
@@ -1787,6 +1799,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         multipleDupesNew = false;
         uploadWarningMessage = null;
         uploadSuccessMessage = null;
+        errorMessages = new ArrayList<>();
     }
 
     private String warningMessageForFileTypeDifferentPopUp;
@@ -1920,7 +1933,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
         fileReplacePageHelper.resetReplaceFileHelper();
         saveEnabled = false;
-        String storageIdentifier = DataAccess.getStorarageIdFromLocation(fullStorageLocation);
+        String storageIdentifier = DataAccess.getStorageIdFromLocation(fullStorageLocation);
         if (fileReplacePageHelper.handleNativeFileUpload(null, storageIdentifier, fileName, contentType, checkSumValue, checkSumType)) {
             saveEnabled = true;
 
@@ -1937,6 +1950,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     private String uploadWarningMessage = null;
+    private List<String> errorMessages = new ArrayList<>();
     private String uploadSuccessMessage = null;
     private String uploadComponentId = null;
 
@@ -2005,8 +2019,14 @@ public class EditDatafilesPage implements java.io.Serializable {
         try {
             // Note: A single uploaded file may produce multiple datafiles - 
             // for example, multiple files can be extracted from an uncompressed
-            // zip file. 
-            dFileList = FileUtil.createDataFiles(workingVersion, uFile.getInputStream(), uFile.getFileName(), uFile.getContentType(), null, null, systemConfig);
+            // zip file.
+            CreateDataFileResult createDataFilesResult = FileUtil.createDataFiles(workingVersion, uFile.getInputStream(), uFile.getFileName(), uFile.getContentType(), null, null, systemConfig);
+            dFileList = createDataFilesResult.getDataFiles();
+            String createDataFilesError = editDataFilesPageHelper.getHtmlErrorMessage(createDataFilesResult);
+            if(createDataFilesError != null) {
+                errorMessages.add(createDataFilesError);
+                uploadComponentId = event.getComponent().getClientId();
+            }
 
         } catch (IOException ioex) {
             logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ioex.getMessage());
@@ -2058,8 +2078,12 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (!checksumTypeString.isBlank()) {
             checksumType = ChecksumType.fromString(checksumTypeString);
         }
+
+        //Should only be one colon with curent design
         int lastColon = fullStorageIdentifier.lastIndexOf(':');
-        String storageLocation = fullStorageIdentifier.substring(0, lastColon) + "/" + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + fullStorageIdentifier.substring(lastColon + 1);
+        String storageLocation = fullStorageIdentifier.substring(0,lastColon) + "/" + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + fullStorageIdentifier.substring(lastColon+1);
+        storageLocation = DataAccess.expandStorageIdentifierIfNeeded(storageLocation);
+
         if (uploadInProgress.isFalse()) {
             uploadInProgress.setValue(true);
         }
@@ -2111,7 +2135,9 @@ public class EditDatafilesPage implements java.io.Serializable {
                     // for example, multiple files can be extracted from an uncompressed
                     // zip file.
                     //datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
-                    datafiles = FileUtil.createDataFiles(workingVersion, null, fileName, contentType, fullStorageIdentifier, checksumValue, checksumType, systemConfig);
+                    CreateDataFileResult createDataFilesResult = FileUtil.createDataFiles(workingVersion, null, fileName, contentType, fullStorageIdentifier, checksumValue, checksumType, systemConfig);
+                    datafiles = createDataFilesResult.getDataFiles();
+                    Optional.ofNullable(editDataFilesPageHelper.getHtmlErrorMessage(createDataFilesResult)).ifPresent(errorMessage -> errorMessages.add(errorMessage));
                 } catch (IOException ex) {
                     logger.log(Level.SEVERE, "Error during ingest of file {0}", new Object[]{fileName});
                 }
@@ -3022,7 +3048,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     public boolean rsyncUploadSupported() {
-        // ToDo - rsync was written before multiple store support and currently is hardcoded to use the "s3" store. 
+        // ToDo - rsync was written before multiple store support and currently is hardcoded to use the DataAccess.S3 store. 
         // When those restrictions are lifted/rsync can be configured per store, the test in the 
         // Dataset Util method should be updated
         if (settingsWrapper.isRsyncUpload() && !DatasetUtil.isAppropriateStorageDriver(dataset)) {
@@ -3066,5 +3092,5 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public void setFileAccessRequest(boolean fileAccessRequest) {
         this.fileAccessRequest = fileAccessRequest;
-    }   
+    }
 }

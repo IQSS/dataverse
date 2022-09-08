@@ -22,15 +22,11 @@ import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
-import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
-import java.math.BigDecimal;
 
-import java.net.URISyntaxException;
 import java.util.*;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -204,6 +200,14 @@ public class JsonPrinter {
         return bld;
     }
 
+    public static <E extends Enum> JsonArrayBuilder enumsToJson(Collection<E> collection) {
+        JsonArrayBuilder arr = Json.createArrayBuilder();
+        for (E entry : collection) {
+            arr.add(entry.name());
+        }
+        return arr;
+    }
+
     public static JsonObjectBuilder json(DataverseRole role) {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("alias", role.getAlias())
@@ -310,7 +314,7 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(Dataset ds) {
-        return jsonObjectBuilder()
+        JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", ds.getId())
                 .add("identifier", ds.getIdentifier())
                 .add("persistentUrl", ds.getPersistentURL())
@@ -318,8 +322,11 @@ public class JsonPrinter {
                 .add("authority", ds.getAuthority())
                 .add("publisher", BrandingUtil.getInstallationBrandName())
                 .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
-                .add("storageIdentifier", ds.getStorageIdentifier())
-                .add("metadataLanguage", ds.getMetadataLanguage());
+                .add("storageIdentifier", ds.getStorageIdentifier());
+        if (DvObjectContainer.isMetadataLanguageSet(ds.getMetadataLanguage())) {
+            bld.add("metadataLanguage", ds.getMetadataLanguage());
+        }
+        return bld;
     }
 
     public static JsonObjectBuilder json(DatasetVersion dsv) {
@@ -334,7 +341,7 @@ public class JsonPrinter {
                 .add("UNF", dsv.getUNF()).add("archiveTime", format(dsv.getArchiveTime()))
                 .add("lastUpdateTime", format(dsv.getLastUpdateTime())).add("releaseTime", format(dsv.getReleaseTime()))
                 .add("createTime", format(dsv.getCreateTime()));
-        License license = dsv.getTermsOfUseAndAccess().getLicense();
+        License license = DatasetUtil.getLicense(dsv);;
         if (license != null) {
             // Standard license
             bld.add("license", jsonObjectBuilder()
