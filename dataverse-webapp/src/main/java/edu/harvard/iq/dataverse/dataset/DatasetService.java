@@ -235,7 +235,7 @@ public class DatasetService {
         dataset.setLastChangeForExporterTime(Date.from(Instant.now(Clock.systemDefaultZone())));
         dataset = datasetDao.mergeAndFlush(dataset);
 
-        solrIndexService.indexPermissionsOnSelfAndChildren(dataset);
+        solrIndexService.indexPermissionsForDatasetWithDataFiles(dataset);
 
         return dataset;
     }

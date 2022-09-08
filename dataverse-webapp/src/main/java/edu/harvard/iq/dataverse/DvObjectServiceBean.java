@@ -157,7 +157,6 @@ public class DvObjectServiceBean implements java.io.Serializable {
     /**
      * Updates permission index time in bulk so it is more performant.
      */
-    @TransactionAttribute(REQUIRES_NEW)
     public int updatePermissionIndexTime(Collection<Long> dvObjectIds) {
 
         return em.createQuery("UPDATE DvObject o SET o.permissionIndexTime=:currentTime WHERE o.id IN :ids")

@@ -1,8 +1,9 @@
 package edu.harvard.iq.dataverse.search.index;
 
-import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.persistence.DvObject;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.solr.client.solrj.SolrClient;
@@ -12,18 +13,16 @@ import org.apache.solr.common.SolrInputDocument;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
+
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -37,8 +36,6 @@ public class SolrIndexServiceBean {
     @EJB
     DvObjectServiceBean dvObjectService;
     @EJB
-    DataverseDao dataverseDao;
-    @EJB
     private PermissionsSolrDocFactory solrDocFactory;
     @Inject
     private SolrClient solrServer;
@@ -49,29 +46,15 @@ public class SolrIndexServiceBean {
     public static String messageString = "message";
 
 
-
-    public IndexResponse indexPermissionsOnSelfAndChildren(long definitionPointId) {
-        DvObject definitionPoint = dvObjectService.findDvObject(definitionPointId);
-        if (definitionPoint == null) {
-            logger.log(Level.WARNING, "Cannot find a DvOpbject with id of {0}", definitionPointId);
-            return null;
-        } else {
-            return indexPermissionsOnSelfAndChildren(definitionPoint);
-        }
-    }
-
-    private Set<Long> collectDvObjectIds(List<PermissionsSolrDoc> solrDocs) {
-        return solrDocs.stream().map(doc -> doc.getDvObjectId()).collect(Collectors.toSet());
-    }
+    // -------------------- LOGIC --------------------
 
     /**
      * We use the database to determine direct children since there is no
      * inheritance
      */
-    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public IndexResponse indexPermissionsOnSelfAndChildren(DvObject definitionPoint) {
+    public IndexResponse indexPermissionsForDatasetWithDataFiles(Dataset definitionPoint) {
 
-        List<PermissionsSolrDoc> definitionPoints = solrDocFactory.determinePermissionsDocsOnSelfAndChildren(definitionPoint);
+        List<PermissionsSolrDoc> definitionPoints = solrDocFactory.determinePermissionsDocsForDatasetWithDataFiles(definitionPoint);
 
         Set<Long> affectedDvObjectIds = collectDvObjectIds(definitionPoints);
 
@@ -94,6 +77,9 @@ public class SolrIndexServiceBean {
     public IndexResponse indexPermissionsForOneDvObject(DvObject dvObject) {
         if (dvObject == null) {
             return new IndexResponse("problem indexing... null DvObject passed in");
+        }
+        if (dvObject.isInstanceofDataverse() && ((Dataverse)dvObject).isRoot()) {
+            return new IndexResponse("DvObject is root Dataverse. Skipping.");
         }
 
         List<PermissionsSolrDoc> definitionPoints = solrDocFactory.determinePermissionsDocsOnSelfOnly(dvObject);
@@ -127,23 +113,6 @@ public class SolrIndexServiceBean {
             return new IndexResponse("problem indexing");
         }
 
-    }
-
-    private void persistToSolr(Collection<PermissionsSolrDoc> permissionDocs) throws SolrServerException, IOException {
-        if (permissionDocs.isEmpty()) {
-            // This method is routinely called with an empty list of docs.
-            logger.fine("nothing to persist");
-            return;
-        }
-        logger.fine("persisting to Solr...");
-        List<SolrInputDocument> inputDocs = permissionDocs.stream()
-                .map(SearchUtil::createSolrDoc)
-                .collect(toList());
-        /**
-         * @todo Do something with these responses from Solr.
-         */
-        UpdateResponse addResponse = solrServer.add(inputDocs);
-        UpdateResponse commitResponse = solrServer.commit();
     }
 
     public IndexResponse deleteMultipleSolrIds(List<String> solrIdsToDelete) {
@@ -189,16 +158,18 @@ public class SolrIndexServiceBean {
      */
     public List<Long> findPermissionsInDatabaseButStaleInOrMissingFromSolr() {
         List<Long> indexingRequired = new ArrayList<>();
-        long rootDvId = dataverseDao.findRootDataverse().getId();
+
         for (DvObject dvObject : dvObjectService.findAll()) {
-//            logger.info("examining dvObjectId " + dvObject.getId() + "...");
+
+            if (dvObject.isInstanceofDataverse() && ((Dataverse)dvObject).isRoot()) {
+                // we don't index the rootDv
+                continue;
+            }
+
             Timestamp permissionModificationTime = dvObject.getPermissionModificationTime();
             Timestamp permissionIndexTime = dvObject.getPermissionIndexTime();
             if (permissionIndexTime == null) {
-                if (dvObject.getId() != rootDvId) {
-                    // we don't index the rootDv
-                    indexingRequired.add(dvObject.getId());
-                }
+                indexingRequired.add(dvObject.getId());
             } else if (permissionModificationTime == null) {
                 /**
                  * @todo What should we do here? Permissions should always be
@@ -212,15 +183,26 @@ public class SolrIndexServiceBean {
         return indexingRequired;
     }
 
-    /**
-     * @return A list of dvobject ids that should have their permissions
-     * re-indexed because Solr was down when a permission was revoked. The
-     * permission should be removed from Solr.
-     */
-    public List<Long> findPermissionsInSolrNoLongerInDatabase() {
+    // -------------------- PRIVATE --------------------
+
+    private Set<Long> collectDvObjectIds(List<PermissionsSolrDoc> solrDocs) {
+        return solrDocs.stream().map(doc -> doc.getDvObjectId()).collect(Collectors.toSet());
+    }
+
+    private void persistToSolr(Collection<PermissionsSolrDoc> permissionDocs) throws SolrServerException, IOException {
+        if (permissionDocs.isEmpty()) {
+            // This method is routinely called with an empty list of docs.
+            logger.fine("nothing to persist");
+            return;
+        }
+        logger.fine("persisting to Solr...");
+        List<SolrInputDocument> inputDocs = permissionDocs.stream()
+                .map(SearchUtil::createSolrDoc)
+                .collect(toList());
         /**
-         * @todo Implement this!
+         * @todo Do something with these responses from Solr.
          */
-        return new ArrayList<>();
+        UpdateResponse addResponse = solrServer.add(inputDocs);
+        UpdateResponse commitResponse = solrServer.commit();
     }
 }

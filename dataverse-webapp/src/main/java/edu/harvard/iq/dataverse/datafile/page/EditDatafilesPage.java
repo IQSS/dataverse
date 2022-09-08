@@ -809,10 +809,6 @@ public class EditDatafilesPage implements java.io.Serializable {
             ingestService.startIngestJobsForDataset(dataset, (AuthenticatedUser) session.getUser());
         }
 
-        //if (newDraftVersion) {
-        //    return returnToDraftVersionById();
-        //}
-        indexService.indexDataset(dataset, true);
         logger.fine("Redirecting to the dataset page, from the edit/upload page.");
         return returnToDraftVersion();
     }

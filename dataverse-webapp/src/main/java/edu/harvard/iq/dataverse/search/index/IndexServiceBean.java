@@ -57,8 +57,6 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Timestamp;
@@ -74,7 +72,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
@@ -86,9 +83,6 @@ import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
 public class IndexServiceBean {
 
     private static final Logger logger = Logger.getLogger(IndexServiceBean.class.getCanonicalName());
-
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
 
     @EJB
     DvObjectServiceBean dvObjectService;
@@ -147,14 +141,12 @@ public class IndexServiceBean {
             logger.info(msg);
             return new AsyncResult<>(msg);
         }
-        Dataverse rootDataverse = findRootDataverse();
-        if (rootDataverse == null) {
-            String msg = "Could not find root dataverse and the root dataverse should not be indexed. Returning.";
-            return new AsyncResult<>(msg);
-        } else if (Objects.equals(dataverse.getId(), rootDataverse.getId())) {
+        if (dataverse.isRoot()) {
             String msg = "The root dataverse should not be indexed. Returning.";
             return new AsyncResult<>(msg);
         }
+        Dataverse rootDataverse = dataverseDao.findRootDataverse();
+
         Collection<SolrInputDocument> docs = new ArrayList<>();
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         solrInputDocument.addField(SearchFields.ID, solrDocIdentifierDataverse + dataverse.getId());
@@ -176,30 +168,16 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getCreateDate());
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT, convertToFriendlyDate(dataverse.getCreateDate()));
         }
-        /* We don't really have harvested dataverses yet;
-           (I have in fact just removed the isHarvested() method from the Dataverse object) -- L.A.
-        if (dataverse.isHarvested()) {
-            solrInputDocument.addField(SearchFields.IS_HARVESTED, true);
-            solrInputDocument.addField(SearchFields.SOURCE, HARVESTED);
-        } else { (this means that all dataverses are "local" - should this be removed? */
+        // We don't really have harvested dataverses yet;
         solrInputDocument.addField(SearchFields.IS_HARVESTED, false);
-        solrInputDocument.addField(SearchFields.METADATA_SOURCE, rootDataverse.getName()); //rootDataverseName);
-        /*}*/
+        solrInputDocument.addField(SearchFields.METADATA_SOURCE, rootDataverse.getName());
 
         addDataverseReleaseDateToSolrDoc(solrInputDocument, dataverse);
-        // if (dataverse.getOwner() != null) {
-        // solrInputDocument.addField(SearchFields.HOST_DATAVERSE,
-        // dataverse.getOwner().getName());
-        // }
+
         solrInputDocument.addField(SearchFields.DESCRIPTION, StringUtil.html2text(dataverse.getDescription()));
         solrInputDocument.addField(SearchFields.DATAVERSE_DESCRIPTION, StringUtil.html2text(dataverse.getDescription()));
-        // logger.info("dataverse affiliation: " + dataverse.getAffiliation());
-        if (dataverse.getAffiliation() != null && !dataverse.getAffiliation().isEmpty()) {
-            /**
-             * @todo: stop using affiliation as category
-             */
-            // solrInputDocument.addField(SearchFields.CATEGORY,
-            // dataverse.getAffiliation());
+
+        if (StringUtils.isNotEmpty(dataverse.getAffiliation())) {
             solrInputDocument.addField(SearchFields.AFFILIATION, dataverse.getAffiliation());
             solrInputDocument.addField(SearchFields.DATAVERSE_AFFILIATION, dataverse.getAffiliation());
         }
@@ -211,20 +189,16 @@ public class IndexServiceBean {
                 solrInputDocument.addField(SearchFields.SUBJECT, subject);
             }
         }
-        // checking for NPE is important so we can create the root dataverse
-        if (rootDataverse != null && !dataverse.equals(rootDataverse)) {
-            // important when creating root dataverse
-            if (dataverse.getOwner() != null) {
-                solrInputDocument.addField(SearchFields.PARENT_ID, dataverse.getOwner().getId());
-                solrInputDocument.addField(SearchFields.PARENT_NAME, dataverse.getOwner().getName());
-            }
+
+        if (dataverse.getOwner() != null) {
+            solrInputDocument.addField(SearchFields.PARENT_ID, dataverse.getOwner().getId());
+            solrInputDocument.addField(SearchFields.PARENT_NAME, dataverse.getOwner().getName());
         }
         List<String> dataverseSegments = findPathSegments(dataverse);
         List<String> dataversePaths = getDataversePathsFromSegments(dataverseSegments);
         if (dataversePaths.size() > 0) {
             // don't show yourself while indexing or in search results:
             // https://redmine.hmdc.harvard.edu/issues/3613
-            // logger.info(dataverse.getName() + " size " + dataversePaths.size());
             dataversePaths.remove(dataversePaths.size() - 1);
         }
         // Add paths for linking dataverses
@@ -238,17 +212,7 @@ public class IndexServiceBean {
 
         String status;
         try {
-            if (dataverse.getId() != null) {
-                solrServer.add(docs);
-            } else {
-                logger.info("WARNING: indexing of a dataverse with no id attempted");
-            }
-        } catch (SolrServerException | IOException ex) {
-            status = ex.toString();
-            logger.info(status);
-            return new AsyncResult<>(status);
-        }
-        try {
+            solrServer.add(docs);
             solrServer.commit();
         } catch (SolrServerException | IOException ex) {
             status = ex.toString();
@@ -266,13 +230,10 @@ public class IndexServiceBean {
     }
 
     @TransactionAttribute(REQUIRES_NEW)
-    public Future<String> indexDatasetInNewTransaction(Long datasetId) { //Dataset dataset) {
+    public Future<String> indexDatasetInNewTransaction(Long datasetId) {
         boolean doNormalSolrDocCleanUp = false;
-        Dataset dataset = em.find(Dataset.class, datasetId);
-        // return indexDataset(dataset, doNormalSolrDocCleanUp);
-        Future<String> ret = indexDataset(dataset, doNormalSolrDocCleanUp);
-        dataset = null;
-        return ret;
+        Dataset dataset = datasetDao.find(datasetId);
+        return indexDataset(dataset, doNormalSolrDocCleanUp);
     }
 
     @Asynchronous
@@ -419,7 +380,7 @@ public class IndexServiceBean {
                  */
                 String result = getDesiredCardState(desiredCards) + results.toString() + debug.toString();
                 logger.fine(result);
-                indexDatasetPermissions(dataset);
+                solrIndexService.indexPermissionsForDatasetWithDataFiles(dataset);
                 return new AsyncResult<>(result);
             } else if (latestVersionState.equals(DatasetVersion.VersionState.DEACCESSIONED)) {
 
@@ -466,7 +427,7 @@ public class IndexServiceBean {
                  */
                 String result = getDesiredCardState(desiredCards) + results.toString() + debug.toString();
                 logger.fine(result);
-                indexDatasetPermissions(dataset);
+                solrIndexService.indexPermissionsForDatasetWithDataFiles(dataset);
                 return new AsyncResult<>(result);
             } else {
                 String result = "No-op. Unexpected condition reached: No released version and latest version is neither draft nor deaccessioned";
@@ -523,7 +484,7 @@ public class IndexServiceBean {
                  */
                 String result = getDesiredCardState(desiredCards) + results.toString() + debug.toString();
                 logger.fine(result);
-                indexDatasetPermissions(dataset);
+                solrIndexService.indexPermissionsForDatasetWithDataFiles(dataset);
                 return new AsyncResult<>(result);
             } else if (latestVersionState.equals(DatasetVersion.VersionState.DRAFT)) {
 
@@ -571,7 +532,7 @@ public class IndexServiceBean {
                  */
                 String result = getDesiredCardState(desiredCards) + results.toString() + debug.toString();
                 logger.fine(result);
-                indexDatasetPermissions(dataset);
+                solrIndexService.indexPermissionsForDatasetWithDataFiles(dataset);
                 return new AsyncResult<>(result);
             } else {
                 String result = "No-op. Unexpected condition reached: There is at least one published version but the latest version is neither published nor draft";
@@ -586,26 +547,13 @@ public class IndexServiceBean {
         return indexResponse.toString();
     }
 
-    private IndexResponse indexDatasetPermissions(Dataset dataset) {
-        boolean disabledForDebugging = false;
-        if (disabledForDebugging) {
-            /*
-              Performance problems indexing permissions in
-              https://github.com/IQSS/dataverse/issues/50 and
-              https://github.com/IQSS/dataverse/issues/2036
-             */
-            return new IndexResponse("permissions indexing disabled for debugging");
-        }
-        return solrIndexService.indexPermissionsOnSelfAndChildren(dataset);
-    }
-
     private String addOrUpdateDataset(IndexableDataset indexableDataset) {
         IndexableDataset.DatasetState state = indexableDataset.getDatasetState();
         Dataset dataset = indexableDataset.getDatasetVersion().getDataset();
         logger.fine("adding or updating Solr document for dataset id " + dataset.getId());
         Collection<SolrInputDocument> docs = new ArrayList<>();
         List<String> dataverseSegments = new ArrayList<>();
-        Dataverse rootDataverse = findRootDataverse();
+        Dataverse rootDataverse = dataverseDao.findRootDataverse();
         String rootDataverseName = rootDataverse.getName();
         try {
             dataverseSegments = findPathSegments(dataset.getOwner());
@@ -665,8 +613,6 @@ public class IndexServiceBean {
 
         if (state.equals(IndexableDataset.DatasetState.PUBLISHED)) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, SearchPublicationStatus.PUBLISHED.getSolrValue());
-            // solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE,
-            // dataset.getPublicationDate());
         } else if (state.equals(IndexableDataset.DatasetState.WORKING_COPY)) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, SearchPublicationStatus.DRAFT.getSolrValue());
         }
@@ -678,7 +624,7 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.METADATA_SOURCE, HARVESTED);
         } else {
             solrInputDocument.addField(SearchFields.IS_HARVESTED, false);
-            solrInputDocument.addField(SearchFields.METADATA_SOURCE, rootDataverseName); //rootDataverseName);
+            solrInputDocument.addField(SearchFields.METADATA_SOURCE, rootDataverseName);
         }
 
         DatasetVersion datasetVersion = indexableDataset.getDatasetVersion();
@@ -801,8 +747,6 @@ public class IndexServiceBean {
         }
 
         solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
-        // solrInputDocument.addField(SearchFields.HOST_DATAVERSE,
-        // dataset.getOwner().getName());
         solrInputDocument.addField(SearchFields.PARENT_ID, dataset.getOwner().getId());
         solrInputDocument.addField(SearchFields.PARENT_NAME, dataset.getOwner().getName());
 
@@ -1095,10 +1039,6 @@ public class IndexServiceBean {
 
         try {
             solrServer.add(docs);
-        } catch (SolrServerException | IOException ex) {
-            return ex.toString();
-        }
-        try {
             solrServer.commit();
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
@@ -1146,16 +1086,16 @@ public class IndexServiceBean {
     }
 
     public List<String> findPathSegments(Dataverse dataverse) {
-            List<String> dataversePathIds = new ArrayList<>();
+        List<String> dataversePathIds = new ArrayList<>();
+        dataversePathIds.add(dataverse.getId().toString());
+
+        while (dataverse.getOwner() != null) {
+            dataverse = dataverse.getOwner();
             dataversePathIds.add(dataverse.getId().toString());
+        }
+        Collections.reverse(dataversePathIds);
 
-            while (dataverse.getOwner() != null) {
-                dataverse = dataverse.getOwner();
-                dataversePathIds.add(dataverse.getId().toString());
-            }
-            Collections.reverse(dataversePathIds);
-
-            return dataversePathIds;
+        return dataversePathIds;
     }
 
     List<String> getDataversePathsFromSegments(List<String> dataversePathSegments) {
@@ -1205,10 +1145,6 @@ public class IndexServiceBean {
         UpdateResponse updateResponse;
         try {
             updateResponse = solrServer.deleteById(solrDocIdentifierDataverse + doomed.getId());
-        } catch (SolrServerException | IOException ex) {
-            return ex.toString();
-        }
-        try {
             solrServer.commit();
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
@@ -1230,10 +1166,6 @@ public class IndexServiceBean {
         UpdateResponse updateResponse;
         try {
             updateResponse = solrServer.deleteById(doomed);
-        } catch (SolrServerException | IOException ex) {
-            return ex.toString();
-        }
-        try {
             solrServer.commit();
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
@@ -1307,10 +1239,6 @@ public class IndexServiceBean {
         return result.toString();
     }
 
-    private Dataverse findRootDataverse() {
-        return dataverseDao.findRootDataverse();
-    }
-
     private String getDesiredCardState(Map<DatasetVersion.VersionState, Boolean> desiredCards) {
         /*
           @todo make a JVM option to enforce sanity checks? Call it dev=true?
@@ -1335,7 +1263,7 @@ public class IndexServiceBean {
     public List<Dataverse> findStaleOrMissingDataverses() {
         List<Dataverse> staleDataverses = new ArrayList<>();
         for (Dataverse dataverse : dataverseDao.findAll()) {
-            if (dataverse.equals(dataverseDao.findRootDataverse())) {
+            if (dataverse.isRoot()) {
                 continue;
             }
             if (stale(dataverse)) {

@@ -128,7 +128,6 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         // TODO: switch to asynchronous version when JPA sync works
         // ctxt.index().asyncIndexDataset(theDataset.getId(), true);
         ctxt.index().indexDataset(theDataset, true);
-        ctxt.solrIndex().indexPermissionsOnSelfAndChildren(theDataset.getId());
 
         /*
         if (DataCaptureModuleUtil.rsyncSupportEnabled(ctxt.settings().getValueForKey(SettingsServiceBean.Key.UploadMethods))) {

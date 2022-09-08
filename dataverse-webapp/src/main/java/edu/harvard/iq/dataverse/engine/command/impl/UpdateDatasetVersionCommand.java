@@ -113,6 +113,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 recalculateUNF = true;
             }
         }
+
         // we have to merge to update the database but not flush because
         // we don't want to create two draft versions!
         Dataset tempDataset = ctxt.em().merge(getDataset());

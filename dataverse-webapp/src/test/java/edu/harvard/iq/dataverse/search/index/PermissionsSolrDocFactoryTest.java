@@ -74,48 +74,7 @@ public class PermissionsSolrDocFactoryTest {
     }
     
     @Test
-    public void determinePermissionsDocsOnSelfAndChildren__dataverse() {
-        // given
-        Dataverse dataverse = constructDataverse(1L);
-        
-        Dataset dataset1 = constructDataset(2L);
-        DatasetVersion version11 = constructDatasetVersion(21L, VersionState.DRAFT, dataset1);
-        
-        Dataset dataset2 = constructDataset(3L);
-        DatasetVersion version21 = constructDatasetVersion(31L, VersionState.DRAFT, dataset2);
-        
-        when(datasetDao.findByOwnerId(1L)).thenReturn(Lists.newArrayList(dataset1, dataset2));
-        
-        when(searchPermissionsService.extractVersionsForPermissionIndexing(dataset1)).thenReturn(Sets.newHashSet(version11));
-        when(searchPermissionsService.extractVersionsForPermissionIndexing(dataset2)).thenReturn(Sets.newHashSet(version21));
-        
-        when(searchPermissionsService.findDataversePerms(dataverse)).thenReturn(
-                new SearchPermissions(Lists.newArrayList("perm1"), Instant.EPOCH));
-        
-        when(searchPermissionsService.findDatasetVersionPerms(version11)).thenReturn(
-                new SearchPermissions(Lists.newArrayList("perm21"), Instant.EPOCH));
-        
-        when(searchPermissionsService.findDatasetVersionPerms(version21)).thenReturn(
-                new SearchPermissions(Lists.newArrayList("perm31"), Instant.EPOCH));
-        
-        // when
-        List<PermissionsSolrDoc> permissionsDocs = permissionsDocFactory.determinePermissionsDocsOnSelfAndChildren(dataverse);
-        
-        // then
-        assertEquals(3, permissionsDocs.size());
-        
-        PermissionsSolrDoc permDoc1 = extractPermissionsSolrDoc(permissionsDocs, "dataverse_1");
-        assertPermissionsSolrDoc(permDoc1, 1L, "dataverse_1", null, Lists.newArrayList("perm1"), Instant.EPOCH);
-        
-        PermissionsSolrDoc permDoc2 = extractPermissionsSolrDoc(permissionsDocs, "dataset_2_draft");
-        assertPermissionsSolrDoc(permDoc2, 2L, "dataset_2_draft", 21L, Lists.newArrayList("perm21"), Instant.EPOCH);
-
-        PermissionsSolrDoc permDoc3 = extractPermissionsSolrDoc(permissionsDocs, "dataset_3_draft");
-        assertPermissionsSolrDoc(permDoc3, 3L, "dataset_3_draft", 31L, Lists.newArrayList("perm31"), Instant.EPOCH);
-    }
-    
-    @Test
-    public void determinePermissionsDocsOnSelfAndChildren__dataset_with_files() {
+    public void determinePermissionsDocsForDatasetWithDataFiles() {
         // given
         Dataset dataset = constructDataset(1L);
         DatasetVersion version1 = constructDatasetVersion(11L, VersionState.DRAFT, dataset);
@@ -136,7 +95,7 @@ public class PermissionsSolrDocFactoryTest {
                 new SearchPermissions(Lists.newArrayList("perm2"), Instant.EPOCH));
         
         // when
-        List<PermissionsSolrDoc> permissionsDocs = permissionsDocFactory.determinePermissionsDocsOnSelfAndChildren(dataset);
+        List<PermissionsSolrDoc> permissionsDocs = permissionsDocFactory.determinePermissionsDocsForDatasetWithDataFiles(dataset);
         
         // then
         assertEquals(3, permissionsDocs.size());
