@@ -1321,6 +1321,12 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
+        
+        boolean hasValidTerms = TermsOfUseAndAccessValidator.isTOUAValid(dataset.getLatestVersion().getTermsOfUseAndAccess(), null);
+        
+        if (!hasValidTerms){
+            return error(Status.CONFLICT, BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
+        }
 
         // client is superadmin or (client has EditDataset permission on these files and files are unreleased)
         /*
