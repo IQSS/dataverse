@@ -2808,20 +2808,22 @@ Scripts that implement this association for specific service protocols are maint
 
 ``curl -X PUT --upload-file cvoc-conf.json http://localhost:8080/api/admin/settings/:CVocConf``
 
+.. _:ControlledVocabularyCustomJavaScript:
+
 :ControlledVocabularyCustomJavaScript
 +++++++++++++++++++++++++++++++++++++
 
-We can have controlled vocabulary as a list locally (with optionally translated values). But if the list is large and needs to be maintained, it is more advantageous to have, for example, a lookup functionality that allows to search for the values at an external service. We can have external controlled vocabularies with "skosmos" protocol (or other, using URI bound terms), but this is an overkill for a simple list (enumeration) for one field (e.g., author name using author lookup) that does not have any translations or URIs.
+``:ControlledVocabularyCustomJavaScript`` allows a JavaScript file to be loaded into the dataset page for the purpose of showing controlled vocabulary as a list (with optionally translated values) such as author names.
 
-A more desirable solution is to allow a custom JavaScript to control values of specific fields.
+To specify the URL for a custom script ``covoc.js`` to be loaded from an external site:
 
-To specify a custom script ``/covoc/js/covoc.js`` to be loaded:
+``curl -X PUT -d 'https://example.com/js/covoc.js' http://localhost:8080/api/admin/settings/:ControlledVocabularyCustomJavaScript``
 
-``curl -X PUT -d '/covoc/js/covoc.js' http://localhost:8080/api/admin/settings/:ControlledVocabularyCustomJavaScript``
+To remove the custom script URL:
 
-To remove the custom script:
+``curl -X DELETE http://localhost:8080/api/admin/settings/:ControlledVocabularyCustomJavaScript``
 
-``curl -X PUT -d '' http://localhost:8080/api/admin/settings/:ControlledVocabularyCustomJavaScript``
+Please note that :ref:`:CVocConf` is a better option if the list is large or needs to be searchable from an external service using protocols such as SKOSMOS.
 
 .. _:AllowedCurationLabels:
 
