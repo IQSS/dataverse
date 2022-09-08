@@ -2808,6 +2808,21 @@ Scripts that implement this association for specific service protocols are maint
 
 ``curl -X PUT --upload-file cvoc-conf.json http://localhost:8080/api/admin/settings/:CVocConf``
 
+:ControlledVocabularyCustomJavaScript
++++++++++++++++++++++++++++++++++++++
+
+We can have controlled vocabulary as a list locally (with optionally translated values). But if the list is large and needs to be maintained, it is more advantageous to have, for example, a lookup functionality that allows to search for the values at an external service. We can have external controlled vocabularies with "skosmos" protocol (or other, using URI bound terms), but this is an overkill for a simple list (enumeration) for one field (e.g., author name using author lookup) that does not have any translations or URIs.
+
+A more desirable solution is to allow a custom JavaScript to control values of specific fields.
+
+To specify a custom script ``/covoc/js/covoc.js`` to be loaded:
+
+``curl -X PUT -d '/covoc/js/covoc.js' http://localhost:8080/api/admin/settings/:ControlledVocabularyCustomJavaScript``
+
+To remove the custom script:
+
+``curl -X PUT -d '' http://localhost:8080/api/admin/settings/:ControlledVocabularyCustomJavaScript``
+
 .. _:AllowedCurationLabels:
 
 :AllowedCurationLabels
@@ -2958,18 +2973,3 @@ The URL of an LDN Inbox to which the LDN Announce workflow step will send messag
 ++++++++++++++++++++++++++
 
 The list of parent dataset field names for which the LDN Announce workflow step should send messages. See :doc:`/developers/workflows` for details.
-
-:ControlledVocabularyCustomJavaScript
-+++++++++++++++++++++++++++++++++++++
-
-We can have controlled vocabulary as a list locally (with optionally translated values). But if the list is large and needs to be maintained, it is more advantageous to have, for example, a lookup functionality that allows to search for the values at an external service. We can have external controlled vocabularies with "skosmos" protocol (or other, using URI bound terms), but this is an overkill for a simple list (enumeration) for one field (e.g., author name using author lookup) that does not have any translations or URIs.
-
-A more desirable solution is to allow a custom JavaScript to control values of specific fields.
-
-To specify a custom script ``/covoc/js/covoc.js`` to be loaded:
-
-``curl -X PUT -d '/covoc/js/covoc.js' http://localhost:8080/api/admin/settings/:ControlledVocabularyCustomJavaScript``
-
-To remove the custom script:
-
-``curl -X PUT -d '' http://localhost:8080/api/admin/settings/:ControlledVocabularyCustomJavaScript``
