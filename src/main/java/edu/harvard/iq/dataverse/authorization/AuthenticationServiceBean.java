@@ -647,6 +647,8 @@ public class AuthenticationServiceBean {
         
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "createUser")
             .setInfo(authenticatedUser.getIdentifier()));
+        
+        authenticatedUser.postLoad();
 
         return authenticatedUser;
     }
