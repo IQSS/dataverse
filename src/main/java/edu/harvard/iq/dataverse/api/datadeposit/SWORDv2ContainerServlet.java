@@ -17,9 +17,11 @@ public class SWORDv2ContainerServlet extends SwordServlet {
     ContainerManagerImpl containerManagerImpl;
     @Inject
     StatementManagerImpl statementManagerImpl;
-    private ContainerManager cm;
+    // this field can be replaced by local variable
+//    private ContainerManager cm;
     private ContainerAPI api;
-    private StatementManager sm;
+    // this field can be replaced by local variable
+//    private StatementManager sm;
     private final ReentrantLock lock = new ReentrantLock();
     
     
@@ -28,13 +30,15 @@ public class SWORDv2ContainerServlet extends SwordServlet {
         super.init();
 
         // load the container manager implementation
-        this.cm = containerManagerImpl;
-
-        // load the statement manager implementation
-        this.sm = statementManagerImpl;
+//        this.cm = containerManagerImpl;
+        ContainerManager cm = containerManagerImpl;
+                // load the statement manager implementation
+//        this.sm = statementManagerImpl;
+        StatementManager sm = statementManagerImpl;
 
         // initialise the underlying servlet processor
-        this.api = new ContainerAPI(this.cm, this.sm, this.config);
+//        this.api = new ContainerAPI(this.cm, this.sm, this.config);
+        this.api = new ContainerAPI(cm, sm, this.config);
     }
 
     @Override
