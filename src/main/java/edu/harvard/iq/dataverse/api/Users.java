@@ -21,6 +21,7 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.json.JsonArray;
@@ -201,7 +202,14 @@ public class Users extends AbstractApiBean {
 
         AuthenticatedUser authenticatedUser = findUserByApiToken(tokenFromRequestAPI);
         if (authenticatedUser == null) {
-            return error(Response.Status.BAD_REQUEST, "User with token " + tokenFromRequestAPI + " not found.");
+            try {
+                authenticatedUser = findAuthenticatedUserOrDie();
+                return ok(json(authenticatedUser));
+            } catch (WrappedResponse ex) {
+                Logger.getLogger(Users.class.getName()).log(Level.SEVERE, null, ex);
+                return error(Response.Status.BAD_REQUEST, "User with token " + tokenFromRequestAPI + " not found.");
+            }
+            
         } else {
             return ok(json(authenticatedUser));
         }

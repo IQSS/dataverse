@@ -441,9 +441,9 @@ public abstract class AbstractApiBean {
         String user = httpRequest.getParameter("user");
         AuthenticatedUser targetUser = authSvc.getAuthenticatedUser(user);
         String key = System.getProperty(SystemConfig.API_SIGNING_SECRET,"") + authSvc.findApiTokenByUser(targetUser).getTokenString();
-        String signedUrl = httpRequest.getRequestURL().toString();
+        String signedUrl = httpRequest.getRequestURL().toString()+"?"+httpRequest.getQueryString();
         String method = httpRequest.getMethod();
-        
+        String queryString = httpRequest.getQueryString();
         boolean validated = UrlSignerUtil.isValidUrl(signedUrl, user, method, key);
         if (validated){
             authUser = targetUser;

@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
@@ -19,6 +20,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -90,51 +92,66 @@ public class ExternalToolHandler extends URLTokenUtil {
         JsonString method = obj.getJsonString("httpMethod");
         requestMethod = method!=null?method.getString():HttpMethod.GET;
         JsonArray queryParams = obj.getJsonArray("queryParameters");
-        if (queryParams == null || queryParams.isEmpty()) {
-            return "";
-        }
         List<String> params = new ArrayList<>();
-        queryParams.getValuesAs(JsonObject.class).forEach((queryParam) -> {
-            queryParam.keySet().forEach((key) -> {
-                String value = queryParam.getString(key);
-                String param = getQueryParam(key, value);
-                if (param != null && !param.isEmpty()) {
-                    params.add(param);
-                }
+        if (requestMethod.equals(HttpMethod.GET)) {
+            if (queryParams == null || queryParams.isEmpty()) {
+                return "";
+            }
+            queryParams.getValuesAs(JsonObject.class).forEach((queryParam) -> {
+                queryParam.keySet().forEach((key) -> {
+                    String value = queryParam.getString(key);
+                    String param = getQueryParam(key, value);
+                    if (param != null && !param.isEmpty()) {
+                        params.add(param);
+                    }
+                });
             });
-        });   
+        }
 
-        String allowedApis;
-        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
-
-        JsonObject objApis = JsonUtil.getJsonObject(externalTool.getAllowedApiCalls());
-
-        JsonArray apis = objApis.getJsonArray("apis");
-        apis.getValuesAs(JsonObject.class).forEach(((apiObj) -> {
-            String name = apiObj.getJsonString("name").getString();
-            String httpmethod = apiObj.getJsonString("method").getString();
-            int timeout = apiObj.getInt("timeOut");
-            String urlTemplate = apiObj.getJsonString("urlTemplate").getString();
-            logger.fine("URL Template: " + urlTemplate);
-            String apiPath = replaceTokensWithValues(urlTemplate);
-            logger.fine("URL WithTokens: " + apiPath);
-            String url = UrlSignerUtil.signUrl(apiPath, timeout, user, httpmethod, getApiToken().getTokenString());
-            logger.fine("Signed URL: " + url);
-            jsonArrayBuilder.add(Json.createObjectBuilder().add("name", name).add("httpMethod", httpmethod)
-                    .add("signedUrl", url).add("timeOut", timeout));
-        }));
-        JsonArray allowedApiCallsArray = jsonArrayBuilder.build();
-        allowedApis = JsonUtil.prettyPrint(allowedApiCallsArray);
-        logger.fine("Sending these signed URLS: " + allowedApis);
-        
         //ToDo - if the allowedApiCalls() are defined, could/should we send them to tools using GET as well?
         
         if (requestMethod.equals(HttpMethod.POST)) {
+            JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
             try {
-                return postFormData(allowedApis);
+                queryParams.getValuesAs(JsonObject.class).forEach((queryParam) -> {
+                    queryParam.keySet().forEach((key) -> {
+                        String value = queryParam.getString(key);
+                        String param = getPostBodyParam(key, value);
+                        if (param != null && !param.isEmpty()) {
+                            params.add(param);
+                        }
+                    });
+                });
+                String addVal = String.join(",", params);
+                String kvp = "{\"queryParameters\":{" + addVal;
+
+                String allowedApis;
+
+                JsonObject objApis = JsonUtil.getJsonObject(externalTool.getAllowedApiCalls());
+
+                JsonArray apis = objApis.getJsonArray("apis");
+                apis.getValuesAs(JsonObject.class).forEach(((apiObj) -> {
+                    String name = apiObj.getJsonString("name").getString();
+                    String httpmethod = apiObj.getJsonString("method").getString();
+                    int timeout = apiObj.getInt("timeOut");
+                    String urlTemplate = apiObj.getJsonString("urlTemplate").getString();
+                    logger.fine("URL Template: " + urlTemplate);
+                    String apiPath = replaceTokensWithValues(urlTemplate);
+                    logger.fine("URL WithTokens: " + apiPath);
+                    String url = UrlSignerUtil.signUrl(apiPath, timeout, user, httpmethod, System.getProperty(SystemConfig.API_SIGNING_SECRET, "") + getApiToken().getTokenString());
+                    logger.fine("Signed URL: " + url);
+                    jsonArrayBuilder.add(Json.createObjectBuilder().add("name", name).add("httpMethod", httpmethod)
+                            .add("signedUrl", url).add("timeOut", timeout));
+                }));
+                JsonArray allowedApiCallsArray = jsonArrayBuilder.build();
+                allowedApis = "\"signedUrls\":" + JsonUtil.prettyPrint(allowedApiCallsArray) + "}";
+                logger.fine("Sending these signed URLS: " + allowedApis);
+                String body = kvp + "}," + allowedApis;
+                logger.info(body);
+                return postFormData(body);
             } catch (IOException | InterruptedException ex) {
-                Logger.getLogger(ExternalToolHandler.class.getName()).log(Level.SEVERE, null, ex); 
-           }
+                Logger.getLogger(ExternalToolHandler.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         if (!preview) {
             return "?" + String.join("&", params);
@@ -162,7 +179,7 @@ public class ExternalToolHandler extends URLTokenUtil {
         }
         if (redirect==true){
             String newUrl = response.headers().firstValue("location").get();
-            toolContext = "http://" + response.uri().getAuthority();
+//            toolContext = "http://" + response.uri().getAuthority();
             
             url = newUrl;
         }

@@ -93,6 +93,23 @@ public class URLTokenUtil {
         }
     }
 
+    
+    public String getPostBodyParam(String key, String value) {
+        String tokenValue = null;
+        tokenValue = getTokenValue(value);
+        if (tokenValue != null) {
+            try{
+                int x =Integer.parseInt(tokenValue);
+                return "\""+ key + "\"" + ':' + tokenValue;
+            } catch (NumberFormatException nfe){
+                return "\""+ key + "\"" + ':' + "\"" + tokenValue + "\"";
+            }
+            
+        } else {
+            return null;
+        }
+    }
+
     /**
      * Tries to replace all occurrences of {<text>} with the value for the
      * corresponding ReservedWord

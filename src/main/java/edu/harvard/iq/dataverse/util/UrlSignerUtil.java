@@ -57,6 +57,7 @@ public class UrlSignerUtil {
         }
         signedUrl.append(firstParam ? "?" : "&").append("token=");
         logger.fine("String to sign: " + signedUrl.toString() + "<key>");
+       
         signedUrl.append(DigestUtils.sha512Hex(signedUrl.toString() + key));
         logger.fine("Generated Signed URL: " + signedUrl.toString());
         if (logger.isLoggable(Level.FINE)) {
@@ -119,7 +120,7 @@ public class UrlSignerUtil {
             // Assuming the token is last - doesn't have to be, but no reason for the URL
             // params to be rearranged either, and this should only cause false negatives if
             // it does happen
-            String urlToHash = signedUrl.substring(0, index + 7);
+            String urlToHash = signedUrl.substring(0, index + 7).toString();
             logger.fine("String to hash: " + urlToHash + "<key>");
             String newHash = DigestUtils.sha512Hex(urlToHash + key);
             logger.fine("Calculated Hash: " + newHash);
