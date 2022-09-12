@@ -2479,6 +2479,30 @@ In the case you get garbled characters in Shibboleth-supplied fields (e.g. given
 
 If you managed to get correct accented characters from shibboleth while this setting is _false_, please contact us with your application server and Shibboleth configuration!
 
+:ShibAffiliationOrder
++++++++++++++++++++++
+
+Will select the last or first value of an array in affiliation, the array separator can be set using ``:ShibAffiliationSeparator`` .
+
+To select the last value : 
+
+``curl -X PUT -d "lastAffiliation" http://localhost:8080/api/admin/settings/:ShibAffiliationOrder``
+
+To select the first value :
+
+``curl -X PUT -d "firstAffiliation" http://localhost:8080/api/admin/settings/:ShibAffiliationOrder``
+
+
+:ShibAffiliationSeparator
++++++++++++++++++++++++++
+
+Set the separator to be used for ``:ShibAffiliationOrder``.
+Default separator : ";"
+
+To change the separator :
+
+``curl -X PUT -d ";" http://localhost:8080/api/admin/settings/:ShibAffiliationSeparator``
+
 .. _:ComputeBaseUrl:
 
 :ComputeBaseUrl
