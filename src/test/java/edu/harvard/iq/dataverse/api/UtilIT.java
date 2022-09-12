@@ -1830,7 +1830,12 @@ public class UtilIT {
                 //                .get("/api/datasets/:persistentId/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
                 .get("/api/datasets/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
     }
-    
+
+    static Response reexportDatasetAllFormats(String datasetPersistentId) {
+        return given()
+                .get("/api/admin/metadata/reExportDataset?persistentId=" + datasetPersistentId);
+    }
+
     static Response exportDataverse(String identifier, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
