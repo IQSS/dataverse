@@ -33,6 +33,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.DateUtil;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -715,24 +716,9 @@ public class DataCitation {
         Date citationDate = null;
 
         if (dsv.getDataset().isHarvested()) {
-            try {
-                SimpleDateFormat sdffull = new SimpleDateFormat("yyyy-MM-dd");
-                citationDate = sdffull.parse(dsv.getProductionDate());
-            } catch (ParseException ex) {
-                // ignore
-            } catch (Exception ex) {
-                // ignore
-            }
-
+            citationDate = DateUtil.parseDate(dsv.getProductionDate());
             if (citationDate == null) {
-                try {
-                   SimpleDateFormat sdfshort = new SimpleDateFormat("yyyy");
-                    citationDate = sdfshort.parse(dsv.getDistributionDate());
-                } catch (ParseException ex) {
-                    // ignore
-                } catch (Exception ex) {
-                    // ignore
-                }
+                citationDate = DateUtil.parseDate(dsv.getDistributionDate());
             }
         }
 
