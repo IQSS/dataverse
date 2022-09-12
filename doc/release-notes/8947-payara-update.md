@@ -8,7 +8,7 @@ With lots of bug and security fixes included, we encourage everyone to update to
 yet-to-be-released Payara 6 in the not-so-far-away future.
 
 We recommend you ensure you followed all update instructions from the past releases regarding Payara.
-(latest Payara update was for [v5.6](https://github.com/IQSS/dataverse/release/v5.6))
+(latest Payara update was for [v5.6](https://github.com/IQSS/dataverse/releases/tag/v5.6))
 
 Upgrading requires a maintenance window and downtime. Please plan ahead, create backups of your database, etc.
 
@@ -40,7 +40,11 @@ export PAYARA=/usr/local/payara5
 ```shell
     service payara stop
     rm -rf $PAYARA/glassfish/domains/domain1/generated
+    rm -rf $PAYARA/glassfish/domains/domain1/osgi-cache
+    rm -rf $PAYARA/glassfish/domains/domain1/lib/databases
 ```
+
+(The deletion of `lib/databases` and root cause has been documented in #8230 by @qqmyers)
 
 3. Move the current Payara directory out of the way
 
