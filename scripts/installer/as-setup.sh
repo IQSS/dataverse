@@ -167,6 +167,7 @@ if [ "$DOCKER_BUILD" = "true" ]
     chmod -R 777 /usr/local/payara5/
     rm -rf /usr/local/payara5/glassfish/domains/domain1/generated 
     rm -rf /usr/local/payara5/glassfish/domains/domain1/applications
+    rm -rf /usr/local/payara5/glassfish/domains/domain1/lib/databases
     popd
     exit 0
 fi
