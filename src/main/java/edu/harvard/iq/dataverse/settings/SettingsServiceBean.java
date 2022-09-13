@@ -426,6 +426,14 @@ public class SettingsServiceBean {
          */
         ShibAttributeCharacterSetConversionEnabled,
         /**
+         *Return the last or first value of an array of affiliation names
+         */
+        ShibAffiliationOrder,
+         /**
+         *Split the affiliation array on given string, default ";"
+         */
+        ShibAffiliationSeparator,
+        /**
          * Validate physical files for all the datafiles in the dataset when publishing
          */
         FileValidationOnPublishEnabled,
@@ -522,7 +530,11 @@ public class SettingsServiceBean {
          * would also work) of never muted notifications that cannot be turned off by the users. AlwaysMuted setting overrides
          * Nevermuted setting warning is logged.
          */
-        NeverMuted
+        NeverMuted,
+        /**
+         * LDN Inbox Allowed Hosts - a comma separated list of IP addresses allowed to submit messages to the inbox
+         */
+        LDNMessageHosts
         ;
 
         @Override
