@@ -88,6 +88,8 @@ If the client is unable to complete the multipart upload, it should call the abo
     curl -X DELETE "$SERVER_URL/api/datasets/mpload?..."
    
   
+.. _direct-add-to-dataset-api:
+
 Adding the Uploaded file to the Dataset
 ---------------------------------------
 
@@ -117,7 +119,7 @@ Note that this API call can be used independently of the others, e.g. supporting
 With current S3 stores the object identifier must be in the correct bucket for the store, include the PID authority/identifier of the parent dataset, and be guaranteed unique, and the supplied storage identifer must be prefaced with the store identifier used in the Dataverse installation, as with the internally generated examples above.
 
 To add multiple Uploaded Files to the Dataset
--------------------------------------------------
+---------------------------------------------
 
 Once the files exists in the s3 bucket, a final API call is needed to add all the files to the Dataset. In this API call, additional metadata is added using the "jsonData" parameter.
 jsonData normally includes information such as a file description, tags, provenance, whether the file is restricted, etc. For direct uploads, the jsonData object must also include values for:

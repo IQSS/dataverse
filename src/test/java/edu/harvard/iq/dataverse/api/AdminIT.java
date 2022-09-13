@@ -761,6 +761,7 @@ public class AdminIT {
         Map<String, List<Map<String, String>>> data = JsonPath.from(body).getMap("data");
         assertEquals(1, data.size());
         List<Map<String, String>> addedElements = data.get("added");
+        //Note -test depends on the number of elements in the production citation block, so any changes to the # of elements there can break this test
         assertEquals(322, addedElements.size());
 
         Map<String, Integer> statistics = new HashMap<>();

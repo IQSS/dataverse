@@ -110,8 +110,9 @@
 	publicationIDType	pmid		12											
 	publicationIDType	purl		13											
 	publicationIDType	upc		14											
-	publicationIDType	url		15											
-	publicationIDType	urn		16												
+	publicationIDType	url		15	
+	publicationIDType	urn		16											
+	publicationIDType	DASH-NRS		17		
 	contributorType	Data Collector		0											
 	contributorType	Data Curator		1											
 	contributorType	Data Manager		2											
