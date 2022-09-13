@@ -1294,7 +1294,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
         String idBucket = storageBucketAndId.substring(0, index);
         String id = storageBucketAndId.substring(index+1);
-        System.out.println(id);
+        logger.fine(id);
         if(!bucketName.equals(idBucket)) {
             logger.warning("Incorrect bucket in submitted identifier: " + storageId);
             return false;

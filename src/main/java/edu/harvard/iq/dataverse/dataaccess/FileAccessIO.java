@@ -671,7 +671,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
                 logger.warning("Non-normalized path in submitted identifier " + storageId);
                 return false;
             }
-            System.out.println(normalized.getFileName().toString());
+            logger.fine(normalized.getFileName().toString());
             if (!usesStandardNamePattern(normalized.getFileName().toString())) {
                 logger.warning("Unacceptable file name in submitted identifier: " + storageId);
                 return false;
