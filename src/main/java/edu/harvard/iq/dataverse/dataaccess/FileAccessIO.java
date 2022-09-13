@@ -32,7 +32,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-
+import java.util.logging.Logger;
 
 // Dataverse imports:
 import edu.harvard.iq.dataverse.DataFile;
@@ -49,11 +49,14 @@ import java.util.ArrayList;
 
 public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
 
-	public FileAccessIO() {
-		//Constructor only for testing
-		super(null, null, null);
-	}
-	
+    private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.FileAccessIO");
+
+
+    public FileAccessIO() {
+        // Constructor only for testing
+        super(null, null, null);
+    }
+
     public FileAccessIO(T dvObject, DataAccessRequest req, String driverId ) {
 
         super(dvObject, req, driverId);
@@ -64,8 +67,9 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     // "Direct" File Access IO, opened on a physical file not associated with
     // a specific DvObject
     public FileAccessIO(String storageLocation, String driverId) {
-    	super(storageLocation, driverId);
-    	this.setIsLocalFile(true);
+        super(storageLocation, driverId);
+        this.setIsLocalFile(true);
+        logger.fine("Storage path: " + storageLocation);
         physicalPath = Paths.get(storageLocation);
     }
     
@@ -120,10 +124,10 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
                 }
             } else if (isWriteAccess) {
                 // Creates a new directory as needed for a dataset.
-            	Path datasetPath=Paths.get(getDatasetDirectory());
-            	if (datasetPath != null && !Files.exists(datasetPath)) {
-            		Files.createDirectories(datasetPath);
-            	}
+                Path datasetPath=Paths.get(getDatasetDirectory());
+                if (datasetPath != null && !Files.exists(datasetPath)) {
+                    Files.createDirectories(datasetPath);
+                }
                 FileOutputStream fout = openLocalFileAsOutputStream();
 
                 if (fout == null) {
@@ -132,8 +136,8 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
 
                 this.setOutputStream(fout);
                 setChannel(fout.getChannel());
-                if (!storageIdentifier.startsWith(this.driverId + "://")) {
-                    dvObject.setStorageIdentifier(this.driverId + "://" + storageIdentifier);
+                if (!storageIdentifier.startsWith(this.driverId + DataAccess.SEPARATOR)) {
+                    dvObject.setStorageIdentifier(this.driverId + DataAccess.SEPARATOR + storageIdentifier);
                 }
             }
 
@@ -159,17 +163,22 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
 //                this.setInputStream(fin);  
               } else if (isWriteAccess) {
                 //this checks whether a directory for a dataset exists 
-            	  Path datasetPath=Paths.get(getDatasetDirectory());
-            	  if (datasetPath != null && !Files.exists(datasetPath)) {
-            		  Files.createDirectories(datasetPath);
-            	  }
-                dataset.setStorageIdentifier(this.driverId + "://"+dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage());
+                  Path datasetPath=Paths.get(getDatasetDirectory());
+                  if (datasetPath != null && !Files.exists(datasetPath)) {
+                      Files.createDirectories(datasetPath);
+                  }
+                dataset.setStorageIdentifier(this.driverId + DataAccess.SEPARATOR + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage());
             }
 
         } else if (dvObject instanceof Dataverse) {
             dataverse = this.getDataverse();
         } else {
-            throw new IOException("Data Access: Invalid DvObject type");
+            logger.fine("Overlay case: FileAccessIO open for : " + physicalPath.toString());
+            Path datasetPath= physicalPath.getParent();
+            if (datasetPath != null && !Files.exists(datasetPath)) {
+                Files.createDirectories(datasetPath);
+            }
+            //throw new IOException("Data Access: Invalid DvObject type");
         }
         // This "status" is a leftover from 3.6; we don't have a use for it 
         // in 4.0 yet; and we may not need it at all. 
@@ -232,7 +241,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         Path auxPath = getAuxObjectAsPath(auxItemTag);
 
         if (isWriteAccessRequested(options)) {
-            if (dvObject instanceof Dataset && !this.canWrite()) {
+            if (((dvObject instanceof Dataset) || isDirectAccess()) && !this.canWrite()) {
                 // If this is a dataset-level auxilary file (a cached metadata export,
                 // dataset logo, etc.) there's a chance that no "real" files 
                 // have been saved for this dataset yet, and thus the filesystem 
@@ -293,7 +302,10 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         if (auxItemTag == null || "".equals(auxItemTag)) {
             throw new IOException("Null or invalid Auxiliary Object Tag.");
         }
-
+        if(isDirectAccess()) {
+            //Overlay case
+            return Paths.get(physicalPath.toString() + "." + auxItemTag);
+        }
         String datasetDirectory = getDatasetDirectory();
         
         if (dvObject.getStorageIdentifier() == null || "".equals(dvObject.getStorageIdentifier())) {
@@ -317,7 +329,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     }
     
 
-	@Override 
+    @Override 
     public void backupAsAux(String auxItemTag) throws IOException {
         Path auxPath = getAuxObjectAsPath(auxItemTag);
         
@@ -425,7 +437,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             Path testPath = getFileSystemPath();
             if (testPath != null) {
-                return this.driverId + "://" + testPath.toString();
+                return this.driverId + DataAccess.SEPARATOR + testPath.toString();
             }
         } catch (IOException ioex) {
             // just return null, below:
@@ -545,7 +557,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     }
     
     private String getDatasetDirectory() throws IOException {
-        if (dvObject == null) {
+        if (isDirectAccess()) {
             throw new IOException("No DvObject defined in the Data Access Object");
         }
 
@@ -572,14 +584,10 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     }
     
     
-	private String getFilesRootDirectory() {
-		String filesRootDirectory = System.getProperty("dataverse.files." + this.driverId + ".directory");
-
-		if (filesRootDirectory == null || filesRootDirectory.equals("")) {
-			filesRootDirectory = "/tmp/files";
-		}
-		return filesRootDirectory;
-	}
+    protected String getFilesRootDirectory() {
+        String filesRootDirectory = System.getProperty("dataverse.files." + this.driverId + ".directory", "/tmp/files");
+        return filesRootDirectory;
+    }
     
     private List<Path> listCachedFiles() throws IOException {
         List<Path> auxItems = new ArrayList<>();
@@ -642,10 +650,10 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         return in;
     }
     private String stripDriverId(String storageIdentifier) {
-    	int separatorIndex = storageIdentifier.indexOf("://");
-    	if(separatorIndex>0) {
-        	return storageIdentifier.substring(separatorIndex + 3);
+        int separatorIndex = storageIdentifier.indexOf(DataAccess.SEPARATOR);
+        if(separatorIndex>0) {
+            return storageIdentifier.substring(separatorIndex + DataAccess.SEPARATOR.length());
         }
-		return storageIdentifier;
-	}
+        return storageIdentifier;
+    }
 }
