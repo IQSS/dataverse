@@ -2959,10 +2959,10 @@ The URL of an LDN Inbox to which the LDN Announce workflow step will send messag
 
 The list of parent dataset field names for which the LDN Announce workflow step should send messages. See :doc:`/developers/workflows` for details.
 
-:BasicGlobusToken
+:GlobusBasicToken
 +++++++++++++++++
 
-BasicGlobusToken encodes credentials for Globus Integration - see :doc:`/developers/big-data-support` for details.
+GlobusBasicToken encodes credentials for Globus Integration - see :doc:`/developers/big-data-support` for details.
 
 :GlobusEndpoint
 +++++++++++++++
@@ -2979,3 +2979,7 @@ A comma-separated list of the S3 stores that are configured to support Globus In
 
 The URL where the Dataverse Globus app has been deployed to support Globus Integration - see :doc:`/developers/big-data-support` for details.
 
+:GlobusSingleFileTransfer
++++++++++++++++++++++++++
+
+A true/false option to add a Globus transfer option to the file download menu which is not yet fully supported in the dataverse-globus app - see :doc:`/developers/big-data-support` for details.

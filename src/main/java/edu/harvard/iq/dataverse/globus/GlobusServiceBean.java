@@ -264,11 +264,11 @@ public class GlobusServiceBean implements java.io.Serializable {
     }
 
     public AccessToken getClientToken() throws MalformedURLException {
-        String basicGlobusToken = settingsSvc.getValueForKey(SettingsServiceBean.Key.BasicGlobusToken, "");
+        String globusBasicToken = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusBasicToken, "");
         URL url = new URL(
                 "https://auth.globus.org/v2/oauth2/token?scope=openid+email+profile+urn:globus:auth:scope:transfer.api.globus.org:all&grant_type=client_credentials");
 
-        MakeRequestResponse result = makeRequest(url, "Basic", basicGlobusToken, "POST", null);
+        MakeRequestResponse result = makeRequest(url, "Basic", globusBasicToken, "POST", null);
         AccessToken clientTokenUser = null;
         if (result.status == 200) {
             clientTokenUser = parseJson(result.jsonResponse, AccessToken.class, true);
@@ -276,7 +276,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         return clientTokenUser;
     }
 
-    public AccessToken getAccessToken(HttpServletRequest origRequest, String basicGlobusToken)
+    public AccessToken getAccessToken(HttpServletRequest origRequest, String globusBasicToken)
             throws UnsupportedEncodingException, MalformedURLException {
         String serverName = origRequest.getServerName();
         if (serverName.equals("localhost")) {
@@ -292,7 +292,7 @@ public class GlobusServiceBean implements java.io.Serializable {
                 + "&grant_type=authorization_code");
         logger.info(url.toString());
 
-        MakeRequestResponse result = makeRequest(url, "Basic", basicGlobusToken, "POST", null);
+        MakeRequestResponse result = makeRequest(url, "Basic", globusBasicToken, "POST", null);
         AccessToken accessTokenUser = null;
 
         if (result.status == 200) {
@@ -446,11 +446,10 @@ public class GlobusServiceBean implements java.io.Serializable {
             throws UnsupportedEncodingException, MalformedURLException {
 
         String globusEndpoint = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusEndpoint, "");
-        String basicGlobusToken = settingsSvc.getValueForKey(SettingsServiceBean.Key.BasicGlobusToken, "");
-        if (globusEndpoint.equals("") || basicGlobusToken.equals("")) {
+        String globusBasicToken = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusBasicToken, "");
+        if (globusEndpoint.equals("") || globusBasicToken.equals("")) {
             return false;
         }
-        // AccessToken clientTokenUser = getClientToken(basicGlobusToken);
         AccessToken clientTokenUser = getClientToken();
         if (clientTokenUser == null) {
             logger.severe("Cannot get client token ");
@@ -1255,9 +1254,9 @@ public class GlobusServiceBean implements java.io.Serializable {
      * "Uploaded files have passed checksum validation but something went wrong while attempting to move the files into Dataverse. Message was '"
      * + message + "'."); }
      * 
-     * String basicGlobusToken =
-     * settingsSvc.getValueForKey(SettingsServiceBean.Key.BasicGlobusToken, "");
-     * AccessToken clientTokenUser = getClientToken(basicGlobusToken);
+     * String globusBasicToken =
+     * settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusBasicToken, "");
+     * AccessToken clientTokenUser = getClientToken(globusBasicToken);
      * updatePermision(clientTokenUser, directory, "identity", "r"); return true; }
      * 
      */
