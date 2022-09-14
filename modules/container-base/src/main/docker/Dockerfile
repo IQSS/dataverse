@@ -46,7 +46,7 @@ ENV PAYARA_DIR="${HOME_DIR}/appserver" \
     ADMIN_PASSWORD="admin" \
     DOMAIN_NAME="domain1" \
     PAYARA_ARGS=""
-ENV PATH="${PATH}:${PAYARA_DIR}/bin" \
+ENV PATH="${PATH}:${PAYARA_DIR}/bin:${SCRIPT_DIR}" \
     DOMAIN_DIR="${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}" \
     DEPLOY_PROPS="" \
     PREBOOT_COMMANDS="${CONFIG_DIR}/pre-boot-commands.asadmin" \
@@ -88,7 +88,7 @@ EOF
 
 ARG JATTACH_VERSION="v2.1"
 ARG JATTACH_CHECKSUM="07885fdc782e02e7302c6d190f54c3930afa10a38140365adf54076ec1086a8e"
-ARG PKGS="jq imagemagick curl unzip wget acl dirmngr gpg lsof procps netcat tini"
+ARG PKGS="jq imagemagick curl unzip wget acl dirmngr gpg lsof procps netcat dumb-init"
 
 # Installing the packages in an extra container layer for better caching
 RUN <<EOF
@@ -214,9 +214,9 @@ RUN <<EOF
 EOF
 
 # Set the entrypoint to tini (as a process supervisor)
-ENTRYPOINT ["/usr/bin/tini", "--"]
-# JSON syntax should be used, but bypassed shell. Thus re-add expansion via shell exec.
-CMD ["sh", "-c", "${SCRIPT_DIR}/entrypoint.sh"]
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+# This works because we add ${SCRIPT_DIR} to $PATH above!
+CMD ["entrypoint.sh"]
 
 LABEL org.opencontainers.image.created="@git.build.time@" \
       org.opencontainers.image.authors="Research Data Management at FZJ <forschungsdaten@fz-juelich.de>" \
