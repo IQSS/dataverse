@@ -23,7 +23,8 @@ The base image provides:
 - `Payara Community Application Server <https://docs.payara.fish/community>`_
 - CLI tools necessary to run Dataverse (i. e. ``curl`` or ``jq`` - see also :doc:`../installation/prerequisites` in Installation Guide)
 - Linux tools for analysis, monitoring and so on
-- `Jattach <https://github.com/apangin/jattach>`_
+- `Jattach <https://github.com/apangin/jattach>`__ (attach to running JVM)
+- `dumb-init <https://github.com/Yelp/dumb-init>`__ (see :ref:`below <base-entrypoint>` for details)
 
 This image is created as a "multi-arch image", supporting the most common architectures Dataverse usually runs on:
 AMD64 (Windows/Linux/...) and ARM64 (Apple M1/M2).
@@ -245,6 +246,22 @@ its sources plus uncached scheduled nightly builds to make sure security updates
 
 Note: for the Github Action to be able to push to Docker Hub, two repository secrets
 (DOCKERHUB_USERNAME, DOCKERHUB_TOKEN) have been added by IQSS admins to their repository.
+
+.. _base-entrypoint:
+
+Entry & Extension Points
+++++++++++++++++++++++++
+
+The entrypoint shell script provided by this base image will by default ensure to:
+
+- Run any scripts named ``${SCRIPT_DIR}/init_*`` or in ``${SCRIPT_DIR}/init.d/*`` directory for initialization
+  **before** the application server starts.
+- Run an executable script ``${SCRIPT_DIR}/startInBackground.sh`` in the background - if present.
+- Run the application server startup scripting in foreground (``${SCRIPT_DIR}/startInForeground.sh``).
+
+If you need to create some scripting that runs in parallel under supervision of `dumb-init <https://github.com/Yelp/dumb-init>`_,
+e.g. to wait for the application to deploy before executing something, this is your point of extension: simply provide
+the ``${SCRIPT_DIR}/startInBackground.sh`` executable script with your application image.
 
 
 
