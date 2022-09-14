@@ -594,10 +594,14 @@ public abstract class StorageIO<T extends DvObject> {
         return driverId+ DataAccess.SEPARATOR;
     }
     
+    public static boolean isDirectUploadEnabled(String driverId) {
+        return Boolean.getBoolean(System.getProperty("dataverse.files." + driverId + ".download-redirect", "false"));
+    }
+    
     //Check that storageIdentifier is consistent with store's config
     //False will prevent direct uploads
     protected static boolean isValidIdentifier(String driverId, String storageId) {
-        return true;
+        return false;
     }
     
     //Utility to verify the standard UUID pattern for stored files.
@@ -607,4 +611,5 @@ public abstract class StorageIO<T extends DvObject> {
         Matcher m = r.matcher(identifier);
         return m.find();
     }
+
 }
