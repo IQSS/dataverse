@@ -1817,6 +1817,52 @@ public class DatasetsIT {
     }
     
     @Test
+    @Ignore
+    public void testApiErrors() {
+
+        /*
+        Issue 8859
+        This test excerises the issue where the update apis fail when the dataset is out of compliance with
+        the requirement that datasets containing restricted files must allow reuest access or have terms of access.
+        It's impossible to get a dataset into this state via the version 5.11.1 or later so if you needc to
+        run this test you must set it up manually by setting requestAccess on TermsOfUseAccess to false 
+        with an update query.
+        Update the decalarations below with values from your test environment
+         */
+        String datasetPid = "doi:10.5072/FK2/7LDIUU";
+        String apiToken = "1fab5406-0f03-47de-9a5b-d36d1d683a50";
+        Long datasetId = 902L;
+
+        String newDescription = "{\"citation:dsDescription\": {\"citation:dsDescriptionValue\": \"New description\"},  \"@context\":{\"citation\": \"https://dataverse.org/schema/citation/\"}}";
+        Response response = UtilIT.updateDatasetJsonLDMetadata(datasetId.intValue(), apiToken, newDescription, false);
+        response.then().assertThat().statusCode(CONFLICT.getStatusCode());
+
+        String pathToJsonFile = "doc/sphinx-guides/source/_static/api/dataset-update-metadata.json";
+        Response updateTitle = UtilIT.updateDatasetMetadataViaNative(datasetPid, pathToJsonFile, apiToken);
+        updateTitle.prettyPrint();
+        assertEquals(CONFLICT.getStatusCode(), updateTitle.getStatusCode());
+
+        String basicFileName = "004.txt";
+
+        String basicPathToFile = "scripts/search/data/replace_test/" + basicFileName;
+
+        Response basicAddResponse = UtilIT.uploadFileViaNative(datasetId.toString(), basicPathToFile, apiToken);
+        basicAddResponse.prettyPrint();
+        assertEquals(CONFLICT.getStatusCode(), basicAddResponse.getStatusCode());
+        //String basicFileId = JsonPath.from(basicAddResponse.body().asString()).getInt("data.files[0].dataFile.id");
+
+        Response deleteFile = UtilIT.deleteFile(907, apiToken);
+        deleteFile.prettyPrint();
+        assertEquals(BAD_REQUEST.getStatusCode(), deleteFile.getStatusCode());
+        
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken);
+        publishDataset.prettyPrint();
+        assertEquals(409, publishDataset.getStatusCode());
+
+    }
+
+    
+    @Test
     public void testDatasetLocksApi() {
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
