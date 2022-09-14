@@ -1032,6 +1032,10 @@ public class SystemConfig {
     public boolean isGlobusDownload() {
         return getMethodAvailable(FileUploadMethods.GLOBUS.toString(), false);
     }
+    
+    public boolean isGlobusFileDownload() {
+        return (isGlobusDownload() && settingsService.isTrueForKey(SettingsServiceBean.Key.GlobusSingleFileTransfer, false));
+    }
 
     public List<String> getGlobusStoresList() {
     String globusStores = settingsService.getValueForKey(SettingsServiceBean.Key.GlobusStores, "");

@@ -97,6 +97,7 @@ public class SettingsWrapper implements java.io.Serializable {
     
     private Boolean globusUpload = null;
     private Boolean globusDownload = null;
+    private Boolean globusFileDownload = null;
     
     private String globusAppUrl = null;
     
@@ -313,6 +314,13 @@ public class SettingsWrapper implements java.io.Serializable {
             globusDownload = systemConfig.isGlobusDownload();
         }
         return globusDownload;
+    }
+    
+    public boolean isGlobusFileDownload() {
+        if (globusFileDownload == null) {
+            globusFileDownload = systemConfig.isGlobusFileDownload();
+        }
+        return globusFileDownload;
     }
     
     public boolean isGlobusEnabledStorageDriver(String driverId) {

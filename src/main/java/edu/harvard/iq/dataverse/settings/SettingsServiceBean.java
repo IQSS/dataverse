@@ -466,10 +466,10 @@ public class SettingsServiceBean {
          * 
          */
         GlobusAppUrl,
-        /**Client id for Globus application
+        /**Enable single-file download/transfers for Globus
          *
          */
-        //GlobusClientId,
+        GlobusSingleFileTransfer,
         /**
          * Optional external executables to run on the metadata for dataverses 
          * and datasets being published; as an extra validation step, to 

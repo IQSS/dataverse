@@ -59,7 +59,7 @@
         
         <!-- GlobusTransfer, orig file only  -->
          <o:importFunctions type="edu.harvard.iq.dataverse.dataaccess.DataAccess" />
-        <li jsf:rendered="#{settingsWrapper.globusDownload and settingsWrapper.isGlobusEnabledStorageDriver(DataAccess:getStorageDriverFromIdentifier(fileMetadata.dataFile.storageIdentifier))}">
+        <li jsf:rendered="#{settingsWrapper.globusFileDownload and settingsWrapper.isGlobusEnabledStorageDriver(DataAccess:getStorageDriverFromIdentifier(fileMetadata.dataFile.storageIdentifier))}">
             <p:commandLink rendered="#{!(downloadPopupRequired) 
                                       and !(fileMetadata.dataFile.filePackage)}"
                          styleClass="btn-download"

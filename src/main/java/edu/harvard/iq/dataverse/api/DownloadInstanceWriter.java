@@ -207,7 +207,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     }
                 }
                 
-                if (systemConfig.isGlobusDownload() && systemConfig.getGlobusStoresList()
+                if (systemConfig.isGlobusFileDownload() && systemConfig.getGlobusStoresList()
                         .contains(DataAccess.getStorageDriverFromIdentifier(dataFile.getStorageIdentifier()))) {
                     if (di.getConversionParam() != null) {
                         if (di.getConversionParam().equals("format")) {
