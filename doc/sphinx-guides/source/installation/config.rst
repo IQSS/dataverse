@@ -3003,6 +3003,11 @@ A comma-separated list of the S3 stores that are configured to support Globus In
 
 The URL where the Dataverse Globus app has been deployed to support Globus Integration - see :doc:`/developers/big-data-support` for details.
 
+:GlobusPollingInterval
+++++++++++++++++++++++
+
+The interval in seconds between Dataverse calls to Globus to check on upload progress. Defaults to 50 seconds.
+
 :GlobusSingleFileTransfer
 +++++++++++++++++++++++++
 

@@ -422,7 +422,7 @@ public class SystemConfig {
 
         if (limitSetting != null && !limitSetting.equals("")) {
             try {
-                limit = new Long(limitSetting);
+                limit = Long.valueOf(limitSetting);
             } catch (NumberFormatException nfe) {
                 limit = null;
             }
@@ -431,12 +431,12 @@ public class SystemConfig {
         return limit != null ? limit : defaultValue;
     }
 
-    static int getIntLimitFromStringOrDefault(String limitSetting, Integer defaultValue) {
+    public static int getIntLimitFromStringOrDefault(String limitSetting, Integer defaultValue) {
         Integer limit = null;
 
         if (limitSetting != null && !limitSetting.equals("")) {
             try {
-                limit = new Integer(limitSetting);
+                limit = Integer.valueOf(limitSetting);
             } catch (NumberFormatException nfe) {
                 limit = null;
             }

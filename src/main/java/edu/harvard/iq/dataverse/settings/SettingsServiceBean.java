@@ -474,6 +474,10 @@ public class SettingsServiceBean {
          * 
          */
         GlobusAppUrl,
+        /** Globus Polling Interval how long in seconds Dataverse waits between checks on Globus upload status checks
+         * 
+         */
+        GlobusPollingInterval,
         /**Enable single-file download/transfers for Globus
          *
          */

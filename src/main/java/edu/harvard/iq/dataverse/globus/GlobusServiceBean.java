@@ -49,6 +49,7 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
@@ -902,10 +903,11 @@ public class GlobusServiceBean implements java.io.Serializable {
         boolean taskCompletion = false;
         String status = "";
         GlobusTask task = null;
+        int pollingInterval = SystemConfig.getIntLimitFromStringOrDefault(settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusPollingInterval), 50);
         do {
             try {
                 globusLogger.info("checking globus transfer task   " + taskId);
-                Thread.sleep(50000);
+                Thread.sleep(pollingInterval * 1000);
                 AccessToken clientTokenUser = getClientToken();
                 // success = globusServiceBean.getSuccessfulTransfers(clientTokenUser, taskId);
                 task = getTask(clientTokenUser, taskId, globusLogger);
