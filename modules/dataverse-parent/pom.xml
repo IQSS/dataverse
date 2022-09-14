@@ -164,7 +164,7 @@
     
         <!-- Testing dependencies -->
         <testcontainers.version>1.15.0</testcontainers.version>
-        <microbean-mpconfig.version>0.4.1</microbean-mpconfig.version>
+        <smallrye-mpconfig.version>2.10.1</smallrye-mpconfig.version>
     
         <junit.version>4.13.1</junit.version>
         <junit.jupiter.version>5.7.0</junit.jupiter.version>

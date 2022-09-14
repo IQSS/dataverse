@@ -1278,5 +1278,33 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     public static String getDriverPrefix(String driverId) {
         return driverId+ DataAccess.SEPARATOR + getBucketName(driverId) + ":";
     }
+    
+    //Confirm inputs are of the form s3://demo-dataverse-bucket:176e28068b0-1c3f80357c42
+    protected static boolean isValidIdentifier(String driverId, String storageId) {
+        String storageBucketAndId = storageId.substring(storageId.lastIndexOf("//") + 2);
+        String bucketName = getBucketName(driverId);
+        if(bucketName==null) {
+            logger.warning("No bucket defined for " + driverId);
+            return false;
+        }
+        int index = storageBucketAndId.lastIndexOf(":");
+        if(index<=0) {
+            logger.warning("No bucket defined in submitted identifier: " + storageId);
+            return false;
+        }
+        String idBucket = storageBucketAndId.substring(0, index);
+        String id = storageBucketAndId.substring(index+1);
+        logger.fine(id);
+        if(!bucketName.equals(idBucket)) {
+            logger.warning("Incorrect bucket in submitted identifier: " + storageId);
+            return false;
+        }
+        if (!usesStandardNamePattern(id)) {
+            logger.warning("Unacceptable identifier pattern in submitted identifier: " + storageId);
+            return false;
+        }
+        return true;
+    }
+    
 
 }
