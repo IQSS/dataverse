@@ -44,7 +44,7 @@ public class MarkupChecker {
     /**
      * Strip all HTMl tags
      * 
-     * http://jsoup.org/apidocs/org/jsoup/safety/Safelist.html#none%28%29
+     * http://jsoup.org/apidocs/org/jsoup/safety/Safelist.html#none
      * 
      * @param unsafe
      * @return 
