@@ -525,14 +525,36 @@ public class GlobusServiceBean implements java.io.Serializable {
         } catch (Exception e) {
             logger.warning("GlobusAppUrlForDataset: Failed to get storePrefix for " + driverId);
         }
+        //Use URLTokenUtil for params currently in common with external tools. 
         URLTokenUtil tokenUtil = new URLTokenUtil(d, df, apiToken, localeCode);
-        String appUrl = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusAppUrl, "http://localhost") + "/"
-                + (upload ? "upload" : "download")
-                + "?datasetPid={datasetPid}&siteUrl={siteUrl}&apiToken={apiToken}&datasetId={datasetId}&datasetVersion={datasetVersion}&dvLocale={localeCode}"
-                + (df != null ? "&fileId={fileId}" : "");
+        String appUrl;
+        if (upload) {
+            appUrl = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusAppUrl, "http://localhost")
+                    + "/upload?datasetPid={datasetPid}&siteUrl={siteUrl}&apiToken={apiToken}&datasetId={datasetId}&datasetVersion={datasetVersion}&dvLocale={localeCode}";
+        } else {
+            if (df == null) {
+                appUrl = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusAppUrl, "http://localhost")
+                        + "/download?datasetPid={datasetPid}&siteUrl={siteUrl}"
+                        + ((apiToken != null) ? "&apiToken={apiToken}" : "")
+                        + "&datasetId={datasetId}&datasetVersion={datasetVersion}&dvLocale={localeCode}";
+            } else {
+                String rawStorageId = df.getStorageIdentifier();
+                rawStorageId=rawStorageId.substring(rawStorageId.lastIndexOf(":")+1);
+                appUrl = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusAppUrl, "http://localhost")
+                        + "/download-file?datasetPid={datasetPid}&siteUrl={siteUrl}"
+                        + ((apiToken != null) ? "&apiToken={apiToken}" : "")
+                        + "&datasetId={datasetId}&datasetVersion={datasetVersion}&dvLocale={localeCode}&fileId={fileId}&storageIdentifier="
+                        + rawStorageId + "&fileName=" + df.getCurrentName();
+            }
+        }
         return tokenUtil.replaceTokensWithValues(appUrl) + "&storePrefix=" + storePrefix;
     }
 
+    public String getGlobusDownloadScript(Dataset dataset, ApiToken apiToken) {
+        return URLTokenUtil.getScriptForUrl(getGlobusAppUrlForDataset(dataset, false, null));
+        
+    }
+    
     @Asynchronous
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void globusUpload(String jsonData, ApiToken token, Dataset dataset, String httpRequestUrl,

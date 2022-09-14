@@ -184,6 +184,12 @@ public class URLTokenUtil {
         }
         throw new IllegalArgumentException("Cannot replace reserved word: " + value);
     }
+    
+    public static String getScriptForUrl(String url) {
+        String msg = BundleUtil.getStringFromBundle("externaltools.enable.browser.popups");
+        String script = "const newWin = window.open('" + url + "', target='_blank'); if (!newWin || newWin.closed || typeof newWin.closed == \"undefined\") {alert(\"" + msg + "\");}";
+        return script;
+   }
 
     public enum ReservedWord {
 

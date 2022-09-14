@@ -217,6 +217,14 @@
                                                                 <h:outputText value="#{bundle['dataset.accessBtn.too.big']}">                                           
                                                                 </h:outputText>                                                            
                                                             </ui:fragment>
+                                                            <ui:fragment rendered="#{settingsWrapper.globusDownload and settingsWrapper.isGlobusEnabledStorageDriver(DatasetPage.dataset.effectiveStorageDriverId)}">
+                                                                <li>
+                                                                    <h:commandLink styleClass="btn-download" action="#{DatasetPage.startGlobusTransfer()}">
+                                                                        <h:outputText value="Globus Transfer"/>
+                                                                    </h:commandLink>
+                                                                </li>
+                                                            </ui:fragment>
+                                                            
                                                         </ui:fragment>
                                                                                                             
                                                         <!-- END: DOWNLOAD -->
