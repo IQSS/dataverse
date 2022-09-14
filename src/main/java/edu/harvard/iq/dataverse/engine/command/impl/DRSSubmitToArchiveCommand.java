@@ -61,7 +61,7 @@ import com.auth0.jwt.exceptions.JWTCreationException;
 public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implements Command<DatasetVersion> {
 
     private static final Logger logger = Logger.getLogger(DRSSubmitToArchiveCommand.class.getName());
-    private static final String DRS_CONFIG = ":DRSArchivalConfig";
+    private static final String DRS_CONFIG = ":DRSArchiverConfig";
     private static final String ADMIN_METADATA = "admin_metadata";
     private static final String S3_BUCKET_NAME = "s3_bucket_name";
     private static final String S3_PATH = "s3_path";
