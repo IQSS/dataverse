@@ -29,10 +29,13 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 // NIO imports: 
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 // Dataverse imports:
 import edu.harvard.iq.dataverse.DataFile;
@@ -655,5 +658,29 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
             return storageIdentifier.substring(separatorIndex + DataAccess.SEPARATOR.length());
         }
         return storageIdentifier;
+    }
+    
+    //Confirm inputs are of the form of a relative file path that doesn't contain . or ..
+    protected static boolean isValidIdentifier(String driverId, String storageId) {
+        String pathString = storageId.substring(storageId.lastIndexOf("//") + 2);
+        String basePath = "/tmp/";
+        try {
+            String rawPathString = basePath + pathString;
+            Path normalized = Paths.get(rawPathString).normalize();
+            if(!rawPathString.equals(normalized.toString())) {
+                logger.warning("Non-normalized path in submitted identifier " + storageId);
+                return false;
+            }
+            logger.fine(normalized.getFileName().toString());
+            if (!usesStandardNamePattern(normalized.getFileName().toString())) {
+                logger.warning("Unacceptable file name in submitted identifier: " + storageId);
+                return false;
+            }
+
+        } catch (InvalidPathException ipe) {
+            logger.warning("Invalid Path in submitted identifier " + storageId);
+            return false;
+        }
+        return true;
     }
 }
