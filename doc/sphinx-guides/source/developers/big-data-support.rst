@@ -133,7 +133,7 @@ This mechanism requires use of the Globus S3 connector which requires a paid Glo
 
 The setup required to enable Globus is described in the `Community Dataverse-Globus Setup and Configuration document <https://docs.google.com/document/d/1mwY3IVv8_wTspQC0d4ddFrD2deqwr-V5iAGHgOy4Ch8/edit?usp=sharing>`_ and the references therein.
 
-As described in that document, Globus transfers can be initiated by choosing the Globus option on the dataset upload panel. (Globus, which does asynchronous transfers, is not available during dataset creation.) Analogously, Globus Transfer is one of the downloads in the file download menu.
+As described in that document, Globus transfers can be initiated by choosing the Globus option on the dataset upload panel. (Globus, which does asynchronous transfers, is not available during dataset creation.) Analogously, Globus Transfer is one of the downloads in the dataset access menu and optionally the file download menu (if/when supported in the dataverse-globus app).
 
 An overview of the control and data transfer interactions between components was presented at the Dataverse Community Meeting and can be viewed in the `Itegrations and Tools Session Video <https://www.youtube.com/watch?v=3ek7F_Dxcjk&list=PLLoKvRqQVbtKJFdIe-bynhnXdePwI7jpS>`_ around the 1 hr 28 min mark.
 
