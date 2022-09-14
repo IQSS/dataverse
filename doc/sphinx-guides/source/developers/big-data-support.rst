@@ -135,7 +135,7 @@ The setup required to enable Globus is described in the `Community Dataverse-Glo
 
 As described in that document, Globus transfers can be initiated by choosing the Globus option on the dataset upload panel. (Globus, which does asynchronous transfers, is not available during dataset creation.) Analogously, Globus Transfer is one of the downloads in the dataset access menu and optionally the file download menu (if/when supported in the dataverse-globus app).
 
-An overview of the control and data transfer interactions between components was presented at the Dataverse Community Meeting and can be viewed in the `Itegrations and Tools Session Video <https://www.youtube.com/watch?v=3ek7F_Dxcjk&list=PLLoKvRqQVbtKJFdIe-bynhnXdePwI7jpS>`_ around the 1 hr 28 min mark.
+An overview of the control and data transfer interactions between components was presented at the Dataverse Community Meeting and can be viewed in the `Integrations and Tools Session Video <https://youtu.be/3ek7F_Dxcjk?t=5289>`_ around the 1 hr 28 min mark.
 
 Data Capture Module (DCM)
 -------------------------
