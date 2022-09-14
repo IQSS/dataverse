@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.globus;
 
-public class Task {
+public class GlobusTask {
 
     private String DATA_TYPE;
     private String type;

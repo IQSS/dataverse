@@ -243,17 +243,17 @@ public class GlobusServiceBean implements java.io.Serializable {
         return false;
     }
 
-    public Task getTask(AccessToken clientTokenUser, String taskId, Logger globusLogger) throws MalformedURLException {
+    public GlobusTask getTask(AccessToken clientTokenUser, String taskId, Logger globusLogger) throws MalformedURLException {
 
         URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint_manager/task/" + taskId);
 
         MakeRequestResponse result = makeRequest(url, "Bearer",
                 clientTokenUser.getOtherTokens().get(0).getAccessToken(), "GET", null);
 
-        Task task = null;
+        GlobusTask task = null;
 
         if (result.status == 200) {
-            task = parseJson(result.jsonResponse, Task.class, false);
+            task = parseJson(result.jsonResponse, GlobusTask.class, false);
         }
         if (result.status != 200) {
             globusLogger.warning("Cannot find information for the task " + taskId + " : Reason :   "
@@ -613,7 +613,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         }
 
         // globus task status check
-        Task task = globusStatusCheck(taskIdentifier, globusLogger);
+        GlobusTask task = globusStatusCheck(taskIdentifier, globusLogger);
         String taskStatus = getTaskStatus(task);
 
         if (ruleId.length() > 0) {
@@ -869,7 +869,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         }
 
         // globus task status check
-        Task task = globusStatusCheck(taskIdentifier, globusLogger);
+        GlobusTask task = globusStatusCheck(taskIdentifier, globusLogger);
         String taskStatus = getTaskStatus(task);
 
         if (ruleId.length() > 0) {
@@ -898,10 +898,10 @@ public class GlobusServiceBean implements java.io.Serializable {
 
     Executor executor = Executors.newFixedThreadPool(10);
 
-    private Task globusStatusCheck(String taskId, Logger globusLogger) throws MalformedURLException {
+    private GlobusTask globusStatusCheck(String taskId, Logger globusLogger) throws MalformedURLException {
         boolean taskCompletion = false;
         String status = "";
-        Task task = null;
+        GlobusTask task = null;
         do {
             try {
                 globusLogger.info("checking globus transfer task   " + taskId);
@@ -946,7 +946,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         return task;
     }
 
-    private String getTaskStatus(Task task) {
+    private String getTaskStatus(GlobusTask task) {
         String status = null;
         if (task != null) {
             status = task.getStatus();
