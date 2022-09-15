@@ -1,0 +1,1 @@
+Support for indexing the Geographic Bounding Box fields from the Geospatial metadata block has been added. This allows trusted applications with access to solr to perform geospatial queries to find datasets, e.g. those near a given point. This is also a step towards enabling geospatial queries via the Dataverse API and UI.

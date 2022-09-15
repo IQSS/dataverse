@@ -730,3 +730,17 @@ Output from iteration example
       <span class="label label-success pull-right">
         CORS
       </span>
+      
+      
+Geospatial Indexing
+-------------------
+
+Dataverse indexes the Geospatial Bounding Box field from the Geospatial metadatablock as a solr.BBoxField enabling `Spatial Search<https://solr.apache.org/guide/solr/latest/query-guide/spatial-search.html>`_. This capability is not yet exposed through the Dataverse API or UI but can be accessed by trusted applications with direct solr access. 
+For example, a query of the form
+
+.. code-block:: none
+
+    q=*.*&fq={!bbox sfield=solr_srpt}=&pt=10,10&d=5 
+    
+    
+would find datasets with information near the point latitude=10, longitude=10.
