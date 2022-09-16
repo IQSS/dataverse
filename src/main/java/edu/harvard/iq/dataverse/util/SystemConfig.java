@@ -431,7 +431,7 @@ public class SystemConfig {
         return limit != null ? limit : defaultValue;
     }
 
-    static int getIntLimitFromStringOrDefault(String limitSetting, Integer defaultValue) {
+    public static int getIntLimitFromStringOrDefault(String limitSetting, Integer defaultValue) {
         Integer limit = null;
 
         if (limitSetting != null && !limitSetting.equals("")) {

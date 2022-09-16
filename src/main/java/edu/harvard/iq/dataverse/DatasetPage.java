@@ -6038,7 +6038,9 @@ public class DatasetPage implements java.io.Serializable {
     public String getSignpostingLinkHeader() {
         if (!workingVersion.isReleased())
             return null;
-        SignpostingResources sr = new SignpostingResources(systemConfig, workingVersion, settingsService.getValueForKey(SettingsServiceBean.Key.SignpostingConf));
+        SignpostingResources sr = new SignpostingResources(systemConfig, workingVersion,
+                settingsService.getValueForKey(SettingsServiceBean.Key.SignpostingMaxAuthors),
+                settingsService.getValueForKey(SettingsServiceBean.Key.SignpostingMaxItems));
         return sr.getLinks();
     }
 }

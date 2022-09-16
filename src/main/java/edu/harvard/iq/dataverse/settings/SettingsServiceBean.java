@@ -212,9 +212,13 @@ public class SettingsServiceBean {
         MetricsUrl,
 
         /**
-         * Key for Setting of Signposting
+         * The maximum number of author links to show in the signposting header 
          */
-        SignpostingConf,
+        SignpostingMaxAuthors,
+        /**
+         * The maximum number of file links to show in the signposting header 
+         */
+        SignpostingMaxItems,
 
         /**
          * Number of minutes before a metrics query can be rerun. Otherwise a cached value is returned.

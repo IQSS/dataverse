@@ -78,6 +78,7 @@ import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.Ma
 import edu.harvard.iq.dataverse.metrics.MetricsUtil;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
@@ -552,10 +553,9 @@ public class Datasets extends AbstractApiBean {
         }
         return response( req -> {
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
-            String signpostingConf = settingsService.getValueForKey(SettingsServiceBean.Key.SignpostingConf, BundleUtil.getStringFromBundle("signposting.configuration.SignpostingConf"));
-            if (signpostingConf.isEmpty()) return notFound("Configuration key for signposting is empty [SignpostingConf]");
             if (dsv.getId() == null) return notFound("Dataset not found: Id is empty");
-            return ok(Json.createObjectBuilder().add("linkset", new SignpostingResources(systemConfig, dsv, signpostingConf).getJsonLinkset()));
+            return ok(Json.createObjectBuilder().add("linkset", new SignpostingResources(systemConfig, dsv, settingsService.getValueForKey(SettingsServiceBean.Key.SignpostingMaxAuthors),
+                    settingsService.getValueForKey(SettingsServiceBean.Key.SignpostingMaxItems)).getJsonLinkset()));
         });
     }
     @GET

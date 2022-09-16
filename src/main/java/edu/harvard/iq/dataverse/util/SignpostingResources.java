@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.license.License;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -39,24 +40,16 @@ public class SignpostingResources {
     private static final Logger logger = Logger.getLogger(SignpostingResources.class.getCanonicalName());
     SystemConfig systemConfig;
     DatasetVersion workingDatasetVersion;
-    Boolean useDefaultFileType;
-    String defaultFileTypeValue;
+    static final String defaultFileTypeValue = "https://schema.org/Dataset";
+    static final int defaultMaxLinks = 5;
     int maxAuthors;
     int maxItems;
 
-    public SignpostingResources(SystemConfig systemConfig, DatasetVersion workingDatasetVersion, String jsonSetting) {
+    public SignpostingResources(SystemConfig systemConfig, DatasetVersion workingDatasetVersion, String authorLimitSetting, String itemLimitSetting) {
         this.systemConfig = systemConfig;
         this.workingDatasetVersion = workingDatasetVersion;
-        if (jsonSetting == null) {
-            jsonSetting = BundleUtil.getStringFromBundle("signposting.configuration.SignpostingConf");
-        }
-        JsonReader jsonReader = Json.createReader(new StringReader(jsonSetting));
-        JsonObject spJsonSetting = jsonReader.readObject();
-        jsonReader.close();
-        useDefaultFileType = spJsonSetting.getBoolean("useDefaultFileType", true);
-        defaultFileTypeValue = spJsonSetting.getString("defaultFileTypeValue", "https://schema.org/Dataset");
-        maxAuthors = spJsonSetting.getInt("maxAuthors", 5);
-        maxItems = spJsonSetting.getInt("maxItems", 5);
+        maxAuthors = SystemConfig.getIntLimitFromStringOrDefault(itemLimitSetting, defaultMaxLinks);
+        maxItems = SystemConfig.getIntLimitFromStringOrDefault(authorLimitSetting, defaultMaxLinks);
     }
 
     /**
@@ -132,9 +125,7 @@ public class SignpostingResources {
         valueList.add(describedby);
 
         String type = "<https://schema.org/AboutPage>;rel=\"type\"";
-        if (useDefaultFileType) {
-            type = "<https://schema.org/AboutPage>;rel=\"type\",<" + defaultFileTypeValue + ">;rel=\"type\"";
-        }
+        type = "<https://schema.org/AboutPage>;rel=\"type\",<" + defaultFileTypeValue + ">;rel=\"type\"";
         valueList.add(type);
 
         String licenseString = DatasetUtil.getLicenseURI(workingDatasetVersion) + ";rel=\"license\"";
@@ -236,22 +227,11 @@ public class SignpostingResources {
         JsonArrayBuilder linksetJsonObj = Json.createArrayBuilder();
 
         JsonObjectBuilder mandatory;
-        if (useDefaultFileType) {
-            mandatory = jsonObjectBuilder()
-                    .add("anchor", landingPage)
-                    .add("cite-as", Json.createArrayBuilder().add(jsonObjectBuilder().add("href", ds.getPersistentURL())))
-                    .add("type", Json.createArrayBuilder()
-                            .add(jsonObjectBuilder().add("href", "https://schema.org/AboutPage"))
-                            .add(jsonObjectBuilder().add("href", defaultFileTypeValue))
-                    );
-        } else {
-            mandatory = jsonObjectBuilder()
-                    .add("anchor", landingPage)
-                    .add("cite-as", Json.createArrayBuilder().add(jsonObjectBuilder().add("href", ds.getPersistentURL())))
-                    .add("type", Json.createArrayBuilder()
-                            .add(jsonObjectBuilder().add("href", "https://schema.org/AboutPage"))
-                    );
-        }
+        mandatory = jsonObjectBuilder().add("anchor", landingPage)
+                .add("cite-as", Json.createArrayBuilder().add(jsonObjectBuilder().add("href", ds.getPersistentURL())))
+                .add("type",
+                        Json.createArrayBuilder().add(jsonObjectBuilder().add("href", "https://schema.org/AboutPage"))
+                                .add(jsonObjectBuilder().add("href", defaultFileTypeValue)));
 
         if (authors != null) {
             mandatory.add("author", authors);
