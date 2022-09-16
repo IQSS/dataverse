@@ -2983,11 +2983,20 @@ The URL of an LDN Inbox to which the LDN Announce workflow step will send messag
 
 The list of parent dataset field names for which the LDN Announce workflow step should send messages. See :doc:`/developers/workflows` for details.
 
+.. _:SignPostingMaxAuthors:
+
+:SignpostingMaxItems
+++++++++++++++++++++
+
+Limits the number of authors shown in the :ref:`:Signposting` Level 1 Header. The default is 5.
+
+``curl -X PUT -d 5 http://localhost:8080/api/admin/settings/:SignpostingMaxAuthors``
+
 .. _:SignPostingMaxItems:
 
 :SignpostingMaxItems
 ++++++++++++++++++++
 
-Limits the number of items shown.
+Limits the number of items shown in the :ref:`:Signposting` Level 1 Header. The default is 5.
 
 ``curl -X PUT -d 5 http://localhost:8080/api/admin/settings/:SignpostingMaxItems``
