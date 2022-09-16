@@ -2983,32 +2983,34 @@ The URL of an LDN Inbox to which the LDN Announce workflow step will send messag
 
 The list of parent dataset field names for which the LDN Announce workflow step should send messages. See :doc:`/developers/workflows` for details.
 
+.. _:GlobusBasicToken:
+
 :GlobusBasicToken
 +++++++++++++++++
 
-GlobusBasicToken encodes credentials for Globus Integration - see :doc:`/developers/big-data-support` for details.
+GlobusBasicToken encodes credentials for Globus integration. See :ref:`globus-support` for details.
 
 :GlobusEndpoint
 +++++++++++++++
 
-GlobusEndpoint is Globus endpoint id used with Globus Integration - see :doc:`/developers/big-data-support` for details.
+GlobusEndpoint is Globus endpoint id used with Globus integration. See :ref:`globus-support` for details.
 
 :GlobusStores
 +++++++++++++
 
-A comma-separated list of the S3 stores that are configured to support Globus Integration - see :doc:`/developers/big-data-support` for details.
+A comma-separated list of the S3 stores that are configured to support Globus integration. See :ref:`globus-support` for details.
 
 :GlobusAppURL
 +++++++++++++
 
-The URL where the Dataverse Globus app has been deployed to support Globus Integration - see :doc:`/developers/big-data-support` for details.
+The URL where the `dataverse-globus <https://github.com/scholarsportal/dataverse-globus>`_ "transfer" app has been deployed to support Globus integration. See :ref:`globus-support` for details.
 
 :GlobusPollingInterval
 ++++++++++++++++++++++
 
-The interval in seconds between Dataverse calls to Globus to check on upload progress. Defaults to 50 seconds.
+The interval in seconds between Dataverse calls to Globus to check on upload progress. Defaults to 50 seconds. See :ref:`globus-support` for details.
 
 :GlobusSingleFileTransfer
 +++++++++++++++++++++++++
 
-A true/false option to add a Globus transfer option to the file download menu which is not yet fully supported in the dataverse-globus app - see :doc:`/developers/big-data-support` for details.
+A true/false option to add a Globus transfer option to the file download menu which is not yet fully supported in the dataverse-globus app. See :ref:`globus-support` for details.
