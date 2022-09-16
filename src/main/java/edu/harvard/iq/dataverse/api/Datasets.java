@@ -557,7 +557,7 @@ public class Datasets extends AbstractApiBean {
             String signpostingConf = settingsService.getValueForKey(SettingsServiceBean.Key.SignpostingConf, BundleUtil.getStringFromBundle("signposting.configuration.SignpostingConf"));
             if (signpostingConf.isEmpty()) return notFound("Configuration key for signposting is empty [SignpostingConf]");
             if (dsv.getId() == null) return notFound("Dataset not found: Id is empty");
-            return okLinkset(JsonPrinter.jsonLinkset(new SignpostingResources(systemConfig, dsv, signpostingConf)));
+            return ok(Json.createObjectBuilder().add("linkset", JsonPrinter.jsonLinkset(new SignpostingResources(systemConfig, dsv, signpostingConf))));
         });
     }
     @GET

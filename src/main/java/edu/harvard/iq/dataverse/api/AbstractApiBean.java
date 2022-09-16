@@ -850,19 +850,6 @@ public abstract class AbstractApiBean {
                         .add( "message", msg ).build()
                 ).type(MediaType.APPLICATION_JSON_TYPE).build();
     }
-
-    /**
-     * Adding Signposting
-     *
-     * @param bld
-     * @return HTTP OK response which contains the json structure of linkset
-     */
-    protected Response okLinkset( JsonArrayBuilder bld ) {
-        return Response.ok( Json.createObjectBuilder()
-                .add("linkset", bld).build() )
-                .type(MediaType.APPLICATION_JSON)
-                .build();
-    }
 }
 
 class LazyRef<T> {
