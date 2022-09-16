@@ -71,6 +71,9 @@ public class GlobalId implements java.io.Serializable {
         this.identifier = dvObject.getIdentifier(); 
     }
         
+    // protocol the identifier system, e.g. "doi"
+    // authority the namespace that the authority manages in the identifier system
+    // identifier the local identifier part
     private String protocol;
     private String authority;
     private String identifier;
@@ -113,10 +116,9 @@ public class GlobalId implements java.io.Serializable {
     }
     
     /**
-     * Returns {@code this}' string representation. Differs from {@link #toString}
-     * which can also contain debug data, if needed.
+     * Concatenate the parts that make up a Global Identifier.
      * 
-     * @return The string representation of this global id.
+     * @return the Global Identifier, e.g. "doi:10.12345/67890"
      */
     public String asString() {
         if (protocol == null || authority == null || identifier == null) {
