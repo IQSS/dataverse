@@ -126,6 +126,7 @@ Globus File Transfer
 When configured to use a Globus accessible S3 store and interact with a community-developed Dataverse Globus app, Dataverse can support the transfer of files via Globus for upload and download. Due to differences in the access control models of Dataverse and Globus, enabling this capability on a store will disable the ability to restrict and embargo files in that store.
 
 Globus transfer uses a very efficient transfer mechanism and has additional features that make it suitable for large files and large numbers of files:
+
 * robust file transfer capable of restarting after network or endpoint failures,
 * third-party transfer, which enables a user running Dataverse in their desktop browser to initiate transfer of their files from a remote endpoint, i.e. on a local high-performance computing cluster), directly to an S3 store managed by Dataverse.
 
