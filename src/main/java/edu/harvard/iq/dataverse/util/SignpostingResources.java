@@ -20,15 +20,11 @@ import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.license.License;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
 import java.io.IOException;
-import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -52,47 +48,6 @@ public class SignpostingResources {
         maxItems = SystemConfig.getIntLimitFromStringOrDefault(authorLimitSetting, defaultMaxLinks);
     }
 
-    /**
-     * Get Authors as string
-     * For example:
-     * if author has VIAF
-     * Link: <http://viaf.org/viaf/:id/>; rel="author"
-     *
-     * @param datasetAuthors list of all DatasetAuthor object
-     * @return all the non empty author links in a string
-     */
-    private String getAuthorsAsString(List<DatasetAuthor> datasetAuthors) {
-        String singleAuthorString;
-        String identifierSchema = "";
-        int visibleAuthorCounter = 0;
-//        if (datasetAuthors.size() > maxAuthors) {return "";}
-        for (DatasetAuthor da : datasetAuthors) {
-            logger.info(String.format(
-                    "idtype: %s; idvalue: %s, affiliation: %s; identifierUrl: %s",
-                    da.getIdType(),
-                    da.getIdValue(),
-                    da.getAffiliation(),
-                    da.getIdentifierAsUrl()
-            ));
-
-            String authorURL = "";
-            authorURL = getAuthorUrl(da);
-            if (authorURL != null && !Objects.equals(authorURL, "")) {
-                visibleAuthorCounter++;
-                // return empty if number of visible author more than max allowed
-                if (visibleAuthorCounter >= maxAuthors) return "";
-                singleAuthorString = "<" + authorURL + ">;rel=\"author\"";
-                if (Objects.equals(identifierSchema, "")) {
-                    identifierSchema = singleAuthorString;
-                } else {
-                    identifierSchema = String.join(",", identifierSchema, singleAuthorString);
-                }
-            }
-        }
-
-        logger.info(String.format("identifierSchema: %s", identifierSchema));
-        return identifierSchema;
-    }
 
     /**
      * Get key, values of signposting items and return as string
@@ -103,8 +58,8 @@ public class SignpostingResources {
         List<String> valueList = new LinkedList<>();
         Dataset ds = workingDatasetVersion.getDataset();
 
-        String identifierSchema = getAuthorsAsString(workingDatasetVersion.getDatasetAuthors());
-        if (identifierSchema != null && !identifierSchema.equals("")) {
+        String identifierSchema = getAuthorsAsString(getAuthorURLs(true));
+        if (identifierSchema != null && !identifierSchema.isEmpty()) {
             valueList.add(identifierSchema);
         }
 
@@ -140,66 +95,12 @@ public class SignpostingResources {
         return String.join(", ", valueList);
     }
 
-    private String getAuthorUrl(DatasetAuthor da) {
-        String authorURL = "";
-        if (da.getIdValue() != null && !da.getIdValue().trim().isEmpty()) {
-            authorURL = da.getIdValue();
-        } else {
-            authorURL = da.getIdentifierAsUrl();
-        }
-        return authorURL;
-    }
-
-    private JsonArrayBuilder getJsonAuthors(List<DatasetAuthor> datasetAuthors) {
-        JsonArrayBuilder authors = Json.createArrayBuilder();
-        boolean returnNull = true;
-        String authorURL = "";
-        for (DatasetAuthor da : datasetAuthors) {
-            authorURL = getAuthorUrl(da);
-            if (!Objects.equals(authorURL, "")) {
-                authors.add(jsonObjectBuilder().add("href", authorURL));
-                returnNull = false;
-            }
-        }
-        return returnNull ? null : authors;
-    }
-
-    private String getItems(List<FileMetadata> fms) {
-        if (fms.size() > maxItems) {
-            logger.info(String.format("maxItem is %s and fms size is %s", maxItems, fms.size()));
-            return null;
-        }
-
-        String result = "";
-        for (FileMetadata fm : fms) {
-            DataFile df = fm.getDataFile();
-            if (Objects.equals(result, "")) {
-                result = "<" + getPublicDownloadUrl(df) + ">;rel=\"item\";type=\"" + df.getContentType() + "\"";
-            } else {
-                result = String.join(",", result, "<" + getPublicDownloadUrl(df) + ">;rel=\"item\";type=\"" + df.getContentType() + "\"");
-            }
-        }
-        return result;
-    }
-
-    private JsonArrayBuilder getJsonItems(List<FileMetadata> fms) {
-        JsonArrayBuilder items = Json.createArrayBuilder();
-        for (FileMetadata fm : fms) {
-            DataFile df = fm.getDataFile();
-            items.add(jsonObjectBuilder().add("href", getPublicDownloadUrl(df)).add("type", df.getContentType()));
-        }
-
-        return items;
-    }
-
     public JsonArrayBuilder getJsonLinkset() {
         Dataset ds = workingDatasetVersion.getDataset();
         GlobalId gid = new GlobalId(ds);
         String landingPage = systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier();
-        JsonArrayBuilder authors = getJsonAuthors(workingDatasetVersion.getDatasetAuthors());
-
-        List<FileMetadata> fms = workingDatasetVersion.getFileMetadatas();
-        JsonArrayBuilder items = getJsonItems(fms);
+        JsonArrayBuilder authors = getJsonAuthors(getAuthorURLs(false));
+        JsonArrayBuilder items = getJsonItems();
 
         License license = workingDatasetVersion.getTermsOfUseAndAccess().getLicense();
         String licenseString = license.getUri().toString();
@@ -236,10 +137,10 @@ public class SignpostingResources {
         if (authors != null) {
             mandatory.add("author", authors);
         }
-        if (licenseString != null && !Objects.equals(licenseString, "")) {
+        if (licenseString != null && !licenseString.isBlank()) {
             mandatory.add("license", jsonObjectBuilder().add("href", licenseString));
         }
-        if (!mediaTypes.toString().trim().isEmpty()) {
+        if (!mediaTypes.toString().isBlank()) {
             mandatory.add("describedby", mediaTypes);
         }
         if (items != null) {
@@ -248,7 +149,7 @@ public class SignpostingResources {
         linksetJsonObj.add(mandatory);
 
         // remove scholarly type as shown already on landing page
-        for (FileMetadata fm : fms) {
+        for (FileMetadata fm : workingDatasetVersion.getFileMetadatas()) {
             DataFile df = fm.getDataFile();
             JsonObjectBuilder itemAnchor = jsonObjectBuilder().add("anchor", getPublicDownloadUrl(df));
             itemAnchor.add("collection", Json.createArrayBuilder().add(jsonObjectBuilder()
@@ -259,7 +160,111 @@ public class SignpostingResources {
         return linksetJsonObj;
     }
 
+    /*Method retrieves all the authors of a DatasetVersion with a valid URL and puts them in a list
+     * @param limit - if true, will return an empty list (for level 1) if more than maxAuthor authors with URLs are found 
+     */
+    private List<String> getAuthorURLs(boolean limit) {
+        List<String> authorURLs = new ArrayList<String>(maxAuthors);
+        int visibleAuthorCounter = 0;
 
+        for (DatasetAuthor da : workingDatasetVersion.getDatasetAuthors()) {
+            logger.fine(String.format("idtype: %s; idvalue: %s, affiliation: %s; identifierUrl: %s", da.getIdType(),
+                    da.getIdValue(), da.getAffiliation(), da.getIdentifierAsUrl()));
+            String authorURL = "";
+            authorURL = getAuthorUrl(da);
+            if (authorURL != null && !authorURL.isBlank()) {
+                authorURLs.add(authorURL);
+                visibleAuthorCounter++;
+                // return empty if number of visible author more than max allowed
+                if (visibleAuthorCounter >= maxAuthors) {
+                    authorURLs.clear();
+                    break;
+                }
+
+            }
+        }
+        return authorURLs;
+    }
+
+
+    /**
+     * Get Authors as string
+     * For example:
+     * if author has VIAF
+     * Link: <http://viaf.org/viaf/:id/>; rel="author"
+     *
+     * @param datasetAuthorURLs list of all DatasetAuthors with a valid URL
+     * @return all the author links in a string
+     */
+    private String getAuthorsAsString(List<String> datasetAuthorURLs) {
+        String singleAuthorString;
+        String identifierSchema = null;
+        for (String authorURL : datasetAuthorURLs) {
+                singleAuthorString = "<" + authorURL + ">;rel=\"author\"";
+                if (identifierSchema == null) {
+                    identifierSchema = singleAuthorString;
+                } else {
+                    identifierSchema = String.join(",", identifierSchema, singleAuthorString);
+                }
+        }
+        logger.fine(String.format("identifierSchema: %s", identifierSchema));
+        return identifierSchema;
+    }
+
+    /* 
+     * 
+     */
+    private String getAuthorUrl(DatasetAuthor da) {
+        String authorURL = "";
+        //If no type and there's a value, assume it is a URL (is this reasonable?)
+        //Otherise, get the URL using the type and value
+        if (da.getIdType() != null && !da.getIdType().isBlank() && da.getIdValue()!=null) {
+            authorURL = da.getIdValue();
+        } else {
+            authorURL = da.getIdentifierAsUrl();
+        }
+        return authorURL;
+    }
+
+    private JsonArrayBuilder getJsonAuthors(List<String> datasetAuthorURLs) {
+        if(datasetAuthorURLs.isEmpty()) {
+            return null;
+        }
+        JsonArrayBuilder authors = Json.createArrayBuilder();
+        for (String authorURL : datasetAuthorURLs) {
+                authors.add(jsonObjectBuilder().add("href", authorURL));
+        }
+        return authors;
+    }
+
+    private String getItems(List<FileMetadata> fms) {
+        if (fms.size() > maxItems) {
+            logger.info(String.format("maxItem is %s and fms size is %s", maxItems, fms.size()));
+            return null;
+        }
+
+        String itemString = null;
+        for (FileMetadata fm : fms) {
+            DataFile df = fm.getDataFile();
+            if (itemString == null) {
+                itemString = "<" + getPublicDownloadUrl(df) + ">;rel=\"item\";type=\"" + df.getContentType() + "\"";
+            } else {
+                itemString = String.join(",", itemString, "<" + getPublicDownloadUrl(df) + ">;rel=\"item\";type=\"" + df.getContentType() + "\"");
+            }
+        }
+        return itemString;
+    }
+
+    private JsonArrayBuilder getJsonItems() {
+        JsonArrayBuilder items = Json.createArrayBuilder();
+        for (FileMetadata fm : workingDatasetVersion.getFileMetadatas()) {
+            DataFile df = fm.getDataFile();
+            items.add(jsonObjectBuilder().add("href", getPublicDownloadUrl(df)).add("type", df.getContentType()));
+        }
+
+        return items;
+    }
+    
     private String getPublicDownloadUrl(DataFile dataFile) {
         StorageIO<DataFile> storageIO = null;
         try {
