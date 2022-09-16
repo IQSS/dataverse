@@ -914,4 +914,8 @@ public class Dataset extends DvObjectContainer {
         return DatasetUtil.getThumbnail(this, datasetVersion, size);
     }
 
+    @Override
+    public String getTargetUrl() {
+        return Dataset.TARGET_URL;
+    }
 }

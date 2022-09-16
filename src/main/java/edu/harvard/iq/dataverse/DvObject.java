@@ -419,18 +419,8 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
         throw new UnsupportedOperationException("Not supported yet. New DVObject Instance?");
     }
     
-    public String getTargetUrl(){//ToDo - Inherit
-        if (this instanceof Dataverse){
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        if (this instanceof Dataset){
-            return Dataset.TARGET_URL;
-        }
-        if (this instanceof DataFile){
-            return DataFile.TARGET_URL;
-        }
+    public String getTargetUrl(){
         throw new UnsupportedOperationException("Not supported yet. New DVObject Instance?");
-        
     }
     
     public String getYearPublishedCreated(){

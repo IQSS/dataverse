@@ -1034,6 +1034,10 @@ public class DataFile extends DvObject implements Comparable {
         return null;
     }
     
+    @Override
+    public String getTargetUrl() {
+        return DataFile.TARGET_URL;
+    }
 
 } // end of class
     
