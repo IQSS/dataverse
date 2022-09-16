@@ -82,6 +82,7 @@ import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
@@ -3349,17 +3350,20 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/{id}/{version}/archivalStatus")
     public Response setDatasetVersionArchivalStatus(@PathParam("id") String datasetId,
-            @PathParam("version") String versionNumber, JsonObject update, @Context UriInfo uriInfo,
+            @PathParam("version") String versionNumber, String newStatus, @Context UriInfo uriInfo,
             @Context HttpHeaders headers) {
 
-        logger.fine(JsonUtil.prettyPrint(update));
+        logger.fine(newStatus);
         try {
             AuthenticatedUser au = findAuthenticatedUserOrDie();
 
             if (!au.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
-
+            
+            //Verify we have valid json after removing any HTML tags (the status gets displayed in the UI, so we want plain text).
+            JsonObject update= JsonUtil.getJsonObject(MarkupChecker.stripAllTags(newStatus));
+            
             if (update.containsKey(DatasetVersion.ARCHIVAL_STATUS) && update.containsKey(DatasetVersion.ARCHIVAL_STATUS_MESSAGE)) {
                 String status = update.getString(DatasetVersion.ARCHIVAL_STATUS);
                 if (status.equals(DatasetVersion.ARCHIVAL_STATUS_PENDING) || status.equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE)
@@ -3390,8 +3394,9 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
             }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
+        } catch (JsonException| IllegalStateException ex) {
+            return error(Status.BAD_REQUEST, "Unable to parse provided JSON");
         }
-
         return error(Status.BAD_REQUEST, "Unacceptable status format");
     }
     
