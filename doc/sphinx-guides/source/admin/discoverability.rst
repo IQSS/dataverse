@@ -40,10 +40,11 @@ The HTML source of a dataset landing page includes Schema.org JSON-LD metadata l
 
         <script type="application/ld+json">{"@context":"http://schema.org","@type":"Dataset","@id":"https://doi.org/...
 
+
 .. _:SignPosting:
 
 Signposting
------------
++++++++++++
 
 The Dataverse Software supports `Signposting <https://signposting.org>`_. This allows machines to request more information about a dataset through the `Link <https://tools.ietf.org/html/rfc5988>`_ HTTP header.
 
@@ -65,7 +66,6 @@ The following configuration options are available:
 
   `maxItems` - sets the max number of items/files which will be shown in `level 1` profile. Datasets with 
   too many files will not show any file links in `level 1` profile. They will be shown in `level 2` linkset only. 
-
 
 Additional Discoverability Through Integrations
 -----------------------------------------------
