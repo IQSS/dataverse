@@ -266,36 +266,8 @@ public class SignpostingResources {
     }
     
     private String getPublicDownloadUrl(DataFile dataFile) {
-        StorageIO<DataFile> storageIO = null;
-        try {
-            storageIO = dataFile.getStorageIO();
-        } catch (IOException e) {
-            logger.warning(String.format("Error getting storageID from file; original error message is: %s", e.getLocalizedMessage()));
-        }
-
-        if (storageIO instanceof SwiftAccessIO) {
-            String fileDownloadUrl;
-            SwiftAccessIO<DataFile> swiftIO = (SwiftAccessIO<DataFile>) storageIO;
-            try {
-                swiftIO.open();
-            } catch (IOException e) {
-                logger.warning(String.format("Error opening the swiftIO; original error message is: %s", e.getLocalizedMessage()));
-            }
-
-            //if its a public install, lets just give users the permanent URL!
-            if (systemConfig.isPublicInstall()) {
-                fileDownloadUrl = swiftIO.getRemoteUrl();
-            } else {
-                //TODO: if a user has access to this file, they should be given the swift url
-                // perhaps even we could use this as the "private url"
-                fileDownloadUrl = swiftIO.getTemporarySwiftUrl();
-            }
-            // close the stream
-            swiftIO.closeInputStream();
-            return fileDownloadUrl;
-
-        }
-
-        return FileUtil.getPublicDownloadUrl(systemConfig.getDataverseSiteUrl(), null, dataFile.getId());
+        GlobalId gid = dataFile.getGlobalId();
+        return FileUtil.getPublicDownloadUrl(systemConfig.getDataverseSiteUrl(),
+                ((gid != null) ? gid.asString() : null), dataFile.getId());
     }
 }
