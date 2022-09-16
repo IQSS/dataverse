@@ -33,12 +33,6 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     public static String UNAVAILABLE = ":unav";
 
     @Override
-    public String getIdentifierForLookup(String protocol, String authority, String identifier) {
-        logger.log(Level.FINE,"getIdentifierForLookup");
-        return protocol + ":" + authority + "/" + identifier;
-    }
-
-    @Override
     public Map<String, String> getMetadataForCreateIndicator(DvObject dvObjectIn) {
         logger.log(Level.FINE,"getMetadataForCreateIndicator(DvObject)");
         Map<String, String> metadata = new HashMap<>();
