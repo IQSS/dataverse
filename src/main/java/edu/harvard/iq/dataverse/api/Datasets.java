@@ -549,11 +549,10 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/versions/{versionId}/linkset")
     public Response getLinkset( @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         if ( ":draft".equals(versionId) ) {
-            return badRequest("The :draft version can be viewed");
+            return badRequest("Signposting is not supported on the :draft version");
         }
         return response( req -> {
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
-            if (dsv.getId() == null) return notFound("Dataset not found: Id is empty");
             return ok(Json.createObjectBuilder().add("linkset", new SignpostingResources(systemConfig, dsv, settingsService.getValueForKey(SettingsServiceBean.Key.SignpostingMaxAuthors),
                     settingsService.getValueForKey(SettingsServiceBean.Key.SignpostingMaxItems)).getJsonLinkset()));
         });
