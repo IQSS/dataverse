@@ -916,16 +916,6 @@ public class JsonPrinter {
 
 
     /**
-     * Get signposting from SignpostingResources
-     *
-     * @param sr corresponding SignpostingResources
-     * @return json linkset
-     */
-    public static JsonArrayBuilder jsonLinkset(SignpostingResources sr) {
-        return sr.getJsonLinkset();
-    }
-
-    /**
      * Get signposting from Dataset
      * @param ds the designated Dataset
      * @return json linkset
