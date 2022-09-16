@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProviderServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -123,6 +124,9 @@ public class EjbDataverseEngine {
 
     @EJB
     HandlenetServiceBean handleNet;
+    
+    @EJB
+    PermaLinkPidProviderServiceBean permaLinkProvider;
     
     @EJB
     SettingsServiceBean settings;
@@ -496,6 +500,11 @@ public class EjbDataverseEngine {
                     return handleNet;
                 }
 
+                @Override
+                public PermaLinkPidProviderServiceBean permaLinkProvider() {
+                    return permaLinkProvider;
+                }
+                
                 @Override
                 public SettingsServiceBean settings() {
                     return settings;
