@@ -22,7 +22,6 @@ import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
-import edu.harvard.iq.dataverse.util.SignpostingResources;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
 import edu.harvard.iq.dataverse.workflow.Workflow;
