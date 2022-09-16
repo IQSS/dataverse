@@ -42,8 +42,6 @@ public interface GlobalIdServiceBean {
     
     Map<String,String> getMetadataForTargetURL(DvObject dvObject);
     
-    Map<String,String> lookupMetadataFromIdentifier(String protocol, String authority, String identifier);
-    
     DvObject generateIdentifier(DvObject dvObject);
     
     String getIdentifier(DvObject dvObject);

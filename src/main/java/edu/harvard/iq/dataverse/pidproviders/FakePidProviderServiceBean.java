@@ -102,12 +102,6 @@ public class FakePidProviderServiceBean extends AbstractGlobalIdServiceBean {
     }
 
     @Override
-    public Map<String, String> lookupMetadataFromIdentifier(String protocol, String authority, String identifier) {
-        Map<String, String> map = new HashMap<>();
-        return map;
-    }
-
-    @Override
     public boolean publicizeIdentifier(DvObject studyIn) {
         return true;
     }

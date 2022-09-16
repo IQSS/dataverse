@@ -341,11 +341,6 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     }
 
     @Override
-    public HashMap lookupMetadataFromIdentifier(String protocol, String authority, String identifier)  {
-        throw new NotImplementedException();
-    }
-
-    @Override
     public String modifyIdentifierTargetURL(DvObject dvObject) throws Exception  {
         logger.log(Level.FINE,"modifyIdentifier");
         reRegisterHandle(dvObject);
