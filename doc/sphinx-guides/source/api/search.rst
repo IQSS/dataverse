@@ -735,7 +735,7 @@ Output from iteration example
 Geospatial Indexing
 -------------------
 
-Dataverse indexes the Geospatial Bounding Box field from the Geospatial metadatablock as a solr.BBoxField enabling `Spatial Search<https://solr.apache.org/guide/solr/latest/query-guide/spatial-search.html>`_. This capability is not yet exposed through the Dataverse API or UI but can be accessed by trusted applications with direct solr access. 
+Dataverse indexes the Geospatial Bounding Box field from the Geospatial metadatablock as a solr.BBoxField enabling `Spatial Search <https://solr.apache.org/guide/solr/latest/query-guide/spatial-search.html>`_. This capability is not yet exposed through the Dataverse API or UI but can be accessed by trusted applications with direct solr access. 
 For example, a query of the form
 
 .. code-block:: none
