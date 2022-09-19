@@ -52,6 +52,7 @@ The following DB settings have been added:
 - `:GlobusStores`
 - `:GlobusAppUrl`
 - `:GlobusPollingInterval`
+- `:GlobusSingleFileTransfer`
 - `:S3ArchiverConfig`
 - `:S3ArchiverProfile`
 - `:DRSArchiverConfig`
