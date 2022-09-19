@@ -47,13 +47,14 @@ Several of the capabilities introduced in v5.12 are "experimental" in the sense 
 The following DB settings have been added:
 
 - `:LDNMessageHosts`
-- `:BasicGlobusToken`
+- `:GlobusBasicToken`
 - `:GlobusEndpoint`
 - `:GlobusStores`
 - `:GlobusAppUrl`
+- `:GlobusPollingInterval`
 - `:S3ArchiverConfig`
 - `:S3ArchiverProfile`
-- `:DRSArchivalConfig`
+- `:DRSArchiverConfig`
 
 See the [Database Settings](https://guides.dataverse.org/en/5.12/installation/config.html#database-settings) section of the Guides for more information.
 
