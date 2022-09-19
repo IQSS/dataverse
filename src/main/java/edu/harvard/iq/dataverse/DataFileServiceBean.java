@@ -73,7 +73,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     // Assorted useful mime types:
     
     // 3rd-party and/or proprietary tabular data formasts that we know
-    // how to ingest: 
+    // how to ingest:
     
     private static final String MIME_TYPE_STATA = "application/x-stata";
     private static final String MIME_TYPE_STATA13 = "application/x-stata-13";
@@ -1427,75 +1427,6 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
     }
     
-    public String generateDataFileIdentifier(DataFile datafile, GlobalIdServiceBean idServiceBean) {
-        String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
-        String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
-
-        String prepend = "";
-        if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.DEPENDENT.toString())){
-            //If format is dependent then pre-pend the dataset identifier 
-            prepend = datafile.getOwner().getIdentifier() + "/";
-        } else {
-            //If there's a shoulder prepend independent identifiers with it
-        	prepend = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder, "");
-        }
- 
-        switch (doiIdentifierType) {
-            case "randomString":               
-                return generateIdentifierAsRandomString(datafile, idServiceBean, prepend);
-            case "storedProcGenerated":
-                if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.INDEPENDENT.toString())){ 
-                    return generateIdentifierFromStoredProcedureIndependent(datafile, idServiceBean, prepend);
-                } else {
-                    return generateIdentifierFromStoredProcedureDependent(datafile, idServiceBean, prepend);
-                }
-            default:
-                /* Should we throw an exception instead?? -- L.A. 4.6.2 */
-                return generateIdentifierAsRandomString(datafile, idServiceBean, prepend);
-        }
-    }
-    
-    private String generateIdentifierAsRandomString(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
-        String identifier = null;
-        do {
-            identifier = prepend + RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
-        } while (!isGlobalIdUnique(identifier, datafile, idServiceBean));
-
-        return identifier;
-    }
-
-
-    private String generateIdentifierFromStoredProcedureIndependent(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
-        String identifier; 
-        do {
-            StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierFromStoredProcedure");
-            query.execute();
-            String identifierFromStoredProcedure = (String) query.getOutputParameterValue(1);
-            // some diagnostics here maybe - is it possible to determine that it's failing 
-            // because the stored procedure hasn't been created in the database?
-            if (identifierFromStoredProcedure == null) {
-                return null; 
-            }
-            identifier = prepend + identifierFromStoredProcedure;
-        } while (!isGlobalIdUnique(identifier, datafile, idServiceBean));
-        
-        return identifier;
-    }
-    
-    private String generateIdentifierFromStoredProcedureDependent(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
-        String identifier;
-        Long retVal;
-
-        retVal = new Long(0);
-
-        do {
-            retVal++;
-            identifier = prepend + retVal.toString();
-
-        } while (!isGlobalIdUnique(identifier, datafile, idServiceBean));
-
-        return identifier;
-    }
 
     /**
      * Check that a identifier entered by the user is unique (not currently used

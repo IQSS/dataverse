@@ -5,9 +5,15 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.InputStream;
 
 import javax.ejb.EJB;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.StoredProcedureQuery;
+
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.apache.commons.lang3.RandomStringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -29,6 +35,9 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     DataFileServiceBean datafileService;
     @EJB
     SystemConfig systemConfig;
+    
+    @PersistenceContext(unitName = "VDCNet-ejbPU")
+    protected EntityManager em;
     
     public static String UNAVAILABLE = ":unav";
 
@@ -121,9 +130,9 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         String authority = dvObject.getAuthority() == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Authority) : dvObject.getAuthority();
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, commandEngine.getContext());
         if (dvObject.isInstanceofDataset()) {
-            dvObject.setIdentifier(datasetService.generateDatasetIdentifier((Dataset) dvObject, idServiceBean));
+            dvObject.setIdentifier(generateDatasetIdentifier((Dataset) dvObject, idServiceBean));
         } else {
-            dvObject.setIdentifier(datafileService.generateDataFileIdentifier((DataFile) dvObject, idServiceBean));
+            dvObject.setIdentifier(generateDataFileIdentifier((DataFile) dvObject, idServiceBean));
         }
         if (dvObject.getProtocol() == null) {
             dvObject.setProtocol(protocol);
@@ -133,6 +142,142 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         }
         return dvObject;
     }
+    
+    public String generateDatasetIdentifier(Dataset dataset, GlobalIdServiceBean idServiceBean) {
+        String identifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
+        String shoulder = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder, "");
+
+        switch (identifierType) {
+            case "randomString":
+                return generateIdentifierAsRandomString(dataset, idServiceBean, shoulder);
+            case "storedProcGenerated":
+                return generateIdentifierFromStoredProcedure(dataset, idServiceBean, shoulder);
+            default:
+                /* Should we throw an exception instead?? -- L.A. 4.6.2 */
+                return generateIdentifierAsRandomString(dataset, idServiceBean, shoulder);
+        }
+    }
+
+    private String generateIdentifierAsRandomString(Dataset dataset, GlobalIdServiceBean idServiceBean, String shoulder) {
+        String identifier = null;
+        do {
+            identifier = shoulder + RandomStringUtils.randomAlphanumeric(6).toUpperCase();
+        } while (!datasetService.isIdentifierLocallyUnique(identifier, dataset));
+
+        return identifier;
+    }
+
+    private String generateIdentifierFromStoredProcedure(Dataset dataset, GlobalIdServiceBean idServiceBean, String shoulder) {
+
+        String identifier;
+        do {
+            StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierFromStoredProcedure");
+            query.execute();
+            String identifierFromStoredProcedure = (String) query.getOutputParameterValue(1);
+            // some diagnostics here maybe - is it possible to determine that it's failing
+            // because the stored procedure hasn't been created in the database?
+            if (identifierFromStoredProcedure == null) {
+                return null;
+            }
+            identifier = shoulder + identifierFromStoredProcedure;
+        } while (!datasetService.isIdentifierLocallyUnique(identifier, dataset));
+
+        return identifier;
+    }
+
+    /**
+     * Check that a identifier entered by the user is unique (not currently used
+     * for any other study in this Dataverse Network) also check for duplicate
+     * in EZID if needed
+     * @param userIdentifier
+     * @param dataset
+     * @param persistentIdSvc
+     * @return {@code true} if the identifier is unique, {@code false} otherwise.
+     */
+    public boolean isIdentifierUnique(String userIdentifier, Dataset dataset, GlobalIdServiceBean persistentIdSvc) {
+        if ( ! datasetService.isIdentifierLocallyUnique(userIdentifier, dataset) ) return false; // duplication found in local database
+
+        // not in local DB, look in the persistent identifier service
+        try {
+            return ! persistentIdSvc.alreadyExists(dataset);
+        } catch (Exception e){
+            //we can live with failure - means identifier not found remotely
+        }
+
+        return true;
+    }
+
+    @Override
+    public String generateDataFileIdentifier(DataFile datafile, GlobalIdServiceBean idServiceBean) {
+        String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
+        String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
+
+        String prepend = "";
+        if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.DEPENDENT.toString())){
+            //If format is dependent then pre-pend the dataset identifier 
+            prepend = datafile.getOwner().getIdentifier() + "/";
+        } else {
+            //If there's a shoulder prepend independent identifiers with it
+            prepend = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder, "");
+        }
+ 
+        switch (doiIdentifierType) {
+            case "randomString":               
+                return generateIdentifierAsRandomString(datafile, idServiceBean, prepend);
+            case "storedProcGenerated":
+                if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.INDEPENDENT.toString())){ 
+                    return generateIdentifierFromStoredProcedureIndependent(datafile, idServiceBean, prepend);
+                } else {
+                    return generateIdentifierFromStoredProcedureDependent(datafile, idServiceBean, prepend);
+                }
+            default:
+                /* Should we throw an exception instead?? -- L.A. 4.6.2 */
+                return generateIdentifierAsRandomString(datafile, idServiceBean, prepend);
+        }
+    }
+    
+    private String generateIdentifierAsRandomString(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
+        String identifier = null;
+        do {
+            identifier = prepend + RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
+        } while (!datafileService.isGlobalIdUnique(identifier, datafile, idServiceBean));
+
+        return identifier;
+    }
+
+
+    private String generateIdentifierFromStoredProcedureIndependent(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
+        String identifier; 
+        do {
+            StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierFromStoredProcedure");
+            query.execute();
+            String identifierFromStoredProcedure = (String) query.getOutputParameterValue(1);
+            // some diagnostics here maybe - is it possible to determine that it's failing 
+            // because the stored procedure hasn't been created in the database?
+            if (identifierFromStoredProcedure == null) {
+                return null; 
+            }
+            identifier = prepend + identifierFromStoredProcedure;
+        } while (!datafileService.isGlobalIdUnique(identifier, datafile, idServiceBean));
+        
+        return identifier;
+    }
+    
+    private String generateIdentifierFromStoredProcedureDependent(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
+        String identifier;
+        Long retVal;
+
+        retVal = new Long(0);
+
+        do {
+            retVal++;
+            identifier = prepend + retVal.toString();
+
+        } while (!datafileService.isGlobalIdUnique(identifier, datafile, idServiceBean));
+
+        return identifier;
+    }
+
     
     class GlobalIdMetadataTemplate {
 

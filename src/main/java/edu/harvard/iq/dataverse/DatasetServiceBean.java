@@ -316,69 +316,6 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
     }
 
-    public String generateDatasetIdentifier(Dataset dataset, GlobalIdServiceBean idServiceBean) {
-        String identifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
-        String shoulder = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder, "");
-
-        switch (identifierType) {
-            case "randomString":
-                return generateIdentifierAsRandomString(dataset, idServiceBean, shoulder);
-            case "storedProcGenerated":
-                return generateIdentifierFromStoredProcedure(dataset, idServiceBean, shoulder);
-            default:
-                /* Should we throw an exception instead?? -- L.A. 4.6.2 */
-                return generateIdentifierAsRandomString(dataset, idServiceBean, shoulder);
-        }
-    }
-
-    private String generateIdentifierAsRandomString(Dataset dataset, GlobalIdServiceBean idServiceBean, String shoulder) {
-        String identifier = null;
-        do {
-            identifier = shoulder + RandomStringUtils.randomAlphanumeric(6).toUpperCase();
-        } while (!isIdentifierLocallyUnique(identifier, dataset));
-
-        return identifier;
-    }
-
-    private String generateIdentifierFromStoredProcedure(Dataset dataset, GlobalIdServiceBean idServiceBean, String shoulder) {
-
-        String identifier;
-        do {
-            StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierFromStoredProcedure");
-            query.execute();
-            String identifierFromStoredProcedure = (String) query.getOutputParameterValue(1);
-            // some diagnostics here maybe - is it possible to determine that it's failing
-            // because the stored procedure hasn't been created in the database?
-            if (identifierFromStoredProcedure == null) {
-                return null;
-            }
-            identifier = shoulder + identifierFromStoredProcedure;
-        } while (!isIdentifierLocallyUnique(identifier, dataset));
-
-        return identifier;
-    }
-
-    /**
-     * Check that a identifier entered by the user is unique (not currently used
-     * for any other study in this Dataverse Network) also check for duplicate
-     * in EZID if needed
-     * @param userIdentifier
-     * @param dataset
-     * @param persistentIdSvc
-     * @return {@code true} if the identifier is unique, {@code false} otherwise.
-     */
-    public boolean isIdentifierUnique(String userIdentifier, Dataset dataset, GlobalIdServiceBean persistentIdSvc) {
-        if ( ! isIdentifierLocallyUnique(userIdentifier, dataset) ) return false; // duplication found in local database
-
-        // not in local DB, look in the persistent identifier service
-        try {
-            return ! persistentIdSvc.alreadyExists(dataset);
-        } catch (Exception e){
-            //we can live with failure - means identifier not found remotely
-        }
-
-        return true;
-    }
 
     public boolean isIdentifierLocallyUnique(Dataset dataset) {
         return isIdentifierLocallyUnique(dataset.getIdentifier(), dataset);
@@ -983,7 +920,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                     maxIdentifier++;
                     datafile.setIdentifier(datasetIdentifier + "/" + maxIdentifier.toString());
                 } else {
-                    datafile.setIdentifier(fileService.generateDataFileIdentifier(datafile, idServiceBean));
+                    datafile.setIdentifier(idServiceBean.generateDataFileIdentifier(datafile, idServiceBean));
                 }
 
                 if (datafile.getProtocol() == null) {
