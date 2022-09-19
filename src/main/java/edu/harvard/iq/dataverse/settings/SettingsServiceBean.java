@@ -457,6 +457,31 @@ public class SettingsServiceBean {
          * when the Distributor field (citation metadatablock) is set (true)
          */
         ExportInstallationAsDistributorOnlyWhenNotSet,
+
+        /**
+         * Basic Globus Token for Globus Application
+         */
+        GlobusBasicToken,
+        /**
+         * GlobusEndpoint is Globus endpoint for Globus application
+         */
+        GlobusEndpoint,
+        /** 
+         * Comma separated list of Globus enabled stores
+         */
+        GlobusStores,
+        /** Globus App URL
+         * 
+         */
+        GlobusAppUrl,
+        /** Globus Polling Interval how long in seconds Dataverse waits between checks on Globus upload status checks
+         * 
+         */
+        GlobusPollingInterval,
+        /**Enable single-file download/transfers for Globus
+         *
+         */
+        GlobusSingleFileTransfer,
         /**
          * Optional external executables to run on the metadata for dataverses 
          * and datasets being published; as an extra validation step, to 

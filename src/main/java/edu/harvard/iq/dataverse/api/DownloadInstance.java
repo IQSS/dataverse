@@ -11,6 +11,8 @@ import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.GuestbookResponse;
 import java.util.List;
+import java.util.logging.Logger;
+
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 import javax.faces.context.FacesContext;
 import javax.ws.rs.core.HttpHeaders;
@@ -22,6 +24,7 @@ import javax.ws.rs.core.UriInfo;
  */
 public class DownloadInstance {
     
+    private static final Logger logger = Logger.getLogger(DownloadInstance.class.getCanonicalName());
      /*
      private ByteArrayOutputStream outStream = null;
 
@@ -122,6 +125,7 @@ public class DownloadInstance {
 
         for (OptionalAccessService dataService : servicesAvailable) {
             if (dataService != null) {
+                logger.fine("Checking service: " + dataService.getServiceName());
                 if (serviceArg.equals("variables")) {
                     // Special case for the subsetting parameter (variables=<LIST>):
                     if ("subset".equals(dataService.getServiceName())) {
@@ -149,6 +153,7 @@ public class DownloadInstance {
                     return true;
                 }
                 String argValuePair = serviceArg + "=" + serviceArgValue;
+                logger.fine("Comparing: " + argValuePair + " and " + dataService.getServiceArguments());
                 if (argValuePair.startsWith(dataService.getServiceArguments())) {
                     conversionParam = serviceArg;
                     conversionParamValue = serviceArgValue;
