@@ -12,6 +12,17 @@ IQSS will not offer you support how to deploy or run it, please reach out to the
 You might be interested in taking a look at :doc:`../developers/containers`, linking you to some (community-based)
 efforts.
 
+Supported Image Tags
+++++++++++++++++++++
+
+This image is sourced within the main upstream code repository of the Dataverse software. Development and maintenance
+happens there (again, by the community). Community supported image tags are based on the two most important branches:
+
+- ``develop`` representing the unstable state of affairs in Dataverse's development branch
+  (`Dockerfile <https://github.com/IQSS/dataverse/tree/develop/modules/container-base/src/main/docker/Dockerfile>`__)
+- ``release`` representing the latest stable release in Dataverse's main branch
+  (`Dockerfile <https://github.com/IQSS/dataverse/tree/master/modules/container-base/src/main/docker/Dockerfile>`__)
+
 
 
 Image Contents
@@ -51,8 +62,12 @@ Or move to the module and execute:
 
 Some additional notes, using Maven parameters to change the build and use ...:
 
+- | ... a different tag only: add ``-Dbase.image.tag=tag``.
+  | *Note:* default is ``develop``
 - | ... a different image name and tag: add ``-Dbase.image=name:tag``.
-  | *Note:* default is ``gdcc/base:${target.java.version}-jre``
+  | *Note:* default is ``gdcc/base:${base.image.tag}``
+- ... a different image registry than *Docker Hub*: add ``-Ddocker.registry=registry.example.org`` (see also
+  `DMP docs on registries <https://dmp.fabric8.io/#registry>`__)
 - ... a different Payara version: add ``-Dpayara.version=V.YYYY.R``.
 - | ... a different Temurin JRE version ``A``: add ``-Dtarget.java.version=A`` (i.e. ``11``, ``17``, ...).
   | *Note:* must resolve to an available Docker tag ``A-jre`` of Eclipse Temurin!
@@ -60,6 +75,17 @@ Some additional notes, using Maven parameters to change the build and use ...:
 - ... a different Java Distribution: add ``-Djava.image="name:tag"`` with precise reference to an
   image available from local or remote (e. g. Docker Hub).
 - ... a different UID/GID for the ``payara`` user/group: add ``-Dbase.image.uid=1234`` (or ``.gid``)
+
+Automated Builds & Publishing
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To make reusing most simple, the image is built with a Github Action within the IQSS repository and then pushed
+to `Docker Hub gdcc/base repository <https://hub.docker.com/r/gdcc/base>`_. It is built and pushed on every edit to
+its sources plus uncached scheduled nightly builds to make sure security updates are finding their way in.
+
+*Note:* For the Github Action to be able to push to Docker Hub, two repository secrets
+(DOCKERHUB_USERNAME, DOCKERHUB_TOKEN) have been added by IQSS admins to their repository.
+
 
 
 Tunables
@@ -234,18 +260,6 @@ The HTTPS listener (on port 8181) becomes deactivated during the build, as we wi
 application server and handle SSL/TLS termination at this point. Save the memory and some CPU cycles!
 
 
-Publishing and Updates
-++++++++++++++++++++++
-
-This image is sourced within the main upstream code repository of the Dataverse software. Development and maintenance
-happens there (again, by the community).
-
-To make reusing most simple, the image is built with a Github Action within the IQSS repository and then pushed
-to `Docker Hub gdcc/base repository <https://hub.docker.com/r/gdcc/base>`_. It is built and pushed on every edit to
-its sources plus uncached scheduled nightly builds to make sure security updates are finding their way in.
-
-Note: for the Github Action to be able to push to Docker Hub, two repository secrets
-(DOCKERHUB_USERNAME, DOCKERHUB_TOKEN) have been added by IQSS admins to their repository.
 
 .. _base-entrypoint:
 
