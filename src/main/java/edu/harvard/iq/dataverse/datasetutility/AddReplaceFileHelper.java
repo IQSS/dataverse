@@ -774,7 +774,7 @@ public class AddReplaceFileHelper{
                 }
             }
         }
-        
+
         msgt("step_090_notifyUser");
         if (!this.step_090_notifyUser()){
             return false;            
@@ -1375,7 +1375,7 @@ public class AddReplaceFileHelper{
             String fileType = fileToReplace.getOriginalFileFormat() != null ? fileToReplace.getOriginalFileFormat() : fileToReplace.getContentType();
             if (!finalFileList.get(0).getContentType().equalsIgnoreCase(fileType)) {
                 String friendlyType = fileToReplace.getOriginalFormatLabel() != null ? fileToReplace.getOriginalFormatLabel() : fileToReplace.getFriendlyType();
-                
+
                 List<String> errParams = Arrays.asList(friendlyType,
                                                 finalFileList.get(0).getFriendlyType());
                 
