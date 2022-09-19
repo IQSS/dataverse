@@ -343,7 +343,7 @@ public class FileUtilTest {
         }
         
         @Test
-        public void testDetermineFileTypeFromName() {
+        public void testDetermineFileTypeFromNameLocalFile() {
             //Verify that name of the local file isn't used in determining the type (as we often use *.tmp when the real name has a different extension)
             try {
                 File file = File.createTempFile("empty", "png");
