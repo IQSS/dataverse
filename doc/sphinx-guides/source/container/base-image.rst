@@ -37,8 +37,7 @@ The base image provides:
 - `Jattach <https://github.com/apangin/jattach>`__ (attach to running JVM)
 - `dumb-init <https://github.com/Yelp/dumb-init>`__ (see :ref:`below <base-entrypoint>` for details)
 
-This image is created as a "multi-arch image", supporting the most common architectures Dataverse usually runs on:
-AMD64 (Windows/Linux/...) and ARM64 (Apple M1/M2).
+This image is created as a "multi-arch image", see :ref:`below <base-multiarch>`.
 
 It inherits being built on an Ubuntu environment from the upstream
 `base image of Eclipse Temurin <https://hub.docker.com/_/eclipse-temurin>`_.
@@ -85,6 +84,24 @@ its sources plus uncached scheduled nightly builds to make sure security updates
 
 *Note:* For the Github Action to be able to push to Docker Hub, two repository secrets
 (DOCKERHUB_USERNAME, DOCKERHUB_TOKEN) have been added by IQSS admins to their repository.
+
+.. _base-multiarch:
+
+Processor Architecture and Multiarch
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This image is created as a "multi-arch image", supporting the most common architectures Dataverse usually runs on:
+AMD64 (Windows/Linux/...) and ARM64 (Apple M1/M2), by using Maven Docker Plugin's *BuildX* mode.
+
+Building the image via ``mvn -Pct package`` or ``mvn -Pct install`` as above will only build for the architecture of
+the Docker maschine's CPU.
+
+Only ``mvn -Pct deploy`` will trigger building on all enabled architectures.
+Yet, to enable building with non-native code on your build machine, you will need to setup a cross-platform builder.
+
+On Linux, you should install `qemu-user-static <https://github.com/multiarch/qemu-user-static>`__ (preferably via
+your package management) on the host and run ``docker run --rm --privileged multiarch/qemu-user-static --reset -p yes``
+to enable that builder. The Docker plugin will setup everything else for you.
 
 
 
@@ -289,8 +306,6 @@ included and activated by default since Java 8u192, Java 11 LTS and later. If yo
 you can read about those in a few places like https://developers.redhat.com/articles/2022/04/19/java-17-whats-new-openjdks-container-awareness,
 https://www.eclipse.org/openj9/docs/xxusecontainersupport, etc. The other memory defaults are inspired
 from `run-java-sh recommendations`_.
-
-*Note: the build process used the newer ``buildx`` feature of Docker to provide multiarch images.*
 
 
 
