@@ -12,7 +12,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.util.EjbUtil;
-import edu.harvard.iq.dataverse.util.FileTypeDetection;
+import edu.harvard.iq.dataverse.util.FileUtil;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -62,7 +63,7 @@ public class RedetectFileTypeCommand extends AbstractCommand<DataFile> {
             }
 
             logger.fine("target file: " + localFile);
-            String newlyDetectedContentType = FileTypeDetection.determineFileType(localFile);
+            String newlyDetectedContentType = FileUtil.determineFileType(localFile, fileToRedetect.getDisplayName());
             fileToRedetect.setContentType(newlyDetectedContentType);
         } catch (IOException ex) {
             throw new CommandException("Exception while attempting to get the bytes of the file during file type redetection: " + ex.getLocalizedMessage(), this);

@@ -37,6 +37,9 @@ import java.util.ArrayList;
 import java.util.concurrent.Future;
 import org.apache.solr.client.solrj.SolrServerException;
 
+import javax.ejb.EJB;
+import javax.inject.Inject;
+
 
 /**
  *
@@ -48,7 +51,9 @@ import org.apache.solr.client.solrj.SolrServerException;
 public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCommand<Dataset> {
 
     private static final Logger logger = Logger.getLogger(FinalizeDatasetPublicationCommand.class.getName());
-    
+
+
+
     /**
      * mirror field from {@link PublishDatasetCommand} of same name
      */
