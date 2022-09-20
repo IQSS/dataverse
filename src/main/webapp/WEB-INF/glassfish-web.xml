@@ -8,9 +8,15 @@
       <description>Keep a copy of the generated servlet class' java code.</description>
     </property>
   </jsp-config>
+  <parameter-encoding default-charset="UTF-8"/>
+  <!-- Find a list of properties here: https://docs.oracle.com/cd/E19798-01/821-1750/beayb/index.html -->
   <property name="alternatedocroot_1" value="from=/guides/* dir=./docroot"/>
   <property name="alternatedocroot_2" value="from=/dataexplore/* dir=./docroot"/>
   <property name="alternatedocroot_logos" value="from=/logos/* dir=./docroot"/>
   <property name="alternatedocroot_sitemap" value="from=/sitemap/* dir=./docroot"/>
-  <parameter-encoding default-charset="UTF-8"/>
+  <!--
+    This folder is not only holding compiled JSP pages but also the place where file streams are stored
+    during uploads. As Dataverse does not use any JSP, there will only be uploads stored here.
+  -->
+  <property name="tempdir" value="${MPCONFIG=dataverse.files.uploads:./uploads}"/>
 </glassfish-web-app>
