@@ -12,6 +12,9 @@ on:
             - "pom.xml"
             - "modules/**/pom.xml"
 
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
 jobs:
     unittest:
         name: (${{ matrix.status}} / JDK ${{ matrix.jdk }}) Unit Tests
