@@ -155,7 +155,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     }*/
     
     public DataFile findByGlobalId(String globalId) {
-            return (DataFile) dvObjectService.findByGlobalId(globalId, DataFile.DATAFILE_DTYPE_STRING);
+            return (DataFile) dvObjectService.findByGlobalId(globalId, DvObject.DType.DataFile);
     }
 
     public List<DataFile> findByCreatorId(Long creatorId) {
@@ -1437,7 +1437,7 @@ public class DataFileServiceBean implements java.io.Serializable {
      * @param idServiceBean
      * @return  {@code true} iff the global identifier is unique.
      */
-    public boolean isGlobalIdUnique(String userIdentifier, DataFile datafile, GlobalIdServiceBean idServiceBean) {
+/*    public boolean isGlobalIdUnique(String userIdentifier, DataFile datafile, GlobalIdServiceBean idServiceBean) {
         String testProtocol = "";
         String testAuthority = "";
         if (datafile.getAuthority() != null){
@@ -1468,7 +1468,7 @@ public class DataFileServiceBean implements java.io.Serializable {
        
         return u;
     }
-    
+*/    
     public void finalizeFileDelete(Long dataFileId, String storageLocation) throws IOException {
         // Verify that the DataFile no longer exists: 
         if (find(dataFileId) != null) {

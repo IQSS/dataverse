@@ -53,8 +53,9 @@ public interface GlobalIdServiceBean {
     static GlobalIdServiceBean getBean(CommandContext ctxt) {
         return getBean(ctxt.settings().getValueForKey(Key.Protocol, ""), ctxt);
     }
-
-    String generateDataFileIdentifier(DataFile datafile, GlobalIdServiceBean idServiceBean);
+    String generateDatasetIdentifier(Dataset dataset);
+    String generateDataFileIdentifier(DataFile datafile);
+    boolean isGlobalIdUnique(GlobalId globalId);
     
 }
 

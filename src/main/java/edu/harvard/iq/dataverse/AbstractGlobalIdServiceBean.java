@@ -34,6 +34,8 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     @EJB
     DataFileServiceBean datafileService;
     @EJB
+    DvObjectServiceBean dvObjectService;
+    @EJB
     SystemConfig systemConfig;
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
@@ -128,11 +130,10 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
 
         String protocol = dvObject.getProtocol() == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Protocol) : dvObject.getProtocol();
         String authority = dvObject.getAuthority() == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Authority) : dvObject.getAuthority();
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, commandEngine.getContext());
         if (dvObject.isInstanceofDataset()) {
-            dvObject.setIdentifier(generateDatasetIdentifier((Dataset) dvObject, idServiceBean));
+            dvObject.setIdentifier(generateDatasetIdentifier((Dataset) dvObject));
         } else {
-            dvObject.setIdentifier(generateDataFileIdentifier((DataFile) dvObject, idServiceBean));
+            dvObject.setIdentifier(generateDataFileIdentifier((DataFile) dvObject));
         }
         if (dvObject.getProtocol() == null) {
             dvObject.setProtocol(protocol);
@@ -143,31 +144,34 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         return dvObject;
     }
     
-    public String generateDatasetIdentifier(Dataset dataset, GlobalIdServiceBean idServiceBean) {
+    //ToDo just send the DvObject.DType
+    public String generateDatasetIdentifier(Dataset dataset) {
+        //ToDo - track these in the bean
         String identifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
         String shoulder = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder, "");
 
         switch (identifierType) {
             case "randomString":
-                return generateIdentifierAsRandomString(dataset, idServiceBean, shoulder);
+                return generateIdentifierAsRandomString(dataset, shoulder);
             case "storedProcGenerated":
-                return generateIdentifierFromStoredProcedure(dataset, idServiceBean, shoulder);
+                return generateIdentifierFromStoredProcedure(dataset, shoulder);
             default:
                 /* Should we throw an exception instead?? -- L.A. 4.6.2 */
-                return generateIdentifierAsRandomString(dataset, idServiceBean, shoulder);
+                return generateIdentifierAsRandomString(dataset, shoulder);
         }
     }
 
-    private String generateIdentifierAsRandomString(Dataset dataset, GlobalIdServiceBean idServiceBean, String shoulder) {
+    private String generateIdentifierAsRandomString(Dataset dataset, String shoulder) {
         String identifier = null;
         do {
             identifier = shoulder + RandomStringUtils.randomAlphanumeric(6).toUpperCase();
-        } while (!datasetService.isIdentifierLocallyUnique(identifier, dataset));
+            
+        } while (!dvObjectService.isGlobalIdLocallyUnique(new GlobalId(dataset.getProtocol(), dataset.getAuthority(), identifier) ));
 
         return identifier;
     }
 
-    private String generateIdentifierFromStoredProcedure(Dataset dataset, GlobalIdServiceBean idServiceBean, String shoulder) {
+    private String generateIdentifierFromStoredProcedure(Dataset dataset, String shoulder) {
 
         String identifier;
         do {
@@ -180,7 +184,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
                 return null;
             }
             identifier = shoulder + identifierFromStoredProcedure;
-        } while (!datasetService.isIdentifierLocallyUnique(identifier, dataset));
+        } while (!dvObjectService.isGlobalIdLocallyUnique(new GlobalId(dataset.getProtocol(), dataset.getAuthority(), identifier)));
 
         return identifier;
     }
@@ -191,15 +195,16 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
      * in EZID if needed
      * @param userIdentifier
      * @param dataset
-     * @param persistentIdSvc
      * @return {@code true} if the identifier is unique, {@code false} otherwise.
      */
-    public boolean isIdentifierUnique(String userIdentifier, Dataset dataset, GlobalIdServiceBean persistentIdSvc) {
-        if ( ! datasetService.isIdentifierLocallyUnique(userIdentifier, dataset) ) return false; // duplication found in local database
+    public boolean isGlobalIdUnique(GlobalId globalId) {
+        if ( ! dvObjectService.isGlobalIdLocallyUnique(globalId)  ) {
+            return false; // duplication found in local database
+        }
 
         // not in local DB, look in the persistent identifier service
         try {
-            return ! persistentIdSvc.alreadyExists(dataset);
+            return ! alreadyExists(globalId);
         } catch (Exception e){
             //we can live with failure - means identifier not found remotely
         }
@@ -208,7 +213,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     }
 
     @Override
-    public String generateDataFileIdentifier(DataFile datafile, GlobalIdServiceBean idServiceBean) {
+    public String generateDataFileIdentifier(DataFile datafile) {
         String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
         String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
 
@@ -223,30 +228,30 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
  
         switch (doiIdentifierType) {
             case "randomString":               
-                return generateIdentifierAsRandomString(datafile, idServiceBean, prepend);
+                return generateIdentifierAsRandomString(datafile, prepend);
             case "storedProcGenerated":
                 if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.INDEPENDENT.toString())){ 
-                    return generateIdentifierFromStoredProcedureIndependent(datafile, idServiceBean, prepend);
+                    return generateIdentifierFromStoredProcedureIndependent(datafile, prepend);
                 } else {
-                    return generateIdentifierFromStoredProcedureDependent(datafile, idServiceBean, prepend);
+                    return generateIdentifierFromStoredProcedureDependent(datafile, prepend);
                 }
             default:
                 /* Should we throw an exception instead?? -- L.A. 4.6.2 */
-                return generateIdentifierAsRandomString(datafile, idServiceBean, prepend);
+                return generateIdentifierAsRandomString(datafile, prepend);
         }
     }
     
-    private String generateIdentifierAsRandomString(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
+    private String generateIdentifierAsRandomString(DataFile datafile, String prepend) {
         String identifier = null;
         do {
             identifier = prepend + RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
-        } while (!datafileService.isGlobalIdUnique(identifier, datafile, idServiceBean));
+        } while (!isGlobalIdUnique(new GlobalId(datafile.getProtocol(), datafile.getAuthority(), identifier)));
 
         return identifier;
     }
 
 
-    private String generateIdentifierFromStoredProcedureIndependent(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
+    private String generateIdentifierFromStoredProcedureIndependent(DataFile datafile, String prepend) {
         String identifier; 
         do {
             StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierFromStoredProcedure");
@@ -258,12 +263,12 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
                 return null; 
             }
             identifier = prepend + identifierFromStoredProcedure;
-        } while (!datafileService.isGlobalIdUnique(identifier, datafile, idServiceBean));
+        } while (!isGlobalIdUnique(new GlobalId(datafile.getProtocol(), datafile.getAuthority(), identifier)));
         
         return identifier;
     }
     
-    private String generateIdentifierFromStoredProcedureDependent(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
+    private String generateIdentifierFromStoredProcedureDependent(DataFile datafile, String prepend) {
         String identifier;
         Long retVal;
 
@@ -273,7 +278,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
             retVal++;
             identifier = prepend + retVal.toString();
 
-        } while (!datafileService.isGlobalIdUnique(identifier, datafile, idServiceBean));
+        } while (!isGlobalIdUnique(new GlobalId(datafile.getProtocol(), datafile.getAuthority(), identifier)));
 
         return identifier;
     }

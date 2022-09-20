@@ -503,7 +503,7 @@ public class Dataverses extends AbstractApiBean {
             ds.getIdentifier().startsWith(settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder)))) {
                 throw new BadRequestException("Cannot recreate a dataset that has a PID that doesn't match the server's settings");
             }
-            if(!datasetSvc.isIdentifierLocallyUnique(ds)) {
+            if(!dvObjectSvc.isGlobalIdLocallyUnique(ds.getGlobalId())) {
                 throw new BadRequestException("Cannot recreate a dataset whose PID is already in use");
             }
             

@@ -209,7 +209,7 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
 
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(packageFile.getProtocol(), commandEngine.getContext());
         if (packageFile.getIdentifier() == null || packageFile.getIdentifier().isEmpty()) {
-            String packageIdentifier = dataFileServiceBean.generateDataFileIdentifier(packageFile, idServiceBean);
+            String packageIdentifier = idServiceBean.generateDataFileIdentifier(packageFile);
             packageFile.setIdentifier(packageIdentifier);
         }
 

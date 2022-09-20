@@ -51,10 +51,23 @@ import javax.persistence.*;
 		uniqueConstraints = {@UniqueConstraint(columnNames = {"authority,protocol,identifier"}),@UniqueConstraint(columnNames = {"owner_id,storageidentifier"})})
 public abstract class DvObject extends DataverseEntity implements java.io.Serializable {
     
-    public static final String DATAVERSE_DTYPE_STRING = "Dataverse";
-    public static final String DATASET_DTYPE_STRING = "Dataset";
-    public static final String DATAFILE_DTYPE_STRING = "DataFile";
-    public static final List<String> DTYPE_LIST = Arrays.asList(DATAVERSE_DTYPE_STRING, DATASET_DTYPE_STRING, DATAFILE_DTYPE_STRING);
+    //public static final String DATAVERSE_DTYPE_STRING = "Dataverse";
+    //public static final String DATASET_DTYPE_STRING = "Dataset";
+    //public static final String DATAFILE_DTYPE_STRING = "DataFile";
+    //public static final List<String> DTYPE_LIST = Arrays.asList(DATAVERSE_DTYPE_STRING, DATASET_DTYPE_STRING, DATAFILE_DTYPE_STRING);
+    
+    
+    public enum DType {
+        Dataverse("Dataverse"), Dataset("Dataset"),DataFile("DataFile");
+       
+        String dtype;
+        DType(String dt) {
+           dtype = dt;
+        }
+        public String getDType() {
+           return dtype;
+        } 
+     }
     
     public static final Visitor<String> NamePrinter = new Visitor<String>(){
 

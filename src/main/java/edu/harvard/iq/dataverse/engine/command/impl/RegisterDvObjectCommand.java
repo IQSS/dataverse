@@ -57,10 +57,10 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
             //if so, leave.
             if (target.getIdentifier() == null || target.getIdentifier().isEmpty()) {
                 if (target.isInstanceofDataset()) {
-                    target.setIdentifier(ctxt.datasets().generateDatasetIdentifier((Dataset) target, idServiceBean));
+                    target.setIdentifier(idServiceBean.generateDatasetIdentifier((Dataset) target));
 
                 } else {
-                    target.setIdentifier(ctxt.files().generateDataFileIdentifier((DataFile) target, idServiceBean));
+                    target.setIdentifier(idServiceBean.generateDataFileIdentifier((DataFile) target));
                 }
                 if (target.getProtocol() == null) {
                     target.setProtocol(protocol);
@@ -94,7 +94,7 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                     Dataset dataset = (Dataset) target;
                     for (DataFile df : dataset.getFiles()) {
                         if (df.getIdentifier() == null || df.getIdentifier().isEmpty()) {
-                            df.setIdentifier(ctxt.files().generateDataFileIdentifier(df, idServiceBean));
+                            df.setIdentifier(idServiceBean.generateDataFileIdentifier(df));
                             if (df.getProtocol() == null || df.getProtocol().isEmpty()) {
                                 df.setProtocol(protocol);
                             }

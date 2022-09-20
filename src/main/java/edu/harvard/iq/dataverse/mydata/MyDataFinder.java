@@ -516,8 +516,8 @@ public class MyDataFinder {
 
             this.childToParentIds.put(dvId, parentId);
 
-            switch(dtype){
-                case(DvObject.DATAVERSE_DTYPE_STRING):
+            switch(DvObject.DType.valueOf(dtype)){
+                case Dataverse:
                     //if (this.idsWithDataversePermissions.containsKey(dvId)){
                     this.directDataverseIds.add(dvId);  // Direct dataverse (no indirect dataverses)
                     //}
@@ -532,7 +532,7 @@ public class MyDataFinder {
                         this.datasetParentIds.add(dvId);    // Parent to dataset
                     }
                     break;
-                case(DvObject.DATASET_DTYPE_STRING):
+                case Dataset:
                     //if (this.idsWithDatasetPermissions.containsKey(dvId)){
                     this.directDatasetIds.add(dvId); // Direct dataset
                     //}
@@ -540,7 +540,7 @@ public class MyDataFinder {
                         this.fileParentIds.add(dvId);   // Parent to file
                     }
                     break;
-                case(DvObject.DATAFILE_DTYPE_STRING):
+                case DataFile:
                     if (this.idsWithFilePermissions.containsKey(dvId)){
                         this.directFileIds.add(dvId); // Direct file
                     }
@@ -585,7 +585,7 @@ public class MyDataFinder {
             this.childToParentIds.put(dvId, parentId);
 
             // Should ALWAYS be a Dataset!
-            if (dtype.equals(DvObject.DATASET_DTYPE_STRING)){
+            if (DvObject.DType.valueOf(dtype).equals(DvObject.DType.Dataset)){
                 this.fileParentIds.add(dvId);
             }
         }

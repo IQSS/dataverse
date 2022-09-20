@@ -33,8 +33,8 @@ public class MyDataFilterParams {
     // -----------------------------------
     // Static Reference objects
     // -----------------------------------
-    public static final List<String> defaultDvObjectTypes = Arrays.asList(DvObject.DATAVERSE_DTYPE_STRING, DvObject.DATASET_DTYPE_STRING);
-    public static final List<String> allDvObjectTypes = Arrays.asList(DvObject.DATAVERSE_DTYPE_STRING, DvObject.DATASET_DTYPE_STRING, DvObject.DATAFILE_DTYPE_STRING);
+    public static final List<DvObject.DType> defaultDvObjectTypes = Arrays.asList(DvObject.DType.Dataverse, DvObject.DType.Dataset);
+    public static final List<DvObject.DType> allDvObjectTypes = Arrays.asList(DvObject.DType.Dataverse, DvObject.DType.Dataset, DvObject.DType.Dataverse, DvObject.DType.DataFile);
     
     public static final List<String> defaultPublishedStates = Arrays.asList(IndexServiceBean.getPUBLISHED_STRING(),
                                                     IndexServiceBean.getUNPUBLISHED_STRING(),
@@ -48,22 +48,23 @@ public class MyDataFilterParams {
                                                     IndexServiceBean.getIN_REVIEW_STRING(),
                                                     IndexServiceBean.getDEACCESSIONED_STRING());*/
             
-    public static final HashMap<String, String> sqlToSolrSearchMap ;
+    public static final HashMap<DvObject.DType, String> sqlToSolrSearchMap ;
     static
     {
         sqlToSolrSearchMap = new HashMap<>();
-        sqlToSolrSearchMap.put(DvObject.DATAVERSE_DTYPE_STRING, SearchConstants.DATAVERSES);
-        sqlToSolrSearchMap.put(DvObject.DATASET_DTYPE_STRING, SearchConstants.DATASETS);
-        sqlToSolrSearchMap.put(DvObject.DATAFILE_DTYPE_STRING, SearchConstants.FILES);
+        sqlToSolrSearchMap.put(DvObject.DType.Dataverse, SearchConstants.DATAVERSES);
+        sqlToSolrSearchMap.put(DvObject.DType.Dataset, SearchConstants.DATASETS);
+        sqlToSolrSearchMap.put(DvObject.DType.DataFile, SearchConstants.FILES);
     }
     
-    public static final HashMap<String, String> userInterfaceToSqlSearchMap ;
+    public static final HashMap<DvObject.DType, String> userInterfaceToSqlSearchMap ;
     static
     {
         userInterfaceToSqlSearchMap = new HashMap<>();
-        userInterfaceToSqlSearchMap.put(DvObject.DATAVERSE_DTYPE_STRING, SearchConstants.UI_DATAVERSES);
-        userInterfaceToSqlSearchMap.put(DvObject.DATASET_DTYPE_STRING, SearchConstants.UI_DATAVERSES);
-        userInterfaceToSqlSearchMap.put(DvObject.DATAFILE_DTYPE_STRING, SearchConstants.UI_FILES);
+        
+        userInterfaceToSqlSearchMap.put(DvObject.DType.Dataverse, SearchConstants.UI_DATAVERSES);
+        userInterfaceToSqlSearchMap.put(DvObject.DType.Dataset, SearchConstants.UI_DATAVERSES);
+        userInterfaceToSqlSearchMap.put(DvObject.DType.DataFile, SearchConstants.UI_FILES);
     }
     
     
@@ -73,7 +74,7 @@ public class MyDataFilterParams {
     private DataverseRequest dataverseRequest;
     private AuthenticatedUser authenticatedUser;
     private String userIdentifier;
-    private List<String> dvObjectTypes;    
+    private List<DvObject.DType> dvObjectTypes;
     private List<String> publicationStatuses;
     private List<Long> roleIds;
     
@@ -119,7 +120,7 @@ public class MyDataFilterParams {
      * @param publicationStatuses 
      * @param searchTerm 
      */    
-    public MyDataFilterParams(DataverseRequest dataverseRequest, List<String> dvObjectTypes, List<String> publicationStatuses, List<Long> roleIds, String searchTerm){
+    public MyDataFilterParams(DataverseRequest dataverseRequest, List<DvObject.DType> dvObjectTypes, List<String> publicationStatuses, List<Long> roleIds, String searchTerm){
         if (dataverseRequest==null){
             throw new NullPointerException("MyDataFilterParams constructor: dataverseRequest cannot be null ");
         }
@@ -194,16 +195,9 @@ public class MyDataFilterParams {
             this.addError("No results. Please select one of " + StringUtils.join(MyDataFilterParams.defaultPublishedStates, ", ") + ".");
             return;
         }
-
-        for (String dtype : this.dvObjectTypes){
-            if (!DvObject.DTYPE_LIST.contains(dtype)){
-                this.addError("Sorry!  The type '" + dtype + "' is not known.");
-                return;
-            }               
-        }        
     }
     
-    public List<String> getDvObjectTypes(){
+    public List<DvObject.DType> getDvObjectTypes(){
         return this.dvObjectTypes;
     }
     
@@ -235,19 +229,19 @@ public class MyDataFilterParams {
     // start: Convenience methods for dvObjectTypes
     // --------------------------------------------
     public boolean areDataversesIncluded(){
-        if (this.dvObjectTypes.contains(DvObject.DATAVERSE_DTYPE_STRING)){
+        if (this.dvObjectTypes.contains(DvObject.DType.Dataverse)){
             return true;
         }
         return false;
     }
     public boolean areDatasetsIncluded(){
-        if (this.dvObjectTypes.contains(DvObject.DATASET_DTYPE_STRING)){
+        if (this.dvObjectTypes.contains(DvObject.DType.Dataset)){
             return true;
         }
         return false;
     }
     public boolean areFilesIncluded(){
-        if (this.dvObjectTypes.contains(DvObject.DATAFILE_DTYPE_STRING)){
+        if (this.dvObjectTypes.contains(DvObject.DType.DataFile)){
             return true;
         }
         return false;
@@ -259,7 +253,7 @@ public class MyDataFilterParams {
         }
         
         List<String> solrTypes = new ArrayList<>();
-        for (String dtype : this.dvObjectTypes){
+        for (DvObject.DType dtype : this.dvObjectTypes){
             solrTypes.add(MyDataFilterParams.sqlToSolrSearchMap.get(dtype));
         }
                 
@@ -318,13 +312,13 @@ public class MyDataFilterParams {
         
         JsonArrayBuilder jsonArray = Json.createArrayBuilder();
 
-        jsonArray.add(Json.createObjectBuilder().add("value", DvObject.DATAVERSE_DTYPE_STRING)
+        jsonArray.add(Json.createObjectBuilder().add("value", DvObject.DType.Dataverse.getDType())
                             .add("label", SearchConstants.UI_DATAVERSES)
                             .add("selected", this.areDataversesIncluded()))
-                .add(Json.createObjectBuilder().add("value", DvObject.DATASET_DTYPE_STRING)
+                .add(Json.createObjectBuilder().add("value", DvObject.DType.Dataset.getDType())
                             .add("label", SearchConstants.UI_DATASETS)
                             .add("selected", this.areDatasetsIncluded()))
-                .add(Json.createObjectBuilder().add("value", DvObject.DATAFILE_DTYPE_STRING)
+                .add(Json.createObjectBuilder().add("value", DvObject.DType.DataFile.getDType())
                             .add("label", SearchConstants.UI_FILES)
                             .add("selected", this.areFilesIncluded())
                 );

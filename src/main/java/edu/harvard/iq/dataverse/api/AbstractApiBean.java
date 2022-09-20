@@ -164,6 +164,9 @@ public abstract class AbstractApiBean {
     protected EjbDataverseEngine engineSvc;
 
     @EJB
+    protected DvObjectServiceBean dvObjectSvc;
+    
+    @EJB
     protected DatasetServiceBean datasetSvc;
     
     @EJB
