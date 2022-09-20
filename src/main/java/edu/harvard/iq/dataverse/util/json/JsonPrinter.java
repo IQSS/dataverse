@@ -550,6 +550,7 @@ public class JsonPrinter {
         fieldsBld.add("type", fld.getFieldType().toString());
         fieldsBld.add("watermark", fld.getWatermark());
         fieldsBld.add("description", fld.getDescription());
+        fieldsBld.add("multiple", fld.isAllowMultiples());
         if (!fld.getChildDatasetFieldTypes().isEmpty()) {
             JsonObjectBuilder subFieldsBld = jsonObjectBuilder();
             for (DatasetFieldType subFld : fld.getChildDatasetFieldTypes()) {
