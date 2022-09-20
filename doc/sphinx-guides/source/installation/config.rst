@@ -385,12 +385,16 @@ Logging & Slow Performance
 
 
 
-File Storage: Using a Local Filesystem and/or Swift and/or object stores
-------------------------------------------------------------------------
+.. _file-storage:
+
+File Storage: Using a Local Filesystem and/or Swift and/or Object Stores and/or Trusted Remote Stores
+-----------------------------------------------------------------------------------------------------
 
 By default, a Dataverse installation stores all data files (files uploaded by end users) on the filesystem at ``/usr/local/payara5/glassfish/domains/domain1/files``. This path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.\<id\>.directory`` JVM option described below.
 
 A Dataverse installation can alternately store files in a Swift or S3-compatible object store, and can now be configured to support multiple stores at once. With a multi-store configuration, the location for new files can be controlled on a per-Dataverse collection basis.
+
+A Dataverse installation may also be configured to reference some files (e.g. large and/or sensitive data) stored in a web-accessible trusted remote store.
 
 The following sections describe how to set up various types of stores and how to configure for multiple stores.
 
@@ -810,6 +814,40 @@ Migrating from Local Storage to S3
 
 Is currently documented on the :doc:`/developers/deployment` page.
 
+.. _trusted-remote-storage:
+
+Trusted Remote Storage
+++++++++++++++++++++++
+
+In addition to having the type "remote" and requiring a label, Trusted Remote Stores are defined in terms of a baseURL - all files managed by this store must be at a path starting with this URL, and a baseStore - a file, s3, or swift store that can be used to store additional ancillary dataset files (e.g. metadata exports, thumbnails, auxiliary files, etc.).
+These and other available options are described in the table below.
+
+Trusted remote stores can range from being a static trusted website to a sophisticated service managing access requests and logging activity
+and/or managing access to a secure enclave.  See :doc:`/developers/big-data-support` for additional information on how to use a trusted remote store. For specific remote stores, consult their documentation when configuring the remote store in your Dataverse installation.
+
+Note that in the current implementation, activites where Dataverse needs access to data bytes, e.g. to create thumbnails or validate hash values at publication will fail if a remote store does not allow Dataverse access. Implementers of such trusted remote stores should consider using Dataverse's settings to disable ingest, validation of files at publication, etc. as needed.
+
+Once you have configured a trusted remote store, you can point your users to the :ref:`add-remote-file-api` section of the API Guide.
+
+.. table::
+    :align: left
+
+    ===========================================  ==================  ==========================================================================  ===================
+    JVM Option                                   Value               Description                                                                 Default value
+    ===========================================  ==================  ==========================================================================  ===================
+    dataverse.files.<id>.type                    ``remote``          **Required** to mark this storage as remote.                                (none)
+    dataverse.files.<id>.label                   <?>                 **Required** label to be shown in the UI for this storage.                  (none)
+    dataverse.files.<id>.base-url                <?>                 **Required** All files must have URLs of the form <baseUrl>/* .             (none)
+    dataverse.files.<id>.base-store              <?>                 **Optional** The id of a base store (of type file, s3, or swift).           (the default store)
+    dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download (should usually be true).                            ``false``
+    dataverse.files.<id>.secret-key               <?>                 A key used to sign download requests sent to the remote store. Optional.   (none)
+    dataverse.files.<id>.url-expiration-minutes  <?>                 If direct downloads and using signing: time until links expire. Optional.   60
+    dataverse.files.<id>.remote-store-name       <?>                 A short name used in the UI to indicate where a file is located. Optional.  (none)
+    dataverse.files.<id>.remote-store-url        <?>                 A url to an info page about the remote store used in the UI. Optional.      (none)
+    
+    ===========================================  ==================  ==========================================================================  ===================
+
+
 
 .. _Branding Your Installation:
 
@@ -1228,7 +1266,7 @@ These archival Bags include all of the files and metadata in a given dataset ver
 
 The Dataverse Software offers an internal archive workflow which may be configured as a PostPublication workflow via an admin API call to manually submit previously published Datasets and prior versions to a configured archive such as Chronopolis. The workflow creates a `JSON-LD <http://www.openarchives.org/ore/0.9/jsonld>`_ serialized `OAI-ORE <https://www.openarchives.org/ore/>`_ map file, which is also available as a metadata export format in the Dataverse Software web interface.
 
-At present, archiving classes include the DuraCloudSubmitToArchiveCommand, LocalSubmitToArchiveCommand, GoogleCloudSubmitToArchive, and S3SubmitToArchiveCommand , which all extend the AbstractSubmitToArchiveCommand and use the configurable mechanisms discussed below.
+At present, archiving classes include the DuraCloudSubmitToArchiveCommand, LocalSubmitToArchiveCommand, GoogleCloudSubmitToArchive, and S3SubmitToArchiveCommand , which all extend the AbstractSubmitToArchiveCommand and use the configurable mechanisms discussed below. (A DRSSubmitToArchiveCommand, which works with Harvard's DRS also exists and, while specific to DRS, is a useful example of how Archivers can support single-version-only semantics and support archiving only from specified collections (with collection specific parameters)). 
 
 All current options support the archival status APIs and the same status is available in the dataset page version table (for contributors/those who could view the unpublished dataset, with more detail available to superusers).
 
@@ -1332,7 +1370,7 @@ The S3 Archiver defines one custom setting, a required :S3ArchiverConfig. It can
 
 The credentials for your S3 account, can be stored in a profile in a standard credentials file (e.g. ~/.aws/credentials) referenced via "profile" key in the :S3ArchiverConfig setting (will default to the default entry), or can via MicroProfile settings as described for S3 stores (dataverse.s3archiver.access-key and dataverse.s3archiver.secret-key)
 
-The :S3ArchiverConfig setting is a json object that must include an "s3_bucket_name" and may include additional S3-related parameters as described for S3 Stores, including "profile", "connection-pool-size","custom-endpoint-url", "custom-endpoint-region", "path-style-access", "payload-signing", and "chunked-encoding".
+The :S3ArchiverConfig setting is a JSON object that must include an "s3_bucket_name" and may include additional S3-related parameters as described for S3 Stores, including "profile", "connection-pool-size","custom-endpoint-url", "custom-endpoint-region", "path-style-access", "payload-signing", and "chunked-encoding".
 
 \:S3ArchiverConfig - minimally includes the name of the bucket to use. For example:
 
@@ -2514,6 +2552,30 @@ In the case you get garbled characters in Shibboleth-supplied fields (e.g. given
 
 If you managed to get correct accented characters from shibboleth while this setting is _false_, please contact us with your application server and Shibboleth configuration!
 
+:ShibAffiliationOrder
++++++++++++++++++++++
+
+Will select the last or first value of an array in affiliation, the array separator can be set using ``:ShibAffiliationSeparator`` .
+
+To select the last value : 
+
+``curl -X PUT -d "lastAffiliation" http://localhost:8080/api/admin/settings/:ShibAffiliationOrder``
+
+To select the first value :
+
+``curl -X PUT -d "firstAffiliation" http://localhost:8080/api/admin/settings/:ShibAffiliationOrder``
+
+
+:ShibAffiliationSeparator
++++++++++++++++++++++++++
+
+Set the separator to be used for ``:ShibAffiliationOrder``.
+Default separator : ";"
+
+To change the separator :
+
+``curl -X PUT -d ";" http://localhost:8080/api/admin/settings/:ShibAffiliationSeparator``
+
 .. _:ComputeBaseUrl:
 
 :ComputeBaseUrl
@@ -3000,3 +3062,51 @@ For configuration details, see :ref:`mute-notifications`.
 Overrides the default empty list of never muted notifications. Never muted notifications cannot be muted by the users. Always muted notifications are grayed out and are not adjustable by the user.
 
 For configuration details, see :ref:`mute-notifications`.
+
+:LDNMessageHosts
+++++++++++++++++
+
+The comma-separated list of hosts allowed to send Dataverse Linked Data Notification messages. See :doc:`/api/linkeddatanotification` for details. ``*`` allows messages from anywhere (not recommended for production). By default, messages are not accepted from anywhere.
+
+
+:LDN_TARGET
++++++++++++
+
+The URL of an LDN Inbox to which the LDN Announce workflow step will send messages. See :doc:`/developers/workflows` for details.
+
+:LDNAnnounceRequiredFields
+++++++++++++++++++++++++++
+
+The list of parent dataset field names for which the LDN Announce workflow step should send messages. See :doc:`/developers/workflows` for details.
+
+.. _:GlobusBasicToken:
+
+:GlobusBasicToken
++++++++++++++++++
+
+GlobusBasicToken encodes credentials for Globus integration. See :ref:`globus-support` for details.
+
+:GlobusEndpoint
++++++++++++++++
+
+GlobusEndpoint is Globus endpoint id used with Globus integration. See :ref:`globus-support` for details.
+
+:GlobusStores
++++++++++++++
+
+A comma-separated list of the S3 stores that are configured to support Globus integration. See :ref:`globus-support` for details.
+
+:GlobusAppURL
++++++++++++++
+
+The URL where the `dataverse-globus <https://github.com/scholarsportal/dataverse-globus>`_ "transfer" app has been deployed to support Globus integration. See :ref:`globus-support` for details.
+
+:GlobusPollingInterval
+++++++++++++++++++++++
+
+The interval in seconds between Dataverse calls to Globus to check on upload progress. Defaults to 50 seconds. See :ref:`globus-support` for details.
+
+:GlobusSingleFileTransfer
++++++++++++++++++++++++++
+
+A true/false option to add a Globus transfer option to the file download menu which is not yet fully supported in the dataverse-globus app. See :ref:`globus-support` for details.

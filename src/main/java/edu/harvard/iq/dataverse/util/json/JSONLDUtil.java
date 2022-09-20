@@ -45,7 +45,7 @@ import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import org.apache.commons.lang3.StringUtils;
 
 import com.apicatalog.jsonld.JsonLd;
-import com.apicatalog.jsonld.api.JsonLdError;
+import com.apicatalog.jsonld.JsonLdError;
 import com.apicatalog.jsonld.document.JsonDocument;
 
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;

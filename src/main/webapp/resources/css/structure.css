@@ -99,6 +99,7 @@ td.col-select-width, th.col-select-width {width:36px;}
 .no-margin-top {margin-top:0 !important;}
 .no-margin-bottom {margin-bottom:0 !important;}
 .margin-sides {margin-left:1em; margin-right:1em;}
+.margin-right {margin-right:.5em;}
 .padding-12 {padding: 12px;}
 .padding-6 {padding: 6px;}
 .padding-none {padding: 0 !important;}
@@ -772,6 +773,17 @@ div[id$="filesTable"] thead[id$="filesTable_head"] th.ui-selection-column .ui-ch
     /* Non standard for webkit */
     word-break: break-word;
 }
+/*Remote Store Branding*/
+.remote-info {
+    width: fit-content;
+    margin-left: auto;
+    margin-right: 10px;
+    display: block;
+    padding:5px;
+}
+.remote-info > a {
+    color:white;
+}
 
 /* REQUEST ACCESS DOWNLOAD OPTION LINK */
 div[id$="requestPanel"].iq-dropdown-list-item {display:list-item !important;}
@@ -870,6 +882,8 @@ div.panel-body.read-terms{max-height:220px; overflow-y:scroll; width:100%; backg
 /* UPLOAD FILES */
 #dragdropMsg {padding:20px;font-size:1.3em;color:#808080;text-align:center;}
 .dropin-btn-status.ui-icon {background: url("https://www.dropbox.com/static/images/widgets/dbx-saver-status.png") no-repeat;}
+.globus-btn.ui-icon {background: url("https://docs.globus.org/images/home/transfer.png") no-repeat;background-size:contain;display:inline-block;}
+
 
 /* VERSIONS */
 div[id$="versionsTable"] th.col-select-width * {display:none;}
@@ -1116,3 +1130,8 @@ span.label-default { background-color: #757575 }
 
 .login-container h1 { font-size:30px; }
 #embargoInputs label { font-weight: normal; }
+
+/*Template Instructions Editing*/
+.ui-inplace .ui-inputfield {
+    width:60%
+}
