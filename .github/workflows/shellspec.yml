@@ -12,8 +12,15 @@ on:
             # add more when more specs are written relying on data
 env:
     SHELLSPEC_VERSION: 0.28.1
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
 jobs:
     shellcheck:
+        permissions:
+          contents: read # to fetch code (actions/checkout)
+          pull-requests: write # to report issues using PR comments (reviewdog/action-shellcheck)
+
         name: Shellcheck
         runs-on: ubuntu-latest
         steps:
