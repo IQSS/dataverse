@@ -35,6 +35,7 @@ The base image provides:
 - CLI tools necessary to run Dataverse (i. e. ``curl`` or ``jq`` - see also :doc:`../installation/prerequisites` in Installation Guide)
 - Linux tools for analysis, monitoring and so on
 - `Jattach <https://github.com/apangin/jattach>`__ (attach to running JVM)
+- `wait-for <https://github.com/eficode/wait-for>`__ (tool to "wait for" a service to be available)
 - `dumb-init <https://github.com/Yelp/dumb-init>`__ (see :ref:`below <base-entrypoint>` for details)
 
 This image is created as a "multi-arch image", see :ref:`below <base-multiarch>`.
