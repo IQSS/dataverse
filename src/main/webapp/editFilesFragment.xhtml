@@ -191,6 +191,11 @@
                                     <p:commandButton id="hypothesisButton" disabled="#{!(datasetPage || EditDatafilesPage.showFileUploadComponent())}" value="#{bundle['file.fromHypothesis']}" actionListener="#{EditDatafilesPage.handleHypothesisUpload}" oncomplete="javascript:hypothesisUploadFinished();" update="@none" icon="hypothesis-btn-status" />
                                     <p:message for="hypothesisButton" id="hypothesisUploadMessage" display="text" redisplay="false" />
                                 </div>
+                                <div jsf:id="globusBlock" jsf:rendered="#{globusUploadSupported and !lockedFromEdits }"  class="margin-top">
+                                    <p class="help-block" jsf:rendered="#{!createDataset}">#{bundle['file.fromGlobus.tip']}</p>
+                                    <p class="help-block" jsf:rendered="#{createDataset}">#{bundle['file.fromGlobusAfterCreate.tip']}</p>
+                                    <p:button target="_blank" rendered="#{!createDataset}" onclick="cancelDatasetEdit();window.open('#{GlobusServiceBean.getGlobusAppUrlForDataset(dataset)}');return false;" value="#{bundle['file.fromGlobus']}"  icon="globus-btn" />
+                                </div>
                     
                             </div>
                         </div>
@@ -316,7 +321,7 @@
                                 </ui:fragment>
                             </div>
                         </div>
-                    </div>               
+                    </div>
                     
                     <p:message for="fileUpload" id="uploadMessage" display="text" escape="false"/>
                     
@@ -468,7 +473,7 @@
                                                     <f:setPropertyActionListener target="#{DatasetPage.selectedFiles}" value="#{EditDatafilesPage.selectedFiles}" /> 
                                                 </p:commandLink>
                                             </li>
-                                            <li jsf:rendered="#{!settingsWrapper.publicInstall}">
+                                            <li jsf:rendered="#{!DatasetPage.hasPublicStore}">
                                                 <p:commandLink  onclick="if (!testFilesSelected2()) return false;"
                                                                 update="@([id$=accessPopup])" 
                                                                 oncomplete="PF('accessPopup').show();">                                                               
@@ -478,7 +483,7 @@
                                                     <f:setPropertyActionListener target="#{DatasetPage.selectedFiles}" value="#{EditDatafilesPage.selectedFiles}" /> 
                                                 </p:commandLink>
                                             </li>
-                                            <li jsf:rendered="#{!settingsWrapper.publicInstall}">
+                                            <li jsf:rendered="#{!DatasetPage.hasPublicStore}">
                                                 <p:commandLink  onclick="if (!testFilesSelected2()) return false;"
                                                                 actionListener="#{EditDatafilesPage.restrictFiles(false)}"
                                                                 update="filesTable,:messagePanel" 
