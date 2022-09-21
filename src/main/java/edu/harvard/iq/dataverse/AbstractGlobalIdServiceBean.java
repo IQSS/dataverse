@@ -152,42 +152,13 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
             case "randomString":
                 return generateIdentifierAsRandomString(dataset, shoulder);
             case "storedProcGenerated":
-                return generateIdentifierFromStoredProcedure(dataset, shoulder);
+                return generateIdentifierFromStoredProcedureIndependent(dataset, shoulder);
             default:
                 /* Should we throw an exception instead?? -- L.A. 4.6.2 */
                 return generateIdentifierAsRandomString(dataset, shoulder);
         }
     }
 
-    /*
-     * This method checks locally for a DvObject with the same PID and if that is OK, checks with the PID service.
-     * @param dvo - the object to check (ToDo - get protocol/authority from this PidProvider object)
-     * @param prepend - for Datasets, this is always the shoulder, for DataFiles, it could be the shoulder or the parent Dataset identifier
-     */
-    private String generateIdentifierAsRandomString(DvObject dvo, String prepend) {
-        String identifier = null;
-        do {
-            identifier = prepend + RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
-        } while (!isGlobalIdUnique(new GlobalId(dvo.getProtocol(), dvo.getAuthority(), identifier)));
-
-        return identifier;
-    }
-
-    private String generateIdentifierFromStoredProcedure(Dataset dataset, String shoulder) {
-
-        String identifier;
-        do {
-            String identifierFromStoredProcedure = dvObjectService.generateNewIdentifierByStoredProcedure();
-            // some diagnostics here maybe - is it possible to determine that it's failing
-            // because the stored procedure hasn't been created in the database?
-            if (identifierFromStoredProcedure == null) {
-                return null;
-            }
-            identifier = shoulder + identifierFromStoredProcedure;
-        } while (!dvObjectService.isGlobalIdLocallyUnique(new GlobalId(dataset.getProtocol(), dataset.getAuthority(), identifier)));
-
-        return identifier;
-    }
 
     /**
      * Check that a identifier entered by the user is unique (not currently used
@@ -242,9 +213,27 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     }
     
 
+    /*
+     * This method checks locally for a DvObject with the same PID and if that is OK, checks with the PID service.
+     * @param dvo - the object to check (ToDo - get protocol/authority from this PidProvider object)
+     * @param prepend - for Datasets, this is always the shoulder, for DataFiles, it could be the shoulder or the parent Dataset identifier
+     */
+    private String generateIdentifierAsRandomString(DvObject dvo, String prepend) {
+        String identifier = null;
+        do {
+            identifier = prepend + RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
+        } while (!isGlobalIdUnique(new GlobalId(dvo.getProtocol(), dvo.getAuthority(), identifier)));
 
+        return identifier;
+    }
 
-    private String generateIdentifierFromStoredProcedureIndependent(DataFile datafile, String prepend) {
+    /*
+     * This method checks locally for a DvObject with the same PID and if that is OK, checks with the PID service.
+     * @param dvo - the object to check (ToDo - get protocol/authority from this PidProvider object)
+     * @param prepend - for Datasets, this is always the shoulder, for DataFiles, it could be the shoulder or the parent Dataset identifier
+     */
+
+    private String generateIdentifierFromStoredProcedureIndependent(DvObject dvo, String prepend) {
         String identifier; 
         do {
             String identifierFromStoredProcedure = dvObjectService.generateNewIdentifierByStoredProcedure();
@@ -254,16 +243,19 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
                 return null; 
             }
             identifier = prepend + identifierFromStoredProcedure;
-        } while (!isGlobalIdUnique(new GlobalId(datafile.getProtocol(), datafile.getAuthority(), identifier)));
+        } while (!isGlobalIdUnique(new GlobalId(dvo.getProtocol(), dvo.getAuthority(), identifier)));
         
         return identifier;
     }
     
+    /*This method is only used for DataFiles with DEPENDENT Pids. It is not for Datasets
+     * 
+     */
     private String generateIdentifierFromStoredProcedureDependent(DataFile datafile, String prepend) {
         String identifier;
         Long retVal;
-
-        retVal = new Long(0);
+        //ToDo - replace loop with one DB lookup for largest entry? (adding 1000 files, this loop would run ~n**2/2 db calls)
+        retVal = Long.valueOf(0L);
 
         do {
             retVal++;
@@ -294,7 +286,6 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
 
     private String xmlMetadata;
     private String identifier;
-    private String datasetIdentifier;
     private List<String> datafileIdentifiers;
     private List<String> creators;
     private String title;
@@ -380,7 +371,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
             // Added to prevent a NullPointerException when trying to destroy datasets when using DataCite rather than EZID.
             publisherYearFinal = this.publisherYear;
         }
-        xmlMetadata = template.replace("${identifier}", this.identifier.trim())
+        xmlMetadata = template.replace("${identifier}", getIdentifier().trim())
                 .replace("${title}", this.title)
                 .replace("${publisher}", this.publisher)
                 .replace("${publisherYear}", publisherYearFinal)
@@ -506,10 +497,6 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         this.identifier = identifier;
     }
 
-    public void setDatasetIdentifier(String datasetIdentifier) {
-        this.datasetIdentifier = datasetIdentifier;
-    }
-
     public List<String> getCreators() {
         return creators;
     }
@@ -563,10 +550,6 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
             DataFile df = (DataFile) dvObject;
             String fileDescription = df.getDescription();
             metadataTemplate.setDescription(fileDescription == null ? "" : fileDescription);
-            String datasetPid = df.getOwner().getGlobalId().asString();
-            metadataTemplate.setDatasetIdentifier(datasetPid);
-        } else {
-            metadataTemplate.setDatasetIdentifier("");
         }
 
         metadataTemplate.setContacts(dataset.getLatestVersion().getDatasetContacts());
