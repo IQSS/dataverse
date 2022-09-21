@@ -964,7 +964,6 @@ public class OpenAireExportUtil {
             relatedIdentifierTypeMap.put("URL".toLowerCase(), "URL");
             relatedIdentifierTypeMap.put("URN".toLowerCase(), "URN");
             relatedIdentifierTypeMap.put("WOS".toLowerCase(), "WOS");
-            relatedIdentifierTypeMap.put("CSTR".toLowerCase(), "cstr");
         }
 
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
