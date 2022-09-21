@@ -24,7 +24,7 @@ In addition to the automated exports, a Dataverse installation admin can start a
 
 ``curl http://localhost:8080/api/admin/metadata/clearExportTimestamps``
 
-``curl http://localhost:8080/api/admin/metadata/reExportDataset?persistentId=doi:10.5072/FK2/AAA000``
+``curl http://localhost:8080/api/admin/metadata/:persistentId/reExportDataset?persistentId=doi:10.5072/FK2/AAA000``
 
 The first will attempt to export all the published, local (non-harvested) datasets that haven't been exported yet. 
 The second will *force* a re-export of every published, local dataset, regardless of whether it has already been exported or not. 
@@ -36,6 +36,10 @@ The difference is that when exporting prematurely fails due to some problem, the
 Calling clearExportTimestamps should return ``{"status":"OK","data":{"message":"cleared: X"}}`` where "X" is the total number of datasets cleared.
 
 The reExportDataset call gives you the opportunity to *force* a re-export of only a specific dataset and (with some script automation) could allow you the export specific batches of datasets. This might be usefull when handling exporting problems or when reExportAll takes too much time and is overkill. Note that :ref:`export-dataset-metadata-api` is a related API.
+
+reExportDataset can be called with either ``persistentId`` (as shown above, with a DOI) or with the database id of a dataset (as shown below, with "42" as the database id).
+
+``curl http://localhost:8080/api/admin/metadata/42/reExportDataset``
 
 Note, that creating, modifying, or re-exporting an OAI set will also attempt to export all the unexported datasets found in the set.
 
