@@ -4,15 +4,11 @@ import edu.harvard.iq.dataverse.AbstractGlobalIdServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.ImportDatasetCommand;
-import edu.harvard.iq.dataverse.util.FileUtil;
-
 import java.lang.StackWalker.StackFrame;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 

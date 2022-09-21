@@ -4,11 +4,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.InputStream;
 
-import javax.ejb.EJB;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.StoredProcedureQuery;
-
+import javax.inject.Inject;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,23 +19,14 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
 
     private static final Logger logger = Logger.getLogger(AbstractGlobalIdServiceBean.class.getCanonicalName());
 
-    @EJB
+    @Inject
     DataverseServiceBean dataverseService;
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
-    @EJB
-    EjbDataverseEngine commandEngine;
-    @EJB
-    DatasetServiceBean datasetService;
-    @EJB
-    DataFileServiceBean datafileService;
-    @EJB
+    @Inject
     DvObjectServiceBean dvObjectService;
-    @EJB
+    @Inject
     SystemConfig systemConfig;
-    
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    protected EntityManager em;
     
     public static String UNAVAILABLE = ":unav";
 
@@ -109,11 +96,6 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         return dvObject.getGlobalId().asString();
     }
 
-    protected String getTargetUrl(Dataset datasetIn) {
-        logger.log(Level.FINE,"getTargetUrl");
-        return systemConfig.getDataverseSiteUrl() + Dataset.TARGET_URL + datasetIn.getGlobalIdString();
-    }
-    
     protected String generateYear (DvObject dvObjectIn){
         return dvObjectIn.getYearPublishedCreated(); 
     }
@@ -125,6 +107,22 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         return metadata;
     }
     
+    @Override
+    public boolean alreadyExists(DvObject dvo) throws Exception {
+        return alreadyExists(dvo.getGlobalId());
+    }
+
+    /*
+     * ToDo: the DvObject being sent in provides partial support for the case where
+     * it has a different authority/protocol than what is configured (i.e. a legacy
+     * Pid that can actually be updated by the Pid account being used.) Removing
+     * this now would potentially break/make it harder to handle that case prior to
+     * support for configuring multiple Pid providers. Once that exists, it would be
+     * cleaner to always find the PidProvider associated with the
+     * protocol/authority/shoulder of the current dataset and then not pass the
+     * DvObject as a param. (This would also remove calls to get the settings since
+     * that would be done at construction.)
+     */
     @Override
     public DvObject generateIdentifier(DvObject dvObject) {
 
@@ -175,9 +173,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
 
         String identifier;
         do {
-            StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierFromStoredProcedure");
-            query.execute();
-            String identifierFromStoredProcedure = (String) query.getOutputParameterValue(1);
+            String identifierFromStoredProcedure = dvObjectService.generateNewIdentifierByStoredProcedure();
             // some diagnostics here maybe - is it possible to determine that it's failing
             // because the stored procedure hasn't been created in the database?
             if (identifierFromStoredProcedure == null) {
@@ -215,7 +211,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     @Override
     public String generateDataFileIdentifier(DataFile datafile) {
         String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
-        String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
+        String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, SystemConfig.DataFilePIDFormat.DEPENDENT.toString());
 
         String prepend = "";
         if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.DEPENDENT.toString())){
@@ -254,9 +250,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     private String generateIdentifierFromStoredProcedureIndependent(DataFile datafile, String prepend) {
         String identifier; 
         do {
-            StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierFromStoredProcedure");
-            query.execute();
-            String identifierFromStoredProcedure = (String) query.getOutputParameterValue(1);
+            String identifierFromStoredProcedure = dvObjectService.generateNewIdentifierByStoredProcedure();
             // some diagnostics here maybe - is it possible to determine that it's failing 
             // because the stored procedure hasn't been created in the database?
             if (identifierFromStoredProcedure == null) {

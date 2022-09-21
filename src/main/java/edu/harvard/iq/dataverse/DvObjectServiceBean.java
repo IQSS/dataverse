@@ -19,6 +19,8 @@ import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.StoredProcedureQuery;
+
 import org.apache.commons.lang3.StringUtils;
 import org.ocpsoft.common.util.Strings;
 
@@ -337,4 +339,11 @@ public class DvObjectServiceBean implements java.io.Serializable {
         }
         return ret;        
     }
+    
+    public String generateNewIdentifierByStoredProcedure() {
+        StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierFromStoredProcedure");
+        query.execute();
+        return (String) query.getOutputParameterValue(1);
+    }
+    
 }

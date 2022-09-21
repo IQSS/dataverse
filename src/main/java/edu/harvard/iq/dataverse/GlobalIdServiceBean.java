@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import static edu.harvard.iq.dataverse.GlobalIdServiceBean.logger;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProviderServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 
@@ -58,6 +59,17 @@ public interface GlobalIdServiceBean {
     boolean isGlobalIdUnique(GlobalId globalId);
     
 }
+
+
+/*
+ * ToDo - replace this with a mechanism like BrandingUtilHelper that would read
+ * the config and create PidProviders, one per set of config values and serve
+ * those as needed. The help has to be a bean to autostart and to hand the
+ * required service beans to the PidProviders. That may boil down to just the
+ * dvObjectService (to check for local identifier conflicts) since it will be
+ * the helper that has to read settings/get systewmConfig values.
+ * 
+ */
 
 /**
  * Static utility class for dispatching implementing beans, based on protocol and providers.
