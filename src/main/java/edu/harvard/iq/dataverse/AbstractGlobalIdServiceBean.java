@@ -159,12 +159,16 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         }
     }
 
-    private String generateIdentifierAsRandomString(Dataset dataset, String shoulder) {
+    /*
+     * This method checks locally for a DvObject with the same PID and if that is OK, checks with the PID service.
+     * @param dvo - the object to check (ToDo - get protocol/authority from this PidProvider object)
+     * @param prepend - for Datasets, this is always the shoulder, for DataFiles, it could be the shoulder or the parent Dataset identifier
+     */
+    private String generateIdentifierAsRandomString(DvObject dvo, String prepend) {
         String identifier = null;
         do {
-            identifier = shoulder + RandomStringUtils.randomAlphanumeric(6).toUpperCase();
-            
-        } while (!dvObjectService.isGlobalIdLocallyUnique(new GlobalId(dataset.getProtocol(), dataset.getAuthority(), identifier) ));
+            identifier = prepend + RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
+        } while (!isGlobalIdUnique(new GlobalId(dvo.getProtocol(), dvo.getAuthority(), identifier)));
 
         return identifier;
     }
@@ -237,14 +241,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         }
     }
     
-    private String generateIdentifierAsRandomString(DataFile datafile, String prepend) {
-        String identifier = null;
-        do {
-            identifier = prepend + RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
-        } while (!isGlobalIdUnique(new GlobalId(datafile.getProtocol(), datafile.getAuthority(), identifier)));
 
-        return identifier;
-    }
 
 
     private String generateIdentifierFromStoredProcedureIndependent(DataFile datafile, String prepend) {
