@@ -17,7 +17,6 @@ DV_DIR=${PAYARA_DIR}/glassfish/domains/domain1
 ${PAYARA_DIR}/bin/asadmin stop-domain
 
 rm -rf ${PAYARA_DIR}/${DV_DIR}/generated/
-rm -rf ${PAYARA_DIR}/${DV_DIR}/lib/databases
 rm -rf ${PAYARA_DIR}/${DV_DIR}/osgi-cache/felix
 
 # restart the domain (also generates a warning if app server is stopped)

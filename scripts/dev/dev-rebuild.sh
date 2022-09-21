@@ -17,7 +17,6 @@ $ASADMIN stop-domain
 
 echo "Deleting \"generated\" directory..."
 rm -rf $PAYARA_DIR/glassfish/domains/domain1/generated
-rm -rf $PAYARA_DIR/glassfish/domains/domain1/lib/databases
 
 echo "Deleting ALL DATA FILES uploaded to Dataverse..." 
 # TODO: Make this configurable.

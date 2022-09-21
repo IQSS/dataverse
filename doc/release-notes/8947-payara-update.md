@@ -22,6 +22,8 @@ application user.
 
 In the following commands we assume that Payara 5 is installed in `/usr/local/payara5`. If not, adjust as needed.
 
+Please note that the deletion of the `lib/databases` directory below is only required once, for this upgrade (see Issue #8230 for details).
+
 ```shell
 export PAYARA=/usr/local/payara5
 ```
@@ -43,8 +45,6 @@ export PAYARA=/usr/local/payara5
     rm -rf $PAYARA/glassfish/domains/domain1/osgi-cache
     rm -rf $PAYARA/glassfish/domains/domain1/lib/databases
 ```
-
-(The deletion of `lib/databases` and root cause has been documented in #8230 by @qqmyers)
 
 3. Move the current Payara directory out of the way
 
