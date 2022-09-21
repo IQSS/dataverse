@@ -1836,11 +1836,14 @@ public class DatasetsIT {
         String newDescription = "{\"citation:dsDescription\": {\"citation:dsDescriptionValue\": \"New description\"},  \"@context\":{\"citation\": \"https://dataverse.org/schema/citation/\"}}";
         Response response = UtilIT.updateDatasetJsonLDMetadata(datasetId.intValue(), apiToken, newDescription, false);
         response.then().assertThat().statusCode(CONFLICT.getStatusCode());
+        assertTrue(response.prettyPrint().contains("You must enable request access or add terms of access in datasets with restricted files"));
+
 
         String pathToJsonFile = "doc/sphinx-guides/source/_static/api/dataset-update-metadata.json";
         Response updateTitle = UtilIT.updateDatasetMetadataViaNative(datasetPid, pathToJsonFile, apiToken);
         updateTitle.prettyPrint();
         assertEquals(CONFLICT.getStatusCode(), updateTitle.getStatusCode());
+        assertTrue(updateTitle.prettyPrint().contains("You must enable request access or add terms of access in datasets with restricted files"));
 
         String basicFileName = "004.txt";
 
@@ -1849,7 +1852,7 @@ public class DatasetsIT {
         Response basicAddResponse = UtilIT.uploadFileViaNative(datasetId.toString(), basicPathToFile, apiToken);
         basicAddResponse.prettyPrint();
         assertEquals(CONFLICT.getStatusCode(), basicAddResponse.getStatusCode());
-        //String basicFileId = JsonPath.from(basicAddResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        assertTrue(basicAddResponse.prettyPrint().contains("You must enable request access or add terms of access in datasets with restricted files"));
 
         Response deleteFile = UtilIT.deleteFile(907, apiToken);
         deleteFile.prettyPrint();
@@ -1858,6 +1861,7 @@ public class DatasetsIT {
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken);
         publishDataset.prettyPrint();
         assertEquals(409, publishDataset.getStatusCode());
+        assertTrue(publishDataset.prettyPrint().contains("You must enable request access or add terms of access in datasets with restricted files"));
 
     }
 
