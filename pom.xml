@@ -614,9 +614,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.microbean</groupId>
-            <artifactId>microbean-microprofile-config</artifactId>
-            <version>${microbean-mpconfig.version}</version>
+            <groupId>io.smallrye.config</groupId>
+            <artifactId>smallrye-config</artifactId>
+            <version>${smallrye-mpconfig.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -654,8 +654,15 @@
                     <include>**/*.xml</include>
                     <include>**/firstNames/*.*</include>
                     <include>**/*.xsl</include>
-                    <include>**/*.properties</include>
                     <include>**/services/*</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <!-- Filter files matching here for Maven properties and replace -->
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/*.properties</include>
                 </includes>
             </resource>
         </resources>

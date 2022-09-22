@@ -120,6 +120,34 @@ To configure the options mentioned above, an administrator must set two JVM opti
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.public=true"``
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.ingestsizelimit=<size in bytes>"``
 
+.. _globus-support:
+
+Globus File Transfer
+--------------------
+
+Note: Globus file transfer is still experimental but feedback is welcome! See :ref:`support`.
+
+Users can transfer files via `Globus <ttps://www.globus.org>`_ into and out of datasets when their Dataverse installation is configured to use a Globus accessible S3 store and a community-developed `dataverse-globus <https://github.com/scholarsportal/dataverse-globus>`_ "transfer" app has been properly installed and configured.
+
+Due to differences in the access control models of a Dataverse installation and Globus, enabling the Globus capability on a store will disable the ability to restrict and embargo files in that store.
+
+As Globus aficionados know, Globus endpoints can be in a variety of places, from data centers to personal computers. This means that from within the Dataverse software, a Globus transfer can feel like an upload or a download (with Globus Personal Connect running on your laptop, for example) or it can feel like a true transfer from one server to another (from a cluster in a data center into a Dataverse dataset or vice versa).
+
+Globus transfer uses a very efficient transfer mechanism and has additional features that make it suitable for large files and large numbers of files:
+
+* robust file transfer capable of restarting after network or endpoint failures
+* third-party transfer, which enables a user accessing a Dataverse installation in their desktop browser to initiate transfer of their files from a remote endpoint (i.e. on a local high-performance computing cluster), directly to an S3 store managed by the Dataverse installation
+
+Globus transfer requires use of the Globus S3 connector which requires a paid Globus subscription at the host institution. Users will need a Globus account which could be obtained via their institution or directly from Globus (at no cost).
+
+The setup required to enable Globus is described in the `Community Dataverse-Globus Setup and Configuration document <https://docs.google.com/document/d/1mwY3IVv8_wTspQC0d4ddFrD2deqwr-V5iAGHgOy4Ch8/edit?usp=sharing>`_ and the references therein.
+
+As described in that document, Globus transfers can be initiated by choosing the Globus option in the dataset upload panel. (Globus, which does asynchronous transfers, is not available during dataset creation.) Analogously, "Globus Transfer" is one of the download options in the "Access Dataset" menu and optionally the file landing page download menu (if/when supported in the dataverse-globus app).
+
+An overview of the control and data transfer interactions between components was presented at the 2022 Dataverse Community Meeting and can be viewed in the `Integrations and Tools Session Video <https://youtu.be/3ek7F_Dxcjk?t=5289>`_ around the 1 hr 28 min mark.
+
+See also :ref:`Globus settings <:GlobusBasicToken>`.
+
 Data Capture Module (DCM)
 -------------------------
 
