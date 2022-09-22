@@ -35,7 +35,7 @@ public class PermaLinkPidProviderServiceBean extends AbstractGlobalIdServiceBean
     public static final String PERMA_BASE_URL = System.getProperty("pid.baseurlstring", SystemConfig.getDataverseSiteUrlStatic());
     
     @Override
-    public boolean alreadyExists(DvObject dvo) throws Exception {
+    public boolean alreadyExists(GlobalId globalId) throws Exception {
         /*
          * This method is called in cases where the 'right' answer can be true or false:
          * 
@@ -71,11 +71,6 @@ public class PermaLinkPidProviderServiceBean extends AbstractGlobalIdServiceBean
                 .findFirst().map(f -> true).orElse(false);
     }
     
-    @Override
-    public boolean alreadyExists(GlobalId globalId) throws Exception {
-        //Could use the same method as above to return false if/when needed.
-        return true;
-    }
 
     @Override
     public boolean registerWhenPublished() {
