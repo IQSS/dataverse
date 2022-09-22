@@ -633,6 +633,10 @@ public abstract class AbstractApiBean {
             return engineSvc.submit(cmd);
 
         } catch (IllegalCommandException ex) {
+            //for 8859 for api calls that try to update datasets with TOA out of compliance
+                if (ex.getMessage().toLowerCase().contains("terms of use")){
+                    throw new WrappedResponse(ex, conflict(ex.getMessage()));
+                }
             throw new WrappedResponse( ex, forbidden(ex.getMessage() ) );
         } catch (PermissionException ex) {
             /**
@@ -823,6 +827,10 @@ public abstract class AbstractApiBean {
     
     protected Response forbidden( String msg ) {
         return error( Status.FORBIDDEN, msg );
+    }
+    
+    protected Response conflict( String msg ) {
+        return error( Status.CONFLICT, msg );
     }
     
     protected Response badApiKey( String apiKey ) {
