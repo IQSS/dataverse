@@ -96,10 +96,8 @@ Sometimes your Dataverse installation fails to deploy, or Payara fails to restar
 
 We don't know what's causing this issue, but here's a known workaround: 
 
-- Stop Payara; 
-
-- Remove the ``generated`` and ``osgi-cache`` directories;
-
+- Stop Payara;
+- Remove the ``generated`` and ``osgi-cache`` directories from the ``domain1`` directory;
 - Start Payara
 
 The shell script below performs the steps above. 
@@ -146,7 +144,7 @@ To identify the specific invalid values in the affected datasets, or to check al
 Many Files with a File Type of "Unknown", "Application", or "Binary"
 --------------------------------------------------------------------
 
-From the home page of a Dataverse installation you can get a count of files by file type by clicking "Files" and then scrolling down to "File Type". If you see a lot of files that are "Unknown", "Application", or "Binary" you can have the Dataverse  installation attempt to redetect the file type by using the :ref:`Redetect File Type <redetect-file-type>` API endpoint.
+From the home page of a Dataverse installation you can get a count of files by file type by clicking "Files" and then scrolling down to "File Type". If you see a lot of files that are "Unknown", "Application", or "Binary" you can have the Dataverse installation attempt to redetect the file type by using the :ref:`Redetect File Type <redetect-file-type>` API endpoint.
 
 .. _actionlogrecord-trimming:
 

@@ -11,8 +11,6 @@ import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
 import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -20,7 +18,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,9 +25,7 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
-import javax.json.JsonReader;
 import javax.json.JsonString;
-import javax.json.JsonWriter;
 import javax.ws.rs.HttpMethod;
 
 /**
@@ -203,4 +198,14 @@ public class ExternalToolHandler extends URLTokenUtil {
         this.apiToken = apiToken;
     }
 
+    /**
+     * @return Returns Javascript that opens the explore tool in a new browser
+     * tab if the browser allows it.If not, it shows an alert that popups must
+     * be enabled in the browser.
+     */
+    public String getExploreScript() {
+        String toolUrl = this.getToolUrlWithQueryParams();
+        logger.fine("Exploring with " + toolUrl);
+        return getScriptForUrl(toolUrl);
+    }
 }

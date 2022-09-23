@@ -1,7 +1,5 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.DOIDataCiteRegisterService;
-import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetLock.Reason;
@@ -22,6 +20,9 @@ import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.Map;
 import java.util.logging.Logger;
+
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 
 import org.apache.commons.codec.binary.Hex;
 import com.google.auth.oauth2.ServiceAccountCredentials;
@@ -50,6 +51,11 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
         logger.fine("Project: " + projectName + " Bucket: " + bucketName);
         if (bucketName != null && projectName != null) {
             Storage storage;
+            //Set a failure status that will be updated if we succeed
+            JsonObjectBuilder statusObject = Json.createObjectBuilder();
+            statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
+            statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, "Bag not transferred");
+            
             try {
                 FileInputStream fis = new FileInputStream(System.getProperty("dataverse.files.directory") + System.getProperty("file.separator") + "googlecloudkey.json");
                 storage = StorageOptions.newBuilder()
@@ -65,10 +71,7 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                     String spaceName = dataset.getGlobalId().asString().replace(':', '-').replace('/', '-')
                             .replace('.', '-').toLowerCase();
 
-                    DataCitation dc = new DataCitation(dv);
-                    Map<String, String> metadata = dc.getDataCiteMetadata();
-                    String dataciteXml = DOIDataCiteRegisterService.getMetadataFromDvObject(
-                            dv.getDataset().getGlobalId().asString(), metadata, dv.getDataset());
+                    String dataciteXml = getDataCiteXml(dv);
                     MessageDigest messageDigest = MessageDigest.getInstance("MD5");
                     try (PipedInputStream dataciteIn = new PipedInputStream();
                             DigestInputStream digestInputStream = new DigestInputStream(dataciteIn, messageDigest)) {
@@ -157,7 +160,9 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
 
                         StringBuffer sb = new StringBuffer("https://console.cloud.google.com/storage/browser/");
                         sb.append(bucketName + "/" + spaceName);
-                        dv.setArchivalCopyLocation(sb.toString());
+                        statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_SUCCESS);
+                        statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, sb.toString());
+                        
                     }
                 } else {
                     logger.warning("GoogleCloud Submision Workflow aborted: Dataset locked for pidRegister");
@@ -169,6 +174,8 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                 return new Failure("GoogleCloud Submission Failure",
                         e.getLocalizedMessage() + ": check log for details");
 
+            } finally {
+                dv.setArchivalCopyLocation(statusObject.build().toString());
             }
             return WorkflowStepResult.OK;
         } else {

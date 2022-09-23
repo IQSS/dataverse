@@ -1,7 +1,5 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.DOIDataCiteRegisterService;
-import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetLock.Reason;
@@ -22,6 +20,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.logging.Logger;
+
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 
 import org.apache.commons.codec.binary.Hex;
 import org.duracloud.client.ContentStore;
@@ -60,7 +61,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
             // ToDo - change after HDC 3A changes to status reporting
             // This will make the archivalCopyLocation non-null after a failure which should
             // stop retries
-            dv.setArchivalCopyLocation("Attempted");
+            
             if (dataset.getLockFor(Reason.finalizePublication) == null
                     && dataset.getLockFor(Reason.FileValidationFailed) == null) {
                 // Use Duracloud client classes to login
@@ -88,6 +89,11 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                         .replace('.', '-').toLowerCase() + "_v" + dv.getFriendlyVersionNumber();
 
                 ContentStore store;
+                //Set a failure status that will be updated if we succeed
+                JsonObjectBuilder statusObject = Json.createObjectBuilder();
+                statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
+                statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, "Bag not transferred");
+                
                 try {
                     /*
                      * If there is a failure in creating a space, it is likely that a prior version
@@ -100,10 +106,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                     if (!store.spaceExists(spaceName)) {
                         store.createSpace(spaceName);
                     }
-                    DataCitation dc = new DataCitation(dv);
-                    Map<String, String> metadata = dc.getDataCiteMetadata();
-                    String dataciteXml = DOIDataCiteRegisterService.getMetadataFromDvObject(
-                            dv.getDataset().getGlobalId().asString(), metadata, dv.getDataset());
+                    String dataciteXml = getDataCiteXml(dv);
 
                     MessageDigest messageDigest = MessageDigest.getInstance("MD5");
                     try (PipedInputStream dataciteIn = new PipedInputStream();
@@ -194,7 +197,9 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                         sb.append("/duradmin/spaces/sm/");
                         sb.append(store.getStoreId());
                         sb.append("/" + spaceName + "/" + fileName);
-                        dv.setArchivalCopyLocation(sb.toString());
+                        statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_SUCCESS);
+                        statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, sb.toString());
+                        
                         logger.fine("DuraCloud Submission step complete: " + sb.toString());
                     } catch (ContentStoreException | IOException e) {
                         // TODO Auto-generated catch block
@@ -216,6 +221,9 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                     return new Failure("Unable to create DuraCloud space with name: " + baseFileName, mesg);
                 } catch (NoSuchAlgorithmException e) {
                     logger.severe("MD5 MessageDigest not available!");
+                }
+                finally {
+                    dv.setArchivalCopyLocation(statusObject.build().toString());
                 }
             } else {
                 logger.warning(

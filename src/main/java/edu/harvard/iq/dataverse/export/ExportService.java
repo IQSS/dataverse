@@ -213,16 +213,16 @@ public class ExportService {
                 cacheExport(releasedVersion, formatName, datasetAsJson, e);
 
             }
+            // Finally, if we have been able to successfully export in all available 
+            // formats, we'll increment the "last exported" time stamp: 
+            dataset.setLastExportTime(new Timestamp(new Date().getTime()));
+            
         } catch (ServiceConfigurationError serviceError) {
             throw new ExportException("Service configuration error during export. " + serviceError.getMessage());
-        } catch (Exception e) {
-            e.printStackTrace();
-            logger.warning(e.getMessage());
+        } catch (RuntimeException e) {
+            //e.printStackTrace();
+            throw new ExportException("Unknown runtime exception exporting metadata. " + (e.getMessage() == null ? "" : e.getMessage()));
         }
-        // Finally, if we have been able to successfully export in all available 
-        // formats, we'll increment the "last exported" time stamp: 
-
-        dataset.setLastExportTime(new Timestamp(new Date().getTime()));
 
     }
 
