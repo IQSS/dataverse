@@ -56,6 +56,33 @@
     <ui:fragment rendered="#{fileDownloadHelper.canDownloadFile(fileMetadata)}">
         <!-- Download Options -->
         <li class="dropdown-header">#{bundle['file.accessBtn.header.download']} <span class="glyphicon glyphicon-download-alt"/></li>
+        
+        <!-- GlobusTransfer, orig file only  -->
+         <o:importFunctions type="edu.harvard.iq.dataverse.dataaccess.DataAccess" />
+        <li jsf:rendered="#{settingsWrapper.globusFileDownload and settingsWrapper.isGlobusEnabledStorageDriver(DataAccess:getStorageDriverFromIdentifier(fileMetadata.dataFile.storageIdentifier))}">
+            <p:commandLink rendered="#{!(downloadPopupRequired) 
+                                      and !(fileMetadata.dataFile.filePackage)}"
+                         styleClass="btn-download"
+                         process="@this"
+                         disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}" 
+                         actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'GlobusTransfer')}">
+                <!-- non-tabular data file: -->
+                <!-- no guest book/terms of use/etc. - straight to the download API url: -->
+                <span class="globus-btn ui-icon" title="#{bundle['file.globus.transfer']}"/> #{bundle['file.globus.of']} #{fileMetadata.dataFile.friendlyType == 'Unknown' ? bundle['file.download.filetype.unknown'] : fileMetadata.dataFile.friendlyType}
+            </p:commandLink>
+            <p:commandLink rendered="#{downloadPopupRequired and !fileMetadata.dataFile.filePackage}"
+                         styleClass="btn-download"
+                         process="@this"
+                         disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}" 
+                         action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'GlobusTransfer')}"
+                         update="@widgetVar(downloadPopup)" oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />
+                <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
+                GT: #{fileMetadata.dataFile.friendlyType == 'Unknown' ? bundle['file.download.filetype.unknown'] : fileMetadata.dataFile.friendlyType}
+            </p:commandLink>
+        </li>
+        
+        
         <!-- NON-TABULAR + PACKAGE DOWNLOAD OPTIONS -->
         <li jsf:rendered="#{!fileMetadata.dataFile.tabularData}">
             <p:commandLink rendered="#{!(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) 

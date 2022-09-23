@@ -261,6 +261,28 @@ public class ShibUtil {
         request.setAttribute(ShibUtil.usernameAttribute, "missing");
     }
 
+    static void mutateRequestForDevConstantOneAffiliation(HttpServletRequest request) {
+        request.setAttribute(ShibUtil.shibIdpAttribute, "https://fake.example.com/idp/shibboleth");
+        request.setAttribute(ShibUtil.uniquePersistentIdentifier, "oneAffiliation");
+        request.setAttribute(ShibUtil.firstNameAttribute, "Lurneen");
+        request.setAttribute(ShibUtil.lastNameAttribute, "Lumpkin");
+        request.setAttribute(ShibUtil.emailAttribute, "oneAffiliaton@mailinator.com");
+        request.setAttribute(ShibUtil.usernameAttribute, "oneAffiliaton");
+        // Affiliation. "ou" is the suggested attribute in :ShibAffiliationAttribute.
+        request.setAttribute("ou", "Beer-N-Brawl");
+    }
+
+    static void mutateRequestForDevConstantTwoAffiliations(HttpServletRequest request) {
+        request.setAttribute(ShibUtil.shibIdpAttribute, "https://fake.example.com/idp/shibboleth");
+        request.setAttribute(ShibUtil.uniquePersistentIdentifier, "twoAffiliatons");
+        request.setAttribute(ShibUtil.firstNameAttribute, "Lenny");
+        request.setAttribute(ShibUtil.lastNameAttribute, "Leonard");
+        request.setAttribute(ShibUtil.emailAttribute, "twoAffiliatons@mailinator.com");
+        request.setAttribute(ShibUtil.usernameAttribute, "twoAffiliatons");
+        // Affiliation. "ou" is the suggested attribute in :ShibAffiliationAttribute.
+        request.setAttribute("ou", "SNPP;Stonecutters");
+    }
+
     public static Map<String, String> getRandomUserStatic() {
         Map<String, String> fakeUser = new HashMap<>();
         String shortRandomString = UUID.randomUUID().toString().substring(0, 8);

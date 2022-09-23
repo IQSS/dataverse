@@ -16,23 +16,17 @@ import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetStorageSizeCommand;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+
+import java.io.*;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -95,6 +89,12 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     @EJB
     SystemConfig systemConfig;
+
+    @EJB
+    GlobusServiceBean globusServiceBean;
+
+    @EJB
+    UserNotificationServiceBean userNotificationService;
 
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 
@@ -1130,4 +1130,5 @@ public class DatasetServiceBean implements java.io.Serializable {
             hdLogger.warning("Failed to destroy the dataset");
         }
     }
+
 }

@@ -219,15 +219,82 @@ Assign search facets for a given Dataverse collection identified by ``id``:
   export SERVER_URL=https://demo.dataverse.org
   export ID=root
 
-  curl -H X-Dataverse-key:$API_TOKEN" -X POST $SERVER_URL/api/dataverses/$ID/facets --upload-file facets.json
+  curl -H X-Dataverse-key:$API_TOKEN" -X POST $SERVER_URL/api/dataverses/$ID/facets --upload-file dataverse-facets.json
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST https://demo.dataverse.org/api/dataverses/root/facets --upload-file facets.json
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST https://demo.dataverse.org/api/dataverses/root/facets --upload-file dataverse-facets.json
 
-Where ``facets.json`` contains a JSON encoded list of metadata keys (e.g. ``["authorName","authorAffiliation"]``).
+Where :download:`dataverse-facets.json <../_static/api/dataverse-facets.json>` contains a JSON encoded list of metadata keys (e.g. ``["authorName","authorAffiliation"]``).
+
+List Metadata Block Facets Configured for a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+|CORS| List the metadata block facet configuration with all the metadata block configured for a given Dataverse collection ``id``:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$ID/metadatablockfacets
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/dataverses/root/metadatablockfacets
+
+Set Metadata Block Facets for a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sets the metadata blocks that will appear in the ``Dataset Features`` facet category for a given Dataverse collection identified by ``id``.
+
+In order to set or clear the metadata blocks for a collection, you must first :ref:`set the metadata block facet root to true<metadata-block-facet-root-api>`.
+
+To clear the metadata blocks set by a parent collection, submit an empty array (e.g. ``[]``):
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H X-Dataverse-key:$API_TOKEN" -X POST -H "Content-type:application/json" $SERVER_URL/api/dataverses/$ID/metadatablockfacets --upload-file metadata-block-facets.json
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST -H "Content-type:application/json" https://demo.dataverse.org/api/dataverses/root/metadatablockfacets --upload-file metadata-block-facets.json
+
+Where :download:`metadata-block-facets.json <../_static/api/metadata-block-facets.json>` contains a JSON encoded list of metadata block names (e.g. ``["socialscience","geospatial"]``). This endpoint supports an empty list (e.g. ``[]``)
+
+.. _metadata-block-facet-root-api:
+
+Configure a Dataverse Collection to Inherit Its Metadata Block Facets from Its Parent
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Set whether the Dataverse collection is a metadata block facet root, or does it uses its parent metadata block facets. Possible values are ``true`` and ``false`` (both are valid JSON expressions).
+
+When updating the root to false, it will clear any metadata block facets from the collection. When updating to true, it will copy the metadata block facets from the parent collection:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H X-Dataverse-key:$API_TOKEN -X POST -H "Content-type:application/json" $SERVER_URL/api/dataverses/$ID/metadatablockfacets/isRoot -d 'true'
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST -H "Content-type:application/json" https://demo.dataverse.org/api/dataverses/root/metadatablockfacets/isRoot -d 'true'
 
 Create a New Role in a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -979,7 +1046,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT https://demo.dataverse.org/api/datasets/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/BCCP9Z --upload-file dataset-update-metadata.json
 
-Note that in the example JSON file above, there is a single JSON object with ``metadataBlocks`` as a key. When you download a representation of your dataset in JSON format, the ``metadataBlocks`` object you need is nested inside another object called ``json``. To extract just the ``metadataBlocks`` key when downloading a JSON representation, you can use a tool such as ``jq`` like this:
+Note that in the example JSON file above, there is a single JSON object with ``metadataBlocks`` as a key. When you download a representation of your dataset in JSON format, the ``metadataBlocks`` object you need is nested inside another object called ``datasetVersion``. To extract just the ``metadataBlocks`` key when downloading a JSON representation, you can use a tool such as ``jq`` like this:
 
 .. code-block:: bash
 
@@ -1411,7 +1478,37 @@ In practice, you only need one the ``dataset_id`` or the ``persistentId``. The e
     print '-' * 40
     print r.json()
     print r.status_code
+
+.. _add-remote-file-api:
     
+Add a Remote File to a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If your Dataverse installation has been configured to support :ref:`trusted-remote-storage`
+you can add files from remote URLs to datasets. These remote files appear in your Dataverse
+installation as if they were ordinary files but are stored remotely.
+
+The location of the remote file is specified in the ``storageIdentifier`` field in JSON you supply.
+The base URL of the file is contained in the "store" (e.g. "trsa" in the example below) and is followed by the
+path to the file (e.g. "themes/custom...").
+
+In the JSON example below, all fields are required except for ``description``. Other optional fields are shown under :ref:`add-file-api`.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.5072/FK2/J8SJZB
+  export JSON_DATA='{"description":"A remote image.","storageIdentifier":"trsa://themes/custom/qdr/images/CoreTrustSeal-logo-transparent.png","checksumType":"MD5","md5Hash":"509ef88afa907eaf2c17c1c8d8fde77e","label":"testlogo.png","fileName":"testlogo.png","mimeType":"image/png"}'
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X POST "$SERVER_URL/api/datasets/:persistentId/add?persistentId=$PERSISTENT_ID" -F "jsonData=$JSON_DATA"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST https://demo.dataverse.org/api/datasets/:persistentId/add?persistentId=doi:10.5072/FK2/J8SJZB -F 'jsonData={"description":"A remote image.","storageIdentifier":"trsa://themes/custom/qdr/images/CoreTrustSeal-logo-transparent.png","checksumType":"MD5","md5Hash":"509ef88afa907eaf2c17c1c8d8fde77e","label":"testlogo.png","fileName":"testlogo.png","mimeType":"image/png"}'
+
 Report the data (file) size of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
