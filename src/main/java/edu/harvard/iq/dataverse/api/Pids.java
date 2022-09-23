@@ -1,13 +1,16 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.DeletePidCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReservePidCommand;
+import edu.harvard.iq.dataverse.pidproviders.PIDHelper;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Arrays;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
@@ -35,6 +38,8 @@ import javax.ws.rs.core.Response;
 @Path("pids")
 public class Pids extends AbstractApiBean {
 
+    @Inject PIDHelper pidSvc;
+    
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getPid(@QueryParam("persistentId") String persistentId) {
@@ -50,7 +55,8 @@ public class Pids extends AbstractApiBean {
         String username = System.getProperty("doi.username");
         String password = System.getProperty("doi.password");
         try {
-            JsonObjectBuilder result = PidUtil.queryDoi(persistentId, baseUrl, username, password);
+            GlobalId globalId = pidSvc.parseAsGlobalID(persistentId);
+            JsonObjectBuilder result = PidUtil.queryDoi(globalId, baseUrl, username, password);
             return ok(result);
         } catch (NotFoundException ex) {
             return error(ex.getResponse().getStatusInfo().toEnum(), ex.getLocalizedMessage());

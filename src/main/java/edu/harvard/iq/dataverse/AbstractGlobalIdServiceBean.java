@@ -184,6 +184,47 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     }
 
     @Override
+    public GlobalId parsePersistentId(String identifierString) {
+        String protocol;
+        String authority;
+        String identifier;
+        if (identifierString == null) {
+            return null;
+        }
+        int index1 = identifierString.indexOf(':');
+        if (index1 > 0) { // ':' found with one or more characters before it
+            int index2 = identifierString.indexOf('/', index1 + 1);
+            if (index2 > 0 && (index2 + 1) < identifierString.length()) { // '/' found with one or more characters
+                                                                          // between ':'
+                protocol = identifierString.substring(0, index1); // and '/' and there are characters after '/'
+                //If not in the set of available protocols
+                if (!DOI_PROTOCOL.equals(protocol) && !HDL_PROTOCOL.equals(protocol) && !PermaLinkPidProviderServiceBean.PERMA_PROTOCOL.equals(protocol)) {
+                    return null;
+                }
+                //Strip any whitespace, ; and ' from authority (should finding them cause a failure instead?)
+                authority = GlobalIdServiceBean.formatIdentifierString(identifierString.substring(index1 + 1, index2));
+                if(GlobalIdServiceBean.testforNullTerminator(authority)) return null;
+                if (protocol.equals(DOI_PROTOCOL)) {
+                    if (!GlobalIdServiceBean.checkDOIAuthority(authority)) {
+                        return null;
+                    }
+                }
+                // Passed all checks
+                //Strip any whitespace, ; and ' from identifier (should finding them cause a failure instead? - Yes!)
+                identifier = GlobalIdServiceBean.formatIdentifierString(identifierString.substring(index2 + 1));
+                if(GlobalIdServiceBean.testforNullTerminator(identifier)) return null;
+            } else {
+                logger.log(Level.INFO, "Error parsing identifier: {0}: '':<authority>/<identifier>'' not found in string", identifierString);
+                return null;
+            }
+        } else {
+            logger.log(Level.INFO, "Error parsing identifier: {0}: ''<protocol>:'' not found in string", identifierString);
+            return null;
+        }
+        return new GlobalId(protocol, authority, identifier);
+    }
+    
+    @Override
     public String generateDataFileIdentifier(DataFile datafile) {
         String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
         String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, SystemConfig.DataFilePIDFormat.DEPENDENT.toString());

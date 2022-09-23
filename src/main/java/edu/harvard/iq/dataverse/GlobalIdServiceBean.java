@@ -41,6 +41,10 @@ public interface GlobalIdServiceBean {
     
     boolean publicizeIdentifier(DvObject studyIn);
     
+    String generateDatasetIdentifier(Dataset dataset);
+    String generateDataFileIdentifier(DataFile datafile);
+    boolean isGlobalIdUnique(GlobalId globalId);
+    
     static GlobalIdServiceBean getBean(String protocol, CommandContext ctxt) {
         final Function<CommandContext, GlobalIdServiceBean> protocolHandler = BeanDispatcher.DISPATCHER.get(protocol);
         if ( protocolHandler != null ) {
@@ -54,10 +58,90 @@ public interface GlobalIdServiceBean {
     static GlobalIdServiceBean getBean(CommandContext ctxt) {
         return getBean(ctxt.settings().getValueForKey(Key.Protocol, ""), ctxt);
     }
-    String generateDatasetIdentifier(Dataset dataset);
-    String generateDataFileIdentifier(DataFile datafile);
-    boolean isGlobalIdUnique(GlobalId globalId);
     
+    public static final String DOI_PROTOCOL = "doi";
+    public static final String HDL_PROTOCOL = "hdl";
+    public static final String DOI_RESOLVER_URL = "https://doi.org/";
+    public static final String DXDOI_RESOLVER_URL = "https://dx.doi.org/";
+    public static final String HDL_RESOLVER_URL = "https://hdl.handle.net/";
+    public static final String HTTP_DOI_RESOLVER_URL = "http://doi.org/";
+    public static final String HTTP_DXDOI_RESOLVER_URL = "http://dx.doi.org/";
+    public static final String HTTP_HDL_RESOLVER_URL = "http://hdl.handle.net/";
+    
+
+    
+    public static Optional<GlobalId> parse(String identifierString) {
+        try {
+            return Optional.of(new GlobalId(identifierString));
+        } catch ( IllegalArgumentException _iae) {
+            return Optional.empty();
+        }
+    }
+    
+    /** 
+     *   Parse a Persistent Id and set the protocol, authority, and identifier
+     * 
+     *   Example 1: doi:10.5072/FK2/BYM3IW
+     *       protocol: doi
+     *       authority: 10.5072
+     *       identifier: FK2/BYM3IW
+     * 
+     *   Example 2: hdl:1902.1/111012
+     *       protocol: hdl
+     *       authority: 1902.1
+     *       identifier: 111012
+     *
+     * @param identifierString
+     * @param separator the string that separates the authority from the identifier.
+     * @param destination the global id that will contain the parsed data.
+     * @return {@code destination}, after its fields have been updated, or
+     *         {@code null} if parsing failed.
+     */
+    public GlobalId parsePersistentId(String identifierString);
+    
+    static String formatIdentifierString(String str){
+        
+        if (str == null){
+            return null;
+        }
+        // remove whitespace, single quotes, and semicolons
+        return str.replaceAll("\\s+|'|;","");  
+        
+        /*
+        <   (%3C)
+>   (%3E)
+{   (%7B)
+}   (%7D)
+^   (%5E)
+[   (%5B)
+]   (%5D)
+`   (%60)
+|   (%7C)
+\   (%5C)
++
+        */
+        // http://www.doi.org/doi_handbook/2_Numbering.html
+    }
+    
+    static boolean testforNullTerminator(String str){
+        if(str == null) {
+            return false;
+        }
+        return str.indexOf('\u0000') > 0;
+    }
+    
+    static boolean checkDOIAuthority(String doiAuthority){
+        
+        if (doiAuthority==null){
+            return false;
+        }
+        
+        if (!(doiAuthority.startsWith("10."))){
+            return false;
+        }
+        
+        return true;
+    }
 }
 
 

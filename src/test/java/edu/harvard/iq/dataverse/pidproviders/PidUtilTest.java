@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.pidproviders;
 
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.io.IOException;
 import javax.json.JsonObjectBuilder;
@@ -18,8 +19,7 @@ public class PidUtilTest {
         String username = System.getenv("DataCiteUsername");
         String password = System.getenv("DataCitePassword");
         String baseUrl = "https://api.test.datacite.org";
-        String pid = "";
-        pid = "doi:10.70122/QE5A-XN55";
+        GlobalId pid = new GlobalId("doi","10.70122","QE5A-XN55");
         try {
             JsonObjectBuilder result = PidUtil.queryDoi(pid, baseUrl, username, password);
             String out = JsonUtil.prettyPrint(result.build());

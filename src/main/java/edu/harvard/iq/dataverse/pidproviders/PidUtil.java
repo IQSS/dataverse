@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.pidproviders;
 
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,11 +37,11 @@ public class PidUtil {
      * @throws InternalServerErrorException on local misconfiguration such as
      * DataCite hostname not in DNS.
      */
-    public static JsonObjectBuilder queryDoi(String persistentId, String baseUrl, String username, String password) {
+    public static JsonObjectBuilder queryDoi(GlobalId globalId, String baseUrl, String username, String password) {
         try {
             // This throws an exception if this is not a DOI, which is the only
             // user-supplied param - treat this as a BadRequest in the catch statement.
-            String doi = acceptOnlyDoi(persistentId);
+            String doi = acceptOnlyDoi(globalId);
             URL url;
             // Other errors are all internal misconfiguration (any problems creating the URL), the
             // DOI doesn't exist (404 from DataCite), or problem at DataCite (other non-200 responses).
@@ -64,7 +65,7 @@ public class PidUtil {
             }
             if (status == 404) {
                 //Could check to see if Dataverse expects the DOI to be registered - that would result in a 404 from Dataverse before having to contact DataCite, and DataCite could still return a 404
-                throw new NotFoundException("404 (NOT FOUND) from DataCite for DOI " + persistentId);
+                throw new NotFoundException("404 (NOT FOUND) from DataCite for DOI " + globalId);
             }
             if (status != 200) {
                 /* We could just send back whatever status code DataCite sends, but we've seen
@@ -73,7 +74,7 @@ public class PidUtil {
                  * a 503 error, to indicate this is a temporary error, might be the better option. In any case, we need to log the
                  * issue to be able to debug it.
                  */
-                logger.severe("Received " + status + " error from DataCite for DOI: " + persistentId); 
+                logger.severe("Received " + status + " error from DataCite for DOI: " + globalId); 
                 InputStream errorStream = connection.getErrorStream();
                 if (errorStream != null) {
                     JsonObject out = Json.createReader(connection.getErrorStream()).readObject();
@@ -104,9 +105,8 @@ public class PidUtil {
      * @param PID in the form doi:10.7910/DVN/TJCLKP
      * @return DOI in the form 10.7910/DVN/TJCLKP (no "doi:")
      */
-    private static String acceptOnlyDoi(String persistentId) {
-        GlobalId globalId = new GlobalId(persistentId);
-        if (!GlobalId.DOI_PROTOCOL.equals(globalId.getProtocol())) {
+    private static String acceptOnlyDoi(GlobalId globalId) {
+        if (!GlobalIdServiceBean.DOI_PROTOCOL.equals(globalId.getProtocol())) {
             throw new IllegalArgumentException(BundleUtil.getStringFromBundle("pids.datacite.errors.DoiOnly"));
         }
         return globalId.getAuthority() + "/" + globalId.getIdentifier();
