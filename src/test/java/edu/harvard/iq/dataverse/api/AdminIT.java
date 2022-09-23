@@ -762,7 +762,7 @@ public class AdminIT {
         assertEquals(1, data.size());
         List<Map<String, String>> addedElements = data.get("added");
         //Note -test depends on the number of elements in the production citation block, so any changes to the # of elements there can break this test
-        assertEquals(322, addedElements.size());
+        assertEquals(323, addedElements.size());
 
         Map<String, Integer> statistics = new HashMap<>();
         for (Map<String, String> unit : addedElements) {
