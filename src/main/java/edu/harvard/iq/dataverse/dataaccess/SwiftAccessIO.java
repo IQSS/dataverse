@@ -874,7 +874,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         }
         return null;
      }
-     
+
     //https://gist.github.com/ishikawa/88599
     public static String toHexString(byte[] bytes) {
         Formatter formatter = new Formatter();
