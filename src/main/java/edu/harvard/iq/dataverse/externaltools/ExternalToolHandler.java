@@ -168,7 +168,6 @@ public class ExternalToolHandler extends URLTokenUtil {
 
     public JsonObjectBuilder createPostBody(JsonObject params) {
         JsonObjectBuilder bodyBuilder = Json.createObjectBuilder();
-
         bodyBuilder.add("queryParameters", params);
 
         JsonArray apiArray = JsonUtil.getJsonArray(externalTool.getAllowedApiCalls());
