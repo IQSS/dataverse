@@ -98,25 +98,33 @@ public class MailUtilTest {
     @Test
     public void testSubjectCreateDataset() {
         userNotification.setType(UserNotification.Type.CREATEDS);
-        assertEquals("LibraScholar: Your dataset has been created", MailUtil.getSubjectTextBasedOnNotification(userNotification, null));
+        String output = MailUtil.getSubjectTextBasedOnNotification(userNotification, null) ;
+        System.out.println((" JAYANTHY  1=============== " + output ));
+        assertEquals("LibraScholar: Dataset \"\" has been created", MailUtil.getSubjectTextBasedOnNotification(userNotification, null));
     }
     
     @Test
     public void testSubjectSubmittedDS() {
         userNotification.setType(UserNotification.Type.SUBMITTEDDS);
-        assertEquals("LibraScholar: Your dataset has been submitted for review", MailUtil.getSubjectTextBasedOnNotification(userNotification, null));
+        String output = MailUtil.getSubjectTextBasedOnNotification(userNotification, null) ;
+        System.out.println((" JAYANTHY  2=============== " + output ));
+        assertEquals("LibraScholar: Dataset \"\" has been submitted for review", MailUtil.getSubjectTextBasedOnNotification(userNotification, null));
     }
     
     @Test
     public void testSubjectPublishedDS() {
         userNotification.setType(UserNotification.Type.PUBLISHEDDS);
-        assertEquals("LibraScholar: Your dataset has been published", MailUtil.getSubjectTextBasedOnNotification(userNotification, null));
+        String output = MailUtil.getSubjectTextBasedOnNotification(userNotification, null) ;
+        System.out.println((" JAYANTHY  3=============== " + output ));
+        assertEquals("LibraScholar: Dataset \"\" has been published", MailUtil.getSubjectTextBasedOnNotification(userNotification, null));
     }
     
     @Test
     public void testSubjectReturnedDS() {
         userNotification.setType(UserNotification.Type.RETURNEDDS);
-        assertEquals("LibraScholar: Your dataset has been returned", MailUtil.getSubjectTextBasedOnNotification(userNotification, null));
+        String output = MailUtil.getSubjectTextBasedOnNotification(userNotification, null) ;
+        System.out.println((" JAYANTHY  4=============== " + output ));
+        assertEquals("LibraScholar: Dataset \"\" has been returned", MailUtil.getSubjectTextBasedOnNotification(userNotification, null));
     }
     
     @Test
