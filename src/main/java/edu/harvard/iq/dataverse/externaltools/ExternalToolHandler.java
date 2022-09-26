@@ -28,6 +28,7 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.json.JsonString;
 import javax.json.JsonWriter;
@@ -111,8 +112,8 @@ public class ExternalToolHandler extends URLTokenUtil {
         //ToDo - if the allowedApiCalls() are defined, could/should we send them to tools using GET as well?
         
         if (requestMethod.equals(HttpMethod.POST)) {
-            JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
             try {
+                JsonObjectBuilder bodyBuilder =  Json.createObjectBuilder();
                 queryParams.getValuesAs(JsonObject.class).forEach((queryParam) -> {
                     queryParam.keySet().forEach((key) -> {
                         String value = queryParam.getString(key);
@@ -123,12 +124,10 @@ public class ExternalToolHandler extends URLTokenUtil {
                     });
                 });
                 String addVal = String.join(",", params);
-                String kvp = "{\"queryParameters\":{" + addVal;
-
+                bodyBuilder.add("queryParameters", addVal);
                 String allowedApis;
-
+                JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
                 JsonObject objApis = JsonUtil.getJsonObject(externalTool.getAllowedApiCalls());
-
                 JsonArray apis = objApis.getJsonArray("apis");
                 apis.getValuesAs(JsonObject.class).forEach(((apiObj) -> {
                     String name = apiObj.getJsonString("name").getString();
@@ -144,12 +143,13 @@ public class ExternalToolHandler extends URLTokenUtil {
                             .add("signedUrl", url).add("timeOut", timeout));
                 }));
                 JsonArray allowedApiCallsArray = jsonArrayBuilder.build();
-                allowedApis = "\"signedUrls\":" + JsonUtil.prettyPrint(allowedApiCallsArray) + "}";
-                logger.fine("Sending these signed URLS: " + allowedApis);
-                String body = kvp + "}," + allowedApis;
-                logger.info(body);
-                return postFormData(body);
-            } catch (IOException | InterruptedException ex) {
+                bodyBuilder.add("signedUrls", allowedApiCallsArray);
+                JsonObject body = bodyBuilder.build();
+                logger.info(body.toString());
+                return postFormData(body.toString());
+            } catch (IOException ex) {
+                Logger.getLogger(ExternalToolHandler.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InterruptedException ex) {
                 Logger.getLogger(ExternalToolHandler.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
