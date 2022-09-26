@@ -49,6 +49,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.function.Function;
@@ -256,6 +257,10 @@ public class IndexServiceBean {
                 for(String locale: langs) {
                     solrInputDocument.addField(SearchFields.DATAVERSE_SUBJECT, dataverseSubject.getLocaleStrValue(locale));
                 }
+                if (langs.isEmpty()) {
+                    solrInputDocument.addField(SearchFields.DATAVERSE_SUBJECT, dataverseSubject.getStrValue());
+                }
+
                 // collapse into shared "subject" field used as a facet
                 solrInputDocument.addField(SearchFields.SUBJECT, subject);
             }
@@ -726,8 +731,8 @@ public class IndexServiceBean {
     private String addOrUpdateDataset(IndexableDataset indexableDataset) throws  SolrServerException, IOException {
         return addOrUpdateDataset(indexableDataset, null);
     }
-    
-    private String addOrUpdateDataset(IndexableDataset indexableDataset, Set<Long> datafilesInDraftVersion) throws  SolrServerException, IOException {        
+
+    public SolrInputDocuments toSolrDocs(IndexableDataset indexableDataset, Set<Long> datafilesInDraftVersion) throws  SolrServerException, IOException {        
         IndexableDataset.DatasetState state = indexableDataset.getDatasetState();
         Dataset dataset = indexableDataset.getDatasetVersion().getDataset();
         logger.fine("adding or updating Solr document for dataset id " + dataset.getId());
@@ -812,6 +817,7 @@ public class IndexServiceBean {
 
             Set<String> langs = settingsService.getConfiguredLanguages();
             Map<Long, JsonObject> cvocMap = datasetFieldService.getCVocConf(false);
+            Set<String> metadataBlocksWithValue = new HashSet<>();
             for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
 
                 DatasetFieldType dsfType = dsf.getDatasetFieldType();
@@ -819,6 +825,11 @@ public class IndexServiceBean {
                 String solrFieldFacetable = dsfType.getSolrField().getNameFacetable();
 
                 if (dsf.getValues() != null && !dsf.getValues().isEmpty() && dsf.getValues().get(0) != null && solrFieldSearchable != null) {
+                    // Index all metadata blocks that have a value - To show in new facet category SearchFields.METADATA_TYPES
+                    if (dsfType.getMetadataBlock() != null) {
+                        metadataBlocksWithValue.add(dsfType.getMetadataBlock().getName());
+                    }
+
                     logger.fine("indexing " + dsf.getDatasetFieldType().getName() + ":" + dsf.getValues() + " into " + solrFieldSearchable + " and maybe " + solrFieldFacetable);
                     // if (dsfType.getSolrField().getSolrType().equals(SolrField.SolrType.INTEGER))
                     // {
@@ -898,10 +909,16 @@ public class IndexServiceBean {
                                 if (controlledVocabularyValue.getStrValue().equals(DatasetField.NA_VALUE)) {
                                     continue;
                                 }
+
                                 // Index in all used languages (display and metadata languages
-                                for(String locale: langs) {
-                                    solrInputDocument.addField(solrFieldSearchable, controlledVocabularyValue.getLocaleStrValue(locale));
+                                if (!dsfType.isAllowMultiples() || langs.isEmpty()) {
+                                    solrInputDocument.addField(solrFieldSearchable, controlledVocabularyValue.getStrValue());
+                                } else {
+                                    for(String locale: langs) {
+                                        solrInputDocument.addField(solrFieldSearchable, controlledVocabularyValue.getLocaleStrValue(locale));
+                                    }
                                 }
+
                                 if (dsfType.getSolrField().isFacetable()) {
                                     solrInputDocument.addField(solrFieldFacetable, controlledVocabularyValue.getStrValue());
                                 }
@@ -930,6 +947,10 @@ public class IndexServiceBean {
                         }
                     }
                 }
+            }
+
+            for(String metadataBlockName : metadataBlocksWithValue) {
+                solrInputDocument.addField(SearchFields.METADATA_TYPES, metadataBlockName);
             }
         }
         
@@ -1288,9 +1309,16 @@ public class IndexServiceBean {
               solrInputDocument.addField(SearchFields.EMBARGO_END_DATE, embargoEndDate.toEpochDay());
             }
         }
+        Long datasetId = dataset.getId();
+        final String msg = "indexed dataset " + datasetId + " as " + datasetSolrDocId + ". filesIndexed: " + filesIndexed;
+        return new SolrInputDocuments(docs, msg, datasetId);
+    }
+    
+    private String addOrUpdateDataset(IndexableDataset indexableDataset, Set<Long> datafilesInDraftVersion) throws  SolrServerException, IOException {   
+        final SolrInputDocuments docs = toSolrDocs(indexableDataset, datafilesInDraftVersion);
 
         try {
-            solrClientService.getSolrClient().add(docs);
+            solrClientService.getSolrClient().add(docs.getDocuments());
             solrClientService.getSolrClient().commit();
         } catch (SolrServerException | IOException ex) {
             if (ex.getCause() instanceof SolrServerException) {
@@ -1299,19 +1327,17 @@ public class IndexServiceBean {
                 throw new IOException(ex);
             }
         }
-
-        Long dsId = dataset.getId();
         /// Dataset updatedDataset =
         /// (Dataset)dvObjectService.updateContentIndexTime(dataset);
         /// updatedDataset = null;
         // instead of making a call to dvObjectService, let's try and
         // modify the index time stamp using the local EntityManager:
-        DvObject dvObjectToModify = em.find(DvObject.class, dsId);
+        DvObject dvObjectToModify = em.find(DvObject.class, docs.getDatasetId());
         dvObjectToModify.setIndexTime(new Timestamp(new Date().getTime()));
         dvObjectToModify = em.merge(dvObjectToModify);
         dvObjectToModify = null;
 
-        return "indexed dataset " + dsId + " as " + datasetSolrDocId + ". filesIndexed: " + filesIndexed;
+        return docs.getMessage();
     }
 
     /**

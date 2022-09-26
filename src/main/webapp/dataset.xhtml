@@ -110,6 +110,8 @@
                 </f:metadata>
                 <h:form id="datasetForm">
                     <h:inputHidden id="validateFilesOutcome" value="#{DatasetPage.validateFilesOutcome}" />
+                    <h:inputHidden id="validTermsofAccess" value="#{DatasetPage.hasValidTermsOfAccess}" />
+
                     <!-- View infoMode -->
                     <!-- Top Button/Citation Blocks -->
                     <p:fragment id="topDatasetBlockFragment">
@@ -215,6 +217,14 @@
                                                                 <h:outputText value="#{bundle['dataset.accessBtn.too.big']}">                                           
                                                                 </h:outputText>                                                            
                                                             </ui:fragment>
+                                                            <ui:fragment rendered="#{settingsWrapper.globusDownload and settingsWrapper.isGlobusEnabledStorageDriver(DatasetPage.dataset.effectiveStorageDriverId)}">
+                                                                <li>
+                                                                    <h:commandLink styleClass="btn-download" action="#{DatasetPage.startGlobusTransfer()}">
+                                                                        <h:outputText value="Globus Transfer"/>
+                                                                    </h:commandLink>
+                                                                </li>
+                                                            </ui:fragment>
+                                                            
                                                         </ui:fragment>
                                                                                                             
                                                         <!-- END: DOWNLOAD -->
@@ -296,13 +306,13 @@
                                             <div class="btn-group btn-group-justified" jsf:rendered="#{showPublishLink or showSubmitForReviewLink}">
                                                 <div class="btn-group">
                                                     <!-- Publish BTN -->
-                                                    <h:outputLink value="#" disabled="#{DatasetPage.lockedFromPublishing}">
+                                                    <h:outputLink value="#" disabled="#{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess }">
                                                         <c:if test="#{!((showSubmitForReviewLink or showReturnToAuthorLink or not empty DatasetPage.allowedExternalStatuses) and showPublishLink)}">
-                                                            <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish #{DatasetPage.lockedFromPublishing ? 'disabled' : ''}"/>
+                                                            <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish #{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess ? 'disabled' : ''}"/>
                                                             <f:passThroughAttribute name="onclick" value="$(this).parent().find( 'li > a' ).trigger( 'click' );"/>
                                                         </c:if>
                                                         <c:if test="#{(showSubmitForReviewLink or showReturnToAuthorLink or not empty DatasetPage.allowedExternalStatuses) and showPublishLink}">
-                                                            <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish dropdown-toggle #{DatasetPage.lockedFromPublishing ? 'disabled' : ''}"/>
+                                                            <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish dropdown-toggle #{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess ? 'disabled' : ''}"/>
                                                             <f:passThroughAttribute name="data-toggle" value="dropdown"/>
                                                             <f:passThroughAttribute name="aria-haspopup" value="true"/>
                                                             <f:passThroughAttribute name="aria-expanded" value="false"/>
@@ -311,10 +321,10 @@
                                                     </h:outputLink>
                                                     <!-- Publish BTN DROPDOWN-MENU OPTIONS -->
                                                     <ul class="dropdown-menu pull-right text-left">
-                                                        <li jsf:rendered="#{showPublishLink}" class="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}">
+                                                        <li jsf:rendered="#{showPublishLink}" class="#{!DatasetPage.hasValidTermsOfAccess or ( DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview) ? 'disabled' : ''}">
                                                             <!-- Publish LINK -->
-                                                            <p:commandLink styleClass="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" 
-                                                                           disabled="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview}"
+                                                            <p:commandLink styleClass="#{!DatasetPage.hasValidTermsOfAccess or (DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview) ? 'disabled' : ''}" 
+                                                                           disabled="#{!DatasetPage.hasValidTermsOfAccess or (DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview)}"
                                                                            action="#{DatasetPage.processPublishButton()}">
                                                                 #{bundle['dataset.publish.btn']}
                                                             </p:commandLink>
@@ -371,14 +381,25 @@
                                                     </button>
                                                     <ul class="dropdown-menu pull-right text-left">
                                                         <li>
-                                                            <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD">
+                                                            <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD" rendered="#{DatasetPage.hasValidTermsOfAccess}">
                                                                 <h:outputText value="#{bundle['dataset.editBtn.itemLabel.upload']}"/>
                                                             </h:outputLink>
                                                         </li>
-                                                        <li>
-                                                            <p:commandLink id="editMetadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:datasetForm,:messagePanel">
+                                                        <li style="margin-left:20px;margin-bottom:2px;">
+                                                            <p:commandLink rendered="#{!DatasetPage.hasValidTermsOfAccess}" disabled="#{!DatasetPage.hasValidTermsOfAccess}" >
+                                                                <h:outputText  value="#{bundle['dataset.editBtn.itemLabel.upload']}" />
+                                                            </p:commandLink>
+                                                        </li>                                                    
+                                                        <li style="margin-left:20px;">
+                                                            <p:commandLink id="editMetadataDisabled" onclick="editMetadata()" rendered="#{!DatasetPage.hasValidTermsOfAccess}" disabled="#{!DatasetPage.hasValidTermsOfAccess}" >
                                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                                                <h:outputText value="#{bundle['dataset.editBtn.itemLabel.metadata']}" />
+                                                                <h:outputText value="#{bundle['dataset.editBtn.itemLabel.metadata']}"  />
+                                                            </p:commandLink>
+                                                        </li> 
+                                                        <li>
+                                                            <p:commandLink id="editMetadata" onclick="editMetadata()" rendered="#{DatasetPage.hasValidTermsOfAccess}">
+                                                                <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                                                <h:outputText value="#{bundle['dataset.editBtn.itemLabel.metadata']}"  />
                                                             </p:commandLink>
                                                         </li>
                                                         <li>
@@ -388,8 +409,8 @@
                                                             </p:commandLink>
                                                         </li>
                                                         <ui:fragment rendered="#{permissionsWrapper.canManagePermissions(DatasetPage.dataset) || permissionsWrapper.canManageFilesOnDataset(DatasetPage.dataset)}">
-                                                            <li class="#{settingsWrapper.publicInstall ? '' : 'dropdown-submenu pull-left'}">
-                                                                <ui:fragment rendered="#{!settingsWrapper.publicInstall}">
+                                                            <li class="#{DatasetPage.hasPublicStore ? '' : 'dropdown-submenu pull-left'}">
+                                                                <ui:fragment rendered="#{!DatasetPage.hasPublicStore}">
                                                                 <a tabindex="0">#{bundle['dataset.editBtn.itemLabel.permissions']}</a>
                                                                     <ul class="dropdown-menu">
                                                                         <li jsf:rendered="#{permissionsWrapper.canManagePermissions(DatasetPage.dataset)}">
@@ -406,7 +427,7 @@
                                                                         </li>
                                                                     </ul>
                                                                 </ui:fragment>
-                                                                <h:link id="managePermissions" rendered="#{settingsWrapper.publicInstall}"
+                                                                <h:link id="managePermissions" rendered="#{DatasetPage.hasPublicStore}"
                                                                         styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
                                                                     <h:outputText value="#{bundle['dataset.editBtn.itemLabel.permissions']}" />
                                                                     <f:param name="id" value="#{DatasetPage.dataset.id}" />
@@ -736,6 +757,7 @@
                     <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
                         <ui:include src="metadataFragment.xhtml">
                             <ui:param name="datasetPage" value="true"/>
+                            <ui:param name="template" value="#{DatasetPage.dataset.template}"/>
                             <ui:param name="editMode" value="#{!empty DatasetPage.editMode ? DatasetPage.editMode : ''}"/>
                             <ui:param name="metadataBlocks" value="#{!empty DatasetPage.editMode ? DatasetPage.datasetVersionUI.metadataBlocksForEdit.entrySet().toArray(): DatasetPage.datasetVersionUI.metadataBlocksForView.entrySet().toArray()}"/>
                             <!-- ui:param name="publicationDate" value="#{DatasetPage.dataset.publicationDateFormattedYYYYMMDD}"/-->
@@ -746,11 +768,17 @@
                     </ui:fragment>
                     <!-- Create/Save Dataset Button Panel TOP editMode -->
                     <div class="button-block form-top" jsf:rendered="#{DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'LICENSE'}">
-                        <p:commandButton id="saveTop" styleClass="btn btn-default" value="#{bundle.saveChanges}"
+                        <p:commandButton id="saveTop" styleClass="btn btn-default" value="#{bundle.saveChanges}" rendered="#{DatasetPage.editMode == 'METADATA'}"
                                          onclick="PF('blockDatasetForm').show();"
                                          update=":datasetForm,:messagePanel"
                                          oncomplete="$(document).scrollTop(0);"
-                                         action="#{DatasetPage.save}"/>
+                                         action="#{DatasetPage.save}"
+                                         />
+                        <p:commandButton id="saveTopTOA" styleClass="btn btn-default" value="#{bundle.saveChanges}" rendered="#{DatasetPage.editMode == 'LICENSE'}"
+                                         onclick="testTOADatasetPage();"
+                                         update=":datasetForm,:messagePanel"
+                                         oncomplete="$(document).scrollTop(0);"
+                        />
                         <p:commandButton id="cancelTop" styleClass="btn btn-link" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                         </p:commandButton>
@@ -817,6 +845,7 @@
                                 <ui:param name="datasetPage" value="true"/>
                                 <ui:param name="editDatafilesPage" value="false"/>
                                 <ui:param name="rsyncSupported" value="#{DatasetPage.rsyncUploadSupported()}"/>
+                                <ui:param name="globusUploadSupported" value="#{DatasetPage.globusUploadSupported()}"/>
                                 <ui:param name="dataverse" value="#{DatasetPage.dataset.owner}"/>
                                 <ui:param name="dataset" value="#{DatasetPage.dataset}"/>
                                 <ui:param name="version" value="#{DatasetPage.workingVersion}"/>
@@ -839,7 +868,7 @@
                                                and (empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA')}">
                                 <div class="button-block tab-header margin-bottom text-right" jsf:rendered="#{empty DatasetPage.editMode}">
                                     <p:commandLink styleClass="btn btn-default btn-access" actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:messagePanel" 
-                                                   disabled="#{DatasetPage.lockedFromEdits}" 
+                                                   disabled="#{DatasetPage.lockedFromEdits or !DatasetPage.hasValidTermsOfAccess}" 
                                                    rendered="#{!widgetWrapper.widgetView 
                                                                and (DatasetPage.sessionUserAuthenticated 
                                                                and empty DatasetPage.editMode and !widgetWrapper.widgetView
@@ -867,6 +896,7 @@
                                 </div>
                                 <ui:include src="metadataFragment.xhtml">
                                     <ui:param name="datasetPage" value="true"/>
+                                    <ui:param name="template" value="#{DatasetPage.dataset.template}"/>
                                     <ui:param name="editMode" value="#{!empty DatasetPage.editMode ? DatasetPage.editMode : ''}"/>
                                     <ui:param name="metadataBlocks" value="#{!empty DatasetPage.editMode ? DatasetPage.datasetVersionUI.metadataBlocksForEdit.entrySet().toArray(): DatasetPage.datasetVersionUI.metadataBlocksForView.entrySet().toArray()}"/>
                                     <ui:param name="publicationDate" value="#{DatasetPage.dataset.publicationDate != null ? DatasetPage.dataset.publicationDateFormattedYYYYMMDD : ''}"/>
@@ -885,6 +915,7 @@
                                     <ui:param name="editMode" value="#{!empty DatasetPage.editMode ? 'LICENSE': ''}"/>
                                     <ui:param name="termsOfUseAndAccess" value="#{DatasetPage.workingVersion.termsOfUseAndAccess}"/>
                                     <ui:param name="datasetPage" value="true"/>
+                                    <ui:param name="publicStore" value="DatasetPage.hasPublicStore"/>
                                 </ui:include>
                             </p:tab>
                             <!-- 4.2.1: see above -->
@@ -902,11 +933,17 @@
                     </div>
                     <!-- Create/Save Dataset Button Panel BTM editMode -->
                     <div class="button-block" jsf:rendered="#{!empty DatasetPage.editMode}">
-                        <p:commandButton id="save" styleClass="btn btn-default" value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}" 
+                        <p:commandButton id="saveBottomTerms" styleClass="btn btn-default" rendered="#{DatasetPage.editMode == 'LICENSE'}"
+                                         value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}" 
+                                         onclick="testTOADatasetPage();" 
+                                         update=":datasetForm,:messagePanel"
+                                         oncomplete="$(document).scrollTop(0);"/>
+                        <p:commandButton id="saveBottom" styleClass="btn btn-default" value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}" rendered="#{DatasetPage.editMode == 'CREATE' or DatasetPage.editMode == 'METADATA'}"
                                          onclick="PF('blockDatasetForm').show();"
                                          update=":datasetForm,:messagePanel"
                                          oncomplete="$(document).scrollTop(0);"
-                                         action="#{DatasetPage.save}"/>
+                                         action="#{DatasetPage.save}"
+                                         />
                         <p:commandButton id="cancel" styleClass="btn btn-link" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" rendered="#{DatasetPage.editMode != 'CREATE'}">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                         </p:commandButton>
@@ -916,17 +953,15 @@
                     <!-- END: Create/Save Dataset Button Panel BTM editMode -->
                     <p:blockUI block="datasetForm" widgetVar="blockDatasetForm"/>
                     <!-- POPUPS -->
-                    <ui:fragment rendered="#{empty DatasetPage.editMode}">
-                        <ui:include src="file-edit-popup-fragment.xhtml">
-                              <ui:param name="datasetVersion" value="#{DatasetPage.workingVersion}"/>   
-                              <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>
-                              <ui:param name="bean" value="#{DatasetPage}"/>
-                              <ui:param name="restrictFileAction" value="restrictFiles"/>
-                              <ui:param name="deleteFileAction" value="deleteFiles"/>
-                              <ui:param name="saveEmbargoAction" value="saveEmbargo"/> 
-                              <ui:param name="updateElements" value=":datasetForm:embargoInputs"/>
-                        </ui:include>
-                    </ui:fragment>
+                    <ui:include src="file-edit-popup-fragment.xhtml">
+                        <ui:param name="datasetVersion" value="#{DatasetPage.workingVersion}"/>   
+                        <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>
+                        <ui:param name="bean" value="#{DatasetPage}"/>
+                        <ui:param name="restrictFileAction" value="restrictFiles"/>
+                        <ui:param name="deleteFileAction" value="deleteFiles"/>
+                        <ui:param name="saveEmbargoAction" value="saveEmbargo"/> 
+                        <ui:param name="updateElements" value=":datasetForm:embargoInputs"/>
+                    </ui:include>
                     <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true" rendered="#{!DatasetPage.workingVersion.deaccessioned}">
                         <p class="help-block">#{bundle['dataset.share.datasetShare.tip']}</p>
                         <div id="sharrre-widget" data-url="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" data-text="#{bundle['dataset.share.datasetShare.shareText']}"></div>
@@ -1594,6 +1629,9 @@
                         <p class="text-warning">
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.submitMessage']}
                         </p>
+                        <c:if test="#{showSubmitForReviewLink}">
+                            <ui:include src="datasetLicenseInfoFragment.xhtml"/>
+                        </c:if>
                         <div class="button-block">
                             <p:commandButton styleClass="btn btn-default" value="#{bundle.submit}" 
                                              onclick="PF('inreview').hide();
@@ -1658,111 +1696,9 @@
                                 </h:outputFormat>
                             </p>
                         </ui:fragment>
-                        <!-- START license info -->
-                        <div class="form-group terms">
-                            <div class="form-group">
-                                <label for="metadata_Terms" class="col-sm-3 control-label">
-                                    #{bundle['file.dataFilesTab.terms.list.license']}
-                                </label>
-                                <div class="col-sm-9">
-                                    <p>
-                                        <o:importFunctions
-                                            type="edu.harvard.iq.dataverse.dataset.DatasetUtil" />
-                                        <img
-                                            src="#{DatasetUtil:getLicenseIcon(DatasetPage.workingVersion)}"
-                                            title="#{DatasetUtil:getLicenseDescription(DatasetPage.workingVersion)}"
-                                            style="display: none" onload="this.style.display='inline'" />
-                                        <a
-                                            href="#{DatasetUtil:getLicenseURI(DatasetPage.workingVersion)}"
-                                            title="#{DatasetUtil:getLicenseDescription(DatasetPage.workingVersion)}"
-                                            target="_blank">#{DatasetUtil:getLicenseName(DatasetPage.workingVersion)}
-                                        </a>
-                                        <ui:fragment
-                                            rendered="#{empty DatasetPage.workingVersion.termsOfUseAndAccess.license}">
-                                            <h:outputText
-                                                value="#{bundle['file.dataFilesTab.terms.list.license.customterms.txt']}"
-                                                escape="false" />
-                                        </ui:fragment>
-                                    </p>
-                                </div>
-                            </div>
-                            <ui:fragment rendered="#{!empty DatasetPage.workingVersion.termsOfUseAndAccess.license}">
-                                <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfUseAndAccess.license.shortDescription}">
-                                    <label for="metadata_Terms" class="col-sm-3 control-label">
-                                        #{bundle['dataset.publish.terms.description']}
-                                    </label>
-                                    <div class="col-sm-9">
-                                        <h:outputText value="#{DatasetPage.workingVersion.termsOfUseAndAccess.license.shortDescription}"/>
-                                    </div>
-                                </div>
-                            </ui:fragment>
-                            <ui:fragment rendered="#{empty DatasetPage.workingVersion.termsOfUseAndAccess.license}">
-                                <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfUseAndAccess.termsOfUse}">
-                                    <label for="termsOfUse" class="col-sm-3 control-label">
-                                        #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
-                                    </label>
-                                    <h:outputText id="termsOfUse" class="col-sm-9"
-                                        value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfUseAndAccess.termsOfUse)}" escape="false"/>
-                                </div>
-                                <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfUseAndAccess.confidentialityDeclaration}">
-                                    <label for="confidentialityDeclaration" class="col-sm-3 control-label">
-                                        #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration']}
-                                    </label>
-                                    <h:outputText id="confidentialityDeclaration" class="col-sm-9"
-                                        value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfUseAndAccess.confidentialityDeclaration)}" escape="false"/>
-                                </div>
-                                <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfUseAndAccess.specialPermissions}">
-                                    <label for="specialPermissions" class="col-sm-3 control-label">
-                                        #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.permissions']}
-                                    </label>
-                                    <h:outputText id="specialPermissions" class="col-sm-9"
-                                        value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfUseAndAccess.specialPermissions)}" escape="false"/>
-                                </div>
-                                <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfUseAndAccess.restrictions}">
-                                    <label for="restrictions" class="col-sm-3 control-label">
-                                        #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.restrictions']}
-                                    </label>
-                                    <h:outputText id="restrictions" class="col-sm-9"
-                                        value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfUseAndAccess.restrictions)}" escape="false"/>
-                                </div>
-                                <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfUseAndAccess.citationRequirements}">
-                                    <label for="citationRequirements" class="col-sm-3 control-label">
-                                        #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.citationRequirements']}
-                                    </label>
-                                    <h:outputText id="citationRequirements" class="col-sm-9"
-                                        value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfUseAndAccess.citationRequirements)}" escape="false"/>
-                                </div>
-                                <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfUseAndAccess.depositorRequirements}">
-                                    <label for="depositorRequirements" class="col-sm-3 control-label">
-                                        #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.depositorRequirements']}
-                                    </label>
-                                    <h:outputText id="depositorRequirements" class="col-sm-9"
-                                        value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfUseAndAccess.depositorRequirements)}" escape="false"/>
-                                </div>
-                                <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfUseAndAccess.conditions}">
-                                    <label for="conditions" class="col-sm-3 control-label">
-                                        #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.conditions']}
-                                    </label>
-                                    <h:outputText id="conditions" class="col-sm-9"
-                                        value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfUseAndAccess.conditions)}" escape="false"/>
-                                </div>
-                                <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfUseAndAccess.disclaimer}">
-                                    <label for="disclaimer" class="col-sm-3 control-label">
-                                        #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.disclaimer']}
-                                    </label>
-                                    <h:outputText id="disclaimer" class="col-sm-9"
-                                        value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfUseAndAccess.disclaimer)}" escape="false"/>
-                                </div>
-                                <div class="form-group" jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.termsOfAccess and DatasetPage.hasRestrictedFile()}">
-                                    <label jsf:for="termsOfAccess" class="col-sm-3 control-label">
-                                        #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
-                                    </label>
-                                    <h:outputText id="termsOfAccess" class="col-sm-6"
-                                        value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.termsOfAccess)}" escape="false"/>
-                                </div>
-                            </ui:fragment>
-                        </div>
-                        <!-- END license info -->
+                        <c:if test="#{showPublishLink}">
+                            <ui:include src="datasetLicenseInfoFragment.xhtml" />
+                        </c:if>
                         <ui:fragment  rendered="#{publishDataset}">
                             <div class="form-group">
                                 <p class="col-sm-12 help-block">#{bundle['dataset.publish.terms.help.tip']}</p>
@@ -1777,7 +1713,7 @@
                                 #{bundle.cancel}
                             </button>
                         </div>
-                    </p:dialog>                     
+                    </p:dialog>
                     <p:dialog id="mayNotRelease" header="#{bundle['dataset.publish.header']}" widgetVar="mayNotRelease" modal="true">
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-exclamation-sign"/>
@@ -1844,6 +1780,13 @@
                         </div>
                     </p:dialog>
                     <p:remoteCommand name="returnToAuthorCommand" action="#{DatasetPage.sendBackToContributor}"/>
+                    <p:remoteCommand name="linkEditTerms"   actionListener="#{DatasetPage.edit('LICENSE')}" update="@form,:datasetForm,:messagePanel">
+                        <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                    </p:remoteCommand>
+                    <p:remoteCommand name="editMedatdataCommand"   actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:datasetForm,:messagePanel">
+                        <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                    </p:remoteCommand>
+                    <p:remoteCommand name="datasetSaveCommand" action="#{DatasetPage.save()}" update=":datasetForm,:messagePanel"/>
                     <!-- END: Publish/Submit for Review Dialogs -->
                 </h:form>
                 <script>
@@ -1871,6 +1814,19 @@
                     function openCompareTwo() {
                         PF('compareTwo').show();
                     }
+                    function editTerms(){  
+                        linkEditTerms();
+                    }
+                    function editMetadata(){                         
+                        var validTOA = document.getElementById("datasetForm:validTermsofAccess").value;
+                        if (validTOA === 'false'){                            
+                            PF('blockDatasetForm').show();
+                            PF('accessPopup').show();
+                        } else {
+                            editMedatdataCommand();
+                        }                            
+                    }
+                    
                     function testCheckBoxes() {
                         var count = PF('versionsTable').getSelectedRowsCount();
                         if (count !== 2) {
@@ -1883,6 +1839,15 @@
                         var count = PF('filesTable').getSelectedRowsCount();
                         if (count == 0) {
                             PF('selectFiles').show();
+                        } else {
+                            return true;
+                        }
+                    }
+                    function testTermsOfAccess() {
+                        var valid = document.getElementById("datasetForm:validTermsofAccess").value;
+                        if (valid === false) {
+                            PF('accessPopup').show();
+                            return false;
                         } else {
                             return true;
                         }
@@ -1911,7 +1876,27 @@
                         if (outcome ==='GuestbookRequired'){
                             PF('downloadPopup').show();
                         }
-                    }    
+                    }
+                    
+                    function testTOADatasetPage() {
+                        var termsofAccessHidden, fileAccessRequestHidden;
+                        try{
+                            termsofAccessHidden = document.getElementById("datasetForm:tabView:termsofAccessHiddenLT").value;
+                            fileAccessRequestHidden  = document.getElementById("datasetForm:tabView:fileAccessRequestHiddenLT").value;  
+                        }
+                        catch (error){
+                            //terms not present so save...
+                            PF('blockDatasetForm').show();
+                            datasetSaveCommand();                        
+                        }                         
+                        if ('#{DatasetPage.isHasRestrictedFiles()}' === 'true' && fileAccessRequestHidden === 'false' && termsofAccessHidden === '') {
+                           //Not compliant show error keep page open...
+                        } else {
+                            PF('blockDatasetForm').show();
+                            datasetSaveCommand();
+                        }
+                    }
+                                        
                     //]]>
                 </script>
             </ui:define>

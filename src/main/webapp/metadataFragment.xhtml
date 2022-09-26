@@ -76,6 +76,12 @@
                                         <td jsf:rendered="#{!anonymized or !settingsWrapper.shouldBeAnonymized(dsf)}">
                                             <!-- Primitive datasetFields -->
                                             <ui:fragment rendered="#{dsf.datasetFieldType.primitive}">
+                                                <ui:fragment rendered="#{managePage or templatePage}">
+                                                  <div>
+                                                    <h:outputLabel for="instr_view" value="#{bundle['template.instructions.label']}" class="italic normal-text margin-right"/>
+                                                    <h:outputText id="instr_view" value="#{template.getInstructionsFor(dsf.datasetFieldType.name)}"/>
+                                                  </div>
+                                                </ui:fragment>
                                                 <h:outputText value="#{dsf.value}"
                                                     rendered="#{!dsf.datasetFieldType.allowMultiples and cvocConf.containsKey(dsf.datasetFieldType.id)}"
                                                     escape="#{dsf.datasetFieldType.isEscapeOutputText()}">
@@ -109,6 +115,13 @@
                                                         <h:outputText value="#{bundle['dataset.contact.tip']}"/>
                                                     </p>
                                                 </ui:fragment>
+                                                <ui:fragment rendered="#{managePage or templatePage}">
+                                                  <div>
+                                                    <h:outputLabel for="compinstr_view" value="#{bundle['template.instructions.label']} " class="italic normal-text margin-right"/>
+                                                    <h:outputText id="compinstr_view" value="#{template.getInstructionsFor(dsf.datasetFieldType.name)}"/>
+                                                  </div>
+                                                </ui:fragment>
+          
                                                 <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="compoundValue" varStatus="compoundValuesstatus">
                                                     <ui:repeat value="#{compoundValue.displayValueMap.entrySet().toArray()}" var="cvPart" varStatus="partStatus">
                                                         <h:outputText value="#{dsf.datasetFieldType.displayFormat} " rendered="${!partStatus.first and !cvocConf.containsKey(dsf.datasetFieldType.id)}"/>
@@ -158,7 +171,7 @@
         <div class="panel-group">
                 <p>
                     <h:outputFormat
-                        rendered="#{(mdLangCode!='undefined') and ((editMode == 'CREATE') or (editMode == 'METADATA'))}"
+                        rendered="#{(!empty(mdLang) and mdLangCode!='undefined') and ((editMode == 'CREATE') or (editMode == 'METADATA'))}"
                         value="#{bundle['dataset.metadatalanguage.create.guidance']}"
                         escape="false">
                         <f:param value="#{mdLang}" />
@@ -198,7 +211,7 @@
                     </div>
                     <div id="panelCollapse#{block.index}" class="collapse #{block.first or editMode == 'CREATE' or !cvocConf.isEmpty() ? 'in' : ''}">
                         <div class="panel-body">
-                            <ui:repeat value="#{metadataBlockVal.value}" var="dsf">
+                            <ui:repeat value="#{metadataBlockVal.value}" var="dsf" varStatus="curField">
                                 <div class="form-group" role="group"
                                      jsf:rendered="#{((editMode == 'METADATA'
                                                          or dsf.datasetFieldType.displayOnCreate or !dsf.isEmpty() or dsf.required) and dsf.include)
@@ -206,13 +219,26 @@
                                     <!-- Primitive fields -->
                                     <p:fragment id="editPrimitiveValueFragment" rendered="#{dsf.datasetFieldType.primitive}">
                                         <p:autoUpdate/>
-                                        <h:outputLabel for="#{dsf.datasetFieldType.controlledVocabulary ? (!dsf.datasetFieldType.allowMultiples ? 'unique1_focus' : 'unique2_focus') : ('fieldvaluelist:0:'.concat(((dsf.datasetFieldType.fieldType == 'TEXTBOX') ? 'description' : 'inputText')))}" styleClass="col-sm-3 control-label">
+                                        <div>
+                                          <h:outputLabel for="#{dsf.datasetFieldType.controlledVocabulary ? (!dsf.datasetFieldType.allowMultiples ? 'unique1_focus' : 'unique2_focus') : ('fieldvaluelist:0:'.concat(((dsf.datasetFieldType.fieldType == 'TEXTBOX') ? 'description' : 'inputText')))}" styleClass="col-sm-3 control-label">
                                             #{dsf.datasetFieldType.localeTitle}
                                             <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{dsf.required}"/>
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
-                                        </h:outputLabel>
-                                        <div class="form-group">
+                                          </h:outputLabel>
+                                          <ui:fragment rendered="#{templatePage}">
+                                            <div class="col-sm-7">
+                                              <h:outputLabel for="instr" value="#{bundle['template.instructions.label']} " title="#{bundle['template.instructions.label.tip']}" class="italic normal-text margin-right"/>
+                                                <p:inplace id="instr" label="#{TemplatePage.getInstructionsLabelFor(dsf.datasetFieldType.name)}" editor="true">
+                                                  <p:inputText value="#{TemplatePage.template.instructionsMap[dsf.datasetFieldType.name]}"/>
+                                                </p:inplace>
+                                              </div>
+                                          </ui:fragment>
+                                          <h:outputText class="col-sm-7" value="#{template.getInstructionsFor(dsf.datasetFieldType.name)}" rendered="#{!templatePage and template!=null and not empty template.getInstructionsFor(dsf.datasetFieldType.name)}"/>
+                                        </div>
+                                        <div class="col-sm-3"/>
+                                        <div class="col-sm-9" style="padding-left:2px">
+                                          <div class="form-group">
                                             <div class="form-col-container col-sm-12">
                                                 <p:repeat value="#{dsf.datasetFieldValues}" var="dsfv" varStatus="valCount" id="fieldvaluelist">
                                                     <div class="form-group dataset-field-values">
@@ -228,16 +254,14 @@
                                                             <p:commandLink title="#{bundle.add}"
                                                                            styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{dsf.datasetFieldType.compound ? 'compound-field-btn' : ''}"
                                                                            actionListener="#{dsf.addDatasetFieldValue(valCount.index + 1)}"
-                                                                           update=":#{p:resolveClientIds('@id(editPrimitiveValueFragment)', view)}"
-                                                                           oncomplete="javascript:bind_bsui_components();">
+                                                                           update=":#{p:resolveClientIds('@id(editPrimitiveValueFragment)', view)}">
                                                                 <span class="glyphicon glyphicon-plus no-text"/>
                                                             </p:commandLink>
                                                             <p:commandLink title="#{bundle.delete}"
                                                                            styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{dsf.datasetFieldType.compound ? 'compound-field-btn' : ''}"
                                                                            rendered="#{dsf.datasetFieldValues.size() > 1}"
                                                                            actionListener="#{dsf.removeDatasetFieldValue(valCount.index)}"
-                                                                           update=":#{p:resolveClientIds('@id(editPrimitiveValueFragment)', view)}"
-                                                                           oncomplete="javascript:bind_bsui_components();">
+                                                                           update=":#{p:resolveClientIds('@id(editPrimitiveValueFragment)', view)}">
                                                                 <span class="glyphicon glyphicon-minus no-text"/>
                                                             </p:commandLink>
                                                         </div>
@@ -270,17 +294,31 @@
                                                     </div>
                                                 </ui:fragment>
                                             </div>
+                                          </div>
                                         </div>
                                     </p:fragment>
                                     <!-- Compound fields -->
                                     <p:fragment id="editCompoundValueFragment" rendered="#{dsf.datasetFieldType.compound}">
                                         <p:autoUpdate/>
-                                        <div id="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label highlightBold">
+                                        <div>
+                                          <div id="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label highlightBold">
                                             #{dsf.datasetFieldType.localeTitle}
-                                            <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{dsf.required}"/>                                           
+                                            <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{dsf.required}"/>
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
-                                        </div>
+                                          </div>
+                                          
+                                          <div class="col-sm-7">
+                                            <ui:fragment rendered="#{templatePage}">
+                                              <h:outputLabel for="compinstr" value="#{bundle['template.instructions.label']} " title="#{bundle['template.instructions.label.tip']}" class="italic normal-text margin-right"/>
+                                                <p:inplace id="compinstr" label="#{TemplatePage.getInstructionsLabelFor(dsf.datasetFieldType.name)}" editor="true">
+                                                  <p:inputText value="#{TemplatePage.template.instructionsMap[dsf.datasetFieldType.name]}"/>
+                                                </p:inplace>
+                                            </ui:fragment>
+                                           <h:outputText value="#{template.getInstructionsFor(dsf.datasetFieldType.name)}" rendered="#{!templatePage and template != null and ! empty template.getInstructionsFor(dsf.datasetFieldType.name)}"/>
+                                          </div>
+                                        </div> 
+                                        <div class="col-sm-3"/>
                                         <div class="form-group form-col-container col-sm-9 dataset-field-values">
                                             <ui:fragment rendered="#{!dsf.required and dsf.hasRequiredChildren}">
                                                 <p class="help-block">
@@ -349,16 +387,14 @@
                                                     <p:commandLink title="#{bundle.add}"
                                                                    styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{dsf.datasetFieldType.compound ? 'compound-field-btn' : ''}"
                                                                    actionListener="#{dsf.addDatasetFieldCompoundValue(valCount.index + 1)}"   
-                                                                   update=":#{p:resolveClientIds('@id(editCompoundValueFragment)', view)}"
-                                                                   oncomplete="javascript:bind_bsui_components();">
+                                                                   update=":#{p:resolveClientIds('@id(editCompoundValueFragment)', view)}">
                                                         <span class="glyphicon glyphicon-plus no-text"/>
                                                     </p:commandLink>
                                                     <p:commandLink title="#{bundle.delete}"
                                                                    styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{dsf.datasetFieldType.compound ? 'compound-field-btn' : ''}"
                                                                    rendered="#{dsf.datasetFieldCompoundValues.size() > 1}"
                                                                    actionListener="#{dsf.removeDatasetFieldCompoundValue(valCount.index)}"
-                                                                   update=":#{p:resolveClientIds('@id(editCompoundValueFragment)', view)}"
-                                                                   oncomplete="javascript:bind_bsui_components();">
+                                                                   update=":#{p:resolveClientIds('@id(editCompoundValueFragment)', view)}">
                                                         <span class="glyphicon glyphicon-minus no-text"/>
                                                     </p:commandLink>
                                                 </div>

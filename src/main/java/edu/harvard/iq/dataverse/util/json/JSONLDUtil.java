@@ -45,7 +45,7 @@ import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import org.apache.commons.lang3.StringUtils;
 
 import com.apicatalog.jsonld.JsonLd;
-import com.apicatalog.jsonld.api.JsonLdError;
+import com.apicatalog.jsonld.JsonLdError;
 import com.apicatalog.jsonld.document.JsonDocument;
 
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
@@ -74,7 +74,8 @@ public class JSONLDUtil {
     }
 
     public static Dataset updateDatasetMDFromJsonLD(Dataset ds, String jsonLDBody,
-                                                    MetadataBlockServiceBean metadataBlockSvc, DatasetFieldServiceBean datasetFieldSvc, boolean append, boolean migrating, LicenseServiceBean licenseSvc) {
+            MetadataBlockServiceBean metadataBlockSvc, DatasetFieldServiceBean datasetFieldSvc, boolean append,
+            boolean migrating, LicenseServiceBean licenseSvc) {
 
         DatasetVersion dsv = new DatasetVersion();
 
@@ -491,27 +492,13 @@ public class JSONLDUtil {
     static Map<String, String> localContext = new TreeMap<String, String>();
     static Map<String, DatasetFieldType> dsftMap = new TreeMap<String, DatasetFieldType>();
 
+    //A map if DatasetFieldTypes by decontextualized URL
     private static void populateFieldTypeMap(MetadataBlockServiceBean metadataBlockSvc) {
         if (dsftMap.isEmpty()) {
-
             List<MetadataBlock> mdbList = metadataBlockSvc.listMetadataBlocks();
-
             for (MetadataBlock mdb : mdbList) {
-                boolean blockHasUri = mdb.getNamespaceUri() != null;
                 for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()) {
-                    if (dsft.getUri() != null) {
-                        dsftMap.put(dsft.getUri(), dsft);
-                    }
-                    if (blockHasUri) {
-                        if (dsft.getParentDatasetFieldType() != null) {
-                            // ToDo - why not getName for child type? Would have to fix in ORE generation
-                            // code and handle legacy bags
-                            dsftMap.put(mdb.getNamespaceUri() + dsft.getParentDatasetFieldType().getName() + "#"
-                                    + dsft.getTitle(), dsft);
-                        } else {
-                            dsftMap.put(mdb.getNamespaceUri() + dsft.getTitle(), dsft);
-                        }
-                    }
+                    dsftMap.put(dsft.getJsonLDTerm().getUrl(), dsft);
                 }
             }
             logger.fine("DSFT Map: " + String.join(", ", dsftMap.keySet()));
@@ -522,15 +509,12 @@ public class JSONLDUtil {
         if (localContext.isEmpty()) {
 
             List<MetadataBlock> mdbList = metadataBlockSvc.listMetadataBlocks();
-
             for (MetadataBlock mdb : mdbList) {
-                boolean blockHasUri = mdb.getNamespaceUri() != null;
-                if (blockHasUri) {
-                    JsonLDNamespace.defineNamespace(mdb.getName(), mdb.getNamespaceUri());
-                }
+                //Assures the mdb's namespace is in the list checked by JsonLDNamespace.isInNamespace() below
+                mdb.getJsonLDNamespace();
                 for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()) {
                     if ((dsft.getUri() != null) && !JsonLDNamespace.isInNamespace(dsft.getUri())) {
-                        //Add term if uri exists and it's not in one of the namespaces already defined
+                        // Add term if uri exists and it's not in one of the namespaces already defined
                         localContext.putIfAbsent(dsft.getName(), dsft.getUri());
                     }
                 }

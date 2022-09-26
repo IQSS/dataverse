@@ -1,6 +1,23 @@
 package edu.harvard.iq.dataverse.util.json;
 
 import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.AuxiliaryFile;
+import edu.harvard.iq.dataverse.ControlledVocabularyValue;
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileTag;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetDistributor;
+import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
+import edu.harvard.iq.dataverse.DatasetFieldValue;
+import edu.harvard.iq.dataverse.DatasetLock;
+import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseContact;
+import edu.harvard.iq.dataverse.DataverseFacet;
+import edu.harvard.iq.dataverse.DataverseTheme;
+import edu.harvard.iq.dataverse.api.Datasets;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
@@ -19,18 +36,15 @@ import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.license.License;
+import edu.harvard.iq.dataverse.globus.FileDetailsHolder;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
-import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
-import java.math.BigDecimal;
 
-import java.net.URISyntaxException;
 import java.util.*;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -64,7 +78,7 @@ public class JsonPrinter {
 
     @EJB
     static DatasetFieldServiceBean datasetFieldService;
-    
+
     public static void injectSettingsService(SettingsServiceBean ssb, DatasetFieldServiceBean dfsb) {
             settingsService = ssb;
             datasetFieldService = dfsb;
@@ -204,6 +218,14 @@ public class JsonPrinter {
         return bld;
     }
 
+    public static <E extends Enum> JsonArrayBuilder enumsToJson(Collection<E> collection) {
+        JsonArrayBuilder arr = Json.createArrayBuilder();
+        for (E entry : collection) {
+            arr.add(entry.name());
+        }
+        return arr;
+    }
+
     public static JsonObjectBuilder json(DataverseRole role) {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("alias", role.getAlias())
@@ -310,7 +332,7 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(Dataset ds) {
-        return jsonObjectBuilder()
+        JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", ds.getId())
                 .add("identifier", ds.getIdentifier())
                 .add("persistentUrl", ds.getPersistentURL())
@@ -318,8 +340,19 @@ public class JsonPrinter {
                 .add("authority", ds.getAuthority())
                 .add("publisher", BrandingUtil.getInstallationBrandName())
                 .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
-                .add("storageIdentifier", ds.getStorageIdentifier())
-                .add("metadataLanguage", ds.getMetadataLanguage());
+                .add("storageIdentifier", ds.getStorageIdentifier());
+        if (DvObjectContainer.isMetadataLanguageSet(ds.getMetadataLanguage())) {
+            bld.add("metadataLanguage", ds.getMetadataLanguage());
+        }
+        return bld;
+    }
+
+    public static JsonObjectBuilder json(FileDetailsHolder ds) {
+        return Json.createObjectBuilder().add(ds.getStorageID() ,
+                Json.createObjectBuilder()
+                .add("id", ds.getStorageID() )
+                .add("hash", ds.getHash())
+                .add("mime",ds.getMime()));
     }
 
     public static JsonObjectBuilder json(DatasetVersion dsv) {
@@ -334,7 +367,7 @@ public class JsonPrinter {
                 .add("UNF", dsv.getUNF()).add("archiveTime", format(dsv.getArchiveTime()))
                 .add("lastUpdateTime", format(dsv.getLastUpdateTime())).add("releaseTime", format(dsv.getReleaseTime()))
                 .add("createTime", format(dsv.getCreateTime()));
-        License license = dsv.getTermsOfUseAndAccess().getLicense();
+        License license = DatasetUtil.getLicense(dsv);;
         if (license != null) {
             // Standard license
             bld.add("license", jsonObjectBuilder()
@@ -464,7 +497,7 @@ public class JsonPrinter {
         blockBld.add("name", block.getName());
         
         final JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
-        Map<Long, JsonObject> cvocMap = (datasetFieldService==null) ? new HashMap<Long, JsonObject>() :datasetFieldService.getCVocConf(false); 
+        Map<Long, JsonObject> cvocMap = (datasetFieldService==null) ? new HashMap<Long, JsonObject>() :datasetFieldService.getCVocConf(false);
         DatasetFieldWalker.walk(fields, settingsService, cvocMap, new DatasetFieldsToJson(fieldsArray));
 
         blockBld.add("fields", fieldsArray);
@@ -680,7 +713,7 @@ public class JsonPrinter {
             objectStack.peek().add("multiple", typ.isAllowMultiples());
             objectStack.peek().add("typeClass", typeClassString(typ));
         }
-        
+
         @Override
         public void addExpandedValuesArray(DatasetField f) {
             // Invariant: all values are multiple. Diffrentiation between multiple and single is done at endField.
@@ -701,7 +734,7 @@ public class JsonPrinter {
                             f.getDatasetFieldType().isAllowMultiples() ? expandedValues
                                     : expandedValues.get(0));
                 }
-                
+
                 valueArrStack.peek().add(jsonField);
             }
         }
@@ -717,7 +750,7 @@ public class JsonPrinter {
                 }
             }
         }
-        
+
         @Override
         public void primitiveValue(DatasetFieldValue dsfv) {
             if (dsfv.getValue() != null) {

@@ -261,6 +261,9 @@
     <field name="cleaningOperations" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="collectionMode" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="collectorTraining" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <field name="workflowType" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="workflowCodeRepository" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="workflowDocumentation" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="contributor" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="contributorName" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="contributorType" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -315,7 +318,7 @@
     <field name="grantNumber" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="grantNumberAgency" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="grantNumberValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="journalArticleType" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <field name="journalArticleType" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="journalIssue" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="journalPubDate" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="journalVolume" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -498,6 +501,9 @@
     <copyField source="cleaningOperations" dest="_text_" maxChars="3000"/>
     <copyField source="collectionMode" dest="_text_" maxChars="3000"/>
     <copyField source="collectorTraining" dest="_text_" maxChars="3000"/>
+    <copyField source="workflowType" dest="_text_" maxChars="3000"/>
+    <copyField source="workflowCodeRepository" dest="_text_" maxChars="3000"/>
+    <copyField source="workflowDocumentation" dest="_text_" maxChars="3000"/>
     <copyField source="contributor" dest="_text_" maxChars="3000"/>
     <copyField source="contributorName" dest="_text_" maxChars="3000"/>
     <copyField source="contributorType" dest="_text_" maxChars="3000"/>

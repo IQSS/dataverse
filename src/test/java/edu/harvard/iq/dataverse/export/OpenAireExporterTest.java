@@ -97,7 +97,7 @@ public class OpenAireExporterTest {
         }
         InputStream xmlStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setValidating(true);
+        //factory.setValidating(true);
         factory.setNamespaceAware(true);
         factory.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaLanguage",
                 "http://www.w3.org/2001/XMLSchema");
