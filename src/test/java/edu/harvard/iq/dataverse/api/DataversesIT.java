@@ -486,7 +486,7 @@ public class DataversesIT {
     }
 
     @Test
-    public void testImportDDI() throws IOException {
+    public void testImportDDI() throws IOException, InterruptedException {
 
         Response createUser = UtilIT.createRandomUser();
         String username = UtilIT.getUsernameFromResponse(createUser);
@@ -534,6 +534,12 @@ public class DataversesIT {
         Response destroyDatasetResponsePidRel = UtilIT.destroyDataset(datasetIdIntPidRel, apiToken);
         assertEquals(200, destroyDatasetResponsePidRel.getStatusCode());
 
+        // This last dataset we have just imported, let's give it a sec. to finish indexing (?)
+        // or whatever it is that may still be happening. (Have been seeing intermittent 500 from the next
+        // destroyDataset() line lately)
+        
+        Thread.sleep(1000L); 
+        
         Integer datasetIdIntRelease = JsonPath.from(importDDIRelease.body().asString()).getInt("data.id");
         Response destroyDatasetResponseRelease = UtilIT.destroyDataset(datasetIdIntRelease, apiToken);
         assertEquals(200, destroyDatasetResponseRelease.getStatusCode());
