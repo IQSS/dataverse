@@ -58,6 +58,7 @@ import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectB
 
 import java.io.InputStream;
 import java.io.StringReader;
+import java.net.URLDecoder;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -1317,7 +1318,7 @@ public class Admin extends AbstractApiBean {
 
 	}
 
-	@Path("permissions/{dvo}")
+	@Path("permissions/{dvo:.+}")
 	@GET
 	public Response findPermissonsOn(@PathParam("dvo") String dvo) {
 		try {
