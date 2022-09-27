@@ -363,7 +363,7 @@ public abstract class AbstractApiBean {
     protected User findUserOrDie() throws WrappedResponse {
         final String requestApiKey = getRequestApiKey();
         final String requestWFKey = getRequestWorkflowInvocationID();
-        if (requestApiKey == null && requestWFKey == null) {
+        if (requestApiKey == null && requestWFKey == null && getRequestParameter("token")==null) {
             return GuestUser.get();
         }
         PrivateUrlUser privateUrlUser = privateUrlSvc.getPrivateUrlUserFromToken(requestApiKey);
@@ -437,19 +437,19 @@ public abstract class AbstractApiBean {
         // that as a secret in validation the signedURL. If the signature can't be
         // validating with their key, the user (or their API key) has been changed and
         // we reject the request.
-        //ToDo - add null checks/ verify that calling methods catch things.
+        // ToDo - add null checks/ verify that calling methods catch things.
         String user = httpRequest.getParameter("user");
         AuthenticatedUser targetUser = authSvc.getAuthenticatedUser(user);
-        String key = System.getProperty(SystemConfig.API_SIGNING_SECRET,"") + authSvc.findApiTokenByUser(targetUser).getTokenString();
-        String signedUrl = httpRequest.getRequestURL().toString()+"?"+httpRequest.getQueryString();
+        String key = System.getProperty(SystemConfig.API_SIGNING_SECRET, "")
+                + authSvc.findApiTokenByUser(targetUser).getTokenString();
+        String signedUrl = httpRequest.getRequestURL().toString() + "?" + httpRequest.getQueryString();
         String method = httpRequest.getMethod();
-        String queryString = httpRequest.getQueryString();
         boolean validated = UrlSignerUtil.isValidUrl(signedUrl, user, method, key);
-        if (validated){
+        if (validated) {
             authUser = targetUser;
         }
         return authUser;
-    }    
+    }
 
     protected Dataverse findDataverseOrDie( String dvIdtf ) throws WrappedResponse {
         Dataverse dv = findDataverse(dvIdtf);
