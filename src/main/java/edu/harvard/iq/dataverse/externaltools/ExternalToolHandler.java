@@ -186,7 +186,6 @@ public class ExternalToolHandler extends URLTokenUtil {
             String url = apiPath;
             // Sign if apiToken exists, otherwise send unsigned URL (i.e. for guest users)
             ApiToken apiToken = getApiToken();
-            logger.info("Fullkey create: " + System.getProperty(SystemConfig.API_SIGNING_SECRET, "") + getApiToken().getTokenString());
             if (apiToken != null) {
                 url = UrlSignerUtil.signUrl(apiPath, timeout, apiToken.getAuthenticatedUser().getUserIdentifier(), httpmethod,
                         System.getProperty(SystemConfig.API_SIGNING_SECRET, "") + getApiToken().getTokenString());
