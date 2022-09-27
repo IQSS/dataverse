@@ -55,13 +55,26 @@ public class URLTokenUtil {
      * @param apiToken The apiToken can be null
      */
     public URLTokenUtil(Dataset dataset, ApiToken apiToken, String localeCode) {
+        this(dataset, null, apiToken, localeCode);
+    }
+
+    /**
+     * Dataset level
+     *
+     * @param dataset  Required.
+     * @param datafile Optional.
+     * @param apiToken Optional The apiToken can be null
+     * @localeCode     Optional
+     * 
+     */
+    public URLTokenUtil(Dataset dataset, DataFile datafile, ApiToken apiToken, String localeCode) {
         if (dataset == null) {
             String error = "A Dataset is required.";
             logger.warning("Error in URLTokenUtil constructor: " + error);
             throw new IllegalArgumentException(error);
         }
         this.dataset = dataset;
-        this.dataFile = null;
+        this.dataFile = datafile;
         this.fileMetadata = null;
         this.apiToken = apiToken;
         this.localeCode = localeCode;
@@ -112,7 +125,7 @@ public class URLTokenUtil {
             String token = matcher.group(1);
             ReservedWord reservedWord = ReservedWord.fromString(token);
             String tValue = getTokenValue(token);
-            logger.info("Replacing " + reservedWord.toString() + " with " + tValue + " in " + newUrl);
+            logger.fine("Replacing " + reservedWord.toString() + " with " + tValue + " in " + newUrl);
             newUrl = newUrl.replace(reservedWord.toString(), tValue);
         }
         return newUrl;
@@ -171,6 +184,12 @@ public class URLTokenUtil {
         }
         throw new IllegalArgumentException("Cannot replace reserved word: " + value);
     }
+    
+    public static String getScriptForUrl(String url) {
+        String msg = BundleUtil.getStringFromBundle("externaltools.enable.browser.popups");
+        String script = "const newWin = window.open('" + url + "', target='_blank'); if (!newWin || newWin.closed || typeof newWin.closed == \"undefined\") {alert(\"" + msg + "\");}";
+        return script;
+   }
 
     public enum ReservedWord {
 

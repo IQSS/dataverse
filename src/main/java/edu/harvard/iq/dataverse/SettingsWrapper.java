@@ -92,7 +92,15 @@ public class SettingsWrapper implements java.io.Serializable {
     
     private Boolean rsyncUpload = null; 
     
-    private Boolean rsyncDownload = null; 
+    private Boolean rsyncDownload = null;
+    
+    private Boolean globusUpload = null;
+    private Boolean globusDownload = null;
+    private Boolean globusFileDownload = null;
+    
+    private String globusAppUrl = null;
+    
+    private List<String> globusStoreList = null;
     
     private Boolean httpUpload = null; 
     
@@ -291,6 +299,42 @@ public class SettingsWrapper implements java.io.Serializable {
             rsyncDownload = systemConfig.isRsyncDownload();
         }
         return rsyncDownload;
+    }
+
+    public boolean isGlobusUpload() {
+        if (globusUpload == null) {
+            globusUpload = systemConfig.isGlobusUpload();
+        }
+        return globusUpload;
+    }
+    
+    public boolean isGlobusDownload() {
+        if (globusDownload == null) {
+            globusDownload = systemConfig.isGlobusDownload();
+        }
+        return globusDownload;
+    }
+    
+    public boolean isGlobusFileDownload() {
+        if (globusFileDownload == null) {
+            globusFileDownload = systemConfig.isGlobusFileDownload();
+        }
+        return globusFileDownload;
+    }
+    
+    public boolean isGlobusEnabledStorageDriver(String driverId) {
+        if (globusStoreList == null) {
+            globusStoreList = systemConfig.getGlobusStoresList();
+        }
+        return globusStoreList.contains(driverId);
+    }
+    
+    public String getGlobusAppUrl() {
+        if (globusAppUrl == null) {
+            globusAppUrl = settingsService.getValueForKey(SettingsServiceBean.Key.GlobusAppUrl, "http://localhost");
+        }
+        return globusAppUrl;
+        
     }
     
     public boolean isRsyncOnly() {
