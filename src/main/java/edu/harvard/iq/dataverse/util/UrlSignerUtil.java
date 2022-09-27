@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.util;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -34,7 +35,7 @@ public class UrlSignerUtil {
      * @return - the signed URL
      */
     public static String signUrl(String baseUrl, Integer timeout, String user, String method, String key) {
-        StringBuilder signedUrl = new StringBuilder(baseUrl);
+        StringBuilder signedUrlBuilder = new StringBuilder(baseUrl);
 
         boolean firstParam = true;
         if (baseUrl.contains("?")) {
@@ -44,26 +45,26 @@ public class UrlSignerUtil {
             LocalDateTime validTime = LocalDateTime.now();
             validTime = validTime.plusMinutes(timeout);
             validTime.toString();
-            signedUrl.append(firstParam ? "?" : "&").append("until=").append(validTime);
+            signedUrlBuilder.append(firstParam ? "?" : "&").append("until=").append(validTime);
             firstParam = false;
         }
         if (user != null) {
-            signedUrl.append(firstParam ? "?" : "&").append("user=").append(user);
+            signedUrlBuilder.append(firstParam ? "?" : "&").append("user=").append(user);
             firstParam = false;
         }
         if (method != null) {
-            signedUrl.append(firstParam ? "?" : "&").append("method=").append(method);
+            signedUrlBuilder.append(firstParam ? "?" : "&").append("method=").append(method);
             firstParam=false;
         }
-        signedUrl.append(firstParam ? "?" : "&").append("token=");
-        logger.fine("String to sign: " + signedUrl.toString() + "<key>");
-        signedUrl.append(DigestUtils.sha512Hex(signedUrl.toString() + key));
-        logger.fine("Generated Signed URL: " + signedUrl.toString());
+        signedUrlBuilder.append(firstParam ? "?" : "&").append("token=");
+        logger.fine("String to sign: " + signedUrlBuilder.toString() + "<key>");
+        String signedUrl = signedUrlBuilder.toString();
+        signedUrl= signedUrl + (DigestUtils.sha512Hex(signedUrl + key));
         if (logger.isLoggable(Level.FINE)) {
             logger.fine(
-                    "URL signature is " + (isValidUrl(signedUrl.toString(), user, method, key) ? "valid" : "invalid"));
+                    "URL signature is " + (isValidUrl(signedUrl, user, method, key) ? "valid" : "invalid"));
         }
-        return signedUrl.toString();
+        return signedUrl;
     }
 
     /**
@@ -148,4 +149,18 @@ public class UrlSignerUtil {
         return valid;
     }
 
+    public static boolean hasToken(String urlString) {
+        try {
+            URL url = new URL(urlString);
+            List<NameValuePair> params = URLEncodedUtils.parse(url.getQuery(), Charset.forName("UTF-8"));
+            for (NameValuePair nvp : params) {
+                if (nvp.getName().equals("token")) {
+                    return true;
+                }
+            }
+        } catch (MalformedURLException mue) {
+            logger.fine("Bad url string: " + urlString);
+        }
+        return false;
+    }
 }
