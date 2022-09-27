@@ -1318,13 +1318,16 @@ public class Admin extends AbstractApiBean {
 
 	}
 
-	@Path("permissions/{dvo:.+}")
+	@Path("permissions/{dvo}")
 	@GET
 	public Response findPermissonsOn(@PathParam("dvo") String dvo) {
 		try {
 			DvObject dvObj = findDvo(dvo);
 			if (dvObj == null) {
-				return notFound("DvObject " + dvo + " not found");
+				dvObj = findDatasetOrDie(dvo);
+				if (dvObj == null) {
+					return notFound("DvObject " + dvo + " not found");
+				}
 			}
 			try {
 				User aUser = findUserOrDie();
