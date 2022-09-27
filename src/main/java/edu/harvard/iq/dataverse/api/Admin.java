@@ -2249,29 +2249,34 @@ public class Admin extends AbstractApiBean {
     @Consumes("application/json")
     @Path("/requestSignedUrl")
     public Response getSignedUrl(JsonObject urlInfo) throws WrappedResponse {
-        AuthenticatedUser superuser = authSvc.getAdminUser();
+        AuthenticatedUser superuser = findAuthenticatedUserOrDie();
         
-        if (superuser == null) {
+        if (superuser == null || !superuser.isSuperuser()) {
             return error(Response.Status.FORBIDDEN, "Requesting signed URLs is restricted to superusers.");
         }
         
         String userId = urlInfo.getString("user");
         String key=null;
-        if(userId!=null) {
-        AuthenticatedUser user = authSvc.getAuthenticatedUser(userId);
-        if(user!=null) {
-            ApiToken apiToken = authSvc.findApiTokenByUser(user);
-            if(apiToken!=null && !apiToken.isExpired() &&  ! apiToken.isDisabled()) {
-                key = apiToken.getTokenString();
+        if (userId != null) {
+            AuthenticatedUser user = authSvc.getAuthenticatedUser(userId);
+            // If a user param was sent, we sign the URL for them, otherwise on behalf of
+            // the superuser who made this api call
+            if (user != null) {
+                ApiToken apiToken = authSvc.findApiTokenByUser(user);
+                if (apiToken != null && !apiToken.isExpired() && !apiToken.isDisabled()) {
+                    key = apiToken.getTokenString();
+                }
+            } else {
+                userId = superuser.getUserIdentifier();
+                // We ~know this exists - the superuser just used it and it was unexpired/not
+                // disabled. (ToDo - if we want this to work with workflow tokens (or as a
+                // signed URL), we should do more checking as for the user above))
+                key = authSvc.findApiTokenByUser(superuser).getTokenString();
             }
-        } else {
-            userId=superuser.getIdentifier();
-            //We ~know this exists - the superuser just used it and it was unexpired/not disabled. (ToDo - if we want this to work with workflow tokens (or as a signed URL, we should do more checking as for the user above))
-        }
-            key =  System.getProperty(SystemConfig.API_SIGNING_SECRET,"") + authSvc.findApiTokenByUser(superuser).getTokenString();
-        }
-        if(key==null) {
-            return error(Response.Status.CONFLICT, "Do not have a valid user with apiToken");
+            if (key == null) {
+                return error(Response.Status.CONFLICT, "Do not have a valid user with apiToken");
+            }
+            key = System.getProperty(SystemConfig.API_SIGNING_SECRET, "") + key;
         }
         
         String baseUrl = urlInfo.getString("url");
