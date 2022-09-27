@@ -57,10 +57,11 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetTargetURLComman
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
-
-import edu.harvard.iq.dataverse.S3PackageImporter;
+import edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -142,7 +143,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.Status;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -3580,5 +3580,37 @@ public class Datasets extends AbstractApiBean {
             }
         }
         return false;
+    }
+    
+    // This method provides a callback for an external tool to retrieve it's
+    // parameters/api URLs. If the request is authenticated, e.g. by it being
+    // signed, the api URLs will be signed. If a guest request is made, the URLs
+    // will be plain/unsigned.
+    // This supports the cases where a tool is accessing a restricted resource (e.g.
+    // for a draft dataset), or public case.
+    @GET
+    @Path("{id}/versions/{version}/toolparams/{tid}")
+    public Response getExternalToolDVParams(@PathParam("tid") long externalToolId,
+            @PathParam("id") String datasetId, @PathParam("version") String version, @QueryParam(value = "locale") String locale) {
+        try {
+            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            DatasetVersion target = getDatasetVersionOrDie(req, version, findDatasetOrDie(datasetId), null, null);
+            if (target == null) {
+                return error(BAD_REQUEST, "DatasetVersion not found.");
+            }
+            
+            ExternalTool externalTool = externalToolService.findById(externalToolId);
+            ApiToken apiToken = null;
+            User u = findUserOrDie();
+            if (u instanceof AuthenticatedUser) {
+                apiToken = authSvc.findApiTokenByUser((AuthenticatedUser) u);
+            }
+            
+
+            ExternalToolHandler eth = new ExternalToolHandler(externalTool, target.getDataset(), apiToken, locale);
+            return ok(eth.createPostBody(eth.getParams(JsonUtil.getJsonObject(externalTool.getToolParameters()))));
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
     }
 }

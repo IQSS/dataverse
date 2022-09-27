@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccessValidator;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
@@ -31,6 +32,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.UningestFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
@@ -40,6 +43,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -451,7 +455,8 @@ public class Files extends AbstractApiBean {
     @GET                             
     @Path("{id}/metadata")
     public Response getFileMetadata(@PathParam("id") String fileIdOrPersistentId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, Boolean getDraft) throws WrappedResponse, Exception {
-            DataverseRequest req;
+        //ToDo - versionId is not used - can't get metadata for earlier versions
+        DataverseRequest req;
             try {
                 req = createDataverseRequest(findUserOrDie());
             } catch (Exception e) {
@@ -639,4 +644,34 @@ public class Files extends AbstractApiBean {
         }
     }
 
+    // This method provides a callback for an external tool to retrieve it's
+    // parameters/api URLs. If the request is authenticated, e.g. by it being
+    // signed, the api URLs will be signed. If a guest request is made, the URLs
+    // will be plain/unsigned.
+    // This supports the cases where a tool is accessing a restricted resource (e.g.
+    // preview of a draft file), or public case.
+    @GET
+    @Path("{id}/metadata/{fmid}/toolparams/{tid}")
+    public Response getExternalToolFMParams(@PathParam("tid") long externalToolId,
+            @PathParam("id") long fileId, @PathParam("fmid") long fmid, @QueryParam(value = "locale") String locale) {
+        try {
+            ExternalTool externalTool = externalToolService.findById(externalToolId);
+            ApiToken apiToken = null;
+            User u = findUserOrDie();
+            if (u instanceof AuthenticatedUser) {
+                apiToken = authSvc.findApiTokenByUser((AuthenticatedUser) u);
+            }
+            FileMetadata target = fileSvc.findFileMetadata(fmid);
+            if (target == null) {
+                return error(BAD_REQUEST, "FileMetadata not found.");
+            }
+
+            ExternalToolHandler eth = null;
+
+            eth = new ExternalToolHandler(externalTool, target.getDataFile(), apiToken, target, locale);
+            return ok(eth.createPostBody(eth.getParams(JsonUtil.getJsonObject(externalTool.getToolParameters()))));
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
 }
