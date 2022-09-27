@@ -176,7 +176,7 @@ public class ExternalToolHandler extends URLTokenUtil {
         apiArray.getValuesAs(JsonObject.class).forEach(((apiObj) -> {
             logger.info(JsonUtil.prettyPrint(apiObj));
             String name = apiObj.getJsonString("name").getString();
-            String httpmethod = apiObj.getJsonString("method").getString();
+            String httpmethod = apiObj.getJsonString("httpMethod").getString();
             int timeout = apiObj.getInt("timeOut");
             String urlTemplate = apiObj.getJsonString("urlTemplate").getString();
             logger.fine("URL Template: " + urlTemplate);
