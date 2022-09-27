@@ -118,14 +118,7 @@ public class ExternalTool implements Serializable {
     }
 
     public ExternalTool(String displayName, String toolName, String description, List<ExternalToolType> externalToolTypes, Scope scope, String toolUrl, String toolParameters, String contentType) {
-        this.displayName = displayName;
-        this.toolName = toolName;
-        this.description = description;
-        this.externalToolTypes = externalToolTypes;
-        this.scope = scope;
-        this.toolUrl = toolUrl;
-        this.toolParameters = toolParameters;
-        this.contentType = contentType;
+       this(displayName, toolName, description, externalToolTypes, scope, toolUrl, toolParameters, contentType, null);
     }
 
     public ExternalTool(String displayName, String toolName, String description, List<ExternalToolType> externalToolTypes, Scope scope, String toolUrl, String toolParameters, String contentType, String allowedApiCalls) {
