@@ -6,9 +6,16 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
 import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -198,4 +205,33 @@ public class ExternalToolHandlerTest {
 
     }
 
+    @Test
+    public void testGetToolUrlWithallowedApiCalls() {
+
+        System.out.println("allowedApiCalls test");
+        Dataset ds = new Dataset();
+        ds.setId(1L);
+        ApiToken at = new ApiToken();
+        AuthenticatedUser au = new AuthenticatedUser();
+        au.setUserIdentifier("dataverseAdmin");
+        at.setAuthenticatedUser(au);
+        at.setTokenString("1234");
+        ExternalTool et = ExternalToolServiceBeanTest.getAllowedApiCallsTool();
+        assertTrue(et != null);
+        System.out.println("allowedApiCalls et created");
+        System.out.println(et.getAllowedApiCalls());
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(et, ds, at, null);
+        System.out.println("allowedApiCalls eth created");
+        JsonObject jo = externalToolHandler
+                .createPostBody(externalToolHandler.getParams(JsonUtil.getJsonObject(et.getToolParameters()))).build();
+        assertEquals(1, jo.getJsonObject("queryParameters").getInt("datasetId"));
+        String signedUrl = jo.getJsonArray("signedUrls").getJsonObject(0).getString("signedUrl");
+        // The date and token will change each time but check for the constant parts of
+        // the response
+        assertTrue(signedUrl.contains("https://librascholar.org/api/v1/datasets/1"));
+        assertTrue(signedUrl.contains("&user=dataverseAdmin"));
+        assertTrue(signedUrl.contains("&method=GET"));
+        assertTrue(signedUrl.contains("&token="));
+        System.out.println(JsonUtil.prettyPrint(jo));
+    }
 }
