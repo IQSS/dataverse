@@ -125,7 +125,7 @@ public class SystemConfig {
     // A secret used in signing URLs - individual urls are signed using this and the
     // intended user's apiKey, creating an aggregate key that is unique to the user
     // but not known to the user (as their apiKey is)
-    public final static String API_SIGNING_SECRET = "dataverse.api-signing-secret;";
+    public final static String API_SIGNING_SECRET = "dataverse.api-signing-secret";
     
     public String getVersion() {
         return getVersion(false);
