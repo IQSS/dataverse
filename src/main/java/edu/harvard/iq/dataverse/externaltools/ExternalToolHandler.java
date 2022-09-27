@@ -16,6 +16,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Base64;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,8 +32,6 @@ import javax.json.JsonValue;
 import javax.ws.rs.HttpMethod;
 
 import org.apache.commons.codec.binary.StringUtils;
-
-import com.github.scribejava.core.java8.Base64;
 
 /**
  * Handles an operation on a specific file. Requires a file id in order to be
@@ -148,6 +147,7 @@ public class ExternalToolHandler extends URLTokenUtil {
     }
 
     public JsonObject getParams(JsonObject toolParameters) {
+        //ToDo - why an array of object each with a single key/value pair instead of one object?
         JsonArray queryParams = toolParameters.getJsonArray("queryParameters");
 
         // ToDo return json and print later
