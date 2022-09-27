@@ -649,6 +649,10 @@ public class DatasetsIT {
         reexportAllFormats.prettyPrint();
         reexportAllFormats.then().assertThat().statusCode(OK.getStatusCode());
 
+        Response reexportAllFormatsUsingId = UtilIT.reexportDatasetAllFormats(datasetId.toString());
+        reexportAllFormatsUsingId.prettyPrint();
+        reexportAllFormatsUsingId.then().assertThat().statusCode(OK.getStatusCode());
+
         Response deleteDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());

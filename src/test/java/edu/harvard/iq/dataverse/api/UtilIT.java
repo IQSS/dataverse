@@ -1831,9 +1831,15 @@ public class UtilIT {
                 .get("/api/datasets/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
     }
 
-    static Response reexportDatasetAllFormats(String datasetPersistentId) {
+    static Response reexportDatasetAllFormats(String idOrPersistentId) {
+        String idInPath = idOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isDigits(idOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + idOrPersistentId;
+        }
         return given()
-                .get("/api/admin/metadata/reExportDataset?persistentId=" + datasetPersistentId);
+                .get("/api/admin/metadata/" + idInPath + "/reExportDataset" + optionalQueryParam);
     }
 
     static Response exportDataverse(String identifier, String apiToken) {

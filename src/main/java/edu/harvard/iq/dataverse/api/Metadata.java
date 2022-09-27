@@ -68,22 +68,14 @@ public class Metadata extends AbstractApiBean {
     }
 
     @GET
-    @Path("reExportDataset")
-    public Response indexDatasetByPersistentId(@QueryParam("persistentId") String persistentId) {
-        if (persistentId == null) {
-            return error(Response.Status.BAD_REQUEST, "No persistent id given.");
-        }
-        Dataset dataset = null;
+    @Path("{id}/reExportDataset")
+    public Response indexDatasetByPersistentId(@PathParam("id") String id) {
         try {
-            dataset = datasetService.findByGlobalId(persistentId);
-        } catch (Exception ex) {
-            return error(Response.Status.BAD_REQUEST, "Problem looking up dataset with persistent id \"" + persistentId + "\". Error: " + ex.getMessage());
-        }
-        if (dataset != null) {
+            Dataset dataset = findDatasetOrDie(id);
             datasetService.reExportDatasetAsync(dataset);
             return ok("export started");
-        } else {
-            return error(Response.Status.BAD_REQUEST, "Could not find dataset with persistent id " + persistentId);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
         }
     }
 
