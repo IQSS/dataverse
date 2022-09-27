@@ -201,19 +201,17 @@ public class Users extends AbstractApiBean {
         String tokenFromRequestAPI = getRequestApiKey();
 
         AuthenticatedUser authenticatedUser = findUserByApiToken(tokenFromRequestAPI);
+        // This allows use of the :me API call from an active login session. Not sure
+        // this is a good idea
         if (authenticatedUser == null) {
             try {
                 authenticatedUser = findAuthenticatedUserOrDie();
-                return ok(json(authenticatedUser));
             } catch (WrappedResponse ex) {
                 Logger.getLogger(Users.class.getName()).log(Level.SEVERE, null, ex);
                 return error(Response.Status.BAD_REQUEST, "User with token " + tokenFromRequestAPI + " not found.");
             }
-            
-        } else {
-            return ok(json(authenticatedUser));
         }
-
+        return ok(json(authenticatedUser));
     }
 
     @POST
