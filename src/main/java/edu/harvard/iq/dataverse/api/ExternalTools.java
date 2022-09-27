@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import java.util.logging.Logger;
