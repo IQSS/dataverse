@@ -3808,6 +3808,17 @@ List permissions a user (based on API Token used) has on a Dataverse collection 
 
 The ``$identifier`` can be a Dataverse collection alias or database id or a dataset persistent ID or database id.
 
+.. note:: Datasets can be selected using persistent identifiers. This is done by passing the constant ``:persistentId`` where the numeric id of the dataset is expected, and then passing the actual persistent id as a query parameter with the name ``persistentId``.
+
+Example: List permissions a user (based on API Token used) has on a dataset whose DOI is *10.5072/FK2/J8SJZB*:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
+
+  curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/admin/permissions/:persistentId?persistentId=$PERSISTENT_IDENTIFIER
+
 Show Role Assignee
 ~~~~~~~~~~~~~~~~~~
 
