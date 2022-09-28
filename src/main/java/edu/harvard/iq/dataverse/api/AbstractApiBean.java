@@ -420,11 +420,11 @@ public abstract class AbstractApiBean {
             } else {
                 throw new WrappedResponse(badWFKey(wfid));
             }
-        } else {
+        } else if (getRequestParameter("token") != null) {
             AuthenticatedUser authUser = getAuthenticatedUserFromSignedUrl();
             if (authUser != null) {
                 return authUser;
-            } 
+            }
         }
         //Just send info about the apiKey - workflow users will learn about invocationId elsewhere
         throw new WrappedResponse(badApiKey(null));
