@@ -43,7 +43,6 @@ public class ExternalToolHandler extends URLTokenUtil {
     private final ExternalTool externalTool;
 
     private String requestMethod;
-    private String toolContext;
 
     /**
      * File level tool
@@ -57,7 +56,6 @@ public class ExternalToolHandler extends URLTokenUtil {
             FileMetadata fileMetadata, String localeCode) {
         super(dataFile, apiToken, fileMetadata, localeCode);
         this.externalTool = externalTool;
-        toolContext = externalTool.getToolUrl();
     }
 
     /**
@@ -223,7 +221,7 @@ public class ExternalToolHandler extends URLTokenUtil {
 
     public String getToolUrlWithQueryParams() {
         String params = ExternalToolHandler.this.handleRequest();
-        return toolContext + params;
+        return externalTool.getToolUrl() + params;
     }
 
     public String getToolUrlForPreviewMode() {
