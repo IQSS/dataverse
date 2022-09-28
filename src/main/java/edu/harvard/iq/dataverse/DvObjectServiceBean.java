@@ -136,7 +136,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
     }
     
     public boolean isGlobalIdLocallyUnique(GlobalId globalId) {
-        return em.createNamedQuery("Dataset.findByIdentifierAuthorityProtocol")
+        return em.createNamedQuery("DvObject.findByIdentifierAuthorityProtocol")
             .setParameter("identifier", globalId.getIdentifier())
             .setParameter("authority", globalId.getAuthority())
             .setParameter("protocol", globalId.getProtocol())
