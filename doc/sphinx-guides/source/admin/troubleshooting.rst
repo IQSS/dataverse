@@ -96,10 +96,8 @@ Sometimes your Dataverse installation fails to deploy, or Payara fails to restar
 
 We don't know what's causing this issue, but here's a known workaround: 
 
-- Stop Payara; 
-
-- Remove the ``generated`` and ``osgi-cache`` directories;
-
+- Stop Payara;
+- Remove the ``generated`` and ``osgi-cache`` directories from the ``domain1`` directory;
 - Start Payara
 
 The shell script below performs the steps above. 
