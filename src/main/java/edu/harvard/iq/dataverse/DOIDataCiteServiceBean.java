@@ -10,11 +10,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpStatus;
+
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 
 
 /**
@@ -22,7 +26,7 @@ import org.apache.commons.httpclient.HttpStatus;
  * @author luopc
  */
 @Stateless
-public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
+public class DOIDataCiteServiceBean extends DOIServiceBean {
 
     private static final Logger logger = Logger.getLogger(DOIDataCiteServiceBean.class.getCanonicalName());
     
@@ -34,7 +38,12 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
     @EJB
     DOIDataCiteRegisterService doiDataCiteRegisterService;
 
-    public DOIDataCiteServiceBean() {
+    @PostConstruct
+    private void init() {
+        String doiProvider = settingsService.getValueForKey(Key.DoiProvider, "");
+        if("DataCite".equals(doiProvider)) {
+            isConfigured=true;
+        }
     }
 
     @Override
@@ -42,14 +51,7 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
         return false;
     }
 
-    @Override
-    public boolean alreadyExists(DvObject dvObject) {
-        if(dvObject==null) {
-            logger.severe("Null DvObject sent to alreadyExists().");
-            return false;
-        }
-        return alreadyExists(dvObject.getGlobalId());
-    }
+
 
     @Override
     public boolean alreadyExists(GlobalId pid) {
@@ -253,6 +255,8 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
         providerInfo.add(providerLink);
         return providerInfo;
     }
+
+    //PID recognition
 
 
 }

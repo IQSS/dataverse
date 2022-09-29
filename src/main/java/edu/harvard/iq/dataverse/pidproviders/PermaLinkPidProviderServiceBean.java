@@ -3,7 +3,9 @@ package edu.harvard.iq.dataverse.pidproviders;
 import edu.harvard.iq.dataverse.AbstractGlobalIdServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import java.lang.StackWalker.StackFrame;
@@ -14,6 +16,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
+import javax.annotation.PostConstruct;
 import javax.ejb.Stateless;
 
 /*PermaLink provider
@@ -32,7 +35,19 @@ public class PermaLinkPidProviderServiceBean extends AbstractGlobalIdServiceBean
 
     public static final String PERMA_PROTOCOL = "perma";
 
-    public static final String PERMA_BASE_URL = System.getProperty("pid.baseurlstring", SystemConfig.getDataverseSiteUrlStatic());
+    //ToDo - handle dataset/file defaults for local system
+    public static final String PERMA_RESOLVER_URL = System.getProperty("pid.baseurlstring", SystemConfig.getDataverseSiteUrlStatic());
+    
+    String authority = null; 
+    
+    @PostConstruct
+    private void init() {
+        if("PERMA".equals(settingsService.getValueForKey(Key.DoiProvider))){
+            authority = settingsService.getValueForKey(Key.Authority);
+            isConfigured=true;
+        };
+        
+    }
     
     @Override
     public boolean alreadyExists(GlobalId globalId) throws Exception {
@@ -81,7 +96,7 @@ public class PermaLinkPidProviderServiceBean extends AbstractGlobalIdServiceBean
     public List<String> getProviderInformation() {
         ArrayList<String> providerInfo = new ArrayList<>();
         providerInfo.add(PERMA_PROTOCOL);
-        providerInfo.add(PERMA_BASE_URL);
+        providerInfo.add(PERMA_RESOLVER_URL);
         return providerInfo;
     }
 
@@ -114,4 +129,40 @@ public class PermaLinkPidProviderServiceBean extends AbstractGlobalIdServiceBean
         return true;
     }
 
+    @Override
+    public GlobalId parsePersistentId(String pidString) {
+        //ToDo - handle local PID resolver for dataset/file
+        if (pidString.startsWith(PERMA_RESOLVER_URL)) {
+            pidString = pidString.replace(PERMA_RESOLVER_URL,
+                    (PERMA_PROTOCOL + ":"));
+        }
+        return super.parsePersistentId(pidString);
+    }
+
+    public GlobalId parsePersistentId(String protocol, String identifierString) {
+        if (!PERMA_PROTOCOL.equals(protocol)) {
+            return null;
+        }
+        String identifier = null;
+        if (authority != null) {
+            if (identifierString.startsWith(authority)) {
+                identifier = identifierString.substring(authority.length());
+            }
+        }
+        identifier = GlobalIdServiceBean.formatIdentifierString(identifier);
+        if (GlobalIdServiceBean.testforNullTerminator(identifier)) {
+            return null;
+        }
+        return new GlobalId(PERMA_PROTOCOL, authority, identifier);
+    }
+    
+    
+    @Override
+    //No slash between authority and identifier
+    public String asString(GlobalId globalId) {
+        if (globalId.getProtocol() == null || globalId.getAuthority() == null || globalId.getIdentifier() == null) {
+            return "";
+        }
+        return globalId.getProtocol() + ":" + globalId.getAuthority() + globalId.getIdentifier();
+    }
 }

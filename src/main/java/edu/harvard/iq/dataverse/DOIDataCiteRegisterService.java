@@ -45,7 +45,7 @@ public class DOIDataCiteRegisterService {
     DataverseServiceBean dataverseService;
 
     @EJB
-    DOIDataCiteServiceBean doiDataCiteServiceBean;
+    AbstractGlobalIdServiceBean doiDataCiteServiceBean;
     
         
     //A singleton since it, and the httpClient in it can be reused.

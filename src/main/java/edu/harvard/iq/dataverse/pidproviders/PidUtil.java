@@ -9,9 +9,13 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.List;
 import java.util.logging.Logger;
+
+import javax.annotation.PostConstruct;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -111,4 +115,34 @@ public class PidUtil {
         }
         return globalId.getAuthority() + "/" + globalId.getIdentifier();
     }
+    
+    static List<GlobalIdServiceBean> providerList = new ArrayList<GlobalIdServiceBean>();
+    
+    public static void addAllToProviderList(List<GlobalIdServiceBean> list) {
+        providerList.addAll(list);
+        logger.info("Now in providerList: " + providerList.size());
+        for (GlobalIdServiceBean pidProvider : providerList) {
+            logger.info(String.join(",", pidProvider.getProviderInformation()));
+        }
+    }
+
+    
+
+    /**
+     * 
+     * @param identifier The string to be parsed
+     * @throws IllegalArgumentException if the passed string cannot be parsed.
+     */
+    public static GlobalId parseAsGlobalID(String identifier) {
+        logger.info("IN parseAsGlobalId: " + providerList.size());
+        for (GlobalIdServiceBean pidProvider : providerList) {
+            logger.info(" Checking " + String.join(",", pidProvider.getProviderInformation()));
+            GlobalId globalId = pidProvider.parsePersistentId(identifier);
+            if (globalId != null) {
+                return globalId;
+            }
+        }
+        throw new IllegalArgumentException("Failed to parse identifier: " + identifier);
+    }
+    
 }

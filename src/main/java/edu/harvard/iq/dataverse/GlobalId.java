@@ -7,7 +7,6 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProviderServiceBean;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 import java.net.MalformedURLException;
@@ -17,7 +16,6 @@ import java.net.URL;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.ejb.EJB;
 
 /**
  *
@@ -25,15 +23,6 @@ import javax.ejb.EJB;
  */
 public class GlobalId implements java.io.Serializable {
     
-    public static final String DOI_PROTOCOL = "doi";
-    public static final String HDL_PROTOCOL = "hdl";
-    public static final String DOI_RESOLVER_URL = "https://doi.org/";
-    public static final String DXDOI_RESOLVER_URL = "https://dx.doi.org/";
-    public static final String HDL_RESOLVER_URL = "https://hdl.handle.net/";
-    public static final String HTTP_DOI_RESOLVER_URL = "http://doi.org/";
-    public static final String HTTP_DXDOI_RESOLVER_URL = "http://dx.doi.org/";
-    public static final String HTTP_HDL_RESOLVER_URL = "http://hdl.handle.net/";
-
     public static Optional<GlobalId> parse(String identifierString) {
         try {
             return Optional.of(new GlobalId(identifierString));
@@ -43,9 +32,6 @@ public class GlobalId implements java.io.Serializable {
     }
     
     private static final Logger logger = Logger.getLogger(GlobalId.class.getName());
-    
-    @EJB
-    SettingsServiceBean settingsService;
 
     /**
      * 
@@ -133,10 +119,10 @@ public class GlobalId implements java.io.Serializable {
             return null;
         }
         try {
-            if (protocol.equals(DOI_PROTOCOL)){
-               url = new URL(DOI_RESOLVER_URL + authority + "/" + identifier); 
-            } else if (protocol.equals(HDL_PROTOCOL)){
-               url = new URL(HDL_RESOLVER_URL + authority + "/" + identifier);  
+            if (protocol.equals(DOIServiceBean.DOI_PROTOCOL)){
+               url = new URL(DOIServiceBean.DOI_RESOLVER_URL + authority + "/" + identifier); 
+            } else if (protocol.equals(HandlenetServiceBean.HDL_PROTOCOL)){
+               url = new URL(HandlenetServiceBean.HDL_RESOLVER_URL + authority + "/" + identifier);  
             }           
         } catch (MalformedURLException ex) {
             logger.log(Level.SEVERE, null, ex);
@@ -177,13 +163,13 @@ public class GlobalId implements java.io.Serializable {
                                                                           // between ':'
                 protocol = identifierString.substring(0, index1); // and '/' and there are characters after '/'
                 //If not in the set of available protocols
-                if (!DOI_PROTOCOL.equals(protocol) && !HDL_PROTOCOL.equals(protocol) && !PermaLinkPidProviderServiceBean.PERMA_PROTOCOL.equals(protocol)) {
+                if (!DOIServiceBean.DOI_PROTOCOL.equals(protocol) && !HandlenetServiceBean.HDL_PROTOCOL.equals(protocol) && !PermaLinkPidProviderServiceBean.PERMA_PROTOCOL.equals(protocol)) {
                     return false;
                 }
                 //Strip any whitespace, ; and ' from authority (should finding them cause a failure instead?)
                 authority = formatIdentifierString(identifierString.substring(index1 + 1, index2));
                 if(testforNullTerminator(authority)) return false;
-                if (protocol.equals(DOI_PROTOCOL)) {
+                if (protocol.equals(DOIServiceBean.DOI_PROTOCOL)) {
                     if (!this.checkDOIAuthority(authority)) {
                         return false;
                     }
@@ -260,28 +246,5 @@ public class GlobalId implements java.io.Serializable {
         Matcher m = p.matcher(pidParam);
 
         return m.matches();
-    }
-
-    /**
-     * Convenience method to get the internal form of a PID string when it may be in
-     * the https:// or http:// form ToDo -refactor class to allow creating a
-     * GlobalID from any form (which assures it has valid syntax) and then have methods to get
-     * the form you want.
-     * 
-     * @param pidUrlString - a string assumed to be a valid PID in some form
-     * @return the internal form as a String
-     */
-    public static String getInternalFormOfPID(String pidUrlString) {
-        String pidString = pidUrlString;
-        if(pidUrlString.startsWith(GlobalId.DOI_RESOLVER_URL)) {
-            pidString = pidUrlString.replace(GlobalId.DOI_RESOLVER_URL, (GlobalId.DOI_PROTOCOL + ":"));
-        } else if(pidUrlString.startsWith(GlobalId.HDL_RESOLVER_URL)) {
-            pidString = pidUrlString.replace(GlobalId.HDL_RESOLVER_URL, (GlobalId.HDL_PROTOCOL + ":"));
-        } else if(pidUrlString.startsWith(GlobalId.HTTP_DOI_RESOLVER_URL)) {
-            pidString = pidUrlString.replace(GlobalId.HTTP_DOI_RESOLVER_URL, (GlobalId.DOI_PROTOCOL + ":"));
-        } else if(pidUrlString.startsWith(GlobalId.HTTP_HDL_RESOLVER_URL)) {
-            pidString = pidUrlString.replace(GlobalId.HTTP_HDL_RESOLVER_URL, (GlobalId.HDL_PROTOCOL + ":"));
-        }
-        return pidString;
     }
 }

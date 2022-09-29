@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse;
 
 import static edu.harvard.iq.dataverse.GlobalIdServiceBean.logger;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
-import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProviderServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 
@@ -142,6 +141,8 @@ public interface GlobalIdServiceBean {
         
         return true;
     }
+
+    String asString(GlobalId globalId);
 }
 
 

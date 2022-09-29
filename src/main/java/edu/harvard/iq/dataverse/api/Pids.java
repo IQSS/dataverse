@@ -38,8 +38,6 @@ import javax.ws.rs.core.Response;
 @Path("pids")
 public class Pids extends AbstractApiBean {
 
-    @Inject PIDHelper pidSvc;
-    
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getPid(@QueryParam("persistentId") String persistentId) {
@@ -55,7 +53,7 @@ public class Pids extends AbstractApiBean {
         String username = System.getProperty("doi.username");
         String password = System.getProperty("doi.password");
         try {
-            GlobalId globalId = pidSvc.parseAsGlobalID(persistentId);
+            GlobalId globalId = PidUtil.parseAsGlobalID(persistentId);
             JsonObjectBuilder result = PidUtil.queryDoi(globalId, baseUrl, username, password);
             return ok(result);
         } catch (NotFoundException ex) {

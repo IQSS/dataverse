@@ -22,7 +22,6 @@ import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
-import java.util.List;
 import java.util.Stack;
 import javax.persistence.EntityManager;
 

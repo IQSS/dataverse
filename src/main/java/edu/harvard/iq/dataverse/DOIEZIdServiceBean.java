@@ -1,11 +1,15 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.ucsb.nceas.ezid.EZIDException;
 import edu.ucsb.nceas.ezid.EZIDService;
 import edu.ucsb.nceas.ezid.EZIDServiceRequest;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 
 /**
@@ -13,7 +17,7 @@ import javax.ejb.Stateless;
  * @author skraffmiller
  */
 @Stateless
-public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
+public class DOIEZIdServiceBean extends DOIServiceBean {
 
     EZIDService ezidService;
     EZIDServiceRequest ezidServiceRequest;
@@ -23,16 +27,20 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
     // get username and password from system properties
     private String USERNAME = "";
     private String PASSWORD = "";
-
     public DOIEZIdServiceBean() {
         logger.log(Level.FINE,"Constructor");
-        baseURLString = System.getProperty("doi.baseurlstring");
-        ezidService = new EZIDService(baseURLString);
-        USERNAME = System.getProperty("doi.username");
-        PASSWORD = System.getProperty("doi.password");
-        logger.log(Level.FINE, "Using baseURLString {0}", baseURLString);
+       logger.log(Level.FINE, "Using baseURLString {0}", baseURLString);
         try {
-            ezidService.login(USERNAME, PASSWORD);
+            String doiProvider = settingsService.getValueForKey(Key.DoiProvider, "");
+            if ("EZID".equals(doiProvider)) {
+                //Guessing these are SYstem.getProperty rather than using settingsService because this is a constructir rather than a @PostConstruct method
+                baseURLString = System.getProperty("doi.baseurlstring");
+                ezidService = new EZIDService(baseURLString);
+                USERNAME = System.getProperty("doi.username");
+                PASSWORD = System.getProperty("doi.password");
+                ezidService.login(USERNAME, PASSWORD);
+                isConfigured = true;
+            }
         } catch (EZIDException e) {
             logger.log(Level.WARNING, "login failed ");
             logger.log(Level.WARNING, "Exception String: {0}", e.toString());

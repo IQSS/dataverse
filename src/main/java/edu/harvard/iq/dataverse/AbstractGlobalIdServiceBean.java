@@ -3,7 +3,10 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 
+import javax.ejb.EJB;
 import javax.inject.Inject;
 import java.util.*;
 import java.util.logging.Level;
@@ -21,12 +24,16 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
 
     @Inject
     DataverseServiceBean dataverseService;
-    @Inject
+    @EJB
+    protected
     SettingsServiceBean settingsService;
     @Inject
+    protected
     DvObjectServiceBean dvObjectService;
     @Inject
     SystemConfig systemConfig;
+
+    protected boolean isConfigured = false;
     
     public static String UNAVAILABLE = ":unav";
 
@@ -109,6 +116,10 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     
     @Override
     public boolean alreadyExists(DvObject dvo) throws Exception {
+        if(dvo==null) {
+            logger.severe("Null DvObject sent to alreadyExists().");
+            return false;
+        }
         return alreadyExists(dvo.getGlobalId());
     }
 
@@ -183,46 +194,96 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         return true;
     }
 
+    /** 
+     *   Parse a Persistent Id and set the protocol, authority, and identifier
+     * 
+     *   Example 1: doi:10.5072/FK2/BYM3IW
+     *       protocol: doi
+     *       authority: 10.5072
+     *       identifier: FK2/BYM3IW
+     * 
+     *   Example 2: hdl:1902.1/111012
+     *       protocol: hdl
+     *       authority: 1902.1
+     *       identifier: 111012
+     *
+     * @param identifierString
+     * @param separator the string that separates the authority from the identifier.
+     * @param destination the global id that will contain the parsed data.
+     * @return {@code destination}, after its fields have been updated, or
+     *         {@code null} if parsing failed.
+     */
     @Override
-    public GlobalId parsePersistentId(String identifierString) {
-        String protocol;
+    public GlobalId parsePersistentId(String fullIdentifierString) {
+        if(!isConfigured) {
+            return null;
+        }
+        int index1 = fullIdentifierString.indexOf(':');
+        if (index1 > 0) { // ':' found with one or more characters before it
+            String protocol = fullIdentifierString.substring(0, index1);
+            return parsePersistentIdentifier(protocol, fullIdentifierString.substring(index1+1));
+        }
+        logger.log(Level.INFO, "Error parsing identifier: {0}: ''<protocol>:'' not found in string", fullIdentifierString);
+        return null;
+    }
+
+    protected GlobalId parsePersistentIdentifier(String protocol, String identifierString) {
         String authority;
         String identifier;
         if (identifierString == null) {
             return null;
         }
-        int index1 = identifierString.indexOf(':');
-        if (index1 > 0) { // ':' found with one or more characters before it
-            int index2 = identifierString.indexOf('/', index1 + 1);
-            if (index2 > 0 && (index2 + 1) < identifierString.length()) { // '/' found with one or more characters
-                                                                          // between ':'
-                protocol = identifierString.substring(0, index1); // and '/' and there are characters after '/'
-                //If not in the set of available protocols
-                if (!DOI_PROTOCOL.equals(protocol) && !HDL_PROTOCOL.equals(protocol) && !PermaLinkPidProviderServiceBean.PERMA_PROTOCOL.equals(protocol)) {
-                    return null;
-                }
-                //Strip any whitespace, ; and ' from authority (should finding them cause a failure instead?)
-                authority = GlobalIdServiceBean.formatIdentifierString(identifierString.substring(index1 + 1, index2));
-                if(GlobalIdServiceBean.testforNullTerminator(authority)) return null;
-                if (protocol.equals(DOI_PROTOCOL)) {
-                    if (!GlobalIdServiceBean.checkDOIAuthority(authority)) {
-                        return null;
-                    }
-                }
-                // Passed all checks
-                //Strip any whitespace, ; and ' from identifier (should finding them cause a failure instead? - Yes!)
-                identifier = GlobalIdServiceBean.formatIdentifierString(identifierString.substring(index2 + 1));
-                if(GlobalIdServiceBean.testforNullTerminator(identifier)) return null;
-            } else {
-                logger.log(Level.INFO, "Error parsing identifier: {0}: '':<authority>/<identifier>'' not found in string", identifierString);
+        int index = identifierString.indexOf('/');
+        if (index > 0 && (index + 1) < identifierString.length()) {
+            // '/' found with one or more characters
+            // before and after it
+            // Strip any whitespace, ; and ' from authority (should finding them cause a
+            // failure instead?)
+            authority = GlobalIdServiceBean.formatIdentifierString(identifierString.substring(0, index));
+            if (GlobalIdServiceBean.testforNullTerminator(authority)) {
+                return null;
+            }
+            identifier = GlobalIdServiceBean.formatIdentifierString(identifierString.substring(index + 1));
+            if (GlobalIdServiceBean.testforNullTerminator(identifier)) {
                 return null;
             }
         } else {
-            logger.log(Level.INFO, "Error parsing identifier: {0}: ''<protocol>:'' not found in string", identifierString);
+            logger.log(Level.INFO, "Error parsing identifier: {0}: '':<authority>/<identifier>'' not found in string",
+                    identifierString);
             return null;
         }
         return new GlobalId(protocol, authority, identifier);
     }
+    
+    /**
+     * Concatenate the parts that make up a Global Identifier.
+     * 
+     * @return the Global Identifier, e.g. "doi:10.12345/67890"
+     */
+    @Override
+    public String asString(GlobalId globalId) {
+        if (globalId.getProtocol() == null || globalId.getAuthority() == null || globalId.getIdentifier() == null) {
+            return "";
+        }
+        return globalId.getProtocol() + ":" + globalId.getAuthority() + "/" + globalId.getIdentifier();
+    }
+    
+    public URL toURL(GlobalId globalId) {
+        URL url = null;
+        if (globalId.getIdentifier() == null){
+            return null;
+        }
+        try {
+            if (globalId.getProtocol().equals(DOIServiceBean.DOI_PROTOCOL)){
+               url = new URL(DOIServiceBean.DOI_RESOLVER_URL + globalId.getAuthority() + "/" + globalId.getIdentifier());
+            } else if (globalId.getProtocol().equals(HandlenetServiceBean.HDL_PROTOCOL)){
+               url = new URL(HandlenetServiceBean.HDL_RESOLVER_URL + globalId.getAuthority() + "/" + globalId.getIdentifier());
+            }           
+        } catch (MalformedURLException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }       
+        return url;
+    }  
     
     @Override
     public String generateDataFileIdentifier(DataFile datafile) {
