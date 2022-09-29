@@ -545,8 +545,8 @@ List of S3 Storage Options
     dataverse.files.<id>.label                   <?>                 **Required** label to be shown in the UI for this storage                   (none)
     dataverse.files.<id>.bucket-name             <?>                 The bucket name. See above.                                                 (none)
     dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                          ``false``
-    dataverse.files.<id>.upload-redirect         ``true``/``false``  Enable direct upload of files added to a dataset  to the S3 store.          ``false``
-    dataverse.files.<id>.api-direct-upload       ``true``/``false``  Enable direct upload of files added to a dataset through API only.          ``false``
+    dataverse.files.<id>.upload-redirect         ``true``/``false``  Enable direct upload of files added to a dataset in the S3 store.           ``false``
+    dataverse.files.<id>.api-direct-upload       ``true``/``false``  Enable direct upload of files added to a dataset via API only.              ``false``
     dataverse.files.<id>.ingestsizelimit         <size in bytes>     Maximum size of directupload files that should be ingested                  (none)
     dataverse.files.<id>.url-expiration-minutes  <?>                 If direct uploads/downloads: time until links expire. Optional.             60
     dataverse.files.<id>.min-part-size           <?>                 Multipart direct uploads will occur for files larger than this. Optional.   ``1024**3``
