@@ -605,7 +605,8 @@ public abstract class StorageIO<T extends DvObject> {
     }
     
     public static boolean isDirectUploadEnabled(String driverId) {
-        return Boolean.parseBoolean(System.getProperty("dataverse.files." + driverId + ".upload-redirect"));
+        return Boolean.parseBoolean(System.getProperty("dataverse.files." + driverId + ".upload-redirect")) ||
+            Boolean.parseBoolean(System.getProperty("dataverse.files." + driverId + ".api-direct-upload"));
     }
     
     //Check that storageIdentifier is consistent with store's config

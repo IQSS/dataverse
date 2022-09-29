@@ -1112,7 +1112,8 @@ public class SystemConfig {
     }
 
 	public boolean directUploadEnabled(DvObjectContainer container) {
-    	return Boolean.getBoolean("dataverse.files." + container.getEffectiveStorageDriverId() + ".upload-redirect");
+        // this method is used in UI only, therfore "dataverse.files." + driverId + ".api-direct-upload" is not used here
+    	return Boolean.parseBoolean(System.getProperty("dataverse.files." + container.getEffectiveStorageDriverId() + ".upload-redirect"));
 	}
 	
 	public String getDataCiteRestApiUrlString() {
