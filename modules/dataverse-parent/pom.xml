@@ -4,7 +4,7 @@
  
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse-parent</artifactId>
-    <version>5.11-qdr</version>
+    <version>5.12-qdr</version>
     <!--version>${revision}</version-->
     <packaging>pom</packaging>
  
@@ -130,7 +130,7 @@
  
     <properties>
         <!-- This is a special Maven property name, do not change! -->
-        <revision>5.11.1-qdr</revision>
+        <revision>5.12-qdr</revision>
     
         <target.java.version>11</target.java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

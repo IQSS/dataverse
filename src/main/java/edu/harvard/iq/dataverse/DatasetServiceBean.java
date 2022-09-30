@@ -822,6 +822,35 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     }
     
+
+    @Asynchronous
+    public void reExportDatasetAsync(Dataset dataset) {
+        exportDataset(dataset, true);
+    }
+
+    public void exportDataset(Dataset dataset, boolean forceReExport) {
+        if (dataset != null) {
+            // Note that the logic for handling a dataset is similar to what is implemented in exportAllDatasets, 
+            // but when only one dataset is exported we do not log in a separate export logging file
+            if (dataset.isReleased() && dataset.getReleasedVersion() != null && !dataset.isDeaccessioned()) {
+
+                // can't trust dataset.getPublicationDate(), no. 
+                Date publicationDate = dataset.getReleasedVersion().getReleaseTime(); // we know this dataset has a non-null released version! Maybe not - SEK 8/19 (We do now! :)
+                if (forceReExport || (publicationDate != null
+                        && (dataset.getLastExportTime() == null
+                        || dataset.getLastExportTime().before(publicationDate)))) {
+                    try {
+                        recordService.exportAllFormatsInNewTransaction(dataset);
+                        logger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalIdString());
+                    } catch (Exception ex) {
+                        logger.info("Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalIdString() + "; " + ex.getMessage());
+                    }
+                }
+            }
+        }
+        
+    }
+
     public String getReminderString(Dataset dataset, boolean canPublishDataset) {
         return getReminderString( dataset, canPublishDataset, false);
     }
@@ -860,6 +889,13 @@ public class DatasetServiceBean implements java.io.Serializable {
             logger.warning("Unable to get reminder string from bundle. Returning empty string.");
             return "";
         }
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public int clearAllExportTimes() {
+        Query clearExportTimes = em.createQuery("UPDATE Dataset SET lastExportTime = NULL");
+        int numRowsUpdated = clearExportTimes.executeUpdate();
+        return numRowsUpdated;
     }
 
     public Dataset setNonDatasetFileAsThumbnail(Dataset dataset, InputStream inputStream) {

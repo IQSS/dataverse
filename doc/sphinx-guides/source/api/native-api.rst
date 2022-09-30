@@ -840,7 +840,9 @@ The fully expanded example above (without environment variables) looks like this
 Export Metadata of a Dataset in Various Formats
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| Export the metadata of the current published version of a dataset in various formats see Note below:
+|CORS| Export the metadata of the current published version of a dataset in various formats.
+
+See also :ref:`batch-exports-through-the-api` and the note below:
 
 .. code-block:: bash
 
