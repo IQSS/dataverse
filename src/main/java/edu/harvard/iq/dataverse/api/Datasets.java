@@ -2451,8 +2451,7 @@ public class Datasets extends AbstractApiBean {
                 fileService,
                 permissionSvc,
                 commandEngine,
-                                                systemConfig,
-                                                licenseSvc);
+                systemConfig);
 
 
         //-------------------
@@ -3387,11 +3386,81 @@ public class Datasets extends AbstractApiBean {
                 this.fileService,
                 this.permissionSvc,
                 this.commandEngine,
-                this.systemConfig,
-                this.licenseSvc
+                this.systemConfig
         );
 
         return addFileHelper.addFiles(jsonData, dataset, authUser);
+
+    }
+
+    /**
+     * Replace multiple Files to an existing Dataset
+     *
+     * @param idSupplied
+     * @param jsonData
+     * @return
+     */
+    @POST
+    @Path("{id}/replaceFiles")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response replaceFilesInDataset(@PathParam("id") String idSupplied,
+                                      @FormDataParam("jsonData") String jsonData) {
+
+        if (!systemConfig.isHTTPUpload()) {
+            return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
+        }
+
+        // -------------------------------------
+        // (1) Get the user from the API key
+        // -------------------------------------
+        User authUser;
+        try {
+            authUser = findUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("file.addreplace.error.auth")
+            );
+        }
+
+        // -------------------------------------
+        // (2) Get the Dataset Id
+        // -------------------------------------
+        Dataset dataset;
+
+        try {
+            dataset = findDatasetOrDie(idSupplied);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+
+        dataset.getLocks().forEach(dl -> {
+            logger.info(dl.toString());
+        });
+
+        //------------------------------------
+        // (2a) Make sure dataset does not have package file
+        // --------------------------------------
+
+        for (DatasetVersion dv : dataset.getVersions()) {
+            if (dv.isHasPackageFile()) {
+                return error(Response.Status.FORBIDDEN,
+                        BundleUtil.getStringFromBundle("file.api.alreadyHasPackageFile")
+                );
+            }
+        }
+
+        DataverseRequest dvRequest = createDataverseRequest(authUser);
+
+        AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(
+                dvRequest,
+                this.ingestService,
+                this.datasetService,
+                this.fileService,
+                this.permissionSvc,
+                this.commandEngine,
+                this.systemConfig
+        );
+
+        return addFileHelper.replaceFiles(jsonData, dataset, authUser);
 
     }
 

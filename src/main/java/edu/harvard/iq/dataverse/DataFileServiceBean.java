@@ -1544,6 +1544,10 @@ public class DataFileServiceBean implements java.io.Serializable {
             throw new IOException("Attempted to permanently delete a physical file still associated with an existing DvObject "
                     + "(id: " + dataFileId + ", location: " + storageLocation);
         }
+        if(storageLocation == null || storageLocation.isBlank()) {
+            throw new IOException("Attempted to delete a physical file with no location "
+                    + "(id: " + dataFileId + ", location: " + storageLocation);
+        }
         StorageIO<DvObject> directStorageAccess = DataAccess.getDirectStorageIO(storageLocation);
         directStorageAccess.delete();
     }

@@ -256,8 +256,7 @@ public class Files extends AbstractApiBean {
                                                 this.fileService,
                                                 this.permissionSvc,
                                                 this.commandEngine,
-                                                this.systemConfig,
-                                                this.licenseSvc);
+                                                this.systemConfig);
 
         // (5) Run "runReplaceFileByDatasetId"
         long fileToReplaceId = 0;
