@@ -231,7 +231,6 @@ public class Files extends AbstractApiBean {
         if (null == contentDispositionHeader) {
             if (optionalFileParams.hasStorageIdentifier()) {
                 newStorageIdentifier = optionalFileParams.getStorageIdentifier();
-                // ToDo - check that storageIdentifier is valid
                 if (optionalFileParams.hasFileName()) {
                     newFilename = optionalFileParams.getFileName();
                     if (optionalFileParams.hasMimetype()) {
