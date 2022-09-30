@@ -2067,10 +2067,9 @@ public class AddReplaceFileHelper{
                             }
 
                             msgt("ADD!  = " + newFilename);
-                            if (!hasError()) {
-                                runAddFileByDataset(dataset, newFilename, newFileContentType, newStorageIdentifier,
-                                        null, optionalFileParams, true);
-                            }
+
+                            runAddFileByDataset(dataset, newFilename, newFileContentType, newStorageIdentifier, null,
+                                    optionalFileParams, true);
                             if (hasError()) {
                                 JsonObjectBuilder fileoutput = Json.createObjectBuilder()
                                         .add("storageIdentifier", newStorageIdentifier)
@@ -2176,9 +2175,10 @@ public class AddReplaceFileHelper{
      * @return
      */
     
-    public Response replaceFiles(String jsonData, Dataset dataset, User authUser) {
+    public Response replaceFiles(String jsonData, Dataset ds, User authUser) {
         msgt("(replaceFilesInDataset) jsonData: " + jsonData.toString());
 
+        this.dataset = ds;
         JsonArrayBuilder jarr = Json.createArrayBuilder();
 
         JsonArray filesJson = null;
@@ -2231,22 +2231,12 @@ public class AddReplaceFileHelper{
                             }
 
                             msgt("REPLACE!  = " + newFilename);
-                            if (!hasError()) {
-                                if (forceReplace){
-                                    runForceReplaceFile(fileToReplaceId,
-                                                            newFilename,
-                                                            newFileContentType,
-                                                            newStorageIdentifier,
-                                                            null,
-                                                            optionalFileParams, true);
-                                }else{
-                                    runReplaceFile(fileToReplaceId,
-                                                            newFilename,
-                                                            newFileContentType,
-                                                            newStorageIdentifier,
-                                                            null,
-                                                            optionalFileParams, true);
-                                }
+                            if (forceReplace) {
+                                runForceReplaceFile(fileToReplaceId, newFilename, newFileContentType,
+                                        newStorageIdentifier, null, optionalFileParams, true);
+                            } else {
+                                runReplaceFile(fileToReplaceId, newFilename, newFileContentType, newStorageIdentifier,
+                                        null, optionalFileParams, true);
                             }
                             if (hasError()) {
                                 JsonObjectBuilder fileoutput = Json.createObjectBuilder()
