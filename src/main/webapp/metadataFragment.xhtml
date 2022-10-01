@@ -1,3 +1,4 @@
+
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
@@ -262,6 +263,11 @@
                                             <ui:fragment rendered="#{!dsf.required and dsf.hasRequiredChildren}">
                                                 <p class="help-block">
                                                     <h:outputText value="#{bundle.conditionalRequiredMsg}"/>
+                                                </p>
+                                            </ui:fragment>
+                                            <ui:fragment rendered="#{dsf.datasetFieldType.name == 'keyword'}">
+                                                <p class="help-block">
+                                                    <h:outputText value="#{bundle.vocabularyFaqMsg}" escape="false"/>
                                                 </p>
                                             </ui:fragment>
                                             <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="compoundValue" varStatus="valCount">
