@@ -54,15 +54,18 @@ public class DatasetField implements Serializable {
                                     o2.getDatasetFieldType().getDisplayOrder() );
     }};
 
-    public static DatasetField createNewEmptyDatasetField(DatasetFieldType dsfType, Object dsv) {
+    public static DatasetField createNewEmptyDatasetField(DatasetFieldType dsfType, DatasetVersion dsv) {
         
         DatasetField dsfv = createNewEmptyDatasetField(dsfType);
-        //TODO - a better way to handle this?
-        if (dsv.getClass().getName().equals("edu.harvard.iq.dataverse.DatasetVersion")){
-                   dsfv.setDatasetVersion((DatasetVersion)dsv); 
-        } else {
-            dsfv.setTemplate((Template)dsv);
-        }
+        dsfv.setDatasetVersion(dsv);
+
+        return dsfv;
+    }
+
+    public static DatasetField createNewEmptyDatasetField(DatasetFieldType dsfType, Template dsv) {
+        
+        DatasetField dsfv = createNewEmptyDatasetField(dsfType);
+        dsfv.setTemplate(dsv);
 
         return dsfv;
     }
