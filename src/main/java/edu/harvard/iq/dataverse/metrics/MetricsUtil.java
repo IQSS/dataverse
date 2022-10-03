@@ -227,7 +227,9 @@ public class MetricsUtil {
                 JsonObjectBuilder job = Json.createObjectBuilder();
                 job.add(MetricsUtil.DATE, date);
                 job.add(ID, id);
-                job.add(PID, pids.get(id));
+                if(pids.get(id)!=null) {
+                    job.add(PID, pids.get(id));
+                }
                 job.add(COUNT, totals.get(id));
                 jab.add(job);
             }

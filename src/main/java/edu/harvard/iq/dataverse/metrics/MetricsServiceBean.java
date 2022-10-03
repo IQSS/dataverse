@@ -513,7 +513,9 @@ public class MetricsServiceBean implements Serializable {
             for (Object[] result : results) {
                 JsonObjectBuilder job = Json.createObjectBuilder();
                 job.add(MetricsUtil.ID, (int) result[0]);
-                job.add(MetricsUtil.PID, (String) result[1]);
+                if(result[1]!=null) {
+                    job.add(MetricsUtil.PID, (String) result[1]);
+                }
                 job.add(MetricsUtil.COUNT, (long) result[2]);
                 jab.add(job);
             }
