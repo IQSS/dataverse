@@ -5,7 +5,8 @@
       xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:jsf="http://xmlns.jcp.org/jsf">
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
     <h:head>
     </h:head>
 
@@ -240,6 +241,17 @@
                                         <p:inputText id="fileFieldFileTags" styleClass="form-control" value="#{AdvancedSearchPage.fileFieldFileTags}"/>
                                     </div>
                                 </div>
+                                <div class="form-group">
+                                    <label for="advancedSearchForm:fileFieldFullText" class="col-sm-4 control-label">
+                                        #{bundle['advanced.search.files.fullText']}
+                                        <span data-toggle="tooltip" data-placement="auto right" 
+                                              class="glyphicon glyphicon-question-sign tooltip-icon" data-original-title="#{bundle['advanced.search.files.fullText.tip']}"></span>
+                                    </label>
+                                    <div class="col-sm-6">
+                                        <p:inputText id="fileFieldFullText" styleClass="form-control" value="#{AdvancedSearchPage.fileFieldFullText}"/>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
 

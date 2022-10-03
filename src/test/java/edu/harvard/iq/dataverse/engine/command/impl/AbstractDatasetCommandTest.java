@@ -50,7 +50,7 @@ public class AbstractDatasetCommandTest {
         assertTrue( Math.abs(now-instance.getTimestamp().getTime()) < 20 ); // 20 milliseconds is equal enough.
     }
 
-    public class AbstractDatasetCommandImpl extends AbstractDatasetCommand {
+    public class AbstractDatasetCommandImpl extends AbstractDatasetCommand<Object> {
 
         public AbstractDatasetCommandImpl(DataverseRequest aRequest, Dataset aDataset, Dataverse parent) {
             super(aRequest, aDataset, parent);

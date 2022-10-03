@@ -105,9 +105,6 @@ import java.io.OutputStream;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.rolesToJson;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
-import java.math.BigDecimal;
-
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -639,7 +636,7 @@ public class Admin extends AbstractApiBean {
 	@PUT
 	@Path("authenticatedUsers/id/{id}/convertRemoteToBuiltIn")
 	public Response convertOAuthUserToBuiltin(@PathParam("id") Long id, String newEmailAddress) {
-                try {
+        try {
 			AuthenticatedUser user = findAuthenticatedUserOrDie();
 			if (!user.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
@@ -649,12 +646,11 @@ public class Admin extends AbstractApiBean {
 		}
 		try {
 			BuiltinUser builtinUser = authSvc.convertRemoteToBuiltIn(id, newEmailAddress);
-                        //AuthenticatedUser authUser = authService.getAuthenticatedUser(aUser.getUserName());
 			if (builtinUser == null) {
 				return error(Response.Status.BAD_REQUEST, "User id " + id
 						+ " could not be converted from remote to BuiltIn. An Exception was not thrown.");
 			}
-                        AuthenticatedUser authUser = authSvc.getAuthenticatedUser(builtinUser.getUserName());
+            AuthenticatedUser authUser = authSvc.getAuthenticatedUser(builtinUser.getUserName());
 			JsonObjectBuilder output = Json.createObjectBuilder();
 			output.add("email", authUser.getEmail());
 			output.add("username", builtinUser.getUserName());
@@ -1522,8 +1518,8 @@ public class Admin extends AbstractApiBean {
 	}
 
 	@GET
-	@Path("/registerDataFileAll")
-	public Response registerDataFileAll() {
+	@Path("/registerDataFileAll/{num}")
+	public Response registerDataFileAll(@PathParam("num") int num) {
 		Integer count = fileService.findAll().size();
 		Integer successes = 0;
 		Integer alreadyRegistered = 0;
@@ -1532,6 +1528,9 @@ public class Admin extends AbstractApiBean {
 		logger.info("Starting to register: analyzing " + count + " files. " + new Date());
 		logger.info("Only unregistered, published files will be registered.");
 		for (DataFile df : fileService.findAll()) {
+			if (released.intValue() > num) {
+				break;
+			}	
 			try {
 				if ((df.getIdentifier() == null || df.getIdentifier().isEmpty())) {
 					if (df.isReleased()) {
@@ -1805,31 +1804,44 @@ public class Admin extends AbstractApiBean {
 
     }
 
-    @GET
-    @Path("/submitDataVersionToArchive/{id}/{version}")
-    public Response submitDatasetVersionToArchive(@PathParam("id") String dsid, @PathParam("version") String versionNumber) {
+    @POST
+    @Path("/submitDatasetVersionToArchive/{id}/{version}")
+    public Response submitDatasetVersionToArchive(@PathParam("id") String dsid,
+            @PathParam("version") String versionNumber) {
 
         try {
             AuthenticatedUser au = findAuthenticatedUserOrDie();
-			// Note - the user is being set in the session so it becomes part of the
-			// DataverseRequest and is sent to the back-end command where it is used to get
-			// the API Token which is then used to retrieve files (e.g. via S3 direct
-			// downloads) to create the Bag
-            session.setUser(au); // TODO: Stop using session. Use createDataverseRequest instead.
+
             Dataset ds = findDatasetOrDie(dsid);
 
             DatasetVersion dv = datasetversionService.findByFriendlyVersionNumber(ds.getId(), versionNumber);
             if (dv.getArchivalCopyLocation() == null) {
                 String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
-                AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), dv);
+                // Note - the user is being sent via the createDataverseRequest(au) call to the
+                // back-end command where it is used to get the API Token which is
+                // then used to retrieve files (e.g. via S3 direct downloads) to create the Bag
+                AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className,
+                        createDataverseRequest(au), dv);
+                // createSubmitToArchiveCommand() tries to find and instantiate an non-abstract
+                // implementation of AbstractSubmitToArchiveCommand based on the provided
+                // className. If a class with that name isn't found (or can't be instatiated), it
+                // will return null
                 if (cmd != null) {
+                    if(ArchiverUtil.onlySingleVersionArchiving(cmd.getClass(), settingsService)) {
+                        for (DatasetVersion version : ds.getVersions()) {
+                            if ((dv != version) && version.getArchivalCopyLocation() != null) {
+                                return error(Status.CONFLICT, "Dataset already archived.");
+                            }
+                        } 
+                    }
                     new Thread(new Runnable() {
                         public void run() {
                             try {
                                 DatasetVersion dv = commandEngine.submit(cmd);
-                                if (dv.getArchivalCopyLocation() != null) {
-                                    logger.info("DatasetVersion id=" + ds.getGlobalId().toString() + " v" + versionNumber + " submitted to Archive at: "
-                                            + dv.getArchivalCopyLocation());
+                                if (!dv.getArchivalCopyLocationStatus().equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE)) {
+                                    logger.info(
+                                            "DatasetVersion id=" + ds.getGlobalId().toString() + " v" + versionNumber
+                                                    + " submitted to Archive, status: " + dv.getArchivalCopyLocationStatus());
                                 } else {
                                     logger.severe("Error submitting version due to conflict/error at Archive");
                                 }
@@ -1838,13 +1850,105 @@ public class Admin extends AbstractApiBean {
                             }
                         }
                     }).start();
-                    return ok("Archive submission using " + cmd.getClass().getCanonicalName() + " started. Processing can take significant time for large datasets. View log and/or check archive for results.");
+                    return ok("Archive submission using " + cmd.getClass().getCanonicalName()
+                            + " started. Processing can take significant time for large datasets and requires that the user have permission to publish the dataset. View log and/or check archive for results.");
                 } else {
                     logger.log(Level.SEVERE, "Could not find Archiver class: " + className);
                     return error(Status.INTERNAL_SERVER_ERROR, "Could not find Archiver class: " + className);
                 }
             } else {
-                return error(Status.BAD_REQUEST, "Version already archived at: " + dv.getArchivalCopyLocation());
+                return error(Status.BAD_REQUEST, "Version was already submitted for archiving.");
+            }
+        } catch (WrappedResponse e1) {
+            return error(Status.UNAUTHORIZED, "api key required");
+        }
+    }
+
+    
+    /**
+     * Iteratively archives all unarchived dataset versions
+     * @param
+     * listonly - don't archive, just list unarchived versions
+     * limit - max number to process
+     * lastestonly - only archive the latest versions
+     * @return
+     */
+    @POST
+    @Path("/archiveAllUnarchivedDatasetVersions")
+    public Response archiveAllUnarchivedDatasetVersions(@QueryParam("listonly") boolean listonly, @QueryParam("limit") Integer limit, @QueryParam("latestonly") boolean latestonly) {
+
+        try {
+            AuthenticatedUser au = findAuthenticatedUserOrDie();
+
+            List<DatasetVersion> dsl = datasetversionService.getUnarchivedDatasetVersions();
+            if (dsl != null) {
+                if (listonly) {
+                    JsonArrayBuilder jab = Json.createArrayBuilder();
+                    logger.fine("Unarchived versions found: ");
+                    int current = 0;
+                    for (DatasetVersion dv : dsl) {
+                        if (limit != null && current >= limit) {
+                            break;
+                        }
+                        if (!latestonly || dv.equals(dv.getDataset().getLatestVersionForCopy())) {
+                            jab.add(dv.getDataset().getGlobalId().toString() + ", v" + dv.getFriendlyVersionNumber());
+                            logger.fine("    " + dv.getDataset().getGlobalId().toString() + ", v" + dv.getFriendlyVersionNumber());
+                            current++;
+                        }
+                    }
+                    return ok(jab); 
+                }
+                String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
+                // Note - the user is being sent via the createDataverseRequest(au) call to the
+                // back-end command where it is used to get the API Token which is
+                // then used to retrieve files (e.g. via S3 direct downloads) to create the Bag
+                final DataverseRequest request = createDataverseRequest(au);
+                // createSubmitToArchiveCommand() tries to find and instantiate an non-abstract
+                // implementation of AbstractSubmitToArchiveCommand based on the provided
+                // className. If a class with that name isn't found (or can't be instatiated, it
+                // will return null
+                AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, request, dsl.get(0));
+                if (cmd != null) {
+                    //Found an archiver to use
+                    new Thread(new Runnable() {
+                        public void run() {
+                            int total = dsl.size();
+                            int successes = 0;
+                            int failures = 0;
+                            for (DatasetVersion dv : dsl) {
+                                if (limit != null && (successes + failures) >= limit) {
+                                    break;
+                                }
+                                if (!latestonly || dv.equals(dv.getDataset().getLatestVersionForCopy())) {
+                                    try {
+                                        AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, request, dv);
+
+                                        dv = commandEngine.submit(cmd);
+                                        if (!dv.getArchivalCopyLocationStatus().equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE)) {
+                                            successes++;
+                                            logger.info("DatasetVersion id=" + dv.getDataset().getGlobalId().toString() + " v" + dv.getFriendlyVersionNumber() + " submitted to Archive, status: "
+                                                    + dv.getArchivalCopyLocationStatus());
+                                        } else {
+                                            failures++;
+                                            logger.severe("Error submitting version due to conflict/error at Archive for " + dv.getDataset().getGlobalId().toString() + " v" + dv.getFriendlyVersionNumber());
+                                        }
+                                    } catch (CommandException ex) {
+                                        failures++;
+                                        logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
+                                    }
+                                }
+                                logger.fine(successes + failures + " of " + total + " archive submissions complete");
+                            }
+                            logger.info("Archiving complete: " + successes + " Successes, " + failures + " Failures. See prior log messages for details.");
+                        }
+                    }).start();
+                    return ok("Starting to archive all unarchived published dataset versions using " + cmd.getClass().getCanonicalName() + ". Processing can take significant time for large datasets/ large numbers of dataset versions  and requires that the user have permission to publish the dataset(s). View log and/or check archive for results.");
+                } else {
+                    logger.log(Level.SEVERE, "Could not find Archiver class: " + className);
+                    return error(Status.INTERNAL_SERVER_ERROR, "Could not find Archiver class: " + className);
+                }
+            } else {
+                return error(Status.BAD_REQUEST, "No unarchived published dataset versions found");
             }
         } catch (WrappedResponse e1) {
             return error(Status.UNAUTHORIZED, "api key required");

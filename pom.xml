@@ -6,7 +6,7 @@
     <parent>
         <groupId>edu.harvard.iq</groupId>
         <artifactId>dataverse-parent</artifactId>
-        <version>${revision}</version>
+        <version>5.12-qdr</version>
         <relativePath>modules/dataverse-parent</relativePath>
     </parent>
     
@@ -24,7 +24,7 @@
         <jhove.version>1.20.1</jhove.version>
         <jacoco.version>0.8.7</jacoco.version>
         <poi.version>5.2.1</poi.version>
-        <tika.version>2.3.0</tika.version>
+        <tika.version>2.4.1</tika.version>
     </properties>
     
     <!-- Versions of dependencies used both directly and transitive are managed here.
@@ -38,6 +38,12 @@
                 <groupId>org.apache.abdera</groupId>
                 <artifactId>abdera-core</artifactId>
                 <version>1.1.3</version>
+                <exclusions>
+                  <exclusion>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                    <artifactId>geronimo-stax-api_1.0_spec</artifactId>
+                  </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.abdera</groupId>
@@ -52,7 +58,7 @@
     -->
     <!-- TODO: Housekeeping is utterly needed. -->
     <dependencies>
-    
+
         <!-- This dependency ensures the lib is on the classpath. That way, anything coming from
              SLF4J should flow through our usual ways of using java.util.logging.
              (Which makes it also configurable using those mechanisms.) No direct use intended. -->
@@ -112,12 +118,12 @@
         <dependency>
           <groupId>com.apicatalog</groupId>
           <artifactId>titanium-json-ld</artifactId>
-          <version>0.8.6</version>
+          <version>1.3.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.2.4</version>
+            <version>2.8.9</version>
             <scope>compile</scope>
         </dependency>
         <!-- Should be refactored and moved to transitive section above once on Java EE 8 (makes WAR smaller) -->
@@ -142,7 +148,7 @@
         <dependency>
             <groupId>org.mindrot</groupId>
             <artifactId>jbcrypt</artifactId>
-            <version>0.3m</version>
+            <version>0.4</version>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -249,7 +255,7 @@
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-solrj</artifactId>
-            <version>8.11.1</version>
+            <version>8.11.2</version>
         </dependency>
         <dependency>
             <groupId>colt</groupId>
@@ -326,7 +332,7 @@
         <dependency>
             <groupId>com.github.jai-imageio</groupId>
             <artifactId>jai-imageio-core</artifactId>
-            <version>1.3.1</version>
+            <version>1.4.0</version>
         </dependency>
         <dependency>
             <groupId>org.ocpsoft.rewrite</groupId>
@@ -347,7 +353,7 @@
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>1.14.2</version>
+            <version>1.15.3</version>
         </dependency>
         <dependency>
             <groupId>io.searchbox</groupId>
@@ -357,7 +363,7 @@
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.9</version>
+            <version>1.15</version>
         </dependency>
         <!-- JavaSwift/JOSS: for accessing OpenStack cloud storage -->
         <dependency>
@@ -380,7 +386,7 @@
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>oauth2-oidc-sdk</artifactId>
-            <version>9.9.1</version>
+            <version>9.41.1</version>
         </dependency>
         <!-- EXPERIMENTAL: -->
         <!-- lyncode xoai OAI-PMH implementation: -->
@@ -397,6 +403,16 @@
             <groupId>com.lyncode</groupId>
             <artifactId>xoai-common</artifactId>
             <version>4.1.0-header-patch</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.xml.stream</groupId>
+                    <artifactId>stax-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>stax</groupId>
+                    <artifactId>stax-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.lyncode</groupId>
@@ -433,7 +449,7 @@
         <dependency>
             <groupId>com.google.auto.service</groupId>
             <artifactId>auto-service</artifactId>
-            <version>1.0-rc2</version>
+            <version>1.0-rc6</version>
             <optional>true</optional>
             <type>jar</type>
         </dependency>
@@ -463,7 +479,7 @@
         <dependency>
             <groupId>org.duracloud</groupId>
             <artifactId>common</artifactId>
-            <version>7.1.0</version>
+            <version>7.1.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -478,7 +494,7 @@
         <dependency>
             <groupId>org.duracloud</groupId>
             <artifactId>storeclient</artifactId>
-            <version>7.1.0</version>
+            <version>7.1.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -512,11 +528,28 @@
             <version>1.9.1</version>
         </dependency>
         <dependency>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-core</artifactId>
+            <version>2.6.2</version>
+        </dependency>
+        <dependency>
           <groupId>com.google.cloud</groupId>
           <artifactId>google-cloud-storage</artifactId>
           <!-- no version here as managed in <dependencyManagement> of parent for convergence! -->
         </dependency>
-        
+        <!-- JWT support, currently in DRSSubmitToArchiveCommand-->
+        <!-- https://mvnrepository.com/artifact/com.auth0/java-jwt -->
+        <dependency>
+          <groupId>com.auth0</groupId>
+          <artifactId>java-jwt</artifactId>
+          <version>3.19.1</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/io.github.erdtman/java-json-canonicalization -->
+        <dependency>
+          <groupId>io.github.erdtman</groupId>
+          <artifactId>java-json-canonicalization</artifactId>
+          <version>1.1</version>
+        </dependency>
         
         <!-- TESTING DEPENDENCIES -->
         <dependency>
@@ -601,9 +634,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.microbean</groupId>
-            <artifactId>microbean-microprofile-config</artifactId>
-            <version>${microbean-mpconfig.version}</version>
+            <groupId>io.smallrye.config</groupId>
+            <artifactId>smallrye-config</artifactId>
+            <version>${smallrye-mpconfig.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -641,8 +674,15 @@
                     <include>**/*.xml</include>
                     <include>**/firstNames/*.*</include>
                     <include>**/*.xsl</include>
-                    <include>**/*.properties</include>
                     <include>**/services/*</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <!-- Filter files matching here for Maven properties and replace -->
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/*.properties</include>
                 </includes>
             </resource>
         </resources>
@@ -768,7 +808,7 @@
             <id>tc</id>
             <properties>
                 <skipUnitTests>true</skipUnitTests>
-                <postgresql.server.version>9.6</postgresql.server.version>
+                <postgresql.server.version>13</postgresql.server.version>
             </properties>
             <build>
                 <plugins>

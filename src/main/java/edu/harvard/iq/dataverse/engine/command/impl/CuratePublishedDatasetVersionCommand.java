@@ -137,7 +137,11 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
                 cat.getFileMetadatas().remove(draftFmd);
             }
         }
-
+        if(logger.isLoggable(Level.FINE)) {
+            for(FileMetadata fmd: updateVersion.getFileMetadatas()) {
+                logger.fine("Id: " + fmd.getId() + " label: " + fmd.getLabel());
+            }
+        }
         // Update modification time on the published version and the dataset
         updateVersion.setLastUpdateTime(getTimestamp());
         tempDataset.setModificationTime(getTimestamp());

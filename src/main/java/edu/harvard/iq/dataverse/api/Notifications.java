@@ -71,7 +71,7 @@ public class Notifications extends AbstractApiBean {
             Object objectOfNotification =  mailService.getObjectOfNotification(notification);
             if (objectOfNotification != null){
                 String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, objectOfNotification);
-                String messageText = mailService.getMessageTextBasedOnNotification(notification, objectOfNotification, null, notification.getRequestor());
+                String messageText = mailService.getMessageTextBasedOnNotification(notification, objectOfNotification, null, notification.getRequestor(), false);
                 notificationObjectBuilder.add("subjectText", subjectText);
                 notificationObjectBuilder.add("messageText", messageText);
             }

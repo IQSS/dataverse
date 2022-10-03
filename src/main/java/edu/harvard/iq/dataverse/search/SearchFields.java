@@ -206,6 +206,7 @@ public class SearchFields {
      * A dataverse, a dataset, or a file.
      */
     public static final String TYPE = "dvObjectType";
+    public static final String METADATA_TYPES = "metadata_type_ss";
     public static final String NAME_SORT = "nameSort";
     // PUBLICATION_YEAR used to be called PUBLICATION_DATE.
     public static final String PUBLICATION_YEAR = "publicationDate";
@@ -215,6 +216,7 @@ public class SearchFields {
     public static final String DEFINITION_POINT = "definitionPointDocId";
     public static final String DEFINITION_POINT_DVOBJECT_ID = "definitionPointDvObjectId";
     public static final String DISCOVERABLE_BY = "discoverableBy";
+    public static final String FULL_TEXT_SEARCHABLE_BY = "fullTextSearchableBy";
 
     /**
      * i.e. "Unpublished", "Draft" (multivalued)
@@ -264,7 +266,7 @@ public class SearchFields {
     public static final String VARIABLE_NOTES = "variableNotes";
 
 
-    public static final String FULL_TEXT = "_text_";
+	public static final String FULL_TEXT = "fulltext";
     public static final String EMBARGO_END_DATE = "embargoEndDate";
 
 }

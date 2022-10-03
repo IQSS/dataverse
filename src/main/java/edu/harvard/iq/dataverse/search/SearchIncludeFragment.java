@@ -23,6 +23,8 @@ import edu.harvard.iq.dataverse.ThumbnailServiceWrapper;
 import edu.harvard.iq.dataverse.WidgetWrapper;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,6 +34,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -42,8 +45,6 @@ import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 
-
-//@ViewScoped
 @RequestScoped
 @Named("SearchIncludeFragment")
 public class SearchIncludeFragment implements java.io.Serializable {
@@ -143,6 +144,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     private String adjustFacetName = null; 
     private int adjustFacetNumber = 0; 
     /**
+     * @throws UnsupportedEncodingException 
      * @todo:
      *
      * better style and icons for facets
@@ -168,7 +170,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
      *
      * see also https://trello.com/c/jmry3BJR/28-browse-dataverses
      */
-    public String searchRedirect(String dataverseRedirectPage, Dataverse dataverseIn) {
+    public String searchRedirect(String dataverseRedirectPage, Dataverse dataverseIn) throws UnsupportedEncodingException {
         /**
          * These are our decided-upon search/browse rules, the way we expect
          * users to search/browse and how we want the app behave:
@@ -193,7 +195,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
          * 5. Someday the default sort order for browse mode will be by "release
          * date" (newest first) but that functionality is not yet available in
          * the system ( see https://redmine.hmdc.harvard.edu/issues/3628 and
-         * 
          * https://redmine.hmdc.harvard.edu/issues/3629 ) so for now the default
          * sort order for browse mode will by alphabetical (sort by name,
          * ascending). The default sort order for search mode will be by
@@ -209,7 +210,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
         String qParam = "";
         if (query != null) {
-            qParam = "&q=" + query;
+            qParam = "&q=" + URLEncoder.encode(query, "UTF-8");
         }
 
         return widgetWrapper.wrapURL(dataverseRedirectPage + "?faces-redirect=true&q=" + qParam + optionalDataverseScope);
@@ -480,7 +481,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     }
                 }
             }
-                        
+            
             dataversePage.setQuery(query);
             dataversePage.setFacetCategoryList(facetCategoryList);
             dataversePage.setFilterQueries(filterQueriesFinal);
@@ -1150,9 +1151,20 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 friendlyNames.add(key);
             }
         }
+
         String noLeadingQuote = value.replaceAll("^\"", "");
         String noTrailingQuote = noLeadingQuote.replaceAll("\"$", "");
         String valueWithoutQuotes = noTrailingQuote;
+
+        if (key.equals(SearchFields.METADATA_TYPES) && getDataverse() != null && getDataverse().getMetadataBlockFacets() != null) {
+            Optional<String> friendlyName = getDataverse().getMetadataBlockFacets().stream().filter(block -> block.getMetadataBlock().getName().equals(valueWithoutQuotes)).findFirst().map(block -> block.getMetadataBlock().getLocaleDisplayFacet());
+            logger.fine(String.format("action=getFriendlyNamesFromFilterQuery key=%s value=%s friendlyName=%s", key, value, friendlyName));
+            if(friendlyName.isPresent()) {
+                friendlyNames.add(friendlyName.get());
+                return friendlyNames;
+            }
+        }
+
         friendlyNames.add(valueWithoutQuotes);
         return friendlyNames;
     }

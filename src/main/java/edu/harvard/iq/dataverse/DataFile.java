@@ -180,7 +180,7 @@ public class DataFile extends DvObject implements Comparable {
     @OneToMany(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DataTable> dataTables;
     
-    @OneToMany(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToMany(mappedBy = "dataFile", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<AuxiliaryFile> auxiliaryFiles;
    
     @OneToMany(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
@@ -605,7 +605,11 @@ public class DataFile extends DvObject implements Comparable {
      * @return 
      */
     public String getFriendlySize() {
-        return FileSizeChecker.bytesToHumanReadable(filesize);
+        if (filesize != null) {
+            return FileSizeChecker.bytesToHumanReadable(filesize);
+        } else {
+            return BundleUtil.getStringFromBundle("file.sizeNotAvailable");
+        }
     }
 
     public boolean isRestricted() {

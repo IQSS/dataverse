@@ -23,7 +23,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col-sm-8 small" jsf:rendered="#{!widgetView}">
-                        <p>
+                    <p class='footertext'>
                             <h:outputText value="#{settingsWrapper.footerCopyrightAndYear}#{settingsWrapper.get(':FooterCopyright')}" escape="false"/> <ui:fragment rendered="#{!empty settingsWrapper.get(':ApplicationPrivacyPolicyUrl')}">&#160;|&#160; <h:outputLink value="#{settingsWrapper.get(':ApplicationPrivacyPolicyUrl')}" target="_blank" rel="noopener">#{bundle['footer.privacyPolicy']}</h:outputLink></ui:fragment>
                         </p>
                     </div>
@@ -35,7 +35,8 @@
                                 </o:param>
                             </h:outputFormat>
                             <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
-                                <h:outputLink styleClass="margin-sides highlightBold" value="/loginpage.xhtml?#{loginRedirectPage}" target="_blank" rel="noopener" title="#{bundle['footer.widget.login']} #{settingsWrapper.rootDataverse.displayName}">
+                                <h:outputLink styleClass="margin-sides highlightBold" value="/Shibboleth.sso/Login" target="_blank" rel="noopener" title="#{bundle['footer.widget.login']} #{settingsWrapper.rootDataverse.displayName}">
+                                        <f:param name="target" value="#{request.contextPath.concat('/shib.xhtml').concat(navigationWrapper.redirectPage)}" />
                                     #{bundle.login}
                                 </h:outputLink>
                             </ui:fragment>
@@ -45,12 +46,12 @@
                         <div class="poweredbylogo">
                             <span>#{bundle['footer.poweredby']}</span>
                             <a href="http://dataverse.org/" title="#{bundle['footer.dataverseProject']}" target="_blank" rel="noopener"><img src="/resources/images/dataverse_project_logo.svg" width="118" height="40" onerror="this.src='/resources/images/dataverseproject_logo.png'" alt="#{of:format1(bundle['alt.logo'], bundle['footer.dataverseProject'])}"/></a>
-                            <h:outputText class="version" value="v. #{settingsWrapper.appVersionWithBuildNumber}" rendered="#{!widgetView}"/>
+                        <h:outputText class="version" value="v. #{settingsWrapper.appVersionWithBuildNumber}" rendered="#{!widgetView}"/>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    <o:resourceInclude path="/CustomizationFilesServlet?customFileType=footer" rendered="#{!widgetView}"/>
+        <o:resourceInclude path="/CustomizationFilesServlet?customFileType=footer" rendered="#{!widgetView}"/>
     </footer>
 </ui:composition>

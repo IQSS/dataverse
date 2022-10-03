@@ -58,7 +58,6 @@ public class DataCitationTest {
         assertEquals("doi:10.5072/FK2/LK0D1H", dataCitation.getPersistentId().asString());
         assertEquals("LibraScholar", dataCitation.getPublisher());
         assertEquals("Dataset Title", dataCitation.getTitle());
-        assertNull(dataCitation.getUNF());
         assertEquals("V1", dataCitation.getVersion());
         assertEquals("1955", dataCitation.getYear());
     }
@@ -311,7 +310,7 @@ public class DataCitationTest {
         DatasetVersion datasetVersion = createATestDatasetVersion("Dataset Title", true);
         DataCitation dataCitation = new DataCitation(datasetVersion);
         assertEquals(
-           "First Last, 1955, \"Dataset Title\", https://doi.org/10.5072/FK2/LK0D1H, LibraScholar, V1",
+           "First Last. 1955. \"Dataset Title\". LibraScholar. https://doi.org/10.5072/FK2/LK0D1H. LibraScholar. V1",
            dataCitation.toString()
         );
     }
@@ -322,7 +321,7 @@ public class DataCitationTest {
         DatasetVersion datasetVersion = createATestDatasetVersion(nullDatasetTitle, false);
         DataCitation dataCitation = new DataCitation(datasetVersion);
         assertEquals(
-           "1955, https://doi.org/10.5072/FK2/LK0D1H, LibraScholar, V1",
+           "1955. LibraScholar. https://doi.org/10.5072/FK2/LK0D1H. LibraScholar. V1",
            dataCitation.toString()
         );
     }
@@ -332,9 +331,9 @@ public class DataCitationTest {
         DatasetVersion datasetVersion = createATestDatasetVersion("Dataset Title", true);
         DataCitation dataCitation = new DataCitation(datasetVersion);
         assertEquals(
-           "First Last, 1955, \"Dataset Title\"," +
-           " <a href=\"https://doi.org/10.5072/FK2/LK0D1H\" target=\"_blank\">https://doi.org/10.5072/FK2/LK0D1H</a>," +
-           " LibraScholar, V1",
+           "First Last. 1955. \"Dataset Title\". LibraScholar." +
+           " <a href=\"https://doi.org/10.5072/FK2/LK0D1H\" target=\"_blank\">https://doi.org/10.5072/FK2/LK0D1H</a>." +
+           " LibraScholar. V1",
            dataCitation.toString(true)
         );
     }
@@ -345,9 +344,9 @@ public class DataCitationTest {
         DatasetVersion datasetVersion = createATestDatasetVersion(nullDatasetTitle, false);
         DataCitation dataCitation = new DataCitation(datasetVersion);
         assertEquals(
-           "1955," +
-           " <a href=\"https://doi.org/10.5072/FK2/LK0D1H\" target=\"_blank\">https://doi.org/10.5072/FK2/LK0D1H</a>," +
-           " LibraScholar, V1",
+           "1955. LibraScholar." +
+           " <a href=\"https://doi.org/10.5072/FK2/LK0D1H\" target=\"_blank\">https://doi.org/10.5072/FK2/LK0D1H</a>." +
+           " LibraScholar. V1",
            dataCitation.toString(true)
         );
     }
@@ -360,7 +359,6 @@ public class DataCitationTest {
         assertEquals("doi:10.5072/FK2/LK0D1H", dataCitation.getPersistentId().asString());
         assertEquals("LibraScholar", dataCitation.getPublisher());
         assertEquals("This Title \"Has Quotes\" In It", dataCitation.getTitle());
-        assertNull(dataCitation.getUNF());
         assertEquals("V1", dataCitation.getVersion());
         assertEquals("1955", dataCitation.getYear());
         assertEquals(

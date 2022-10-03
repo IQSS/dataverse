@@ -146,6 +146,9 @@ public class DataCiteRESTfullClient implements Closeable {
      * @return boolean true if identifier already exists on DataCite site
      */
     public boolean testDOIExists(String doi) throws IOException {
+        if (doi == null || doi.trim().length() == 0) {
+            throw new IOException("No DOI in testDOIExists");
+        }
         HttpGet httpGet = new HttpGet(this.url + "/metadata/" + doi);
         httpGet.setHeader("Accept", "application/xml");
         HttpResponse response = httpClient.execute(httpGet, context);

@@ -76,7 +76,7 @@ public class DeletePrivateUrlCommandTest {
     @Test
     public void testDatasetNull() {
         dataset = null;
-        String expected = "Can't delete Private URL. Dataset is null.";
+        String expected = "Can't delete Private URL. Data Project is null.";
         String actual = null;
         try {
             testEngine.submit(new DeletePrivateUrlCommand(null, dataset));

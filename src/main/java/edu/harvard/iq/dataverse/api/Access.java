@@ -278,7 +278,7 @@ public class Access extends AbstractApiBean {
     @Path("datafile/{fileId:.+}")
     @GET
     @Produces({"application/xml"})
-    public DownloadInstance datafile(@PathParam("fileId") String fileId, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public Response datafile(@PathParam("fileId") String fileId, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         
         // check first if there's a trailing slash, and chop it: 
         while (fileId.lastIndexOf('/') == fileId.length() - 1) {
@@ -332,6 +332,11 @@ public class Access extends AbstractApiBean {
             dInfo.addServiceAvailable(new OptionalAccessService("preprocessed", "application/json", "format=prep", "Preprocessed data in JSON"));
             dInfo.addServiceAvailable(new OptionalAccessService("subset", "text/tab-separated-values", "variables=&lt;LIST&gt;", "Column-wise Subsetting"));
         }
+        
+        if(systemConfig.isGlobusFileDownload() && systemConfig.getGlobusStoresList().contains(DataAccess.getStorageDriverFromIdentifier(df.getStorageIdentifier()))) {
+            dInfo.addServiceAvailable(new OptionalAccessService("GlobusTransfer", df.getContentType(), "format=GlobusTransfer", "Download via Globus"));
+        }
+        
         DownloadInstance downloadInstance = new DownloadInstance(dInfo);
         downloadInstance.setRequestUriInfo(uriInfo);
         downloadInstance.setRequestHttpHeaders(headers);
@@ -423,7 +428,10 @@ public class Access extends AbstractApiBean {
         /* 
          * Provide some browser-friendly headers: (?)
          */
-        return downloadInstance;
+        if (headers.getRequestHeaders().containsKey("Range")) {
+            return Response.status(Response.Status.PARTIAL_CONTENT).entity(downloadInstance).build();
+        }
+        return Response.ok(downloadInstance).build();
     }
     
     
@@ -515,10 +523,10 @@ public class Access extends AbstractApiBean {
         return retValue;
     }
 
-
     /*
      * GET method for retrieving a list of auxiliary files associated with 
      * a tabular datafile.
+     * 
      */
     
     @Path("datafile/{fileId}/auxiliary")
@@ -531,7 +539,7 @@ public class Access extends AbstractApiBean {
         return listAuxiliaryFiles(fileId, null, apiToken, uriInfo, headers, response);
     }
     /*
-     * GET method for retrieving a list auxiliary files associated with
+     * GET method for retrieving a list auxiliary files associated with 
      * a tabular datafile and having the specified origin.
      */
     
@@ -568,7 +576,7 @@ public class Access extends AbstractApiBean {
                 job.add("fileSize", auxFile.getFileSize());
                 job.add("contentType", auxFile.getContentType());
                 job.add("isPublic", auxFile.getIsPublic());
-                job.add("type", auxFile.getType());
+                job.add("type",  auxFile.getType());
                 jab.add(job);
             }
         });
@@ -578,7 +586,6 @@ public class Access extends AbstractApiBean {
     /*
      * GET method for retrieving various auxiliary files associated with 
      * a tabular datafile.
-     *
      */
     
     @Path("datafile/{fileId}/auxiliary/{formatTag}/{formatVersion}")

@@ -391,7 +391,7 @@ public class MetricsServiceBean implements Serializable {
     }
     
     public JsonArray filesByTypeTimeSeries(Dataverse d, boolean published) {
-        Query query = em.createNativeQuery("SELECT DISTINCT to_char(" + (published ? "ob.publicationdate" : "ob.createdate") + ",'YYYY-MM') as date, df.contenttype, count(df.id), coalesce(sum(df.filesize),0) "
+        Query query = em.createNativeQuery("SELECT DISTINCT to_char(" + (published ? "ob.publicationdate" : "ob.createdate") + ",'YYYY-MM') as date, df.contenttype, count(df.id), sum(df.filesize) "
                 + " FROM DataFile df, DvObject ob"
                 + " where ob.id = df.id "
                 + (published ? "and publicationdate is not null\n" : " and createdate is not null\n")

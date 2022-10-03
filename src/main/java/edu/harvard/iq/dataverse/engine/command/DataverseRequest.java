@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command;
 
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
-import edu.harvard.iq.dataverse.api.batchjob.FileRecordJobResource;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -93,7 +92,7 @@ public class DataverseRequest {
                     if (index >= 0) {
                         ip = ip.substring(index + 1);
                     }
-                    ip=ip.trim();
+                    ip = ip.trim();
                     /*
                      * We should have a valid, single IP address string here. The IpAddress.valueOf
                      * call will throw an exception if it can't be parsed into a valid address (e.g.

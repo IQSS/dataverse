@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.AbstractGlobalIdServiceBean.GlobalIdMetadataTemplate;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 
 import java.io.ByteArrayOutputStream;
@@ -16,18 +17,27 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+import javax.xml.transform.Source;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.xmlunit.builder.DiffBuilder;
+import org.xmlunit.builder.Input;
+import org.xmlunit.builder.Input.Builder;
+import org.xmlunit.diff.Diff;
+import org.xmlunit.diff.Difference;
 
 /**
  *
@@ -145,6 +155,34 @@ public class DOIDataCiteRegisterService {
         DataCiteRESTfullClient client = getClient();
         retString = client.postMetadata(xmlMetadata);
         client.postUrl(identifier.substring(identifier.indexOf(":") + 1), target);
+
+        return retString;
+    }
+    
+    public String reRegisterIdentifier(String identifier, Map<String, String> metadata, DvObject dvObject) throws IOException {
+        String retString = "";
+        String numericIdentifier = identifier.substring(identifier.indexOf(":") + 1);
+        String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
+        String target = metadata.get("_target");
+        DataCiteRESTfullClient client = getClient();
+        String currentMetadata = client.getMetadata(numericIdentifier);
+        Diff myDiff = DiffBuilder.compare(xmlMetadata)
+                .withTest(currentMetadata).ignoreWhitespace().checkForSimilar()
+                .build();
+
+        if (myDiff.hasDifferences()) {
+            for(Difference d : myDiff.getDifferences()) {
+            
+              logger.fine(d.toString());
+            }
+            retString = "metadata:\\r" + client.postMetadata(xmlMetadata) + "\\r";
+        }
+        if (!target.equals(client.getUrl(numericIdentifier))) {
+            logger.info("Updating target URL to " +  target);
+            client.postUrl(numericIdentifier, target);
+            retString = retString + "url:\\r" + target;
+
+        }
 
         return retString;
     }
@@ -542,15 +580,68 @@ class DataCiteMetadataTemplate {
         StringBuilder sb = new StringBuilder();
         if (dvObject.isInstanceofDataset()) {
             Dataset dataset = (Dataset) dvObject;
+            List<DatasetRelPublication> relatedPublications = dataset.getLatestVersionForCopy().getRelatedPublications();
+            if (!relatedPublications.isEmpty()) {
+                for (DatasetRelPublication relatedPub : relatedPublications) {
+                    String pubIdType = relatedPub.getIdType();
+                    String identifier = relatedPub.getIdNumber();
+                    /*
+                     * Note - with identifier and url fields, it's not clear that there's a single
+                     * way those two fields are used for all identifier types In QDR, at this time,
+                     * doi and isbn types always have the raw number in the identifier field,
+                     * whereas there are examples where URLs are in the identifier or url fields.
+                     * The code here addresses those practices and is not generic.
+                     */
+                    if(pubIdType!=null) {
+                    switch (pubIdType) {
+                    case "doi":
+                        if (identifier != null && identifier.length() != 0) {
+                            appendIdentifier(sb, "DOI", "IsSupplementTo", "doi:" + identifier);
+                        }
+                        break;
+                    case "isbn":
+                        if (identifier != null && identifier.length() != 0) {
+                            appendIdentifier(sb, "ISBN", "IsSupplementTo", "ISBN:" + identifier);
+                        }
+                        break;
+                    case "url":
+                        if (identifier != null && identifier.length() != 0) {
+                            appendIdentifier(sb, "URL", "IsSupplementTo", identifier);
+                        } else {
+                            String pubUrl = relatedPub.getUrl();
+                            if (pubUrl != null && pubUrl.length() > 0) {
+                                appendIdentifier(sb, "URL", "IsSupplementTo", pubUrl);
+                            }
+                        }
+                        break;
+                    default:
+                        if (identifier != null && identifier.length() != 0) {
+                            if (pubIdType.equalsIgnoreCase("arXiv")) {
+                                pubIdType = "arXiv";
+                            } else if (pubIdType.equalsIgnoreCase("handle")) {
+                                //Initial cap required for handle
+                                pubIdType="Handle";
+                            } else if (!pubIdType.equals("bibcode")) {
+                                pubIdType = pubIdType.toUpperCase();
+                            }
+                            // For all others, do a generic attempt to match the identifier type to the
+                            // datacite schema and send the raw identifier as the value
+                            appendIdentifier(sb, pubIdType, "IsSupplementTo", identifier);
+                        }
+                        break;
+                    }
+                    
+                } else {
+                    logger.info(relatedPub.getIdNumber() + relatedPub.getUrl() + relatedPub.getTitle());
+                }
+                }
+            }
             if (!dataset.getFiles().isEmpty() && !(dataset.getFiles().get(0).getIdentifier() == null)) {
 
                 datafileIdentifiers = new ArrayList<>();
                 for (DataFile dataFile : dataset.getFiles()) {
                     if (!dataFile.getGlobalId().asString().isEmpty()) {
-                        if (sb.toString().isEmpty()) {
-                            sb.append("<relatedIdentifiers>");
-                        }
-                        sb.append("<relatedIdentifier relatedIdentifierType=\"DOI\" relationType=\"HasPart\">" + dataFile.getGlobalId() + "</relatedIdentifier>");
+                        appendIdentifier(sb, "DOI", "HasPart", dataFile.getGlobalId().toString());
                     }
                 }
 
@@ -560,12 +651,19 @@ class DataCiteMetadataTemplate {
             }
         } else if (dvObject.isInstanceofDataFile()) {
             DataFile df = (DataFile) dvObject;
-            sb.append("<relatedIdentifiers>");
-            sb.append("<relatedIdentifier relatedIdentifierType=\"DOI\" relationType=\"IsPartOf\""
-                    + ">" + df.getOwner().getGlobalId() + "</relatedIdentifier>");
-            sb.append("</relatedIdentifiers>");
+            appendIdentifier(sb, "DOI", "IsPartOf", df.getOwner().getGlobalId().toString());
+            if (sb.length() != 0) {
+                sb.append("</relatedIdentifiers>");
+            }
         }
         return sb.toString();
+    }
+
+    private void appendIdentifier(StringBuilder sb, String idType, String relationType, String identifier) {
+        if (sb.toString().isEmpty()) {
+            sb.append("<relatedIdentifiers>");
+        }
+        sb.append("<relatedIdentifier relatedIdentifierType=\"" + idType + "\" relationType=\"" + relationType + "\">" + identifier + "</relatedIdentifier>");
     }
 
     public void generateFileIdentifiers(DvObject dvObject) {

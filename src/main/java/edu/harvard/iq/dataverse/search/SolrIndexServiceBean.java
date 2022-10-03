@@ -81,7 +81,7 @@ public class SolrIndexServiceBean {
      * See also https://github.com/IQSS/dataverse/issues/50
      */
     @Deprecated
-    private boolean unpublishedDataRelatedToMeModeEnabled = true;
+    private final boolean unpublishedDataRelatedToMeModeEnabled = true;
 
     public List<DvObjectSolrDoc> determineSolrDocs(DvObject dvObject) {
         List<DvObjectSolrDoc> emptyList = new ArrayList<>();
@@ -164,6 +164,7 @@ public class SolrIndexServiceBean {
                 String solrIdEnd = getDatasetOrDataFileSolrEnding(datasetVersionFileIsAttachedTo.getVersionState());
                 String solrId = solrIdStart + solrIdEnd;
                 List<String> perms = new ArrayList<>();
+                List<String> ftperms = new ArrayList<>();
                 if (unpublishedDataRelatedToMeModeEnabled) {
                     List<String> cachedPerms = null;
                     if (permStringByDatasetVersion != null) {
@@ -180,11 +181,12 @@ public class SolrIndexServiceBean {
                         logger.fine("no cached perms, file is not public, finding perms for file " + dataFile.getId());
                         perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
                     }
-                } else {
-                    // This should never be executed per the deprecation notice on the boolean.
-                    perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
+                } 
+                if(dataFile.isRestricted()) {
+
+                    ftperms = searchPermissionsService.findDataFilePermsforDatasetVersion(dataFile, datasetVersionFileIsAttachedTo);
                 }
-                DvObjectSolrDoc dataFileSolrDoc = new DvObjectSolrDoc(dataFile.getId().toString(), solrId, datasetVersionFileIsAttachedTo.getId(), dataFile.getDisplayName(), perms);
+                DvObjectSolrDoc dataFileSolrDoc = new DvObjectSolrDoc(dataFile.getId().toString(), solrId, datasetVersionFileIsAttachedTo.getId(), dataFile.getDisplayName(), perms, ftperms);
                 datafileSolrDocs.add(dataFileSolrDoc);
             }
         }
@@ -208,12 +210,17 @@ public class SolrIndexServiceBean {
                 } else {
                     perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
                 }
+                
                 for (FileMetadata fileMetadata : datasetVersionFileIsAttachedTo.getFileMetadatas()) {
                     Long fileId = fileMetadata.getDataFile().getId();
                     String solrIdStart = IndexServiceBean.solrDocIdentifierFile + fileId;
                     String solrIdEnd = getDatasetOrDataFileSolrEnding(datasetVersionFileIsAttachedTo.getVersionState());
                     String solrId = solrIdStart + solrIdEnd;
-                    DvObjectSolrDoc dataFileSolrDoc = new DvObjectSolrDoc(fileId.toString(), solrId, datasetVersionFileIsAttachedTo.getId(), fileMetadata.getLabel(), perms);
+                    List<String> ftperms = new ArrayList<>();
+                    if(fileMetadata.getDataFile().isRestricted()) {
+                        ftperms = searchPermissionsService.findDataFilePermsforDatasetVersion(fileMetadata.getDataFile(), datasetVersionFileIsAttachedTo);
+                    }
+                    DvObjectSolrDoc dataFileSolrDoc = new DvObjectSolrDoc(fileId.toString(), solrId, datasetVersionFileIsAttachedTo.getId(), fileMetadata.getLabel(), perms, ftperms);
                     logger.fine("adding fileid " + fileId);
                     datafileSolrDocs.add(dataFileSolrDoc);
                 }
@@ -272,7 +279,7 @@ public class SolrIndexServiceBean {
         Map<Long, List<Long>> filesPerDataset = new HashMap<>();
         List<DvObject> allExceptFiles = dvObjectService.findAll();
         for (DvObject dvObject : allExceptFiles) {
-            logger.info("determining definition points for dvobject id " + dvObject.getId());
+            logger.fine("determining definition points for dvobject id " + dvObject.getId());
             if (dvObject.isInstanceofDataFile()) {
                 Long dataset = dvObject.getOwner().getId();
                 Long datafile = dvObject.getId();
@@ -300,9 +307,9 @@ public class SolrIndexServiceBean {
         }
 
         for (DvObjectSolrDoc dvObjectSolrDoc : definitionPoints) {
-            logger.info("creating solr doc in memory for " + dvObjectSolrDoc.getSolrId());
+            logger.fine("creating solr doc in memory for " + dvObjectSolrDoc.getSolrId());
             SolrInputDocument solrInputDocument = SearchUtil.createSolrDoc(dvObjectSolrDoc);
-            logger.info("adding to list of docs to index " + dvObjectSolrDoc.getSolrId());
+            logger.fine("adding to list of docs to index " + dvObjectSolrDoc.getSolrId());
             docs.add(solrInputDocument);
         }
         try {
@@ -518,7 +525,7 @@ public class SolrIndexServiceBean {
 
     public JsonObjectBuilder deleteAllFromSolrAndResetIndexTimes() throws SolrServerException, IOException {
         JsonObjectBuilder response = Json.createObjectBuilder();
-        logger.info("attempting to delete all Solr documents before a complete re-index");
+        logger.fine("attempting to delete all Solr documents before a complete re-index");
         solrClientService.getSolrClient().deleteByQuery("*:*");
         solrClientService.getSolrClient().commit();
         int numRowsAffected = dvObjectService.clearAllIndexTimes();

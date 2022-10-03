@@ -37,6 +37,9 @@ import java.util.ArrayList;
 import java.util.concurrent.Future;
 import org.apache.solr.client.solrj.SolrServerException;
 
+import javax.ejb.EJB;
+import javax.inject.Inject;
+
 
 /**
  *
@@ -48,7 +51,9 @@ import org.apache.solr.client.solrj.SolrServerException;
 public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCommand<Dataset> {
 
     private static final Logger logger = Logger.getLogger(FinalizeDatasetPublicationCommand.class.getName());
-    
+
+
+
     /**
      * mirror field from {@link PublishDatasetCommand} of same name
      */
@@ -96,8 +101,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             try {
                 // This can potentially throw a CommandException, so let's make 
                 // sure we exit cleanly:
-
-            	registerExternalIdentifier(theDataset, ctxt, false);
+                registerExternalIdentifier(theDataset, ctxt, false);
+                registerFilePidsIfNeeded(theDataset, ctxt, false);
             } catch (CommandException comEx) {
                 logger.warning("Failed to reserve the identifier "+theDataset.getGlobalId().asString()+"; notifying the user(s), unlocking the dataset");
                 // Send failure notification to the user: 
@@ -205,6 +210,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
 
         Dataset readyDataset = ctxt.em().merge(ds);
         
+        setDataset(readyDataset);
+        
         // Finally, unlock the dataset (leaving any post-publish workflow lock in place)
         ctxt.datasets().removeDatasetLocks(readyDataset, DatasetLock.Reason.finalizePublication);
         if (readyDataset.isLockedFor(DatasetLock.Reason.InReview) ) {
@@ -226,7 +233,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         } catch (ClassCastException e){
             dataset  = ((PublishDatasetResult) r).getDataset();
         }
-        
         try {
             // Success! - send notification:
             notifyUsersDatasetPublishStatus(ctxt, dataset, UserNotification.Type.PUBLISHEDDS);
@@ -256,30 +262,23 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             }
         }
 
-        exportMetadata(dataset);
-                
-        ctxt.datasets().updateLastExportTimeStamp(dataset.getId());
-
-        return retVal;
-    }
-
-    /**
-     * Attempting to run metadata export, for all the formats for which we have
-     * metadata Exporters.
-     */
-    private void exportMetadata(Dataset dataset) {
-
+        // Metadata export:
+        
         try {
             ExportService instance = ExportService.getInstance();
             instance.exportAllFormats(dataset);
-
+            dataset = ctxt.datasets().merge(dataset); 
         } catch (Exception ex) {
             // Something went wrong!
             // Just like with indexing, a failure to export is not a fatal
             // condition. We'll just log the error as a warning and keep
             // going:
-            logger.log(Level.WARNING, "Dataset publication finalization: exception while exporting:{0}", ex.getMessage());
-        }
+            logger.warning("Finalization: exception caught while exporting: "+ex.getMessage());
+            // ... but it is important to only update the export time stamp if the 
+            // export was indeed successful.
+        }        
+        
+        return retVal;
     }
 
     /**
@@ -407,7 +406,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 dataset.setGlobalIdCreateTime(new Date()); // TODO these two methods should be in the responsibility of the idServiceBean.
                 dataset.setIdentifierRegistered(true);
             } catch (Throwable e) {
-                logger.warning("Failed to register the identifier "+dataset.getGlobalId().asString()+", or to register a file in the dataset; notifying the user(s), unlocking the dataset");
+                logger.warning("Failed to publicize the identifier "+dataset.getGlobalId().asString()+", or to publicize a file in the dataset; notifying the user(s), unlocking the dataset");
 
                 // Send failure notification to the user: 
                 notifyUsersDatasetPublishStatus(ctxt, dataset, UserNotification.Type.PUBLISHFAILED_PIDREG);

@@ -64,7 +64,7 @@ public class Workflow implements Serializable {
             s.setParent(this);
         }
     }
-
+    
     Map<String, String> getRequiredSettings() {
         Map<String, String> settings = new HashMap<String, String>();
         for(WorkflowStepData step: steps) {

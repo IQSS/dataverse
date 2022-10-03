@@ -383,7 +383,7 @@ public class WorkflowServiceBean {
         logger.log(Level.INFO, "Workflow {0} completed.", ctxt.getInvocationId());
         
             try {
-        if ( ctxt.getType() == TriggerType.PrePublishDataset ) {
+            if (ctxt.getType() == TriggerType.PrePublishDataset) {
                 ctxt = refresh(ctxt);
                 //Now lock for FinalizePublication - this block mirrors that in PublishDatasetCommand
                 AuthenticatedUser user = ctxt.getRequest().getAuthenticatedUser();
@@ -417,7 +417,7 @@ public class WorkflowServiceBean {
                 logger.fine("Removing workflow lock");
                 unlockDataset(ctxt);
             }
-            } catch (CommandException ex) {
+        } catch (CommandException ex) {
                 logger.log(Level.SEVERE, "Exception finalizing workflow " + ctxt.getInvocationId() +": " + ex.getMessage(), ex);
                 rollback(wf, ctxt, new Failure("Exception while finalizing the publication: " + ex.getMessage()), wf.steps.size()-1);
             }
@@ -513,8 +513,8 @@ public class WorkflowServiceBean {
         return provider.getStep(wsd.getStepType(), wsd.getStepParameters());
     }
     
-    private WorkflowContext refresh( WorkflowContext ctxt ) {
-    	return refresh(ctxt, ctxt.getSettings(), ctxt.getApiToken());
+    private WorkflowContext refresh(WorkflowContext ctxt) {
+        return refresh(ctxt, ctxt.getSettings(), ctxt.getApiToken());
     }
 
     private WorkflowContext refresh(WorkflowContext ctxt, Map<String, Object> settings, ApiToken apiToken) {

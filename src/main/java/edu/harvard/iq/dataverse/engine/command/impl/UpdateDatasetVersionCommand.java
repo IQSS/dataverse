@@ -30,36 +30,36 @@ import org.apache.solr.client.solrj.SolrServerException;
 @RequiredPermissions(Permission.EditDataset)
 public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset> {
 
-    private static final Logger logger = Logger.getLogger(UpdateDatasetVersionCommand.class.getCanonicalName());
+    static final Logger logger = Logger.getLogger(UpdateDatasetVersionCommand.class.getCanonicalName());
     private final List<FileMetadata> filesToDelete;
     private boolean validateLenient = false;
     private final DatasetVersion clone;
     private final FileMetadata fmVarMet;
-    
+
     public UpdateDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest) {
         super(aRequest, theDataset);
         this.filesToDelete = new ArrayList<>();
         this.clone = null;
         this.fmVarMet = null;
-    }    
-    
+    }
+
     public UpdateDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest, List<FileMetadata> filesToDelete) {
         super(aRequest, theDataset);
         this.filesToDelete = filesToDelete;
         this.clone = null;
         this.fmVarMet = null;
     }
-    
+
     public UpdateDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest, List<FileMetadata> filesToDelete, DatasetVersion clone) {
         super(aRequest, theDataset);
         this.filesToDelete = filesToDelete;
         this.clone = clone;
         this.fmVarMet = null;
     }
-    
+
     public UpdateDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest, DataFile fileToDelete) {
         super(aRequest, theDataset);
-        
+
         // get the latest file metadata for the file; ensuring that it is a draft version
         this.filesToDelete = new ArrayList<>();
         this.clone = null;
@@ -70,8 +70,8 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 break;
             }
         }
-    } 
-    
+    }
+
     public UpdateDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest, DatasetVersion clone) {
         super(aRequest, theDataset);
         this.filesToDelete = new ArrayList<>();
@@ -99,7 +99,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         if ( ! (getUser() instanceof AuthenticatedUser) ) {
             throw new IllegalCommandException("Only authenticated users can update datasets", this);
         }
-        
+
         Dataset theDataset = getDataset();        
         ctxt.permissions().checkEditDatasetLock(theDataset, getRequest(), this);
         Dataset savedDataset = null;
@@ -113,7 +113,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             } else {
                 logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", getDataset().getId());
             }
-            
+
             getDataset().getEditVersion(fmVarMet).setDatasetFields(getDataset().getEditVersion(fmVarMet).initDatasetFields());
             validateOrDie(getDataset().getEditVersion(fmVarMet), isValidateLenient());
 
@@ -133,7 +133,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             		throw e;
             	}
             }
-
+            //Set creator and create date for files if needed
             for (DataFile dataFile : theDataset.getFiles()) {
                 if (dataFile.getCreateDate() == null) {
                     dataFile.setCreateDate(getTimestamp());
@@ -166,6 +166,9 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                     recalculateUNF = true;
                 }
             }
+            
+            theDataset.getEditVersion().setLastUpdateTime(getTimestamp());
+            
             // we have to merge to update the database but not flush because
             // we don't want to create two draft versions!
             // Although not completely tested, it looks like this merge handles the
@@ -238,12 +241,14 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             for(FileMetadata fmd: theDataset.getEditVersion().getFileMetadatas()) {
                 logger.fine("FMD: " + fmd.getId() + " for file: " + fmd.getDataFile().getId() + "is in final draft version");    
             }
+
+            registerFilePidsIfNeeded(theDataset, ctxt, true);
             
             if (recalculateUNF) {
                 ctxt.ingest().recalculateDatasetVersionUNF(theDataset.getEditVersion());
             }
 
-            theDataset.getEditVersion().setLastUpdateTime(getTimestamp());
+
             theDataset.setModificationTime(getTimestamp());
 
             savedDataset = ctxt.em().merge(theDataset);
@@ -264,10 +269,9 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.EditInProgress);
             }
         }
-
         return savedDataset; 
     }
-    
+
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
 

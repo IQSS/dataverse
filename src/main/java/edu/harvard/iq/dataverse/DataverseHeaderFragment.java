@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
@@ -38,6 +40,9 @@ public class DataverseHeaderFragment implements java.io.Serializable {
 
     @EJB
     DataverseServiceBean dataverseService;
+
+    @EJB
+    SettingsServiceBean settingsService;
 
     @EJB
     GroupServiceBean groupService;
@@ -219,43 +224,30 @@ public class DataverseHeaderFragment implements java.io.Serializable {
      return null;
      }
      */
-    public String logout() {
+    public void logout() throws IOException {
+        ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
+        
         dataverseSession.setUser(null);
         dataverseSession.setStatusDismissed(false);
-        
+         
         // Important part of completing a logout - kill the existing HTTP session: 
         // from the ExternalContext.invalidateSession doc page: 
         // "Invalidates this session then unbinds any objects bound to it."
         // - this means whatever allocated SessionScoped classes associated 
         // with this session may currently be on the heap will become 
         // garbage-collectable after we log the user out. 
-        FacesContext.getCurrentInstance().getExternalContext().invalidateSession();
+        externalContext.invalidateSession();
         // Note that the HTTP session no longer exists - 
         // .getExternalContext().getSession(false) will return null at this point!
         // so it is important to redirect the user to the next page, where a new 
         // session is going to be issued to them. 
         
-        String redirectPage = navigationWrapper.getPageFromContext();
-        try {
-            redirectPage = URLDecoder.decode(redirectPage, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-            Logger.getLogger(LoginPage.class.getName()).log(Level.SEVERE, null, ex);
-            redirectPage = redirectToRoot();
-        }
-
-        if (StringUtils.isEmpty(redirectPage)) {
-            redirectPage = redirectToRoot();
-        }
-
-        logger.log(Level.INFO, "Sending user to = " + redirectPage);
-        return redirectPage + (!redirectPage.contains("?") ? "?" : "&") + "faces-redirect=true";
+        String safeDefaultIfKeyNotFound = "https://idp.dev-aws.qdr.org/idp/profile/Logout";
+        String shibLogoutUrl = settingsService.getValueForKey(SettingsServiceBean.Key.ShibLogoutUrl, safeDefaultIfKeyNotFound);
+        externalContext.redirect(shibLogoutUrl);
     }
 
     private Boolean signupAllowed = null;
-    
-    private String redirectToRoot(){
-        return "dataverse.xhtml?alias=" + settingsWrapper.getRootDataverse().getAlias();
-    }
     
     public boolean isSignupAllowed() {
         if (signupAllowed != null) {

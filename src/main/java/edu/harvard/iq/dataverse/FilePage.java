@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -20,6 +21,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UningestFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
@@ -27,6 +29,8 @@ import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
+import edu.harvard.iq.dataverse.ingest.IngestRequest;
+import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
@@ -36,6 +40,8 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import edu.harvard.iq.dataverse.util.StringUtil;
+
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
@@ -46,6 +52,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -94,7 +101,8 @@ public class FilePage implements java.io.Serializable {
 
     @EJB
     DataFileServiceBean datafileService;
-    
+    @EJB
+    DatasetServiceBean datasetService;
     @EJB
     DatasetVersionServiceBean datasetVersionService;
 
@@ -108,10 +116,8 @@ public class FilePage implements java.io.Serializable {
     GuestbookResponseServiceBean guestbookResponseService;
     @EJB
     AuthenticationServiceBean authService;
-    
     @EJB
-    DatasetServiceBean datasetService;
-    
+    IngestServiceBean ingestService;
     @EJB
     SystemConfig systemConfig;
 
@@ -204,7 +210,7 @@ public class FilePage implements java.io.Serializable {
             // If this DatasetVersion is unpublished and permission is doesn't have permissions:
             //  > Go to the Login page
             //
-            // Check permisisons       
+            // Check permissions       
             Boolean authorized = (fileMetadata.getDatasetVersion().isReleased())
                     || (!fileMetadata.getDatasetVersion().isReleased() && this.canViewUnpublishedDataset());
 
@@ -240,6 +246,13 @@ public class FilePage implements java.io.Serializable {
             if(!toolsWithPreviews.isEmpty()){
                 setSelectedTool(toolsWithPreviews.get(0));                
             }
+            if(null == dataset) {
+                dataset = file.getOwner();
+            }
+            if(dataset.isLockedFor(DatasetLock.Reason.EditInProgress))  {
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message"),
+                        BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message.details"));
+            }
         } else {
 
             return permissionsWrapper.notFound();
@@ -253,6 +266,7 @@ public class FilePage implements java.io.Serializable {
         }
         
         displayPublishMessage();
+
         return null;
     }
     
@@ -412,6 +426,112 @@ public class FilePage implements java.io.Serializable {
         init();
         return returnToDraftVersion();
     }
+    
+    public String ingestFile() throws CommandException{
+        
+        User u = session.getUser();
+        if(!u.isAuthenticated() ||  !(permissionService.permissionsFor(u, file).contains(Permission.PublishDataset))) {
+            //Shouldn't happen (choice not displayed for users who don't have the right permission), but check anyway
+            logger.warning("User: " + u.getIdentifier() + " tried to ingest a file");
+            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.cantIngestFileWarning"));
+            return null;
+        }
+
+        DataFile dataFile = fileMetadata.getDataFile();
+        editDataset = dataFile.getOwner();
+        
+        if (dataFile.isTabularData()) {
+            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.alreadyIngestedWarning"));
+            return null;
+        }
+        
+        boolean ingestLock = dataset.isLockedFor(DatasetLock.Reason.Ingest);
+        
+        if (ingestLock) {
+            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.ingestInProgressWarning"));
+            return null;
+        }
+        
+        if (!FileUtil.canIngestAsTabular(dataFile)) {
+            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.cantIngestFileWarning"));
+            return null;
+            
+        }
+        
+        dataFile.SetIngestScheduled();
+                
+        if (dataFile.getIngestRequest() == null) {
+            dataFile.setIngestRequest(new IngestRequest(dataFile));
+        }
+
+        dataFile.getIngestRequest().setForceTypeCheck(true);
+        
+        // update the datafile, to save the newIngest request in the database:
+        save();
+
+        // queue the data ingest job for asynchronous execution: 
+        String status = ingestService.startIngestJobs(new ArrayList<>(Arrays.asList(dataFile)), (AuthenticatedUser) session.getUser());
+        
+        if (!StringUtil.isEmpty(status)) {
+            // This most likely indicates some sort of a problem (for example, 
+            // the ingest job was not put on the JMS queue because of the size
+            // of the file). But we are still returning the OK status - because
+            // from the point of view of the API, it's a success - we have 
+            // successfully gone through the process of trying to schedule the 
+            // ingest job...
+            
+            logger.warning("Ingest Status for file: " + dataFile.getId() + " : " + status);
+        }
+        logger.info("File: " + dataFile.getId() + " ingest queued");
+
+        init();
+        JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("file.ingest.ingestQueued"));
+        return returnToDraftVersion();
+    }
+
+    public String uningestFile() throws CommandException {
+        
+        if (!file.isTabularData()) {
+            if(file.isIngestProblem()) {
+                User u = session.getUser();
+                if(!u.isAuthenticated() ||  !(permissionService.permissionsFor(u, file).contains(Permission.PublishDataset))) {
+                    logger.warning("User: " + u.getIdentifier() + " tried to uningest a file");
+                    //Shouldn't happen (choice not displayed for users who don't have the right permission), but check anyway
+                    JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.cantUningestFileWarning"));
+                    return null;
+                }
+              file.setIngestDone();
+              file.setIngestReport(null);
+            } else {
+              JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.cantUningestFileWarning"));
+              return null;
+            }
+        } else {
+            commandEngine.submit(new UningestFileCommand(dvRequestService.getDataverseRequest(), file));
+            Long dataFileId = file.getId();
+            file = datafileService.find(dataFileId);
+        }
+        editDataset = file.getOwner();
+        if (editDataset.isReleased()) {
+            try {
+                ExportService instance = ExportService.getInstance();
+                instance.exportAllFormats(editDataset);
+
+            } catch (ExportException ex) {
+                // Something went wrong!
+                // Just like with indexing, a failure to export is not a fatal
+                // condition. We'll just log the error as a warning and keep
+                // going:
+                logger.log(Level.WARNING, "Uningest: Exception while exporting:{0}", ex.getMessage());
+            }
+        }
+        save();
+        //Refresh filemetadata with file title, etc.
+        init();
+        JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("file.uningest.complete"));
+        return returnToDraftVersion();
+    }
+    
     
     private List<FileMetadata> filesToBeDeleted = new ArrayList<>();
 
@@ -628,7 +748,6 @@ public class FilePage implements java.io.Serializable {
 
         if (!filesToBeDeleted.isEmpty()) { 
             // We want to delete the file (there's always only one file with this page)
-            editDataset.getEditVersion().getFileMetadatas().remove(filesToBeDeleted.get(0));
             deleteFileId = filesToBeDeleted.get(0).getDataFile().getId();
             deleteStorageLocation = datafileService.getPhysicalFileToDelete(filesToBeDeleted.get(0).getDataFile());
         }
@@ -684,6 +803,21 @@ public class FilePage implements java.io.Serializable {
         
         setVersion("DRAFT");
         return "";
+    }
+    
+    public String reportEditContinues() {
+        dataset = datasetService.find(dataset.getId());
+        logger.fine("Timeout during long edit. Redirecting to draft Dataset page...");
+        if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress)) {
+            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.editContinues.message"),
+                    BundleUtil.getStringFromBundle("dataset.locked.editContinues.message.details"));
+         } else {
+             JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.message.actiontimeout"),
+                     BundleUtil.getStringFromBundle("dataset.message.actiontimeout.details"));
+            
+         }
+        
+        return returnToDraftVersion();
     }
     
     private Boolean thumbnailAvailable = null; 
@@ -843,7 +977,7 @@ public class FilePage implements java.io.Serializable {
         if (swiftObject != null) {
             swiftObject.open();
             //generate a temp url for a file
-            if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)) {
+            if (isHasPublicStore()) {
                 return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getFile().getOwner().getGlobalIdString() + "=" + swiftObject.getSwiftFileName();
             }
             return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getFile().getOwner().getGlobalIdString() + "=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
@@ -886,8 +1020,15 @@ public class FilePage implements java.io.Serializable {
         return FileUtil.isPubliclyDownloadable(fileMetadata);
     }
 
+    public boolean isIngestable() {
+        DataFile f = fileMetadata.getDataFile();
+        //Datafile is an ingestable type and hasn't been ingested yet or had an ingest fail
+        return (FileUtil.canIngestAsTabular(f)&&!(f.isTabularData() || f.isIngestProblem()));
+    }
+
     private Boolean lockedFromEditsVar;
     private Boolean lockedFromDownloadVar; 
+    private boolean stateChanged = false;
     
     /**
      * Authors are not allowed to edit but curators are allowed - when Dataset is inReview
@@ -926,6 +1067,99 @@ public class FilePage implements java.io.Serializable {
         }
         return lockedFromDownloadVar;       
     }
+    
+    public String refresh() {
+
+        if (fileId != null || persistentId != null) {
+
+            // ---------------------------------------
+            // Set the file and datasetVersion
+            // ---------------------------------------
+            if (fileId != null) {
+                file = datafileService.find(fileId);
+
+            } else if (persistentId != null) {
+                file = datafileService.findByGlobalId(persistentId);
+                if (file != null) {
+                    fileId = file.getId();
+                }
+
+            }
+
+            if (file == null || fileId == null) {
+                return permissionsWrapper.notFound();
+            }
+
+            RetrieveDatasetVersionResponse retrieveDatasetVersionResponse;
+            retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(file.getOwner().getVersions(), version);
+            Long getDatasetVersionID = retrieveDatasetVersionResponse.getDatasetVersion().getId();
+            fileMetadata = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(getDatasetVersionID, fileId);
+
+            if (fileMetadata == null) {
+                logger.fine("fileMetadata is null! Checking finding most recent version file was in.");
+                fileMetadata = datafileService.findMostRecentVersionFileIsIn(file);
+                if (fileMetadata == null) {
+                    return permissionsWrapper.notFound();
+                }
+            }
+        }
+        stateChanged = false;
+        lockedFromEditsVar = null;
+        lockedFromDownloadVar = null;
+        dataset=null;
+        
+        return null;
+    }
+
+    public void refreshAllLocks() {
+        // RequestContext requestContext = RequestContext.getCurrentInstance();
+        logger.fine("checking all locks");
+        if (isStillLockedForAnyReason()) {
+            logger.fine("(still locked)");
+        } else {
+            // OK, the dataset is no longer locked.
+            // let's tell the page to refresh:
+            logger.fine("no longer locked!");
+            stateChanged = true;
+            lockedFromEditsVar = null;
+            lockedFromDownloadVar = null;
+            // requestContext.execute("refreshPage();");
+        }
+    }
+
+    public boolean isStillLockedForAnyReason() {
+        if (dataset.getId() != null) {
+            Dataset testDataset = datasetService.find(dataset.getId());
+            if (testDataset != null && testDataset.getId() != null) {
+                logger.log(Level.FINE, "checking lock status of dataset {0}", dataset.getId());
+                if (testDataset.getLocks().size() > 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    public boolean isLockedForAnyReason() {
+        if (dataset.getId() != null) {
+            Dataset testDataset = datasetService.find(dataset.getId());
+            if (stateChanged) {
+                return false;
+            }
+
+            if (testDataset != null) {
+                if (testDataset.getLocks().size() > 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    public void setLockedForAnyReason(boolean locked) {
+        // empty method, so that we can use FilePage.lockedForAnyReason in a hidden 
+        // input on the page. 
+    }
 
     public String getPublicDownloadUrl() {
         try {
@@ -935,8 +1169,8 @@ public class FilePage implements java.io.Serializable {
                 try {
                     SwiftAccessIO<DataFile> swiftIO = (SwiftAccessIO<DataFile>) storageIO;
                     swiftIO.open();
-                    //if its a public install, lets just give users the permanent URL!
-                    if (systemConfig.isPublicInstall()){                        
+                    //if its a public store, lets just give users the permanent URL!
+                    if (isHasPublicStore()){
                         fileDownloadUrl = swiftIO.getRemoteUrl();
                     } else {
                         //TODO: if a user has access to this file, they should be given the swift url
@@ -999,6 +1233,15 @@ public class FilePage implements java.io.Serializable {
         JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("file.metadataTab.provenance.error"));
     }
     
+    public boolean isStateChanged() {
+        return stateChanged;
+    }
+    
+    public void setStateChanged(boolean stateChanged) {
+        // empty method, so that we can use DatasetPage.stateChanged in a hidden 
+        // input on the page. 
+    }
+    
     private static final Comparator<ExternalTool> CompareExternalToolName = new Comparator<ExternalTool>() {
         @Override
         public int compare(ExternalTool o1, ExternalTool o2) {
@@ -1032,6 +1275,7 @@ public class FilePage implements java.io.Serializable {
 
     public void setFileAccessRequest(boolean fileAccessRequest) {
         this.fileAccessRequest = fileAccessRequest;
+
     }
     public boolean isAnonymizedAccess() {
         if(session.getUser() instanceof PrivateUrlUser) {
@@ -1164,6 +1408,11 @@ public class FilePage implements java.io.Serializable {
 
     public String getIngestMessage() {
         return BundleUtil.getStringFromBundle("file.ingestFailed.message", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), settingsWrapper.getGuidesVersion()));
+    }
+    
+    //Determines whether this File uses a public store and therefore doesn't support embargoed or restricted files
+    public boolean isHasPublicStore() {
+        return settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, StorageIO.isPublicStore(DataAccess.getStorageDriverFromIdentifier(file.getStorageIdentifier())));
     }
 
 }

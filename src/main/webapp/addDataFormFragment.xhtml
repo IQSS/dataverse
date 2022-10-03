@@ -11,9 +11,9 @@
         </p>
         <div class="button-block">
             <ui:fragment rendered="#{dataverseHeaderFragment.signupAllowed}">
-                <a class="btn btn-default" href="#{dataverseHeaderFragment.getSignupUrl(navigationWrapper.redirectPage)}" title="#{bundle['dataverse.results.dialog.addDataGuest.signup.title']}">#{bundle['signup']}</a>
+                <a class="btn btn-default" href="#{settingsWrapper.get(':QDRDrupalSiteURL')}/user/register" title="#{bundle['dataverse.results.dialog.addDataGuest.signup.title']}">#{bundle['signup']}</a>
             </ui:fragment>
-            <a class="btn btn-default" href="/loginpage.xhtml#{navigationWrapper.redirectPage}" title="#{bundle['dataverse.results.dialog.addDataGuest.login.title']}">#{bundle['login']}</a>
+            <a class="btn btn-default" href="#{dataverseHeaderFragment.getSignupUrl(navigationWrapper.getShibLoginPath())}" title="#{bundle['dataverse.results.dialog.addDataGuest.login.title']}">#{bundle['login']}</a>
         </div>
     </p:dialog>
 </ui:composition>

@@ -54,7 +54,7 @@
                     </p:panel>
 
                     <p:tabView id="dataRelatedToMeView" activeIndex="#{DataverseUserPage.activeIndex}" dynamic="true" cache="false" rendered="#{empty DataverseUserPage.editMode}">
-                        <p:ajax event="tabChange" listener="#{DataverseUserPage.onTabChange}" update="@all"  />
+                        <p:ajax event="tabChange" listener="#{DataverseUserPage.onTabChange}" update="@all"  oncomplete="javascript:addQDRBackdrop();"/>
                         <p:tab id="myData" title="#{bundle['user.dataRelatedToMe']}">
                             <ui:include src="mydata_fragment.xhtml"></ui:include>
                         </p:tab>
@@ -109,13 +109,13 @@
                                                     <span class="icon-dataverse text-icon-inline text-muted"></span>
                                                     <h:outputFormat value="#{bundle['notification.welcome']}" escape="false">
                                                         <o:param>
-                                                            <h:outputText value="#{dataverseServiceBean.findRootDataverse().name}"/>
+                                                          #{bundle['institution.acronym']}
                                                         </o:param>
                                                         <o:param>
-                                                            <a href="#{systemConfig.guidesBaseUrl}/#{systemConfig.guidesVersion}/user/index.html" title="#{dataverseServiceBean.findRootDataverse().name} #{bundle['header.guides.user']}" target="_blank">#{bundle['header.guides.user']}</a>
+                                                          <a href="#{settingsWrapper.get(':QDRDrupalSiteURL')}/deposit">#{bundle['header.guides.user']}</a>
                                                         </o:param>
                                                         <o:param>
-                                                            <a href="https://demo.dataverse.org">#{bundle['notification.demoSite']}</a>
+                                                          <a href="mailto:#{settingsWrapper.get(':SystemEmail')}">contact us</a>
                                                         </o:param>
                                                     </h:outputFormat>
                                                     <!--Only show message about an email confirmation link to non-Shib users (Shib users can't edit their accounts)-->
@@ -143,9 +143,6 @@
                                                         </o:param>
                                                         <o:param>
                                                             <a href="/dataverse/#{item.theObject.getDataset().getOwner().getAlias()}" title="#{item.theObject.getDataset().getOwner().getDisplayName()}">#{item.theObject.getDataset().getOwner().getDisplayName()}</a>
-                                                        </o:param>
-                                                        <o:param>
-                                                            <a href="#{systemConfig.guidesBaseUrl}/#{systemConfig.guidesVersion}/user/dataset-management.html" title="#{bundle['notification.dataset.management.title']}" target="_blank">#{bundle['header.guides.user']}</a>
                                                         </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
@@ -341,6 +338,34 @@
                                                         <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
                                                     </h:outputFormat>
                                                 </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'GLOBUSUPLOADCOMPLETED'}">
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
+                                                    <h:outputFormat value="#{bundle['notification.globus.upload.completed']}" escape="false">
+                                                        <f:param value="#{item.theObject.getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'GLOBUSDOWNLOADCOMPLETED'}">
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
+                                                    <h:outputFormat value="#{bundle['notification.globus.download.completed']}" escape="false">
+                                                        <f:param value="#{item.theObject.getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'GLOBUSUPLOADCOMPLETEDWITHERRORS'}">
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
+                                                    <h:outputFormat value="#{bundle['notification.globus.upload.completedWithErrors']}" escape="false">
+                                                        <f:param value="#{item.theObject.getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'GLOBUSDOWNLOADCOMPLETEDWITHERRORS'}">
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
+                                                    <h:outputFormat value="#{bundle['notification.globus.download.completedWithErrors']}" escape="false">
+                                                        <f:param value="#{item.theObject.getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'CHECKSUMIMPORT'}">
                                                     <span class="icon-dataset text-icon-inline text-muted"></span>
                                                     <h:outputFormat value="#{bundle['notification.import.checksum']}" escape="false">
@@ -402,6 +427,19 @@
                                                         <f:param value="#{item.theObject.externalStatusLabel}"/>
                                                     </h:outputFormat>
                                                 </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'DATASETMENTIONED'}">
+                                                <o:importFunctions type="edu.harvard.iq.dataverse.util.json.JsonUtil" />
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
+                                                    <h:outputFormat value="#{bundle['notification.datasetMentioned']}" escape="false">
+                                                    <f:param value="#{JsonUtil:getJsonObject(item.additionalInfo).getString('@type')}"/>
+                                                    <f:param value="#{JsonUtil:getJsonObject(item.additionalInfo).getString('@id')}"/>
+                                                    <f:param value="#{JsonUtil:getJsonObject(item.additionalInfo).getString('name')}"/>
+                                                    <f:param value="#{JsonUtil:getJsonObject(item.additionalInfo).getString('relationship', 'isRelatedTo')}"/>
+                                                        <o:param>
+                                                            <a href="/dataset.xhtml?persistentId=#{item.theObject.getGlobalId()}&amp;version=DRAFT&amp;faces-redirect=true" title="#{item.theObject.getDisplayName()}">#{item.theObject.getDisplayName()}</a>
+                                                        </o:param>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
                                                 
 
                                             </ui:fragment>
@@ -429,16 +467,14 @@
                                     <ul class="dropdown-menu pull-right text-left">
                                         <ui:fragment rendered="#{DataverseUserPage.passwordEditable or DataverseUserPage.accountDetailsEditable}">
                                             <li>
-                                                <p:commandLink id="editAccount" rendered="#{DataverseUserPage.accountDetailsEditable}"
-                                                               actionListener="#{DataverseUserPage.edit}" update="@form">
+                                                <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/user">
                                                     <h:outputText value="#{bundle['account.info']}" />
-                                                </p:commandLink>
+                                                </h:outputLink>
                                             </li>
                                             <li>
-                                                <p:commandLink id="changePassword" rendered="#{DataverseUserPage.passwordEditable}" 
-                                                               actionListener="#{DataverseUserPage.changePassword}" update="@form">
+                                                    <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/me/edit">
                                                     <h:outputText value="#{bundle.passwd}" />
-                                                </p:commandLink>
+                                                    </h:outputLink>
                                             </li>
                                         </ui:fragment>
                                     </ul>
@@ -594,10 +630,12 @@
                                     <code class="language-html" data-lang="html">#{ApiTokenPage.apiToken}</code>
                                 </pre>
                             </div>
+                            <script src="#{resource['js/mydata.js']}?version=#{systemConfig.getVersion()}"></script>
                             <!--Script removes "hidden" class from div containing API token to stop javascript browser exploits-->
                             <script>
                                 //<![CDATA[
                                 $(document).ready(function() {
+                                    addQDRBackdrop();
                                     $("div#apiToken").removeClass("hidden");
                                 });
                                 //Produces "Are you sure you want to leave this page?" alert to allow API token to hide again
@@ -625,7 +663,8 @@
                         </ui:remove>
                     </p:tabView>
 
-                    <p:tabView id="accountInfoView" rendered="#{!empty DataverseUserPage.editMode}">
+                    <!-- QDRCustom- Do not display accountInfoView tabView -->
+                    <p:tabView id="accountInfoView" rendered="false">
                         <p:tab id="accountInfoEdit" title="#{bundle['account.info']}">
                             <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' and DataverseUserPage.nonLocalLoginEnabled}">
                                 <p class="help-block">

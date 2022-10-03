@@ -37,9 +37,9 @@ public class BrandingUtil {
                 return personalName;
             }
         }
-        String rootDataverseName = dataverseService.getRootDataverseName();
-        if (rootDataverseName != null && !rootDataverseName.isEmpty()) {
-            return rootDataverseName + " " + BundleUtil.getStringFromBundle("contact.support");
+        String brandName = getInstallationBrandName();
+        if (brandName != null && !brandName.isEmpty()) {
+            return brandName + " " + BundleUtil.getStringFromBundle("contact.support");
         }
         String saneDefault = BundleUtil.getStringFromBundle("dataverse");
         return BundleUtil.getStringFromBundle("contact.support", Arrays.asList(saneDefault));

@@ -37,11 +37,10 @@ public class WorkflowStepData implements Serializable {
     @ElementCollection( fetch=FetchType.EAGER )
     @Column(length = 2048)
     private Map<String,String> stepParameters;
-
+    
     @ElementCollection( fetch=FetchType.EAGER )
     @Column(length = 2048)
     private Map<String,String> stepSettings;
-
 
     public Workflow getParent() {
         return parent;

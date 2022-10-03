@@ -401,9 +401,31 @@ public class SettingsServiceBean {
          */
         InheritParentRoleAssignments,
         
-        /** Make Data Count Logging and Display */
+        /**
+         * A comma-separated list of CategoryName in the desired order for files to be
+         * sorted in the file table display. If not set, files will be sorted
+         * alphabetically by default. If set, files will be sorted by these categories
+         * and alphabetically within each category.
+         */
+        CategorySortOrder,
+        
+        /**
+         * QDR Custom settings
+         * 
+         */
+        /** URL for Shibboleth Single Logout */        
+        ShibLogoutUrl,
+        /** Latest version of Terms and Conditions document */
+        ShibAuthTermsVer,
+        /** Url of integrated Drupal Site */
+        QDRDrupalSiteURL,
+        /** Base Url of this Dataverse Site */
+        QDRDataverseBaseURL,
+        
+        /** Make Data Count Logging, Display, and Start Date */
         MDCLogPath, 
         DisplayMDCMetrics,
+        MDCStartDate,
 
         /**
          * Allow CORS flag (true or false). It is true by default
@@ -425,6 +447,14 @@ public class SettingsServiceBean {
          * Convert shibboleth AJP attributes from ISO-8859-1 to UTF-8
          */
         ShibAttributeCharacterSetConversionEnabled,
+        /**
+         *Return the last or first value of an array of affiliation names
+         */
+        ShibAffiliationOrder,
+         /**
+         *Split the affiliation array on given string, default ";"
+         */
+        ShibAffiliationSeparator,
         /**
          * Validate physical files for all the datafiles in the dataset when publishing
          */
@@ -449,6 +479,31 @@ public class SettingsServiceBean {
          * when the Distributor field (citation metadatablock) is set (true)
          */
         ExportInstallationAsDistributorOnlyWhenNotSet,
+
+        /**
+         * Basic Globus Token for Globus Application
+         */
+        GlobusBasicToken,
+        /**
+         * GlobusEndpoint is Globus endpoint for Globus application
+         */
+        GlobusEndpoint,
+        /** 
+         * Comma separated list of Globus enabled stores
+         */
+        GlobusStores,
+        /** Globus App URL
+         * 
+         */
+        GlobusAppUrl,
+        /** Globus Polling Interval how long in seconds Dataverse waits between checks on Globus upload status checks
+         * 
+         */
+        GlobusPollingInterval,
+        /**Enable single-file download/transfers for Globus
+         *
+         */
+        GlobusSingleFileTransfer,
         /**
          * Optional external executables to run on the metadata for dataverses 
          * and datasets being published; as an extra validation step, to 
@@ -522,7 +577,15 @@ public class SettingsServiceBean {
          * would also work) of never muted notifications that cannot be turned off by the users. AlwaysMuted setting overrides
          * Nevermuted setting warning is logged.
          */
-        NeverMuted
+        NeverMuted,
+        /**
+         * LDN Inbox Allowed Hosts - a comma separated list of IP addresses allowed to submit messages to the inbox
+         */
+        LDNMessageHosts,
+        /*
+         * Allow a custom JavaScript to control values of specific fields.
+         */
+        ControlledVocabularyCustomJavaScript
         ;
 
         @Override

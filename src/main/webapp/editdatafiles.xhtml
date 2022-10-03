@@ -62,7 +62,8 @@
                                 <ui:param name="createDataset" value="false"/>
                                 <ui:param name="showFileButtonUpdate" value="true"/>
                                 <ui:param name="rsyncSupported" value="#{EditDatafilesPage.rsyncUploadSupported()}"/>
-                                <ui:param name="lockedFromEdits" value="#{EditDatafilesPage.lockedFromEdits}"/>                             
+                                <ui:param name="globusUploadSupported" value="#{EditDatafilesPage.globusUploadSupported()}"/>
+                                <ui:param name="lockedFromEdits" value="#{EditDatafilesPage.lockedFromEdits}"/>
                             </ui:include>
                         </div>
                     </ui:fragment> 
@@ -85,6 +86,7 @@
                                     <p:commandButton id="savebutton" class="btn btn-default" value="#{bundle.saveChanges}"
                                                      update=":datasetForm,:messagePanel"
                                                      onclick="PF('blockFileForm').show();"
+                                                     onerror="javascript:editTimedOut(xhr);"
                                                      oncomplete="$(document).scrollTop(0);"
                                                      action="#{EditDatafilesPage.save}"/>
                                     <p:commandButton styleClass="btn btn-link" id="cancelbutton" value="#{bundle.cancel}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form"/>
@@ -94,6 +96,7 @@
                                     <p:remoteCommand name="cancelEditCommand" process="@this" partialSubmit="true" async="true" update="" action="#{EditDatafilesPage.cancel}"/>     
  
                                 </div>
+                                <p:remoteCommand name="reportEditContinues" process="@this" update=":datasetForm,:messagePanel" actionListener="#{EditDatafilesPage.reportEditContinues}"/>
                             </p:outputPanel>
                         </div>
                     </ui:fragment>
@@ -101,6 +104,18 @@
                 </h:form>
                 
                 <p:blockUI block="datasetForm" widgetVar="blockFileForm"/>
+
+                <script>
+                    //<![CDATA[
+                    function editTimedOut(xhr) {
+                      if(xhr!=null) {
+                        if(xhr.status==500) {
+                          reportEditContinues();
+                        }
+                      }
+                    }
+                    //]]>
+                </script>
             </ui:define>
         </ui:composition>
     </h:body>

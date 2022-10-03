@@ -89,7 +89,7 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
                 PrivateUrl privateUrl = ctxt.privateUrl().getPrivateUrlFromDatasetId(doomed.getId());
                 if (privateUrl != null) {
                     logger.fine("Deleting Private URL for dataset id " + doomed.getId());
-                    PrivateUrlUser privateUrlUser = new PrivateUrlUser(doomed.getId());
+                    PrivateUrlUser privateUrlUser = new PrivateUrlUser(doomed.getId(), privateUrl.isAnonymizedAccess());
                     List<RoleAssignment> roleAssignments = ctxt.roles().directRoleAssignments(privateUrlUser, doomed);
                     for (RoleAssignment roleAssignment : roleAssignments) {
                         ctxt.roles().revoke(roleAssignment);

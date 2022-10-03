@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
+
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
@@ -26,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
  *
  * @author rmp553
  */
+
 public class MyDataFilterParams {
 
     private static final Logger logger = Logger.getLogger(MyDataFilterParams.class.getCanonicalName());
@@ -141,6 +143,7 @@ public class MyDataFilterParams {
         
         // Do something here if none chosen!
         this.roleIds = roleIds;
+
         
         if ((searchTerm == null)||(searchTerm.trim().isEmpty())){
             this.searchTerm = MyDataFilterParams.defaultSearchTerm;
@@ -181,7 +184,7 @@ public class MyDataFilterParams {
         }
 
         if ((this.roleIds == null)||(this.roleIds.isEmpty())){
-            this.addError("No results. Please select at least one Role.");
+            this.addError("No results for " + this.authenticatedUser.getName());
             return;
         }
 

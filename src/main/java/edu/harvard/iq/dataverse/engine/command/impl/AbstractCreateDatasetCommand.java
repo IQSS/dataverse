@@ -102,7 +102,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         }
         if (theDataset.getStorageIdentifier() == null) {
         	String driverId = theDataset.getEffectiveStorageDriverId();
-        	theDataset.setStorageIdentifier(driverId  + "://" + theDataset.getAuthorityForFileStorage() + "/" + theDataset.getIdentifierForFileStorage());
+        	theDataset.setStorageIdentifier(driverId  + DataAccess.SEPARATOR + theDataset.getAuthorityForFileStorage() + "/" + theDataset.getIdentifierForFileStorage());
         }
         if (theDataset.getIdentifier()==null) {
             theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
@@ -125,7 +125,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         
         // DB updates - done.
         
-        // Now we need the acutal dataset id, so we can start indexing.
+        // Now we need the actual dataset id, so we can start indexing.
         ctxt.em().flush();
         
         //Use for code that requires database ids

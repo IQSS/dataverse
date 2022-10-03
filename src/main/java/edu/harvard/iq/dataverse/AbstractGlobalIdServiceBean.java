@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.InputStream;
@@ -62,7 +63,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
             authorString = UNAVAILABLE;
         }
 
-        String producerString = dataverseService.getRootDataverseName();
+        String producerString = BrandingUtil.getInstallationBrandName();
 
         if (producerString.isEmpty() || producerString.equals(DatasetField.NA_VALUE)) {
             producerString = UNAVAILABLE;
@@ -447,6 +448,10 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         String xmlMetadata = metadataTemplate.generateXML(dvObject);
         logger.log(Level.FINE, "XML to send to DataCite: {0}", xmlMetadata);
         return xmlMetadata;
+    }
+
+    public boolean updateIdentifier(DvObject dvObject) {
+        return publicizeIdentifier(dvObject);
     }
     
 }

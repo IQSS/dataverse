@@ -28,6 +28,7 @@ import org.apache.commons.io.FileUtils;
 import javax.batch.runtime.JobExecution;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.FileHandler;
@@ -60,7 +61,7 @@ public class LoggingUtil {
                 logger.log(Level.SEVERE, "Couldn't create directory: " + dir.getAbsolutePath());
             }
             File logFile = new File(dir.getAbsolutePath() + fileName);
-            FileUtils.writeStringToFile(logFile, fileContent);
+            FileUtils.writeStringToFile(logFile, fileContent, StandardCharsets.UTF_8);
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error saving log report: " + fileName + " " + e.getMessage());
         }
@@ -94,9 +95,9 @@ public class LoggingUtil {
             }
             File logFile = new File(dir.getAbsolutePath() +"/"+ fileName);
             if(!logFile.exists() && null != logHeader) {
-                FileUtils.writeStringToFile(logFile, logHeader);
+                FileUtils.writeStringToFile(logFile, logHeader, StandardCharsets.UTF_8);
             }
-            FileUtils.writeStringToFile(logFile, fileContent, true);
+            FileUtils.writeStringToFile(logFile, fileContent, StandardCharsets.UTF_8, true);
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error saving log report: " + fileName + " " + e.getMessage());
         }
@@ -142,6 +143,8 @@ public class LoggingUtil {
 			    {
 			    	logger.log(Level.INFO,"log directory: " + d.getAbsolutePath() + " created");
 			    }
+		    } else {
+		        logger.fine("log dir " + d.getAbsolutePath());
 		    }
 	    }
 	    catch( SecurityException e)

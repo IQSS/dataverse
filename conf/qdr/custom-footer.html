@@ -1,0 +1,7 @@
+<div id="custom-footer"></div>
+<script>
+    $(document).ready(function() {
+        $url = $('#qdrdrupalurl').text();
+        $('#custom-footer').load($url + '/content/just-footer');
+    });
+</script>

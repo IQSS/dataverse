@@ -36,7 +36,7 @@ public class BagValidatorTest {
     @Before
     public void beforeEachTest() {
         manifestReader = Mockito.mock(ManifestReader.class);
-        target = new BagValidator(manifestReader);
+        target = Mockito.spy(new BagValidator(manifestReader));
     }
 
     @Test
@@ -93,7 +93,7 @@ public class BagValidatorTest {
 
         MatcherAssert.assertThat(result.success(), Matchers.is(false));
         MatcherAssert.assertThat(result.getErrorMessage().isEmpty(), Matchers.is(false));
-        MatcherAssert.assertThat(result.getErrorMessage().get(), Matchers.containsString("Invalid bag file"));
+        Mockito.verify(target).getMessage(Mockito.eq("bagit.validation.bag.file.not.found"), Mockito.any());
 
         Mockito.verifyZeroInteractions(manifestReader);
     }
@@ -119,7 +119,7 @@ public class BagValidatorTest {
 
         MatcherAssert.assertThat(result.success(), Matchers.is(false));
         MatcherAssert.assertThat(result.getErrorMessage().isEmpty(), Matchers.is(false));
-        MatcherAssert.assertThat(result.getErrorMessage().get(), Matchers.containsString("No supported manifest found"));
+        Mockito.verify(target).getMessage(Mockito.eq("bagit.validation.manifest.not.supported"), Mockito.any());
 
         Mockito.verify(manifestReader).getManifestChecksums(fileDataProvider, expectedBagRoot);
     }
@@ -139,8 +139,8 @@ public class BagValidatorTest {
         MatcherAssert.assertThat(result.getFileResults().size(), Matchers.is(checksums.getFileChecksums().size()));
         for(Path filePath: checksums.getFileChecksums().keySet()) {
             MatcherAssert.assertThat(result.getFileResults().get(filePath).isError(), Matchers.is(true));
-            MatcherAssert.assertThat(result.getFileResults().get(filePath).getMessage(), Matchers.containsString("Manifest declared file"));
         }
+        Mockito.verify(target, Mockito.times(checksums.getFileChecksums().size())).getMessage(Mockito.eq("bagit.validation.file.not.found"), Mockito.any());
 
         Mockito.verify(manifestReader).getManifestChecksums(fileDataProvider, expectedBagRoot);
         Mockito.verify(fileDataProvider).getFilePaths();
@@ -226,7 +226,7 @@ public class BagValidatorTest {
 
         MatcherAssert.assertThat(result.success(), Matchers.is(false));
         MatcherAssert.assertThat(result.getErrorMessage().isEmpty(), Matchers.is(false));
-        MatcherAssert.assertThat(result.getErrorMessage().get(), Matchers.containsString("Unable to complete checksums"));
+        Mockito.verify(target).getMessage(Mockito.eq("bagit.validation.exception"), Mockito.any());
     }
 
     private FileDataProvider createDataProviderWithRandomFiles(String... filePathItems) {

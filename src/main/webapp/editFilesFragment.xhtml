@@ -15,12 +15,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/components/core.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/components/md5.js"></script>
     <!-- Static Tab Layout -->
-    <div data-widget="content" class="ui-tabs ui-widget ui-widget-content ui-corner-all ui-hidden-container ui-tabs-top" id="datasetForm:tabView">
+    <div data-widget="content" class="ui-tabs ui-widget ui-widget-content ui-corner-all ui-hidden-container" id="datasetForm:tabView">
         <ul role="tablist" class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
             <li aria-expanded="true" role="tab" class="ui-state-default ui-tabs-selected ui-state-active ui-corner-top">
                 <a href="#datasetForm:tabView:dataFilesTab">#{bundle['files']}</a>
             </li>
         </ul>
+        <div class="file-row-panel-backdrop"></div>
         <div class="ui-tabs-panels">
             <div aria-hidden="false" role="tabpanel" class="ui-tabs-panel ui-widget-content ui-corner-bottom" id="datasetForm:tabView:dataFilesTab">
                 <!-- Create dataset workflow info msg + user guide link -->
@@ -28,10 +29,8 @@
                     <p class="help-block">
                         <h:outputFormat value="#{bundle['dataset.message.uploadFilesSingle.message']}" escape="false"
                                         rendered="#{settingsWrapper.uploadMethodsCount == 1}">
-                            <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                            <f:param value="#{systemConfig.guidesVersion}"/>
+                            <f:param value="#{settingsWrapper.get(':QDRDrupalSiteURL')}"/>
                         </h:outputFormat>
-                        
                         <h:outputText value="#{bundle['dataset.message.uploadFilesMultiple.message']}" escape="false"
                                         rendered="#{settingsWrapper.uploadMethodsCount > 1}"/>
                     </p>
@@ -67,31 +66,30 @@
                                 </p>
                             </div>
                             <div class="panel-body" jsf:id="contentOfHttpPanel" jsf:rendered="#{!EditDatafilesPage.workingVersion.hasPackageFile}">
-                                <p class="help-block">
-                                    <h:outputFormat value="#{bundle['file.selectToAdd.tipMoreInformation']}" escape="false">
-                                        <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                                        <f:param value="#{systemConfig.guidesVersion}"/>
-                                    </h:outputFormat>
-                                    <h:outputFormat value=" #{bundle['file.selectToAdd.tipMaxNumFiles']}" escape="false"
-                                                    rendered="#{EditDatafilesPage.maxNumberOfFiles > 0}">
-                                        <f:param value="#{EditDatafilesPage.maxNumberOfFiles}"/>
-                                    </h:outputFormat>
-                                    <h:outputFormat value=" #{bundle['file.selectToAdd.tipLimit']}" escape="false" 
-                                                    rendered="#{!EditDatafilesPage.isUnlimitedUploadFileSize()}">
-                                        <f:param value="#{EditDatafilesPage.getHumanMaxFileUploadSizeInBytes()}"/>
-                                    </h:outputFormat>
-                                    <h:outputFormat value=" #{bundle['file.selectToAdd.tipTabularLimit']}" escape="false"
-                                                    rendered="#{EditDatafilesPage.maxIngestSizeInBytes != -1}">
-                                        <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                                        <f:param value="#{systemConfig.guidesVersion}"/>
-                                        <f:param value="#{EditDatafilesPage.humanMaxIngestSizeInBytes}"/>
-                                    </h:outputFormat>
-                                    <h:outputFormat value=" #{bundle['file.selectToAdd.tipPerFileTabularLimit']}"
-                                                    rendered="#{not empty EditDatafilesPage.humanPerFormatTabularLimits}">
-                                        <f:param value="#{EditDatafilesPage.humanPerFormatTabularLimits}"/>
-                                    </h:outputFormat>
-                                </p>
                     
+                    <p class="help-block">
+                        <h:outputFormat value=" #{bundle['file.selectToAdd.tipMoreInformation']}" escape="false">
+                            <f:param value="#{settingsWrapper.get(':QDRDrupalSiteURL')}"/>
+                        </h:outputFormat>
+                        <h:outputFormat value=" #{bundle['file.selectToAdd.tipMaxNumFiles']}" escape="false"
+                                        rendered="#{EditDatafilesPage.maxNumberOfFiles > 0}">
+                            <f:param value="#{EditDatafilesPage.maxNumberOfFiles}"/>
+                        </h:outputFormat>
+                        <h:outputFormat value=" #{bundle['file.selectToAdd.tipLimit']}" escape="false"
+                                        rendered="#{!EditDatafilesPage.isUnlimitedUploadFileSize()}">
+                            <f:param value="#{EditDatafilesPage.getHumanMaxFileUploadSizeInBytes()}"/>
+                        </h:outputFormat>                      
+                        <h:outputFormat value=" #{bundle['file.selectToAdd.tipTabularLimit']}" escape="false"
+                                        rendered="#{EditDatafilesPage.maxIngestSizeInBytes != -1}">
+                            <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                            <f:param value="#{systemConfig.guidesVersion}"/>
+                            <f:param value="#{EditDatafilesPage.humanMaxIngestSizeInBytes}"/>
+                        </h:outputFormat>
+                        <h:outputFormat value=" #{bundle['file.selectToAdd.tipPerFileTabularLimit']}"
+                                         rendered="#{not empty EditDatafilesPage.humanPerFormatTabularLimits}">
+                            <f:param value="#{EditDatafilesPage.humanPerFormatTabularLimits}"/>
+                        </h:outputFormat>
+                    </p>
                     <script>
                         //<![CDATA[
                         function uploadWidgetDropMsg() {
@@ -102,6 +100,9 @@
                         }
                         function dropBoxUploadFinished(fileupload) {
                             $('button[id$="dropBoxUploadFinished"]').trigger('click');
+                        }
+                        function hypothesisUploadFinished(fileupload) {
+                            $('button[id$="hypothesisUploadFinished"]').trigger('click');
                         }
                         function uploadWidgetDropRemoveMsg() {
                             $('div[id$="fileUpload"] div.ui-fileupload-content div#dragdropMsg').remove();
@@ -166,6 +167,34 @@
                                     <p:commandButton id="dropBoxButton" actionListener="#{EditDatafilesPage.handleDropBoxUpload}" oncomplete="javascript:dropBoxUploadFinished();" update="@none" style="display:none;" />
                                     <p:commandButton id="dropBoxUserButton" disabled="#{!(datasetPage || EditDatafilesPage.showFileUploadComponent())}" value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status" />
                                     <p:message for="dropBoxButton" id="dropBoxUploadMessage" display="text" redisplay="false" />
+                                    
+                                </div>
+                                <div jsf:id="hypothesisBlock" jsf:rendered="#{settingsWrapper.isHasHypothesisKey() and !lockedFromEdits }"  class="margin-top">
+                                    <!-- Hypothesis upload widget -->
+                                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.fromHypothesis.tip']}</p>
+                                    <div>
+                                      <label for="datasetForm:hypothesisUrlInput" class="col-sm-1 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.hypothesis.url.tip']}">
+                                          #{bundle['dataset.hypothesis.url']}
+                                        </span>
+                                      </label>
+                                      <h:inputText id="hypothesisUrlInput"  value="#{EditDatafilesPage.hypothesisUrlSelection}"/>
+                                    </div>
+                                    <div>
+                                      <label for="datasetForm:hypothesisGroupInput" class="col-sm-1 control-label">
+                                        <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['dataset.hypothesis.group.tip']}">
+                                          #{bundle['dataset.hypothesis.group']}
+                                        </span>
+                                      </label>
+                                      <h:inputText id="hypothesisGroupInput" value="#{EditDatafilesPage.hypothesisGroupSelection}"/>
+                                    </div>
+                                    <p:commandButton id="hypothesisButton" disabled="#{!(datasetPage || EditDatafilesPage.showFileUploadComponent())}" value="#{bundle['file.fromHypothesis']}" actionListener="#{EditDatafilesPage.handleHypothesisUpload}" oncomplete="javascript:hypothesisUploadFinished();" update="@none" icon="hypothesis-btn-status" />
+                                    <p:message for="hypothesisButton" id="hypothesisUploadMessage" display="text" redisplay="false" />
+                                </div>
+                                <div jsf:id="globusBlock" jsf:rendered="#{globusUploadSupported and !lockedFromEdits }"  class="margin-top">
+                                    <p class="help-block" jsf:rendered="#{!createDataset}">#{bundle['file.fromGlobus.tip']}</p>
+                                    <p class="help-block" jsf:rendered="#{createDataset}">#{bundle['file.fromGlobusAfterCreate.tip']}</p>
+                                    <p:button target="_blank" rendered="#{!createDataset}" onclick="cancelDatasetEdit();window.open('#{GlobusServiceBean.getGlobusAppUrlForDataset(dataset)}');return false;" value="#{bundle['file.fromGlobus']}"  icon="globus-btn" />
                                 </div>
                     
                             </div>
@@ -292,19 +321,21 @@
                                 </ui:fragment>
                             </div>
                         </div>
-                    </div>               
+                    </div>
                     
-                    <p:message for="fileUpload" id="uploadMessage" display="text" />
+                    <p:message for="fileUpload" id="uploadMessage" display="text" escape="false"/>
                     
                     <p:commandButton id="updateEditDataFilesButtonsForUpload" action="#{EditDatafilesPage.uploadFinished()}" update="datasetForm:editDataFilesButtons" rendered="#{showFileButtonUpdate}" style="display:none"/>
                     <p:commandButton id="updateEditDataFilesButtonsForDelete" action="#{EditDatafilesPage.deleteFilesCompleted()}" update="datasetForm:editDataFilesButtons" rendered="#{showFileButtonUpdate}" style="display:none"/>
-                    <p:commandButton id="AllUploadsFinished" action="#{EditDatafilesPage.uploadFinished()}" update="@([id$=filesButtons]),datasetForm:contentOfHttpPanel,datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:uploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable" oncomplete="javascript:uploadWidgetDropMsg();" style="display:none"/> 
+                    <p:commandButton id="AllUploadsFinished" action="#{EditDatafilesPage.uploadFinished()}" update="@([id$=filesButtons]),datasetForm:contentOfHttpPanel,datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:hypothesisButton,datasetForm:uploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable" oncomplete="javascript:uploadWidgetDropMsg();" style="display:none"/> 
                     <p:commandButton id="dropBoxUploadFinished" action="#{EditDatafilesPage.uploadFinished()}" update="@([id$=filesButtons]),datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:dropBoxUploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable" style="display:none"/>
-                    <p:commandButton id="allDeletesFinished" action="#{EditDatafilesPage.deleteFilesCompleted()}" update="@([id$=filesButtons]),datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:uploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable" oncomplete="javascript:uploadWidgetDropMsg();" style="display:none"/> 
+                    <p:commandButton id="hypothesisUploadFinished" action="#{EditDatafilesPage.uploadFinished()}" update="@([id$=filesButtons]),datasetForm:fileUpload,datasetForm:hypothesisButton,datasetForm:hypothesisUploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable" style="display:none"/>
+                    <p:commandButton id="allDeletesFinished" action="#{EditDatafilesPage.deleteFilesCompleted()}" update="@([id$=filesButtons]),datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:hypothesisButton,datasetForm:uploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable" oncomplete="javascript:uploadWidgetDropMsg();" style="display:none"/> 
                     <!-- ????? TODO: How scalable are all these hidden update buttons ????? -->
                     <!-- ????? 
                     datasetForm:fileUpload,
                     datasetForm:dropBoxUserButton,
+                    datasetForm:hypothesisButton,
                     datasetForm:uploadMessage,
                     datasetForm:filesCounts,
                     datasetForm:filesTable,
@@ -374,13 +405,13 @@
                                         </div>
                                     </div>
                                     <div class="col-md-10 file-metadata-block">
-                                        <label class="control-label" for="datasetForm:filesTable:#{rowNum}:fileName" style="margin-right:1em;margin-bottom:.5em;">
+                                        <label class="control-label" jsf:for="fileName" style="margin-right:1em;margin-bottom:.5em;">
                                             #{bundle['file.fileName']}
                                         </label>
                                         <p:inputText id="fileName" value="#{fileMetadata.label}" style="width:60%; margin-bottom:.5em;" disabled="#{fileMetadata.dataFile.filePackage}"/>
                                         <p:message for="datasetForm:filesTable:#{rowNum}:fileName"/>
 
-                                        <label class="control-label" for="datasetForm:filesTable:#{rowNum}:fileDirectoryName" style="margin-right:1em;margin-bottom:.5em;">
+                                        <label class="control-label" jsf:for="fileDirectoryName" style="margin-right:1em;margin-bottom:.5em;">
                                             #{bundle['file.metadataTab.fileMetadata.hierarchy.label']}    
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.metadataTab.fileMetadata.hierarchy.tip']}"></span>
@@ -442,7 +473,7 @@
                                                     <f:setPropertyActionListener target="#{DatasetPage.selectedFiles}" value="#{EditDatafilesPage.selectedFiles}" /> 
                                                 </p:commandLink>
                                             </li>
-                                            <li>
+                                            <li jsf:rendered="#{!DatasetPage.hasPublicStore}">
                                                 <p:commandLink  onclick="if (!testFilesSelected2()) return false;"
                                                                 update="@([id$=accessPopup])" 
                                                                 oncomplete="PF('accessPopup').show();">                                                               
@@ -452,7 +483,7 @@
                                                     <f:setPropertyActionListener target="#{DatasetPage.selectedFiles}" value="#{EditDatafilesPage.selectedFiles}" /> 
                                                 </p:commandLink>
                                             </li>
-                                            <li>
+                                            <li jsf:rendered="#{!DatasetPage.hasPublicStore}">
                                                 <p:commandLink  onclick="if (!testFilesSelected2()) return false;"
                                                                 actionListener="#{EditDatafilesPage.restrictFiles(false)}"
                                                                 update="filesTable,:messagePanel" 

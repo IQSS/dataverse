@@ -43,7 +43,7 @@
         </p:commandLink>
     </li>
 
-    <ui:fragment rendered="#{!settingsWrapper.publicInstall}">
+    <ui:fragment rendered="#{!bean.hasPublicStore}">
         <ui:fragment rendered="#{fileMetadata == null or !fileMetadata.restricted}">
             <li>
                 <p:commandLink  onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))
@@ -76,6 +76,22 @@
             <h:outputLink value="/editdatafiles.xhtml?mode=REPLACE#{isFilePg?'&#38;referrer=FILE':''}&#38;datasetId=#{fileMetadata.datasetVersion.dataset.id}&#38;fid=#{fileMetadata.dataFile.id}&#38;version=#{fileMetadata.datasetVersion.version}">
                 <h:outputText value="#{bundle['file.replace']}"/>
             </h:outputLink>
+        </li>
+    </ui:fragment>
+    
+    <!-- QDR - single file uningest/reingest -->
+    <ui:fragment rendered="#{isFilePg and dataverseSession.user.superuser and (FilePage.fileMetadata.dataFile.isTabularData() or FilePage.fileMetadata.dataFile.isIngestProblem())}">
+        <li>
+            <p:commandLink update="@form,:messagePanel,:fileForm:fileTitleFragment, :fileForm:topDatasetBlockFragment" action="#{FilePage.uningestFile()}">
+                <h:outputText value="#{bundle['file.uningest']}"/>
+            </p:commandLink>
+        </li>
+    </ui:fragment>
+    <ui:fragment rendered="#{isFilePg and dataverseSession.user.superuser and FilePage.isIngestable()}">
+        <li>
+            <p:commandLink update="@form,:messagePanel" actionListener="#{FilePage.ingestFile()}">
+                <h:outputText value="#{bundle['file.ingest']}"/>
+            </p:commandLink>
         </li>
     </ui:fragment>
 

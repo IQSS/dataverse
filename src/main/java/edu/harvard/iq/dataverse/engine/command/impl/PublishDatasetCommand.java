@@ -82,16 +82,15 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             // First Release
             theDataset.getLatestVersion().setVersionNumber(new Long(1)); // minor release is blocked by #verifyCommandArguments
             theDataset.getLatestVersion().setMinorVersionNumber(new Long(0));
-            
+
         } else if ( minorRelease ) {
-            theDataset.getLatestVersion().setVersionNumber(new Long(theDataset.getVersionNumber()));
-            theDataset.getLatestVersion().setMinorVersionNumber(new Long(theDataset.getMinorVersionNumber() + 1));
-            
-        } else {
-            // major, non-first release
-            theDataset.getLatestVersion().setVersionNumber(new Long(theDataset.getVersionNumber() + 1));
-            theDataset.getLatestVersion().setMinorVersionNumber(new Long(0));
-        }
+                theDataset.getLatestVersion().setVersionNumber(new Long(theDataset.getVersionNumber()));
+                theDataset.getLatestVersion().setMinorVersionNumber(new Long(theDataset.getMinorVersionNumber() + 1));
+            } else {
+                // major, non-first release
+                theDataset.getLatestVersion().setVersionNumber(new Long(theDataset.getVersionNumber() + 1));
+                theDataset.getLatestVersion().setMinorVersionNumber(new Long(0));
+            }
         
         // Perform any optional validation steps, if defined:
         if (ctxt.systemConfig().isExternalDatasetValidationEnabled()) {

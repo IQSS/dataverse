@@ -108,6 +108,8 @@ public class BrandingUtilTest {
     public void testGetSupportTeamName(String mockedRootName, String expected, InternetAddress email) throws AddressException, UnsupportedEncodingException {
         // given
         Mockito.when(dataverseSvc.getRootDataverseName()).thenReturn(mockedRootName);
+        //QDR uses installation name
+        Mockito.when(settingsSvc.getValueForKey(SettingsServiceBean.Key.InstallationName)).thenReturn(mockedRootName);
         // when & then
         assertEquals(expected, BrandingUtil.getSupportTeamName(email));
     }
@@ -138,15 +140,14 @@ public class BrandingUtilTest {
         log.fine(testInfo.getDisplayName());
         String message = BundleUtil.getStringFromBundle("notification.welcome",
                 Arrays.asList(
-                        "LibraScholar",
+                		"LibraScholar",
                         "<a href=\"http://guides.dataverse.org/en/4.3/user/index.html\">User Guide</a>",
-                        "<a href=\"https://demo.dataverse.org\">Demo Site</a>"
+                        "<a mailto:\"LibraScholar<support@librascholar.edu>\">contact us</a>"
                 ))
                 + " " + BundleUtil.getStringFromBundle("notification.welcomeConfirmEmail");
         log.fine("message: " + message);
         assertEquals("Welcome to LibraScholar! Get started by adding or finding data. "
-                + "Have questions? Check out the <a href=\"http://guides.dataverse.org/en/4.3/user/index.html\">User Guide</a>."
-                + " Want to test out Dataverse features? Use our <a href=\"https://demo.dataverse.org\">Demo Site</a>."
+                + "Have questions? Check out our <a href=\"http://guides.dataverse.org/en/4.3/user/index.html\">User Guide</a> or <a mailto:\"LibraScholar<support@librascholar.edu>\">contact us</a>."
                 + " Also, check for your welcome email to verify your address.",
                 message);
     }
@@ -156,16 +157,15 @@ public class BrandingUtilTest {
         log.fine(testInfo.getDisplayName());
         String message = BundleUtil.getStringFromBundle("notification.email.welcome",
                 Arrays.asList(
-                        "LibraScholar",
-                        "http://guides.librascholar.edu/en",
-                        "4.3",
+                		"LibraScholar",
+                		"documentation",
+                        "http://guides.librascholar.edu/en/4.3",
                         "LibraScholar Support",
                         "support@librascholar.edu"
                 ));
         log.fine("message: " + message);
-        assertEquals("Welcome to LibraScholar! Get started by adding or finding data. "
-                + "Have questions? Check out the User Guide at http://guides.librascholar.edu/en/4.3/user or"
-                + " contact LibraScholar Support at support@librascholar.edu for assistance.",
+        //QDR - suppress Welcome Email
+        assertEquals("",
                 message);
     }
 
@@ -178,7 +178,7 @@ public class BrandingUtilTest {
                         "LibraScholar Support Team"
                 ));
         log.fine("message: " + message);
-        assertEquals("\n\nYou may contact us for support at support@librascholar.edu.\n\nThank you,\nLibraScholar Support Team",
+        assertEquals("\n\nPlease be in touch with any questions or concerns support@librascholar.edu.\n\nThank you,\nThe LibraScholar Support Team",
                 message);
     }
 
@@ -190,14 +190,14 @@ public class BrandingUtilTest {
                         "LibraScholar"
                 ));
         log.fine("message: " + message);
-        assertEquals("LibraScholar: Your account has been created",
+        assertEquals("",
                 message);
     }
 
     @Test
     public void testGetContactHeader() {
         Mockito.when(dataverseSvc.getRootDataverseName()).thenReturn(null);
-        assertEquals("Contact Support", BrandingUtil.getContactHeader(null));
+        assertEquals("Contact LibraScholar Support", BrandingUtil.getContactHeader(null));
     }
 
 }

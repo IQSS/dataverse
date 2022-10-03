@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.Template;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -19,6 +20,7 @@ import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
+
 import java.util.List;
 import java.sql.Timestamp;
 import java.time.Instant;

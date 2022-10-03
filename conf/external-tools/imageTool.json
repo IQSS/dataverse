@@ -1,0 +1,16 @@
+{
+  "displayName":"Image View",
+  "description":"Preview an image file.",
+  "type":"explore",
+  "toolUrl":"https://dv.dev-aws.qdr.org/resources/previewers/ImagePreview.html",
+  "toolParameters": {
+      "queryParameters":[
+        {"fileid":"{fileId}"},
+        {"siteUrl":"{siteUrl}"},
+        {"key":"{apiToken}"},
+        {"datasetid":"{datasetId}"},
+        {"datasetversion":"{datasetVersion}"}
+      ]
+    },
+  "contentType":"image/jpeg"
+}

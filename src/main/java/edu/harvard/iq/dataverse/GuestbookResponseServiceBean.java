@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -848,9 +849,9 @@ public class GuestbookResponseServiceBean {
             in.setDataFile(fm.getDataFile());
             in.setSelectedFileIds(fm.getDataFile().getId().toString());
         }
-        if (in != null && fm.getDatasetVersion() != null && fm.getDatasetVersion().isDraft()) {
+        if (in != null && fm.getDatasetVersion() != null && fm.getDatasetVersion().isDraft() ) {
             in.setWriteResponse(false);
-        }
+        } 
         return in;
     }
     
@@ -861,10 +862,10 @@ public class GuestbookResponseServiceBean {
             in.setDatasetVersion(fm.getDatasetVersion());
             in.setSelectedFileIds(fm.getDataFile().getId().toString());
         }
-        if (in != null && fm.getDatasetVersion() != null && fm.getDatasetVersion().isDraft()) {
+        if (in != null && fm.getDatasetVersion() != null && fm.getDatasetVersion().isDraft() ) {
             in.setWriteResponse(false);
         }
-
+        
         return in;
     }
 
@@ -877,6 +878,9 @@ public class GuestbookResponseServiceBean {
     public GuestbookResponse modifyDatafileAndFormat(GuestbookResponse in, FileMetadata fm, String format, ExternalTool externalTool) {
         if (in != null && externalTool != null) {
             in.setExternalTool(externalTool);
+        }
+        if (in != null && fm != null && fm.getDatasetVersion() != null) {
+            in.setDatasetVersion(fm.getDatasetVersion());
         }
         return modifyDatafileAndFormat(in, fm, format);
     }
@@ -910,8 +914,17 @@ public class GuestbookResponseServiceBean {
     }
     
     public Long getCountGuestbookResponsesByDatasetId(Long datasetId) {
+        return getCountGuestbookResponsesByDatasetId(datasetId, null);
+    }
+    
+    public Long getCountGuestbookResponsesByDatasetId(Long datasetId, LocalDate date) {
         // dataset id is null, will return 0        
-        Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId);
+        Query query;
+        if(date != null) {
+            query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId + " and responsetime < '" + date.toString() + "'");
+        }else {
+            query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId);
+        }
         return (Long) query.getSingleResult();
     }    
 

@@ -35,7 +35,6 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
 
-
         if (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser()) {
             throw new PermissionException(BundleUtil.getStringFromBundle("datasets.api.updatePIDMetadata.auth.mustBeSuperUser"),
                     this, Collections.singleton(Permission.EditDataset), target);
@@ -48,38 +47,36 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
         }
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(target.getProtocol(), ctxt);
         try {
-            Boolean doiRetString = idServiceBean.publicizeIdentifier(target);
+            Boolean doiRetString = idServiceBean.updateIdentifier(target);
             if (doiRetString) {
                 target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                 ctxt.em().merge(target);
                 ctxt.em().flush();
-                // When updating, we want to traverse through files even if the dataset itself
-                // didn't need updating.
-                String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
-                String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
-                boolean isFilePIDsEnabled = ctxt.systemConfig().isFilePIDsEnabled();
-                // We will skip trying to update the global identifiers for datafiles if they
-                // aren't being used.
-                // If they are, we need to assure that there's an existing PID or, as when
-                // creating PIDs, that the protocol matches that of the dataset DOI if
-                // we're going to create a DEPENDENT file PID.
-                String protocol = target.getProtocol();
-                for (DataFile df : target.getFiles()) {
-                    if (isFilePIDsEnabled && // using file PIDs and
-                            (!(df.getIdentifier() == null || df.getIdentifier().isEmpty()) || // identifier exists, or
-                                    currentGlobalIdProtocol.equals(protocol) || // right protocol to create dependent DOIs, or
-                                    dataFilePIDFormat.equals("INDEPENDENT"))// or independent. TODO(pm) - check authority too
-                    ) {
-                        doiRetString = idServiceBean.publicizeIdentifier(df);
-                        if (doiRetString) {
-                            df.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
-                            ctxt.em().merge(df);
-                            ctxt.em().flush();
-                        }
+            }
+            // When updating, we want to traverse through files even if the dataset itself
+            // didn't need updating.
+            String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
+            String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
+            boolean isFilePIDsEnabled = ctxt.systemConfig().isFilePIDsEnabled();
+            // We will skip trying to update the global identifiers for datafiles if they
+            // aren't being used.
+            // If they are, we need to assure that there's an existing PID or, as when
+            // creating PIDs, that the protocol matches that of the dataset DOI if
+            // we're going to create a DEPENDENT file PID.
+            String protocol = target.getProtocol();
+            for (DataFile df : target.getFiles()) {
+                if (isFilePIDsEnabled && // using file PIDs and
+                        (!(df.getIdentifier() == null || df.getIdentifier().isEmpty()) || // identifier exists, or
+                                currentGlobalIdProtocol.equals(protocol) || // right protocol to create dependent DOIs, or
+                                dataFilePIDFormat.equals("INDEPENDENT"))// or independent. TODO(pm) - check authority too
+                ) {
+                    doiRetString = idServiceBean.updateIdentifier(df);
+                    if (doiRetString) {
+                        df.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
+                        ctxt.em().merge(df);
+                        ctxt.em().flush();
                     }
                 }
-            } else {
-                //do nothing - we'll know it failed because the global id create time won't have been updated.
             }
         } catch (Exception e) {
             //do nothing - item and the problem has been logged

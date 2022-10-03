@@ -333,7 +333,7 @@
                                                 </label>
                                             </div>
                                             <div id="metadataFieldOptionsPanel-Block" jsf:rendered="#{mdb.showDatasetFieldTypes}">
-                                                <div class="panel panel-default">
+                                                <div class="panel">
                                                     <div id="metadataFieldOptionsPanel-Body" class="panel-body">
                                                         <table id="metadataFieldOptions" class="table table-striped">
                                                             <tbody>
@@ -430,8 +430,8 @@
                         <div id="actionButtonBlock" class="col-xs-12 button-block margin-bottom" jsf:rendered="#{!widgetWrapper.widgetView}">
                             <div class="row">
                                 <!-- Metrics for Root Dataverse -->
-                                <div id="metrics-block1" class="col-xs-4" jsf:rendered="#{DataversePage.isRootDataverse() and !settingsWrapper.rsyncOnly}">
-                                    <div id="metrics-label" class="col-xs-4 small text-center">
+                                <div id="metrics-block1" class="col-xs-2" jsf:rendered="#{DataversePage.isRootDataverse() and !settingsWrapper.rsyncOnly}">
+                                    <div id="metrics-label" class="small text-center">
                                         <h:outputLink value="#{settingsWrapper.metricsUrl}" target="_blank" title="#{bundle['metrics.title.tip']}" rendered="#{settingsWrapper.metricsUrl != null}">
                                             <span class="glyphicon glyphicon-stats"/> #{bundle['metrics.title']}
                                         </h:outputLink>
@@ -439,7 +439,7 @@
                                             <span class="glyphicon glyphicon-stats"/> #{bundle['metrics.title']}
                                         </ui:fragment>
                                     </div>
-                                    <div id="metrics-content" class="col-xs-8 small text-center">
+                                    <div id="metrics-content" class="small text-center">
                                         <h:outputFormat styleClass="metrics-downloads" value="{0} #{bundle['metrics.downloads']}">
                                             <f:param value="#{guestbookResponseServiceBean.getCountOfAllGuestbookResponses()}"/>
                                         </h:outputFormat>
@@ -447,7 +447,7 @@
                                 </div>
                                 <!-- END: Metrics for Root Dataverse-->
                                 <!-- ActionButtonBlock -->
-                                <div class="#{DataversePage.isRootDataverse() ? 'col-xs-8' : 'col-xs-12'} text-right padding-none">
+                                <div class="#{DataversePage.isRootDataverse() ? 'col-xs-10' : 'col-xs-12'} text-right padding-none">
                                     <!-- Email/Link/Share Button Group -->
                                     <div class="btn-group" role="group">
                                         <p:commandLink type="button" styleClass="text-button btn-contact bootstrap-button-tooltip" title="#{bundle['dataverse.contact']}"

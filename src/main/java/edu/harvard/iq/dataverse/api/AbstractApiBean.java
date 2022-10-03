@@ -25,6 +25,8 @@ import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
+import edu.harvard.iq.dataverse.api.util.FailedPIDResolutionLoggingServiceBean;
+import edu.harvard.iq.dataverse.api.util.FailedPIDResolutionLoggingServiceBean.FailedPIDResolutionEntry;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
@@ -45,6 +47,8 @@ import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.metrics.MetricsServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.locality.StorageSiteServiceBean;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -63,6 +67,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
@@ -253,6 +258,9 @@ public abstract class AbstractApiBean {
     @EJB 
     GuestbookResponseServiceBean gbRespSvc;
 
+    @Inject
+    FailedPIDResolutionLoggingServiceBean fprLogService;
+    
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     protected EntityManager em;
 
@@ -458,6 +466,8 @@ public abstract class AbstractApiBean {
             }
             dataset = datasetSvc.findByGlobalId(persistentId);
             if (dataset == null) {
+                FailedPIDResolutionLoggingServiceBean.FailedPIDResolutionEntry entry = new FailedPIDResolutionEntry(persistentId, httpRequest.getRequestURI(),httpRequest.getMethod(), new DataverseRequest(null, httpRequest).getSourceAddress());
+                fprLogService.logEntry(entry);
                 throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.persistentId", Collections.singletonList(persistentId))));
             }
             return dataset;
@@ -486,6 +496,8 @@ public abstract class AbstractApiBean {
             }
             datafile = fileService.findByGlobalId(persistentId);
             if (datafile == null) {
+                FailedPIDResolutionLoggingServiceBean.FailedPIDResolutionEntry entry = new FailedPIDResolutionEntry(persistentId, httpRequest.getRequestURI(),httpRequest.getMethod(), new DataverseRequest(null, httpRequest).getSourceAddress());
+                fprLogService.logEntry(entry);
                 throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.datafile.error.dataset.not.found.persistentId", Collections.singletonList(persistentId))));
             }
             return datafile;
@@ -630,6 +642,10 @@ public abstract class AbstractApiBean {
             return engineSvc.submit(cmd);
 
         } catch (IllegalCommandException ex) {
+            //for 8859 for api calls that try to update datasets with TOA out of compliance
+                if (ex.getMessage().toLowerCase().contains("terms of use")){
+                    throw new WrappedResponse(ex, conflict(ex.getMessage()));
+                }
             throw new WrappedResponse( ex, forbidden(ex.getMessage() ) );
         } catch (PermissionException ex) {
             /**
@@ -820,6 +836,10 @@ public abstract class AbstractApiBean {
     
     protected Response forbidden( String msg ) {
         return error( Status.FORBIDDEN, msg );
+    }
+    
+    protected Response conflict( String msg ) {
+        return error( Status.CONFLICT, msg );
     }
     
     protected Response badApiKey( String apiKey ) {

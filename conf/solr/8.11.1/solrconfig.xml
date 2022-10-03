@@ -35,7 +35,7 @@
        that you fully re-index after changing this setting as it can
        affect both how text is indexed and queried.
   -->
-  <luceneMatchVersion>7.3.0</luceneMatchVersion>
+  <luceneMatchVersion>8.11.1</luceneMatchVersion>
 
   <!-- <lib/> directives can be used to instruct Solr to load any Jars
        identified and use them to resolve any "plugins" specified in
@@ -75,14 +75,14 @@
   <lib dir="${solr.install.dir:../../../..}/contrib/extraction/lib" regex=".*\.jar" />
   <lib dir="${solr.install.dir:../../../..}/dist/" regex="solr-cell-\d.*\.jar" />
 
-  <lib dir="${solr.install.dir:../../../..}/contrib/clustering/lib/" regex=".*\.jar" />
-  <lib dir="${solr.install.dir:../../../..}/dist/" regex="solr-clustering-\d.*\.jar" />
-
   <lib dir="${solr.install.dir:../../../..}/contrib/langid/lib/" regex=".*\.jar" />
   <lib dir="${solr.install.dir:../../../..}/dist/" regex="solr-langid-\d.*\.jar" />
 
+  <lib dir="${solr.install.dir:../../../..}/dist/" regex="solr-ltr-\d.*\.jar" />
+
   <lib dir="${solr.install.dir:../../../..}/contrib/velocity/lib" regex=".*\.jar" />
   <lib dir="${solr.install.dir:../../../..}/dist/" regex="solr-velocity-\d.*\.jar" />
+
   <!-- an exact 'path' can be used instead of a 'dir' to specify a
        specific jar file.  This will cause a serious error to be logged
        if it can't be loaded.
@@ -157,9 +157,19 @@
          maxBufferedDocs sets a limit on the number of documents buffered
          before flushing.
          If both ramBufferSizeMB and maxBufferedDocs is set, then
-         Lucene will flush based on whichever limit is hit first.  -->
+         Lucene will flush based on whichever limit is hit first.
+         The default is 100 MB.  -->
     <!-- <ramBufferSizeMB>100</ramBufferSizeMB> -->
     <!-- <maxBufferedDocs>1000</maxBufferedDocs> -->
+
+    <!-- Expert: ramPerThreadHardLimitMB sets the maximum amount of RAM that can be consumed
+         per thread before they are flushed. When limit is exceeded, this triggers a forced
+         flush even if ramBufferSizeMB has not been exceeded.
+         This is a safety limit to prevent Lucene's DocumentsWriterPerThread from address space
+         exhaustion due to its internal 32 bit signed integer based memory addressing.
+         The specified value should be greater than 0 and less than 2048MB. When not specified,
+         Solr uses Lucene's default value 1945. -->
+    <!-- <ramPerThreadHardLimitMB>1945</ramPerThreadHardLimitMB> -->
 
     <!-- Expert: Merge Policy
          The Merge Policy in Lucene controls how merging of segments is done.
@@ -241,10 +251,11 @@
          To aid in advanced debugging, Lucene provides an "InfoStream"
          of detailed information when indexing.
 
-         Setting The value to true will instruct the underlying Lucene
-         IndexWriter to write its debugging info the specified file
+         Setting the value to true will instruct the underlying Lucene
+         IndexWriter to write its info stream to solr's log. By default,
+         this is enabled here, and controlled through log4j2.xml
       -->
-    <!-- <infoStream file="INFOSTREAM.txt">false</infoStream> -->
+     <infoStream>false</infoStream>
   </indexConfig>
 
 
@@ -408,8 +419,7 @@
                       to occupy. Note that when this option is specified, the size
                       and initialSize parameters are ignored.
       -->
-    <filterCache class="solr.search.CaffeineCache"
-                 size="512"
+    <filterCache size="512"
                  initialSize="512"
                  autowarmCount="0"/>
 
@@ -421,8 +431,7 @@
             maxRamMB - the maximum amount of RAM (in MB) that this cache is allowed
                        to occupy
       -->
-    <queryResultCache class="solr.search.CaffeineCache"
-                      size="512"
+    <queryResultCache size="512"
                       initialSize="512"
                       autowarmCount="0"/>
 
@@ -432,14 +441,12 @@
          document).  Since Lucene internal document ids are transient,
          this cache will not be autowarmed.
       -->
-    <documentCache class="solr.search.CaffeineCache"
-                   size="512"
+    <documentCache size="512"
                    initialSize="512"
                    autowarmCount="0"/>
 
     <!-- custom cache currently used by block join -->
     <cache name="perSegFilter"
-           class="solr.search.CaffeineCache"
            size="10"
            initialSize="0"
            autowarmCount="10"
@@ -693,53 +700,12 @@
     <lst name="defaults">
       <str name="echoParams">explicit</str>
       <int name="rows">10</int>
-      <str name="defType">edismax</str>
-      <float name="tie">0.075</float>
-        <str name="qf">
-            dvName^400
-            authorName^180
-            dvSubject^190
-            dvDescription^180
-            dvAffiliation^170
-            title^130
-            subject^120
-            keyword^110
-            topicClassValue^100
-            dsDescriptionValue^90
-            authorAffiliation^80
-            publicationCitation^60
-            producerName^50
-            fileName^30
-            fileDescription^30
-            variableLabel^20
-            variableName^10
-            _text_^1.0
-        </str>
-        <str name="pf">
-            dvName^200
-            authorName^100
-            dvSubject^100
-            dvDescription^100
-            dvAffiliation^100
-            title^75
-            subject^75
-            keyword^75
-            topicClassValue^75
-            dsDescriptionValue^75
-            authorAffiliation^75
-            publicationCitation^75
-            producerName^75
-        </str>
-        <!-- Even though this number is huge it only seems to apply a boost of ~1.5x to final result -MAD 4.9.3--> 
-        <str name="bq">
-            isHarvested:false^25000
-        </str>
 
       <!-- Default search field
-         <str name="df">text</str> 
+         <str name="df">text</str>
         -->
       <!-- Change from JSON to XML format (the default prior to Solr 7.0)
-         <str name="wt">xml</str> 
+         <str name="wt">xml</str>
         -->
     </lst>
     <!-- In addition to defaults, "appends" params can be specified

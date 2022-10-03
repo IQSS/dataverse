@@ -4,7 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public enum ExternalIdentifier {
-    ORCID("ORCID", "https://orcid.org/%s", "^\\d{4}-\\d{4}-\\d{4}-(\\d{4}|\\d{3}X)$"),
+    ORCID("ORCID", "https://orcid.org/%s", "^(https:\\/\\/orcid.org\\/)?\\d{4}-\\d{4}-\\d{4}-(\\d{4}|\\d{3}X)$"),
     ISNI("ISNI", "http://www.isni.org/isni/%s", "^\\d*$"),
     LCNA("LCNA", "http://id.loc.gov/authorities/names/%s", "^[a-z]+\\d+$"),
     VIAF("VIAF", "https://viaf.org/viaf/%s", "^\\d*$"),
@@ -53,6 +53,9 @@ public enum ExternalIdentifier {
     }
 
     public String format(String idValue) {
+        if(idValue.startsWith(template.substring(0,template.indexOf("%s")))) {
+            return idValue; 
+        }
         return String.format(template, idValue);
     }
 }

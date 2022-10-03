@@ -110,6 +110,9 @@ function init_mydata_page(){
       }
     });
 
+    // Add the grey background
+    addQDRBackdrop();
+
     // Normal form submit
     /*   mydata_filter_form removed b/c of JSF conflict (ahh..)
     $( "#mydata_filter_form" ).submit(function( event ) {
@@ -125,6 +128,12 @@ function init_mydata_page(){
 
 } // end init_mydata_page
 
+function addQDRBackdrop () {
+    // Add the grey background
+    if($('#file-row-panel-backdrop').length==0) {
+      $('<div id="file-row-panel-backdrop"></div>').insertAfter('.ui-tabs-panels');
+    }
+}
 
 //-----------------------------------------
 // clear page elements before displaying new results

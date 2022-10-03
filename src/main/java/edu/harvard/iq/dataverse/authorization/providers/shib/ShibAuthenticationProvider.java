@@ -33,6 +33,14 @@ public class ShibAuthenticationProvider implements AuthenticationProvider {
         return false;
     }
 
+    /* QDR Specific - QDR's Shib-based SSO mechanism allows password updates, mail pref update, and will allow other updates, so these should be 'true'
+    */
+    @Override
+    public boolean isPasswordUpdateAllowed() { return true; };
+    @Override
+    public boolean isUserInfoUpdateAllowed() { return true; };
+
+    
     // We don't override "isEmailVerified" because we're using timestamps
     // ("emailconfirmed" on the "authenticateduser" table) to know if
     // Shib users have confirmed/verified their email or not.

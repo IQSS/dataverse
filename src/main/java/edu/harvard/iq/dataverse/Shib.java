@@ -19,11 +19,14 @@ import edu.harvard.iq.dataverse.validation.EMailValidator;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -33,7 +36,9 @@ import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @ViewScoped
 @Named("Shib")
@@ -43,6 +48,10 @@ public class Shib implements java.io.Serializable {
 
     @Inject
     DataverseSession session;
+    @Inject
+    SettingsWrapper settingsWrapper;
+    @Inject
+    NavigationWrapper navigationWrapper;
 
     @EJB
     AuthenticationServiceBean authSvc;
@@ -55,11 +64,12 @@ public class Shib implements java.io.Serializable {
     @EJB
     UserNotificationServiceBean userNotificationService;
     @EJB
+    SystemConfig systemConfig;
+    @EJB
     SettingsServiceBean settingsService;
-	@EJB
-	SystemConfig systemConfig;
 
     HttpServletRequest request;
+    HttpServletResponse response;
 
     private String userPersistentId;
     private String internalUserIdentifer;
@@ -123,8 +133,57 @@ public class Shib implements java.io.Serializable {
         state = State.INIT;
         ExternalContext context = FacesContext.getCurrentInstance().getExternalContext();
         request = (HttpServletRequest) context.getRequest();
+        //QDR Custom - manage SSO cookies
+        response = (HttpServletResponse)context.getResponse();
+        String QDRDrupalSiteURL = settingsWrapper.get(":QDRDrupalSiteURL");
+        String QDRDrupalSiteHost = QDRDrupalSiteURL;
+        int index = QDRDrupalSiteURL.indexOf("://");
+        if (index >=0) {
+            QDRDrupalSiteHost = QDRDrupalSiteURL.substring(index + 3);
+        }
+        String cookieVal = getPrettyFacesHomePageString(false);
+        try {
+            cookieVal = URLEncoder.encode(cookieVal, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            logger.warning("Unable to escape redirect URL for cookie: " + cookieVal);
+        }
+        Cookie passiveSSOCookie = new Cookie("_check_is_passive_dv", cookieVal);
+        //In QDR config, common domain for Drupal and Dataverse is '.<Drupal dns name>'
+        passiveSSOCookie.setDomain("." + QDRDrupalSiteHost);
+        
         ShibUtil.printAttributes(request);
-
+        
+        /* 
+        * QDRCustom
+        * Direct the user to the Drupal Terms & Conditions page if the user has not 
+        * accepted the latest version of the T&C
+        */
+        Integer acceptedTermsDocVer;
+        try {
+            String acceptedTermsDocVerStr = getRequiredValueFromAssertion(ShibUtil.acceptedTermsDocVerAttribute);
+            acceptedTermsDocVer = new Integer(acceptedTermsDocVerStr);
+        } catch (Exception ex) {
+        	//Old accounts appear to not have a value which causes an exception when converting to an Integer
+        	//No other errors known to cause this but we can catch anything else that can't be parsed, just in case.
+            acceptedTermsDocVer=0; //Treat this as never having accepted any version as though a new user  
+        }
+        
+        int latestTermsDocVer = systemConfig.getShibAuthTermsVer();        
+        if (acceptedTermsDocVer < latestTermsDocVer) {            
+            
+            Map<String, String> params = context.getRequestParameterMap();
+            String paramRedirectPage = params.get("redirectPage");            
+            String termsConditionsPageURL = QDRDrupalSiteURL + "/qdr-sso/dv-terms-conditions-redirect?redirectPage=" + paramRedirectPage;
+            // Direct user to Drupal T&C page
+            try {
+                context.redirect(termsConditionsPageURL);
+                return;
+            } catch (IOException ex) {
+                logger.info("Unable to redirect user to Terms & Conditions Page " + termsConditionsPageURL);
+                return;
+            }
+        }
+        
         /**
          * @todo Investigate why JkEnvVar is null since it may be useful for
          * debugging per https://github.com/IQSS/dataverse/issues/2916 . See
@@ -218,7 +277,26 @@ public class Shib implements java.io.Serializable {
             ? getValueFromAssertion(shibAffiliationAttribute)
             : shibService.getAffiliation(shibIdp, shibService.getDevShibAccountType());
 
+
         if (affiliation != null) {
+            String ShibAffiliationSeparator = settingsService.getValueForKey(SettingsServiceBean.Key.ShibAffiliationSeparator);
+            if (ShibAffiliationSeparator == null) {
+                ShibAffiliationSeparator = ";";
+            }
+            String ShibAffiliationOrder = settingsService.getValueForKey(SettingsServiceBean.Key.ShibAffiliationOrder);
+            if (ShibAffiliationOrder != null) {
+                if (ShibAffiliationOrder.equals("lastAffiliation")) {
+                    affiliation = affiliation.substring(affiliation.lastIndexOf(ShibAffiliationSeparator) + 1); //patch for affiliation array returning last part
+                }
+                else if (ShibAffiliationOrder.equals("firstAffiliation")) {
+                    try{
+                        affiliation = affiliation.substring(0,affiliation.indexOf(ShibAffiliationSeparator)); //patch for affiliation array returning first part
+                    }
+                    catch (Exception e){
+                        logger.info("Affiliation does not contain \"" + ShibAffiliationSeparator + "\"");
+                    }
+                }
+            }
             affiliationToDisplayAtConfirmation = affiliation;
             friendlyNameForInstitution = affiliation;
         }
@@ -243,12 +321,16 @@ public class Shib implements java.io.Serializable {
             logInUserAndSetShibAttributes(au);
             String prettyFacesHomePageString = getPrettyFacesHomePageString(false);
             try {
+                //QDR - add SSO cookie
+                response.addCookie(passiveSSOCookie);
                 FacesContext.getCurrentInstance().getExternalContext().redirect(prettyFacesHomePageString);
             } catch (IOException ex) {
                 logger.info("Unable to redirect user to homepage at " + prettyFacesHomePageString);
             }
         } else {
-            state = State.PROMPT_TO_CREATE_NEW_ACCOUNT;
+            /*** QDRCustom: do not change state to allow for auto-creation of local account  ***/
+            /*** state = State.PROMPT_TO_CREATE_NEW_ACCOUNT; ***/
+            
             displayNameToPersist = displayInfo.getTitle();
             emailToPersist = emailAddress;
             /**
@@ -293,7 +375,20 @@ public class Shib implements java.io.Serializable {
                     debugSummary = "Could not find a builtin account based on the username. Here we should simply create a new Shibboleth user";
                 }
             } else {
-                debugSummary = "Could not find an auth user based on email address";
+                // QDRCustom: auto-create local account for authenticated Shibboleth user
+                debugSummary = "Could not find an auth user based on email address. Creating new local account for Shibboleth user with email: " + emailAddress;                
+                String destinationAfterAccountCreation = confirmAndCreateAccount();
+                if (destinationAfterAccountCreation != null) {
+                    try {
+                        //QDR - add SSO cookie
+                        response.addCookie(passiveSSOCookie);
+                        context.redirect(destinationAfterAccountCreation);
+                        return;
+                    } catch (IOException ex) {
+                        logger.info("Unable to redirect user to page: " + destinationAfterAccountCreation);
+                        return;
+                    }                    
+                }                
             }
 
         }
@@ -324,7 +419,15 @@ public class Shib implements java.io.Serializable {
             userNotificationService.sendNotification(au,
                     new Timestamp(new Date().getTime()),
                     UserNotification.Type.CREATEACC, null);
-            return "/dataverseuser.xhtml?selectTab=accountInfo&faces-redirect=true";
+            //QDR - redirect if/as requested
+            ExternalContext context = FacesContext.getCurrentInstance().getExternalContext();
+            Map<String, String> params = context.getRequestParameterMap();
+            String paramRedirectPage = params.get("redirectPage");
+            if(paramRedirectPage!=null) {
+                return paramRedirectPage;
+            } else {
+              return "/dataverseuser.xhtml?selectTab=dataRelatedToMe&faces-redirect=true";
+            }
         } else {
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("shib.createUser.fail"));
         }
@@ -350,7 +453,7 @@ public class Shib implements java.io.Serializable {
                 logInUserAndSetShibAttributes(au);
                 debugSummary = "Local account validated and successfully converted to a Shibboleth account. The old account username was " + builtinUsername;
                 JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.shib.success"));
-                return "/dataverseuser.xhtml?selectTab=accountInfo&faces-redirect=true";
+                return "/dataverseuser.xhtml?selectTab=dataRelatedToMe&faces-redirect=true";
             } else {
                 debugSummary = "Local account validated but unable to convert to Shibboleth account.";
             }
@@ -385,7 +488,16 @@ public class Shib implements java.io.Serializable {
      * https://iqssharvard.mybalsamiq.com/projects/loginwithshibboleth-version3-dataverse40/Dataverse%20Account%20III%20-%20Agree%20Terms%20of%20Use
      */
     public String cancel() {
-        return loginpage + "?faces-redirect=true";
+        // QDRCustom
+        ExternalContext context = FacesContext.getCurrentInstance().getExternalContext();
+        // Redirect user to Shibboleth login page
+            try {
+                context.redirect(navigationWrapper.getShibLoginPath());
+                return "";
+            } catch (IOException ex) {
+                logger.info("Unable to redirect user to Shibboleth login page");
+                return "";
+            }
     }
 
     /**

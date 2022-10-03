@@ -55,6 +55,7 @@
        1.5: omitNorms defaults to true for primitive field types 
             (int, float, boolean, string...)
        1.6: useDocValuesAsStored defaults to true.
+       1.7 QDR: use separate fulltext field
     -->
 
     <!-- Valid attributes for fields:
@@ -125,12 +126,14 @@
         via copyField further on in this schema  -->
     <!-- Dataverse solr 7.3.0: for some reason the old text wasn't working so switched to _text_ for copyfields -->
         <!--<field name="text" type="text_general" indexed="true" stored="false" multiValued="true"/>-->
-        <field name="_text_" type="text_general" indexed="true" stored="false" multiValued="true"/>
+        <field name="_text_" type="text_en_splitting" indexed="true" stored="false" multiValued="true"/>
     <!-- catchall text field that indexes tokens both normally and in reverse for efficient
         leading wildcard queries. -->
     <field name="text_rev" type="text_general_rev" indexed="true" stored="false" multiValued="true"/>    
     <field name="name" type="text_en" indexed="true" stored="true"/> 
 
+    <!--  full text indexing, text_en for stemming, stored to support returning phrases around hits -->
+    <field name="fulltext" type="text_en" indexed="true" stored="true"/>
 
 
 
@@ -141,6 +144,7 @@
     <field name="definitionPointDocId" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="definitionPointDvObjectId" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="discoverableBy" type="string" stored="true" indexed="true" multiValued="true"/>
+    <field name="fullTextSearchableBy" type="string" stored="true" indexed="true" multiValued="true"/>
 
     <field name="dvObjectType" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="metadataSource" type="string" stored="true" indexed="true" multiValued="false"/>
@@ -155,7 +159,7 @@
     <field name="dvCategory" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="categoryOfDataverse" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="identifierOfDataverse" type="string" stored="true" indexed="true" multiValued="false"/>
-    
+
     <field name="publicationDate" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="dsPublicationDate" type="string" stored="true" indexed="true" multiValued="false"/>
 
@@ -167,7 +171,7 @@
     
     <field name="subtreePaths" type="string" stored="true" indexed="true" multiValued="true"/>
 
-    <field name="fileName" type="text_en" stored="true" indexed="true" multiValued="true"/>
+    <field name="fileName" type="text_en_splitting" stored="true" indexed="true" multiValued="true"/>
     <field name="fileType" type="text_en" stored="true" indexed="true" multiValued="true"/>
     <field name="fileNameWithoutExtension" type="text_en" stored="true" indexed="true" multiValued="true"/>
     <field name="variableName" type="text_en" stored="true" indexed="true" multiValued="true"/>
@@ -261,6 +265,9 @@
     <field name="cleaningOperations" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="collectionMode" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="collectorTraining" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <field name="workflowType" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="workflowCodeRepository" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="workflowDocumentation" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="contributor" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="contributorName" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="contributorType" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -326,6 +333,7 @@
     <field name="keywordVocabularyURI" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="kindOfData" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="language" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="metadataOnOrig" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="northLongitude" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="notesText" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="originOfSources" type="text_en" multiValued="false" stored="true" indexed="true"/>
@@ -498,6 +506,9 @@
     <copyField source="cleaningOperations" dest="_text_" maxChars="3000"/>
     <copyField source="collectionMode" dest="_text_" maxChars="3000"/>
     <copyField source="collectorTraining" dest="_text_" maxChars="3000"/>
+    <copyField source="workflowType" dest="_text_" maxChars="3000"/>
+    <copyField source="workflowCodeRepository" dest="_text_" maxChars="3000"/>
+    <copyField source="workflowDocumentation" dest="_text_" maxChars="3000"/>
     <copyField source="contributor" dest="_text_" maxChars="3000"/>
     <copyField source="contributorName" dest="_text_" maxChars="3000"/>
     <copyField source="contributorType" dest="_text_" maxChars="3000"/>
@@ -563,6 +574,7 @@
     <copyField source="keywordVocabularyURI" dest="_text_" maxChars="3000"/>
     <copyField source="kindOfData" dest="_text_" maxChars="3000"/>
     <copyField source="language" dest="_text_" maxChars="3000"/>
+    <copyField source="metadataOnOrig" dest="_text_" maxChars="3000"/>
     <copyField source="northLongitude" dest="_text_" maxChars="3000"/>
     <copyField source="notesText" dest="_text_" maxChars="3000"/>
     <copyField source="originOfSources" dest="_text_" maxChars="3000"/>
@@ -912,7 +924,9 @@
             <filter class="solr.KeywordRepeatFilterFactory" />
             <filter class="solr.PorterStemFilterFactory"/>
             <filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+            <!-- QDR handling non-ascii chars in foreign words and foreign contractions. Note that the Pattern filter should match the one below in the query analyzer -->
             <filter class="solr.ASCIIFoldingFilterFactory" preserveOriginal="true" />
+            <filter class="solr.PatternReplaceFilterFactory" pattern="([^i]|qu)'(.*)" replacement="$2"/>
         </analyzer>
         <analyzer type="query">
             <tokenizer class="solr.StandardTokenizerFactory"/>
@@ -933,6 +947,8 @@
             <filter class="solr.KeywordRepeatFilterFactory" />
             <filter class="solr.PorterStemFilterFactory"/>
             <filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+            <!--  QDR - handle foreign contractions --> 
+            <filter class="solr.PatternReplaceFilterFactory" pattern="([^i]|qu)'(.*)" replacement="$2"/>
         </analyzer>
     </fieldType>
 
@@ -958,12 +974,14 @@
                 ignoreCase="true"
                 words="lang/stopwords_en.txt"
         />
-        <filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1"/>
+        <filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" splitOnNumerics="0" preserveOriginal="1"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
         <filter class="solr.PorterStemFilterFactory"/>
         <filter class="solr.FlattenGraphFilterFactory" />
+        <!-- QDR handling non-ascii chars in foreign words and foreign contractions. Note that the Pattern filter should match the one below in the query analyzer -->
         <filter class="solr.ASCIIFoldingFilterFactory" preserveOriginal="true" />
+        <filter class="solr.PatternReplaceFilterFactory" pattern="([^i]|qu)'(.*)" replacement="$2"/>
       </analyzer>
       <analyzer type="query">
         <tokenizer class="solr.WhitespaceTokenizerFactory"/>
@@ -972,10 +990,13 @@
                 ignoreCase="true"
                 words="lang/stopwords_en.txt"
         />
-        <filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="0" catenateNumbers="0" catenateAll="0" splitOnCaseChange="1"/>
+        <filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="0" catenateNumbers="0" catenateAll="0" splitOnCaseChange="1" splitOnNumerics="0" preserveOriginal="1"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
         <filter class="solr.PorterStemFilterFactory"/>
+        <!--  QDR - handle foreign contractions --> 
+        <filter class="solr.PatternReplaceFilterFactory" pattern="([^i]|qu)'(.*)" replacement="$2"/>
+        
       </analyzer>
     </fieldType>
 

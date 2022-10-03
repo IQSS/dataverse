@@ -49,6 +49,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.function.Function;
@@ -816,6 +817,7 @@ public class IndexServiceBean {
 
             Set<String> langs = settingsService.getConfiguredLanguages();
             Map<Long, JsonObject> cvocMap = datasetFieldService.getCVocConf(false);
+            Set<String> metadataBlocksWithValue = new HashSet<>();
             for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
 
                 DatasetFieldType dsfType = dsf.getDatasetFieldType();
@@ -823,6 +825,11 @@ public class IndexServiceBean {
                 String solrFieldFacetable = dsfType.getSolrField().getNameFacetable();
 
                 if (dsf.getValues() != null && !dsf.getValues().isEmpty() && dsf.getValues().get(0) != null && solrFieldSearchable != null) {
+                    // Index all metadata blocks that have a value - To show in new facet category SearchFields.METADATA_TYPES
+                    if (dsfType.getMetadataBlock() != null) {
+                        metadataBlocksWithValue.add(dsfType.getMetadataBlock().getName());
+                    }
+
                     logger.fine("indexing " + dsf.getDatasetFieldType().getName() + ":" + dsf.getValues() + " into " + solrFieldSearchable + " and maybe " + solrFieldFacetable);
                     // if (dsfType.getSolrField().getSolrType().equals(SolrField.SolrType.INTEGER))
                     // {
@@ -941,6 +948,10 @@ public class IndexServiceBean {
                     }
                 }
             }
+
+            for(String metadataBlockName : metadataBlocksWithValue) {
+                solrInputDocument.addField(SearchFields.METADATA_TYPES, metadataBlockName);
+            }
         }
         
         List<String> dataversePaths = retrieveDVOPaths(dataset); 
@@ -1027,7 +1038,7 @@ public class IndexServiceBean {
                     
                     /* Full-text indexing using Apache Tika */
                     if (doFullTextIndexing) {
-                        if (!dataset.isHarvested() && !fileMetadata.getDataFile().isRestricted() && !fileMetadata.getDataFile().isFilePackage()) {
+                        if (!dataset.isHarvested() && !fileMetadata.getDataFile().isFilePackage()&& fileMetadata.getDataFile().getFilesize()!=0) {
                             StorageIO<DataFile> accessObject = null;
                             InputStream instream = null;
                             ContentHandler textHandler = null;
@@ -1036,12 +1047,13 @@ public class IndexServiceBean {
                                         new DataAccessRequest());
                                 if (accessObject != null) {
                                     accessObject.open();
-                                    // If the size is >max, we don't use the stream. However, for S3, the stream is
+                                    // If the size is >max, we don't use the stream. However, for fileIO, the stream is
                                     // currently opened in the call above (see
-                                    // https://github.com/IQSS/dataverse/issues/5165), so we want to get a handle so
+                                    // https://github.com/IQSS/dataverse/issues/5165 - applies to files as well), so we want to get a handle so
                                     // we can close it below.
-                                    instream = accessObject.getInputStream();
-                                    if (accessObject.getSize() <= maxSize) {
+                                    long size = accessObject.getSize();
+                                    if ((size > 0) && (size <= maxSize)) {
+                                        instream = accessObject.getInputStream();
                                         AutoDetectParser autoParser = new AutoDetectParser();
                                         textHandler = new BodyContentHandler(-1);
                                         Metadata metadata = new Metadata();
@@ -1068,8 +1080,14 @@ public class IndexServiceBean {
                                 logger.warning(String.format("Full-text indexing for %s failed due to OutOfMemoryError",
                                         fileMetadata.getDataFile().getDisplayName()));
                                 continue;
+                            } catch(Error e) {
+                                //Catch everything - full-text indexing is complex enough (and using enough 3rd party components) that it can fail
+                                // and we don't want problems here to break other Dataverse functionality (e.g. edits)
+                                logger.severe(String.format("Full-text indexing for %s failed due to Error: %s : %s",
+                                        fileMetadata.getDataFile().getDisplayName(),e.getClass().getCanonicalName(), e.getLocalizedMessage()));
+                                continue;
                             } finally {
-                                IOUtils.closeQuietly(instream);
+                                accessObject.closeInputStream();
                             }
                         }
                     }

@@ -28,7 +28,7 @@ public class ExternalToolHandlerTest {
         String toolUrl = "http://example.com";
         ExternalTool externalTool = new ExternalTool("displayName", "toolName", "description", externalToolTypes, scope, toolUrl, "{}", DataFileServiceBean.MIME_TYPE_TSV_ALT);
 
-        // One query parameter, not a reserved word, no {fileId} (required) used.
+        // One query parameter, not a reserved word, no {file} (required) used.
         externalTool.setToolParameters(Json.createObjectBuilder()
                 .add("queryParameters", Json.createArrayBuilder()
                         .add(Json.createObjectBuilder()

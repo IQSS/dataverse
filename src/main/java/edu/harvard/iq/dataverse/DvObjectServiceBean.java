@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
+
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -107,6 +108,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
                 // (set to .info, this can fill the log file with thousands of
                 // these messages during a large harvest run)
                 logger.fine("no dvObject found: " + globalIdString);
+
                 // DO nothing, just return null.
                 return null;
             } catch (Exception ex) {

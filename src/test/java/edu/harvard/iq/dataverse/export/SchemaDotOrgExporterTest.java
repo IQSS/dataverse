@@ -170,7 +170,6 @@ public class SchemaDotOrgExporterTest {
         assertEquals("Organization", json2.getJsonObject("publisher").getString("@type"));
         assertEquals("LibraScholar", json2.getJsonObject("provider").getString("name"));
         assertEquals("Organization", json2.getJsonObject("provider").getString("@type"));
-        assertEquals("LibraScholar", json2.getJsonObject("provider").getString("name"));
         assertEquals("Organization", json2.getJsonArray("funder").getJsonObject(0).getString("@type"));
         assertEquals("National Science Foundation", json2.getJsonArray("funder").getJsonObject(0).getString("name"));
         // The NIH grant number is not shown because don't have anywhere in schema.org to put it. :(

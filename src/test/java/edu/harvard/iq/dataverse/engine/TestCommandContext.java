@@ -236,6 +236,11 @@ public class TestCommandContext implements CommandContext {
     }
     
     @Override
+    public MailServiceBean mail() {
+        return null;
+    }
+    
+    @Override
     public ActionLogServiceBean actionLog() {
         return null;
     }

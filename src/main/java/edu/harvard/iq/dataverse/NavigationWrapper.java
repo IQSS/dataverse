@@ -14,10 +14,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
@@ -30,14 +32,53 @@ import org.apache.commons.lang3.StringUtils;
 @Named
 public class NavigationWrapper implements java.io.Serializable {
     
+    private static final Logger logger = Logger.getLogger(NavigationWrapper.class.getName());    
     @Inject
     DataverseSession session;
+    @Inject
+    SettingsWrapper settingsWrapper;
     
     String redirectPage;
 
 
     public String getRedirectPage() {
         return !StringUtils.isEmpty(getPageFromContext()) ? "?redirectPage=" + getPageFromContext() : "";
+    }
+    
+    // QDRCustom
+    public String getShibLoginPath() {
+        String QDRDataverseBaseURL = settingsWrapper.get(":QDRDataverseBaseURL");   
+        String QDRDrupalSiteURL = settingsWrapper.get(":QDRDrupalSiteURL");
+        //Example:
+        //https://dev-aws.qdr.org/user/login?current_page=https%3A%2F%2Fdv.dev-aws.qdr.org%2Fshib.xhtml%3FredirectPage%3D%2Fdataset.xhtml%253FpersistentId%253Ddoi%253A10.33564%252FFK2LSJCQI%2526version%253DDRAFT
+        String shibLoginPath;
+        //Check cookies - if Drupal is logged in/cookies are set to trigger Dataverse passive login, don't try to login at Drupal
+        ExternalContext context = FacesContext.getCurrentInstance().getExternalContext(); 
+        Map<String, Object> cookies =  context.getRequestCookieMap();
+        Cookie passive = (Cookie) cookies.get("_check_is_passive");
+        try {
+            if (passive==null || passive.getValue().equals("0")) {
+              shibLoginPath = QDRDrupalSiteURL + "/user/login?current_page=" + URLEncoder.encode(QDRDataverseBaseURL, "UTF-8") + "%2Fshib.xhtml%3FredirectPage%3D" + URLEncoder.encode(getPageFromContext(), "UTF-8");
+            } else {
+              shibLoginPath = QDRDataverseBaseURL + "/shib.xhtml?redirectPage=" + getPageFromContext();  
+            }
+        } catch (UnsupportedEncodingException e) {
+            //Shouldn't happen since we're just re-encoding something already successfully encoded once
+            shibLoginPath = QDRDrupalSiteURL + "/user/login?current_page=" + QDRDataverseBaseURL;
+            logger.severe("Unexpected Failure in getting shibLoginPath, baseURL = " + QDRDataverseBaseURL + ", redirectPage = " + getPageFromContext());
+            e.printStackTrace();
+        }
+        
+        /*String shibLoginPath = "/Shibboleth.sso/Login?target=".concat(QDRDataverseBaseURL).concat("/shib.xhtml");                
+                
+        if (!StringUtils.isEmpty(getRedirectPage())) {
+           String redirectPageStr = getRedirectPage();
+           redirectPageStr = redirectPageStr.replace("?redirectPage","%3FredirectPage");
+           shibLoginPath = shibLoginPath.concat(redirectPageStr);
+        }
+        */
+        
+        return shibLoginPath;                        
     }
 
     public String getPageFromContext() {
@@ -51,7 +92,7 @@ public class NavigationWrapper implements java.io.Serializable {
             // that we don't want, so we filter through a list of paramters we do allow
             // @todo verify what needs to be in this list of available parameters (for example do we want to repeat searches when you login?
             List<String> acceptableParameters = new ArrayList<>();
-            acceptableParameters.addAll(Arrays.asList("id", "alias", "version", "q", "ownerId", "persistentId", "versionId", "datasetId", "selectedFileIds", "mode", "dataverseId", "fileId", "datasetVersionId", "guestbookId"));
+            acceptableParameters.addAll(Arrays.asList("id", "alias", "version", "q", "ownerId", "persistentId", "versionId", "datasetId", "selectedFileIds", "mode", "dataverseId", "fileId", "datasetVersionId", "guestbookId", "selectTab"));
 
             if (req.getParameterMap() != null) {
                 StringBuilder queryString = new StringBuilder();
@@ -81,7 +122,16 @@ public class NavigationWrapper implements java.io.Serializable {
     
      public String notAuthorized(){
         if (!session.getUser().isAuthenticated()){
-            return "/loginpage.xhtml" + getRedirectPage();
+            // QDRCustom
+            ExternalContext context = FacesContext.getCurrentInstance().getExternalContext(); 
+            // Redirect user to Shibboleth login page
+            try {
+                context.redirect(getShibLoginPath());
+                return "";
+            } catch (IOException ex) {
+                logger.info("Unable to redirect user to Shibboleth login page");
+                return "";
+            }
         } else {
             return sendError(HttpServletResponse.SC_FORBIDDEN);
         }        

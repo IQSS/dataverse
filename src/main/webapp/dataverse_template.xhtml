@@ -39,6 +39,7 @@
         <link type="text/css" rel="stylesheet" href="#{resource['css/fontcustom.css']}?version=#{settingsWrapper.appVersion}" />
         <link type="text/css" rel="stylesheet" href="#{resource['css/socicon.css']}?version=#{settingsWrapper.appVersion}" />
         <link type="text/css" rel="stylesheet" href="#{resource['css/structure.css']}?version=#{settingsWrapper.appVersion}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['qdr/css/qdr-custom.css']}?version=#{settingsWrapper.appVersion}" />
 	<ui:fragment rendered="#{!empty settingsWrapper.get(':StyleCustomizationFile')}">
             <style>
                 /* Custom CSS */
@@ -60,6 +61,7 @@
             <ui:insert name="body">#{bundle.defaultBody}</ui:insert>
         </div>
         <!-- FOOTER BLOCK -->
+        <!-- Comment out custom footer in favor of Drupal's footer on iframe -->
         <ui:include src="dataverse_footer.xhtml">
             <ui:param name="widgetView" value="#{widgetWrapper.widgetView}"/>
             <ui:param name="loginRedirectPage" value="#{loginRedirectPage != null ? '?redirectPage='.concat(loginRedirectPage) : navigationWrapper.redirectPage}"/>

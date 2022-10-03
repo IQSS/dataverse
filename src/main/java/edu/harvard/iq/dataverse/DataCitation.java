@@ -52,12 +52,10 @@ public class DataCitation {
     private Date date;
     private GlobalId persistentId;
     private String version;
-    private String UNF = null;
     private String publisher;
     private boolean direct;
     private List<String> funders;
     private String seriesTitle;
-    private String description;
     private List<String> datesOfCollection;
     private List<String> keywords;
     private List<String> kindsOfData;
@@ -80,9 +78,6 @@ public class DataCitation {
         // It is always part of the citation for the local datasets; 
         // And for *some* harvested datasets. 
         persistentId = getPIDFrom(dsv, dsv.getDataset());
-
-        // UNF
-        UNF = dsv.getUNF();
 
         // optional values
         for (DatasetFieldType dsfType : dsv.getDataset().getOwner().getCitationDatasetFieldTypes()) {
@@ -111,16 +106,9 @@ public class DataCitation {
         fileTitle = fm.getLabel();
         DataFile df = fm.getDataFile();
 
-        // File description
-        description = fm.getDescription();
-
         // The Global Identifier of the Datafile (if published and isDirect==true) or Dataset as appropriate
         persistentId = getPIDFrom(dsv, df);
 
-        // UNF
-        if (df.isTabularData() && df.getUnf() != null && !df.getUnf().isEmpty()) {
-            UNF = df.getUnf();
-        }
     }
 
     private void getCommonValuesFrom(DatasetVersion dsv) {
@@ -171,10 +159,6 @@ public class DataCitation {
         return version;
     }
 
-    public String getUNF() {
-        return UNF;
-    }
-
     public String getPublisher() {
         return publisher;
     }
@@ -183,13 +167,14 @@ public class DataCitation {
     public String toString() {
         return toString(false);
     }
-
+    // QDRCustom: Use period to join values, not comma
+    static String separator = ". ";
+    
     public String toString(boolean html) {
         return toString(html, false);
     }
     public String toString(boolean html, boolean anonymized) {
         // first add comma separated parts
-        String separator = ", ";
         List<String> citationList = new ArrayList<>();
         if(anonymized) {
             citationList.add(BundleUtil.getStringFromBundle("file.anonymized.authorsWithheld"));
@@ -204,6 +189,9 @@ public class DataCitation {
         citationList.add(formatString(title, html, "\""));
         }
 
+        // QDRCustom: Use "Qualitative Data Repository" as distributor name
+        citationList.add(formatString(BrandingUtil.getInstallationBrandName(), html));
+        // QDRCustom: Show persistentID after distributor name
         if (persistentId != null) {
         	// always show url format
             citationList.add(formatURL(persistentId.toURL().toString(), persistentId.toURL().toString(), html)); 
@@ -216,10 +204,6 @@ public class DataCitation {
 
         if ((fileTitle != null) && !isDirect()) {
             citation.append("; " + formatString(fileTitle, html, "") + " [fileName]");
-        }
-        // append UNF
-        if (!StringUtils.isEmpty(UNF)) {
-            citation.append(separator).append(UNF).append(" [fileUNF]");
         }
 
         for (DatasetField dsf : optionalValues) {
@@ -279,11 +263,6 @@ public class DataCitation {
             String doubleAp = "''";
             out.write(title.replaceFirst(doubleQ, doubleTick).replaceFirst(doubleQ, doubleAp));
             out.write("}},\r\n");
-        }
-        if(UNF != null){
-            out.write("UNF = {");
-            out.write(UNF);
-            out.write("},\r\n");
         }
         out.write("year = {");
         out.write(year);
@@ -389,13 +368,10 @@ public class DataCitation {
         out.write("UR  - " + persistentId.toURL().toString() + "\r\n");
         out.write("PB  - " + publisher + "\r\n");
 
-        // a DataFile citation also includes filename und UNF, if applicable:
+        // a DataFile citation also includes filename, if applicable:
         if (getFileTitle() != null) {
             if(!isDirect()) {
                 out.write("C1  - " + getFileTitle() + "\r\n");
-            }
-            if (getUNF() != null) {
-                out.write("C2  - " + getUNF() + "\r\n");
             }
         }
         // closing element:
@@ -596,12 +572,6 @@ public class DataCitation {
             xmlw.writeStartElement("custom1");
             xmlw.writeCharacters(fileTitle);
             xmlw.writeEndElement(); // custom1
-            
-                if (getUNF() != null) {
-                    xmlw.writeStartElement("custom2");
-                    xmlw.writeCharacters(getUNF());
-                    xmlw.writeEndElement(); // custom2
-            }
         }
         if (persistentId != null) {
             xmlw.writeStartElement("electronic-resource-num");
@@ -624,7 +594,8 @@ public class DataCitation {
 
         if (authorString.isEmpty()) {
             authorString = AbstractGlobalIdServiceBean.UNAVAILABLE;
-    }
+        }
+        // QDR - use institution name
         String producerString = getPublisher();
 
         if (producerString.isEmpty()) {
@@ -753,7 +724,8 @@ public class DataCitation {
 
     private String getPublisherFrom(DatasetVersion dsv) {
         if (!dsv.getDataset().isHarvested()) {
-            return BrandingUtil.getInstallationBrandName();
+            //QDR - already includes the installation name in the citation, so want the specific collection name here
+            return dsv.getDataset().getOwner().getDisplayName();
         } else {
             return dsv.getDistributorName();
             // remove += [distributor] SEK 8-18-2016

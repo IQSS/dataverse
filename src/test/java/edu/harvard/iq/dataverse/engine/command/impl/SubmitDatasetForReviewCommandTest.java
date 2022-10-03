@@ -145,7 +145,7 @@ public class SubmitDatasetForReviewCommandTest {
     @Test
     public void testReleasedDataset() {
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
-        String expected = "Latest version of dataset is already released. Only draft versions can be submitted for review.";
+        String expected = "Latest version of data project is already released. Only draft versions can be submitted for review.";
         String actual = null;
         try {
             testEngine.submit(new SubmitDatasetForReviewCommand(dataverseRequest, dataset));
@@ -162,7 +162,7 @@ public class SubmitDatasetForReviewCommandTest {
         try {
             updatedDataset = testEngine.submit(new SubmitDatasetForReviewCommand(dataverseRequest, dataset));
         } catch (CommandException ex) {
-            System.out.println("Error updating dataset: " + ex.getMessage() );
+            System.out.println("Error updating data project: " + ex.getMessage() );
         }
         assertNotNull(updatedDataset);
     }

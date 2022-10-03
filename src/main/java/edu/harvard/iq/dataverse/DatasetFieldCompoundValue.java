@@ -203,6 +203,15 @@ public class DatasetFieldCompoundValue implements Serializable {
         return fieldMap;
     }
 
+    public boolean isEmpty() {
+        for (DatasetField subField : getChildDatasetFields()) {
+            if (!subField.isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public String getLink() {
         return DatasetAuthor.getIdentifierAsUrl(linkScheme, linkValue);
     }

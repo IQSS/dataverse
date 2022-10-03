@@ -242,10 +242,28 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      */
     //public List<RoleAssignment> directRoleAssignments(@NotNull RoleAssignee roas, @NotNull DvObject dvo) {
     public List<RoleAssignment> directRoleAssignments(RoleAssignee roas, DvObject dvo) {
+        // QDR Work-around - as of Jan 23, 2019, the second query below (added as part
+        // of https://github.com/IQSS/dataverse/pull/4883) was returning RA objects with
+        // null getDefinitionPoint(), causing an exception. The workaround below
+        // uses the original query and returns its value if the new one fails. (Leaving
+        // the original to be able to quickly test if machine config changes fix the
+        // problem.
+
+        List<RoleAssignment> oldList = em.createNamedQuery("RoleAssignment.listByAssigneeIdentifier_DefinitionPointId", RoleAssignment.class).
+                setParameter("assigneeIdentifier", roas.getIdentifier()).
+                setParameter("definitionPointId", dvo.getId())
+                .getResultList();
+        try {
         List<RoleAssignment> unfiltered = em.createNamedQuery("RoleAssignment.listByAssigneeIdentifier", RoleAssignment.class).
                             setParameter("assigneeIdentifier", roas.getIdentifier())
                             .getResultList();
         return unfiltered.stream().filter(roleAssignment -> Objects.equals(roleAssignment.getDefinitionPoint().getId(), dvo.getId())).collect(Collectors.toList());
+        } catch (Exception e) {
+            
+            logger.severe("Exception " + e.getClass().getCanonicalName() + " " + e.getMessage());
+            e.printStackTrace();
+            return oldList;
+        }
     }
     
     /**

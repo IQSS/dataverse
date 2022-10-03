@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.UserNotification.Type;
 
 import java.time.LocalDate;
@@ -92,7 +93,15 @@ public class SettingsWrapper implements java.io.Serializable {
     
     private Boolean rsyncUpload = null; 
     
-    private Boolean rsyncDownload = null; 
+    private Boolean rsyncDownload = null;
+    
+    private Boolean globusUpload = null;
+    private Boolean globusDownload = null;
+    private Boolean globusFileDownload = null;
+    
+    private String globusAppUrl = null;
+    
+    private List<String> globusStoreList = null;
     
     private Boolean httpUpload = null; 
     
@@ -292,6 +301,42 @@ public class SettingsWrapper implements java.io.Serializable {
         }
         return rsyncDownload;
     }
+
+    public boolean isGlobusUpload() {
+        if (globusUpload == null) {
+            globusUpload = systemConfig.isGlobusUpload();
+        }
+        return globusUpload;
+    }
+    
+    public boolean isGlobusDownload() {
+        if (globusDownload == null) {
+            globusDownload = systemConfig.isGlobusDownload();
+        }
+        return globusDownload;
+    }
+    
+    public boolean isGlobusFileDownload() {
+        if (globusFileDownload == null) {
+            globusFileDownload = systemConfig.isGlobusFileDownload();
+        }
+        return globusFileDownload;
+    }
+    
+    public boolean isGlobusEnabledStorageDriver(String driverId) {
+        if (globusStoreList == null) {
+            globusStoreList = systemConfig.getGlobusStoresList();
+        }
+        return globusStoreList.contains(driverId);
+    }
+    
+    public String getGlobusAppUrl() {
+        if (globusAppUrl == null) {
+            globusAppUrl = settingsService.getValueForKey(SettingsServiceBean.Key.GlobusAppUrl, "http://localhost");
+        }
+        return globusAppUrl;
+        
+    }
     
     public boolean isRsyncOnly() {
         if (rsyncOnly == null) {
@@ -389,6 +434,19 @@ public class SettingsWrapper implements java.io.Serializable {
         return configuredLocales;
     }
     
+    public String getHypothesisKey() {
+
+        String configuredHypothesisKey = System.getProperty("dataverse.hypothesis.key");
+        if (configuredHypothesisKey != null) {
+            return configuredHypothesisKey;
+        }
+        return "";
+    }
+    
+    public Boolean isHasHypothesisKey() {
+        return !getHypothesisKey().isEmpty();
+    }
+
     public boolean isDoiInstallation() {
         String protocol = getValueForKey(SettingsServiceBean.Key.Protocol);
         if ("doi".equals(protocol)) {
@@ -410,7 +468,16 @@ public class SettingsWrapper implements java.io.Serializable {
     public boolean isMakeDataCountDisplayEnabled() {
         boolean safeDefaultIfKeyNotFound = (getValueForKey(SettingsServiceBean.Key.MDCLogPath)!=null); //Backward compatible
         return isTrueForKey(SettingsServiceBean.Key.DisplayMDCMetrics, safeDefaultIfKeyNotFound);
+    }
     
+    public LocalDate getMDCStartDate() {
+        String date = getValueForKey(SettingsServiceBean.Key.MDCStartDate);
+        LocalDate ld=null;
+        if(date!=null) {
+          ld = LocalDate.parse(date);
+        }
+        return ld;
+        
     }
     
     public boolean displayChronologicalDateFacets() {
@@ -647,4 +714,3 @@ public class SettingsWrapper implements java.io.Serializable {
         return customLicenseAllowed;
     }
 }
-

@@ -5,9 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.IOException;
-import java.io.PrintWriter;
 import javax.ejb.EJB;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
