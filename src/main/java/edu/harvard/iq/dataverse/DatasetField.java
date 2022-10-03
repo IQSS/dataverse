@@ -563,7 +563,7 @@ public class DatasetField implements Serializable {
         dsf.setDatasetFieldType(datasetFieldType);
         
         if (version != null) {
-            if (version.getClass().getName().equals("edu.harvard.iq.dataverse.DatasetVersion")) {
+            if (version instanceof DatasetVersion) {
                 dsf.setDatasetVersion((DatasetVersion) version);               
             } else {
                 dsf.setTemplate((Template) version);
