@@ -548,8 +548,11 @@ public class DatasetField implements Serializable {
         return "edu.harvard.iq.dataverse.DatasetField[ id=" + id + " ]";
     }
 
-    public DatasetField copy(Object version) {
+    public DatasetField copy(DatasetVersion version) {
         return copy(version, null);
+    }
+    public DatasetField copy(Template template) {
+        return copy(template, null);
     }
     
     // originally this was an overloaded method, but we renamed it to get around an issue with Bean Validation
@@ -558,15 +561,15 @@ public class DatasetField implements Serializable {
         return copy(null, parent);
     }
 
-    private DatasetField copy(Object version, DatasetFieldCompoundValue parent) {
+    private DatasetField copy(Object versionOrTemplate, DatasetFieldCompoundValue parent) {
         DatasetField dsf = new DatasetField();
         dsf.setDatasetFieldType(datasetFieldType);
         
-        if (version != null) {
-            if (version instanceof DatasetVersion) {
-                dsf.setDatasetVersion((DatasetVersion) version);               
+        if (versionOrTemplate != null) {
+            if (versionOrTemplate instanceof DatasetVersion) {
+                dsf.setDatasetVersion((DatasetVersion) versionOrTemplate);               
             } else {
-                dsf.setTemplate((Template) version);
+                dsf.setTemplate((Template) versionOrTemplate);
             }
         }
         
