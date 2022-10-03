@@ -72,7 +72,7 @@ Return Formats
 
 There are a number of API calls that provide time series, information reported per item (e.g. per dataset, per file, by subject, by category, and by file Mimetype), or both (time series per item). Because these calls all report more than a single number, the API provides two optional formats for the return that can be selected by specifying an HTTP Accept Header for the desired format:
 
-* application/json - a JSON array of objects. For time-series, the objects include key/values for the ``date`` and ``count`` for that month. For per-item calls, the objects include the item (e.g. for a subject), or it's id/pid (for a dataset or datafile). For timeseries per-item, the objects also include a date. In all cases, the response is a single array.
+* application/json - a JSON array of objects. For time-series, the objects include key/values for the ``date`` and ``count`` for that month. For per-item calls, the objects include the item (e.g. for a subject), or it's id/pid (for a dataset or datafile (which may/may not not have a PID)). For timeseries per-item, the objects also include a date. In all cases, the response is a single array.
 
   * Example: ``curl -H 'Accept:application/json' https://demo.dataverse.org/api/info/metrics/downloads/monthly``
 
@@ -120,7 +120,7 @@ Example: ``curl https://demo.dataverse.org/api/info/metrics/makeDataCount/viewsT
 Endpoint Table
 --------------
 
-The following table lists the available metrics endpoints (not including the Make Data Counts endpoints a single dataset which are part of the :doc:`/api/native-api`) along with additional notes about them.
+The following table lists the available metrics endpoints (not including the Make Data Counts endpoints for a single dataset which are part of the :doc:`/api/native-api`) along with additional notes about them.
 
 
 .. csv-table:: Metrics Endpoints
