@@ -61,9 +61,9 @@ Merge "develop" into "master"
 
 If this is a regular (non-hotfix) release, create a pull request to merge the "develop" branch into the "master" branch using this "compare" link: https://github.com/IQSS/dataverse/compare/master...develop
 
-Once the tests have passed, merge the pull request.
+Once important tests have passed (compile, unit tests, etc.), merge the pull request. Don't worry about style tests failing such as for shell scripts. 
 
-If this is a hotfix release, skip this step (the "develop" branch is not involved until later).
+If this is a hotfix release, skip this whole "merge develop to master" step (the "develop" branch is not involved until later).
 
 Build the Guides for the Release
 --------------------------------
@@ -86,7 +86,7 @@ Create a Draft Release on GitHub
 Go to https://github.com/IQSS/dataverse/releases/new to start creating a draft release.
 
 - Under "Choose a tag" you will be creating a new tag. Have it start with a "v" such as ``v5.10.1``. Click "Create new tag on publish".
-- Under "Target" select ``master`` as the branch.
+- Under "Target" go to "Recent Commits" and select the merge commit from when you merged ``develop`` into ``master`` above. This commit will appear in ``/api/info/version`` from a running installation.
 - Under "Release title" use the same name as the tag such as ``v5.10.1``.
 - In the description, copy and paste the content from the release notes .md file created in the "Write Release Notes" steps above.
 - Click "Save draft" because we do not want to publish the release yet.
@@ -98,6 +98,8 @@ Make corrections to the draft, if necessary. It will be out of sync with the .md
 Run a Build to Create the War File
 ----------------------------------
 
+ssh into the dataverse-internal server and undeploy the current war file.
+
 Go to https://jenkins.dataverse.org/job/IQSS_Dataverse_Internal/ and make the following adjustments to the config:
 
 - Repository URL: ``https://github.com/IQSS/dataverse.git``
@@ -105,6 +107,8 @@ Go to https://jenkins.dataverse.org/job/IQSS_Dataverse_Internal/ and make the fo
 - Execute shell: Update version in filenames to ``dataverse-5.10.1.war`` (for example)
 
 Click "Save" then "Build Now".
+
+The build number will appear in ``/api/info/version`` (along with the commit mentioned above) from a running installation (e.g. ``{"version":"5.10.1","build":"907-b844672``).
 
 Build Installer (dvinstall.zip)
 -------------------------------
