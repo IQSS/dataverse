@@ -303,7 +303,7 @@ public class FileUtilTest {
         }*/
 
         @Test
-        public void testDetermineFileType() {
+        public void testDetermineFileTypeByExtension() {
             File file = new File("src/main/webapp/resources/images/cc0.png");
             if (file.exists()) {
                 try {
@@ -314,6 +314,44 @@ public class FileUtilTest {
             } else {
                 fail("File does not exist: " + file.toPath().toString());
             }
+        }
+        
+        @Test
+        public void testDetermineFileTypeFromName() {
+            //Verify that name of the local file isn't used in determining the type (as we often use *.tmp when the real name has a different extension)
+            try {
+                File file = File.createTempFile("empty", "png");
+                assertEquals("text/plain", FileUtil.determineFileType(file, "something.txt"));
+            } catch (IOException ex) {
+                Logger.getLogger(FileUtilTest.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+        }
+
+        @Test
+        public void testDetermineFileTypeByName() {
+            File file = new File("src/test/resources/fileutil/Makefile");
+            if (file.exists()) {
+                try {
+                    assertEquals("text/x-makefile", FileUtil.determineFileType(file, "Makefile"));
+                } catch (IOException ex) {
+                    Logger.getLogger(FileUtilTest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } else {
+                fail("File does not exist: " + file.toPath().toString());
+            }
+        }
+        
+        @Test
+        public void testDetermineFileTypeFromNameLocalFile() {
+            //Verify that name of the local file isn't used in determining the type (as we often use *.tmp when the real name has a different extension)
+            try {
+                File file = File.createTempFile("empty", "png");
+                assertEquals("text/plain", FileUtil.determineFileType(file, "something.txt"));
+            } catch (IOException ex) {
+                Logger.getLogger(FileUtilTest.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
         }
 
         // isThumbnailSuppported() has been moved from DataFileService to FileUtil:

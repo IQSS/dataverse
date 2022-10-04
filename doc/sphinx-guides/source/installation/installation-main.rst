@@ -207,7 +207,7 @@ Fresh Reinstall
 Early on when you're installing the Dataverse Software, you may think, "I just want to blow away what I've installed and start over." That's fine. You don't have to uninstall the various components like Payara, PostgreSQL and Solr, but you should be conscious of how to clear out their data. For Payara, a common helpful process is to:
 
 - Stop Payara; 
-- Remove the ``generated`` and ``osgi-cache`` directories;
+- Remove the ``generated``, ``lib/databases`` and ``osgi-cache`` directories from the ``domain1`` directory;
 - Start Payara
 
 Drop database
