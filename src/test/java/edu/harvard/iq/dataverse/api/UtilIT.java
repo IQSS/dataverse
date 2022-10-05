@@ -2432,19 +2432,24 @@ public class UtilIT {
     static boolean sleepForReindex(String idOrPersistentId, String apiToken, int durationInSeconds) {
         int i = 0;
         Response timestampResponse;
-        int sleepStep=500;
-        int repeats = durationInSeconds*(1000/sleepStep);
+        int sleepStep = 500;
+        int repeats = durationInSeconds * (1000 / sleepStep);
+        boolean stale=true;
         do {
             timestampResponse = UtilIT.getDatasetTimestamps(idOrPersistentId, apiToken);
+            String hasStaleIndex = timestampResponse.body().jsonPath().getString("data.hasStaleIndex");
+            System.out.println(hasStaleIndex);
+            stale = Boolean.parseBoolean(hasStaleIndex);
             
             try {
                 Thread.sleep(sleepStep);
                 i++;
             } catch (InterruptedException ex) {
                 Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
+                i = repeats + 1;
             }
-        } while ((i <= repeats) && timestampResponse.body().jsonPath().getBoolean("data.hasStaleIndex"));
-        Logger.getLogger(UtilIT.class.getName()).info("Waited " + (i * (sleepStep/1000)) + " seconds");
+        } while ((i <= repeats) && stale);
+        System.out.println("Waited " + (i * (sleepStep / 1000)) + " seconds");
         return i <= repeats;
 
     }
