@@ -2432,22 +2432,19 @@ public class UtilIT {
     static boolean sleepForReindex(String idOrPersistentId, String apiToken, int durationInSeconds) {
         int i = 0;
         Response timestampResponse;
-        int sleepStep=200;
-        int repeats = durationInSeconds*1000/sleepStep;
+        int sleepStep=500;
+        int repeats = durationInSeconds*(1000/sleepStep);
         do {
             timestampResponse = UtilIT.getDatasetTimestamps(idOrPersistentId, apiToken);
             
             try {
                 Thread.sleep(sleepStep);
                 i++;
-                if (i > repeats) {
-                    break; 
-                }
             } catch (InterruptedException ex) {
                 Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
             }
-        } while (timestampResponse.body().jsonPath().getBoolean("data.hasStaleIndex"));
-
+        } while ((i <= repeats) && timestampResponse.body().jsonPath().getBoolean("data.hasStaleIndex"));
+        Logger.getLogger(UtilIT.class.getName()).info("Waited " + (i * (sleepStep/1000)) + " seconds");
         return i <= repeats;
 
     }
