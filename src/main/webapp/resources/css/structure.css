@@ -1514,3 +1514,23 @@ span.label-danger { background-color: #D3413C }
 .ui-inplace .ui-inputfield {
     width:60%
 }
+
+/*Accomodate long placeholder text */
+
+@media(min-width:768px){
+  div:has(> input[placeholder='1) FamilyName, GivenName or 2) Organization']) {
+    width:75%;
+  }
+}
+/*Override previous for child fields*/
+div:has(> input[placeholder='1) FamilyName, GivenName or 2) Organization']):has( > label) {
+  width:100%;
+}
+@media(min-width:768px){
+  div:has(> input[placeholder='provided by QDR']) {
+    width:100%;
+  }
+}
+div:has(> input[placeholder='QDR strongly encourages the use of ORCIDs']) {
+    width:100%;
+}
