@@ -110,7 +110,8 @@ public class DRSSubmitToArchiveCommandTest {
             DecodedJWT jwt = JWT.decode(token1);
             System.out.println(jwt.getPayload());
         } catch (Exception e) {
-            System.out.println(e.getLocalizedMessage());
+            System.out.println(e.getClass() + e.getLocalizedMessage());
+            e.printStackTrace();
             //Any exception is a failure, otherwise decoding worked.
             Assert.fail(e.getLocalizedMessage());
         }
