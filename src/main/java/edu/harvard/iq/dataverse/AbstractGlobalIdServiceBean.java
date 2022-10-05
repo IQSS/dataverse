@@ -221,7 +221,11 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         int index1 = fullIdentifierString.indexOf(':');
         if (index1 > 0) { // ':' found with one or more characters before it
             String protocol = fullIdentifierString.substring(0, index1);
-            return parsePersistentIdentifier(protocol, fullIdentifierString.substring(index1+1));
+            GlobalId globalId = parsePersistentIdentifier(protocol, fullIdentifierString.substring(index1+1));
+            globalId.setProvider(this.getProviderInformation().get(0));
+            globalId.setSeparator(this.getSeparator());
+            globalId.setUrlForm(this.getUrlForm(globalId));
+            return globalId;
         }
         logger.log(Level.INFO, "Error parsing identifier: {0}: ''<protocol>:'' not found in string", fullIdentifierString);
         return null;
@@ -255,6 +259,11 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         return new GlobalId(protocol, authority, identifier);
     }
     
+    public String getSeparator() {
+        //The standard default
+        return "/";
+    }
+
     /**
      * Concatenate the parts that make up a Global Identifier.
      * 

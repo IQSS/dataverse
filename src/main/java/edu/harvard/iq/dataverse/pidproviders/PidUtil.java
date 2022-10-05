@@ -6,16 +6,14 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
-import javax.annotation.PostConstruct;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -23,8 +21,6 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.ServiceUnavailableException;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
 
 public class PidUtil {
 
@@ -116,13 +112,11 @@ public class PidUtil {
         return globalId.getAuthority() + "/" + globalId.getIdentifier();
     }
     
-    static List<GlobalIdServiceBean> providerList = new ArrayList<GlobalIdServiceBean>();
+    static Map<String,GlobalIdServiceBean> providerMap = new HashMap<String, GlobalIdServiceBean>();
     
     public static void addAllToProviderList(List<GlobalIdServiceBean> list) {
-        providerList.addAll(list);
-        logger.info("Now in providerList: " + providerList.size());
-        for (GlobalIdServiceBean pidProvider : providerList) {
-            logger.info(String.join(",", pidProvider.getProviderInformation()));
+        for (GlobalIdServiceBean pidProvider : list) {
+            providerMap.put(pidProvider.getProviderInformation().get(0), pidProvider);
         }
     }
 
@@ -134,8 +128,8 @@ public class PidUtil {
      * @throws IllegalArgumentException if the passed string cannot be parsed.
      */
     public static GlobalId parseAsGlobalID(String identifier) {
-        logger.info("IN parseAsGlobalId: " + providerList.size());
-        for (GlobalIdServiceBean pidProvider : providerList) {
+        logger.info("IN parseAsGlobalId: " + providerMap.size());
+        for (GlobalIdServiceBean pidProvider : providerMap.values()) {
             logger.info(" Checking " + String.join(",", pidProvider.getProviderInformation()));
             GlobalId globalId = pidProvider.parsePersistentId(identifier);
             if (globalId != null) {

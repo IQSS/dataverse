@@ -63,6 +63,9 @@ public class GlobalId implements java.io.Serializable {
     private String protocol;
     private String authority;
     private String identifier;
+    private String managingProviderName;
+    private String separator = "/";
+    private String urlForm;
 
     /**
      * Tests whether {@code this} instance has all the data required for a 
@@ -110,11 +113,13 @@ public class GlobalId implements java.io.Serializable {
         if (protocol == null || authority == null || identifier == null) {
             return "";
         }
-        return protocol + ":" + authority + "/" + identifier;
+        return protocol + ":" + authority + separator + identifier;
     }
     
-    public URL toURL() {
-        URL url = null;
+    public String asURL() {
+        return urlForm;
+
+        /*URL url = null;
         if (identifier == null){
             return null;
         }
@@ -128,6 +133,7 @@ public class GlobalId implements java.io.Serializable {
             logger.log(Level.SEVERE, null, ex);
         }       
         return url;
+        */
     }    
 
     
@@ -247,4 +253,21 @@ public class GlobalId implements java.io.Serializable {
 
         return m.matches();
     }
+
+    public void setProvider(String name) {
+        managingProviderName = name;
+    }
+    
+    public String getProvider() {
+        return managingProviderName;
+    }
+
+    public void setSeparator(String separator) {
+        this.separator = separator;
+    }
+
+    public void setUrlForm(String urlForm) {
+        this.urlForm = urlForm;
+    }
+
 }
