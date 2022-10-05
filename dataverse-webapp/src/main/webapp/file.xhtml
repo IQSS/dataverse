@@ -414,6 +414,7 @@
                                 rendered="#{not empty FilePage.previewTools
                                             and fileDownloadHelper.canUserDownloadFile(FilePage.fileMetadata)
                                             and not FilePage.fileMetadata.datasetVersion.deaccessioned
+                                            and not FilePage.fileMetadata.datasetVersion.draft
                                             and not FilePage.fileMetadata.datasetVersion.dataset.hasActiveEmbargo()}">
                                 <ui:fragment rendered="#{FilePage.downloadPopupRequired and !FilePage.guestbookResponseProvided}">
                                     <ui:include src="file-download-popup-fragment.xhtml">
