@@ -676,7 +676,7 @@ In addition to having the type "remote" and requiring a label, Trusted Remote St
 These and other available options are described in the table below.
 
 Trusted remote stores can range from being a static trusted website to a sophisticated service managing access requests and logging activity
-and/or managing access to a secure enclave. For specific remote stores, consult their documentation when configuring the remote store in your Dataverse installation.
+and/or managing access to a secure enclave.  See :doc:`/developers/big-data-support` for additional information on how to use a trusted remote store. For specific remote stores, consult their documentation when configuring the remote store in your Dataverse installation.
 
 Note that in the current implementation, activites where Dataverse needs access to data bytes, e.g. to create thumbnails or validate hash values at publication will fail if a remote store does not allow Dataverse access. Implementers of such trusted remote stores should consider using Dataverse's settings to disable ingest, validation of files at publication, etc. as needed.
 
@@ -2456,6 +2456,30 @@ In the case you get garbled characters in Shibboleth-supplied fields (e.g. given
 
 If you managed to get correct accented characters from shibboleth while this setting is _false_, please contact us with your application server and Shibboleth configuration!
 
+:ShibAffiliationOrder
++++++++++++++++++++++
+
+Will select the last or first value of an array in affiliation, the array separator can be set using ``:ShibAffiliationSeparator`` .
+
+To select the last value : 
+
+``curl -X PUT -d "lastAffiliation" http://localhost:8080/api/admin/settings/:ShibAffiliationOrder``
+
+To select the first value :
+
+``curl -X PUT -d "firstAffiliation" http://localhost:8080/api/admin/settings/:ShibAffiliationOrder``
+
+
+:ShibAffiliationSeparator
++++++++++++++++++++++++++
+
+Set the separator to be used for ``:ShibAffiliationOrder``.
+Default separator : ";"
+
+To change the separator :
+
+``curl -X PUT -d ";" http://localhost:8080/api/admin/settings/:ShibAffiliationSeparator``
+
 .. _:ComputeBaseUrl:
 
 :ComputeBaseUrl
@@ -2808,6 +2832,23 @@ Scripts that implement this association for specific service protocols are maint
 
 ``curl -X PUT --upload-file cvoc-conf.json http://localhost:8080/api/admin/settings/:CVocConf``
 
+.. _:ControlledVocabularyCustomJavaScript:
+
+:ControlledVocabularyCustomJavaScript
++++++++++++++++++++++++++++++++++++++
+
+``:ControlledVocabularyCustomJavaScript`` allows a JavaScript file to be loaded into the dataset page for the purpose of showing controlled vocabulary as a list (with optionally translated values) such as author names.
+
+To specify the URL for a custom script ``covoc.js`` to be loaded from an external site:
+
+``curl -X PUT -d 'https://example.com/js/covoc.js' http://localhost:8080/api/admin/settings/:ControlledVocabularyCustomJavaScript``
+
+To remove the custom script URL:
+
+``curl -X DELETE http://localhost:8080/api/admin/settings/:ControlledVocabularyCustomJavaScript``
+
+Please note that :ref:`:CVocConf` is a better option if the list is large or needs to be searchable from an external service using protocols such as SKOSMOS.
+
 .. _:AllowedCurationLabels:
 
 :AllowedCurationLabels
@@ -2958,3 +2999,35 @@ The URL of an LDN Inbox to which the LDN Announce workflow step will send messag
 ++++++++++++++++++++++++++
 
 The list of parent dataset field names for which the LDN Announce workflow step should send messages. See :doc:`/developers/workflows` for details.
+
+.. _:GlobusBasicToken:
+
+:GlobusBasicToken
++++++++++++++++++
+
+GlobusBasicToken encodes credentials for Globus integration. See :ref:`globus-support` for details.
+
+:GlobusEndpoint
++++++++++++++++
+
+GlobusEndpoint is Globus endpoint id used with Globus integration. See :ref:`globus-support` for details.
+
+:GlobusStores
++++++++++++++
+
+A comma-separated list of the S3 stores that are configured to support Globus integration. See :ref:`globus-support` for details.
+
+:GlobusAppURL
++++++++++++++
+
+The URL where the `dataverse-globus <https://github.com/scholarsportal/dataverse-globus>`_ "transfer" app has been deployed to support Globus integration. See :ref:`globus-support` for details.
+
+:GlobusPollingInterval
+++++++++++++++++++++++
+
+The interval in seconds between Dataverse calls to Globus to check on upload progress. Defaults to 50 seconds. See :ref:`globus-support` for details.
+
+:GlobusSingleFileTransfer
++++++++++++++++++++++++++
+
+A true/false option to add a Globus transfer option to the file download menu which is not yet fully supported in the dataverse-globus app. See :ref:`globus-support` for details.
