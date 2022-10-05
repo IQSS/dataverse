@@ -228,7 +228,7 @@ public class HarvestingServerIT {
         // still be running after we received the OK from the publish API. 
         // So let's wait for it to finish.
         UtilIT.sleepForReindex(datasetPersistentId, adminUserAPIKey, 10);
-        Thread.sleep(3000L);
+
         String setName = identifier;
         String setQuery = "dsPersistentId:" + identifier;
         String apiPath = String.format("/api/harvest/server/oaisets/%s", setName);
