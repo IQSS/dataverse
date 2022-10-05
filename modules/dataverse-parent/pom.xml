@@ -129,7 +129,7 @@
  
     <properties>
         <!-- This is a special Maven property name, do not change! -->
-        <revision>5.11.1</revision>
+        <revision>5.12</revision>
     
         <target.java.version>11</target.java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -146,11 +146,11 @@
         <argLine>-Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
     
         <!-- Major system components and dependencies -->
-        <payara.version>5.2021.6</payara.version>
-        <postgresql.version>42.3.5</postgresql.version>
+        <payara.version>5.2022.3</payara.version>
+        <postgresql.version>42.5.0</postgresql.version>
         <solr.version>8.11.1</solr.version>
-        <aws.version>1.11.762</aws.version>
-        <google.cloud.version>0.157.0</google.cloud.version>
+        <aws.version>1.12.290</aws.version>
+        <google.cloud.version>0.177.0</google.cloud.version>
     
         <!-- Basic libs, logging -->
         <jakartaee-api.version>8.0.0</jakartaee-api.version>
@@ -164,7 +164,7 @@
     
         <!-- Testing dependencies -->
         <testcontainers.version>1.15.0</testcontainers.version>
-        <microbean-mpconfig.version>0.4.1</microbean-mpconfig.version>
+        <smallrye-mpconfig.version>2.10.1</smallrye-mpconfig.version>
     
         <junit.version>4.13.1</junit.version>
         <junit.jupiter.version>5.7.0</junit.jupiter.version>
