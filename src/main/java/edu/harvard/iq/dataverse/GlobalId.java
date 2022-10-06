@@ -29,7 +29,9 @@ public class GlobalId implements java.io.Serializable {
         this.protocol = protocol;
         this.authority = authority;
         this.identifier = identifier;
-        this.separator = separator;
+        if(separator!=null) {
+          this.separator = separator;
+        }
         this.urlPrefix = urlPrefix;
         this.managingProviderName = providerName;
     }
@@ -97,11 +99,12 @@ public class GlobalId implements java.io.Serializable {
             return null;
         }
         try {
-               url = new URL(urlPrefix + authority + "/" + identifier); 
+               url = new URL(urlPrefix + authority + "/" + identifier);
+               return url.toExternalForm();
         } catch (MalformedURLException ex) {
             logger.log(Level.SEVERE, null, ex);
-        }       
-        return url.toExternalForm();
+        }
+        return null;
     }
 
 

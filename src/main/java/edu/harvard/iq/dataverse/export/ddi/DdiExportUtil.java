@@ -30,6 +30,7 @@ import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_SUBJECT_
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_TYPE_TAG;
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_TYPE_UNF;
 import edu.harvard.iq.dataverse.export.DDIExporter;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import static edu.harvard.iq.dataverse.util.SystemConfig.FQDN;
@@ -184,7 +185,7 @@ public class DdiExportUtil {
         String pidUri = pid;
         //Some tests don't send real PIDs - don't try to get their URL form
         if(!pidUri.equals("null:null/null")) {
-            pidUri= new GlobalId(persistentProtocol + ":" + persistentAuthority + "/" + persistentId).toURL().toString();
+            pidUri= PidUtil.parseAsGlobalID(persistentProtocol, persistentAuthority, persistentId).asURL();
         }
         // The "persistentAgency" tag is used for the "agency" attribute of the 
         // <IDNo> ddi section; back in the DVN3 days we used "handle" and "DOI" 
@@ -1351,7 +1352,7 @@ public class DdiExportUtil {
                 String dfIdentifier = fileMetadata.getDataFile().getIdentifier();
                 if (dfIdentifier != null && !dfIdentifier.isEmpty()){
                     GlobalId globalId = new GlobalId(fileMetadata.getDataFile());
-                    writeAttribute(xmlw, "URI",  globalId.toURL().toString()); 
+                    writeAttribute(xmlw, "URI",  globalId.asURL()); 
                 }  else {
                     writeAttribute(xmlw, "URI", dataverseUrl + "/api/access/datafile/" + fileMetadata.getDataFile().getId()); 
                 }

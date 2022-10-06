@@ -26,6 +26,7 @@ import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -72,7 +73,7 @@ public class OpenAireExportUtil {
         String persistentAgency = datasetDto.getProtocol();
         String persistentAuthority = datasetDto.getAuthority();
         String persistentId = datasetDto.getIdentifier();
-        GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId);
+        GlobalId globalId = PidUtil.parseAsGlobalID(persistentAgency, persistentAuthority, persistentId);
 
         // The sequence is revied using sample:
         // https://schema.datacite.org/meta/kernel-4.0/example/datacite-example-full-v4.0.xml
@@ -84,7 +85,7 @@ public class OpenAireExportUtil {
         String language = null;
 
         // 1, Identifier (with mandatory type sub-property) (M)
-        writeIdentifierElement(xmlw, globalId.toURL().toString(), language);
+        writeIdentifierElement(xmlw, globalId.asURL(), language);
 
         // 2, Creator (with optional given name, family name, 
         //      name identifier and affiliation sub-properties) (M)

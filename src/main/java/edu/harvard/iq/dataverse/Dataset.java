@@ -256,7 +256,7 @@ public class Dataset extends DvObjectContainer {
     }
 
     public String getPersistentURL() {
-        return new GlobalId(this).toURL().toString();
+        return new GlobalId(this).asURL();
     }
     
     public List<DataFile> getFiles() {

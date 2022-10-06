@@ -39,6 +39,7 @@ public class PermaLinkPidProviderServiceBean extends AbstractGlobalIdServiceBean
     public static final String PERMA_RESOLVER_URL = System.getProperty("pid.baseurlstring", SystemConfig.getDataverseSiteUrlStatic());
     
     String authority = null; 
+    String separator = "";
     
     @PostConstruct
     private void init() {
@@ -153,7 +154,7 @@ public class PermaLinkPidProviderServiceBean extends AbstractGlobalIdServiceBean
         if (GlobalIdServiceBean.testforNullTerminator(identifier)) {
             return null;
         }
-        return new GlobalId(PERMA_PROTOCOL, authority, identifier);
+        return new GlobalId(PERMA_PROTOCOL, authority, identifier, separator, getUrlPrefix(), PERMA_PROTOCOL);
     }
     
     
@@ -164,5 +165,11 @@ public class PermaLinkPidProviderServiceBean extends AbstractGlobalIdServiceBean
             return "";
         }
         return globalId.getProtocol() + ":" + globalId.getAuthority() + globalId.getIdentifier();
+    }
+
+    @Override
+    public String getUrlPrefix() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

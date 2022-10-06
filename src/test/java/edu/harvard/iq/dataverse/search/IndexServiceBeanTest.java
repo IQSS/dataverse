@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
+import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
@@ -64,8 +65,7 @@ public class IndexServiceBeanTest {
 
     private IndexableDataset createIndexableDataset() {
         final Dataset dataset = MocksFactory.makeDataset();
-        String fakeId = "doi:10.666/FAKE/fake";
-        dataset.setGlobalId(new GlobalId(fakeId));
+        dataset.setGlobalId(new GlobalId(DOIServiceBean.DOI_PROTOCOL,"10.666", "FAKE/fake", "/", DOIServiceBean.DOI_RESOLVER_URL, null));
         final DatasetVersion datasetVersion = dataset.getCreateVersion(null);
         DatasetField field = createCVVField("language", "English", false);
         datasetVersion.getDatasetFields().add(field);

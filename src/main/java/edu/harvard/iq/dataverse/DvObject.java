@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -342,10 +344,10 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     }
     
     public GlobalId getGlobalId() {
-        // FIXME should return NULL when the fields are null. Currenntly, 
+        // FIXME should return NULL when the fields are null. Currently, 
         //       a lot of code depends call this method, so this fix can't be 
         //       a part of the current PR.
-        return new GlobalId(getProtocol(), getAuthority(), getIdentifier());
+        return PidUtil.parseAsGlobalID(getProtocol(), getAuthority(), getIdentifier());
     }
     
     public abstract <T> T accept(Visitor<T> v);

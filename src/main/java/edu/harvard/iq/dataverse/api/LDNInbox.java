@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.HandlenetServiceBean;
 import edu.harvard.iq.dataverse.MailServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
@@ -139,7 +140,7 @@ public class LDNInbox extends AbstractApiBean {
                                     pid = pid.replace(HandlenetServiceBean.HDL_RESOLVER_URL, HandlenetServiceBean.HDL_PROTOCOL + ":");
                                 }
                                 logger.fine("Protocol PID: " + pid);
-                                Optional<GlobalId> id = GlobalId.parse(pid);
+                                Optional<GlobalId> id = GlobalIdServiceBean.parse(pid);
                                 Dataset dataset = datasetSvc.findByGlobalId(pid);
                                 if (dataset != null) {
                                     JsonObject citingResource = Json.createObjectBuilder().add("@id", citingPID)

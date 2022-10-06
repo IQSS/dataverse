@@ -441,6 +441,11 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
         GlobalId globalId = this.parsePersistentIdentifier(protocol, identifierString);
         return globalId;
     }
+
+    @Override
+    public String getUrlPrefix() {
+        return HDL_RESOLVER_URL;
+    }
 }
 
 

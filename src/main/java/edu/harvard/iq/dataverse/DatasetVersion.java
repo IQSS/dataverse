@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.license.License;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -14,9 +15,7 @@ import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.io.Serializable;
-import java.net.URL;
 import java.sql.Timestamp;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -388,7 +387,7 @@ public class DatasetVersion implements Serializable {
     }
 
     public GlobalId getDeaccessionLinkAsGlobalId() {
-        return new GlobalId(deaccessionLink);
+        return PidUtil.parseAsGlobalID(deaccessionLink);
     }
 
     public Date getCreateTime() {
@@ -2006,10 +2005,7 @@ public class DatasetVersion implements Serializable {
             for (FileMetadata fileMetadata : fileMetadatasSorted) {
                 JsonObjectBuilder fileObject = NullSafeJsonBuilder.jsonObjectBuilder();
                 String filePidUrlAsString = null;
-                URL filePidUrl = fileMetadata.getDataFile().getGlobalId().toURL();
-                if (filePidUrl != null) {
-                    filePidUrlAsString = filePidUrl.toString();
-                }
+                filePidUrlAsString = fileMetadata.getDataFile().getGlobalId().asURL();
                 fileObject.add("@type", "DataDownload");
                 fileObject.add("name", fileMetadata.getLabel());
                 fileObject.add("fileFormat", fileMetadata.getDataFile().getContentType());

@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -84,7 +86,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
 
     public DvObject findByGlobalId(String globalIdString, DvObject.DType dtype) {
         try {
-            GlobalId gid = new GlobalId(globalIdString);
+            GlobalId gid = PidUtil.parseAsGlobalID(globalIdString);
             return findByGlobalId(gid, dtype);
         } catch (IllegalArgumentException iae) {
             logger.fine("Invalid identifier: " + globalIdString);
@@ -95,7 +97,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
     
     public DvObject findByAltGlobalId(String globalIdString, DvObject.DType dtype) {
         try {
-            GlobalId gid = new GlobalId(globalIdString);
+            GlobalId gid = PidUtil.parseAsGlobalID(globalIdString);
             return findByAltGlobalId(gid, dtype);
         } catch (IllegalArgumentException iae) {
             logger.fine("Invalid alternate identifier: " + globalIdString);
