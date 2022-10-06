@@ -88,8 +88,8 @@
         <geoBndBox>
           <westBL>10</westBL>
           <eastBL>20</eastBL>
-          <northBL>30</northBL>
-          <southBL>40</southBL>
+          <northBL>40</northBL>
+          <southBL>30</southBL>
         </geoBndBox>
         <geoBndBox>
           <southBL>80</southBL>
