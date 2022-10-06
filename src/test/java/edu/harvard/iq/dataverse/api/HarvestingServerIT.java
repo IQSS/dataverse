@@ -227,9 +227,9 @@ public class HarvestingServerIT {
         // - however, publish command is executed asynchronously, i.e. it may 
         // still be running after we received the OK from the publish API. 
         // So let's wait for it to finish.
-        Thread.sleep(1000L);
+        Thread.sleep(200L);
         UtilIT.sleepForReindex(datasetPersistentId, adminUserAPIKey, 10);
-
+        Thread.sleep(5000L);
         String setName = identifier;
         String setQuery = "dsPersistentId:" + identifier;
         String apiPath = String.format("/api/harvest/server/oaisets/%s", setName);

@@ -2437,6 +2437,7 @@ public class UtilIT {
         boolean stale=true;
         do {
             timestampResponse = UtilIT.getDatasetTimestamps(idOrPersistentId, apiToken);
+            System.out.println(timestampResponse.body().asString());
             String hasStaleIndex = timestampResponse.body().jsonPath().getString("data.hasStaleIndex");
             System.out.println(hasStaleIndex);
             stale = Boolean.parseBoolean(hasStaleIndex);
