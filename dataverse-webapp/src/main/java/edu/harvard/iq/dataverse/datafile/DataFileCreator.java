@@ -83,7 +83,7 @@ public class DataFileCreator {
     // -------------------- PRIVATE --------------------
 
     private List<DataFile> createDataFiles(Path tempFile, String fileName, String suppliedContentType, Long fileSizeLimit) throws IOException {
-        
+
         logger.info("mime type supplied: " + suppliedContentType);
 
         String recognizedType = fileTypeDetector.determineFileType(tempFile.toFile(), fileName);
@@ -92,7 +92,7 @@ public class DataFileCreator {
         String finalType = isDetectedContentTypeBetterThanSupplied(suppliedContentType, recognizedType) ?
                 recognizedType : suppliedContentType;
 
-        if (settingsService.isTrueForKey(SettingsServiceBean.Key.AntivirusScannerEnabled) 
+        if (settingsService.isTrueForKey(SettingsServiceBean.Key.AntivirusScannerEnabled)
                 && !antivirFileScanner.isFileOverSizeLimit(tempFile.toFile(), recognizedType)) {
             Stopwatch watch = new Stopwatch();
             watch.start();
@@ -104,7 +104,7 @@ public class DataFileCreator {
                 throw new VirusFoundException(scannerResponse.getMessage());
             }
         }
-        
+
 
         IngestError errorKey = null;
         long zipFileUnpackFilesLimit = settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.ZipUploadFilesLimit);
@@ -153,13 +153,13 @@ public class DataFileCreator {
                 throw new IOException("One of the unzipped shape files exceeded the size limit", femsx);
             }
         }
-        
+
         Long uncompressedSize = uncompressedCalculator.calculateUncompressedSize(tempFile, finalType, fileName);
 
         // Finally, if none of the special cases above were applicable (or
         // if we were unable to unpack an uploaded file, etc.), we'll just
         // create and return a single DataFile:
-        
+
         DataFile datafile = createSingleDataFile(tempFile, fileName, finalType, uncompressedSize);
 
         if (errorKey != null) {
@@ -170,12 +170,12 @@ public class DataFileCreator {
                 datafile.setIngestReport(createIngestFailureReport(datafile, errorKey));
             }
 
-            datafile.SetIngestProblem();
+            datafile.setIngestProblem();
         }
 
         return Lists.newArrayList(datafile);
     }
-    
+
     /**
      *  Is detected it any better than the type that was supplied to us,
      *  if any?
@@ -184,7 +184,7 @@ public class DataFileCreator {
      *  be chosen over other choices available. Maybe it should
      *  even be a weighed list... as in, "application/foo" should
      *  be chosen over "application/foo-with-bells-and-whistles".
-     *  
+     *
      *  For now the logic will be as follows:
      *  1. If the contentType supplied (by the browser, most likely)
      *  is some form of "unknown", we always discard it in favor of
@@ -201,7 +201,7 @@ public class DataFileCreator {
                 || isIngestableButNotCsvOrXlsx(suppliedContentType)
                 || isTrustedDetectedMimeType(recognizedType);
     }
-    
+
     private boolean isUndeterminedMimeType(String mimeType) {
         return mimeType == null || mimeType.equals("")
                 || mimeType.equals(ApplicationMimeType.UNDETERMINED_DEFAULT.getMimeValue())
@@ -222,7 +222,7 @@ public class DataFileCreator {
         }
         return false;
     }
-    
+
     /**
      * Creates {@link DataFile} from uncompressed gzip file that is passed
      * a an argument
@@ -236,7 +236,7 @@ public class DataFileCreator {
         }
 
         try (InputStream uncompressedIn = new GZIPInputStream(Files.newInputStream(tempFile))) {
-            
+
             Path unZippedTempFile = FileUtil.limitedInputStreamToTempFile(uncompressedIn, fileSizeLimit);
             return createSingleDataFile(unZippedTempFile, finalFileName, ApplicationMimeType.FITS
                     .getMimeValue(), 0L);
@@ -326,13 +326,13 @@ public class DataFileCreator {
                 Path unZippedShapeTempFile = FileUtil.limitedInputStreamToTempFile(finalFileInputStream, fileSizeLimit);
                 DataFile newDatafile = createSingleDataFile(unZippedShapeTempFile, finalFile.getName(), finalType, 0L);
                 datafiles.add(newDatafile);
-                
+
             }
         }
 
         return datafiles;
     }
-    
+
     /**
      * This method creates a DataFile;
      * This method should only be called by the upper-level methods that handle

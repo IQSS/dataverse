@@ -187,7 +187,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     private List<SelectItem> termsOfUseSelectItems;
 
-    private final int NUMBER_OF_SCROLL_ROWS = 25;
+    private static final int NUMBER_OF_SCROLL_ROWS = 25;
 
     public String getSelectedFileIds() {
         return selectedFileIdsString;
@@ -1104,14 +1104,12 @@ public class EditDatafilesPage implements java.io.Serializable {
             uploadInProgress = false;
         }
         // refresh the warning message below the upload component, if exists:
-        if (uploadComponentId != null) {
-            if (uploadWarningMessage != null) {
-                {
-                    FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), uploadWarningMessage));
-                }
-            } else if (uploadSuccessMessage != null) {
-                FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.file.uploadWorked"), uploadSuccessMessage));
-            }
+        if (uploadComponentId != null && uploadWarningMessage != null) {
+            FacesContext.getCurrentInstance()
+                    .addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), uploadWarningMessage));
+        } else if (uploadComponentId != null && uploadSuccessMessage != null) {
+            FacesContext.getCurrentInstance()
+                    .addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.file.uploadWorked"), uploadSuccessMessage));
         }
 
         // We clear the following duplicate warning labels, because we want to
@@ -1147,7 +1145,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     /**
      * Handle native file replace
      *
-     * @param event
      * @throws java.io.IOException
      */
     public void handleFileUpload(FileUploadEvent event) throws IOException {

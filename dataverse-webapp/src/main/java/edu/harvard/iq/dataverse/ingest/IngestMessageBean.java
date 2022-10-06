@@ -101,7 +101,7 @@ public class IngestMessageBean implements MessageListener {
                         logger.fine("looking up datafile for id " + datafile_id);
                         DataFile datafile = datafileService.find(datafile_id);
                         if (datafile != null) {
-                            datafile.SetIngestProblem();
+                            datafile.setIngestProblem();
                             IngestReport errorReport = new IngestReport();
                             errorReport.setFailure();
                             errorReport.setErrorKey(IngestError.DB_FAIL);

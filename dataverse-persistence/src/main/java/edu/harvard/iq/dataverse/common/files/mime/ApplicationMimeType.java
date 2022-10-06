@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 
 import java.util.List;
 
-public enum ApplicationMimeType {
+public enum ApplicationMimeType implements MimeType {
 
     FITS("application/fits"),
     SPSS_SAV("application/x-spss-sav"),
@@ -33,6 +33,7 @@ public enum ApplicationMimeType {
         this.mimeValue = mimeType;
     }
 
+    @Override
     public String getMimeValue() {
         return mimeValue;
     }

@@ -77,16 +77,13 @@ public class FileUtil implements java.io.Serializable {
      */
     public static final String DATA_URI_SCHEME = "data:image/png;base64,";
 
-    public FileUtil() {
-    }
+    // -------------------- LOGIC --------------------
 
     public static String replaceExtension(String originalName, String newExtension) {
         int extensionIndex = originalName.lastIndexOf(".");
-        if (extensionIndex != -1) {
-            return originalName.substring(0, extensionIndex) + "." + newExtension;
-        } else {
-            return originalName + "." + newExtension;
-        }
+        return extensionIndex != -1
+                ? originalName.substring(0, extensionIndex) + "." + newExtension
+                : originalName + "." + newExtension;
     }
 
     public static String getFacetFileTypeForIndex(DataFile dataFile, Locale locale) {
@@ -116,7 +113,7 @@ public class FileUtil implements java.io.Serializable {
 
     // from MD5Checksum.java
     public static String calculateChecksum(InputStream in, ChecksumType checksumType) {
-        MessageDigest md = null;
+        MessageDigest md;
         try {
             // Use "SHA-1" (toString) rather than "SHA1", for example.
             md = MessageDigest.getInstance(checksumType.toString());
@@ -137,6 +134,7 @@ public class FileUtil implements java.io.Serializable {
             try {
                 in.close();
             } catch (Exception e) {
+                logger.warn("Exception while closing stream: ", e);
             }
         }
 
@@ -144,30 +142,26 @@ public class FileUtil implements java.io.Serializable {
     }
 
     public static String calculateChecksum(byte[] dataBytes, ChecksumType checksumType) {
-        MessageDigest md = null;
+        MessageDigest md;
         try {
             // Use "SHA-1" (toString) rather than "SHA1", for example.
             md = MessageDigest.getInstance(checksumType.toString());
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
-
         md.update(dataBytes);
-
         return checksumDigestToString(md.digest());
-
     }
 
     private static String checksumDigestToString(byte[] digestBytes) {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < digestBytes.length; i++) {
-            sb.append(Integer.toString((digestBytes[i] & 0xff) + 0x100, 16).substring(1));
+        for (byte digestByte : digestBytes) {
+            sb.append(Integer.toString((digestByte & 0xff) + 0x100, 16).substring(1));
         }
         return sb.toString();
     }
 
     public static String generateOriginalExtension(String fileType) {
-
         if (fileType.equalsIgnoreCase("application/x-spss-sav")) {
             return ".sav";
         } else if (fileType.equalsIgnoreCase("application/x-spss-por")) {
@@ -188,19 +182,10 @@ public class FileUtil implements java.io.Serializable {
 
     public static boolean canIngestAsTabular(DataFile dataFile) {
         String mimeType = dataFile.getContentType();
-
         return canIngestAsTabular(mimeType);
     }
 
     public static boolean canIngestAsTabular(String mimeType) {
-        /*
-         * In the final 4.0 we'll be doing real-time checks, going through the
-         * available plugins and verifying the lists of mime types that they
-         * can handle. In 4.0 beta, the ingest plugins are still built into the
-         * main code base, so we can just go through a hard-coded list of mime
-         * types. -- L.A.
-         */
-
         if (mimeType == null) {
             return false;
         }
@@ -211,13 +196,11 @@ public class FileUtil implements java.io.Serializable {
         boolean isMimeAmongIngestableTextTypes = TextMimeType.retrieveIngestableMimes().stream()
                 .anyMatch(appMime -> appMime.getMimeValue().equals(mimeType));
 
-
         return isMimeAmongIngestableAppTypes || isMimeAmongIngestableTextTypes;
     }
 
     public static String getFilesTempDirectory() {
         String filesRootDirectory = SystemConfig.getFilesDirectoryStatic();
-
         String filesTempDirectory = filesRootDirectory + "/temp";
 
         if (!Files.exists(Paths.get(filesTempDirectory))) {
@@ -231,7 +214,6 @@ public class FileUtil implements java.io.Serializable {
                 throw new IllegalStateException("Failed to create files temp directory: " + filesTempDirectory, ex);
             }
         }
-
         return filesTempDirectory;
     }
 
@@ -241,7 +223,6 @@ public class FileUtil implements java.io.Serializable {
 
         try (OutputStream outStream = Files.newOutputStream(tempFile)) {
             logger.info("Will attempt to save the file as: " + tempFile.toString());
-
             byte[] buffer = new byte[8 * 1024];
             int bytesRead;
             long totalBytesRead = 0;
@@ -253,14 +234,12 @@ public class FileUtil implements java.io.Serializable {
                     } catch (Exception ex) {
                         logger.error("There was a problem with deleting temporary file");
                     }
-
                     throw new FileExceedsMaxSizeException(fileSizeLimit, MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit"),
                                                                                bytesToHumanReadable(fileSizeLimit)));
                 }
                 outStream.write(buffer, 0, bytesRead);
             }
         }
-
         return tempFile;
     }
 
@@ -275,73 +254,42 @@ public class FileUtil implements java.io.Serializable {
         }
         File file = File.createTempFile(UUID.randomUUID().toString(), UUID.randomUUID().toString());
         try (OutputStream outputStream = new FileOutputStream(file)) {
-            int read = 0;
             byte[] bytes = new byte[bufferSize];
+            int read;
             while ((read = inputStream.read(bytes)) != -1) {
                 outputStream.write(bytes, 0, read);
             }
             return file;
         }
     }
-    
-    public static String generateStorageIdentifier() {
 
+    public static String generateStorageIdentifier() {
         UUID uid = UUID.randomUUID();
 
-        logger.debug("UUID value: {}", uid.toString());
+        logger.trace("UUID value: {}", uid.toString());
 
         // last 6 bytes, of the random UUID, in hex:
-
         String hexRandom = uid.toString().substring(24);
 
-        logger.debug("UUID (last 6 bytes, 12 hex digits): {}", hexRandom);
+        logger.trace("UUID (last 6 bytes, 12 hex digits): {}", hexRandom);
 
         String hexTimestamp = Long.toHexString(new Date().getTime());
 
-        logger.debug("(not UUID) timestamp in hex: {}", hexTimestamp);
+        logger.trace("(not UUID) timestamp in hex: {}", hexTimestamp);
 
         String storageIdentifier = hexTimestamp + "-" + hexRandom;
 
-        logger.debug("timestamp/UUID hybrid: {}", storageIdentifier);
+        logger.debug("Storage identifier (timestamp/UUID hybrid): {}", storageIdentifier);
         return storageIdentifier;
     }
 
-    public enum FileCitationExtension {
-
-        ENDNOTE("-endnote", ".xml"),
-        RIS(".ris"),
-        BIBTEX(".bib");
-
-        private final String text;
-        private final String extension;
-
-        public String getSuffix() {
-            return text + extension;
-        }
-
-        public String getExtension() {
-            return extension;
-        }
-
-        FileCitationExtension(String text, String extension) {
-            this.text = text;
-            this.extension = extension;
-        }
-
-        FileCitationExtension(String extension) {
-            this(StringUtils.EMPTY, extension);
-        }
-    }
-
     public static String getCiteDataFileFilename(String fileTitle, FileCitationExtension fileCitationExtension) {
-        if ((fileTitle == null) || (fileCitationExtension == null)) {
+        if (fileTitle == null || fileCitationExtension == null) {
             return null;
         }
-        if (fileTitle.endsWith("tab")) {
-            return fileTitle.replaceAll("\\.tab$", fileCitationExtension.getSuffix());
-        } else {
-            return fileTitle + fileCitationExtension.getSuffix();
-        }
+        return fileTitle.endsWith("tab")
+                ? fileTitle.replaceAll("\\.tab$", fileCitationExtension.getSuffix())
+                : fileTitle + fileCitationExtension.getSuffix();
     }
 
     /**
@@ -353,22 +301,22 @@ public class FileUtil implements java.io.Serializable {
         // Each of these conditions is sufficient reason to have to
         // present the user with the popup:
         if (datasetVersion == null) {
-            logger.debug("Download popup required because datasetVersion is null.");
+            logger.trace("Download popup required because datasetVersion is null.");
             return false;
         }
-        //0. if version is draft then Popup "not required"
+        // 0. if version is draft then Popup "not required"
         if (!datasetVersion.isReleased()) {
-            logger.debug("Download popup required because datasetVersion has not been released.");
+            logger.trace("Download popup required because datasetVersion has not been released.");
             return false;
         }
 
         // 1. Guest Book:
         if (datasetVersion.getDataset() != null && datasetVersion.getDataset().getGuestbook() != null && datasetVersion.getDataset().getGuestbook().isEnabled() && datasetVersion.getDataset().getGuestbook().getDataverse() != null) {
-            logger.debug("Download popup required because of guestbook.");
+            logger.trace("Download popup required because of guestbook.");
             return true;
         }
 
-        logger.debug("Download popup is not required.");
+        logger.trace("Download popup is not required.");
         return false;
     }
 
@@ -379,19 +327,17 @@ public class FileUtil implements java.io.Serializable {
 
         //0. if version is draft then Popup "not required"
         if (!fileMetadata.getDatasetVersion().isReleased()) {
-            logger.debug("Request access popup not required because datasetVersion has not been released.");
+            logger.trace("Request access popup not required because datasetVersion has not been released.");
             return false;
         }
 
         // 1. Terms of Use:
         FileTermsOfUse termsOfUse = fileMetadata.getTermsOfUse();
         if (termsOfUse.getTermsOfUseType() == TermsOfUseType.RESTRICTED) {
-            logger.debug("Request access popup required because file is restricted.");
+            logger.trace("Request access popup required because file is restricted.");
             return true;
         }
-
-
-        logger.debug("Request access popup is not required.");
+        logger.trace("Request access popup is not required.");
         return false;
     }
 
@@ -409,7 +355,7 @@ public class FileUtil implements java.io.Serializable {
             return false;
         }
         return !isDownloadPopupRequired(fileMetadata.getDatasetVersion());
-        /**
+        /*
          * @todo The user clicking publish may have a bad "Dude, where did
          * the file Download URL go" experience in the following scenario:
          *
@@ -449,15 +395,6 @@ public class FileUtil implements java.io.Serializable {
         return path;
     }
 
-    public enum ApiDownloadType {
-        DEFAULT,
-        BUNDLE,
-        ORIGINAL,
-        RDATA,
-        VAR,
-        TAB
-    }
-
     /**
      * The FileDownloadServiceBean operates on file IDs, not DOIs.
      */
@@ -492,11 +429,6 @@ public class FileUtil implements java.io.Serializable {
         return fileDownloadUrl;
     }
 
-    public enum ApiBatchDownloadType {
-        DEFAULT,
-        ORIGINAL
-    }
-
     public static String getBatchFilesDownloadUrlPath(List<Long> fileIds, boolean guestbookRecordsAlreadyWritten, ApiBatchDownloadType downloadType) {
 
         String fileDownloadUrl = "/api/access/datafiles/" + StringUtils.join(fileIds, ',');
@@ -526,20 +458,15 @@ public class FileUtil implements java.io.Serializable {
         return fileDownloadUrl;
     }
 
-    /*
+    /**
      * This method tells you if thumbnail generation is *supported*
      * on this type of file. i.e., if true, it does not guarantee that a thumbnail
      * can/will be generated; but it means that we can try.
      */
     public static boolean isThumbnailSupported(DataFile file) {
-        if (file == null) {
+        if (file == null || file.isHarvested() || "".equals(file.getStorageIdentifier())) {
             return false;
         }
-
-        if (file.isHarvested() || "".equals(file.getStorageIdentifier())) {
-            return false;
-        }
-
         String contentType = file.getContentType();
 
         // Some browsers (Chrome?) seem to identify FITS files as mime
@@ -553,11 +480,11 @@ public class FileUtil implements java.io.Serializable {
         // besides most image/* types, we can generate thumbnails for
         // pdf and "world map" files:
 
-        return (contentType != null &&
-                (contentType.startsWith("image/") ||
-                        contentType.equalsIgnoreCase("application/pdf") ||
-                        (file.isTabularData() && file.hasGeospatialTag()) ||
-                        contentType.equalsIgnoreCase(ApplicationMimeType.GEO_SHAPE.getMimeValue())));
+        return contentType != null &&
+                (contentType.startsWith("image/")
+                        || contentType.equalsIgnoreCase("application/pdf")
+                        || (file.isTabularData() && file.hasGeospatialTag())
+                        || contentType.equalsIgnoreCase(ApplicationMimeType.GEO_SHAPE.getMimeValue()));
     }
 
     public static boolean isPackageFile(DataFile dataFile) {
@@ -569,4 +496,45 @@ public class FileUtil implements java.io.Serializable {
                 .getOrElseThrow(throwable -> new RuntimeException("Unable to get file from resources", throwable));
     }
 
+    // -------------------- INNER CLASSES --------------------
+
+    public enum FileCitationExtension {
+        ENDNOTE("-endnote", ".xml"),
+        RIS(".ris"),
+        BIBTEX(".bib");
+
+        private final String text;
+        private final String extension;
+
+        FileCitationExtension(String text, String extension) {
+            this.text = text;
+            this.extension = extension;
+        }
+
+        FileCitationExtension(String extension) {
+            this(StringUtils.EMPTY, extension);
+        }
+
+        public String getSuffix() {
+            return text + extension;
+        }
+
+        public String getExtension() {
+            return extension;
+        }
+    }
+
+    public enum ApiBatchDownloadType {
+        DEFAULT,
+        ORIGINAL
+    }
+
+    public enum ApiDownloadType {
+        DEFAULT,
+        BUNDLE,
+        ORIGINAL,
+        RDATA,
+        VAR,
+        TAB
+    }
 }

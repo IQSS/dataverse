@@ -60,7 +60,7 @@ public class FileRecordProcessor implements ItemProcessor {
         dataset = datasetDao.find(new Long(jobParams.getProperty("datasetId")));
     }
 
-    // TODO: This method may be meaningles when used in the context of a "package file" 
+    // TODO: This method may be meaningles when used in the context of a "package file"
     // batch import. See if it can be modified/improved? -- L.A. 4.6.1
     @Override
     public Object processItem(Object object) throws Exception {
@@ -71,7 +71,7 @@ public class FileRecordProcessor implements ItemProcessor {
         String relativePath = path.substring(path.indexOf(gid) + gid.length() + 1);
 
         // skip if it already exists
-        DataFile datafile = dataFileServiceBean.findByStorageIdandDatasetVersion(relativePath, version);
+        DataFile datafile = dataFileServiceBean.findByStorageIdAndDatasetVersion(relativePath, version);
         if (datafile == null) {
             return new File(path);
         } else {

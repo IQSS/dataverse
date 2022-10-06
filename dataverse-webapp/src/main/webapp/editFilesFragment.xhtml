@@ -385,8 +385,7 @@
                                  pt:data-currentBatchSize="#{EditDatafilesPage.currentBatchSize}"
                                  widgetVar="filesTable"
                                  emptyMessage="#{showFileUpload ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}"
-                                 styleClass="filesTable medium-min-width"
-                    >
+                                 styleClass="filesTable medium-min-width">
                         <f:facet name="header">
                             <div jsf:id="filesHeaderBlock" class="row">
                                 <div id="filesHeaderCount" class="col-xs-6 text-left">
@@ -486,6 +485,15 @@
                                     <p:watermark for="fileDescription" value="#{bundle['file.addDescription']}"/>
                                     <p:message for="fileDescription"/>
                                 </ui:fragment>
+                            </div>
+                            <div id="ingestControl"
+                                 jsf:rendered="#{dataFileServiceBean.isSelectivelyIngestableFile(fileMetadata.dataFile)}">
+                                <p:outputLabel styleClass="control-label" for="includeInIngest"
+                                               style="margin-right:1em; margin-top:.5em"
+                                               value="#{bundle['file.ingest.control.label']}"/>
+                                <p:selectBooleanCheckbox id="includeInIngest"
+                                                         value="#{fileMetadata.dataFile.includedInIngest}"
+                                                         itemLabel="#{bundle['file.ingest.control.checkbox']}"/>
                             </div>
                             <div jsf:rendered="#{isUploadPermited}" jsf:id="licenseSelection">
                                 <ui:fragment id="fileTermsOfUse">

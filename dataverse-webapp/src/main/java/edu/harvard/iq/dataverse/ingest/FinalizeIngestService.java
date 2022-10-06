@@ -64,7 +64,7 @@ public class FinalizeIngestService {
             dataFile = fileService.find(dataFileId);
 
             if (dataFile != null) {
-                dataFile.SetIngestProblem();
+                dataFile.setIngestProblem();
                 dataFile.setIngestReport(IngestReport.createIngestFailureReport(dataFile, IngestError.DB_FAIL));
 
                 originalFileData.restoreIngestedDataFile(dataFile, tabDataIngest);
@@ -105,7 +105,7 @@ public class FinalizeIngestService {
             dataFile = fileService.find(dataFileId);
 
             if (dataFile != null) {
-                dataFile.SetIngestProblem();
+                dataFile.setIngestProblem();
                 dataFile.setIngestReport(IngestReport.createIngestFailureReport(dataFile, IngestError.DB_FAIL));
 
                 originalFileData.restoreIngestedDataFile(dataFile, tabDataIngest);

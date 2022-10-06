@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 
 import java.util.List;
 
-public enum TextMimeType {
+public enum TextMimeType implements MimeType {
 
     TSV("text/tsv"),
     TSV_ALT("text/tab-separated-values"),
@@ -23,6 +23,7 @@ public enum TextMimeType {
         this.mimeValue = mimeType;
     }
 
+    @Override
     public String getMimeValue() {
         return mimeValue;
     }

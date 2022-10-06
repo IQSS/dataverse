@@ -262,17 +262,13 @@ public class IngestServiceBean {
             String fileName = fileMetadata.getLabel();
 
             boolean metadataExtracted = false;
-            if (FileUtil.canIngestAsTabular(dataFile)) {
-                /*
-                 * Note that we don't try to ingest the file right away -
-                 * instead we mark it as "scheduled for ingest", then at
-                 * the end of the save process it will be queued for async.
-                 * ingest in the background. In the meantime, the file
-                 * will be ingested as a regular, non-tabular file, and
-                 * appear as such to the user, until the ingest job is
-                 * finished with the Ingest Service.
-                 */
-                dataFile.SetIngestScheduled();
+            if (FileUtil.canIngestAsTabular(dataFile) && !Boolean.FALSE.equals(dataFile.getIncludedInIngest())) {
+                // Note that we don't try to ingest the file right away - instead we mark it
+                // as "scheduled for ingest", then at the end of the save process it will be
+                // queued for async. ingest in the background. In the meantime, the file will
+                // be ingested as a regular, non-tabular file, and appear as such to the user,
+                // until the ingest job is finished with the Ingest Service.
+                dataFile.setIngestScheduled();
             } else if (fileMetadataExtractable(dataFile)) {
 
                 try {
@@ -378,7 +374,7 @@ public class IngestServiceBean {
                 }
 
                 if (ingestSizeLimit == -1 || dataFile.getFilesize() < ingestSizeLimit) {
-                    dataFile.SetIngestInProgress();
+                    dataFile.setIngestInProgress();
                     scheduledFiles.add(dataFile);
                 } else {
                     dataFile.setIngestDone();
@@ -459,7 +455,7 @@ public class IngestServiceBean {
             // Otherwise, we can give up - there is no point in proceeding to
             // the next step if no ingest plugin is available.
 
-            dataFile.SetIngestProblem();
+            dataFile.setIngestProblem();
             dataFile.setIngestReport(
                     IngestReport.createIngestFailureReport(dataFile, IngestError.NOPLUGIN, dataFile.getContentType()));
             fileService.saveInNewTransaction(dataFile);
@@ -474,7 +470,7 @@ public class IngestServiceBean {
             storageIO = dataAccess.getStorageIO(dataFile);
             localFile = Optional.of(StorageIOUtils.obtainAsLocalFile(storageIO, storageIO.isRemoteFile()));
         } catch (IOException ioEx) {
-            dataFile.SetIngestProblem();
+            dataFile.setIngestProblem();
 
             dataFile.setIngestReport(IngestReport.createIngestFailureReport(dataFile, IngestError.UNKNOWN_ERROR));
             fileService.saveInNewTransaction(dataFile);
@@ -495,7 +491,7 @@ public class IngestServiceBean {
             if (ingestPlugin == null) {
                 // If it's still null - give up!
 
-                dataFile.SetIngestProblem();
+                dataFile.setIngestProblem();
                 dataFile.setIngestReport(IngestReport.createIngestFailureReport(
                         dataFile, IngestError.NOPLUGIN, dataFile.getContentType()));
                 fileService.saveInNewTransaction(dataFile);
@@ -520,14 +516,14 @@ public class IngestServiceBean {
         try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(localFile.get()))) {
             tabDataIngest = ingestPlugin.read(inputStream, additionalData);
         } catch (IngestException ex) {
-            dataFile.SetIngestProblem();
+            dataFile.setIngestProblem();
 
             dataFile.setIngestReport(IngestReport.createIngestFailureReport(dataFile, ex));
             logger.log(Level.WARNING, "Ingest failure.", ex);
             fileService.saveInNewTransaction(dataFile);
             return false;
         } catch (Exception ingestEx) {
-            dataFile.SetIngestProblem();
+            dataFile.setIngestProblem();
             dataFile.setIngestReport(IngestReport.createIngestFailureReport(dataFile, IngestError.UNKNOWN_ERROR));
             fileService.saveInNewTransaction(dataFile);
 
@@ -572,7 +568,7 @@ public class IngestServiceBean {
             produceFrequencyStatistics(table, dataFile);
         } catch (IOException postIngestEx) {
 
-            dataFile.SetIngestProblem();
+            dataFile.setIngestProblem();
             dataFile.setIngestReport(
                     IngestReport.createIngestFailureReport(dataFile, IngestError.STATS_OR_SIGNATURE_FAILURE, postIngestEx.getMessage()));
 

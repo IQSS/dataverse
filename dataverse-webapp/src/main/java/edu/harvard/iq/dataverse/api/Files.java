@@ -319,7 +319,7 @@ public class Files extends AbstractApiBean {
             return error(Response.Status.BAD_REQUEST, "Tabular ingest is not supported for this file type (id: " + id + ", type: " + dataFile.getContentType() + ")");
         }
 
-        dataFile.SetIngestScheduled();
+        dataFile.setIngestScheduled();
 
         if (dataFile.getIngestRequest() == null) {
             dataFile.setIngestRequest(new IngestRequest(dataFile));
