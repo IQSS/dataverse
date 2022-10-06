@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import static edu.harvard.iq.dataverse.GlobalIdServiceBean.logger;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProviderServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 
 import java.util.*;
@@ -74,7 +75,7 @@ public interface GlobalIdServiceBean {
     
     public static Optional<GlobalId> parse(String identifierString) {
         try {
-            return Optional.of(new GlobalId(identifierString));
+            return Optional.of(PidUtil.parseAsGlobalID(identifierString));
         } catch ( IllegalArgumentException _iae) {
             return Optional.empty();
         }
@@ -100,6 +101,8 @@ public interface GlobalIdServiceBean {
      *         {@code null} if parsing failed.
      */
     public GlobalId parsePersistentId(String identifierString);
+    public GlobalId parsePersistentId(String protocol, String authority, String identifier);
+
     
     static String formatIdentifierString(String str){
         

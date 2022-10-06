@@ -139,4 +139,20 @@ public class PidUtil {
         throw new IllegalArgumentException("Failed to parse identifier: " + identifier);
     }
     
+    /**
+     * 
+     * @param identifier The string to be parsed
+     * @throws IllegalArgumentException if the passed string cannot be parsed.
+     */
+    public static GlobalId parseAsGlobalID(String protocol, String authority, String identifier) {
+        logger.info("IN parseAsGlobalId: " + providerMap.size());
+        for (GlobalIdServiceBean pidProvider : providerMap.values()) {
+            logger.info(" Checking " + String.join(",", pidProvider.getProviderInformation()));
+            GlobalId globalId = pidProvider.parsePersistentId(protocol, authority, identifier);
+            if (globalId != null) {
+                return globalId;
+            }
+        }
+        throw new IllegalArgumentException("Failed to parse identifier: " + identifier);
+    }
 }
