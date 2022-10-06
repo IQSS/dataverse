@@ -23,27 +23,7 @@ import java.util.regex.Pattern;
  */
 public class GlobalId implements java.io.Serializable {
     
-    public static Optional<GlobalId> parse(String identifierString) {
-        try {
-            return Optional.of(new GlobalId(identifierString));
-        } catch ( IllegalArgumentException _iae) {
-            return Optional.empty();
-        }
-    }
-    
     private static final Logger logger = Logger.getLogger(GlobalId.class.getName());
-
-    /**
-     * 
-     * @param identifier The string to be parsed
-     * @throws IllegalArgumentException if the passed string cannot be parsed.
-     */
-    public GlobalId(String identifier) {
-        // set the protocol, authority, and identifier via parsePersistentId        
-        if ( ! parsePersistentId(identifier) ){
-            throw new IllegalArgumentException("Failed to parse identifier: " + identifier);
-        }
-    }
 
     public GlobalId(String protocol, String authority, String identifier, String separator, String urlPrefix, String providerName) {
         this.protocol = protocol;
@@ -83,26 +63,18 @@ public class GlobalId implements java.io.Serializable {
         return protocol;
     }
 
-    public void setProtocol(String protocol) {
-        this.protocol = protocol;
-    }
-
     public String getAuthority() {
         return authority;
-    }
-
-    public void setAuthority(String authority) {
-        this.authority = authority;
     }
 
     public String getIdentifier() {
         return identifier;
     }
-
-    public void setIdentifier(String identifier) {
-        this.identifier = identifier;
-    }
     
+    public String getProvider() {
+        return managingProviderName;
+    }
+
     public String toString() {
         return asString();
     }
@@ -132,108 +104,7 @@ public class GlobalId implements java.io.Serializable {
         return url.toExternalForm();
     }
 
-    
-    /** 
-     *   Parse a Persistent Id and set the protocol, authority, and identifier
-     * 
-     *   Example 1: doi:10.5072/FK2/BYM3IW
-     *       protocol: doi
-     *       authority: 10.5072
-     *       identifier: FK2/BYM3IW
-     * 
-     *   Example 2: hdl:1902.1/111012
-     *       protocol: hdl
-     *       authority: 1902.1
-     *       identifier: 111012
-     *
-     * @param identifierString
-     * @param separator the string that separates the authority from the identifier.
-     * @param destination the global id that will contain the parsed data.
-     * @return {@code destination}, after its fields have been updated, or
-     *         {@code null} if parsing failed.
-     */
-    //ToDo - move this to an ~AbstractGlobalIdentifierServiceBean that can call subclasses to get available PROTOCOLs, etc.
-    private boolean parsePersistentId(String identifierString) {
 
-        if (identifierString == null) {
-            return false;
-        }
-        int index1 = identifierString.indexOf(':');
-        if (index1 > 0) { // ':' found with one or more characters before it
-            int index2 = identifierString.indexOf('/', index1 + 1);
-            if (index2 > 0 && (index2 + 1) < identifierString.length()) { // '/' found with one or more characters
-                                                                          // between ':'
-                protocol = identifierString.substring(0, index1); // and '/' and there are characters after '/'
-                //If not in the set of available protocols
-                if (!DOIServiceBean.DOI_PROTOCOL.equals(protocol) && !HandlenetServiceBean.HDL_PROTOCOL.equals(protocol) && !PermaLinkPidProviderServiceBean.PERMA_PROTOCOL.equals(protocol)) {
-                    return false;
-                }
-                //Strip any whitespace, ; and ' from authority (should finding them cause a failure instead?)
-                authority = formatIdentifierString(identifierString.substring(index1 + 1, index2));
-                if(testforNullTerminator(authority)) return false;
-                if (protocol.equals(DOIServiceBean.DOI_PROTOCOL)) {
-                    if (!this.checkDOIAuthority(authority)) {
-                        return false;
-                    }
-                }
-                // Passed all checks
-                //Strip any whitespace, ; and ' from identifier (should finding them cause a failure instead? - Yes!)
-                identifier = formatIdentifierString(identifierString.substring(index2 + 1));
-                if(testforNullTerminator(identifier)) return false;               
-            } else {
-                logger.log(Level.INFO, "Error parsing identifier: {0}: '':<authority>/<identifier>'' not found in string", identifierString);
-                return false;
-            }
-        } else {
-            logger.log(Level.INFO, "Error parsing identifier: {0}: ''<protocol>:'' not found in string", identifierString);
-            return false;
-        }
-        return true;
-    }
-    
-    private static String formatIdentifierString(String str){
-        
-        if (str == null){
-            return null;
-        }
-        // remove whitespace, single quotes, and semicolons
-        return str.replaceAll("\\s+|'|;","");  
-        
-        /*
-        < 	(%3C)
-> 	(%3E)
-{ 	(%7B)
-} 	(%7D)
-^ 	(%5E)
-[ 	(%5B)
-] 	(%5D)
-` 	(%60)
-| 	(%7C)
-\ 	(%5C)
-+
-        */
-        // http://www.doi.org/doi_handbook/2_Numbering.html
-    }
-    
-    private static boolean testforNullTerminator(String str){
-        if(str == null) {
-            return false;
-        }
-        return str.indexOf('\u0000') > 0;
-    }
-    
-    private boolean checkDOIAuthority(String doiAuthority){
-        
-        if (doiAuthority==null){
-            return false;
-        }
-        
-        if (!(doiAuthority.startsWith("10."))){
-            return false;
-        }
-        
-        return true;
-    }
 
     /**
      * Verifies that the pid only contains allowed characters.
@@ -248,10 +119,6 @@ public class GlobalId implements java.io.Serializable {
         Matcher m = p.matcher(pidParam);
 
         return m.matches();
-    }
-
-    public String getProvider() {
-        return managingProviderName;
     }
 
 
