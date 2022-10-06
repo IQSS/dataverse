@@ -683,4 +683,45 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         }
         return true;
     }
+
+    public List<String> listAllFiles() throws IOException {
+        Dataset dataset = this.getDataset();
+        if (dataset == null) {
+            throw new IOException("This FileAccessIO object hasn't been properly initialized.");
+        }
+
+        Path datasetDirectoryPath = Paths.get(dataset.getAuthorityForFileStorage(), dataset.getIdentifierForFileStorage());
+        if (datasetDirectoryPath == null) {
+            throw new IOException("Could not determine the filesystem directory of the dataset.");
+        }
+
+        DirectoryStream<Path> dirStream = Files.newDirectoryStream(Paths.get(this.getFilesRootDirectory(), datasetDirectoryPath.toString()));
+        
+        List<String> res = new ArrayList<>();
+        if (dirStream != null) {
+            for (Path filePath : dirStream) {
+                res.add(filePath.getFileName().toString());
+            }
+            dirStream.close();
+        }
+        
+        return res;
+    }
+    
+    @Override
+    public void deleteFile(String fileName) throws IOException {
+        Dataset dataset = this.getDataset();
+        if (dataset == null) {
+            throw new IOException("This FileAccessIO object hasn't been properly initialized.");
+        }
+
+        Path datasetDirectoryPath = Paths.get(dataset.getAuthorityForFileStorage(), dataset.getIdentifierForFileStorage());
+        if (datasetDirectoryPath == null) {
+            throw new IOException("Could not determine the filesystem directory of the dataset.");
+        }
+
+        Path p = Paths.get(this.getFilesRootDirectory(), datasetDirectoryPath.toString(), fileName);
+        Files.delete(p);
+    }
+
 }

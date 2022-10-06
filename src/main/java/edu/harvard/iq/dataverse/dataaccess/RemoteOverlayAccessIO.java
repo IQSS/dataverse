@@ -631,4 +631,13 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         return System.getProperty("dataverse.files." + driverId + ".base-store");
     }
     
+    @Override
+    public List<String> listAllFiles() throws IOException {
+        return baseStore.listAllFiles();
+    }
+
+    @Override
+    public void deleteFile(String fileName) throws IOException {
+        baseStore.deleteFile(fileName);
+    }
 }

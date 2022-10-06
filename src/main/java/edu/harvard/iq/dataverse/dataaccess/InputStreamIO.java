@@ -159,5 +159,15 @@ public class InputStreamIO extends StorageIO<DataFile> {
                 throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
     }
 
-  
+    @Override
+    public List<String> listAllFiles() throws IOException {
+        throw new UnsupportedDataAccessOperationException("InputStreamIO: tthis method is not supported in this DataAccess driver.");
+    }
+        
+    
+    @Override
+    public void deleteFile(String fileName) throws IOException {
+        throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
+    }
+
 }

@@ -622,4 +622,8 @@ public abstract class StorageIO<T extends DvObject> {
         return m.find();
     }
 
+    public abstract List<String> listAllFiles() throws IOException;
+
+    public abstract void deleteFile(String fileName) throws IOException;
+
 }

@@ -864,13 +864,16 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
 
+    private String getSwiftContainerName(Dataset dataset) {
+        String authorityNoSlashes = dataset.getAuthorityForFileStorage().replace("/", swiftFolderPathSeparator);
+        return dataset.getProtocolForFileStorage() + swiftFolderPathSeparator + authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
+                swiftFolderPathSeparator + dataset.getIdentifierForFileStorage();
+    }
+
     @Override
     public String getSwiftContainerName() {
         if (dvObject instanceof DataFile) {
-            String authorityNoSlashes = this.getDataFile().getOwner().getAuthorityForFileStorage().replace("/", swiftFolderPathSeparator);
-            return this.getDataFile().getOwner().getProtocolForFileStorage() + swiftFolderPathSeparator
-                   +            authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
-                swiftFolderPathSeparator + this.getDataFile().getOwner().getIdentifierForFileStorage();
+            return getSwiftContainerName(this.getDataFile().getOwner());
         }
         return null;
      }
@@ -893,5 +896,49 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         mac.init(signingKey);
         return toHexString(mac.doFinal(data.getBytes()));
     }
-     
+
+    @Override
+    public List<String> listAllFiles() throws IOException {
+        if (!this.canWrite()) {
+            open(DataAccessOption.WRITE_ACCESS);
+        }
+        Dataset dataset = this.getDataset();
+        if (dataset == null) {
+            throw new IOException("This SwiftAccessIO object hasn't been properly initialized.");
+        }
+        String prefix = getSwiftContainerName(dataset) + swiftFolderPathSeparator;
+        
+        Collection<StoredObject> items; 
+        String lastItemName = null; 
+        List<String> ret = new ArrayList<>();
+
+        while ((items = this.swiftContainer.list(prefix, lastItemName, LIST_PAGE_LIMIT)) != null && items.size() > 0) {
+            for (StoredObject item : items) {
+                lastItemName = item.getName().substring(prefix.length());
+                ret.add(lastItemName);
+            }
+        }
+
+        return ret;
+    }
+
+    @Override
+    public void deleteFile(String fileName) throws IOException {
+        if (!this.canWrite()) {
+            open(DataAccessOption.WRITE_ACCESS);
+        }
+        Dataset dataset = this.getDataset();
+        if (dataset == null) {
+            throw new IOException("This SwiftAccessIO object hasn't been properly initialized.");
+        }
+        String prefix = getSwiftContainerName(dataset) + swiftFolderPathSeparator;
+        
+        StoredObject fileObject = this.swiftContainer.getObject(prefix + fileName);
+
+        if (!fileObject.exists()) {
+            throw new FileNotFoundException("SwiftAccessIO/Direct Access: " + fileName + " does not exist");
+        }
+
+        fileObject.delete();
+    }
 }

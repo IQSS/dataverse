@@ -66,6 +66,7 @@ import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetStorageSizeCommand;
@@ -2501,6 +2502,65 @@ public class Datasets extends AbstractApiBean {
         
     } // end: addFileToDataset
 
+
+    /**
+     * Clean storage of a Dataset
+     *
+     * @param idSupplied
+     * @return
+     */
+    @GET
+    @Path("{id}/cleanStorage")
+    public Response cleanStorage(@PathParam("id") String idSupplied) {
+        // get user and dataset
+        User authUser;
+        try {
+            authUser = findUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.FORBIDDEN,
+                    BundleUtil.getStringFromBundle("file.addreplace.error.auth")
+            );
+        }
+
+        Dataset dataset;
+        try {
+            dataset = findDatasetOrDie(idSupplied);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        
+        // check permissions
+        if (!permissionSvc.permissionsFor(createDataverseRequest(authUser), dataset).contains(Permission.EditDataset)) {
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Access denied!");
+        }
+
+        List<String> deleted = new ArrayList<>();
+        Set<String> files = new HashSet<String>();
+        try {
+            for (DatasetVersion dv : dataset.getVersions()) {
+                for (FileMetadata f : dv.getFileMetadatas()) {
+                    String storageIdentifier = f.getDataFile().getStorageIdentifier();
+                    String location = storageIdentifier.substring(storageIdentifier.indexOf("://") + 3);
+                    String[] locationParts = location.split(":", 3);//separate bucket, swift container, etc. from fileName
+                    files.add(locationParts[locationParts.length-1]);
+                }
+            }
+            StorageIO<DvObject> datasetIO = DataAccess.getStorageIO(dataset);
+            List<String> allDatasetFiles = datasetIO.listAllFiles();
+            for (String f : allDatasetFiles) {
+                if (!files.contains(f)) {
+                    datasetIO.deleteFile(f);
+                    deleted.add(f);
+                }
+            }
+        } catch (IOException ex) {
+            logger.log(Level.SEVERE, null, ex);
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "IOException! Serious Error! See administrator!");
+        }
+
+        return ok("Found: " + files.stream().collect(Collectors.joining(", ")) + "\n" + "Deleted: " + deleted.stream().collect(Collectors.joining(", ")));
+        
+    }
 
     private void msg(String m) {
         //System.out.println(m);
