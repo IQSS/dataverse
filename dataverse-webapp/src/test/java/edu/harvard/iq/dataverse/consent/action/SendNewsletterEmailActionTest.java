@@ -52,7 +52,8 @@ class SendNewsletterEmailActionTest {
         newsAction.executeAction(consentActionDto);
 
         //then
-        Mockito.verify(mailService, Mockito.times(1)).sendMailAsync(Mockito.any(), Mockito.any());
+        Mockito.verify(mailService, Mockito.times(1))
+                .sendMailAsync(Mockito.any(), Mockito.any(), Mockito.any());
     }
 
     // -------------------- PRIVATE --------------------

@@ -28,10 +28,14 @@ public class UserNotificationDTO {
     private Object theObject;
 
     private NotificationObjectType theObjectType;
-    
+
     private String requestorName;
 
     private String requestorEmail;
+
+    private String rejectedOrGrantedBy;
+
+    private String replyTo;
 
     // -------------------- GETTERS --------------------
 
@@ -42,7 +46,7 @@ public class UserNotificationDTO {
     public Date getSendDate() {
         return sendDate;
     }
-    
+
     public String getType() {
         return type;
     }
@@ -74,7 +78,15 @@ public class UserNotificationDTO {
     public String getRequestorEmail() {
         return requestorEmail;
     }
-    
+
+    public String getRejectedOrGrantedBy() {
+        return rejectedOrGrantedBy;
+    }
+
+    public String getReplyTo() {
+        return replyTo;
+    }
+
     // -------------------- LOGIC --------------------
 
     public void setTheDataverseObject(Dataverse dataverse) {
@@ -135,6 +147,12 @@ public class UserNotificationDTO {
     public void setRequestorEmail(String requestorEmail) {
         this.requestorEmail = requestorEmail;
     }
-    
-    
+
+    public void setRejectedOrGrantedBy(String rejectedOrGrantedBy) {
+        this.rejectedOrGrantedBy = rejectedOrGrantedBy;
+    }
+
+    public void setReplyTo(String replyTo) {
+        this.replyTo = replyTo;
+    }
 }

@@ -50,7 +50,7 @@ public class MailServiceTestIT extends WebappArquillianDeployment {
         Assume.assumeThat(overseerEmail, not(emptyOrNullString()));
 
         // when
-        mailService.sendMail(userMailAddress, content);
+        mailService.sendMail(userMailAddress, null, content);
         Awaitility.await()
                 .atMost(10L, TimeUnit.SECONDS)
                 .until(() -> !smtpServer.mailBox().isEmpty());

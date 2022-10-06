@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.common.RoleTranslationUtil;
 import edu.harvard.iq.dataverse.mail.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
+import edu.harvard.iq.dataverse.notification.NotificationParameter;
 import edu.harvard.iq.dataverse.notification.dto.EmailNotificationDto;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
 import edu.harvard.iq.dataverse.persistence.MocksFactory;
@@ -20,6 +21,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserRepository;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
@@ -40,8 +42,11 @@ import org.simplejavamail.email.Recipient;
 
 import javax.mail.internet.InternetAddress;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -58,6 +63,7 @@ public class MailMessageCreatorTest {
     @Mock private ConfirmEmailServiceBean confirmEmailService;
     @Mock private GenericDao genericDao;
     @Mock private DataverseSession dataverseSession;
+    @Mock private AuthenticatedUserRepository authenticatedUserRepository;
 
     @InjectMocks
     private MailMessageCreator mailMessageCreator;
@@ -97,7 +103,7 @@ public class MailMessageCreatorTest {
         InternetAddress systemEmail = MailUtil.parseSystemAddress(SYSTEMEMAIL);
 
         // when
-        String footerMessage = mailMessageCreator.createMailFooterMessage(Locale.ENGLISH, ROOTDVNAME, systemEmail);
+        String footerMessage = mailMessageCreator.createMailFooterMessage( "notification.email.closing", Locale.ENGLISH, ROOTDVNAME, systemEmail);
 
         // then
         assertThat(footerMessage).isEqualTo(getFooterMessage());
@@ -143,7 +149,7 @@ public class MailMessageCreatorTest {
 
         EmailNotificationDto testEmailNotificationDto = new EmailNotificationDto(1L,
                 "useremail@test.com", NotificationType.CREATEDV, 1L,
-                NotificationObjectType.DATAVERSE, userFromDifferentCountry);
+                NotificationObjectType.DATAVERSE, userFromDifferentCountry, Collections.emptyMap());
 
         // when
         Tuple2<String, String> messageAndSubject = mailMessageCreator.getMessageAndSubject(testEmailNotificationDto,
@@ -190,10 +196,10 @@ public class MailMessageCreatorTest {
     @Test
     void getMessageAndSubject_ForDatasetVersion_ReturnToAuthor() {
         // given
-        EmailNotificationDto testEmailNotificationDto = createReturnToAuthorNotificationDto();
+        EmailNotificationDto notificationDto = createReturnToAuthorNotificationDto();
 
         // when
-        Tuple2<String, String> messageAndSubject = mailMessageCreator.getMessageAndSubject(testEmailNotificationDto,
+        Tuple2<String, String> messageAndSubject = mailMessageCreator.getMessageAndSubject(notificationDto,
                 "test@icm.pl");
 
         // then
@@ -205,7 +211,9 @@ public class MailMessageCreatorTest {
     @Test
     void getMessageAndSubject_ForDatasetVersion_SubmitForReviewWithMessage() {
         // given
-        EmailNotificationDto testEmailNotificationDto = createSubmitForReviewNotificationDto();
+        AuthenticatedUser requestor = MocksFactory.makeAuthenticatedUser("Notifcation", "Requester");
+        when(authenticatedUserRepository.findById(requestor.getId())).thenReturn(Optional.of(requestor));
+        EmailNotificationDto testEmailNotificationDto = createSubmitForReviewNotificationDto(requestor);
 
         // when
         Tuple2<String, String> messageAndSubject = mailMessageCreator.getMessageAndSubject(testEmailNotificationDto, "system@email.com");
@@ -274,10 +282,14 @@ public class MailMessageCreatorTest {
     }
 
     private String getReturnToAuthorMessage() {
-        return "Hello, \n\n"
-                + "TheTitle (view at http://localhost:8080/dataset.xhtml?persistentId=&version=DRAFT) was returned by the curator "
-                + "of rootDataverseName (view at http://localhost:8080/dataverse/nicedataverse).\n\n"
-                + "Additional information:\n\nDataset returned to author message";
+        return "Hello, \n\n" +
+                "Dataset \"TheTitle\" (view at http://localhost:8080/dataset.xhtml?persistentId=&version=DRAFT) was " +
+                "returned by the data reviewer of \"rootDataverseName\" (view at http://localhost:8080/dataverse/nicedataverse).\n\n" +
+                "Additional information from the dataset reviewer:\n\n" +
+                "=====\n\n" +
+                "Dataset returned to author message\n\n" +
+                "=====\n\n" +
+                "To make contact about the review of this dataset, please write to verifier@test.com or simply reply to this message.";
     }
 
     private String getSubmitForReviewMessage() {
@@ -285,7 +297,7 @@ public class MailMessageCreatorTest {
                 + "TheTitle (view at http://localhost:8080/dataset.xhtml?persistentId=&version=DRAFT) was submitted for review to be published in "
                 + "rootDataverseName (view at http://localhost:8080/dataverse/nicedataverse). "
                 + "Don't forget to publish it or send it back to the contributor, Notifcation Requester (Notifcation.Requester@someU.edu)!\n\n"
-                + "Additional information:\n\nContributors message for curator";
+                + "Additional information\n\nContributors message for curator";
     }
 
     private String getGrantFileAccessInfoMessage() {
@@ -330,7 +342,8 @@ public class MailMessageCreatorTest {
                                         NotificationType.CREATEDV,
                                         1L,
                                         NotificationObjectType.DATAVERSE,
-                                        new AuthenticatedUser());
+                                        new AuthenticatedUser(),
+                                        Collections.emptyMap());
     }
 
     private EmailNotificationDto createIncorrectNotificationDto() {
@@ -339,7 +352,8 @@ public class MailMessageCreatorTest {
                                         NotificationType.CREATEDV,
                                         1L,
                                         NotificationObjectType.AUTHENTICATED_USER,
-                                        new AuthenticatedUser());
+                                        new AuthenticatedUser(),
+                                        Collections.emptyMap());
     }
 
     private EmailNotificationDto createAssignRoleEmailNotificationDto() {
@@ -348,7 +362,8 @@ public class MailMessageCreatorTest {
                                         NotificationType.ASSIGNROLE,
                                         1L,
                                         NotificationObjectType.DATAVERSE,
-                                        new AuthenticatedUser());
+                                        new AuthenticatedUser(),
+                                        Collections.emptyMap());
     }
 
     private EmailNotificationDto createRequestFileAccessNotificationDto() {
@@ -357,7 +372,8 @@ public class MailMessageCreatorTest {
                                         NotificationType.REQUESTFILEACCESS,
                                         1L,
                                         NotificationObjectType.DATAFILE,
-                                        new AuthenticatedUser());
+                                        new AuthenticatedUser(),
+                                        Collections.emptyMap());
     }
 
     private EmailNotificationDto createGrantFileAccessInfoNotificationDto() {
@@ -367,8 +383,7 @@ public class MailMessageCreatorTest {
                 2L,
                 NotificationObjectType.DATASET,
                 new AuthenticatedUser(),
-                null,
-                "dataverseAdmin");
+                Collections.singletonMap(NotificationParameter.GRANTED_BY.key(), "dataverseAdmin"));
     }
 
     private EmailNotificationDto createRejectFileAccessInfoNotificationDto() {
@@ -378,30 +393,26 @@ public class MailMessageCreatorTest {
                 2L,
                 NotificationObjectType.DATASET,
                 new AuthenticatedUser(),
-                null,
-                "dataverseAdmin");
+                Collections.singletonMap(NotificationParameter.REJECTED_BY.key(), "dataverseAdmin"));
     }
 
     private EmailNotificationDto createReturnToAuthorNotificationDto() {
-        return new EmailNotificationDto(1L,
-                "useremail@test.com",
-                NotificationType.RETURNEDDS,
-                3L,
-                NotificationObjectType.DATASET_VERSION,
-                MocksFactory.makeAuthenticatedUser("Notification", "Reciever"),
-                MocksFactory.makeAuthenticatedUser("Notifcation", "Requester"),
-                "Dataset returned to author message");
+        return new EmailNotificationDto(1L, "useremail@test.com", NotificationType.RETURNEDDS,
+                3L, NotificationObjectType.DATASET_VERSION, MocksFactory.makeAuthenticatedUser("Notification", "Reciever"),
+                createParametersMap(NotificationParameter.MESSAGE.key(), "Dataset returned to author message",
+                        NotificationParameter.REPLY_TO.key(), "verifier@test.com"));
     }
 
-    private EmailNotificationDto createSubmitForReviewNotificationDto() {
+    private EmailNotificationDto createSubmitForReviewNotificationDto(AuthenticatedUser requestor) {
         return new EmailNotificationDto(1L,
                 "useremail@test.com",
                 NotificationType.SUBMITTEDDS,
                 3L,
                 NotificationObjectType.DATASET_VERSION,
                 MocksFactory.makeAuthenticatedUser("Jurek","Kiler"),
-                MocksFactory.makeAuthenticatedUser("Notifcation", "Requester"),
-                "Contributors message for curator");
+                createParametersMap(
+                        NotificationParameter.REQUESTOR_ID.key(), String.valueOf(requestor.getId()),
+                        NotificationParameter.MESSAGE.key(), "Contributors message for curator"));
     }
 
     private Dataverse createRootDataverse(String rootdvname) {
@@ -456,5 +467,12 @@ public class MailMessageCreatorTest {
         dataset.setVersions(Lists.newArrayList(datasetVersion));
 
         return datasetVersion;
+    }
+
+    private <K, V> Map<K, V> createParametersMap(K key1, V value1, K key2, V value2) {
+        Map<K, V> parameters = new HashMap<>();
+        parameters.put(key1, value1);
+        parameters.put(key2, value2);
+        return parameters;
     }
 }

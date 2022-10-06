@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestAccessCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
+import edu.harvard.iq.dataverse.notification.NotificationParameter;
 import edu.harvard.iq.dataverse.notification.UserNotificationService;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
@@ -30,7 +31,9 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -103,9 +106,11 @@ public class FilePermissionsService {
         usersToNotify.forEach(u -> userNotificationService.sendNotificationWithEmail(u, timestamp, NotificationType.GRANTFILEACCESS,
                 dataset.getId(), NotificationObjectType.DATASET));
         String nameOfUserGrantingAccess = dvRequestService.getDataverseRequest().getAuthenticatedUser().getName();
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put(NotificationParameter.GRANTED_BY.key(), nameOfUserGrantingAccess);
         collectUsersToNotifyAboutAccessChange(dataset)
                 .forEach(u -> userNotificationService.sendNotificationWithEmail(u, timestamp, NotificationType.GRANTFILEACCESSINFO,
-                        dataset.getId(), NotificationObjectType.DATASET, null, nameOfUserGrantingAccess));
+                        dataset.getId(), NotificationObjectType.DATASET, parameters));
         return roleAssignments;
     }
 
@@ -169,18 +174,24 @@ public class FilePermissionsService {
         userNotificationService.sendNotificationWithEmail(au, timestamp,
                 NotificationType.REJECTFILEACCESS, dataset.getId(), NotificationObjectType.DATASET);
         String nameOfUserRejectingAccess = dvRequestService.getDataverseRequest().getAuthenticatedUser().getName();
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put(NotificationParameter.REJECTED_BY.key(), nameOfUserRejectingAccess);
         collectUsersToNotifyAboutAccessChange(dataset)
                 .forEach(u -> userNotificationService.sendNotificationWithEmail(u, timestamp, NotificationType.REJECTFILEACCESSINFO,
-                        dataset.getId(), NotificationObjectType.DATASET, null, nameOfUserRejectingAccess));
+                        dataset.getId(), NotificationObjectType.DATASET, parameters));
     }
 
     public void sendRequestFileAccessNotification(Dataset dataset, Long fileId, AuthenticatedUser requestor) {
         Stream<AuthenticatedUser> usersWithManageDsPerm = permissionService.getUsersWithPermissionOn(Permission.ManageDatasetPermissions, dataset).stream();
         Stream<AuthenticatedUser> usersWithManageMinorDsPerm = permissionService.getUsersWithPermissionOn(Permission.ManageMinorDatasetPermissions, dataset).stream();
 
-        Stream.concat(usersWithManageDsPerm, usersWithManageMinorDsPerm).distinct().forEach((au) ->
-                                                                                                    userNotificationService.sendNotificationWithEmail(au, new Timestamp(new Date().getTime()), NotificationType.REQUESTFILEACCESS,
-                                                                                                                                                      fileId, NotificationObjectType.DATAFILE, requestor));
+        Timestamp timestamp = new Timestamp(new Date().getTime());
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put(NotificationParameter.REQUESTOR_ID.key(), String.valueOf(requestor.getId()));
+        Stream.concat(usersWithManageDsPerm, usersWithManageMinorDsPerm)
+                .distinct()
+                .forEach(au -> userNotificationService.sendNotificationWithEmail(au, timestamp,
+                        NotificationType.REQUESTFILEACCESS, fileId, NotificationObjectType.DATAFILE, parameters));
     }
 
     // -------------------- PRIVATE --------------------

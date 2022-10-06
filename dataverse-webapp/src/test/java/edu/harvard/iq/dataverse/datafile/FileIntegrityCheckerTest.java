@@ -27,6 +27,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -291,7 +292,7 @@ public class FileIntegrityCheckerTest {
     }
 
     @Test
-    public void checkFilesIntegrity__with_harvested_data_file() throws IOException {
+    public void checkFilesIntegrity__with_harvested_data_file() {
         // given
         DataFile datafile1 = makeDataFile(102L, ChecksumType.MD5, "md5hash1");
         datafile1.getOwner().setHarvestedFrom(new HarvestingClient());
@@ -326,7 +327,7 @@ public class FileIntegrityCheckerTest {
         fileIntegrityChecker.checkFilesIntegrity();
 
         // then
-        verify(mailService).sendMailAsync(eq("super1@example.com"), emailContentCaptor.capture());
+        verify(mailService).sendMailAsync(eq("super1@example.com"), Mockito.any(), emailContentCaptor.capture());
 
         String emailSubject1 = emailContentCaptor.getValue().getSubject();
         String emailText1 = emailContentCaptor.getValue().getMessageText();
@@ -345,7 +346,7 @@ public class FileIntegrityCheckerTest {
         assertEquals("", emailFooter1);
 
 
-        verify(mailService).sendMailAsync(eq("super2@example.com"), emailContentCaptor.capture());
+        verify(mailService).sendMailAsync(eq("super2@example.com"), Mockito.any(), emailContentCaptor.capture());
 
         String emailSubject2 = emailContentCaptor.getValue().getSubject();
         String emailText2 = emailContentCaptor.getValue().getMessageText();

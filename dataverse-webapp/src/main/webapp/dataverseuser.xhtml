@@ -198,6 +198,11 @@
                                                             #{DataverseUserPage.getLimitedAdditionalMessage(item.additionalMessage)}
                                                         </o:param>
                                                     </h:outputFormat>
+                                                    <h:outputFormat value="#{bundle['notification.replyTo']}" escape="false">
+                                                        <o:param>
+                                                            <a href="mailto:#{item.replyTo}">#{item.replyTo}</a>
+                                                        </o:param>
+                                                    </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'PUBLISHEDDS'}">
                                                     <h:outputFormat value="#{bundle['notification.wasPublished']}" escape="false">
@@ -332,7 +337,7 @@
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'GRANTFILEACCESSINFO'}">
                                                     <h:outputFormat value="#{bundle['notification.access.grant.info']}" escape="false">
-                                                        <o:param value="#{item.additionalMessage}"/>
+                                                        <o:param value="#{item.rejectedOrGrantedBy}"/>
                                                         <o:param>
                                                             <a href="/dataset.xhtml?persistentId=#{item.theObject.getGlobalId()}" title="#{item.theObject.getDisplayName()}">#{item.theObject.getDisplayName()}</a>
                                                         </o:param>
@@ -343,7 +348,7 @@
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'REJECTFILEACCESSINFO'}">
                                                     <h:outputFormat value="#{bundle['notification.access.grant.info']}" escape="false">
-                                                        <o:param value="#{item.additionalMessage}"/>
+                                                        <o:param value="#{item.rejectedOrGrantedBy}"/>
                                                         <o:param>
                                                             <a href="/dataset.xhtml?persistentId=#{item.theObject.getGlobalId()}" title="#{item.theObject.getDisplayName()}">#{item.theObject.getDisplayName()}</a>
                                                         </o:param>

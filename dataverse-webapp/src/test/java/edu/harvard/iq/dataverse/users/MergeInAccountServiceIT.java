@@ -19,6 +19,9 @@ import edu.harvard.iq.dataverse.datafile.FileAccessRequestDao;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.guestbook.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.mail.confirmemail.ConfirmEmailServiceBean;
+import edu.harvard.iq.dataverse.notification.NotificationParameter;
+import edu.harvard.iq.dataverse.notification.NotificationParametersUtil;
+import edu.harvard.iq.dataverse.notification.UserNotificationService;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.consent.AcceptedConsent;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
@@ -53,7 +56,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -86,6 +91,9 @@ public class MergeInAccountServiceIT extends WebappArquillianDeployment {
     @EJB private ExplicitGroupDao explicitGroupDao;
     @EJB private AcceptedConsentDao acceptedConsentDao;
     @EJB private OAuthTokenDataDao oAuthTokenDataDao;
+    @Inject private UserNotificationService userNotificationService;
+    private NotificationParametersUtil notificationParametersUtil = new NotificationParametersUtil();
+
     @PersistenceContext(unitName = "VDCNet-ejbPU") private EntityManager entityManager;
 
     @Test
@@ -136,7 +144,6 @@ public class MergeInAccountServiceIT extends WebappArquillianDeployment {
         assertThat(authenticationService.getWorkflowCommentsByAuthenticatedUser(consumed)).hasSize(0);
         assertThat(savedSearchService.findByAuthenticatedUser(consumed)).hasSize(0);
         assertThat(userNotificationRepository.findByUser(consumed.getId())).hasSize(0);
-        assertThat(userNotificationRepository.findByRequestor(consumed.getId())).hasSize(0);
         assertThat(guestbookResponseService.findByAuthenticatedUserId(consumed)).hasSize(0);
         assertThat(dvObjectService.findByAuthenticatedUserId(consumed)).hasSize(0);
         assertThat(datasetDao.getDatasetLocksByUser(consumed)).hasSize(0);
@@ -161,7 +168,6 @@ public class MergeInAccountServiceIT extends WebappArquillianDeployment {
         assertThat(authenticationService.getWorkflowCommentsByAuthenticatedUser(base)).hasSize(1);
         assertThat(savedSearchService.findByAuthenticatedUser(base)).hasSize(1);
         assertThat(userNotificationRepository.findByUser(base.getId())).hasSize(1);
-        assertThat(userNotificationRepository.findByRequestor(base.getId())).hasSize(1);
         assertThat(guestbookResponseService.findByAuthenticatedUserId(base)).hasSize(1);
         assertThat(dvObjectService.findByAuthenticatedUserId(base)).hasSize(1);
         assertThat(datasetDao.getDatasetLocksByUser(base)).hasSize(1);
@@ -206,13 +212,16 @@ public class MergeInAccountServiceIT extends WebappArquillianDeployment {
 
         UserNotification userNotification = new UserNotification();
         userNotification.setUser(authenticatedUser);
-        userNotification.setRequestor(null);
         userNotification.setType("testType");
         userNotificationRepository.save(userNotification);
 
         UserNotification userNotificationRequestor = new UserNotification();
         userNotificationRequestor.setUser(authenticationService.findByID(3L));
-        userNotificationRequestor.setRequestor(authenticatedUser);
+
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put(NotificationParameter.REQUESTOR_ID.key(), authenticatedUser.getId().toString());
+        notificationParametersUtil.setParameters(userNotification, parameters);
+
         userNotificationRequestor.setType("testType");
         userNotificationRepository.save(userNotificationRequestor);
 

@@ -5,12 +5,14 @@ import edu.harvard.iq.dataverse.passwordreset.PasswordResetException;
 import edu.harvard.iq.dataverse.persistence.MocksFactory;
 import edu.harvard.iq.dataverse.persistence.user.BuiltinUser;
 
+import javax.enterprise.inject.Vetoed;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * @author michael
  */
+@Vetoed
 public class MockBuiltinUserServiceBean extends BuiltinUserServiceBean {
 
     public final Map<String, BuiltinUser> users = new HashMap<>();

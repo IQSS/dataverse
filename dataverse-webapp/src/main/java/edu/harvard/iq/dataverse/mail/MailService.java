@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse.mail;
 
 import edu.harvard.iq.dataverse.DataverseDao;
+import edu.harvard.iq.dataverse.notification.NotificationParameter;
 import edu.harvard.iq.dataverse.notification.dto.EmailNotificationDto;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
@@ -32,6 +33,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static edu.harvard.iq.dataverse.persistence.user.NotificationType.RETURNEDDS;
+
 /**
  * Service responsible for mail sending.
  */
@@ -52,8 +55,7 @@ public class MailService implements java.io.Serializable {
     // -------------------- CONSTRUCTORS --------------------
 
     @Deprecated /* JEE requirement */
-    public MailService() {
-    }
+    public MailService() { }
 
     @Inject
     public MailService(DataverseDao dataverseDao, SettingsServiceBean settingsService, MailMessageCreator mailMessageCreator) {
@@ -80,9 +82,7 @@ public class MailService implements java.io.Serializable {
      * @return true if email was sent or false if some error occurred and email could not be sent.
      */
     public Boolean sendNotificationEmail(EmailNotificationDto notification) {
-
         String userEmail = notification.getUserEmail();
-        
         String systemEmail = settingsService.getValueForKey(Key.SystemEmail);
         Tuple2<String, String> messageAndSubject = mailMessageCreator.getMessageAndSubject(notification, systemEmail);
 
@@ -90,14 +90,14 @@ public class MailService implements java.io.Serializable {
             return false;
         }
 
-        String footerMessage = getFooterMailMessage(notification.getNotificationReceiver().getNotificationsLanguage());
-
-        return sendMail(userEmail, new EmailContent(messageAndSubject._2(), messageAndSubject._1(), footerMessage));
+        String footerMessage = getFooterMailMessage(notification.getNotificationType(),
+                notification.getNotificationReceiver().getNotificationsLanguage());
+        String replyTo = notification.getParameter(NotificationParameter.REPLY_TO.key());
+        return sendMail(userEmail, replyTo, new EmailContent(messageAndSubject._2(), messageAndSubject._1(), footerMessage));
     }
 
-    public CompletableFuture<Boolean> sendMailAsync(String recipientsEmails, EmailContent emailContent) {
-
-        return CompletableFuture.supplyAsync(() -> sendMail(recipientsEmails, emailContent), executorService);
+    public CompletableFuture<Boolean> sendMailAsync(String recipientsEmails, String replyTo, EmailContent emailContent) {
+        return CompletableFuture.supplyAsync(() -> sendMail(recipientsEmails, replyTo, emailContent), executorService);
     }
 
     public CompletableFuture<Boolean> sendMailAsync(String replyEmail, String recipientsEmails, String subject, String messageText) {
@@ -110,11 +110,12 @@ public class MailService implements java.io.Serializable {
      *
      * @param recipientsEmails - comma separated emails.
      */
-    public boolean sendMail(String recipientsEmails, EmailContent emailContent) {
+    public boolean sendMail(String recipientsEmails, String replyTo, EmailContent emailContent) {
 
         Email email = newMailWithOverseerIfExists()
                 .from(getSystemAddress())
                 .withRecipients(mailMessageCreator.createRecipients(recipientsEmails, StringUtils.EMPTY))
+                .withReplyTo(replyTo)
                 .withSubject(emailContent.getSubject())
                 .appendText(emailContent.getMessageText() + emailContent.getFooter())
                 .buildEmail();
@@ -131,7 +132,6 @@ public class MailService implements java.io.Serializable {
      * @param recipientsEmails - comma separated emails.
      */
     public boolean sendMail(String replyEmail, String recipientsEmails, String subject, String messageText) {
-
         Email email = newMailWithOverseerIfExists()
                 .from(getSystemAddress())
                 .withRecipients(mailMessageCreator.createRecipients(recipientsEmails, StringUtils.EMPTY))
@@ -139,24 +139,27 @@ public class MailService implements java.io.Serializable {
                 .withReplyTo(replyEmail)
                 .appendText(messageText)
                 .buildEmail();
-
         return Try.run(() -> mailSender.sendMail(email))
                 .map(emailSent -> true)
                 .onFailure(Throwable::printStackTrace)
                 .getOrElse(false);
     }
 
-    public String getFooterMailMessage(Locale footerLocale) {
-        return mailMessageCreator.createMailFooterMessage(footerLocale,
-                                                          dataverseDao.findRootDataverse().getName(),
-                                                          getSystemAddress());
+    public String getDefaultFooterMailMessage(Locale footerLocale) {
+        return getFooterMailMessage(null, footerLocale);
+    }
+
+    public String getFooterMailMessage(String notificationType, Locale footerLocale) {
+        String closingLineKey = RETURNEDDS.equals(notificationType)
+                ? "notification.email.closing.other" : "notification.email.closing";
+        return mailMessageCreator.createMailFooterMessage(closingLineKey, footerLocale,
+                dataverseDao.findRootDataverse().getName(), getSystemAddress());
     }
 
     public InternetAddress getSystemAddress() {
         String systemEmail = settingsService.getValueForKey(Key.SystemEmail);
-
         return Try.of(() -> new InternetAddress(systemEmail))
-                  .getOrElseThrow(throwable -> new IllegalArgumentException(
+                  .getOrElseThrow(t -> new IllegalArgumentException(
                           "Email will not be sent due to invalid email: " + systemEmail));
     }
 

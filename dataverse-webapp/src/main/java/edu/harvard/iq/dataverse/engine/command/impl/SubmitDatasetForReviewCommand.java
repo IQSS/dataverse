@@ -7,17 +7,19 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.NoDatasetFilesException;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
+import edu.harvard.iq.dataverse.notification.NotificationParameter;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.user.User;
-import io.vavr.control.Option;
 
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RequiredPermissions(Permission.EditDataset)
 public class SubmitDatasetForReviewCommand extends AbstractDatasetCommand<Dataset> {
@@ -61,21 +63,26 @@ public class SubmitDatasetForReviewCommand extends AbstractDatasetCommand<Datase
 
         updateDatasetUser(ctxt);
 
-        Option<AuthenticatedUser> requestorOption = Option.of(getUser())
-                .filter(User::isAuthenticated)
-                .map(user -> (AuthenticatedUser)user)
-                .orElse(Option.none());
-        List<AuthenticatedUser> curators = ctxt.permissions().getUsersWithPermissionOn(Permission.PublishDataset, savedDataset);
-
-        for (AuthenticatedUser au : curators) {
-            requestorOption
-                    .peek(user -> ctxt.notifications().sendNotificationWithEmail(au, new Timestamp(new Date().getTime()), NotificationType.SUBMITTEDDS,
-                                                                                 savedDataset.getLatestVersion().getId(), NotificationObjectType.DATASET_VERSION, user, comment));
-        }
-
+        sendNotification(ctxt, savedDataset);
         boolean doNormalSolrDocCleanUp = true;
         ctxt.index().indexDataset(savedDataset, doNormalSolrDocCleanUp);
         return savedDataset;
     }
 
+    private void sendNotification(CommandContext ctxt, Dataset savedDataset) {
+        User user = getUser();
+        if (user == null || !user.isAuthenticated()) {
+            return;
+        }
+        List<AuthenticatedUser> curators = ctxt.permissions().getUsersWithPermissionOn(Permission.PublishDataset, savedDataset);
+        AuthenticatedUser requestor = (AuthenticatedUser) user;
+        Timestamp timestamp = new Timestamp(new Date().getTime());
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put(NotificationParameter.REQUESTOR_ID.key(), String.valueOf(requestor.getId()));
+        parameters.put(NotificationParameter.MESSAGE.key(), comment);
+
+        curators.forEach(c -> ctxt.notifications()
+                .sendNotificationWithEmail(c, timestamp, NotificationType.SUBMITTEDDS,
+                        savedDataset.getLatestVersion().getId(), NotificationObjectType.DATASET_VERSION, parameters));
+    }
 }

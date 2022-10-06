@@ -135,8 +135,8 @@ public class PasswordResetServiceBean {
         String toAddress = authUser.getEmail();
         String subject = BundleUtil.getStringFromBundleWithLocale("notification.email.passwordReset.subject", authUser.getNotificationsLanguage());
 
-        String footerMailMessage = mailService.getFooterMailMessage(authUser.getNotificationsLanguage());
-        boolean emailSent = mailService.sendMail(toAddress, new EmailContent(subject, messageBody, footerMailMessage));
+        String footerMailMessage = mailService.getDefaultFooterMailMessage(authUser.getNotificationsLanguage());
+        boolean emailSent = mailService.sendMail(toAddress, null, new EmailContent(subject, messageBody, footerMailMessage));
 
         if (!emailSent) {
             throw new PasswordResetException("Problem sending password reset email possibily due to mail server not being configured.");
@@ -265,8 +265,8 @@ public class PasswordResetServiceBean {
 
             String messageBody = BundleUtil.getStringFromBundleWithLocale("notification.email.passwordResetConfirmation", authUser.getNotificationsLanguage(), authUser.getName(), user.getUserName());
 
-            String footerMailMessage = mailService.getFooterMailMessage(authUser.getNotificationsLanguage());
-            mailService.sendMailAsync(toAddress, new EmailContent(subject, messageBody, footerMailMessage));
+            String footerMailMessage = mailService.getDefaultFooterMailMessage(authUser.getNotificationsLanguage());
+            mailService.sendMailAsync(toAddress, null, new EmailContent(subject, messageBody, footerMailMessage));
             return new PasswordChangeAttemptResponse(true, messageSummary, messageDetail);
         } else {
             messageSummary = messageSummaryFail;

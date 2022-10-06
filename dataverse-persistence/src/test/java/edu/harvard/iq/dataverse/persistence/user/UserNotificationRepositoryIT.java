@@ -35,16 +35,11 @@ public class UserNotificationRepositoryIT extends PersistenceArquillianDeploymen
     }
 
     @Test
-    public void findByRequestorUser() {
-        // given
-        AuthenticatedUser user = authenticatedUserRepository.findById(2L).get();
+    public void updateRequestor() {
         // when
-        List<UserNotification> notifications = userNotificationRepository.findByRequestor(user.getId());
+        int updated = userNotificationRepository.updateRequestor(3L, 1L);
         // then
-        assertThat(notifications)
-            .hasSize(1)
-            .extracting(UserNotification::getRequestor)
-            .allMatch(notificationUser -> notificationUser.equals(user));
+        assertThat(updated).isEqualTo(1);
     }
 
     @Test
@@ -62,7 +57,7 @@ public class UserNotificationRepositoryIT extends PersistenceArquillianDeploymen
         // then
         assertThat(unreadCount).isEqualTo(0);
     }
-    
+
     @Test
     @Transactional(TransactionMode.DISABLED)
     public void updateEmailSent() {

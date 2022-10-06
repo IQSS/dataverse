@@ -2,7 +2,9 @@ package edu.harvard.iq.dataverse.notification.dto;
 
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
-import org.apache.commons.lang.StringUtils;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class EmailNotificationDto {
 
@@ -12,29 +14,23 @@ public class EmailNotificationDto {
     private Long dvObjectId;
     private NotificationObjectType notificationObjectType;
     private AuthenticatedUser notificationReceiver;
-    private AuthenticatedUser requestor;
-    private String customUserMessage;
+    private Map<String, String> parameters = new HashMap<>();
 
     // -------------------- CONSTRUCTORS --------------------
 
 
     public EmailNotificationDto(long userNotificationId, String userEmail, String notificationType,
-                                Long dvObjectId, NotificationObjectType notificationObjectType, AuthenticatedUser notificationReceiver) {
-        this(userNotificationId, userEmail, notificationType, dvObjectId, notificationObjectType, 
-                notificationReceiver, null, null);
-    }
-
-    public EmailNotificationDto(long userNotificationId, String userEmail, String notificationType,
                                 Long dvObjectId, NotificationObjectType notificationObjectType,
-                                AuthenticatedUser notificationReceiver, AuthenticatedUser requestor, String customUserMessage) {
+                                AuthenticatedUser notificationReceiver, Map<String, String> parameters) {
         this.userNotificationId = userNotificationId;
         this.userEmail = userEmail;
         this.notificationType = notificationType;
         this.dvObjectId = dvObjectId;
         this.notificationObjectType = notificationObjectType;
         this.notificationReceiver = notificationReceiver;
-        this.requestor = requestor;
-        this.customUserMessage = customUserMessage;
+        if (parameters != null) {
+            this.parameters.putAll(parameters);
+        }
     }
 
     // -------------------- GETTERS --------------------
@@ -51,10 +47,6 @@ public class EmailNotificationDto {
         return notificationReceiver;
     }
 
-    public AuthenticatedUser getRequestor() {
-        return requestor;
-    }
-
     public String getUserEmail() {
         return userEmail;
     }
@@ -67,7 +59,13 @@ public class EmailNotificationDto {
         return dvObjectId;
     }
 
-    public String getCustomUserMessage() {
-        return customUserMessage;
+    public Map<String, String> getParameters() {
+        return parameters;
+    }
+
+    // -------------------- LOGIC --------------------
+
+    public String getParameter(String key) {
+        return parameters.get(key);
     }
 }

@@ -194,10 +194,9 @@ public class MergeInAccountService {
     }
 
     private void updateUserNotificationRequestor(AuthenticatedUser consumedAU, AuthenticatedUser baseAU) {
-        for (UserNotification note : userNotificationRepository.findByRequestor(consumedAU.getId())) {
-            note.setRequestor(baseAU);
-            userNotificationRepository.save(note);
-        }
+        Long oldId = consumedAU.getId();
+        Long newId = baseAU.getId();
+        userNotificationRepository.updateRequestor(oldId, newId);
     }
 
     private void updateSavedSearch(AuthenticatedUser consumedAU, AuthenticatedUser baseAU) {

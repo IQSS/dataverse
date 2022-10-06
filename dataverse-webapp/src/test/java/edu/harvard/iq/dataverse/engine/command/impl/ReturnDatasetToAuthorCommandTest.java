@@ -41,6 +41,8 @@ public class ReturnDatasetToAuthorCommandTest {
     private DataverseRequest dataverseRequest;
     private TestDataverseEngine testEngine;
 
+    private static final String TEST_MAIL="test@reply.to";
+
     @Before
     public void setUp() {
         dataset = new Dataset();
@@ -135,19 +137,19 @@ public class ReturnDatasetToAuthorCommandTest {
     /*
             if (theDataset == null) {
             throw new IllegalCommandException("Can't return to author. Dataset is null.", this);
-        } 
-                
+        }
+
         if (!theDataset.getLatestVersion().isInReview()) {
             throw new IllegalCommandException("Latest version of dataset " + theDataset.getIdentifier() + " is not In Review. Only such versions my be returned to author.", this);
-        } 
-        
+        }
+
         if (theDataset.getLatestVersion().getReturnReason() == null || theDataset.getLatestVersion().getReturnReason().isEmpty()){
             throw new IllegalCommandException("You must enter a reason for returning a dataset to its author.", this);
         }
      */
     @Test(expected = IllegalArgumentException.class)
     public void testDatasetNull()  {
-        new ReturnDatasetToAuthorCommand(dataverseRequest, null, "");
+        new ReturnDatasetToAuthorCommand(dataverseRequest, null, "", TEST_MAIL);
     }
 
     @Test
@@ -158,7 +160,7 @@ public class ReturnDatasetToAuthorCommandTest {
         String actual = null;
         Dataset updatedDataset = null;
         try {
-            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, ""));
+            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, "", TEST_MAIL));
         } catch (CommandException ex) {
             actual = ex.getMessage();
         }
@@ -174,7 +176,7 @@ public class ReturnDatasetToAuthorCommandTest {
         String actual = null;
         Dataset updatedDataset = null;
         try {
-            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, ""));
+            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, "", TEST_MAIL));
         } catch (CommandException ex) {
             actual = ex.getMessage();
         }
@@ -185,7 +187,7 @@ public class ReturnDatasetToAuthorCommandTest {
     FIXME - Empty Comments won't be allowed in future
     @Test
     public void testEmptyComments(){
-               
+
         dataset.setIdentifier("DUMMY");
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);
         dataset.getLatestVersion().setInReview(true);
@@ -194,14 +196,14 @@ public class ReturnDatasetToAuthorCommandTest {
         String actual = null;
         Dataset updatedDataset = null;
         try {
-            
+
              updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset));
         } catch (CommandException ex) {
             actual = ex.getMessage();
         }
-        assertEquals(expected, actual);      
-        
-        
+        assertEquals(expected, actual);
+
+
     }
      */
 
@@ -212,7 +214,7 @@ public class ReturnDatasetToAuthorCommandTest {
         try {
             testEngine.submit(new AddLockCommand(dataverseRequest, dataset,
                                                  new DatasetLock(DatasetLock.Reason.InReview, dataverseRequest.getAuthenticatedUser())));
-            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, "Update Your Files, Dummy"));
+            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, "Update Your Files, Dummy", TEST_MAIL));
         } catch (CommandException ex) {
             System.out.println("Error updating dataset: " + ex.getMessage());
         }

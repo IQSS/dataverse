@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse.notification.dto;
 import com.google.common.collect.Sets;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
+import edu.harvard.iq.dataverse.notification.NotificationParameter;
+import edu.harvard.iq.dataverse.notification.UserNotificationService;
 import edu.harvard.iq.dataverse.persistence.MocksFactory;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFileRepository;
@@ -15,6 +17,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersionRepository;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseRepository;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserRepository;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
@@ -24,12 +27,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,7 +48,6 @@ public class UserNotificationMapperTest {
     private final static Long DATAFILE_ID = 300L;
     private final static Long FILEMETADATA_ID = 301L;
 
-    @InjectMocks
     private UserNotificationMapper notificationMapper;
 
     @Mock
@@ -59,6 +62,11 @@ public class UserNotificationMapperTest {
     private FileMetadataRepository fileMetadataRepository;
     @Mock
     private PermissionServiceBean permissionService;
+    @Mock
+    private UserNotificationService userNotificationService;
+    @Mock
+    private AuthenticatedUserRepository authenticatedUserRepository;
+
 
     private Dataverse dataverse;
     private Dataset dataset;
@@ -69,6 +77,9 @@ public class UserNotificationMapperTest {
 
     @BeforeEach
     void beforeEach() {
+        notificationMapper = new UserNotificationMapper(dataverseRepository, datasetRepository, datasetVersionRepository, dataFileRepository,
+                fileMetadataRepository, permissionService, new UserNotificationService(), authenticatedUserRepository);
+
         dataverse = new Dataverse();
         dataverse.setId(DATAVERSE_ID);
 
@@ -98,7 +109,7 @@ public class UserNotificationMapperTest {
         notification.setType("type");
         notification.setId(1L);
         notification.setSendDate(Timestamp.from(Instant.parse("2007-12-03T10:15:30.00Z")));
-        notification.setAdditionalMessage("additional message");
+        notification.setParameters("{\"message\":\"additional message\"}");
         notification.setReadNotification(true);
 
         // when
@@ -266,10 +277,15 @@ public class UserNotificationMapperTest {
         // given
         AuthenticatedUser requestor = MocksFactory.makeAuthenticatedUser("Some", "Requestor");
         requestor.setEmail("sr@example.com");
+        when(authenticatedUserRepository.findById(requestor.getId())).thenReturn(Optional.of(requestor));
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put(NotificationParameter.REQUESTOR_ID.key(), requestor.getId().toString());
+
         UserNotification notification = new UserNotification();
         notification.setType(NotificationType.REQUESTFILEACCESS);
         notification.setUser(user);
-        notification.setRequestor(requestor);
+        notification.setParameters("{\"requestorId\":\"" + requestor.getId() + "\"}");
+
         notification.setObjectId(DATAFILE_ID);
         when(dataFileRepository.findById(DATAFILE_ID)).thenReturn(Optional.of(dataFile));
 
@@ -332,7 +348,9 @@ public class UserNotificationMapperTest {
         notification.setObjectId(DATASET_ID);
         notification.setType(type);
         notification.setUser(user);
-        notification.setAdditionalMessage("dataverseAdmin");
+        notification.setParameters("GRANTFILEACCESSINFO".equals(type)
+                ? "{\"grantedBy\":\"dataverseAdmin\"}"
+                : "{\"rejectedBy\":\"dataverseAdmin\"}");
         when(datasetRepository.findById(DATASET_ID)).thenReturn(Optional.of(dataset));
 
         // when
@@ -341,7 +359,7 @@ public class UserNotificationMapperTest {
         // then
         assertThat(dto).extracting(
                 UserNotificationDTO::getType, UserNotificationDTO::getTheObject,
-                UserNotificationDTO::getTheObjectType, UserNotificationDTO::getAdditionalMessage)
+                UserNotificationDTO::getTheObjectType, UserNotificationDTO::getRejectedOrGrantedBy)
                 .containsExactly(type, dataset, NotificationObjectType.DATASET, "dataverseAdmin");
     }
 
@@ -355,5 +373,4 @@ public class UserNotificationMapperTest {
         roleAssignment.setRole(dataverseRole);
         return roleAssignment;
     }
-
 }

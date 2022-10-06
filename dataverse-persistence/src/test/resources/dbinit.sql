@@ -287,15 +287,16 @@ VALUES ('{"email": "test@gmail.com"}', 'SEND_NEWSLETTER_EMAIL', 1);
 
 -------------------- USER NOTIFICATIONS ---------------------
 
-INSERT INTO usernotification(id, user_id, requestor_id, type, objectid, emailed, readnotification, senddate, additionalmessage)
-VALUES (1, 2, NULL, 'CREATEACC', NULL, true, true, '2020-09-24 13:01:00', NULL);
-INSERT INTO usernotification(id, user_id, requestor_id, type, objectid, emailed, readnotification, senddate, additionalmessage)
-VALUES (2, 2, NULL, 'CREATEDV', 19, false, true, '2020-09-25 14:00:00', NULL);
-INSERT INTO usernotification(id, user_id, requestor_id, type, objectid, emailed, readnotification, senddate, additionalmessage)
-VALUES (3, 2, 4, 'SUBMITTEDDS', 44, false, false, '2020-09-26 10:00:00', 'message to curator');
-INSERT INTO usernotification(id, user_id, requestor_id, type, objectid, emailed, readnotification, senddate, additionalmessage)
-VALUES (4, 4, 2, 'RETURNEDDS', 44, false, false, '2020-09-26 10:10:00', 'send back to author');
-
+INSERT INTO usernotification(id, user_id, type, objectid, emailed, readnotification, senddate)
+VALUES (1, 2, 'CREATEACC', NULL, true, true, '2020-09-24 13:01:00');
+INSERT INTO usernotification(id, user_id, type, objectid, emailed, readnotification, senddate)
+VALUES (2, 2, 'CREATEDV', 19, false, true, '2020-09-25 14:00:00');
+INSERT INTO usernotification(id, user_id, type, objectid, emailed, readnotification, senddate, parameters)
+VALUES (3, 2, 'SUBMITTEDDS', 44, false, false, '2020-09-26 10:00:00', '{"message":"message to curator", "requestorId":"4"}');
+INSERT INTO usernotification(id, user_id, type, objectid, emailed, readnotification, senddate, parameters)
+VALUES (4, 4, 'RETURNEDDS', 44, false, false, '2020-09-26 10:10:00', '{"message":"send back to author", "requestorId":"2"}');
+INSERT INTO usernotification(id, user_id, type, objectid, emailed, readnotification, senddate, parameters)
+VALUES (5, 4, 'RETURNEDDS', 44, false, false, '2020-09-26 10:10:00', '{"message":"send back to author", "requestorId":"3"}');
 -------------------- SUGGESTIONS ---------------------
 
 INSERT INTO grantsuggestion (grantagency, grantagencyacronym, fundingprogram, suggestionname, suggestionnamelocale)

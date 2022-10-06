@@ -20,6 +20,7 @@ import org.mockito.quality.Strictness;
 import org.simplejavamail.mailer.Mailer;
 
 import javax.mail.internet.InternetAddress;
+import java.util.Collections;
 import java.util.Locale;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -50,7 +51,7 @@ public class MailServiceTest {
                                                              any(String.class)))
                 .thenReturn(Tuple.of("Nice Message", "Nice Subject"));
 
-        Mockito.when(mailMessageCreator.createMailFooterMessage(any(Locale.class), anyString(), any(InternetAddress.class)))
+        Mockito.when(mailMessageCreator.createMailFooterMessage(anyString(), any(Locale.class), anyString(), any(InternetAddress.class)))
                 .thenReturn("Nice Footer");
 
         Dataverse testDataverse = new Dataverse();
@@ -78,7 +79,7 @@ public class MailServiceTest {
     @Test
     public void sendSystemEmail() {
         //when
-        boolean emailSent = mailService.sendMail("test@email.com", new EmailContent("Nice Subject", "Nice message", ""));
+        boolean emailSent = mailService.sendMail("test@email.com", null, new EmailContent("Nice Subject", "Nice message", ""));
 
         //then
         Assert.assertTrue(emailSent);
@@ -103,7 +104,7 @@ public class MailServiceTest {
         makeSmtpThrowException();
 
         //when
-        boolean emailSent = mailService.sendMail("test@email.com", new EmailContent("Nice Subject", "Nice message", ""));
+        boolean emailSent = mailService.sendMail("test@email.com", null, new EmailContent("Nice Subject", "Nice message", ""));
 
         //then
         Assert.assertFalse(emailSent);
@@ -131,12 +132,9 @@ public class MailServiceTest {
     }
 
     private EmailNotificationDto createTestEmailNotificationDto() {
-        return new EmailNotificationDto(1L,
-                                        "useremail@test.com",
-                                        NotificationType.CREATEDV,
-                                        1L,
-                                        NotificationObjectType.DATAVERSE,
-                                        new AuthenticatedUser());
+        return new EmailNotificationDto(1L, "useremail@test.com", NotificationType.CREATEDV,
+                                        1L, NotificationObjectType.DATAVERSE, new AuthenticatedUser(),
+                                        Collections.emptyMap());
     }
 
     private void makeSmtpThrowException() {

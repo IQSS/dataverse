@@ -277,8 +277,8 @@ public class ConfirmEmailServiceBean {
                 String subject = BundleUtil.getStringFromBundleWithLocale("notification.email.verifyEmail.subject", aUser.getNotificationsLanguage(), rootDataverseName);
                 logger.fine("sending email to " + toAddress + " with this subject: " + subject);
 
-                String footerMailMessage = mailService.getFooterMailMessage(aUser.getNotificationsLanguage());
-                boolean emailSent = mailService.sendMail(toAddress, new EmailContent(subject, messageBody, footerMailMessage));
+                String footerMailMessage = mailService.getFooterMailMessage(userNotification.getType(), aUser.getNotificationsLanguage());
+                boolean emailSent = mailService.sendMail(toAddress, null, new EmailContent(subject, messageBody, footerMailMessage));
 
                 if (!emailSent) {
                     throw new ConfirmEmailException("Problem sending email confirmation link possibily due to mail server not being configured.");

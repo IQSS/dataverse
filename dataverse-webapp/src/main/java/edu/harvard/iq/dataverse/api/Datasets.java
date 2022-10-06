@@ -1574,7 +1574,7 @@ public class Datasets extends AbstractApiBean {
             }
             AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
             Dataset updatedDataset = execCommand(new ReturnDatasetToAuthorCommand(createDataverseRequest(
-                    authenticatedUser), dataset, reasonForReturn));
+                    authenticatedUser), dataset, reasonForReturn, authenticatedUser.getEmail()));
 
             JsonObjectBuilder result = Json.createObjectBuilder();
             result.add("inReview", false);

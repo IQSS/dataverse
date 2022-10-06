@@ -97,7 +97,7 @@ public class FileIntegrityChecker {
         EmailContent reportEmailContent = buildReportEmailContent(report);
         authSvc.findSuperUsers()
             .stream()
-            .forEach(user -> mailService.sendMailAsync(user.getEmail(), reportEmailContent));
+            .forEach(user -> mailService.sendMailAsync(user.getEmail(), null, reportEmailContent));
 
 
         return report;

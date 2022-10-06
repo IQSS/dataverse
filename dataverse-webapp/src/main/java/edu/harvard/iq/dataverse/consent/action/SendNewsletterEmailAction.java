@@ -29,7 +29,7 @@ class SendNewsletterEmailAction implements Action{
 
         EmailContent emailContent = prepareEmail(repositoryName, consentActionDto, sendNewsletterEmailContent);
 
-        mailService.sendMailAsync(sendNewsletterEmailContent.getSenderEmail(), emailContent);
+        mailService.sendMailAsync(sendNewsletterEmailContent.getSenderEmail(), null, emailContent);
     }
 
     // -------------------- PRIVATE --------------------

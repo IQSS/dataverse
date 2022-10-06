@@ -549,7 +549,9 @@ public class DataverseUserPage implements java.io.Serializable {
 
     public String getLimitedAdditionalMessage(String additionalMessage) {
         return additionalMessage.length() <= ADDITIONAL_MESSAGE_MAX_LENGTH
-                ? additionalMessage
+                ? additionalMessage.endsWith(".")
+                    ? additionalMessage
+                    : additionalMessage + "."
                 : BundleUtil.getStringFromBundle("notification.limitedAdditionalMessage",
                     truncateToFullWord(additionalMessage.substring(0, ADDITIONAL_MESSAGE_MAX_LENGTH)));
     }

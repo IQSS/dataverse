@@ -1318,12 +1318,13 @@
                 </p:dialog>
 
                 <p:dialog header="#{bundle['dataset.rejectBtn']}" widgetVar="sendBackToContributor" modal="true">
-                    <div class="form-group">
-                        <label for="returnReasonTextArea" class="col-sm-3 control-label">#{bundle['dataset.reject.messageBox.label']}
-                            <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
-                        </label>
-                        <div class="col-sm-9">
-                            <p:fragment id="returnReasonFragment">
+                    <p:fragment id="returnReasonFragment">
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="returnReasonTextArea" class="col-sm-4 control-label">#{bundle['dataset.reject.messageBox.label']}
+                                <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                            </label>
+                            <div class="col-sm-8">
                                 <p:inputTextarea id="returnReasonTextArea"
                                                  rows="3"
                                                  value="#{DatasetPage.returnToAuthorReason}"
@@ -1334,25 +1335,47 @@
                                                  autoResize="false"
                                                  required="#{param['DO_RETURN_VALIDATION']}"
                                                  requiredMessage="#{bundle['dataset.reject.enterReason']}"
-                                                 styleClass="form-control"
-                                >
+                                                 styleClass="form-control">
                                 </p:inputTextarea>
                                 <h:message for="returnReasonTextArea" styleClass="bg-danger text-danger"/>
                                 <p>
                                     <h:outputText id="display"/>
                                 </p>
-                            </p:fragment>
+                            </div>
+                            <p:watermark for="returnReasonTextArea" value="#{bundle['dataset.rejectWatermark']}"
+                                         id="returnReasonwatermark"/>
                         </div>
-                        <p:watermark for="returnReasonTextArea" value="#{bundle['dataset.rejectWatermark']}"
-                                     id="returnReasonwatermark"/>
                     </div>
+                        <div class="row">
+                            <div class="form-group">
+                                <label for="replyTo" class="col-sm-4 control-label">
+                                    #{bundle['dataset.reject.reply.to.label']}
+                                    <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                          tabindex="0" role="button"
+                                          data-toggle="tooltip" data-placement="auto right"
+                                          data-original-title="#{bundle['dataset.reject.reply.to.tooltip']}"></span>
+                                </label>
+                                <div class="col-sm-8">
+                                    <p:inputText id="replyTo"
+                                                 value="#{DatasetPage.replyTo}"
+                                                 required="#{param['DO_RETURN_VALIDATION']}"
+                                                 requiredMessage="#{bundle['requiredField']}"
+                                                 validator="#{DatasetPage.validateReplyToEmail}"
+                                                 validatorMessage="#{bundle['dataset.reject.reply.to.invalid.mail']}">
+                                    </p:inputText>
+                                    <br/>
+                                    <h:message for="replyTo" styleClass="bg-danger text-danger"/>
+                                </div>
+                            </div>
+                        </div>
+                    </p:fragment>
                     <div class="button-block">
                         <p:commandLink styleClass="btn btn-default btn-access"
                                        value="#{bundle.ok}"
                                        update=":messagePanel returnReasonFragment topDatasetBlockFragment"
                                        oncomplete="if (args &amp;&amp; !args.validationFailed) PF('sendBackToContributor').hide();"
-                                       actionListener="#{DatasetPage.sendBackToContributor()}"
-                        >
+                                       actionListener="#{DatasetPage.sendBackToContributor()}">
                             <f:param name="DO_RETURN_VALIDATION" value="#{true}" />
                         </p:commandLink>
                         <p:commandButton value="#{bundle.cancel}"

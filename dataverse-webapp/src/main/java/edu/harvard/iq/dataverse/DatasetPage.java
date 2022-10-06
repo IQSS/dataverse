@@ -71,6 +71,7 @@ import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.faces.validator.ValidatorException;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.ByteArrayInputStream;
@@ -164,8 +165,12 @@ public class DatasetPage implements java.io.Serializable {
     private boolean thumbnailStringIsCached = false;
     private Optional<Boolean> isLatestDatasetWithAnyFilesIncluded = Optional.empty();
     private Optional<Boolean> isDsvMinorUpdate = Optional.empty();
+
     private String returnToAuthorReason;
+    private String replyTo;
+
     private String contributorMessageToCurator;
+
     private Integer fileSize;
     private int datasetCitationsCount;
     private Long datasetDownloadCount;
@@ -414,6 +419,14 @@ public class DatasetPage implements java.io.Serializable {
         return datasetDownloadCount;
     }
 
+    public String getReplyTo() {
+        return replyTo;
+    }
+
+    public void setReplyTo(String replyTo) {
+        this.replyTo = replyTo;
+    }
+
     /**
      * Create a hashmap consisting of { DataFile.id : MapLayerMetadata object}
      * <p>
@@ -448,130 +461,135 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private String init(boolean initFull) {
-        if (dataset.getId() != null || versionId != null || persistentId != null) { // view mode for a dataset
-
-            DatasetVersionServiceBean.RetrieveDatasetVersionResponse retrieveDatasetVersionResponse = null;
-
-            // ---------------------------------------
-            // Set the workingVersion and Dataset
-            // ---------------------------------------
-            if (persistentId != null) {
-                logger.fine("initializing DatasetPage with persistent ID " + persistentId);
-                // Set Working Version and Dataset by PersistentID
-                dataset = datasetPageFacade.findByGlobalId(persistentId);
-                if (dataset == null) {
-                    logger.warning("No such dataset: " + persistentId);
-                    return permissionsWrapper.notFound();
-                }
-                logger.fine("retrieved dataset, id=" + dataset.getId());
-
-                retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
-                //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);
-                this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
-                logger.fine("retrieved version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
-
-            } else if (dataset.getId() != null) {
-                // Set Working Version and Dataset by Datasaet Id and Version
-                dataset = datasetPageFacade.retrieveDataset(dataset.getId());
-                if (dataset == null) {
-                    logger.warning("No such dataset: " + dataset);
-                    return permissionsWrapper.notFound();
-                }
-                //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), version);
-                retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
-                this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
-                logger.info("retreived version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
-
-            } else if (versionId != null) {
-                // TODO: 4.2.1 - this method is broken as of now!
-                // Set Working Version and Dataset by DatasaetVersion Id
-                //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByVersionId(versionId);
-
-            }
-
-            if (retrieveDatasetVersionResponse == null) {
-                return permissionsWrapper.notFound();
-            }
-
-
-            //this.dataset = this.workingVersion.getDataset();
-
-            // end: Set the workingVersion and Dataset
-            // ---------------------------------------
-            // Is the DatasetVersion or Dataset null?
-            //
-            if (workingVersion == null || this.dataset == null) {
-                return permissionsWrapper.notFound();
-            }
-
-            // Is the Dataset harvested?
-
-            if (dataset.isHarvested()) {
-                // if so, we'll simply forward to the remote URL for the original
-                // source of this harvested dataset:
-                String originalSourceURL = dataset.getRemoteArchiveURL();
-                if (originalSourceURL != null && !originalSourceURL.equals("")) {
-                    logger.fine("redirecting to " + originalSourceURL);
-                    try {
-                        FacesContext.getCurrentInstance().getExternalContext().redirect(originalSourceURL);
-                    } catch (IOException ioex) {
-                        // must be a bad URL...
-                        // we don't need to do anything special here - we'll redirect
-                        // to the local 404 page, below.
-                        logger.warning("failed to issue a redirect to " + originalSourceURL);
-                    }
-                    return originalSourceURL;
-                }
-
-                return permissionsWrapper.notFound();
-            }
-
-            // Check permisisons
-            if (!(workingVersion.isReleased() || workingVersion.isDeaccessioned()) && !this.canViewUnpublishedDataset()) {
-                return permissionsWrapper.notAuthorized();
-            }
-
-            if (!retrieveDatasetVersionResponse.wasRequestedVersionRetrieved()) {
-                //msg("checkit " + retrieveDatasetVersionResponse.getDifferentVersionMessage());
-                JsfHelper.addFlashWarningMessage(retrieveDatasetVersionResponse.getDifferentVersionMessage());//BundleUtil.getStringFromBundle("dataset.message.metadataSuccess"));
-            }
-
-            // init the citation
-            displayCitation = citationFactory.create(workingVersion).toString(true);
-            initCurrentEmbargo();
-            datasetCitationsCount = datasetCitationsCountRepository.findByDatasetId(dataset.getId())
-                    .map(DatasetCitationsCount::getCitationsCount).orElse(0);
-
-            fetchMetricsDownloadCount();
-
-            if (initFull) {
-                // init the list of FileMetadatas
-                if (workingVersion.isDraft() && canUpdateDataset()) {
-                    readOnly = false;
-                }
-
-                datasetNextMajorVersion = this.dataset.getNextMajorVersionString();
-                datasetNextMinorVersion = this.dataset.getNextMinorVersionString();
-                returnToAuthorReason = StringUtils.EMPTY;
-                contributorMessageToCurator = StringUtils.EMPTY;
-                fileTermDiffsWithLatestReleased = Lists.newArrayList();
-
-                setExistReleasedVersion(resetExistRealeaseVersion());
-                //moving setVersionTabList to tab change event
-                //setVersionTabList(resetVersionTabList());
-                //setReleasedVersionTabList(resetReleasedVersionTabList());
-                //SEK - lazymodel may be needed for datascroller in future release
-                // lazyModel = new LazyFileMetadataDataModel(workingVersion.getId(), datafileService );
-                // populate MapLayerMetadata
-                this.loadMapLayerMetadataLookup();  // A DataFile may have a related MapLayerMetadata object
-            }
-        } else {
+        if (dataset.getId() == null && versionId == null && persistentId == null) {
             return permissionsWrapper.notFound();
+        }
+        // view mode for a dataset
+
+        DatasetVersionServiceBean.RetrieveDatasetVersionResponse retrieveDatasetVersionResponse = null;
+
+        // ---------------------------------------
+        // Set the workingVersion and Dataset
+        // ---------------------------------------
+        if (persistentId != null) {
+            logger.fine("initializing DatasetPage with persistent ID " + persistentId);
+            // Set Working Version and Dataset by PersistentID
+            dataset = datasetPageFacade.findByGlobalId(persistentId);
+            if (dataset == null) {
+                logger.warning("No such dataset: " + persistentId);
+                return permissionsWrapper.notFound();
+            }
+            logger.fine("retrieved dataset, id=" + dataset.getId());
+
+            retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
+            //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);
+            this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
+            logger.fine("retrieved version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
+
+        } else if (dataset.getId() != null) {
+            // Set Working Version and Dataset by Datasaet Id and Version
+            dataset = datasetPageFacade.retrieveDataset(dataset.getId());
+            if (dataset == null) {
+                logger.warning("No such dataset: " + dataset);
+                return permissionsWrapper.notFound();
+            }
+            //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), version);
+            retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
+            this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
+            logger.info("retreived version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
+
+        } else if (versionId != null) {
+            // TODO: 4.2.1 - this method is broken as of now!
+            // Set Working Version and Dataset by DatasaetVersion Id
+            //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByVersionId(versionId);
+
+        }
+
+        if (retrieveDatasetVersionResponse == null) {
+            return permissionsWrapper.notFound();
+        }
+
+
+        //this.dataset = this.workingVersion.getDataset();
+
+        // end: Set the workingVersion and Dataset
+        // ---------------------------------------
+        // Is the DatasetVersion or Dataset null?
+        //
+        if (workingVersion == null || this.dataset == null) {
+            return permissionsWrapper.notFound();
+        }
+
+        // Is the Dataset harvested?
+
+        if (dataset.isHarvested()) {
+            // if so, we'll simply forward to the remote URL for the original
+            // source of this harvested dataset:
+            String originalSourceURL = dataset.getRemoteArchiveURL();
+            if (originalSourceURL != null && !originalSourceURL.equals("")) {
+                logger.fine("redirecting to " + originalSourceURL);
+                try {
+                    FacesContext.getCurrentInstance().getExternalContext().redirect(originalSourceURL);
+                } catch (IOException ioex) {
+                    // must be a bad URL...
+                    // we don't need to do anything special here - we'll redirect
+                    // to the local 404 page, below.
+                    logger.warning("failed to issue a redirect to " + originalSourceURL);
+                }
+                return originalSourceURL;
+            }
+
+            return permissionsWrapper.notFound();
+        }
+
+        // Check permisisons
+        if (!(workingVersion.isReleased() || workingVersion.isDeaccessioned()) && !this.canViewUnpublishedDataset()) {
+            return permissionsWrapper.notAuthorized();
+        }
+
+        if (!retrieveDatasetVersionResponse.wasRequestedVersionRetrieved()) {
+            //msg("checkit " + retrieveDatasetVersionResponse.getDifferentVersionMessage());
+            JsfHelper.addFlashWarningMessage(retrieveDatasetVersionResponse.getDifferentVersionMessage());//BundleUtil.getStringFromBundle("dataset.message.metadataSuccess"));
+        }
+
+        // init the citation
+        displayCitation = citationFactory.create(workingVersion).toString(true);
+        initCurrentEmbargo();
+        datasetCitationsCount = datasetCitationsCountRepository.findByDatasetId(dataset.getId())
+                .map(DatasetCitationsCount::getCitationsCount).orElse(0);
+
+        fetchMetricsDownloadCount();
+
+        if (initFull) {
+            // init the list of FileMetadatas
+            if (workingVersion.isDraft() && canUpdateDataset()) {
+                readOnly = false;
+            }
+
+            datasetNextMajorVersion = this.dataset.getNextMajorVersionString();
+            datasetNextMinorVersion = this.dataset.getNextMinorVersionString();
+            returnToAuthorReason = StringUtils.EMPTY;
+            contributorMessageToCurator = StringUtils.EMPTY;
+            fileTermDiffsWithLatestReleased = Lists.newArrayList();
+
+            setExistReleasedVersion(resetExistRealeaseVersion());
+            //moving setVersionTabList to tab change event
+            //setVersionTabList(resetVersionTabList());
+            //setReleasedVersionTabList(resetReleasedVersionTabList());
+            //SEK - lazymodel may be needed for datascroller in future release
+            // lazyModel = new LazyFileMetadataDataModel(workingVersion.getId(), datafileService );
+            // populate MapLayerMetadata
+            this.loadMapLayerMetadataLookup();  // A DataFile may have a related MapLayerMetadata object
         }
         try {
             privateUrl = commandEngine.submit(new GetPrivateUrlCommand(dvRequestService.getDataverseRequest(), dataset));
         } catch (CommandException ex) {
             // No big deal. The user simply doesn't have access to create or delete a Private URL.
+        }
+
+        if (session.getUser() instanceof AuthenticatedUser) {
+            AuthenticatedUser replyToUser = (AuthenticatedUser) session.getUser();
+            this.replyTo = replyToUser.getEmail();
         }
 
         return null;
@@ -616,7 +634,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String sendBackToContributor() {
-        Try.of(() -> commandEngine.submit(new ReturnDatasetToAuthorCommand(dvRequestService.getDataverseRequest(), dataset, returnToAuthorReason)))
+        Try.of(() -> commandEngine.submit(new ReturnDatasetToAuthorCommand(dvRequestService.getDataverseRequest(), dataset, returnToAuthorReason, replyTo)))
                 .onSuccess(ds -> JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.reject.success")))
                 .onFailure(throwable -> logger.log(Level.SEVERE, "Sending back to Contributor failed:", throwable))
                 .onFailure(throwable -> JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.reject.failure", throwable.getMessage())));
@@ -1239,6 +1257,19 @@ public class DatasetPage implements java.io.Serializable {
         validateVersusMaximumDate(context, toValidate, embargoDate);
     }
 
+    public void validateReplyToEmail(FacesContext context, UIComponent component, Object value) throws ValidatorException {
+        if (value == null) {
+            return;
+        }
+        String email = (String) value;
+        boolean valid = org.apache.commons.validator.routines.EmailValidator.getInstance().isValid(email);
+        if (!valid) {
+            throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    email + " " + BundleUtil.getStringFromBundle("email.invalid"), ""));
+        }
+    }
+
+
     public boolean isUserUnderEmbargo() {
         return dataset.hasActiveEmbargo() && !permissionsWrapper.canViewUnpublishedDataset(dataset);
     }
@@ -1300,6 +1331,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     // -------------------- PRIVATE ---------------------
+
     private void validateVersusMaximumDate(FacesContext context, UIComponent toValidate, Object embargoDate) {
         if(isMaximumEmbargoLengthSet() &&
                 !Objects.isNull(embargoDate) &&

@@ -31,10 +31,14 @@ public class UserNotificationRepository extends JpaRepository<Long, UserNotifica
                 .getResultList();
     }
 
-    public List<UserNotification> findByRequestor(Long userId) {
-        return em.createQuery("select un from UserNotification un where un.requestor.id =:userId order by un.sendDate desc", UserNotification.class)
-                .setParameter("userId", userId)
-                .getResultList();
+    public int updateRequestor(Long oldId, Long newId) {
+        if (oldId == null || newId == null) {
+            throw new IllegalArgumentException("Null encountered: [oldId]:" + oldId + ", [newId]:" + newId);
+        }
+        return em.createNativeQuery(String.format("update usernotification " +
+                "set parameters = jsonb_set(parameters::jsonb, '{requestorId}', '\"%s\"')::json " +
+                "where parameters ->> 'requestorId' = '%s'", newId.toString(), oldId.toString()))
+                .executeUpdate();
     }
 
     public Long getUnreadNotificationCountByUser(Long userId) {
