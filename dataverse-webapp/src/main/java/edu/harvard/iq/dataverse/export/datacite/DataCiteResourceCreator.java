@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.export.datacite;
 
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.export.RelatedIdentifierTypeConstants;
 import edu.harvard.iq.dataverse.export.datacite.DataCiteResource.Affiliation;
 import edu.harvard.iq.dataverse.export.datacite.DataCiteResource.Contributor;
 import edu.harvard.iq.dataverse.export.datacite.DataCiteResource.ContributorType;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.apache.commons.lang3.StringEscapeUtils.unescapeHtml4;
 
@@ -115,19 +117,59 @@ public class DataCiteResourceCreator {
     private List<RelatedIdentifier> extractRelatedIdentifiers(DvObject dvObject) {
         if (dvObject.isInstanceofDataset()) {
             Dataset dataset = (Dataset) dvObject;
-            if (!dataset.hasActiveEmbargo() && !dataset.getFiles().isEmpty()
+            List<RelatedIdentifier> identifiers = extractAdditionalRelatedIdentifiers(dataset);
+            if (!dataset.hasActiveEmbargo()
+                    && !dataset.getFiles().isEmpty()
                     && dataset.getFiles().get(0).getIdentifier() != null) {
-                return dataset.getFiles().stream()
+                identifiers.addAll(dataset.getFiles().stream()
                         .filter(f -> StringUtils.isNotEmpty(f.getGlobalId().asString()))
                         .map(f -> new RelatedIdentifier(f.getGlobalId().asString(),  "HasPart"))
-                        .collect(Collectors.toList());
+                        .collect(Collectors.toList()));
             }
+            return identifiers;
         } else if (dvObject.isInstanceofDataFile()) {
             DataFile dataFile = (DataFile) dvObject;
             return Collections.singletonList(
                     new RelatedIdentifier(dataFile.getOwner().getGlobalId().asString(), "IsPartOf"));
         }
         return Collections.emptyList();
+    }
+
+    private List<RelatedIdentifier> extractAdditionalRelatedIdentifiers(Dataset dataset) {
+        List<RelatedIdentifier> identifiers = new ArrayList<>();
+        DatasetVersion version = dataset.getLatestVersion();
+        List<Map<String, DatasetField>> relatedElements = version.extractFieldsWithSubfields(DatasetFieldConstant.publication,
+                DatasetFieldConstant.relatedDataset, DatasetFieldConstant.relatedMaterial);
+        for (Map<String, DatasetField> fieldMap : relatedElements) {
+            String parentName = extractParentFieldName(fieldMap);
+            String[] fields = RelatedIdFields.getSuffixes()
+                    .map(parentName::concat)
+                    .map(fieldMap::get)
+                    .map(f -> f != null ? f.getValue() : null)
+                    .toArray(String[]::new);
+            String relatedIdType = fields[RelatedIdFields.RELATED_ID_TYPE.ordinal()];
+            String relationType = fields[RelatedIdFields.RELATION_TYPE.ordinal()];
+            if (StringUtils.isBlank(relatedIdType) || StringUtils.isBlank(relationType)) {
+                continue;
+            }
+            if (RelatedIdentifierTypeConstants.ALTERNATIVE_TO_MAIN_ID_TYPE_INDEX.containsKey(relatedIdType)) {
+                relatedIdType = RelatedIdentifierTypeConstants.ALTERNATIVE_TO_MAIN_ID_TYPE_INDEX.get(relatedIdType);
+            }
+
+            identifiers.add(new RelatedIdentifier(
+                    StringUtils.containsIgnoreCase(relatedIdType, "url")
+                            ? fields[RelatedIdFields.URL.ordinal()]
+                            : fields[RelatedIdFields.RELATED_ID.ordinal()],
+                    relationType, relatedIdType));
+        }
+        return identifiers;
+    }
+
+    private String extractParentFieldName(Map<String, DatasetField> fields) {
+        return fields.values().stream()
+                .filter(f -> f.getDatasetFieldParent().isEmpty())
+                .map(f -> f.getDatasetFieldType().getName())
+                .findFirst().orElse(null);
     }
 
     private List<Description> extractDescription(DvObject dvObject) {
@@ -150,7 +192,7 @@ public class DataCiteResourceCreator {
     }
 
     private List<Contributor> extractDatasetContactsAsContributors(Dataset dataset) {
-        return dataset.getLatestVersion().extractSubfields(DatasetFieldConstant.datasetContact,
+        return dataset.getLatestVersion().extractFieldWithSubfields(DatasetFieldConstant.datasetContact,
                 Arrays.asList(DatasetFieldConstant.datasetContactName, DatasetFieldConstant.datasetContactAffiliation))
                 .stream()
                 .filter(e -> {
@@ -166,7 +208,7 @@ public class DataCiteResourceCreator {
     }
 
     public List<Contributor> extractDatasetProducersAsContributors(Dataset dataset) {
-        return dataset.getLatestVersion().extractSubfields(DatasetFieldConstant.producer,
+        return dataset.getLatestVersion().extractFieldWithSubfields(DatasetFieldConstant.producer,
                 Arrays.asList(DatasetFieldConstant.producerName, DatasetFieldConstant.producerAffiliation))
                 .stream()
                 .filter(e -> {
@@ -183,7 +225,7 @@ public class DataCiteResourceCreator {
 
     private List<FundingReference> extractFundingReferences(Dataset dataset) {
         DatasetVersion version = dataset.getLatestVersion();
-        return version.extractSubfields(DatasetFieldConstant.grantNumber,
+        return version.extractFieldWithSubfields(DatasetFieldConstant.grantNumber,
                 Arrays.asList(DatasetFieldConstant.grantNumberAgency, DatasetFieldConstant.grantNumberAgencyShortName,
                         DatasetFieldConstant.grantNumberAgencyIdentifier, DatasetFieldConstant.grantNumberProgram,
                         DatasetFieldConstant.grantNumberValue))
@@ -210,5 +252,35 @@ public class DataCiteResourceCreator {
             fundingReference.setAwardNumber(programIdentifier.getValue());
         }
         return fundingReference;
+    }
+
+    // -------------------- INNER CLASSES --------------------
+
+    private enum RelatedIdFields {
+        RELATED_ID_TYPE("IDType"),
+        RELATED_ID("IDNumber"),
+        URL("URL"),
+        RELATION_TYPE("RelationType");
+
+        private String suffix;
+
+        // -------------------- CONSTRUCTORS --------------------
+
+        RelatedIdFields(String suffix) {
+            this.suffix = suffix;
+        }
+
+        // -------------------- GETTERS --------------------
+
+        public String suffix() {
+            return suffix;
+        }
+
+        // -------------------- LOGIC --------------------
+
+        public static Stream<String> getSuffixes() {
+            return Arrays.stream(values())
+                    .map(RelatedIdFields::suffix);
+        }
     }
 }

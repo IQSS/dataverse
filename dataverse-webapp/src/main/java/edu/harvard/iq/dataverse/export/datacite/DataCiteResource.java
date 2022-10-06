@@ -324,7 +324,7 @@ public class DataCiteResource {
 
     public static class RelatedIdentifier {
         @JacksonXmlProperty(isAttribute = true)
-        private String relatedIdentifierType = "DOI";
+        private String relatedIdentifierType;
 
         @JacksonXmlProperty(isAttribute = true)
         private String relationType;
@@ -335,8 +335,13 @@ public class DataCiteResource {
         // -------------------- CONSTRUCTORS --------------------
 
         public RelatedIdentifier(String value, String relationType) {
+            this(value, relationType, "DOI");
+        }
+
+        public RelatedIdentifier(String value, String relationType, String relatedIdentifierType) {
             this.value = value;
             this.relationType = relationType;
+            this.relatedIdentifierType = relatedIdentifierType;
         }
 
         // -------------------- GETTERS --------------------

@@ -60,7 +60,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static edu.harvard.iq.dataverse.persistence.dataset.DatasetAuthor.displayOrderComparator;
 
 /**
  * @author skraffmiller
@@ -534,7 +533,14 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
         return StringUtils.EMPTY;
     }
 
-    public List<Map<String, DatasetField>> extractSubfields(String fieldName, List<String> subfields) {
+    /**
+     * Extracts the instances of the given field with the chosen set of its subfields.
+     * If all the subfields of a field are empty that field will be skipped.
+     *
+     * @param fieldName parent field name
+     * @param subfields list of subfields to extract from parent field
+     */
+    public List<Map<String, DatasetField>> extractFieldWithSubfields(String fieldName, List<String> subfields) {
         Set<String> namesLookup = new HashSet<>(subfields);
         namesLookup.add(fieldName); // sometimes the main field will be also needed
         return datasetFields.stream()
@@ -546,8 +552,23 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Extracts the instances of the given fields with all its subfields.
+     * If all the subfields of a field are empty that field will be skipped.
+     */
+    public List<Map<String, DatasetField>> extractFieldsWithSubfields(String... fieldNames) {
+        List<String> namesLookup = newArrayList(fieldNames);
+        return  datasetFields.stream()
+                .filter(f -> !f.getDatasetFieldsChildren().isEmpty())
+                .filter(f -> namesLookup.contains(f.getDatasetFieldType().getName()))
+                .map(f -> Stream.concat(f.getDatasetFieldsChildren().stream(), Stream.of(f))
+                        .collect(Collectors.toMap(s -> s.getDatasetFieldType().getName(), s -> s, (prev, next) -> next)))
+                .filter(e -> e.size() > 1) // omit fields with no children
+                .collect(Collectors.toList());
+    }
+
     public List<DatasetAuthor> getDatasetAuthors() {
-        return extractSubfields(DatasetFieldConstant.author,
+        return extractFieldWithSubfields(DatasetFieldConstant.author,
                 Arrays.asList(DatasetFieldConstant.authorName, DatasetFieldConstant.authorAffiliation, DatasetFieldConstant.authorAffiliationIdentifier,
                         DatasetFieldConstant.authorIdType, DatasetFieldConstant.authorIdValue))
                 .stream()
@@ -589,7 +610,7 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
     }
 
     public List<DatasetRelPublication> getRelatedPublications() {
-        return extractSubfields(DatasetFieldConstant.publication, Arrays.asList(
+        return extractFieldWithSubfields(DatasetFieldConstant.publication, Arrays.asList(
                     DatasetFieldConstant.publicationCitation, DatasetFieldConstant.publicationURL,
                     DatasetFieldConstant.publicationIDNumber, DatasetFieldConstant.publicationIDType))
                 .stream()
@@ -605,7 +626,7 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
     }
 
     public List<String> getCompoundChildFieldValues(String parentName, List<String> childNames) {
-        return extractSubfields(parentName, childNames).stream()
+        return extractFieldWithSubfields(parentName, childNames).stream()
                 .flatMap(f -> childNames.stream().map(f::get))
                 .filter(Objects::nonNull)
                 .map(DatasetField::getValue)

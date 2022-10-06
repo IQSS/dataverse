@@ -281,6 +281,7 @@ public class MocksFactory {
         result.setDatasetFieldType(type);
         result.setValue(value);
         result.setDatasetFieldsChildren(subfields);
+        subfields.forEach(s -> s.setDatasetFieldParent(result));
         return result;
     }
 

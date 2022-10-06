@@ -117,7 +117,7 @@ public class CitationDataExtractor {
     }
 
     private List<String> getDatesOfCollection(DatasetVersion dsv) {
-        return dsv.extractSubfields(DatasetFieldConstant.dateOfCollection,
+        return dsv.extractFieldWithSubfields(DatasetFieldConstant.dateOfCollection,
                 Arrays.asList(DatasetFieldConstant.dateOfCollectionStart, DatasetFieldConstant.dateOfCollectionEnd))
                 .stream()
                 .map(e -> Tuple.of(e.get(DatasetFieldConstant.dateOfCollectionStart), e.get(DatasetFieldConstant.dateOfCollectionEnd)))
@@ -129,7 +129,7 @@ public class CitationDataExtractor {
     public List<String> extractSpatialCoverages(DatasetVersion version) {
         List<String> subfields = Arrays.asList(DatasetFieldConstant.country, DatasetFieldConstant.state,
                 DatasetFieldConstant.city, DatasetFieldConstant.otherGeographicCoverage);
-        return version.extractSubfields(DatasetFieldConstant.geographicCoverage, subfields).stream()
+        return version.extractFieldWithSubfields(DatasetFieldConstant.geographicCoverage, subfields).stream()
                 .map(s -> subfields.stream()
                         .map(s::get)
                         .filter(v -> v != null && !v.isEmptyForDisplay())
@@ -158,7 +158,7 @@ public class CitationDataExtractor {
     }
 
     private List<Tuple2<String, String>> getProducers(DatasetVersion dsv) {
-        return dsv.extractSubfields(DatasetFieldConstant.producer,
+        return dsv.extractFieldWithSubfields(DatasetFieldConstant.producer,
                 Arrays.asList(DatasetFieldConstant.producerName, DatasetFieldConstant.producerAffiliation))
                 .stream()
                 .filter(e -> {

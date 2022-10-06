@@ -313,14 +313,14 @@ public class JsonLdBuilder {
     // -------------------- PRIVATE --------------------
 
     List<String> getFunders(DatasetVersion datasetVersion) {
-        List<String> funders = datasetVersion.extractSubfields(DatasetFieldConstant.contributor,
+        List<String> funders = datasetVersion.extractFieldWithSubfields(DatasetFieldConstant.contributor,
                 Arrays.asList(DatasetFieldConstant.contributorName, DatasetFieldConstant.contributorType))
                 .stream()
                 .map(e -> Tuple.of(e.get(DatasetFieldConstant.contributorName), e.get(DatasetFieldConstant.contributorType)))
                 .filter(t -> t._1 != null && t._2 != null && "Funder".equals(t._2.getDisplayValue()))
                 .map(t -> t._1.getDisplayValue())
                 .collect(Collectors.toList());
-        funders.addAll(datasetVersion.extractSubfields(DatasetFieldConstant.grantNumber,
+        funders.addAll(datasetVersion.extractFieldWithSubfields(DatasetFieldConstant.grantNumber,
                 Collections.singletonList(DatasetFieldConstant.grantNumberAgency))
                 .stream()
                 .map(e -> e.get(DatasetFieldConstant.grantNumberAgency))
@@ -331,7 +331,7 @@ public class JsonLdBuilder {
     }
 
     List<String> getTimePeriodsCovered(DatasetVersion datasetVersion) {
-        return datasetVersion.extractSubfields(DatasetFieldConstant.timePeriodCovered,
+        return datasetVersion.extractFieldWithSubfields(DatasetFieldConstant.timePeriodCovered,
                 Arrays.asList(DatasetFieldConstant.timePeriodCoveredStart, DatasetFieldConstant.timePeriodCoveredEnd))
                 .stream()
                 .map(e -> Tuple.of(e.get(DatasetFieldConstant.timePeriodCoveredStart), e.get(DatasetFieldConstant.timePeriodCoveredEnd)))
@@ -344,7 +344,7 @@ public class JsonLdBuilder {
     List<String> getSpatialCoverages(DatasetVersion version) {
         List<String> subfields = Arrays.asList(DatasetFieldConstant.city, DatasetFieldConstant.state,
                 DatasetFieldConstant.country, DatasetFieldConstant.otherGeographicCoverage);
-        return version.extractSubfields(DatasetFieldConstant.geographicCoverage, subfields).stream()
+        return version.extractFieldWithSubfields(DatasetFieldConstant.geographicCoverage, subfields).stream()
                 .map(s -> subfields.stream()
                         .map(s::get)
                         .filter(v -> v != null && !v.isEmptyForDisplay())

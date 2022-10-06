@@ -32,7 +32,7 @@ public abstract class ExporterBase implements Exporter {
             return objectMapper.writeValueAsString(createDTO(datasetVersion));
         } catch (JsonProcessingException jpe) {
             logger.warn("Exception during JSON creation. Empty JSON returned", jpe);
-            return "{}";
+            throw new RuntimeException(jpe);
         }
     }
 
