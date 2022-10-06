@@ -44,7 +44,7 @@ public interface GlobalIdServiceBean {
     String generateDataFileIdentifier(DataFile datafile);
     boolean isGlobalIdUnique(GlobalId globalId);
     
-    public String getUrlForm(GlobalId globalId);
+    public String getUrlPrefix();
     public String getSeparator();
     
     static GlobalIdServiceBean getBean(String protocol, CommandContext ctxt) {

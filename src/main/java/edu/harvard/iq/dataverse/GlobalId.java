@@ -45,10 +45,13 @@ public class GlobalId implements java.io.Serializable {
         }
     }
 
-    public GlobalId(String protocol, String authority, String identifier) {
+    public GlobalId(String protocol, String authority, String identifier, String separator, String urlPrefix, String providerName) {
         this.protocol = protocol;
         this.authority = authority;
         this.identifier = identifier;
+        this.separator = separator;
+        this.urlPrefix = urlPrefix;
+        this.managingProviderName = providerName;
     }
     
     public GlobalId(DvObject dvObject) {
@@ -65,7 +68,7 @@ public class GlobalId implements java.io.Serializable {
     private String identifier;
     private String managingProviderName;
     private String separator = "/";
-    private String urlForm;
+    private String urlPrefix;
 
     /**
      * Tests whether {@code this} instance has all the data required for a 
@@ -117,24 +120,17 @@ public class GlobalId implements java.io.Serializable {
     }
     
     public String asURL() {
-        return urlForm;
-
-        /*URL url = null;
+        URL url = null;
         if (identifier == null){
             return null;
         }
         try {
-            if (protocol.equals(DOIServiceBean.DOI_PROTOCOL)){
-               url = new URL(DOIServiceBean.DOI_RESOLVER_URL + authority + "/" + identifier); 
-            } else if (protocol.equals(HandlenetServiceBean.HDL_PROTOCOL)){
-               url = new URL(HandlenetServiceBean.HDL_RESOLVER_URL + authority + "/" + identifier);  
-            }           
+               url = new URL(urlPrefix + authority + "/" + identifier); 
         } catch (MalformedURLException ex) {
             logger.log(Level.SEVERE, null, ex);
         }       
-        return url;
-        */
-    }    
+        return url.toExternalForm();
+    }
 
     
     /** 
@@ -254,20 +250,9 @@ public class GlobalId implements java.io.Serializable {
         return m.matches();
     }
 
-    public void setProvider(String name) {
-        managingProviderName = name;
-    }
-    
     public String getProvider() {
         return managingProviderName;
     }
 
-    public void setSeparator(String separator) {
-        this.separator = separator;
-    }
-
-    public void setUrlForm(String urlForm) {
-        this.urlForm = urlForm;
-    }
 
 }

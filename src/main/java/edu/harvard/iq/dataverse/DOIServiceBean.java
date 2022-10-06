@@ -37,8 +37,8 @@ public abstract class DOIServiceBean extends AbstractGlobalIdServiceBean {
         return globalId;
     }
 
-    public String getUrlForm(GlobalId globalId) {
-        return DOI_RESOLVER_URL + globalId.getAuthority() + getSeparator() + globalId.getIdentifier();
+    public String getUrlPrefix() {
+        return DOI_RESOLVER_URL;
     }
     
 }

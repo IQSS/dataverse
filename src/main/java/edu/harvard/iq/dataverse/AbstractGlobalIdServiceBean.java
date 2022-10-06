@@ -222,9 +222,6 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         if (index1 > 0) { // ':' found with one or more characters before it
             String protocol = fullIdentifierString.substring(0, index1);
             GlobalId globalId = parsePersistentIdentifier(protocol, fullIdentifierString.substring(index1+1));
-            globalId.setProvider(this.getProviderInformation().get(0));
-            globalId.setSeparator(this.getSeparator());
-            globalId.setUrlForm(this.getUrlForm(globalId));
             return globalId;
         }
         logger.log(Level.INFO, "Error parsing identifier: {0}: ''<protocol>:'' not found in string", fullIdentifierString);
@@ -256,7 +253,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
                     identifierString);
             return null;
         }
-        return new GlobalId(protocol, authority, identifier);
+        return new GlobalId(protocol, authority, identifier, this.getSeparator(), this.getUrlPrefix(), this.getProviderInformation().get(0));
     }
     
     public String getSeparator() {
@@ -333,7 +330,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         String identifier = null;
         do {
             identifier = prepend + RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
-        } while (!isGlobalIdUnique(new GlobalId(dvo.getProtocol(), dvo.getAuthority(), identifier)));
+        } while (!isGlobalIdUnique(new GlobalId(dvo.getProtocol(), dvo.getAuthority(), identifier, this.getSeparator(), this.getUrlPrefix(), this.getProviderInformation().get(0))));
 
         return identifier;
     }
@@ -354,7 +351,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
                 return null; 
             }
             identifier = prepend + identifierFromStoredProcedure;
-        } while (!isGlobalIdUnique(new GlobalId(dvo.getProtocol(), dvo.getAuthority(), identifier)));
+        } while (!isGlobalIdUnique(new GlobalId(dvo.getProtocol(), dvo.getAuthority(), identifier, this.getSeparator(), this.getUrlPrefix(), this.getProviderInformation().get(0))));
         
         return identifier;
     }
@@ -372,7 +369,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
             retVal++;
             identifier = prepend + retVal.toString();
 
-        } while (!isGlobalIdUnique(new GlobalId(datafile.getProtocol(), datafile.getAuthority(), identifier)));
+        } while (!isGlobalIdUnique(new GlobalId(datafile.getProtocol(), datafile.getAuthority(), identifier, this.getSeparator(), this.getUrlPrefix(), this.getProviderInformation().get(0))));
 
         return identifier;
     }
