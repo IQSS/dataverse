@@ -679,9 +679,9 @@
     <dynamicField name="*_dt"  type="pdate"    indexed="true"  stored="true"/>
     <dynamicField name="*_dts" type="pdate"    indexed="true"  stored="true" multiValued="true"/>
     <dynamicField name="*_p"  type="location" indexed="true" stored="true"/>
-    <dynamicField name="*_srpt"  type="location_rpt" indexed="true" stored="true"/>
+    <dynamicField name="*_srpt"  type="location_rpt" indexed="true" stored="true"  multivalued="true"/>
     <!--  Dataverse - adding bbox field per Geobloacklight -->
-    <dynamicField name="*_bboxtype" type="bbox" stored="true" indexed="true"/>
+    <dynamicField name="*_bboxtype" type="bbox" stored="true" indexed="true" multivalued="true"/>
     
     
     <!-- payloaded dynamic fields -->
