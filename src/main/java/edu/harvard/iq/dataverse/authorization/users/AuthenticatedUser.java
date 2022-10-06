@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -135,10 +136,10 @@ public class AuthenticatedUser implements User, Serializable {
     private String mutedNotifications;
     
     @Transient
-    private Set<Type> mutedEmailsSet;
+    private Set<Type> mutedEmailsSet = new HashSet<>();
     
     @Transient
-    private Set<Type> mutedNotificationsSet;
+    private Set<Type> mutedNotificationsSet = new HashSet<>();
 
     @PrePersist
     void prePersist() {
