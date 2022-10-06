@@ -227,6 +227,7 @@ public class HarvestingServerIT {
         // - however, publish command is executed asynchronously, i.e. it may 
         // still be running after we received the OK from the publish API. 
         // So let's wait for it to finish.
+        Thread.sleep(1000L);
         UtilIT.sleepForReindex(datasetPersistentId, adminUserAPIKey, 10);
 
         String setName = identifier;
@@ -246,7 +247,7 @@ public class HarvestingServerIT {
         Response exportSetResponse = UtilIT.exportOaiSet(setName);
         assertEquals(200, exportSetResponse.getStatusCode());
         //SEK 09/04/2019 resonable wait time for export OAI? #6128
-        Thread.sleep(10000L);
+        Thread.sleep(5000L);
         
         Response getSet = given()
                 .get(apiPath);
