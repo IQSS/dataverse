@@ -11,7 +11,7 @@
 <ui:fragment rendered="#{widgetWrapper.widgetView}">
     <p class="help-block">
         <h:outputFormat value="#{bundle['file.dataFilesTab.versions.widget.viewMoreInfo']}" escape="false">
-            <f:param value="#{FilePage.fileMetadata.datasetVersion.dataset.globalIdString}"/>
+            <f:param value="#{FilePage.fileMetadata.datasetVersion.dataset.globalId.asString()}"/>
             <f:param value="#{FilePage.fileMetadata.datasetVersion.dataset.displayName}"/>
             <f:param value="#{dataverseServiceBean.findRootDataverse().displayName}"/>
         </h:outputFormat>

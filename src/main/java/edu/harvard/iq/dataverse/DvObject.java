@@ -10,6 +10,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.logging.Logger;
+
 import javax.persistence.*;
 
 /**
@@ -52,6 +54,8 @@ import javax.persistence.*;
 		, @Index(columnList="releaseuser_id")},
 		uniqueConstraints = {@UniqueConstraint(columnNames = {"authority,protocol,identifier"}),@UniqueConstraint(columnNames = {"owner_id,storageidentifier"})})
 public abstract class DvObject extends DataverseEntity implements java.io.Serializable {
+    
+    private static final Logger logger = Logger.getLogger(DvObject.class.getCanonicalName());
     
     public enum DType {
         Dataverse("Dataverse"), Dataset("Dataset"),DataFile("DataFile");
@@ -283,6 +287,8 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
 
     public void setProtocol(String protocol) {
         this.protocol = protocol;
+        //Remove cached value
+        globalId=null;
     }
 
     public String getAuthority() {
@@ -291,6 +297,8 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
 
     public void setAuthority(String authority) {
         this.authority = authority;
+        //Remove cached value
+        globalId=null;
     }
 
     public Date getGlobalIdCreateTime() {
@@ -307,6 +315,8 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
 
     public void setIdentifier(String identifier) {
         this.identifier = identifier;
+        //Remove cached value
+        globalId=null;
     }
 
     public boolean isIdentifierRegistered() {
@@ -323,17 +333,16 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
             setAuthority(null);
             setIdentifier(null);
         } else {
+            //These reset globalId=null
             setProtocol(pid.getProtocol());
             setAuthority(pid.getAuthority());
             setIdentifier(pid.getIdentifier());
         }
-        //Remove cached value
-        globalId=null;
     }
     
     public GlobalId getGlobalId() {
         // Cache this
-        if (globalId == null && !(getProtocol() == null || getAuthority() == null || getIdentifier() == null)) {
+        if ((globalId == null) && !(getProtocol() == null || getAuthority() == null || getIdentifier() == null)) {
             globalId = PidUtil.parseAsGlobalID(getProtocol(), getAuthority(), getIdentifier());
         }
         return globalId;

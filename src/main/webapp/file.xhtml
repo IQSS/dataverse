@@ -608,7 +608,7 @@
                     </ui:include> 
                     <p:dialog id="shareDialog" header="#{bundle['file.share.title']}" widgetVar="shareDialog" modal="true" rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
                         <p class="help-block">#{bundle['file.share.tip']}</p>
-                        <div id="sharrre-widget" data-text="#{bundle['file.share.text']}" data-url="#{systemConfig.dataverseSiteUrl}/file.xhtml?#{empty FilePage.fileMetadata.dataFile.globalIdString ? 'fileId' : 'persistentId'}=#{empty FilePage.fileMetadata.dataFile.globalIdString ? FilePage.fileMetadata.dataFile.id : FilePage.fileMetadata.dataFile.globalIdString}&amp;version=#{FilePage.fileMetadata.datasetVersion.friendlyVersionNumber}"></div>
+                        <div id="sharrre-widget" data-text="#{bundle['file.share.text']}" data-url="#{systemConfig.dataverseSiteUrl}/file.xhtml?#{empty FilePage.fileMetadata.dataFile.globalId ? 'fileId' : 'persistentId'}=#{empty FilePage.fileMetadata.dataFile.globalId ? FilePage.fileMetadata.dataFile.id : FilePage.fileMetadata.dataFile.globalId.asString()}&amp;version=#{FilePage.fileMetadata.datasetVersion.friendlyVersionNumber}"></div>
                         <div class="button-block">
                             <button class="btn btn-default" onclick="PF('shareDialog').hide()" type="button">
                                 #{bundle.close}

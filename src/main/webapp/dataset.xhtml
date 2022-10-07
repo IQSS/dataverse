@@ -761,7 +761,7 @@
                             <ui:param name="editMode" value="#{!empty DatasetPage.editMode ? DatasetPage.editMode : ''}"/>
                             <ui:param name="metadataBlocks" value="#{!empty DatasetPage.editMode ? DatasetPage.datasetVersionUI.metadataBlocksForEdit.entrySet().toArray(): DatasetPage.datasetVersionUI.metadataBlocksForView.entrySet().toArray()}"/>
                             <!-- ui:param name="publicationDate" value="#{DatasetPage.dataset.publicationDateFormattedYYYYMMDD}"/-->
-                            <ui:param name="globalId" value="#{DatasetPage.dataset.globalIdString}"/>
+                            <ui:param name="globalId" value="#{DatasetPage.dataset.globalId.asString()}"/>
                             <ui:param name="mdLang" value="#{DatasetPage.getLocaleDisplayName(DatasetPage.getEffectiveMetadataLanguage(true))}"/>
                             <ui:param name="mdLangCode" value="#{DatasetPage.getEffectiveMetadataLanguage(true)}"/>
                         </ui:include>
@@ -901,7 +901,7 @@
                                     <ui:param name="metadataBlocks" value="#{!empty DatasetPage.editMode ? DatasetPage.datasetVersionUI.metadataBlocksForEdit.entrySet().toArray(): DatasetPage.datasetVersionUI.metadataBlocksForView.entrySet().toArray()}"/>
                                     <ui:param name="publicationDate" value="#{DatasetPage.dataset.publicationDate != null ? DatasetPage.dataset.publicationDateFormattedYYYYMMDD : ''}"/>
                                     <ui:param name="citationDate" value="#{DatasetPage.dataset.citationDate != null ? DatasetPage.dataset.citationDateFormattedYYYYMMDD : ''}"/>
-                                    <ui:param name="globalId" value="#{DatasetPage.dataset.globalIdString}"/>
+                                    <ui:param name="globalId" value="#{DatasetPage.dataset.globalId.asString()}"/>
                                     <ui:param name="altPID" value="#{DatasetPage.dataset.alternativePersistentIdentifier}"/>
                                     <ui:param name="mdLang" value="#{DatasetPage.getLocaleDisplayName(DatasetPage.effectiveMetadataLanguage)}"/>
                                     <ui:param name="mdLangCode" value="#{DatasetPage.effectiveMetadataLanguage}"/>
