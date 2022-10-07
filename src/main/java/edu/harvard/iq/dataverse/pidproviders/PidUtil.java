@@ -155,14 +155,16 @@ public class PidUtil {
                 return globalId;
             }
         }
-        if(providerMap.isEmpty()) {
-            logger.warning("No PID Providers - should only happen in tests!");
+        //Default recognition - could be moved to new classes in the future.
             if(!GlobalIdServiceBean.isValidGlobalId(protocol, authority, identifier)) {
                 return null;
             }
             String urlPrefix = null;
             switch(protocol) {
             case DOIServiceBean.DOI_PROTOCOL: 
+                if(!GlobalIdServiceBean.checkDOIAuthority(authority)) {
+                    return null;
+                }
                 urlPrefix=DOIServiceBean.DOI_RESOLVER_URL;
                 break;
             case HandlenetServiceBean.HDL_PROTOCOL:
@@ -170,7 +172,5 @@ public class PidUtil {
                 break;
             }
             return new GlobalId(protocol, authority, identifier, "/", urlPrefix, null);
-        }
-        throw new IllegalArgumentException("Failed to parse identifier: " + identifier);
     }
 }
