@@ -317,21 +317,10 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
 
 
-/*    public boolean isIdentifierLocallyUnique(Dataset dataset) {
-        return isGlobalIdLocallyUnique(dataset.getGlobalId().getIdentifier(), dataset);
-    }
 
-    public boolean isIdentifierLocallyUnique(String identifier, Dataset dataset) {
-        return em.createNamedQuery("Dataset.findByIdentifierAuthorityProtocol")
-            .setParameter("identifier", identifier)
-            .setParameter("authority", dataset.getAuthority())
-            .setParameter("protocol", dataset.getProtocol())
-            .getResultList().isEmpty();
-    }
-*/
     public Long getMaximumExistingDatafileIdentifier(Dataset dataset) {
         //Cannot rely on the largest table id having the greatest identifier counter
-        long zeroFiles = new Long(0);
+        long zeroFiles = 0L;
         Long retVal = zeroFiles;
         Long testVal;
         List<Object> idResults;
@@ -348,7 +337,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                 for (Object raw: idResults){
                     String identifier = (String) raw;
                     identifier =  identifier.substring(identifier.lastIndexOf("/") + 1);
-                    testVal = new Long(identifier) ;
+                    testVal = Long.valueOf(identifier) ;
                     if (testVal > retVal){
                         retVal = testVal;
                     }
