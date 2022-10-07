@@ -613,7 +613,7 @@ public class JsonPrinter {
             fileName = df.getFileMetadata().getLabel();
         }
         
-        String pidURL = new GlobalId(df).asURL();
+        String pidURL = df.getGlobalId().asURL();
 
         JsonObjectBuilder embargo = df.getEmbargo() != null ? JsonPrinter.json(df.getEmbargo()) : null;
 

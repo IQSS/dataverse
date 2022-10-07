@@ -36,12 +36,6 @@ public class GlobalId implements java.io.Serializable {
         this.managingProviderName = providerName;
     }
     
-    public GlobalId(DvObject dvObject) {
-        this.authority = dvObject.getAuthority();
-        this.protocol = dvObject.getProtocol();
-        this.identifier = dvObject.getIdentifier(); 
-    }
-        
     // protocol the identifier system, e.g. "doi"
     // authority the namespace that the authority manages in the identifier system
     // identifier the local identifier part

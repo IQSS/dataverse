@@ -257,20 +257,13 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     }
     
     public GlobalId parsePersistentId(String protocol, String authority, String identifier) {
-        if (protocol == null || authority == null || identifier == null) {
-            return null;
-        }
-        authority = GlobalIdServiceBean.formatIdentifierString(authority);
-        if (GlobalIdServiceBean.testforNullTerminator(authority)) {
-            return null;
-        }
-        identifier = GlobalIdServiceBean.formatIdentifierString(identifier);
-        if (GlobalIdServiceBean.testforNullTerminator(identifier)) {
+        if(!GlobalIdServiceBean.isValidGlobalId(protocol, authority, identifier)) {
             return null;
         }
         return new GlobalId(protocol, authority, identifier, this.getSeparator(), this.getUrlPrefix(),
                 this.getProviderInformation().get(0));
     }
+
     
     public String getSeparator() {
         //The standard default

@@ -7,6 +7,8 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+
 /**
  *
  * @author rmp553
@@ -45,7 +47,7 @@ public class GlobalIdTest {
         testDS.setAuthority("10.5072");
         testDS.setIdentifier("FK2/BYM3IW");
 
-        GlobalId instance = new GlobalId(testDS);
+        GlobalId instance = testDS.getGlobalId();
 
         assertEquals("doi", instance.getProtocol());
         assertEquals("10.5072", instance.getAuthority());
@@ -57,11 +59,9 @@ public class GlobalIdTest {
         System.out.println("testInject (weak test)");
 
         // String badProtocol = "hdl:'Select value from datasetfieldvalue';/ha";
-        GlobalId instance = new GlobalId(HandlenetServiceBean.HDL_PROTOCOL, "'Select value from datasetfieldvalue';", "ha","/", HandlenetServiceBean.HDL_RESOLVER_URL, null);
+        GlobalId instance = PidUtil.parseAsGlobalID(HandlenetServiceBean.HDL_PROTOCOL, "'Select value from datasetfieldvalue';", "ha");
+        assertNull(instance); 
 
-        assertEquals("hdl", instance.getProtocol());
-        assertEquals("Selectvaluefromdatasetfieldvalue", instance.getAuthority());
-        assertEquals("ha", instance.getIdentifier());
         //exception.expect(IllegalArgumentException.class);
         //exception.expectMessage("Failed to parse identifier: " + badProtocol);
         //new GlobalId(badProtocol);

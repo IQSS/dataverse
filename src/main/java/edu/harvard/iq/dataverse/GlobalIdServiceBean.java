@@ -104,6 +104,26 @@ public interface GlobalIdServiceBean {
     public GlobalId parsePersistentId(String protocol, String authority, String identifier);
 
     
+    
+    public static boolean isValidGlobalId(String protocol, String authority, String identifier) {
+        if (protocol == null || authority == null || identifier == null) {
+            return false;
+        }
+        if(!authority.equals(GlobalIdServiceBean.formatIdentifierString(authority))) {
+            return false;
+        }
+        if (GlobalIdServiceBean.testforNullTerminator(authority)) {
+            return false;
+        }
+        if(!identifier.equals(GlobalIdServiceBean.formatIdentifierString(identifier))) {
+            return false;
+        }
+        if (GlobalIdServiceBean.testforNullTerminator(identifier)) {
+            return false;
+        }
+        return true;
+    }
+    
     static String formatIdentifierString(String str){
         
         if (str == null){

@@ -1,7 +1,9 @@
 package edu.harvard.iq.dataverse.pidproviders;
 
+import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
+import edu.harvard.iq.dataverse.HandlenetServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
 import java.io.InputStream;
@@ -106,7 +108,7 @@ public class PidUtil {
      * @return DOI in the form 10.7910/DVN/TJCLKP (no "doi:")
      */
     private static String acceptOnlyDoi(GlobalId globalId) {
-        if (!GlobalIdServiceBean.DOI_PROTOCOL.equals(globalId.getProtocol())) {
+        if (!DOIServiceBean.DOI_PROTOCOL.equals(globalId.getProtocol())) {
             throw new IllegalArgumentException(BundleUtil.getStringFromBundle("pids.datacite.errors.DoiOnly"));
         }
         return globalId.getAuthority() + "/" + globalId.getIdentifier();
@@ -152,6 +154,22 @@ public class PidUtil {
             if (globalId != null) {
                 return globalId;
             }
+        }
+        if(providerMap.isEmpty()) {
+            logger.warning("No PID Providers - should only happen in tests!");
+            if(!GlobalIdServiceBean.isValidGlobalId(protocol, authority, identifier)) {
+                return null;
+            }
+            String urlPrefix = null;
+            switch(protocol) {
+            case DOIServiceBean.DOI_PROTOCOL: 
+                urlPrefix=DOIServiceBean.DOI_RESOLVER_URL;
+                break;
+            case HandlenetServiceBean.HDL_PROTOCOL:
+                urlPrefix=HandlenetServiceBean.HDL_RESOLVER_URL;
+                break;
+            }
+            return new GlobalId(protocol, authority, identifier, "/", urlPrefix, null);
         }
         throw new IllegalArgumentException("Failed to parse identifier: " + identifier);
     }

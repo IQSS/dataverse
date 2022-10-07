@@ -1351,7 +1351,7 @@ public class DdiExportUtil {
                 writeAttribute(xmlw, "ID", "f" + fileMetadata.getDataFile().getId());
                 String dfIdentifier = fileMetadata.getDataFile().getIdentifier();
                 if (dfIdentifier != null && !dfIdentifier.isEmpty()){
-                    GlobalId globalId = new GlobalId(fileMetadata.getDataFile());
+                    GlobalId globalId = fileMetadata.getDataFile().getGlobalId();
                     writeAttribute(xmlw, "URI",  globalId.asURL()); 
                 }  else {
                     writeAttribute(xmlw, "URI", dataverseUrl + "/api/access/datafile/" + fileMetadata.getDataFile().getId()); 
