@@ -112,7 +112,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
                                 && (dataset.getLastExportTime() == null
                                 || dataset.getLastExportTime().before(publicationDate))) {
 
-                            setUpdateLogger.fine("Attempting to run export on dataset " + dataset.getGlobalIdString());
+                            setUpdateLogger.fine("Attempting to run export on dataset " + dataset.getGlobalId().asString());
                             exportAllFormats(dataset);
                         }
                         
@@ -146,14 +146,14 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         boolean isReleased = dataset.getReleasedVersion() != null;
         
         if (isReleased && dataset.getLastExportTime() != null) {
-            OAIRecord record = recordMap.get(dataset.getGlobalIdString());
+            OAIRecord record = recordMap.get(dataset.getGlobalId().asString());
             if (record == null) {
-                setUpdateLogger.info("creating a new OAI Record for " + dataset.getGlobalIdString());
-                record = new OAIRecord(setName, dataset.getGlobalIdString(), new Date());
+                setUpdateLogger.info("creating a new OAI Record for " + dataset.getGlobalId().asString());
+                record = new OAIRecord(setName, dataset.getGlobalId().asString(), new Date());
                 em.persist(record);
             } else {
                 if (record.isRemoved()) {
-                    setUpdateLogger.info("\"un-deleting\" an existing OAI Record for " + dataset.getGlobalIdString());
+                    setUpdateLogger.info("\"un-deleting\" an existing OAI Record for " + dataset.getGlobalId().asString());
                     record.setRemoved(false);
                     record.setLastUpdateTime(new Date());
                 } else if (dataset.getLastExportTime().after(record.getLastUpdateTime())) {
@@ -180,7 +180,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     public void updateOaiRecordsForDataset(Dataset dataset) {
         // create Map of OaiRecords
 
-        List<OAIRecord> oaiRecords = findOaiRecordsByGlobalId(dataset.getGlobalIdString());
+        List<OAIRecord> oaiRecords = findOaiRecordsByGlobalId(dataset.getGlobalId().asString());
         if (oaiRecords != null) {
 
             DatasetVersion releasedVersion = dataset.getReleasedVersion();
@@ -194,7 +194,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
             
             for (OAIRecord record : oaiRecords) {
                 if (record.isRemoved()) {
-                    logger.fine("\"un-deleting\" an existing OAI Record for " + dataset.getGlobalIdString());
+                    logger.fine("\"un-deleting\" an existing OAI Record for " + dataset.getGlobalId().asString());
                     record.setRemoved(false);
                     record.setLastUpdateTime(new Date());
                 } else if (dataset.getLastExportTime().after(record.getLastUpdateTime())) {

@@ -315,16 +315,6 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
         this.identifierRegistered = identifierRegistered;
     }  
     
-    /**
-     * 
-     * @return This object's global id in a string form.
-     * @deprecated use {@code dvobj.getGlobalId().asString()}.
-     */
-    public String getGlobalIdString() {       
-        final GlobalId globalId = getGlobalId();
-        return globalId != null ? globalId.asString() : null;
-    }
-    
     public void setGlobalId( GlobalId pid ) {
         if ( pid == null ) {
             setProtocol(null);

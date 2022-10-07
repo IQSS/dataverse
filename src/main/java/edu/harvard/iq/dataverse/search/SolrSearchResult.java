@@ -22,6 +22,7 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetRelPublication;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
@@ -1129,9 +1130,10 @@ public class SolrSearchResult {
 		 * if (entity != null && entity instanceof DataFile && this.isHarvested()) { String remoteArchiveUrl = ((DataFile) entity).getRemoteArchiveURL(); if
 		 * (remoteArchiveUrl != null) { return remoteArchiveUrl; } return null; }
 		 */
-		if (entity.getIdentifier() != null) {
-			return "/file.xhtml?persistentId=" + entity.getGlobalIdString();
-		}
+        if (entity.getIdentifier() != null) {
+            GlobalId entityPid = entity.getGlobalId();
+            return "/file.xhtml?persistentId=" + ((entityPid != null) ? entityPid.asString() : null);
+        }
 
 		return "/file.xhtml?fileId=" + entity.getId() + "&datasetVersionId=" + datasetVersionId;
 

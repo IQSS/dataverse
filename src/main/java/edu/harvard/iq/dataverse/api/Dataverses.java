@@ -284,7 +284,7 @@ public class Dataverses extends AbstractApiBean {
             return created("/datasets/" + managedDs.getId(),
                     Json.createObjectBuilder()
                             .add("id", managedDs.getId())
-                            .add("persistentId", managedDs.getGlobalIdString())
+                            .add("persistentId", managedDs.getGlobalId().asString())
             );
 
         } catch (WrappedResponse ex) {
@@ -326,7 +326,7 @@ public class Dataverses extends AbstractApiBean {
             return created("/datasets/" + managedDs.getId(),
                     Json.createObjectBuilder()
                             .add("id", managedDs.getId())
-                            .add("persistentId", managedDs.getGlobalIdString())
+                            .add("persistentId", managedDs.getGlobalId().asString())
             );
 
         } catch (WrappedResponse ex) {
@@ -393,7 +393,7 @@ public class Dataverses extends AbstractApiBean {
             Dataset managedDs = execCommand(new ImportDatasetCommand(ds, request));
             JsonObjectBuilder responseBld = Json.createObjectBuilder()
                     .add("id", managedDs.getId())
-                    .add("persistentId", managedDs.getGlobalIdString());
+                    .add("persistentId", managedDs.getGlobalId().asString());
 
             if (shouldRelease) {
                 PublishDatasetResult res = execCommand(new PublishDatasetCommand(managedDs, request, false, shouldRelease));

@@ -956,7 +956,7 @@ public class DataFile extends DvObject implements Comparable {
         // https://github.com/IQSS/dataverse/issues/761, https://github.com/IQSS/dataverse/issues/2110, https://github.com/IQSS/dataverse/issues/3191
         //
         datasetMap.put("title", thisFileMetadata.getDatasetVersion().getTitle());
-        datasetMap.put("persistentId", getOwner().getGlobalIdString());
+        datasetMap.put("persistentId", getOwner().getGlobalId().asString());
         datasetMap.put("url", getOwner().getPersistentURL());
         datasetMap.put("version", thisFileMetadata.getDatasetVersion().getSemanticVersion());
         datasetMap.put("id", getOwner().getId());

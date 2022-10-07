@@ -324,7 +324,7 @@ public class HarvesterServiceBean {
                 
                 Dataset dataset = datasetService.getDatasetByHarvestInfo(oaiHandler.getHarvestingClient().getDataverse(), identifier);
                 if (dataset != null) {
-                    hdLogger.info("Deleting dataset " + dataset.getGlobalIdString());
+                    hdLogger.info("Deleting dataset " + dataset.getGlobalId().asString());
                     datasetService.deleteHarvestedDataset(dataset, dataverseRequest, hdLogger);
                     // TODO: 
                     // check the status of that Delete - see if it actually succeeded

@@ -68,7 +68,7 @@ public class StatementManagerImpl implements StatementManager {
             if (!permissionService.isUserAllowedOn(user, new GetDraftDatasetVersionCommand(dvReq, dataset), dataset)) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to view dataset with global ID " + globalId);
             }
-            String feedUri = urlManager.getHostnamePlusBaseUrlPath(editUri) + "/edit/study/" + dataset.getGlobalIdString();
+            String feedUri = urlManager.getHostnamePlusBaseUrlPath(editUri) + "/edit/study/" + dataset.getGlobalId().asString();
             String author = dataset.getLatestVersion().getAuthorsStr();
             String title = dataset.getLatestVersion().getTitle();
             // in the statement, the element is called "updated"

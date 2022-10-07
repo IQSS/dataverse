@@ -101,7 +101,7 @@ public class Xrecord extends Record {
                 }
                 outputStream.write(METADATA_END_ELEMENT.getBytes());
             } else {
-                outputStream.write(customMetadataExtensionRef(this.dataset.getGlobalIdString()).getBytes());
+                outputStream.write(customMetadataExtensionRef(this.dataset.getGlobalId().asString()).getBytes());
             }
         }
         outputStream.flush();
