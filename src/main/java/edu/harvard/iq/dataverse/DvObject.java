@@ -149,6 +149,8 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     
     private boolean identifierRegistered;
     
+    private transient GlobalId globalId = null;
+    
     @OneToMany(mappedBy = "dvObject", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<AlternativePersistentIdentifier> alternativePersistentIndentifiers;
 
@@ -325,10 +327,16 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
             setAuthority(pid.getAuthority());
             setIdentifier(pid.getIdentifier());
         }
+        //Remove cached value
+        globalId=null;
     }
     
     public GlobalId getGlobalId() {
-        return PidUtil.parseAsGlobalID(getProtocol(), getAuthority(), getIdentifier());
+        // Cache this
+        if (globalId == null && !(getProtocol() == null || getAuthority() == null || getIdentifier() == null)) {
+            globalId = PidUtil.parseAsGlobalID(getProtocol(), getAuthority(), getIdentifier());
+        }
+        return globalId;
     }
     
     public abstract <T> T accept(Visitor<T> v);
