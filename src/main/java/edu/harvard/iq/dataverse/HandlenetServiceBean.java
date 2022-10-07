@@ -68,7 +68,7 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     SettingsServiceBean settingsService;
     private static final Logger logger = Logger.getLogger(HandlenetServiceBean.class.getCanonicalName());
     
-    private static final String HANDLE_PROTOCOL = "hdl";
+    public static final String HDL_PROTOCOL = "hdl";
     int handlenetIndex = System.getProperty("dataverse.handlenet.index")!=null? Integer.parseInt(System.getProperty("dataverse.handlenet.index")) : 300;
     public static final String HTTP_HDL_RESOLVER_URL = "http://hdl.handle.net/";
     public static final String HDL_RESOLVER_URL = "https://hdl.handle.net/";
@@ -84,7 +84,7 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
 
     public void reRegisterHandle(DvObject dvObject) {
         logger.log(Level.FINE,"reRegisterHandle");
-        if (!HANDLE_PROTOCOL.equals(dvObject.getProtocol())) {
+        if (!HDL_PROTOCOL.equals(dvObject.getProtocol())) {
             logger.log(Level.WARNING, "reRegisterHandle called on a dvObject with the non-handle global id: {0}", dvObject.getId());
         }
         

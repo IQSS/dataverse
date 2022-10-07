@@ -62,17 +62,6 @@ public interface GlobalIdServiceBean {
         return getBean(ctxt.settings().getValueForKey(Key.Protocol, ""), ctxt);
     }
     
-    public static final String DOI_PROTOCOL = "doi";
-    public static final String HDL_PROTOCOL = "hdl";
-    public static final String DOI_RESOLVER_URL = "https://doi.org/";
-    public static final String DXDOI_RESOLVER_URL = "https://dx.doi.org/";
-    public static final String HDL_RESOLVER_URL = "https://hdl.handle.net/";
-    public static final String HTTP_DOI_RESOLVER_URL = "http://doi.org/";
-    public static final String HTTP_DXDOI_RESOLVER_URL = "http://dx.doi.org/";
-    public static final String HTTP_HDL_RESOLVER_URL = "http://hdl.handle.net/";
-    
-
-    
     public static Optional<GlobalId> parse(String identifierString) {
         try {
             return Optional.of(PidUtil.parseAsGlobalID(identifierString));
