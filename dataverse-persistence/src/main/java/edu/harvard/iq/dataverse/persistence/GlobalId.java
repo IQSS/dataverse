@@ -36,7 +36,7 @@ public class GlobalId implements java.io.Serializable {
      * @throws IllegalArgumentException if the passed string cannot be parsed.
      */
     public GlobalId(String identifier) {
-        // set the protocol, authority, and identifier via parsePersistentId        
+        // set the protocol, authority, and identifier via parsePersistentId
         if (!parsePersistentId(identifier)) {
             throw new IllegalArgumentException("Failed to parse identifier: " + identifier);
         }
@@ -117,9 +117,9 @@ public class GlobalId implements java.io.Serializable {
             return null;
         }
         try {
-            if (protocol.equals(DOI_PROTOCOL)) {
+            if (DOI_PROTOCOL.equals(protocol)) {
                 url = new URL(DOI_RESOLVER_URL + authority + "/" + identifier);
-            } else if (protocol.equals(HDL_PROTOCOL)) {
+            } else if (HDL_PROTOCOL.equals(protocol)) {
                 url = new URL(HDL_RESOLVER_URL + authority + "/" + identifier);
             }
         } catch (MalformedURLException ex) {
@@ -193,7 +193,7 @@ public class GlobalId implements java.io.Serializable {
         }
         // remove whitespace, single quotes, and semicolons
         return str.replaceAll("\\s+|'|;", "");
-        
+
         /*
         < 	(%3C)
 > 	(%3E)

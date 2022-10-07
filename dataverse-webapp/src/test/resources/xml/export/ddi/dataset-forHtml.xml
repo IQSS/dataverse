@@ -1,0 +1,106 @@
+<codeBook xmlns="ddi:codebook:2_5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="ddi:codebook:2_5 https://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd"
+          version="2.5">
+    <docDscr>
+        <citation>
+            <titlStmt>
+                <titl>DDI Html CodeBook Test</titl>
+                <IDNo agency="DOI">doi:10.5072/FK2/XLDMAW</IDNo>
+            </titlStmt>
+            <distStmt>
+                <distrbtr>Root</distrbtr>
+                <distDate>2022-09-30</distDate>
+            </distStmt>
+            <verStmt source="archive">
+                <version date="2022-10-06" type="RELEASED">2</version>
+            </verStmt>
+            <biblCit>Admin, Dataverse, 2022, "DDI Html CodeBook Test", https://doi.org/10.5072/FK2/XLDMAW, Root, V2
+            </biblCit>
+        </citation>
+    </docDscr>
+    <stdyDscr>
+        <citation>
+            <titlStmt>
+                <titl>DDI Html CodeBook Test</titl>
+                <IDNo agency="DOI">doi:10.5072/FK2/XLDMAW</IDNo>
+            </titlStmt>
+            <rspStmt>
+                <AuthEnty>Admin, Dataverse</AuthEnty>
+            </rspStmt>
+            <prodStmt/>
+            <distStmt>
+                <distrbtr source="archive">Root</distrbtr>
+                <contact email="dataverse@mailinator.com">Admin, Dataverse</contact>
+                <depositr>Admin, Dataverse</depositr>
+                <depDate>2022-09-30</depDate>
+            </distStmt>
+        </citation>
+        <stdyInfo>
+            <subject>
+                <keyword>Other</keyword>
+            </subject>
+            <abstract>&lt;p>Description&lt;/p></abstract>
+            <sumDscr/>
+        </stdyInfo>
+        <method>
+            <dataColl>
+                <sources/>
+            </dataColl>
+            <anlyInfo/>
+        </method>
+        <dataAccs>
+            <notes type="DVN:TOU" level="dv">CC0 Creative Commons Zero 1.0 Waiver</notes>
+        </dataAccs>
+        <othrStdyMat/>
+    </stdyDscr>
+    <fileDscr ID="f2804" URI="http://localhost:8080/api/access/datafile/2804">
+        <fileTxt>
+            <fileName>file1.tab</fileName>
+            <dimensns>
+                <caseQnty>9</caseQnty>
+                <varQnty>3</varQnty>
+            </dimensns>
+            <fileType>text/tab-separated-values</fileType>
+        </fileTxt>
+        <notes level="file" type="VDC:UNF" subject="Universal Numeric Fingerprint">UNF:6:BdkLsYcUgoVSazL32HlHjA==
+        </notes>
+    </fileDscr>
+    <dataDscr>
+        <var ID="v34405" name="Column 1" intrvl="discrete">
+            <location fileid="f2804"/>
+            <labl level="variable">Column 1</labl>
+            <varFormat type="character"/>
+            <notes subject="Universal Numeric Fingerprint" level="variable" type="Dataverse:UNF">
+                UNF:6:xnEppil7GJU7gAV8RcZROg==
+            </notes>
+        </var>
+        <var ID="v34403" name="Column 2" intrvl="discrete">
+            <location fileid="f2804"/>
+            <labl level="variable">Column 2</labl>
+            <sumStat type="vald">9.0</sumStat>
+            <sumStat type="mode">.</sumStat>
+            <sumStat type="medn">56.0</sumStat>
+            <sumStat type="stdev">32.21455847559885</sumStat>
+            <sumStat type="mean">52.44444444444444</sumStat>
+            <sumStat type="min">1.0</sumStat>
+            <sumStat type="max">90.0</sumStat>
+            <sumStat type="invd">0.0</sumStat>
+            <varFormat type="numeric"/>
+            <notes subject="Universal Numeric Fingerprint" level="variable" type="Dataverse:UNF">
+                UNF:6:S+8VWOCZizYAE8cBEytMHQ==
+            </notes>
+        </var>
+        <var ID="v34404" name="Column 3" intrvl="discrete">
+            <location fileid="f2804"/>
+            <labl level="variable">Column 3</labl>
+            <varFormat type="character"/>
+            <notes subject="Universal Numeric Fingerprint" level="variable" type="Dataverse:UNF">
+                UNF:6:Qay50i0afa24c8lmGP+/0A==
+            </notes>
+        </var>
+    </dataDscr>
+    <otherMat ID="f2793" URI="https://doi.org/10.5072/FK2/XLDMAW/40C9HK" level="datafile">
+        <labl>Data.pdf</labl>
+        <notes level="file" type="DATAVERSE:CONTENTTYPE" subject="Content/MIME Type">application/pdf</notes>
+    </otherMat>
+</codeBook>

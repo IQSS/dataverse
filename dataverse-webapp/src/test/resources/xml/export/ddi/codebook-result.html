@@ -1,0 +1,487 @@
+<?xml version="1.0" encoding="UTF-8"?><!--
+            This work is licensed under a Creative Commons Attribution-Noncommercial 3.0 United States License.
+            http://creativecommons.org/licenses/by-nc/3.0/us/
+        --><!--This XML stylesheet is intended to serve as a generic stylesheet for HTML
+            display of codebooks marked up according to Version 2.0 of the DDI DTD. Please note that
+            the part navigation that appears just below the title is dependent upon the 'holdings' tag
+            located at /codeBook/docDscr/citation/holdings. This navigation element allows the user
+            to selectively view any of the five parts of the DDI document, assuming those parts are
+            present. The URI attribute of the 'holdings' tag should contain the URL at which the XML
+            file is accessed on the Web. If that field is not filled in properly, the navigation
+            will not work correctly.--><!--It's also important to note that this stylesheet doesn't display all elements.
+            The following elements do note display:
+            3.2.1 dataItem (locMap)
+            3.2.1.1 CubeCoord (locMap)
+            3.2.1.2 physLoc (locMap)
+            4.2.1 labl (nCubeGrp)
+            4.2.2 txt (nCubeGrp)
+            4.2.3 concept (nCubeGrp)
+            4.2.4 defntn (nCubeGrp)
+            4.2.5 universe (nCubeGrp)
+            4.2.6 notes (nCubeGrp)
+            4.3.18.5 mrow (nCube)
+            4.3.18.5.1 mi (nCube)
+            4.4.2 location (nCube)
+            4.4.3 txt (nCube)
+            4.4.4 universe (nCube)
+            4.4.5 imputation (nCube)
+            4.4.6 security (nCube)
+            4.4.7 embargo (nCube)
+            4.4.8 respUnit (nCube)
+            4.4.9 anlysUnit (nCube)
+            4.4.10 verStmt (nCube)
+            4.4.10.1 version (nCube)
+            4.4.10.2 verResp (nCube)
+            4.4.10.3 notes (nCube)
+            4.4.11 purpose (nCube)
+            4.4.12.1 cohort (nCube)
+            4.4.12.1.1 range (nCube)
+            4.4.13 measure (nCube)
+            4.4.14 notes (nCube)
+
+            In addition, many of the attributes of elements have yet to be set to display.
+        --><!--
+            On 2004-06-01 I corrected some errors in this stylesheet, as lists of variables and variable
+            groups weren't linking properly to the detailed views of said variables and variable groups.
+
+            On 2005-06-22 I made some minor modifications to the display of variables lists, and enabled
+            use of the Link tag within catValu.
+
+            On 2005-06-23 I enabled use of Link tag within labl and enabled catStat to display repetitions
+            in catgry.
+        --><html>
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>DDI Html CodeBook Test</title>
+<style media="screen" type="text/css">
+                    body {
+                    background-color: #FFFFFF;
+                    margin-top: 5px;
+                    margin-left: 5px;
+                    margin-right: 5px;
+                    padding-left: 0px;
+                    padding-top: 0px;
+                    padding-right: 0px;
+                    }
+
+                    tr.h1 {
+                    background: #000000;
+                    color: #FFFFFF;
+                    }
+
+                    td.h3 {
+                    vertical-align: top;
+                    text-align: right;
+                    font-style: italic;
+                    }
+
+                    tr.h2 {
+                    background: #CCCCCC;
+                    color: #000000;
+                    }
+
+                    caption {
+                    font-family: arial, helvetica, geneva, verdana, sans-serif;
+                    font-size: 11pt;
+                    font-weight: bold;
+                    }
+
+                    p {
+                    font-family: arial, helvetica, geneva, verdana, sans-serif;
+                    font-size: 11pt;
+                    }
+
+                    table {
+                    padding-top: 10px;
+                    padding-bottom: 10px;
+                    border: none;
+                    }
+
+                    th {
+                    text-align: left;
+                    }
+
+                    dl {
+                    font-family: arial, helvetica, geneva, verdana, sans-serif;
+                    font-size: 11pt;
+                    }
+
+                    td {
+                    vertical-align: top;
+                    }
+
+                    blockquote {
+                    font-family: arial, helvetica, geneva, verdana, sans-serif;
+                    font-size: 11pt;
+                    }
+
+                    .noindent {padding-left: 0px;}
+
+                    .small {font-size: 9pt;}
+
+                    .red {color: #CC0000;}
+
+                    ol {
+                    font-family: arial, helvetica, geneva, verdana, sans-serif;
+                    font-size: 11pt;
+                    }
+
+                    ul {
+                    font-family: arial, helvetica, geneva, verdana, sans-serif;
+                    list-style: square;
+                    font-size: 11pt;
+                    }
+
+                    h1 {
+                    font-family: arial, helvetica, geneva, verdana, sans-serif;
+                    font-size: 14pt;
+                    }
+
+                    h2 {
+                    font-family: arial, helvetica, geneva, verdana, sans-serif;
+                    font-size: 12pt;
+                    }
+
+                    h3 {
+                    font-family: arial, helvetica, geneva, verdana, sans-serif;
+                    font-size: 11pt;
+                    font-style: bold;
+                    }
+
+                    h4 {
+                    font-family: arial, helvetica, geneva, verdana, sans-serif;
+                    font-size: 10pt;
+                    }
+                </style>
+</head>
+<body lang="en-US" bgcolor="#ffffff">
+<h1>DDI Html CodeBook Test&nbsp;(ICPSR doi:10.5072/FK2/XLDMAW)</h1>
+<table cellspacing="0" cellpadding="5" border="0">
+<tr>
+<td valign="top">
+<p>
+<b>View:</b>
+</p>
+</td><td>
+<p>
+<a href="?part=1">Part 1: Document Description</a>
+<br>
+<a href="?part=2">Part 2: Study Description</a>
+<br>
+<a href="?part=3">Part 3: Data
+                                        Files Description</a>
+<br>
+<a href="?part=4">Part 4: Variable Description</a>
+<br>
+<a href="?part=5">Part 5: Other
+                                        Study-Related Materials</a>
+<br>
+<a href="?part=0">Entire Codebook</a>
+</p>
+</td>
+</tr>
+</table>
+<table cellspacing="5" cellpadding="5" border="0">
+<tr class="h1">
+<th colspan="2" align="left">
+<p>
+<a id="1.0" name="1.0">Document Description</a>
+</p>
+</th>
+</tr>
+<tr class="h2">
+<th colspan="2">
+<p>Citation</p>
+</th>
+</tr>
+<tr>
+<td class="h3">
+<p>Title:</p>
+</td><td>
+<p>DDI Html CodeBook Test</p>
+</td>
+</tr>
+<tr>
+<td class="h3">
+<p>Identification Number:</p>
+</td><td>
+<p>doi:10.5072/FK2/XLDMAW</p>
+</td>
+</tr>
+<tr>
+<td class="h3">
+<p>Distributor:</p>
+</td><td>
+<p>Root</p>
+</td>
+</tr>
+<tr>
+<td class="h3">
+<p>Date of Distribution:</p>
+</td><td>
+<p>2022-09-30</p>
+</td>
+</tr>
+<tr>
+<td class="h3">
+<p>Version:</p>
+</td><td>
+<p>2</p>
+</td>
+</tr>
+<tr>
+<td class="h3">
+<p>Bibliographic Citation:</p>
+</td><td>
+<p>Admin, Dataverse, 2022, "DDI Html CodeBook Test", https://doi.org/10.5072/FK2/XLDMAW, Root, V2
+            </p>
+</td>
+</tr>
+<tr class="h1">
+<th colspan="2">
+<p>
+<a name="2.0">Study Description</a>
+</p>
+</th>
+</tr>
+<tr class="h2">
+<th colspan="2">
+<p>Citation</p>
+</th>
+</tr>
+<tr>
+<td class="h3">
+<p>Title:</p>
+</td><td>
+<p>DDI Html CodeBook Test</p>
+</td>
+</tr>
+<tr>
+<td class="h3">
+<p>Identification Number:</p>
+</td><td>
+<p>doi:10.5072/FK2/XLDMAW</p>
+</td>
+</tr>
+<tr>
+<td class="h3">
+<p>Authoring Entity:</p>
+</td><td>
+<p>Admin, Dataverse</p>
+</td>
+</tr>
+<tr>
+<td class="h3">
+<p>Distributor:</p>
+</td><td>
+<p>Root</p>
+</td>
+</tr>
+<tr>
+<td class="h3">
+<p>Access Authority:</p>
+</td><td>
+<p>Admin, Dataverse</p>
+</td>
+</tr>
+<tr>
+<td class="h3">
+<p>Depositor:</p>
+</td><td>
+<p>Admin, Dataverse</p>
+</td>
+</tr>
+<tr>
+<td class="h3">
+<p>Date of Deposit:</p>
+</td><td>
+<p>2022-09-30</p>
+</td>
+</tr>
+<tr class="h2">
+<th colspan="2">
+<p>Study Scope</p>
+</th>
+</tr>
+<tr>
+<td class="h3">
+<p>Keywords:</p>
+</td><td>
+<p>Other</p>
+</td>
+</tr>
+<tr>
+<td class="h3">
+<p>Abstract:</p>
+</td><td>
+<p>&lt;p&gt;Description&lt;/p&gt;</p>
+</td>
+</tr>
+<tr class="h2">
+<th colspan="2">
+<p>Methodology and Processing</p>
+</th>
+</tr>
+<tr>
+<th colspan="2">
+<p>Sources Statement</p>
+</th>
+</tr>
+<tr class="h2">
+<th colspan="2">
+<p>Data Access</p>
+</th>
+</tr>
+<tr>
+<td class="h3">
+<p>Notes:</p>
+</td><td>
+<p>CC0 Creative Commons Zero 1.0 Waiver</p>
+</td>
+</tr>
+<tr class="h2">
+<th colspan="2">
+<p>Other Study Description Materials</p>
+</th>
+</tr>
+<tr class="h1">
+<th colspan="2">
+<p>
+<a name="3.0">File Description</a>--f2804</p>
+</th>
+</tr>
+<tr class="h2">
+<th colspan="2">
+<p>File: file1.tab</p>
+</th>
+</tr>
+<tr>
+<td></td><td>
+<ul>
+<li>
+<p>Number of cases: 9</p>
+</li>
+<li>
+<p>No. of variables per record: 3</p>
+</li>
+<li>
+<p>Type of File: text/tab-separated-values</p>
+</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td class="h3">
+<p>Notes:</p>
+</td><td>
+<p>UNF:6:BdkLsYcUgoVSazL32HlHjA==
+        </p>
+</td>
+</tr>
+<tr class="h1">
+<th colspan="2">
+<p>
+<a name="a4.0">Variable Description</a>
+</p>
+</th>
+</tr>
+<tr>
+<td class="h3">
+<p>List of Variables:</p>
+</td><td>
+<ul>
+<li>
+<a href="#Column 1">Column 1</a>&nbsp;-&nbsp;Column 1</li>
+<li>
+<a href="#Column 2">Column 2</a>&nbsp;-&nbsp;Column 2</li>
+<li>
+<a href="#Column 3">Column 3</a>&nbsp;-&nbsp;Column 3</li>
+</ul>
+</td>
+</tr>
+<tr class="h2">
+<td colspan="2">
+<p>
+<strong>Variables</strong>
+</p>
+</td>
+</tr>
+<tr>
+<th colspan="2">
+<p>
+<a name="Column 1"></a><a id="v34405"></a>Column 1</p>
+</th>
+</tr>
+<tr>
+<td valign="top">
+<p class="small">f2804&nbsp;Location:</p>
+<p class="small"></p>
+</td><td valign="top">
+<p>Variable Format: character</p>
+<p>
+            Notes: 
+                UNF:6:xnEppil7GJU7gAV8RcZROg==
+            </p>
+</td>
+</tr>
+<tr>
+<th colspan="2">
+<p>
+<a name="Column 2"></a><a id="v34403"></a>Column 2</p>
+</th>
+</tr>
+<tr>
+<td valign="top">
+<p class="small">f2804&nbsp;Location:</p>
+<p class="small"></p>
+</td><td valign="top">
+<p>Summary Statistics: Valid 9.0; StDev 32.21455847559885; Mean 52.44444444444444; Min. 1.0; Max. 90.0; </p>
+<p>Variable Format: numeric</p>
+<p>
+            Notes: 
+                UNF:6:S+8VWOCZizYAE8cBEytMHQ==
+            </p>
+</td>
+</tr>
+<tr>
+<th colspan="2">
+<p>
+<a name="Column 3"></a><a id="v34404"></a>Column 3</p>
+</th>
+</tr>
+<tr>
+<td valign="top">
+<p class="small">f2804&nbsp;Location:</p>
+<p class="small"></p>
+</td><td valign="top">
+<p>Variable Format: character</p>
+<p>
+            Notes: 
+                UNF:6:Qay50i0afa24c8lmGP+/0A==
+            </p>
+</td>
+</tr>
+<tr>
+<th colspan="2" align="left">
+<p>
+<a name="f2793"></a><a name="5.0">Other Study-Related Materials</a>
+</p>
+</th>
+</tr>
+<tr>
+<td valign="top" align="right">
+<p>Label:</p>
+</td><td>
+<p>Data.pdf</p>
+</td>
+</tr>
+<tr>
+<td class="h3">
+<p>Notes:</p>
+</td><td>
+<p>application/pdf</p>
+</td>
+</tr>
+</table>
+</body>
+</html>
