@@ -53,12 +53,6 @@ import javax.persistence.*;
 		uniqueConstraints = {@UniqueConstraint(columnNames = {"authority,protocol,identifier"}),@UniqueConstraint(columnNames = {"owner_id,storageidentifier"})})
 public abstract class DvObject extends DataverseEntity implements java.io.Serializable {
     
-    //public static final String DATAVERSE_DTYPE_STRING = "Dataverse";
-    //public static final String DATASET_DTYPE_STRING = "Dataset";
-    //public static final String DATAFILE_DTYPE_STRING = "DataFile";
-    //public static final List<String> DTYPE_LIST = Arrays.asList(DATAVERSE_DTYPE_STRING, DATASET_DTYPE_STRING, DATAFILE_DTYPE_STRING);
-    
-    
     public enum DType {
         Dataverse("Dataverse"), Dataset("Dataset"),DataFile("DataFile");
        
@@ -344,9 +338,6 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     }
     
     public GlobalId getGlobalId() {
-        // FIXME should return NULL when the fields are null. Currently, 
-        //       a lot of code depends call this method, so this fix can't be 
-        //       a part of the current PR.
         return PidUtil.parseAsGlobalID(getProtocol(), getAuthority(), getIdentifier());
     }
     
