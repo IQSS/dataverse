@@ -612,14 +612,15 @@ public class JsonPrinter {
             // version *you want*! (L.A.)
             fileName = df.getFileMetadata().getLabel();
         }
-        
-        String pidURL = df.getGlobalId().asURL();
+        GlobalId filePid = df.getGlobalId();
+        String pidURL = (filePid!=null)? filePid.asURL(): null;
+        String pidString = (filePid!=null)? filePid.asString(): null;
 
         JsonObjectBuilder embargo = df.getEmbargo() != null ? JsonPrinter.json(df.getEmbargo()) : null;
 
         return jsonObjectBuilder()
                 .add("id", df.getId())
-                .add("persistentId", df.getGlobalId().asString())
+                .add("persistentId", pidString)
                 .add("pidURL", pidURL)
                 .add("filename", fileName)
                 .add("contentType", df.getContentType())

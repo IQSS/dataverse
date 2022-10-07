@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.Embargo;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
@@ -1221,7 +1222,9 @@ public class IndexServiceBean {
                     datafileSolrInputDocument.addField(SearchFields.FILE_CHECKSUM_VALUE, fileMetadata.getDataFile().getChecksumValue());
                     datafileSolrInputDocument.addField(SearchFields.DESCRIPTION, fileMetadata.getDescription());
                     datafileSolrInputDocument.addField(SearchFields.FILE_DESCRIPTION, fileMetadata.getDescription());
-                    datafileSolrInputDocument.addField(SearchFields.FILE_PERSISTENT_ID, fileMetadata.getDataFile().getGlobalId().toString());
+                    GlobalId filePid = fileMetadata.getDataFile().getGlobalId();
+                    datafileSolrInputDocument.addField(SearchFields.FILE_PERSISTENT_ID,
+                            (filePid != null) ? filePid.toString() : null);
                     datafileSolrInputDocument.addField(SearchFields.UNF, fileMetadata.getDataFile().getUnf());
                     datafileSolrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
                     // datafileSolrInputDocument.addField(SearchFields.HOST_DATAVERSE,
