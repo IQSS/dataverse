@@ -229,7 +229,7 @@ public class HarvestingServerIT {
         // So let's wait for it to finish.
         Thread.sleep(200L);
         UtilIT.sleepForReindex(datasetPersistentId, adminUserAPIKey, 10);
-        Thread.sleep(5000L);
+        
         String setName = identifier;
         String setQuery = "dsPersistentId:" + identifier;
         String apiPath = String.format("/api/harvest/server/oaisets/%s", setName);
