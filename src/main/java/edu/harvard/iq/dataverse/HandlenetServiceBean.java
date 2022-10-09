@@ -438,8 +438,15 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
         if (!HDL_PROTOCOL.equals(protocol)) {
             return null;
         }
-        GlobalId globalId = this.parsePersistentIdentifier(protocol, identifierString);
+        GlobalId globalId = super.parsePersistentId(protocol, identifierString);
         return globalId;
+    }
+    
+    public GlobalId parsePersistentId(String protocol, String authority, String identifier) {
+        if (!HDL_PROTOCOL.equals(protocol)) {
+            return null;
+        }
+        return super.parsePersistentId(protocol, authority, identifier);
     }
 
     @Override

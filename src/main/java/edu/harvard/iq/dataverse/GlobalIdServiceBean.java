@@ -156,8 +156,6 @@ public interface GlobalIdServiceBean {
         
         return true;
     }
-
-    String asString(GlobalId globalId);
 }
 
 

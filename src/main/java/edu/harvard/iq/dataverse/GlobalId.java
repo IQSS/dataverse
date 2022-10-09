@@ -93,7 +93,7 @@ public class GlobalId implements java.io.Serializable {
             return null;
         }
         try {
-               url = new URL(urlPrefix + authority + "/" + identifier);
+               url = new URL(urlPrefix + authority + separator + identifier);
                return url.toExternalForm();
         } catch (MalformedURLException ex) {
             logger.log(Level.SEVERE, null, ex);

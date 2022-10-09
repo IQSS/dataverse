@@ -221,14 +221,17 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         int index1 = fullIdentifierString.indexOf(':');
         if (index1 > 0) { // ':' found with one or more characters before it
             String protocol = fullIdentifierString.substring(0, index1);
-            GlobalId globalId = parsePersistentIdentifier(protocol, fullIdentifierString.substring(index1+1));
+            GlobalId globalId = parsePersistentId(protocol, fullIdentifierString.substring(index1+1));
             return globalId;
         }
         logger.log(Level.INFO, "Error parsing identifier: {0}: ''<protocol>:'' not found in string", fullIdentifierString);
         return null;
     }
 
-    protected GlobalId parsePersistentIdentifier(String protocol, String identifierString) {
+    protected GlobalId parsePersistentId(String protocol, String identifierString) {
+        if(!isConfigured) {
+            return null;
+        }
         String authority;
         String identifier;
         if (identifierString == null) {
@@ -257,11 +260,14 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     }
     
     public GlobalId parsePersistentId(String protocol, String authority, String identifier) {
+        if(!isConfigured) {
+            return null;
+        }
         if(!GlobalIdServiceBean.isValidGlobalId(protocol, authority, identifier)) {
             return null;
         }
-        return new GlobalId(protocol, authority, identifier, this.getSeparator(), this.getUrlPrefix(),
-                this.getProviderInformation().get(0));
+        return new GlobalId(protocol, authority, identifier, getSeparator(), getUrlPrefix(),
+                getProviderInformation().get(0));
     }
 
     
@@ -270,36 +276,6 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         return "/";
     }
 
-    /**
-     * Concatenate the parts that make up a Global Identifier.
-     * 
-     * @return the Global Identifier, e.g. "doi:10.12345/67890"
-     */
-    @Override
-    public String asString(GlobalId globalId) {
-        if (globalId.getProtocol() == null || globalId.getAuthority() == null || globalId.getIdentifier() == null) {
-            return "";
-        }
-        return globalId.getProtocol() + ":" + globalId.getAuthority() + "/" + globalId.getIdentifier();
-    }
-    
-    public URL toURL(GlobalId globalId) {
-        URL url = null;
-        if (globalId.getIdentifier() == null){
-            return null;
-        }
-        try {
-            if (globalId.getProtocol().equals(DOIServiceBean.DOI_PROTOCOL)){
-               url = new URL(DOIServiceBean.DOI_RESOLVER_URL + globalId.getAuthority() + "/" + globalId.getIdentifier());
-            } else if (globalId.getProtocol().equals(HandlenetServiceBean.HDL_PROTOCOL)){
-               url = new URL(HandlenetServiceBean.HDL_RESOLVER_URL + globalId.getAuthority() + "/" + globalId.getIdentifier());
-            }           
-        } catch (MalformedURLException ex) {
-            logger.log(Level.SEVERE, null, ex);
-        }       
-        return url;
-    }  
-    
     @Override
     public String generateDataFileIdentifier(DataFile datafile) {
         String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
@@ -338,7 +314,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     private String generateIdentifierAsRandomString(DvObject dvo, String prepend) {
         String identifier = null;
         do {
-            identifier = prepend + RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
+            identifier = prepend + RandomStringUtils.randomAlphanumeric(6).toUpperCase();
         } while (!isGlobalIdUnique(new GlobalId(dvo.getProtocol(), dvo.getAuthority(), identifier, this.getSeparator(), this.getUrlPrefix(), this.getProviderInformation().get(0))));
 
         return identifier;
@@ -683,5 +659,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         logger.log(Level.FINE, "XML to send to DataCite: {0}", xmlMetadata);
         return xmlMetadata;
     }
+
+
     
 }

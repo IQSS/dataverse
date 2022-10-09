@@ -30,11 +30,18 @@ public abstract class DOIServiceBean extends AbstractGlobalIdServiceBean {
         if (!DOI_PROTOCOL.equals(protocol)) {
             return null;
         }
-        GlobalId globalId = this.parsePersistentIdentifier(protocol, identifierString);
-        if (!GlobalIdServiceBean.checkDOIAuthority(globalId.getAuthority())) {
+        GlobalId globalId = super.parsePersistentId(protocol, identifierString);
+        if (globalId!=null && !GlobalIdServiceBean.checkDOIAuthority(globalId.getAuthority())) {
             return null;
         }
         return globalId;
+    }
+    
+    public GlobalId parsePersistentId(String protocol, String authority, String identifier) {
+        if (!DOI_PROTOCOL.equals(protocol)) {
+            return null;
+        }
+        return super.parsePersistentId(protocol, authority, identifier);
     }
 
     public String getUrlPrefix() {
