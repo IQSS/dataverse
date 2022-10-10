@@ -103,6 +103,11 @@ actionlogrecord
 
 There is a database table called ``actionlogrecord`` that captures events that may be of interest. See https://github.com/IQSS/dataverse/issues/2729 for more discussion around this table.
 
+An Important Note about ActionLogRecord Table:
+++++++++++++++++++++++++++++++++++++++++++++++
+
+Please note that in a busy production installation this table will be growing constantly. See the note on :ref:`How to Keep ActionLogRecord in Trim <actionlogrecord-trimming>` in the Troubleshooting section of the guide.
+
 .. _edit-draft-versions-logging:
 
 Edit Draft Versions Logging

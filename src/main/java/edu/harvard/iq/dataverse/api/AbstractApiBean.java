@@ -41,6 +41,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.metrics.MetricsServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.locality.StorageSiteServiceBean;
@@ -181,6 +182,9 @@ public abstract class AbstractApiBean {
     protected MetadataBlockServiceBean metadataBlockSvc;
 
     @EJB
+    protected LicenseServiceBean licenseSvc;
+
+    @EJB
     protected UserServiceBean userSvc;
 
 	@EJB
@@ -266,7 +270,7 @@ public abstract class AbstractApiBean {
     private final LazyRef<JsonParser> jsonParserRef = new LazyRef<>(new Callable<JsonParser>() {
         @Override
         public JsonParser call() throws Exception {
-            return new JsonParser(datasetFieldSvc, metadataBlockSvc,settingsSvc);
+            return new JsonParser(datasetFieldSvc, metadataBlockSvc,settingsSvc, licenseSvc);
         }
     });
 
@@ -626,6 +630,10 @@ public abstract class AbstractApiBean {
             return engineSvc.submit(cmd);
 
         } catch (IllegalCommandException ex) {
+            //for 8859 for api calls that try to update datasets with TOA out of compliance
+                if (ex.getMessage().toLowerCase().contains("terms of use")){
+                    throw new WrappedResponse(ex, conflict(ex.getMessage()));
+                }
             throw new WrappedResponse( ex, forbidden(ex.getMessage() ) );
         } catch (PermissionException ex) {
             /**
@@ -816,6 +824,10 @@ public abstract class AbstractApiBean {
     
     protected Response forbidden( String msg ) {
         return error( Status.FORBIDDEN, msg );
+    }
+    
+    protected Response conflict( String msg ) {
+        return error( Status.CONFLICT, msg );
     }
     
     protected Response badApiKey( String apiKey ) {

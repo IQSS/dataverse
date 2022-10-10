@@ -8,4 +8,4 @@ PGUSER="dvnapp";    export PGUSER
 PGDB="dvndb"; 	    export PGDB
 PGPW="xxxxx"; 	    export PGPW
 
-java -Ddb.serverName=$PGHOST -Ddb.portNumber=$PGPORT -Ddb.user=$PGUSER -Ddb.databaseName=$PGDB -Ddb.password=$PGPW -jar ZipDownloadService-v1.0.0.jar
+java -Ddb.serverName=$PGHOST -Ddb.portNumber=$PGPORT -Ddb.user=$PGUSER -Ddb.databaseName=$PGDB -Ddb.password=$PGPW -jar zipdownloader-0.0.1.jar

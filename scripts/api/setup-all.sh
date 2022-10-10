@@ -80,6 +80,11 @@ echo "Set the default facets for Root"
 curl -s -X POST -H "Content-type:application/json" -d "[\"authorName\",\"subject\",\"keywordValue\",\"dateOfDeposit\"]" $SERVER/dataverses/:root/facets/?key=$adminKey
 echo
 
+echo "Set up licenses"
+# Note: CC0 has been added and set as the default license through
+# Flyway script V5.9.0.1__7440-configurable-license-list.sql
+curl -X POST -H 'Content-Type: application/json' -H "X-Dataverse-key:$adminKey" $SERVER/licenses --upload-file data/licenses/licenseCC-BY-4.0.json
+
 # OPTIONAL USERS AND DATAVERSES
 #./setup-optional.sh
 
