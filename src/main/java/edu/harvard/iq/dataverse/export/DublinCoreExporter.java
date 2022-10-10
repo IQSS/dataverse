@@ -18,7 +18,7 @@ import javax.xml.stream.XMLStreamException;
 public class DublinCoreExporter implements Exporter {
     
     
-    
+   
     @Override
     public String getProviderName() {
         return "oai_dc";

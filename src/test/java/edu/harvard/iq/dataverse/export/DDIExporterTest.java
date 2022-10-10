@@ -1,11 +1,16 @@
 package edu.harvard.iq.dataverse.export;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.branding.BrandingUtilTest;
 import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -16,10 +21,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -39,8 +49,12 @@ public class DDIExporterTest {
 
     private static final Logger logger = Logger.getLogger(DDIExporterTest.class.getCanonicalName());
     private static final SettingsServiceBean settingsService = Mockito.mock(SettingsServiceBean.class);
+    private static final LicenseServiceBean licenseService = Mockito.mock(LicenseServiceBean.class);
     private static final MockDatasetFieldSvc datasetFieldTypeSvc = new MockDatasetFieldSvc();
-    private static final Gson gson = new Gson();
+    private static final Gson gson = new GsonBuilder().registerTypeAdapter(LocalDate.class, (JsonDeserializer<LocalDateTime>) (JsonElement json, Type type, JsonDeserializationContext jsonDeserializationContext) -> {
+        Instant instant = Instant.ofEpochMilli(json.getAsJsonPrimitive().getAsLong());
+        return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+    }).create();
     
     /*
      * Setup and teardown mocks for BrandingUtil for atomicity.
@@ -84,7 +98,7 @@ public class DDIExporterTest {
 
         JsonReader jsonReader = Json.createReader(new StringReader(datasetVersionAsJson));
         JsonObject json = jsonReader.readObject();
-        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, null);
+        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService);
         DatasetVersion version = jsonParser.parseDatasetVersion(json.getJsonObject("datasetVersion"));
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         DDIExporter instance = new DDIExporter();
@@ -102,8 +116,7 @@ public class DDIExporterTest {
 
         JsonReader jsonReader = Json.createReader(new StringReader(datasetVersionAsJson));
         JsonObject json = jsonReader.readObject();
-//        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsSvc);
-        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, null);
+        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService);
         DatasetVersion version = jsonParser.parseDatasetVersion(json.getJsonObject("datasetVersion"));
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         DDIExporter instance = new DDIExporter();

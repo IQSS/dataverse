@@ -11,7 +11,7 @@ The Dataverse Project uses git for version control and GitHub for hosting. On th
 Where to Find the Dataverse Software Code
 -----------------------------------------
 
-The main Dataverse Software code at https://github.com/IQSS/dataverse but as explained in the :doc:`intro` section under "Related Projects", there are many other code bases you can hack on if you wish!
+The main Dataverse Software code is available at https://github.com/IQSS/dataverse but as explained in the :doc:`intro` section under "Related Projects", there are many other code bases you can hack on if you wish!
 
 Branching Strategy
 ------------------
@@ -46,6 +46,13 @@ Feature branches are used for both developing features and fixing bugs. They are
 
 "3728-doc-apipolicy-fix" is an example of a fine name for your feature branch. It tells us that you are addressing https://github.com/IQSS/dataverse/issues/3728 and the "slug" is short, descriptive, and starts with the issue number.
 
+Hotfix Branches
+***************
+
+Hotfix branches are described under :doc:`making-releases`.
+
+.. _how-to-make-a-pull-request:
+
 How to Make a Pull Request
 --------------------------
 
@@ -67,7 +74,7 @@ If you tell us your GitHub username we are happy to add you to the "read only" t
 Create a New Branch off the develop Branch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Always create your feature branch from the latest code in develop, pulling the latest code if necessary. As mentioned above, your branch should have a name like "3728-doc-apipolicy-fix" that starts with the issue number you are addressing, and ends with a short, descriptive name. Dashes ("-") and underscores ("_") in your branch name are ok, but please try to avoid other special characters such as ampersands ("&") than have special meaning in Unix shells.
+Always create your feature branch from the latest code in develop, pulling the latest code if necessary. As mentioned above, your branch should have a name like "3728-doc-apipolicy-fix" that starts with the issue number you are addressing, and ends with a short, descriptive name. Dashes ("-") and underscores ("_") in your branch name are ok, but please try to avoid other special characters such as ampersands ("&") that have special meaning in Unix shells.
 
 Commit Your Change to Your New Branch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

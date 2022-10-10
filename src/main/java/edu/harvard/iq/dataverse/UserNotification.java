@@ -1,11 +1,17 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.DateUtil;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.stream.Collectors;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Enumerated;
@@ -26,11 +32,39 @@ import javax.persistence.Transient;
 @Table(indexes = {@Index(columnList="user_id")})
 
 public class UserNotification implements Serializable {
+    // Keep in sync with list at admin/user-administration.rst
     public enum Type {
         ASSIGNROLE, REVOKEROLE, CREATEDV, CREATEDS, CREATEACC, SUBMITTEDDS, RETURNEDDS, 
         PUBLISHEDDS, REQUESTFILEACCESS, GRANTFILEACCESS, REJECTFILEACCESS, FILESYSTEMIMPORT, 
         CHECKSUMIMPORT, CHECKSUMFAIL, CONFIRMEMAIL, APIGENERATED, INGESTCOMPLETED, INGESTCOMPLETEDWITHERRORS, 
-        PUBLISHFAILED_PIDREG, WORKFLOW_SUCCESS, WORKFLOW_FAILURE, STATUSUPDATED, DATASETCREATED
+        PUBLISHFAILED_PIDREG, WORKFLOW_SUCCESS, WORKFLOW_FAILURE, STATUSUPDATED, DATASETCREATED, DATASETMENTIONED,
+        GLOBUSUPLOADCOMPLETED, GLOBUSUPLOADCOMPLETEDWITHERRORS,
+        GLOBUSDOWNLOADCOMPLETED, GLOBUSDOWNLOADCOMPLETEDWITHERRORS;
+        
+        public String getDescription() {
+            return BundleUtil.getStringFromBundle("notification.typeDescription." + this.name());
+        }
+
+        public boolean hasDescription() {
+            final String description = getDescription();
+            return description != null && !description.isEmpty();
+        }
+
+        public static Set<Type> tokenizeToSet(String tokens) {
+            if (tokens == null || tokens.isEmpty()) {
+                return new HashSet<>();
+            }
+            return Collections.list(new StringTokenizer(tokens, ",")).stream()
+                .map(token -> Type.valueOf(((String) token).trim()))
+                .collect(Collectors.toSet());
+        }
+
+        public static String toStringValue(Set<Type> typesSet) {
+            if (typesSet == null || typesSet.isEmpty()) {
+                return null;
+            }
+            return String.join(",", typesSet.stream().map(x -> x.name()).collect(Collectors.toList()));
+        }
     };
     
     private static final long serialVersionUID = 1L;
@@ -56,6 +90,8 @@ public class UserNotification implements Serializable {
     @Column( nullable = false )
     private Type type;
     private Long objectId;
+    
+    private String additionalInfo;
 
     @Transient
     private boolean displayAsRead;
@@ -91,6 +127,10 @@ public class UserNotification implements Serializable {
 
     public String getSendDate() {
         return new SimpleDateFormat("MMMM d, yyyy h:mm a z").format(sendDate);
+    }
+
+    public Timestamp getSendDateTimestamp() {
+        return sendDate;
     }
 
     public void setSendDate(Timestamp sendDate) {
@@ -159,5 +199,13 @@ public class UserNotification implements Serializable {
 
     public String getLocaleSendDate() {
         return DateUtil.formatDate(sendDate);
+    }
+
+    public String getAdditionalInfo() {
+        return additionalInfo;
+    }
+
+    public void setAdditionalInfo(String additionalInfo) {
+        this.additionalInfo = additionalInfo;
     }
 }

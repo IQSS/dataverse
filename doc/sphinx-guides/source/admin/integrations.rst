@@ -11,6 +11,13 @@ Getting Data In
 
 A variety of integrations are oriented toward making it easier for your researchers to deposit data into your Dataverse installation.
 
+GitHub
+++++++
+
+Dataverse integration with GitHub is implemented via a Dataverse Uploader GitHub Action. It is a reusable, composite workflow for uploading a git repository or subdirectory into a dataset on a target Dataverse installation. The action is customizable, allowing users to choose to replace a dataset, add to the dataset, publish it or leave it as a draft version on Dataverse. The action provides some metadata to the dataset, such as the origin GitHub repository, and it preserves the directory tree structure. 
+
+For instructions on using Dataverse Uploader GitHub Action, visit https://github.com/marketplace/actions/dataverse-uploader-action
+
 Dropbox
 +++++++
 
@@ -50,7 +57,7 @@ their research results and retain links to imported and exported data. Users
 can organize their data in "Datasets", which can be exported to a Dataverse installation via
 the command-line interface (CLI).
 
-Renku dataset documentation: https://renku-python.readthedocs.io/en/latest/commands.html#module-renku.cli.dataset
+Renku dataset documentation: https://renku-python.readthedocs.io/en/latest/reference/commands.html#module-renku.cli.dataset
 
 Flagship deployment of the Renku platform: https://renkulab.io
 
@@ -62,6 +69,13 @@ Amnesia
 Amnesia is a flexible data anonymization tool that transforms relational and transactional databases to datasets where formal privacy guarantees hold. Amnesia transforms original data to provide k-anonymity and km-anonymity: the original data are transformed by generalizing (i.e., replacing one value with a more abstract one) or suppressing values to achieve the statistical properties required by the anonymization guarantees. Amnesia employs visualization tools and supportive mechanisms to allow non expert users to anonymize relational and object-relational data.
 
 For instructions on depositing or loading data from Dataverse installations to Amnesia, visit https://amnesia.openaire.eu/about-documentation.html
+
+SampleDB
+++++++++
+
+SampleDB is a web-based electronic lab notebook (ELN) with a focus on flexible metadata. SampleDB can export this flexible, process-specific metadata to a new Dataset in a Dataverse installation using the EngMeta Process Metadata block.
+
+For instructions on using the Dataverse export, you can visit https://scientific-it-systems.iffgit.fz-juelich.de/SampleDB/administrator_guide/dataverse_export.html
 
 
 Embedding Data on Websites
@@ -82,13 +96,6 @@ Data Explorer
 +++++++++++++
 
 Data Explorer is a GUI which lists the variables in a tabular data file allowing searching, charting and cross tabulation analysis.
-
-For installation instructions, see the :doc:`external-tools` section.
-
-TwoRavens/Zelig
-+++++++++++++++
-
-TwoRavens is a web application for tabular data exploration and statistical analysis with Zelig.
 
 For installation instructions, see the :doc:`external-tools` section.
 
@@ -157,12 +164,14 @@ Archivematica
 
 Sponsored by the `Ontario Council of University Libraries (OCUL) <https://ocul.on.ca/>`_, this technical integration enables users of Archivematica to select datasets from connected Dataverse installations and process them for long-term access and digital preservation. For more information and list of known issues, please refer to Artefactual's `release notes <https://wiki.archivematica.org/Archivematica_1.8_and_Storage_Service_0.13_release_notes>`_, `integration documentation <https://www.archivematica.org/en/docs/archivematica-1.8/user-manual/transfer/dataverse/>`_, and the `project wiki <https://wiki.archivematica.org/Dataverse>`_.
 
-DuraCloud/Chronopolis
-+++++++++++++++++++++
+.. _rda-bagit-archiving:
 
-A Dataverse installation can be configured to submit a copy of published Datasets, packaged as `Research Data Alliance conformant <https://www.rd-alliance.org/system/files/Research%20Data%20Repository%20Interoperability%20WG%20-%20Final%20Recommendations_reviewed_0.pdf>`_ zipped `BagIt <https://tools.ietf.org/html/draft-kunze-bagit-17>`_ bags to the `Chronopolis <https://libraries.ucsd.edu/chronopolis/>`_ via `DuraCloud <https://duraspace.org/duracloud/>`_
+RDA BagIt (BagPack) Archiving
++++++++++++++++++++++++++++++
 
-For details on how to configure this integration, look for "DuraCloud/Chronopolis" in the :doc:`/installation/config` section of the Installation Guide.
+A Dataverse installation can be configured to submit a copy of published Datasets, packaged as `Research Data Alliance conformant <https://www.rd-alliance.org/system/files/Research%20Data%20Repository%20Interoperability%20WG%20-%20Final%20Recommendations_reviewed_0.pdf>`_ zipped `BagIt <https://tools.ietf.org/html/draft-kunze-bagit-17>`_ bags to the `Chronopolis <https://libraries.ucsd.edu/chronopolis/>`_ via `DuraCloud <https://duraspace.org/duracloud/>`_, to a local file system, or to `Google Cloud Storage <https://cloud.google.com/storage>`_.
+
+For details on how to configure this integration, see :ref:`BagIt Export` in the :doc:`/installation/config` section of the Installation Guide.
 
 Future Integrations
 -------------------
