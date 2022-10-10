@@ -508,7 +508,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         if (dvObject instanceof DataFile) {
             Dataset owner = this.getDataFile().getOwner();
 
-            if (storageIdentifier.startsWith(this.driverId + "://")) {
+            if (storageIdentifier.startsWith(this.driverId + DataAccess.SEPARATOR)) {
                 // This is a call on an already existing swift object. 
 
                 String[] swiftStorageTokens = storageIdentifier.substring(8).split(":", 3);    
@@ -552,14 +552,14 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                 //setSwiftContainerName(swiftFolderPath);
                 //swiftFileName = dataFile.getDisplayName();
                 //Storage Identifier is now updated after the object is uploaded on Swift.
-                dvObject.setStorageIdentifier(this.driverId + "://" + swiftDefaultEndpoint + ":" + swiftFolderPath + ":" + swiftFileName);
+                dvObject.setStorageIdentifier(this.driverId + DataAccess.SEPARATOR + swiftDefaultEndpoint + ":" + swiftFolderPath + ":" + swiftFileName);
             } else {
                 throw new IOException("SwiftAccessIO: unknown access mode.");
             }
         } else if (dvObject instanceof Dataset) {
             Dataset dataset = this.getDataset();
 
-            if (storageIdentifier.startsWith(this.driverId + "://")) {
+            if (storageIdentifier.startsWith(this.driverId + DataAccess.SEPARATOR)) {
                 // This is a call on an already existing swift object. 
 
                 //TODO: determine how storage identifier will give us info
@@ -601,7 +601,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                     swiftPseudoFolderPathSeparator + dataset.getIdentifierForFileStorage();
 
                 swiftFileName = auxItemTag;
-                dvObject.setStorageIdentifier(this.driverId + "://" + swiftEndPoint + ":" + swiftFolderPath);
+                dvObject.setStorageIdentifier(this.driverId + DataAccess.SEPARATOR + swiftEndPoint + ":" + swiftFolderPath);
             } else {
                 throw new IOException("SwiftAccessIO: unknown access mode.");
             }
@@ -628,7 +628,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         other swiftContainerName Object Store pseudo-folder can be created, which is
         not provide by the joss Java swift library as of yet.
          */
-        if (storageIdentifier.startsWith(this.driverId + "://")) {
+        if (storageIdentifier.startsWith(this.driverId + DataAccess.SEPARATOR)) {
             // An existing swift object; the container must already exist as well.
             this.swiftContainer = account.getContainer(swiftContainerName);
         } else {
@@ -874,7 +874,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         }
         return null;
      }
-     
+
     //https://gist.github.com/ishikawa/88599
     public static String toHexString(byte[] bytes) {
         Formatter formatter = new Formatter();

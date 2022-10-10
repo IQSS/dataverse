@@ -4,22 +4,34 @@ on:
     push:
         paths:
             - "**.java"
+            - "pom.xml"
+            - "modules/**/pom.xml"
     pull_request:
         paths:
             - "**.java"
+            - "pom.xml"
+            - "modules/**/pom.xml"
 
 jobs:
     unittest:
-        name: (JDK ${{ matrix.jdk }} / ${{ matrix.os }}) Unit Tests
+        name: (${{ matrix.status}} / JDK ${{ matrix.jdk }}) Unit Tests
         strategy:
             fail-fast: false
             matrix:
-                os: [ ubuntu-latest ]
                 jdk: [ '11' ]
+                experimental: [false]
+                status:  ["Stable"]
+                #
+                # JDK 17 builds disabled due to non-essential fails marking CI jobs as completely failed within
+                # Github Projects, PR lists etc. This was consensus on Slack #dv-tech. See issue #8094
+                # (This is a limitation of how Github is currently handling these things.)
+                #
                 #include:
-                #    -   os: ubuntu-latest
-                #        jdk: '16'
-        runs-on: ${{ matrix.os }}
+                #    - jdk: '17'
+                #      experimental: true
+                #      status: "Experimental"
+        continue-on-error: ${{ matrix.experimental }}
+        runs-on: ubuntu-latest
         steps:
           - uses: actions/checkout@v2
           - name: Set up JDK ${{ matrix.jdk }}
@@ -34,7 +46,7 @@ jobs:
                 key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
                 restore-keys: ${{ runner.os }}-m2
           - name: Build with Maven
-            run: mvn -DcompilerArgument=-Xlint:unchecked -P all-unit-tests clean test
+            run: mvn -DcompilerArgument=-Xlint:unchecked -Dtarget.java.version=${{ matrix.jdk }} -P all-unit-tests clean test
           - name: Maven Code Coverage
             env:
                 CI_NAME: github

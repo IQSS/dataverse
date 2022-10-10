@@ -11,8 +11,10 @@ import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
+import edu.harvard.iq.dataverse.api.dto.LicenseDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
 import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
+import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
@@ -139,7 +141,10 @@ public class DublinCoreExportUtil {
         writeSpatialElements(xmlw, version, dcFlavor);
         
         //License and Terms
-        writeFullElement(xmlw, dcFlavor+":"+"license", version.getLicense());        
+        LicenseDTO licDTO = version.getLicense();
+        if(licDTO != null) {
+            writeFullElement(xmlw, dcFlavor+":"+"license", licDTO.getName());
+        }
         writeFullElement(xmlw, dcFlavor+":"+"rights", version.getTermsOfUse()); 
         writeFullElement(xmlw, dcFlavor+":"+"rights", version.getRestrictions()); 
 

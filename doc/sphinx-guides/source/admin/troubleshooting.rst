@@ -16,7 +16,7 @@ See the :doc:`/api/intro` section of the API Guide for a high level overview of 
 A Dataset Is Locked And Cannot Be Edited or Published
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-There are several types of dataset locks. Locks can be managed using the locks API, or by accessing them directly in the database. Internally locks are maintained in the ``DatasetLock`` database table, with the ``field dataset_id`` linking them to specific datasets, and the column ``reason`` specifying the type of lock.
+There are several types of dataset locks. Locks can be managed using the locks API, or by accessing them directly in the database. Internally locks are maintained in the ``datasetlock`` database table, with the field ``dataset_id`` linking them to specific datasets, and the column ``reason`` specifying the type of lock.
 
 It's normal for the ingest process described in the :doc:`/user/tabulardataingest/ingestprocess` section of the User Guide to take some time but if hours or days have passed and the dataset is still locked, you might want to inspect the locks and consider deleting some or all of them. It is recommended to restart the application server if you are deleting an ingest lock, to make sure the ingest job is no longer running in the background. Ingest locks are idetified by the label ``Ingest`` in the ``reason`` column of the ``DatasetLock`` table in the database.
 
@@ -96,10 +96,8 @@ Sometimes your Dataverse installation fails to deploy, or Payara fails to restar
 
 We don't know what's causing this issue, but here's a known workaround: 
 
-- Stop Payara; 
-
-- Remove the ``generated`` and ``osgi-cache`` directories;
-
+- Stop Payara;
+- Remove the ``generated`` and ``osgi-cache`` directories from the ``domain1`` directory;
 - Start Payara
 
 The shell script below performs the steps above. 
@@ -146,7 +144,28 @@ To identify the specific invalid values in the affected datasets, or to check al
 Many Files with a File Type of "Unknown", "Application", or "Binary"
 --------------------------------------------------------------------
 
-From the home page of a Dataverse installation you can get a count of files by file type by clicking "Files" and then scrolling down to "File Type". If you see a lot of files that are "Unknown", "Application", or "Binary" you can have the Dataverse  installation attempt to redetect the file type by using the :ref:`Redetect File Type <redetect-file-type>` API endpoint.
+From the home page of a Dataverse installation you can get a count of files by file type by clicking "Files" and then scrolling down to "File Type". If you see a lot of files that are "Unknown", "Application", or "Binary" you can have the Dataverse installation attempt to redetect the file type by using the :ref:`Redetect File Type <redetect-file-type>` API endpoint.
+
+.. _actionlogrecord-trimming:
+
+What's with this Table "ActionLogRecord" in Our Database, It Seems to be Growing Uncontrollably?
+------------------------------------------------------------------------------------------------
+
+An entry is created in ActionLogRecord table every time an application command is executed (to be precise, certain non-command actions, such as logins are recorded there as well). This is very useful for investigating problems or usage patterns. However, please note that there is no builtin mechanism in the Application for trimming this table, so it will continue growing as your Dataverse installation is kept in operation. For example, multiple entries in this table are created every time a guest user views the page of a published dataset. Many more are created when an author is actively working on a dataset, making edits, adding new files, etc. On a busy installation this table is likely to grow at a faster rate than the actual data holdings. For example, after five years of production use at Harvard IQSS, the raw size of ActionLogRecord appeared to exceed the combined size of the rest of the database (!). It's worth pointing out that the sheer size of this one table does not by itself result in performance issues in any linear way. But it may still be undesirable to keep that much extra data around; especially since for most installations these records are unlikely to have much value past a certain number of months or years. Some installations may be purchasing their database services from cloud computing providers (RDS, etc.) where extra data may result in higher costs.
+Here at Harvard we chose to periodically trim the table manually, deleting all the entries older than 2 years. We recommend that you check on the size of this table in your database, and choose whether, and how often you want to trim it. You will also need to decide whether you want to archive these older records outside the database before deleting them. If you see no reason to keep them around, older records can be erased with a simple query. For example, to delete everything before the year 2021:
+
+``DELETE FROM ACTIONLOGRECORD WHERE starttime < '2021-01-01 00:00:00';``
+
+If you want to preserve these old entries before deleting them, you can save them with, for example, psql:
+
+``psql <CREDENTIALS> -d <DATABASE_NAME> -t -c "SELECT * FROM actionlogrecord WHERE starttime < '2021-01-01 00:00:00' ORDER BY starttime;"``
+
+A full backup of the table can be made with pg_dump, for example:
+
+``pg_dump <CREDENTIALS> --table=actionlogrecord --data-only <DATABASE_NAME> > /tmp/actionlogrecord_backup.sql``
+
+(In the example above, the output will be saved in raw SQL format. It is portable and human-readable, but uses a lot of space. It does, however, compress very well. Add the ``-Fc`` option to save the output in a proprietary, binary format that's already compressed). 
+
 
 Getting Help
 ------------

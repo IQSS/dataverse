@@ -582,11 +582,6 @@ Another variation of icon-only buttons uses the ``.btn-link`` style class from B
                     <ul class="dropdown-menu multi-level pull-right text-left" aria-labelledby="exploreBtn">
                         <li>
                             <a href="#" rel="noopener" class="ui-commandlink ui-widget" onclick="return false;">
-                                TwoRavens
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" rel="noopener" class="ui-commandlink ui-widget" onclick="return false;">
                                 Data Explorer
                             </a>
                         </li>

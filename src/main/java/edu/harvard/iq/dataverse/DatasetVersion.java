@@ -1,12 +1,16 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.util.MarkupChecker;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.DateUtil;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.io.Serializable;
@@ -23,6 +27,7 @@ import java.util.stream.Collectors;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -35,6 +40,8 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
@@ -55,6 +62,13 @@ import org.apache.commons.lang3.StringUtils;
  *
  * @author skraffmiller
  */
+
+@NamedQueries({
+    @NamedQuery(name = "DatasetVersion.findUnarchivedReleasedVersion",
+               query = "SELECT OBJECT(o) FROM DatasetVersion AS o WHERE o.dataset.harvestedFrom IS NULL and o.releaseTime IS NOT NULL and o.archivalCopyLocation IS NULL"
+    )})
+    
+    
 @Entity
 @Table(indexes = {@Index(columnList="dataset_id")},
         uniqueConstraints = @UniqueConstraint(columnNames = {"dataset_id,versionnumber,minorversionnumber"}))
@@ -85,14 +99,18 @@ public class DatasetVersion implements Serializable {
     // StudyVersionsFragment.xhtml in order to display the correct value from a Resource Bundle
     public enum VersionState {
         DRAFT, RELEASED, ARCHIVED, DEACCESSIONED
-    };
-
-    public enum License {
-        NONE, CC0
     }
 
     public static final int ARCHIVE_NOTE_MAX_LENGTH = 1000;
     public static final int VERSION_NOTE_MAX_LENGTH = 1000;
+    
+    //Archival copies: Status message required components
+    public static final String ARCHIVAL_STATUS = "status";
+    public static final String ARCHIVAL_STATUS_MESSAGE = "message";
+    //Archival Copies: Allowed Statuses
+    public static final String ARCHIVAL_STATUS_PENDING = "pending";
+    public static final String ARCHIVAL_STATUS_SUCCESS = "success";
+    public static final String ARCHIVAL_STATUS_FAILURE = "failure";
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -152,6 +170,11 @@ public class DatasetVersion implements Serializable {
     // removed pending further investigation (v4.13)
     private String archiveNote;
     
+    // Originally a simple string indicating the location of the archival copy. As
+    // of v5.12, repurposed to provide a more general json archival status (failure,
+    // pending, success) and message (serialized as a string). The archival copy
+    // location is now expected as the contents of the message for the status
+    // 'success'. See the /api/datasets/{id}/{version}/archivalStatus API calls for more details
     @Column(nullable=true, columnDefinition = "TEXT")
     private String archivalCopyLocation;
     
@@ -160,7 +183,10 @@ public class DatasetVersion implements Serializable {
 
     @Transient
     private String contributorNames;
-    
+
+    @Transient
+    private final String dataverseSiteUrl = SystemConfig.getDataverseSiteUrlStatic();
+
     @Transient 
     private String jsonLd;
 
@@ -177,6 +203,8 @@ public class DatasetVersion implements Serializable {
     @Transient
     private DatasetVersionDifference dvd;
     
+    @Transient 
+    private JsonObject archivalStatus;
     
     public Long getId() {
         return this.id;
@@ -204,7 +232,11 @@ public class DatasetVersion implements Serializable {
 
     public void setVersion(Long version) {
     }
-    
+
+    public String getDataverseSiteUrl() {
+        return dataverseSiteUrl;
+    }
+
     public List<FileMetadata> getFileMetadatas() {
         return fileMetadatas;
     }
@@ -312,9 +344,39 @@ public class DatasetVersion implements Serializable {
     public String getArchivalCopyLocation() {
         return archivalCopyLocation;
     }
+    
+    public String getArchivalCopyLocationStatus() {
+        populateArchivalStatus(false);
+        
+        if(archivalStatus!=null) {
+            return archivalStatus.getString(ARCHIVAL_STATUS);
+        } 
+        return null;
+    }
+    public String getArchivalCopyLocationMessage() {
+        populateArchivalStatus(false);
+        if(archivalStatus!=null) {
+            return archivalStatus.getString(ARCHIVAL_STATUS_MESSAGE);
+        } 
+        return null;
+    }
+    
+    private void populateArchivalStatus(boolean force) {
+        if(archivalStatus ==null || force) {
+            if(archivalCopyLocation!=null) {
+                try {
+            archivalStatus = JsonUtil.getJsonObject(archivalCopyLocation);
+                } catch(Exception e) {
+                    logger.warning("DatasetVersion id: " + id + "has a non-JsonObject value, parsing error: " + e.getMessage());
+                    logger.fine(archivalCopyLocation);
+                }
+            }
+        }
+    }
 
     public void setArchivalCopyLocation(String location) {
         this.archivalCopyLocation = location;
+        populateArchivalStatus(true);
     }
 
     public String getDeaccessionLink() {
@@ -560,6 +622,13 @@ public class DatasetVersion implements Serializable {
         // The presence of any non-package file means that HTTP Upload was used (no mixing allowed) so we just check the first file.
         return !this.fileMetadatas.get(0).getDataFile().getContentType().equals(DataFileServiceBean.MIME_TYPE_PACKAGE_FILE);
     }
+    
+    public boolean isHasRestrictedFile(){
+        if (this.fileMetadatas == null || this.fileMetadatas.isEmpty()){
+            return false;
+        }
+        return this.fileMetadatas.stream().anyMatch(fm -> (fm.isRestricted()));
+    }
 
     public void updateDefaultValuesFromTemplate(Template template) {
         if (!template.getDatasetFields().isEmpty()) {
@@ -567,12 +636,6 @@ public class DatasetVersion implements Serializable {
         }
         if (template.getTermsOfUseAndAccess() != null) {
             TermsOfUseAndAccess terms = template.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
-            terms.setDatasetVersion(this);
-            this.setTermsOfUseAndAccess(terms);
-        } else {
-            TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-            terms.setDatasetVersion(this);
-            terms.setLicense(TermsOfUseAndAccess.License.CC0);
             terms.setDatasetVersion(this);
             this.setTermsOfUseAndAccess(terms);
         }
@@ -591,15 +654,12 @@ public class DatasetVersion implements Serializable {
                 dsv.setDatasetFields(dsv.copyDatasetFields(this.getDatasetFields()));
             }
             
-            if (this.getTermsOfUseAndAccess()!= null){
-                dsv.setTermsOfUseAndAccess(this.getTermsOfUseAndAccess().copyTermsOfUseAndAccess());
-            } else {
-                TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-                terms.setDatasetVersion(dsv);
-                terms.setLicense(TermsOfUseAndAccess.License.CC0);
-                dsv.setTermsOfUseAndAccess(terms);
-            }
-
+            /*
+            adding file metadatas here and updating terms
+            because the terms need to know about the files
+            in a pre-save validation SEK 12/6/2021
+            */
+            
             for (FileMetadata fm : this.getFileMetadatas()) {
                 FileMetadata newFm = new FileMetadata();
                 // TODO: 
@@ -619,23 +679,31 @@ public class DatasetVersion implements Serializable {
                 
                 dsv.getFileMetadatas().add(newFm);
             }
-
-
-
+            
+            if (this.getTermsOfUseAndAccess()!= null){
+                TermsOfUseAndAccess terms = this.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
+                terms.setDatasetVersion(dsv);
+                dsv.setTermsOfUseAndAccess(terms);
+            } else {
+                TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+                terms.setDatasetVersion(dsv);
+               // terms.setLicense(TermsOfUseAndAccess.License.CC0);
+                dsv.setTermsOfUseAndAccess(terms);
+            }
 
         dsv.setDataset(this.getDataset());
         return dsv;
-        
     }
 
-    public void initDefaultValues() {
+    public void initDefaultValues(License license) {
         //first clear then initialize - in case values were present 
         // from template or user entry
         this.setDatasetFields(new ArrayList<>());
         this.setDatasetFields(this.initDatasetFields());
         TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
         terms.setDatasetVersion(this);
-        terms.setLicense(TermsOfUseAndAccess.License.CC0);
+        terms.setLicense(license);
+        terms.setFileAccessRequest(true);
         this.setTermsOfUseAndAccess(terms);
 
     }
@@ -1665,7 +1733,22 @@ public class DatasetVersion implements Serializable {
                 }
             }
         }
+        
+        
+        TermsOfUseAndAccess toua = this.termsOfUseAndAccess;
+        //Only need to test Terms of Use and Access if there are restricted files  
+        if (toua != null && this.isHasRestrictedFile()) {
+            Set<ConstraintViolation<TermsOfUseAndAccess>> constraintViolations = validator.validate(toua);
+            if (constraintViolations.size() > 0) {
+                ConstraintViolation<TermsOfUseAndAccess> violation = constraintViolations.iterator().next();
+                String message = BundleUtil.getStringFromBundle("dataset.message.toua.invalid");
+                logger.info(message);
+                this.termsOfUseAndAccess.setValidationMessage(message);
+                returnSet.add(violation);
+            }
+        }
 
+        
         return returnSet;
     }
     
@@ -1871,19 +1954,7 @@ public class DatasetVersion implements Serializable {
          */
         TermsOfUseAndAccess terms = this.getTermsOfUseAndAccess();
         if (terms != null) {
-            JsonObjectBuilder license = Json.createObjectBuilder().add("@type", "Dataset");
-            
-            if (TermsOfUseAndAccess.License.CC0.equals(terms.getLicense())) {
-                license.add("text", "CC0").add("url", TermsOfUseAndAccess.CC0_URI);
-            } else {
-                String termsOfUse = terms.getTermsOfUse();
-                // Terms of use can be null if you create the dataset with JSON.
-                if (termsOfUse != null) {
-                    license.add("text", termsOfUse);
-                }
-            }
-            
-            job.add("license",license);
+            job.add("license",DatasetUtil.getLicenseURI(this));
         }
         
         job.add("includedInDataCatalog", Json.createObjectBuilder()
@@ -1960,10 +2031,10 @@ public class DatasetVersion implements Serializable {
             job.add("distribution", fileArray);
         }
         jsonLd = job.build().toString();
-        
+
         //Most fields above should be stripped/sanitized but, since this is output in the dataset page as header metadata, do a final sanitize step to make sure
         jsonLd = MarkupChecker.stripAllTags(jsonLd);
-        
+
         return jsonLd;
     }
 
