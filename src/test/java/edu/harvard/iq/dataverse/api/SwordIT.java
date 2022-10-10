@@ -5,6 +5,10 @@ import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
 
 import java.util.List;
 import java.util.Map;
@@ -194,6 +198,13 @@ public class SwordIT {
         assertEquals(CREATED.getStatusCode(), createDatasetResponse.getStatusCode());
         String persistentId = UtilIT.getDatasetPersistentIdFromSwordResponse(createDatasetResponse);
         logger.info("persistent id: " + persistentId);
+
+        Response getJson = UtilIT.nativeGetUsingPersistentId(persistentId, apiToken);
+        getJson.prettyPrint();
+        getJson.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.latestVersion.license.name", equalTo("CC0 1.0"))
+                .body("data.latestVersion.license.uri", equalTo("http://creativecommons.org/publicdomain/zero/1.0"));
 
         Response atomEntryUnAuth = UtilIT.getSwordAtomEntry(persistentId, apiTokenNoPrivs);
         atomEntryUnAuth.prettyPrint();
@@ -638,6 +649,120 @@ public class SwordIT {
 
     }
 
+
+    @Test
+    public void testLicenses() {
+
+        Response createUser = UtilIT.createRandomUser();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.prettyPrint();
+        createDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+
+        String title = "License to Kill";
+        String description = "Spies in 1989";
+        String license = "NONE";
+        Response failToCreateDataset1 = UtilIT.createDatasetViaSwordApi(dataverseAlias, title, description, license, apiToken);
+        failToCreateDataset1.prettyPrint();
+        // As of 5.10 and PR #7920, you cannot pass NONE as a license.
+        failToCreateDataset1.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        String rights = "Call me";
+        Response failToCreateDataset2 = UtilIT.createDatasetViaSwordApi(dataverseAlias, title, description, license, rights, apiToken);
+        failToCreateDataset2.prettyPrint();
+        // You can't pass both license and rights
+        failToCreateDataset2.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        license = "CC0 1.0";
+        Response createDataset = UtilIT.createDatasetViaSwordApi(dataverseAlias, title, description, license, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String persistentId = UtilIT.getDatasetPersistentIdFromSwordResponse(createDataset);
+
+        Response getJson = UtilIT.nativeGetUsingPersistentId(persistentId, apiToken);
+        getJson.prettyPrint();
+        getJson.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.latestVersion.license.name", equalTo("CC0 1.0"))
+                .body("data.latestVersion.license.uri", equalTo("http://creativecommons.org/publicdomain/zero/1.0"))
+                .body("data.latestVersion.termsOfUse", equalTo(null));
+    }
+
+    @Test
+    public void testCustomTerms() {
+
+        Response createUser = UtilIT.createRandomUser();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.prettyPrint();
+        createDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+
+        String title = "Terms of Endearment";
+        String description = "Aurora, etc.";
+        String license = null;
+        String rights = "Call me";
+        Response createDataset = UtilIT.createDatasetViaSwordApi(dataverseAlias, title, description, license, rights, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String persistentId = UtilIT.getDatasetPersistentIdFromSwordResponse(createDataset);
+
+        Response getJson = UtilIT.nativeGetUsingPersistentId(persistentId, apiToken);
+        getJson.prettyPrint();
+        getJson.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.latestVersion.termsOfUse", equalTo("Call me"))
+                .body("data.latestVersion.license", equalTo(null));
+
+        UtilIT.setSetting(SettingsServiceBean.Key.AllowCustomTermsOfUse, "false")
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        Response createDatasetCustomTermsDisabled = UtilIT.createDatasetViaSwordApi(dataverseAlias, title, description, license, rights, apiToken);
+        createDatasetCustomTermsDisabled.prettyPrint();
+        createDatasetCustomTermsDisabled.then().assertThat()
+                //  <summary>Custom Terms (dcterms:rights) are not allowed.</summary>
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        // cleanup, allow custom terms again (delete because it defaults to true)
+        UtilIT.deleteSetting(SettingsServiceBean.Key.AllowCustomTermsOfUse);
+
+    }
+
+    @Test
+    public void testXmlExampleInGuides() throws IOException {
+
+        Response createUser = UtilIT.createRandomUser();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.prettyPrint();
+        createDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+
+        File exampleFile = new File("doc/sphinx-guides/source/api/sword-atom-entry.xml");
+        String xmlIn = new String(java.nio.file.Files.readAllBytes(Paths.get(exampleFile.getAbsolutePath())));
+        Response createDataset = UtilIT.createDatasetViaSwordApiFromXML(dataverseAlias, xmlIn, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+    }
+
     /**
      * This test requires the root dataverse to have been published already.
      *
@@ -847,6 +972,8 @@ public class SwordIT {
 
     @AfterClass
     public static void tearDownClass() {
+        // cleanup, allow custom terms again (delete because it defaults to true)
+        UtilIT.deleteSetting(SettingsServiceBean.Key.AllowCustomTermsOfUse);
         UtilIT.deleteUser(superuser);
     }
 

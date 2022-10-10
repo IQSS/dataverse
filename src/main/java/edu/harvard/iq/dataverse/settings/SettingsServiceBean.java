@@ -9,13 +9,26 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonValue;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.StringReader;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -413,6 +426,14 @@ public class SettingsServiceBean {
          */
         ShibAttributeCharacterSetConversionEnabled,
         /**
+         *Return the last or first value of an array of affiliation names
+         */
+        ShibAffiliationOrder,
+         /**
+         *Split the affiliation array on given string, default ";"
+         */
+        ShibAffiliationSeparator,
+        /**
          * Validate physical files for all the datafiles in the dataset when publishing
          */
         FileValidationOnPublishEnabled,
@@ -436,6 +457,31 @@ public class SettingsServiceBean {
          * when the Distributor field (citation metadatablock) is set (true)
          */
         ExportInstallationAsDistributorOnlyWhenNotSet,
+
+        /**
+         * Basic Globus Token for Globus Application
+         */
+        GlobusBasicToken,
+        /**
+         * GlobusEndpoint is Globus endpoint for Globus application
+         */
+        GlobusEndpoint,
+        /** 
+         * Comma separated list of Globus enabled stores
+         */
+        GlobusStores,
+        /** Globus App URL
+         * 
+         */
+        GlobusAppUrl,
+        /** Globus Polling Interval how long in seconds Dataverse waits between checks on Globus upload status checks
+         * 
+         */
+        GlobusPollingInterval,
+        /**Enable single-file download/transfers for Globus
+         *
+         */
+        GlobusSingleFileTransfer,
         /**
          * Optional external executables to run on the metadata for dataverses 
          * and datasets being published; as an extra validation step, to 
@@ -490,7 +536,34 @@ public class SettingsServiceBean {
          * -1: embargo enabled, no time limit
          * n: embargo enabled with n months the maximum allowed duration
          */
-        MaxEmbargoDurationInMonths
+        MaxEmbargoDurationInMonths,
+        /*
+         * Include "Custom Terms" as an item in the license drop-down or not.
+         */
+        AllowCustomTermsOfUse,
+        /*
+         * Allow users to mute notifications or not.
+         */
+        ShowMuteOptions,
+        /*
+         * List (comma separated, e.g., "ASSIGNROLE,REVOKEROLE", extra whitespaces are trimmed such that "ASSIGNROLE, REVOKEROLE"
+         * would also work) of always muted notifications that cannot be turned on by the users.
+         */
+        AlwaysMuted,
+        /*
+         * List (comma separated, e.g., "ASSIGNROLE,REVOKEROLE", extra whitespaces are trimmed such that "ASSIGNROLE, REVOKEROLE"
+         * would also work) of never muted notifications that cannot be turned off by the users. AlwaysMuted setting overrides
+         * Nevermuted setting warning is logged.
+         */
+        NeverMuted,
+        /**
+         * LDN Inbox Allowed Hosts - a comma separated list of IP addresses allowed to submit messages to the inbox
+         */
+        LDNMessageHosts,
+        /*
+         * Allow a custom JavaScript to control values of specific fields.
+         */
+        ControlledVocabularyCustomJavaScript
         ;
 
         @Override
@@ -700,6 +773,15 @@ public class SettingsServiceBean {
     public boolean isFalseForKey( Key key, boolean defaultValue ) {
         return ! isTrue( key.toString(), defaultValue );
     }
+
+    public boolean containsCommaSeparatedValueForKey(Key key, String value) {
+        final String tokens = getValueForKey(key);
+        if (tokens == null || tokens.isEmpty()) {
+            return false;
+        }
+        return Collections.list(new StringTokenizer(tokens, ",")).stream()
+            .anyMatch(token -> ((String) token).trim().equals(value));
+    }
             
     public void deleteValueForKey( Key name ) {
         delete( name.toString() );
@@ -726,5 +808,53 @@ public class SettingsServiceBean {
         return new HashSet<>(em.createNamedQuery("Setting.findAll", Setting.class).getResultList());
     }
     
+    public Map<String, String> getBaseMetadataLanguageMap(Map<String,String> languageMap, boolean refresh) {
+        if (languageMap == null || refresh) {
+            languageMap = new HashMap<String, String>();
+
+            /* If MetadataLanaguages is set, use it.
+             * If not, we can't assume anything and should avoid assuming a metadata language
+             */
+            String mlString = getValueForKey(SettingsServiceBean.Key.MetadataLanguages,"");
+            
+            if(mlString.isEmpty()) {
+                mlString="[]";
+            }
+            JsonReader jsonReader = Json.createReader(new StringReader(mlString));
+            JsonArray languages = jsonReader.readArray();
+            for(JsonValue jv: languages) {
+                JsonObject lang = (JsonObject) jv;
+                languageMap.put(lang.getString("locale"), lang.getString("title"));
+            }
+        }
+        return languageMap;
+    }
     
+    public void initLocaleSettings(Map<String, String> configuredLocales) {
+        
+        try {
+            JSONArray entries = new JSONArray(getValueForKey(SettingsServiceBean.Key.Languages, "[]"));
+            for (Object obj : entries) {
+                JSONObject entry = (JSONObject) obj;
+                String locale = entry.getString("locale");
+                String title = entry.getString("title");
+
+                configuredLocales.put(locale, title);
+            }
+        } catch (JSONException e) {
+            //e.printStackTrace();
+            // do we want to know? - probably not
+        }
+    }
+    
+
+    public Set<String> getConfiguredLanguages() {
+        Set<String> langs = new HashSet<String>();
+        langs.addAll(getBaseMetadataLanguageMap(new HashMap<String, String>(), true).keySet());
+        Map<String, String> configuredLocales = new LinkedHashMap<>();
+        initLocaleSettings(configuredLocales);
+        langs.addAll(configuredLocales.keySet());
+        return langs;
+    }
+
 }

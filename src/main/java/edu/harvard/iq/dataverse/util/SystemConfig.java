@@ -3,16 +3,11 @@ package edu.harvard.iq.dataverse.util;
 import com.ocpsoft.pretty.PrettyContext;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
-import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-
-import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorUtil;
 import java.io.FileInputStream;
@@ -26,9 +21,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -98,7 +91,7 @@ public class SystemConfig {
 
     /**
      * A JVM option to override the number of minutes for which a password reset
-     * token is valid ({@link #minutesUntilPasswordResetTokenExpires}).
+     * token is valid ({@link #getMinutesUntilPasswordResetTokenExpires}).
      */
     private static final String PASSWORD_RESET_TIMEOUT_IN_MINUTES = "dataverse.auth.password-reset-timeout-in-minutes";
 
@@ -429,7 +422,7 @@ public class SystemConfig {
 
         if (limitSetting != null && !limitSetting.equals("")) {
             try {
-                limit = new Long(limitSetting);
+                limit = Long.valueOf(limitSetting);
             } catch (NumberFormatException nfe) {
                 limit = null;
             }
@@ -438,12 +431,12 @@ public class SystemConfig {
         return limit != null ? limit : defaultValue;
     }
 
-    static int getIntLimitFromStringOrDefault(String limitSetting, Integer defaultValue) {
+    public static int getIntLimitFromStringOrDefault(String limitSetting, Integer defaultValue) {
         Integer limit = null;
 
         if (limitSetting != null && !limitSetting.equals("")) {
             try {
-                limit = new Integer(limitSetting);
+                limit = Integer.valueOf(limitSetting);
             } catch (NumberFormatException nfe) {
                 limit = null;
             }
@@ -586,7 +579,7 @@ public class SystemConfig {
         }
         return null;
     }
-    
+
     public long getTabularIngestSizeLimit() {
         // This method will return the blanket ingestable size limit, if 
         // set on the system. I.e., the universal limit that applies to all 
@@ -863,7 +856,14 @@ public class SystemConfig {
          * Traditional Dataverse file handling, which tends to involve users
          * uploading and downloading files using a browser or APIs.
          */
-        NATIVE("native/http");
+        NATIVE("native/http"),
+
+        /**
+         * Upload through Globus of large files
+         */
+
+        GLOBUS("globus")
+        ;
 
 
         private final String text;
@@ -903,7 +903,9 @@ public class SystemConfig {
          * go through Glassfish.
          */
         RSYNC("rsal/rsync"),
-        NATIVE("native/http");
+        NATIVE("native/http"),
+        GLOBUS("globus")
+        ;
         private final String text;
 
         private FileDownloadMethods(final String text) {
@@ -991,15 +993,19 @@ public class SystemConfig {
     }
     
     public boolean isRsyncUpload(){
-        return getUploadMethodAvailable(SystemConfig.FileUploadMethods.RSYNC.toString());
+        return getMethodAvailable(SystemConfig.FileUploadMethods.RSYNC.toString(), true);
     }
-    
+
+    public boolean isGlobusUpload(){
+        return getMethodAvailable(FileUploadMethods.GLOBUS.toString(), true);
+    }
+
     // Controls if HTTP upload is enabled for both GUI and API.
     public boolean isHTTPUpload(){       
-        return getUploadMethodAvailable(SystemConfig.FileUploadMethods.NATIVE.toString());       
+        return getMethodAvailable(SystemConfig.FileUploadMethods.NATIVE.toString(), true);
     }
     
-    public boolean isRsyncOnly(){       
+    public boolean isRsyncOnly(){
         String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
         if(downloadMethods == null){
             return false;
@@ -1012,26 +1018,37 @@ public class SystemConfig {
             return false;
         } else {
            return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
-        }        
+        }
     }
     
     public boolean isRsyncDownload() {
-        String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
-        return downloadMethods !=null && downloadMethods.toLowerCase().contains(SystemConfig.FileDownloadMethods.RSYNC.toString());
+        return getMethodAvailable(SystemConfig.FileUploadMethods.RSYNC.toString(), false);
     }
     
     public boolean isHTTPDownload() {
-        String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
-        logger.warning("Download Methods:" + downloadMethods);
-        return downloadMethods !=null && downloadMethods.toLowerCase().contains(SystemConfig.FileDownloadMethods.NATIVE.toString());
+        return getMethodAvailable(SystemConfig.FileUploadMethods.NATIVE.toString(), false);
+    }
+
+    public boolean isGlobusDownload() {
+        return getMethodAvailable(FileUploadMethods.GLOBUS.toString(), false);
     }
     
-    private Boolean getUploadMethodAvailable(String method){
-        String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods); 
-        if (uploadMethods==null){
+    public boolean isGlobusFileDownload() {
+        return (isGlobusDownload() && settingsService.isTrueForKey(SettingsServiceBean.Key.GlobusSingleFileTransfer, false));
+    }
+
+    public List<String> getGlobusStoresList() {
+    String globusStores = settingsService.getValueForKey(SettingsServiceBean.Key.GlobusStores, "");
+    return Arrays.asList(globusStores.split("\\s*,\\s*"));
+    }
+
+    private Boolean getMethodAvailable(String method, boolean upload) {
+        String methods = settingsService.getValueForKey(
+                upload ? SettingsServiceBean.Key.UploadMethods : SettingsServiceBean.Key.DownloadMethods);
+        if (methods == null) {
             return false;
         } else {
-           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).contains(method);
+            return Arrays.asList(methods.toLowerCase().split("\\s*,\\s*")).contains(method);
         }
     }
     
@@ -1062,7 +1079,12 @@ public class SystemConfig {
         }
         return retVal;
     }
-    
+
+    public boolean isAllowCustomTerms() {
+        boolean safeDefaultIfKeyNotFound = true;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.AllowCustomTermsOfUse, safeDefaultIfKeyNotFound);
+    }
+
     public boolean isFilePIDsEnabled() {
         boolean safeDefaultIfKeyNotFound = true;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.FilePIDsEnabled, safeDefaultIfKeyNotFound);

@@ -1,43 +1,39 @@
 {
-"citation:Depositor": "Admin, Dataverse",
-"Title": "Test Dataset",
-"Subject": "Computer and Information Science",
-"Creator": {
-  "author:Name": "Admin, Dataverse",
-  "author:Affiliation": "GDCC"
+"citation:depositor": "Admin, Dataverse",
+"title": "Test Dataset",
+"subject": "Computer and Information Science",
+"author": {
+  "citation:authorName": "Admin, Dataverse",
+  "citation:authorAffiliation": "GDCC"
 },
-"Deposit Date": "2020-10-08",
-"citation:Distributor": {
-  "distributor:Name": "Demo Dataverse Repository",
-  "distributor:Affiliation": "Dataverse Community",
-  "distributor:Abbreviation": "GDCC",
-  "distributor:URL": "https://dataverse.org/global-dataverse-community-consortium"
+"dateOfDeposit": "2020-10-08",
+"citation:distributor": {
+  "citation:distributorName": "Demo Dataverse Repository",
+  "citation:distributorAffiliation": "Dataverse Community",
+  "citation:distributorAbbreviation": "GDCC",
+  "citation:distributorURL": "https://dataverse.org/global-dataverse-community-consortium"
 },
-"citation:Contact": {
-"datasetContact:Name": "Admin, Dataverse",
-"datasetContact:Affiliation": "GDCC",
-"datasetContact:E-mail": "admin@demo.dataverse.org"
+"citation:datasetContact": {
+"citation:datasetContactName": "Admin, Dataverse",
+"citation:datasetContactAffiliation": "GDCC",
+"citation:datasetContactEmail": "admin@demo.dataverse.org"
 },
-"citation:Description": {
-  "dsDescription:Text": "A short description"
+"citation:dsDescription": {
+  "citation:dsDescriptionValue": "A short description"
 },
 "@id": "doi:10.33564/FK27U7YBV",
 "schema:version": "1.0",
-"schema:license": "https://creativecommons.org/publicdomain/zero/1.0/",
+"schema:license": "http://creativecommons.org/publicdomain/zero/1.0",
 "schema:datePublished": "2021-07-21",
 "dvcore:fileTermsOfAccess": {
 "dvcore:fileRequestAccess": false
 },
 "@context": {
-  "Creator": "http://purl.org/dc/terms/creator",
-  "Deposit Date": "http://purl.org/dc/terms/dateSubmitted",
-  "Subject": "http://purl.org/dc/terms/subject",
-  "Title": "http://purl.org/dc/terms/title",
-  "author": "https://dataverse.org/schema/citation/author#",
+  "author": "http://purl.org/dc/terms/creator",
+  "dateOfDeposit": "http://purl.org/dc/terms/dateSubmitted",
+  "subject": "http://purl.org/dc/terms/subject",
+  "title": "http://purl.org/dc/terms/title",
   "citation": "https://dataverse.org/schema/citation/",
-  "datasetContact": "https://dataverse.org/schema/citation/datasetContact#",
-  "distributor": "https://dataverse.org/schema/citation/distributor#",
-  "dsDescription": "https://dataverse.org/schema/citation/dsDescription#",
   "dvcore": "https://dataverse.org/schema/core#",
   "schema": "http://schema.org/"
 }}

@@ -278,55 +278,54 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         if (cvocSetting == null || cvocSetting.isEmpty()) {
             oldHash=null;
             return new HashMap<>();
-    } 
+        }
         String newHash = DigestUtils.md5Hex(cvocSetting);
-        if(newHash.equals(oldHash)) {
-            
+        if (newHash.equals(oldHash)) {
             return byTermUriField ? cvocMapByTermUri : cvocMap;
         } 
-            oldHash=newHash;
+        oldHash=newHash;
         cvocMap=new HashMap<>();
         cvocMapByTermUri=new HashMap<>();
         
         try (JsonReader jsonReader = Json.createReader(new StringReader(settingsService.getValueForKey(SettingsServiceBean.Key.CVocConf)))) {
-        JsonArray cvocConfJsonArray = jsonReader.readArray();
+            JsonArray cvocConfJsonArray = jsonReader.readArray();
             for (JsonObject jo : cvocConfJsonArray.getValuesAs(JsonObject.class)) {
                 DatasetFieldType dft = findByNameOpt(jo.getString("field-name"));
-                if (dft != null) {
-                    cvocMap.put(dft.getId(), jo);
-                } else {
+                if (dft == null) {
                     logger.warning("Ignoring External Vocabulary setting for non-existent field: "
-                            + jo.getString("field-name"));
-                }
-                if (jo.containsKey("term-uri-field")) {
-                    String termUriField = jo.getString("term-uri-field");
-                    if (!dft.isHasChildren()) {
-                        if (termUriField.equals(dft.getName())) {
-                            logger.fine("Found primitive field for term uri : " + dft.getName() + ": " + dft.getId());
-                            cvocMapByTermUri.put(dft.getId(), jo);
+                      + jo.getString("field-name"));
+                } else {
+                    cvocMap.put(dft.getId(), jo);
+                    if (jo.containsKey("term-uri-field")) {
+                        String termUriField = jo.getString("term-uri-field");
+                        if (!dft.isHasChildren()) {
+                            if (termUriField.equals(dft.getName())) {
+                                logger.fine("Found primitive field for term uri : " + dft.getName() + ": " + dft.getId());
+                                cvocMapByTermUri.put(dft.getId(), jo);
+                            }
+                        } else {
+                            DatasetFieldType childdft = findByNameOpt(jo.getString("term-uri-field"));
+                            logger.fine("Found term child field: " + childdft.getName()+ ": " + childdft.getId());
+                            cvocMapByTermUri.put(childdft.getId(), jo);
+                            if (childdft.getParentDatasetFieldType() != dft) {
+                                logger.warning("Term URI field (" + childdft.getDisplayName() + ") not a child of parent: "
+                                  + dft.getDisplayName());
+                            }
                         }
-                    } else {
-                        DatasetFieldType childdft = findByNameOpt(jo.getString("term-uri-field"));
-                        logger.fine("Found term child field: " + childdft.getName()+ ": " + childdft.getId());
-                        cvocMapByTermUri.put(childdft.getId(), jo);
-                        if (childdft.getParentDatasetFieldType() != dft) {
-                            logger.warning("Term URI field (" + childdft.getDisplayName() + ") not a child of parent: "
-                                    + dft.getDisplayName());
-                        }
-                    }
-                    if (dft == null) {
-                        logger.warning("Ignoring External Vocabulary setting for non-existent child field: "
-                                + jo.getString("term-uri-field"));
-                    }
-
-                }if(jo.containsKey("child-fields")) {
-                    JsonArray childFields = jo.getJsonArray("child-fields");
-                    for (JsonString elm : childFields.getValuesAs(JsonString.class)) {
-                        dft = findByNameOpt(elm.getString());
-                        logger.info("Found: " + dft.getName());
                         if (dft == null) {
                             logger.warning("Ignoring External Vocabulary setting for non-existent child field: "
-                                    + elm.getString());
+                              + jo.getString("term-uri-field"));
+                        }
+                    }
+                    if (jo.containsKey("child-fields")) {
+                        JsonArray childFields = jo.getJsonArray("child-fields");
+                        for (JsonString elm : childFields.getValuesAs(JsonString.class)) {
+                            dft = findByNameOpt(elm.getString());
+                            logger.info("Found: " + dft.getName());
+                            if (dft == null) {
+                                logger.warning("Ignoring External Vocabulary setting for non-existent child field: "
+                                  + elm.getString());
+                            }
                         }
                     }
                 }
@@ -672,6 +671,10 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         Set<String> scripts = new HashSet<String>();
         for(JsonObject jo: cvocConf.values()) {
             scripts.add(jo.getString("js-url"));
+        }
+        String customScript = settingsService.getValueForKey(SettingsServiceBean.Key.ControlledVocabularyCustomJavaScript);
+        if (customScript != null && !customScript.isEmpty()) {
+            scripts.add(customScript);
         }
         return Arrays.asList(scripts.toArray(new String[0]));
     }

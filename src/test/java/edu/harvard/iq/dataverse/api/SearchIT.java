@@ -269,6 +269,50 @@ public class SearchIT {
         assertTrue(searchResponse.body().jsonPath().getString("data.items[0].storageIdentifier").contains(identifier));
 
     }
+
+    @Test
+    public void testSearchDynamicMetadataFields() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+        Response searchResponseAuthor = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken, "&metadata_fields=citation:author");
+        searchResponseAuthor.prettyPrint();
+        searchResponseAuthor.then().assertThat()
+                .body("data.items[0].metadataBlocks.citation.displayName", CoreMatchers.equalTo("Citation Metadata"))
+                .body("data.items[0].metadataBlocks.citation.fields[0].typeName", CoreMatchers.equalTo("author"))
+                .body("data.items[0].metadataBlocks.citation.fields[0].value[0].authorName.value", CoreMatchers.equalTo("Finch, Fiona"))
+                .body("data.items[0].metadataBlocks.citation.fields[0].value[0].authorAffiliation.value", CoreMatchers.equalTo("Birds Inc."))
+                .statusCode(OK.getStatusCode());
+
+        // "{field_name} could not be a sub field of a compound field
+        Response subFieldsNotSupported = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken, "&metadata_fields=citation:authorAffiliation");
+        subFieldsNotSupported.prettyPrint();
+        subFieldsNotSupported.then().assertThat()
+                .body("data.items[0].metadataBlocks.citation.displayName", CoreMatchers.equalTo("Citation Metadata"))
+                // No fields returned. authorAffiliation is a subfield of author and not supported.
+                .body("data.items[0].metadataBlocks.citation.fields", Matchers.empty())
+                .statusCode(OK.getStatusCode());
+
+        Response allFieldsFromCitation = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken, "&metadata_fields=citation:*");
+        // Many more fields printed
+        allFieldsFromCitation.prettyPrint();
+        allFieldsFromCitation.then().assertThat()
+                .body("data.items[0].metadataBlocks.citation.displayName", CoreMatchers.equalTo("Citation Metadata"))
+                // Many fields returned, all of the citation block that has been filled in.
+                .body("data.items[0].metadataBlocks.citation.fields.typeName.size", Matchers.equalTo(5))
+                .statusCode(OK.getStatusCode());
+
+    }
     
     
     /*
