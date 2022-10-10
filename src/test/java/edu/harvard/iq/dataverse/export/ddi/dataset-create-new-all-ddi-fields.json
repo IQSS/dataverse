@@ -15,8 +15,10 @@
     "lastUpdateTime": "2015-09-24T17:07:57Z",
     "releaseTime": "2020-02-19",
     "createTime": "2015-09-24T16:47:51Z",
-    "license": "CC0",
-    "termsOfUse": "CC0 Waiver",
+    "license": {
+      "name": "CC0 1.0",
+      "uri": "http://creativecommons.org/publicdomain/zero/1.0"
+    },
     "termsOfAccess": "Terms of Access",
     "dataAccessPlace": "Data Access Place",
     "originalArchive": "Original Archive",
@@ -969,9 +971,12 @@
           },
           {
             "typeName": "collectionMode",
-            "multiple": false,
+            "multiple": true,
             "typeClass": "primitive",
-            "value": "CollectionMode"
+            "value": [
+              "CollectionMode"
+            ]
+
           },
           {
             "typeName": "researchInstrument",

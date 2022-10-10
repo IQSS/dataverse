@@ -67,6 +67,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -74,6 +75,7 @@ import java.io.InputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.Timestamp;
@@ -119,8 +121,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.RedirectionException;
+import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.MediaType;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 /*
@@ -273,7 +278,7 @@ public class Access extends AbstractApiBean {
     @Path("datafile/{fileId:.+}")
     @GET
     @Produces({"application/xml"})
-    public DownloadInstance datafile(@PathParam("fileId") String fileId, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public Response datafile(@PathParam("fileId") String fileId, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         
         // check first if there's a trailing slash, and chop it: 
         while (fileId.lastIndexOf('/') == fileId.length() - 1) {
@@ -327,6 +332,11 @@ public class Access extends AbstractApiBean {
             dInfo.addServiceAvailable(new OptionalAccessService("preprocessed", "application/json", "format=prep", "Preprocessed data in JSON"));
             dInfo.addServiceAvailable(new OptionalAccessService("subset", "text/tab-separated-values", "variables=&lt;LIST&gt;", "Column-wise Subsetting"));
         }
+        
+        if(systemConfig.isGlobusFileDownload() && systemConfig.getGlobusStoresList().contains(DataAccess.getStorageDriverFromIdentifier(df.getStorageIdentifier()))) {
+            dInfo.addServiceAvailable(new OptionalAccessService("GlobusTransfer", df.getContentType(), "format=GlobusTransfer", "Download via Globus"));
+        }
+        
         DownloadInstance downloadInstance = new DownloadInstance(dInfo);
         downloadInstance.setRequestUriInfo(uriInfo);
         downloadInstance.setRequestHttpHeaders(headers);
@@ -418,7 +428,10 @@ public class Access extends AbstractApiBean {
         /* 
          * Provide some browser-friendly headers: (?)
          */
-        return downloadInstance;
+        if (headers.getRequestHeaders().containsKey("Range")) {
+            return Response.status(Response.Status.PARTIAL_CONTENT).entity(downloadInstance).build();
+        }
+        return Response.ok(downloadInstance).build();
     }
     
     
@@ -455,7 +468,7 @@ public class Access extends AbstractApiBean {
            throw new BadRequestException("tabular data required");
         }
         
-        if (dataFile.isRestricted()) {
+        if (dataFile.isRestricted() || FileUtil.isActivelyEmbargoed(dataFile)) {
             boolean hasPermissionToDownloadFile = false;
             DataverseRequest dataverseRequest;
             try {
@@ -509,35 +522,67 @@ public class Access extends AbstractApiBean {
 
         return retValue;
     }
+
+
+    /*
+     * GET method for retrieving a list of auxiliary files associated with 
+     * a tabular datafile.
+     */
     
-    @Path("variable/{varId}/metadata/ddi")
+    @Path("datafile/{fileId}/auxiliary")
     @GET
-    @Produces({ "application/xml" })
+    public Response listDatafileMetadataAux(@PathParam("fileId") String fileId,
+            @QueryParam("key") String apiToken,
+            @Context UriInfo uriInfo,
+            @Context HttpHeaders headers,
+            @Context HttpServletResponse response) throws ServiceUnavailableException {
+        return listAuxiliaryFiles(fileId, null, apiToken, uriInfo, headers, response);
+    }
+    /*
+     * GET method for retrieving a list auxiliary files associated with
+     * a tabular datafile and having the specified origin.
+     */
+    
+    @Path("datafile/{fileId}/auxiliary/{origin}")
+    @GET
+    public Response listDatafileMetadataAuxByOrigin(@PathParam("fileId") String fileId,
+            @PathParam("origin") String origin,
+            @QueryParam("key") String apiToken,
+            @Context UriInfo uriInfo,
+            @Context HttpHeaders headers,
+            @Context HttpServletResponse response) throws ServiceUnavailableException {
+        return listAuxiliaryFiles(fileId, origin, apiToken, uriInfo, headers, response);
+    } 
+    
+    private Response listAuxiliaryFiles(String fileId, String origin, String apiToken, UriInfo uriInfo, HttpHeaders headers, HttpServletResponse response) {
+          DataFile df = findDataFileOrDieWrapper(fileId);
 
-    public String dataVariableMetadataDDI(@PathParam("varId") Long varId, @QueryParam("fileMetadataId") Long fileMetadataId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
-        String retValue = "";
-        
-        ByteArrayOutputStream outStream = null;
-        try {
-            outStream = new ByteArrayOutputStream();
-
-            ddiExportService.exportDataVariable(
-                    varId,
-                    outStream,
-                    exclude,
-                    include,
-                    fileMetadataId);
-        } catch (Exception e) {
-            // For whatever reason we've failed to generate a partial 
-            // metadata record requested. We simply return an empty string.
-            return retValue;
+        if (apiToken == null || apiToken.equals("")) {
+            apiToken = headers.getHeaderString(API_KEY_HEADER);
         }
 
-        retValue = outStream.toString();
-        
-        return retValue; 
+        List<AuxiliaryFile> auxFileList = auxiliaryFileService.findAuxiliaryFiles(df, origin);
+
+        if (auxFileList == null || auxFileList.isEmpty()) {
+            throw new NotFoundException("No Auxiliary files exist for datafile " + fileId + (origin==null ? "": " and the specified origin"));
+        }
+        boolean isAccessAllowed = isAccessAuthorized(df, apiToken);
+        JsonArrayBuilder jab = Json.createArrayBuilder();
+        auxFileList.forEach(auxFile -> {
+            if (isAccessAllowed || auxFile.getIsPublic()) {
+                NullSafeJsonBuilder job = NullSafeJsonBuilder.jsonObjectBuilder();
+                job.add("formatTag", auxFile.getFormatTag());
+                job.add("formatVersion", auxFile.getFormatVersion());
+                job.add("fileSize", auxFile.getFileSize());
+                job.add("contentType", auxFile.getContentType());
+                job.add("isPublic", auxFile.getIsPublic());
+                job.add("type", auxFile.getType());
+                jab.add(job);
+            }
+        });
+        return ok(jab);
     }
-    
+
     /*
      * GET method for retrieving various auxiliary files associated with 
      * a tabular datafile.
@@ -563,18 +608,14 @@ public class Access extends AbstractApiBean {
         DownloadInfo dInfo = new DownloadInfo(df);
         boolean publiclyAvailable = false; 
 
-        if (!df.isTabularData()) {
-            throw new BadRequestException("tabular data required");
-        } 
-        
         DownloadInstance downloadInstance;
         AuxiliaryFile auxFile = null;
         
         /* 
           The special case for "preprocessed" metadata should not be here at all. 
           Access to the format should be handled by the /api/access/datafile/{id}?format=prep
-          form exclusively (this is what Data Explorer and Tworavens have been
-          using all along). We may have advertised /api/access/datafile/{id}/metadata/preprocessed
+          form exclusively (this is what Data Explorer has been using all along).
+          We may have advertised /api/access/datafile/{id}/metadata/preprocessed
           in the past - but it has been broken since 5.3 anyway, since the /{formatVersion}
           element was added to the @Path. 
           Now that the api method has been renamed /api/access/datafile/{id}/auxiliary/..., 
@@ -748,13 +789,8 @@ public class Access extends AbstractApiBean {
     }
 
     private Response downloadDatafiles(String rawFileIds, boolean donotwriteGBResponse, String apiTokenParam, UriInfo uriInfo, HttpHeaders headers, HttpServletResponse response) throws WebApplicationException /* throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
-        long setLimit = systemConfig.getZipDownloadLimit();
-        if (!(setLimit > 0L)) {
-            setLimit = DataFileZipper.DEFAULT_ZIPFILE_LIMIT;
-        }
-        
-        final long zipDownloadSizeLimit = setLimit; //to use via anon inner class
-        
+        final long zipDownloadSizeLimit = systemConfig.getZipDownloadLimit();
+                
         logger.fine("setting zip download size limit to " + zipDownloadSizeLimit + " bytes.");
         
         if (rawFileIds == null || rawFileIds.equals("")) {
@@ -893,14 +929,21 @@ public class Access extends AbstractApiBean {
                                         
                                         zipper.addToManifest(fileName + " (" + mimeType + ") " + " skipped because the total size of the download bundle exceeded the limit of " + zipDownloadSizeLimit + " bytes.\r\n");
                                     }
-                                } else if(file.isRestricted()) {
-                                    if (zipper == null) {
-                                        fileManifest = fileManifest + file.getFileMetadata().getLabel() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n";
+                                } else { 
+                                    boolean embargoed = FileUtil.isActivelyEmbargoed(file);
+                                    if (file.isRestricted() || embargoed) {
+                                        if (zipper == null) {
+                                            fileManifest = fileManifest + file.getFileMetadata().getLabel() + " IS "
+                                                    + (embargoed ? "EMBARGOED" : "RESTRICTED")
+                                                    + " AND CANNOT BE DOWNLOADED\r\n";
+                                        } else {
+                                            zipper.addToManifest(file.getFileMetadata().getLabel() + " IS "
+                                                    + (embargoed ? "EMBARGOED" : "RESTRICTED")
+                                                    + " AND CANNOT BE DOWNLOADED\r\n");
+                                        }
                                     } else {
-                                        zipper.addToManifest(file.getFileMetadata().getLabel() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n");
+                                        fileId = null;
                                     }
-                                } else {
-                                    fileId = null;
                                 }
                             
                             } if (null == fileId) {
@@ -1227,6 +1270,7 @@ public class Access extends AbstractApiBean {
             @FormDataParam("origin") String origin,
             @FormDataParam("isPublic") boolean isPublic,
             @FormDataParam("type") String type,
+            @FormDataParam("file") final FormDataBodyPart formDataBodyPart,
             @FormDataParam("file") InputStream fileInputStream
           
     ) {
@@ -1246,12 +1290,13 @@ public class Access extends AbstractApiBean {
             return error(FORBIDDEN, "User not authorized to edit the dataset.");
         }
 
-        if (!dataFile.isTabularData()) {
-            return error(BAD_REQUEST, "Not a tabular DataFile (db id=" + fileId + ")");
+        MediaType mediaType = null;
+        if (formDataBodyPart != null) {
+            mediaType = formDataBodyPart.getMediaType();
         }
 
-        AuxiliaryFile saved = auxiliaryFileService.processAuxiliaryFile(fileInputStream, dataFile, formatTag, formatVersion, origin, isPublic, type);
-      
+        AuxiliaryFile saved = auxiliaryFileService.processAuxiliaryFile(fileInputStream, dataFile, formatTag, formatVersion, origin, isPublic, type, mediaType);
+
         if (saved!=null) {
             return ok(json(saved));
         } else {
@@ -1260,6 +1305,50 @@ public class Access extends AbstractApiBean {
     }
   
     
+
+    /**
+     * 
+     * @param fileId
+     * @param formatTag
+     * @param formatVersion
+     * @param origin
+     * @param isPublic
+     * @param fileInputStream
+     * @param contentDispositionHeader
+     * @param formDataBodyPart
+     * @return 
+     */
+    @Path("datafile/{fileId}/auxiliary/{formatTag}/{formatVersion}")
+    @DELETE
+    public Response deleteAuxiliaryFileWithVersion(@PathParam("fileId") Long fileId,
+            @PathParam("formatTag") String formatTag,
+            @PathParam("formatVersion") String formatVersion) {
+        AuthenticatedUser authenticatedUser;
+        try {
+            authenticatedUser = findAuthenticatedUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(FORBIDDEN, "Authorized users only.");
+        }
+
+        DataFile dataFile = dataFileService.find(fileId);
+        if (dataFile == null) {
+            return error(BAD_REQUEST, "File not found based on id " + fileId + ".");
+        }
+
+        if (!permissionService.userOn(authenticatedUser, dataFile.getOwner()).has(Permission.EditDataset)) {
+            return error(FORBIDDEN, "User not authorized to edit the dataset.");
+        }
+
+        try {
+            auxiliaryFileService.deleteAuxiliaryFile(dataFile, formatTag, formatVersion);
+        } catch (FileNotFoundException e) {
+            throw new NotFoundException();
+        } catch(IOException io) {
+            throw new ServerErrorException("IO Exception trying remove auxiliary file", Response.Status.INTERNAL_SERVER_ERROR, io);
+        }
+
+        return ok("Auxiliary file deleted.");
+    }
 
   
     
@@ -1393,21 +1482,20 @@ public class Access extends AbstractApiBean {
         }
 
         try {
-            dataverseRequest = createDataverseRequest(findUserOrDie());
+            dataverseRequest = createDataverseRequest(findAuthenticatedUserOrDie());
         } catch (WrappedResponse wr) {
             List<String> args = Arrays.asList(wr.getLocalizedMessage());
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
+            return error(UNAUTHORIZED, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
         }
-
-        if (!(dataverseRequest.getAuthenticatedUser().isSuperuser() || permissionService.requestOn(dataverseRequest, dataFile.getOwner()).has(Permission.ManageDatasetPermissions))) {
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions"));
+        if (!(dataverseRequest.getAuthenticatedUser().isSuperuser() || permissionService.requestOn(dataverseRequest, dataFile).has(Permission.ManageFilePermissions))) {
+            return error(FORBIDDEN, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions"));
         }
 
         List<AuthenticatedUser> requesters = dataFile.getFileAccessRequesters();
 
         if (requesters == null || requesters.isEmpty()) {
             List<String> args = Arrays.asList(dataFile.getDisplayName());
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestList.noRequestsFound"));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestList.noRequestsFound", args));
         }
 
         JsonArrayBuilder userArray = Json.createArrayBuilder();
@@ -1593,7 +1681,7 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
         }
         
-        if (!(dataverseRequest.getAuthenticatedUser().isSuperuser() || permissionService.requestOn(dataverseRequest, dataFile.getOwner()).has(Permission.ManageDatasetPermissions))) {
+        if (!(dataverseRequest.getAuthenticatedUser().isSuperuser() || permissionService.requestOn(dataverseRequest, dataFile).has(Permission.ManageFilePermissions))) {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions"));
         }
 
@@ -1628,11 +1716,14 @@ public class Access extends AbstractApiBean {
     }
     
 
-    
     private boolean isAccessAuthorized(DataFile df, String apiToken) {
     // First, check if the file belongs to a released Dataset version: 
         
         boolean published = false; 
+        
+        //True if there's an embargo that hasn't yet expired
+        //In this state, we block access as though the file is restricted (even if it is not restricted)
+        boolean embargoed = FileUtil.isActivelyEmbargoed(df);
         
         
         /*
@@ -1696,7 +1787,7 @@ public class Access extends AbstractApiBean {
             }
         }
         
-        if (!restricted) {
+        if (!restricted && !embargoed) {
             // And if they are not published, they can still be downloaded, if the user
             // has the permission to view unpublished versions! (this case will 
             // be handled below)
@@ -1761,7 +1852,7 @@ public class Access extends AbstractApiBean {
         // an unpublished version:         
         // (if (published) was already addressed above)
         
-        if (!restricted) {
+        if (!restricted && !embargoed) {
             // If the file is not published, they can still download the file, if the user
             // has the permission to view unpublished versions:
             
@@ -1778,7 +1869,7 @@ public class Access extends AbstractApiBean {
             if (apiTokenUser != null) {
                 // used in an API context
                 if (permissionService.requestOn( createDataverseRequest(apiTokenUser), df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
-                    logger.log(Level.FINE, "Session-based auth: user {0} has access rights on the non-restricted, unpublished datafile.", apiTokenUser.getIdentifier());
+                    logger.log(Level.FINE, "Token-based auth: user {0} has access rights on the non-restricted, unpublished datafile.", apiTokenUser.getIdentifier());
                     return true;
                 }
             }
@@ -1791,7 +1882,7 @@ public class Access extends AbstractApiBean {
                     
         } else {
             
-            // OK, this is a restricted file. 
+            // OK, this is a restricted and/or embargoed file. 
             
             boolean hasAccessToRestrictedBySession = false; 
             boolean hasAccessToRestrictedByToken = false; 
@@ -1860,9 +1951,12 @@ public class Access extends AbstractApiBean {
                 return false;
             } 
             
+            
+            //Doesn't this ~duplicate logic above - if so, if there's a way to get here, I think it still works for embargoed files (you only get access if you have download permissions, and, if not published, also view unpublished)
             if (permissionService.requestOn(createDataverseRequest(user), df).has(Permission.DownloadFile)) {
                 if (published) {
                     logger.log(Level.FINE, "API token-based auth: User {0} has rights to access the datafile.", user.getIdentifier());
+                    //Same case as line 1809 (and part of 1708 though when published you don't need the DownloadFile permission)
                     return true; 
                 } else {
                     // if the file is NOT published, we will let them download the 
@@ -1870,6 +1964,7 @@ public class Access extends AbstractApiBean {
                     // unpublished versions:
                     if (permissionService.requestOn(createDataverseRequest(user), df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
                         logger.log(Level.FINE, "API token-based auth: User {0} has rights to access the (unpublished) datafile.", user.getIdentifier());
+                        //Same case as line 1843?
                         return true;
                     } else {
                         logger.log(Level.FINE, "API token-based auth: User {0} is not authorized to access the (unpublished) datafile.", user.getIdentifier());

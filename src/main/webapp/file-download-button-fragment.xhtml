@@ -16,18 +16,19 @@
     <li><span class="dropdown-item-text">
             <span class="#{!fileMetadata.restricted ?
                            'glyphicon glyphicon-globe text-success' : (!fileDownloadHelper.canDownloadFile(fileMetadata) ? 'glyphicon glyphicon-lock text-danger' : 'icon-unlock text-success')}"/>
+            
+            <!-- TODO - add Embargo state -->
             <h:outputText 
-                value=" #{!fileMetadata.restricted ? 'Public' : (!fileDownloadHelper.canDownloadFile(fileMetadata) ? bundle['restricted'] : bundle['restrictedaccess'])}"
-                styleClass="#{!fileMetadata.restricted ? 'text-success' : (!fileDownloadHelper.canDownloadFile(fileMetadata) ? 'text-danger' : 'text-success')}"/>
+                value=" #{!fileDownloadHelper.isRestrictedOrEmbargoed(fileMetadata) ? bundle['public'] : (!fileDownloadHelper.canDownloadFile(fileMetadata) ? (!dataFileServiceBean.isActivelyEmbargoed(fileMetadata) ? bundle['restricted'] : bundle['embargoed']) : (!dataFileServiceBean.isActivelyEmbargoed(fileMetadata) ? bundle['restrictedaccess'] : bundle['embargoed']) )}"
+                styleClass="#{!fileDownloadHelper.isRestrictedOrEmbargoed(fileMetadata) ? 'text-success' : (!fileDownloadHelper.canDownloadFile(fileMetadata) ? 'text-danger' : 'text-success')}"/>
         </span></li>
-
     <ui:fragment rendered="#{!fileMetadata.datasetVersion.deaccessioned and !fileDownloadHelper.canDownloadFile(fileMetadata)
-                             and fileMetadata.dataFile.owner.fileAccessRequest}">
+                             and fileMetadata.dataFile.owner.fileAccessRequest and !dataFileServiceBean.isActivelyEmbargoed(fileMetadata)}">
         <p:outputPanel id="requestPanel" styleClass="iq-dropdown-list-item #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? 'disabled' : ''}"
                        rendered="#{fileDownloadHelper.session.user.authenticated}">
             <p:commandLink styleClass="btn-request #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? 'italic'  : ''}"
                         actionListener="#{fileDownloadHelper.handleCommandLinkClick(fileMetadata)}"
-                        update="@([id$=requestAccessConsolidated]), @([id$=requestPanel])"
+                        update="@([id$=requestAccessConsolidated]), @([id$=requestPanel]),  @([id$=filesTable]), @([id$=messagePanel])"
                         id="requestAccessConsolidated"
                         disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
                 #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
@@ -42,8 +43,12 @@
         </li>
     </ui:fragment>
     <ui:fragment rendered="#{!fileMetadata.datasetVersion.deaccessioned and !fileDownloadHelper.canDownloadFile(fileMetadata)
-                             and !fileMetadata.dataFile.owner.fileAccessRequest}">
+                             and !fileMetadata.dataFile.owner.fileAccessRequest and !dataFileServiceBean.isActivelyEmbargoed(fileMetadata)}">
         <li><span class="dropdown-item-text">#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.notRequest']}</span></li>
+    </ui:fragment>
+    <ui:fragment rendered="#{!fileMetadata.datasetVersion.deaccessioned and !fileDownloadHelper.canDownloadFile(fileMetadata)
+                             and dataFileServiceBean.isActivelyEmbargoed(fileMetadata)}">
+        <li><span class="dropdown-item-text">#{fileMetadata.restricted ? bundle['file.dataFilesTab.terms.list.termsOfAccess.embargoedthenrestricted'] : bundle['file.dataFilesTab.terms.list.termsOfAccess.embargoed']}</span></li>
     </ui:fragment>
     <!-- END: Request Access Options -->
     
@@ -51,6 +56,33 @@
     <ui:fragment rendered="#{fileDownloadHelper.canDownloadFile(fileMetadata)}">
         <!-- Download Options -->
         <li class="dropdown-header">#{bundle['file.accessBtn.header.download']} <span class="glyphicon glyphicon-download-alt"/></li>
+        
+        <!-- GlobusTransfer, orig file only  -->
+         <o:importFunctions type="edu.harvard.iq.dataverse.dataaccess.DataAccess" />
+        <li jsf:rendered="#{settingsWrapper.globusFileDownload and settingsWrapper.isGlobusEnabledStorageDriver(DataAccess:getStorageDriverFromIdentifier(fileMetadata.dataFile.storageIdentifier))}">
+            <p:commandLink rendered="#{!(downloadPopupRequired) 
+                                      and !(fileMetadata.dataFile.filePackage)}"
+                         styleClass="btn-download"
+                         process="@this"
+                         disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}" 
+                         actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'GlobusTransfer')}">
+                <!-- non-tabular data file: -->
+                <!-- no guest book/terms of use/etc. - straight to the download API url: -->
+                <span class="globus-btn ui-icon" title="#{bundle['file.globus.transfer']}"/> #{bundle['file.globus.of']} #{fileMetadata.dataFile.friendlyType == 'Unknown' ? bundle['file.download.filetype.unknown'] : fileMetadata.dataFile.friendlyType}
+            </p:commandLink>
+            <p:commandLink rendered="#{downloadPopupRequired and !fileMetadata.dataFile.filePackage}"
+                         styleClass="btn-download"
+                         process="@this"
+                         disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}" 
+                         action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'GlobusTransfer')}"
+                         update="@widgetVar(downloadPopup)" oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />
+                <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
+                GT: #{fileMetadata.dataFile.friendlyType == 'Unknown' ? bundle['file.download.filetype.unknown'] : fileMetadata.dataFile.friendlyType}
+            </p:commandLink>
+        </li>
+        
+        
         <!-- NON-TABULAR + PACKAGE DOWNLOAD OPTIONS -->
         <li jsf:rendered="#{!fileMetadata.dataFile.tabularData}">
             <p:commandLink rendered="#{!(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) 
@@ -93,6 +125,7 @@
                          disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}" 
                          action="#{guestbookResponseService.modifyDatafile(guestbookResponse, fileMetadata)}"
                          update="@widgetVar(downloadPopup)" oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />
                 <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
                 #{fileMetadata.dataFile.friendlyType == 'Unknown' ? bundle['file.download.filetype.unknown'] : fileMetadata.dataFile.friendlyType}
             </p:commandLink>
@@ -131,6 +164,7 @@
                                action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'original' )}"
                                update="@widgetVar(downloadPopup)"
                                oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                    <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />
                     <h:outputFormat value="#{bundle['file.downloadBtn.format.original']}">
                         <f:param value="#{fileMetadata.dataFile.originalFormatLabel}"/>
                     </h:outputFormat>
@@ -148,6 +182,7 @@
                                disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}" 
                                update="@widgetVar(downloadPopup)"
                                oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                    <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />
                     #{bundle['file.downloadBtn.format.tab']}
                 </p:commandLink>
             </li>
@@ -165,6 +200,7 @@
                                    action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'RData' )}"
                                    update="@widgetVar(downloadPopup)"
                                    oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                        <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />
                         #{bundle['file.downloadBtn.format.rdata']}
                     </p:commandLink>
                 </li>
@@ -197,8 +233,8 @@
     </ui:fragment>
     
     <!-- CITATION FILES DOWNLOAD OPTIONS -->
-    <li class="dropdown-submenu pull-left">
-        <a tabindex="-1" href="javascript:void(0);">#{bundle['file.downloadBtn.format.citation']}</a>
+    <li class="dropdown-submenu pull-left" jsf:rendered="#{!anonymized}">
+            <a tabindex="0">#{bundle['file.downloadBtn.format.citation']}</a>
         <ul class="dropdown-menu">
             <li>
                 <h:commandLink styleClass="btn-download" action="#{fileDownloadService.downloadDatafileCitationXML(fileMetadata)}">
@@ -221,6 +257,7 @@
     <li role="presentation" class="clearfix"></li>
     <!-- END: CITATION FILES DOWNLOAD OPTIONS -->
     
+    <!-- TODO - looks like this shows Aux files regardless of whether you can download them but the redirect to the API will check permissions downloads related to unreleased files and non-public aux files on files that are restricted/embargoed. Should the menu indicate the restrictions?  -->
     <!-- AUX FILES DOWNLOAD OPTIONS -->
     <ui:fragment rendered="#{not empty auxiliaryFileServiceBean.findAuxiliaryFiles(fileMetadata.dataFile)}">
         <!-- Download Auxiliary Files -->
@@ -228,7 +265,7 @@
         <!-- Aux Files in Bundle (DP, etc.)-->
         <ui:repeat var="auxFileType" value="#{auxiliaryFileServiceBean.findAuxiliaryFileTypes(fileMetadata.dataFile, true)}">
             <li class="dropdown-submenu pull-left">
-                <a tabindex="-1" href="javascript:void(0);">#{auxiliaryFileServiceBean.getFriendlyNameForType(auxFileType)}</a>
+                <a tabindex="0">#{auxiliaryFileServiceBean.getFriendlyNameForType(auxFileType)}</a>
                 <ul class="dropdown-menu">
                     <ui:repeat var="auxFile" value="#{auxiliaryFileServiceBean.findAuxiliaryFilesByType(fileMetadata.dataFile, auxFileType)}">
                         <li>
@@ -242,7 +279,7 @@
         </ui:repeat>
         <!--Other Aux Files (not in bundle)-->
         <li class="dropdown-submenu pull-left" jsf:rendered="#{not empty auxiliaryFileServiceBean.findOtherAuxiliaryFiles(fileMetadata.dataFile)}">
-            <a tabindex="-1" href="javascript:void(0);">#{bundle['file.auxfiles.unspecifiedTypes']}</a>
+            <a tabindex="0">#{bundle['file.auxfiles.unspecifiedTypes']}</a>
             <ul class="dropdown-menu">
                 <ui:repeat var="auxFile" value="#{auxiliaryFileServiceBean.findOtherAuxiliaryFiles(fileMetadata.dataFile)}">
                     <li>

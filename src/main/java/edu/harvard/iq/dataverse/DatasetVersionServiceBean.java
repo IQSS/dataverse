@@ -34,7 +34,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
     
 /**
@@ -737,6 +737,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                     + "AND fm.datasetversion_id = dv.id "
                     + "AND fm.datafile_id = df.id "
                     + "AND df.restricted = false "
+                    + "AND df.embargo_id is null "
                     + "AND o.previewImageAvailable = true "
                     + "ORDER BY df.id LIMIT 1;").getSingleResult();
         } catch (Exception ex) {
@@ -762,6 +763,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                         + "AND fm.datafile_id = df.id "
                         // + "AND o.previewImageAvailable = false "
                         + "AND df.restricted = false "
+                        + "AND df.embargo_id is null "
                         + "AND df.contenttype LIKE 'image/%' "
                         + "AND NOT df.contenttype = 'image/fits' "
                         + "AND df.filesize < " + imageThumbnailSizeLimit + " "
@@ -795,6 +797,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                         + "AND fm.datafile_id = df.id "
                         // + "AND o.previewImageAvailable = false "
                         + "AND df.restricted = false "
+                        + "AND df.embargo_id is null "
                         + "AND df.contenttype = 'application/pdf' "
                         + "AND df.filesize < " + imageThumbnailSizeLimit + " "
                         + "ORDER BY df.filesize ASC LIMIT 1;").getSingleResult();
@@ -1184,4 +1187,32 @@ w
         return null;
     }
     
+    /**
+     * Merges the passed datasetversion to the persistence context.
+     * @param ver the DatasetVersion whose new state we want to persist.
+     * @return The managed entity representing {@code ver}.
+     */
+    public DatasetVersion merge( DatasetVersion ver ) {
+        return em.merge(ver);
+    }
+    
+    /**
+     * Execute a query to return DatasetVersion
+     * 
+     * @param queryString
+     * @return 
+     */
+    public List<DatasetVersion> getUnarchivedDatasetVersions(){
+        
+        try {
+            List<DatasetVersion> dsl = em.createNamedQuery("DatasetVersion.findUnarchivedReleasedVersion", DatasetVersion.class).getResultList();
+            return dsl;
+        } catch (javax.persistence.NoResultException e) {
+            logger.log(Level.FINE, "No unarchived DatasetVersions found: {0}");
+            return null;
+        } catch (EJBException e) {
+            logger.log(Level.WARNING, "EJBException exception: {0}", e.getMessage());
+            return null;
+        }
+    } // end getUnarchivedDatasetVersions
 } // end class

@@ -1,0 +1,39 @@
+{
+"citation:depositor": "Admin, Dataverse",
+"title": "Test Dataset",
+"subject": "Computer and Information Science",
+"author": {
+  "citation:authorName": "Admin, Dataverse",
+  "citation:authorAffiliation": "GDCC"
+},
+"dateOfDeposit": "2020-10-08",
+"citation:distributor": {
+  "citation:distributorName": "Demo Dataverse Repository",
+  "citation:distributorAffiliation": "Dataverse Community",
+  "citation:distributorAbbreviation": "GDCC",
+  "citation:distributorURL": "https://dataverse.org/global-dataverse-community-consortium"
+},
+"citation:datasetContact": {
+"citation:datasetContactName": "Admin, Dataverse",
+"citation:datasetContactAffiliation": "GDCC",
+"citation:datasetContactEmail": "admin@demo.dataverse.org"
+},
+"citation:dsDescription": {
+  "citation:dsDescriptionValue": "A short description"
+},
+"@id": "doi:10.33564/FK27U7YBV",
+"schema:version": "1.0",
+"schema:license": "http://creativecommons.org/publicdomain/zero/1.0",
+"schema:datePublished": "2021-07-21",
+"dvcore:fileTermsOfAccess": {
+"dvcore:fileRequestAccess": false
+},
+"@context": {
+  "author": "http://purl.org/dc/terms/creator",
+  "dateOfDeposit": "http://purl.org/dc/terms/dateSubmitted",
+  "subject": "http://purl.org/dc/terms/subject",
+  "title": "http://purl.org/dc/terms/title",
+  "citation": "https://dataverse.org/schema/citation/",
+  "dvcore": "https://dataverse.org/schema/core#",
+  "schema": "http://schema.org/"
+}}

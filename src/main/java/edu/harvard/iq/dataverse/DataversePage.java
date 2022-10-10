@@ -5,9 +5,9 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.dataverse.DataverseUtil;
 import edu.harvard.iq.dataverse.engine.command.Command;
-import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateSavedSearchCommand;
@@ -17,7 +17,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.search.FacetCategory;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
-import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchIncludeFragment;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
@@ -32,15 +31,13 @@ import java.util.List;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
-import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -52,8 +49,8 @@ import org.primefaces.model.DualListModel;
 import javax.ejb.EJBException;
 import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.primefaces.PrimeFaces;
 import org.primefaces.event.TransferEvent;
 
@@ -322,7 +319,7 @@ public class DataversePage implements java.io.Serializable {
                 dataverse = dataverseService.find(this.getId());
             } else {
                 try {
-                    dataverse = dataverseService.findRootDataverse();
+                    dataverse = settingsWrapper.getRootDataverse();
                 } catch (EJBException e) {
                     // @todo handle case with no root dataverse (a fresh installation) with message about using API to create the root 
                     dataverse = null;
@@ -334,6 +331,7 @@ public class DataversePage implements java.io.Serializable {
                 return permissionsWrapper.notFound();
             }
             if (!dataverse.isReleased() && !permissionService.on(dataverse).has(Permission.ViewUnpublishedDataverse)) {
+                // the permission lookup above should probably be moved into the permissionsWrapper -- L.A. 5.7
                 return permissionsWrapper.notAuthorized();
             }
 
@@ -344,6 +342,7 @@ public class DataversePage implements java.io.Serializable {
             if (dataverse.getOwner() == null) {
                 return  permissionsWrapper.notFound();
             } else if (!permissionService.on(dataverse.getOwner()).has(Permission.AddDataverse)) {
+                // the permission lookup above should probably be moved into the permissionsWrapper -- L.A. 5.7
                 return permissionsWrapper.notAuthorized();            
             }
 
@@ -615,6 +614,7 @@ public class DataversePage implements java.io.Serializable {
                         // so we skip looking at parents (which get set automatically with their children)
                         if (!dsft.isHasChildren() && dsft.isRequiredDV()) {
                             boolean addRequiredInputLevels = false;
+                            boolean parentAlreadyAdded = false;
                             
                             if (!dsft.isHasParent() && dsft.isInclude()) {
                                 addRequiredInputLevels = !dsft.isRequired();
@@ -626,9 +626,21 @@ public class DataversePage implements java.io.Serializable {
                             if (addRequiredInputLevels) {
                                 listDFTIL.add(new DataverseFieldTypeInputLevel(dsft, dataverse,true, true));
                             
-                                //also add the parent as required
+                                //also add the parent as required (if it hasn't been added already)
+                                // todo: review needed .equals() methods, then change this to use a Set, in order to simplify code
                                 if (dsft.isHasParent()) {
-                                    listDFTIL.add(new DataverseFieldTypeInputLevel(dsft.getParentDatasetFieldType(), dataverse,true, true));
+                                    DataverseFieldTypeInputLevel parentToAdd = new DataverseFieldTypeInputLevel(dsft.getParentDatasetFieldType(), dataverse, true, true);
+                                    for (DataverseFieldTypeInputLevel dataverseFieldTypeInputLevel : listDFTIL) {
+                                        if (dataverseFieldTypeInputLevel.getDatasetFieldType().getId() == parentToAdd.getDatasetFieldType().getId()) {
+                                            parentAlreadyAdded = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!parentAlreadyAdded) {
+                                        // Only add the parent once. There's a UNIQUE (dataverse_id, datasetfieldtype_id)
+                                        // constraint on the dataversefieldtypeinputlevel table we need to avoid.
+                                        listDFTIL.add(parentToAdd);
+                                    }
                                 }      
                             }
                         }
@@ -685,7 +697,7 @@ public class DataversePage implements java.io.Serializable {
             if (editMode != null && editMode.equals(EditMode.FEATURED)) {
                 message = BundleUtil.getStringFromBundle("dataverse.feature.update");
             } else {
-                message = (create) ? BundleUtil.getStringFromBundle("dataverse.create.success", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), systemConfig.getGuidesVersion())) : BundleUtil.getStringFromBundle("dataverse.update.success");
+                message = (create) ? BundleUtil.getStringFromBundle("dataverse.create.success", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), settingsWrapper.getGuidesVersion())) : BundleUtil.getStringFromBundle("dataverse.update.success");
             }
             JsfHelper.addSuccessMessage(message);
             
@@ -693,15 +705,20 @@ public class DataversePage implements java.io.Serializable {
             return returnRedirect();            
             
 
-        } catch (CommandException ex) {
+        } /*catch (CommandException ex) {
             logger.log(Level.SEVERE, "Unexpected Exception calling dataverse command", ex);
             String errMsg = create ? BundleUtil.getStringFromBundle("dataverse.create.failure") : BundleUtil.getStringFromBundle("dataverse.update.failure");
             JH.addMessage(FacesMessage.SEVERITY_FATAL, errMsg);
             return null;
-        } catch (Exception e) {
+        }*/ catch (Exception e) {
             logger.log(Level.SEVERE, "Unexpected Exception calling dataverse command", e);
             String errMsg = create ? BundleUtil.getStringFromBundle("dataverse.create.failure") : BundleUtil.getStringFromBundle("dataverse.update.failure");
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, errMsg);
+            
+            String failureMessage = e.getMessage() == null 
+                        ? errMsg
+                        : e.getMessage();
+            JsfHelper.addErrorMessage(failureMessage);
+            
             return null;
         }
     }
@@ -714,7 +731,7 @@ public class DataversePage implements java.io.Serializable {
         return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
     }
 
-    public boolean isRootDataverse() {
+    public boolean isRootDataverse() {        
         return dataverse.getOwner() == null;
     }
 
@@ -805,8 +822,8 @@ public class DataversePage implements java.io.Serializable {
     
     private List<String> getSuccessMessageArguments() {
         List<String> arguments = new ArrayList<>();
-        arguments.add(StringEscapeUtils.escapeHtml(dataverse.getDisplayName()));
-        String linkString = "<a href=\"/dataverse/" + linkingDataverse.getAlias() + "\">" + StringEscapeUtils.escapeHtml(linkingDataverse.getDisplayName()) + "</a>";
+        arguments.add(StringEscapeUtils.escapeHtml4(dataverse.getDisplayName()));
+        String linkString = "<a href=\"/dataverse/" + linkingDataverse.getAlias() + "\">" + StringEscapeUtils.escapeHtml4(linkingDataverse.getDisplayName()) + "</a>";
         arguments.add(linkString);
         return arguments;
     }
@@ -867,7 +884,7 @@ public class DataversePage implements java.io.Serializable {
             commandEngine.submit(cmd);
 
             List<String> arguments = new ArrayList<>();           
-            String linkString = "<a href=\"/dataverse/" + linkingDataverse.getAlias() + "\">" + StringEscapeUtils.escapeHtml(linkingDataverse.getDisplayName()) + "</a>";
+            String linkString = "<a href=\"/dataverse/" + linkingDataverse.getAlias() + "\">" + StringEscapeUtils.escapeHtml4(linkingDataverse.getDisplayName()) + "</a>";
             arguments.add(linkString);
             String successMessageString = BundleUtil.getStringFromBundle("dataverse.saved.search.success", arguments);
             JsfHelper.addSuccessMessage(successMessageString);
@@ -898,7 +915,10 @@ public class DataversePage implements java.io.Serializable {
 
             } catch (Exception ex) {
                 logger.log(Level.SEVERE, "Unexpected Exception calling  publish dataverse command", ex);
-                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.publish.failure"));
+                String failureMessage = ex.getMessage() == null 
+                        ? BundleUtil.getStringFromBundle("dataverse.publish.failure")
+                        : ex.getMessage();
+                JsfHelper.addErrorMessage(failureMessage);
 
             }
         } else {
@@ -1204,10 +1224,67 @@ public class DataversePage implements java.io.Serializable {
     	}
    		String label = DataAccess.getStorageDriverLabelFor(storageDriverId);
    		if(fromAncestor) {
-   			label = label + " " + BundleUtil.getStringFromBundle("dataverse.storage.inherited");
+   			label = label + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
    		} else {
-   			label = label + " " + BundleUtil.getStringFromBundle("dataverse.storage.default");
+   			label = label + " " + BundleUtil.getStringFromBundle("dataverse.default");
    		}
    		return label;
     }
+    
+    public Set<Entry<String, String>> getMetadataLanguages() {
+        return settingsWrapper.getMetadataLanguages(this.dataverse).entrySet();
+    }
+    
+    private Set<Entry<String, String>> curationLabelSetOptions = null; 
+    
+    public Set<Entry<String, String>> getCurationLabelSetOptions() {
+        if (curationLabelSetOptions == null) {
+            HashMap<String, String> setNames = new HashMap<String, String>();
+            Set<String> allowedSetNames = systemConfig.getCurationLabels().keySet();
+            if (allowedSetNames.size() > 0) {
+                // Add an entry for the default (inherited from an ancestor or the system
+                // default)
+                String inheritedLabelSet = getCurationLabelSetNameLabel();
+                if (!StringUtils.isBlank(inheritedLabelSet)) {
+                    setNames.put(inheritedLabelSet, SystemConfig.DEFAULTCURATIONLABELSET);
+                }
+                // Add an entry for disabled
+                setNames.put(BundleUtil.getStringFromBundle("dataverse.curationLabels.disabled"), SystemConfig.CURATIONLABELSDISABLED);
+
+                allowedSetNames.forEach(name -> {
+                    String localizedName = DatasetUtil.getLocaleExternalStatus(name) ;
+                    setNames.put(localizedName,name);
+                });
+            }
+            curationLabelSetOptions = setNames.entrySet();
+        }
+        return curationLabelSetOptions;
+    }
+
+    public String getCurationLabelSetNameLabel() {
+        Dataverse parent = dataverse.getOwner();
+        String setName = null;
+        boolean fromAncestor = false;
+        if (parent != null) {
+            setName = parent.getEffectiveCurationLabelSetName();
+            // recurse dataverse chain to root and if any have a curation label set name set,
+            // fromAncestor is true
+            while (parent != null) {
+                if (!parent.getCurationLabelSetName().equals(SystemConfig.DEFAULTCURATIONLABELSET)) {
+                    fromAncestor = true;
+                    break;
+                }
+                parent = parent.getOwner();
+            }
+        }
+        if (setName != null) {
+            if (fromAncestor) {
+                setName = setName + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
+            } else {
+                setName = setName + " " + BundleUtil.getStringFromBundle("dataverse.default");
+            }
+        }
+        return setName;
+    }
+
 }

@@ -97,8 +97,7 @@
                                                      style="display:none"
                                                      process="@this :dataverseForm:selectHostDataverse"
                                                      update=":dataverseForm,:breadCrumbPanel"
-                                                     action="#{DataversePage.updateOwnerDataverse()}"
-                                                     oncomplete="bind_bsui_components();">
+                                                     action="#{DataversePage.updateOwnerDataverse()}">
                                     </p:commandButton>
                                 </div>
                             </div>
@@ -138,7 +137,7 @@
                                 </h:outputLabel>
                                 <div class="form-col-container">
                                     <div class="input-group">
-                                        <div class="input-group-addon"><span class="small">#{systemConfig.dataverseSiteUrl}/dataverse/</span></div>
+                                        <div class="input-group-addon"><span class="small">#{settingsWrapper.dataverseSiteUrl}/dataverse/</span></div>
                                         <p:inputText id="identifier" styleClass="form-control" 
                                                      validator="#{DataversePage.validateAlias}" 
                                                      value="#{DataversePage.dataverse.alias}" 
@@ -158,6 +157,19 @@
                                               <f:selectItems value="#{DataversePage.getStorageDriverOptions()}" var="driver" itemLabel="#{driver.getKey()}" itemValue="#{driver.getValue()}"/>
                                             </h:selectOneMenu>
                                             <p:message for="dataverseStorage" display="text"/>
+                                </div>
+                            </div>
+                            <div class="col-md-6 form-group" jsf:rendered="#{dataverseSession.user.superuser and DataversePage.getCurationLabelSetOptions().size() >0}">
+                                <h:outputLabel for="dataverseCurationLabels" styleClass="control-label">
+                                    #{bundle.curationLabels} 
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.curationLabels.title']}"></span>
+                                </h:outputLabel>
+                                <div class="form-col-container">
+                                            <h:selectOneMenu id="dataverseCurationLabels" styleClass="form-control" value="#{DataversePage.dataverse.curationLabelSetName}">
+                                              <f:selectItems value="#{DataversePage.getCurationLabelSetOptions()}" var="setName" itemLabel="#{setName.getKey()}" itemValue="#{setName.getValue()}"/>
+                                            </h:selectOneMenu>
+                                            <p:message for="dataverseCurationLabels" display="text"/>
                                 </div>
                             </div>
                         </div>
@@ -208,15 +220,13 @@
                                                         <!-- Add / Remove buttons -->
                                                         <div class="col-xs-3 form-col-container field-add-delete">
                                                             <p:commandLink styleClass="btn btn-default btn-sm bootstrap-button-tooltip" title="#{bundle.add}"
-                                                                             actionListener="#{DataversePage.dataverse.addDataverseContact(valCount.index + 1)}"
-                                                                             oncomplete="javascript:bind_bsui_components();">
+                                                                             actionListener="#{DataversePage.dataverse.addDataverseContact(valCount.index + 1)}">
                                                                 <f:param name="SKIP_VALIDATION" value="true"/>
                                                                 <h:outputText styleClass="glyphicon glyphicon-plus no-text"/>
                                                             </p:commandLink>
                                                             <p:commandLink styleClass="btn btn-default btn-sm bootstrap-button-tooltip" title="#{bundle.delete}"
                                                                              rendered="#{DataversePage.dataverse.dataverseContacts.size() > 1}"
-                                                                             actionListener="#{DataversePage.dataverse.removeDataverseContact(valCount.index)}"
-                                                                             oncomplete="javascript:bind_bsui_components();">
+                                                                             actionListener="#{DataversePage.dataverse.removeDataverseContact(valCount.index)}">
                                                                 <f:param name="SKIP_VALIDATION" value="true"/>
                                                                 <h:outputText styleClass="glyphicon glyphicon-minus no-text"/>
                                                             </p:commandLink>
@@ -225,6 +235,19 @@
                                                 </ui:repeat>
                                             </div>
                                         </p:fragment>
+                                    </div>
+                                    <div class="col-md-6 form-group" jsf:rendered="#{DataversePage.getMetadataLanguages().size()>2}">
+                                        <h:outputLabel for="dsMetadataLanguage" styleClass="control-label">
+                                            #{bundle.metadataLanguage} 
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.metadatalanguage.title']}"></span>
+                                        </h:outputLabel>
+                                        <div class="form-col-container">
+                                            <h:selectOneMenu id="dsMetadataLanguage" styleClass="form-control" value="#{DataversePage.dataverse.metadataLanguage}">
+                                                <f:selectItems value="#{DataversePage.getMetadataLanguages()}" var="lang" itemLabel="#{lang.getValue()}" itemValue="#{lang.getKey()}"/>
+                                            </h:selectOneMenu>
+                                            <p:message for="dsMetadataLanguage" display="text"/>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -297,16 +320,14 @@
                                                                    update="@widgetVar(optionBlock)"
                                                                    process="@this"
                                                                    rendered="#{!mdb.showDatasetFieldTypes and (mdb.selected or mdb.required) and !DataversePage.openMetadataBlock and !DataversePage.inheritMetadataBlockFromParent}"
-                                                                   actionListener="#{DataversePage.showDatasetFieldTypes(mdb.id)}"
-                                                                   oncomplete="javascript:bind_bsui_components();">
+                                                                   actionListener="#{DataversePage.showDatasetFieldTypes(mdb.id)}">
                                                          <h:outputText value="#{bundle['dataverse.field.set.tip']}" />
                                                      </p:commandLink>
                                                      <p:commandLink id="viewDSFT" style="margin-left:1em;"
                                                                     update="@widgetVar(optionBlock)"
                                                                     process="@this"
                                                                     rendered="#{!mdb.showDatasetFieldTypes and (!mdb.selected or DataversePage.inheritMetadataBlockFromParent)   and !DataversePage.openMetadataBlock}"
-                                                                    actionListener="#{DataversePage.showDatasetFieldTypes(mdb.id, false)}"
-                                                                    oncomplete="javascript:bind_bsui_components();">
+                                                                    actionListener="#{DataversePage.showDatasetFieldTypes(mdb.id, false)}">
                                                          <h:outputText value="#{bundle['dataverse.field.set.view']}" />
                                                      </p:commandLink>
                                                 </label>
@@ -348,7 +369,6 @@
                                                 <p:commandLink id="hideDSFT" styleClass="btn btn-default" 
                                                                process="@this @widgetVar(optionBlock)"
                                                                update="@widgetVar(optionBlock)" actionListener="#{DataversePage.hideDatasetFieldTypes(mdb.id)}" 
-                                                               oncomplete="javascript:bind_bsui_components();"
                                                                rendered="#{mdb.showDatasetFieldTypes}">
                                                     <h:outputText value="#{bundle.done}" />
                                                 </p:commandLink>
@@ -389,6 +409,7 @@
                                             </f:facet>
                                             <f:facet name="targetCaption">#{bundle['dataverse.selected']}</f:facet>
                                             <p:ajax event="transfer" listener="#{DataversePage.onFacetTransfer}" update="editFacets" />
+                                            <f:passThroughAttribute name="aria-disabled" value="#{!DataversePage.dataverse.facetRoot and DataversePage.dataverse.owner != null}"/>
                                         </p:pickList>
                                     </div>
                                 </div>
@@ -411,10 +432,10 @@
                                 <!-- Metrics for Root Dataverse -->
                                 <div id="metrics-block1" class="col-xs-4" jsf:rendered="#{DataversePage.isRootDataverse() and !settingsWrapper.rsyncOnly}">
                                     <div id="metrics-label" class="col-xs-4 small text-center">
-                                        <h:outputLink value="#{systemConfig.metricsUrl}" target="_blank" title="#{bundle['metrics.title.tip']}" rendered="#{systemConfig.metricsUrl != null}">
+                                        <h:outputLink value="#{settingsWrapper.metricsUrl}" target="_blank" title="#{bundle['metrics.title.tip']}" rendered="#{settingsWrapper.metricsUrl != null}">
                                             <span class="glyphicon glyphicon-stats"/> #{bundle['metrics.title']}
                                         </h:outputLink>
-                                        <ui:fragment rendered="#{systemConfig.metricsUrl == null}">
+                                        <ui:fragment rendered="#{settingsWrapper.metricsUrl == null}">
                                             <span class="glyphicon glyphicon-stats"/> #{bundle['metrics.title']}
                                         </ui:fragment>
                                     </div>
@@ -466,7 +487,7 @@
                                                 <button type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                                                     <span class="glyphicon glyphicon-link"/> #{bundle['link']} <span class="caret"></span>
                                                 </button>
-                                                <ul class="dropdown-menu pull-right text-left" role="menu">
+                                                <ul class="dropdown-menu pull-right text-left">
                                                     <li class="#{DataversePage.dataverse.owner != null ? '' : 'disabled'}">
                                                         <p:commandLink action="#{DataversePage.setupLinkingPopup('link')}"
                                                                        oncomplete="PF('linkDataverseForm').show()"
@@ -491,7 +512,7 @@
                                                 <button type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
                                                     <span class="glyphicon glyphicon-pencil"/> #{bundle['dataverse.edit']} <span class="caret"></span>
                                                 </button>
-                                                <ul class="dropdown-menu pull-right text-left" role="menu">
+                                                <ul class="dropdown-menu pull-right text-left">
                                                     <li>
                                                         <div id="dataverse-info-dropdown">
                                                             <div class="dataverse-info-logo-icon">
@@ -505,7 +526,7 @@
                                                     </li>
                                                     <li class="divider" role="presentation"></li>
                                                     <li>
-                                                        <p:commandLink id="editInfo" actionListener="#{DataversePage.edit('INFO')}" update=":dataverseForm,:searchResults,:messagePanel" oncomplete="javascript:bind_bsui_components();">
+                                                        <p:commandLink id="editInfo" actionListener="#{DataversePage.edit('INFO')}" update=":dataverseForm,:searchResults,:messagePanel">
                                                             <h:outputText value="#{bundle['dataverse.option.generalInfo']}" />
                                                         </p:commandLink>
                                                     </li>
@@ -675,7 +696,7 @@
                     <p:dialog id="shareDialog" header="#{bundle['dataverse.share.dataverseShare']}" widgetVar="shareDialog" modal="true">
                         <h:form styleClass="form-horizontal"> 
                         <p class="help-block">#{bundle['dataverse.share.dataverseShare.tip']}</p>
-                        <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataverse/#{DataversePage.dataverse.alias}" data-text="#{bundle['dataverse.share.dataverseShare.shareText']}"></div>
+                        <div id="sharrre-widget" data-url="#{settingsWrapper.dataverseSiteUrl}/dataverse/#{DataversePage.dataverse.alias}" data-text="#{bundle['dataverse.share.dataverseShare.shareText']}"></div>
                         <div class="button-block">
                             <button class="btn btn-default" onclick="PF('shareDialog').hide()" type="button">
                                 #{bundle.close}

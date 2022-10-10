@@ -19,6 +19,7 @@ import com.google.gson.Gson;
 
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
@@ -1130,28 +1131,10 @@ public class OpenAireExportUtil {
         }
         xmlw.writeEndElement(); // </rights>
 
-        // check if getLicense() method contains CC0
-        // check if getTermsOfUse() method starts with http://
         writeRightsHeader(xmlw, language);
-        if (StringUtils.isNotBlank(datasetVersionDTO.getLicense())) {
-            if (StringUtils.containsIgnoreCase(datasetVersionDTO.getLicense(), "cc0")) {
-                xmlw.writeAttribute("rightsURI", TermsOfUseAndAccess.CC0_URI);
-                if (StringUtils.isNotBlank(datasetVersionDTO.getTermsOfUse())) {
-                    xmlw.writeCharacters(datasetVersionDTO.getTermsOfUse());
-                }
-            } else if (StringUtils.isNotBlank(datasetVersionDTO.getTermsOfUse())) {
-                if (StringUtils.startsWithIgnoreCase(datasetVersionDTO.getTermsOfUse().trim(), "http")) {
-                    xmlw.writeAttribute("rightsURI", datasetVersionDTO.getTermsOfUse());
-                } else {
-                    xmlw.writeCharacters(datasetVersionDTO.getTermsOfUse());
-                }
-            }
-        } else if (StringUtils.isNotBlank(datasetVersionDTO.getTermsOfUse())) {
-            if (StringUtils.startsWithIgnoreCase(datasetVersionDTO.getTermsOfUse().trim(), "http")) {
-                xmlw.writeAttribute("rightsURI", datasetVersionDTO.getTermsOfUse());
-            } else {
-                xmlw.writeCharacters(datasetVersionDTO.getTermsOfUse());
-            }
+        if (datasetVersionDTO.getLicense() != null) {
+            xmlw.writeAttribute("rightsURI", datasetVersionDTO.getLicense().getUri());
+            xmlw.writeCharacters(datasetVersionDTO.getLicense().getName());
         }
         xmlw.writeEndElement(); // </rights>
         xmlw.writeEndElement(); // </rightsList>

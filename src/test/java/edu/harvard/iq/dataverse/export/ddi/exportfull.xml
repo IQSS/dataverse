@@ -56,13 +56,14 @@
         <serName>SeriesName</serName>
         <serInfo>SeriesInformation</serInfo>
       </serStmt>
+      <holdings URI="https://doi.org/10.5072/FK2/WKUKGV"></holdings>
     </citation>
     <stdyInfo>
       <subject>
-        <keyword>Agricultural Sciences</keyword>
-        <keyword>Business and Management</keyword>
-        <keyword>Engineering</keyword>
-        <keyword>Law</keyword>
+        <keyword xml:lang="en">Agricultural Sciences</keyword>
+        <keyword xml:lang="en">Business and Management</keyword>
+        <keyword xml:lang="en">Engineering</keyword>
+        <keyword xml:lang="en">Law</keyword>
         <keyword vocab="KeywordVocabulary1" vocabURI="http://KeywordVocabularyURL1.org">KeywordTerm1</keyword>
         <keyword vocab="KeywordVocabulary2" vocabURI="http://KeywordVocabularyURL2.org">KeywordTerm2</keyword>
       </subject>
@@ -143,7 +144,6 @@
       <notes type="NotesType" subject="NotesSubject">NotesText</notes>
     </method>
     <dataAccs>
-      <notes type="DVN:TOU" level="dv">CC0 Waiver</notes>
       <notes type="DVN:TOA" level="dv">Terms of Access</notes>
       <setAvail>
         <accsPlac>Data Access Place</accsPlac>

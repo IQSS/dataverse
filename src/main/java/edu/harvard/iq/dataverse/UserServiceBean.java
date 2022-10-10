@@ -1,4 +1,5 @@
 package edu.harvard.iq.dataverse;
+import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserUtil;
@@ -19,7 +20,7 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ocpsoft.common.util.Strings;
 
 @Stateless
@@ -143,6 +144,9 @@ public class UserServiceBean {
 
         user.setDeactivated((Boolean)(dbRowValues[13]));
         user.setDeactivatedTime(UserUtil.getTimestampOrNull(dbRowValues[14]));
+
+        user.setMutedEmails(Type.tokenizeToSet((String) dbRowValues[15]));
+        user.setMutedNotifications(Type.tokenizeToSet((String) dbRowValues[15]));
 
         user.setRoles(roles);
         return user;
@@ -415,7 +419,8 @@ public class UserServiceBean {
         qstr += " u.position,";
         qstr += " u.createdtime, u.lastlogintime, u.lastapiusetime, ";
         qstr += " prov.id, prov.factoryalias, ";
-        qstr += " u.deactivated, u.deactivatedtime ";
+        qstr += " u.deactivated, u.deactivatedtime, ";
+        qstr += " u.mutedEmails, u.mutedNotifications ";
         qstr += " FROM authenticateduser u,";
         qstr += " authenticateduserlookup prov_lookup,";
         qstr += " authenticationproviderrow prov";

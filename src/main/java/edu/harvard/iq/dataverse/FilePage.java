@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -39,7 +40,9 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -48,11 +51,15 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
+import javax.faces.validator.ValidatorException;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.validation.ConstraintViolation;
+
+import org.primefaces.PrimeFaces;
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.TabChangeEvent;
 
@@ -104,6 +111,9 @@ public class FilePage implements java.io.Serializable {
     AuthenticationServiceBean authService;
     
     @EJB
+    DatasetServiceBean datasetService;
+    
+    @EJB
     SystemConfig systemConfig;
 
 
@@ -124,6 +134,10 @@ public class FilePage implements java.io.Serializable {
     FileDownloadHelper fileDownloadHelper;
     @Inject
     MakeDataCountLoggingServiceBean mdcLogService;
+    @Inject
+    SettingsWrapper settingsWrapper;
+    @Inject
+    EmbargoServiceBean embargoService;
 
     private static final Logger logger = Logger.getLogger(FilePage.class.getCanonicalName());
 
@@ -231,12 +245,31 @@ public class FilePage implements java.io.Serializable {
 
             return permissionsWrapper.notFound();
         }
-
+        
+        hasRestrictedFiles = fileMetadata.getDatasetVersion().isHasRestrictedFile();
+        hasValidTermsOfAccess = null;
+        hasValidTermsOfAccess = isHasValidTermsOfAccess();
+        if(!hasValidTermsOfAccess && canUpdateDataset() ){
+            JsfHelper.addWarningMessage(BundleUtil.getStringFromBundle("dataset.message.editMetadata.invalid.TOUA.message"));
+        }
+        
+        displayPublishMessage();
         return null;
+    }
+    
+    private void displayPublishMessage(){
+        if (fileMetadata.getDatasetVersion().isDraft()  && canUpdateDataset()
+                &&   (canPublishDataset() || !fileMetadata.getDatasetVersion().getDataset().isLockedFor(DatasetLock.Reason.InReview))){
+            JsfHelper.addWarningMessage(datasetService.getReminderString(fileMetadata.getDatasetVersion().getDataset(), canPublishDataset(), true));
+        }               
     }
     
     private boolean canViewUnpublishedDataset() {
         return permissionsWrapper.canViewUnpublishedDataset( dvRequestService.getDataverseRequest(), fileMetadata.getDatasetVersion().getDataset());
+    }
+    
+    public boolean canPublishDataset(){
+        return permissionsWrapper.canIssuePublishDatasetCommand(fileMetadata.getDatasetVersion().getDataset());
     }
    
 
@@ -349,19 +382,28 @@ public class FilePage implements java.io.Serializable {
         editDataset = this.file.getOwner();
         if (restricted) { // get values from access popup
             editDataset.getEditVersion().getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
-            editDataset.getEditVersion().getTermsOfUseAndAccess().setFileAccessRequest(fileAccessRequest);        
+            editDataset.getEditVersion().getTermsOfUseAndAccess().setFileAccessRequest(fileAccessRequest);   
         }
-        
-        Command cmd;
-        for (FileMetadata fmw : editDataset.getEditVersion().getFileMetadatas()) {
-            if (fmw.getDataFile().equals(this.fileMetadata.getDataFile())) {
-                fileNames += fmw.getLabel();
-                //fmw.setRestricted(restricted);
-                cmd = new RestrictFileCommand(fmw.getDataFile(), dvRequestService.getDataverseRequest(), restricted);
-                commandEngine.submit(cmd);
+        //using this method to update the terms for datasets that are out of compliance 
+        // with Terms of Access requirement - may get her with a file that is already restricted
+        // we'll allow it 
+        try {
+            Command cmd;
+            for (FileMetadata fmw : editDataset.getEditVersion().getFileMetadatas()) {
+                if (fmw.getDataFile().equals(this.fileMetadata.getDataFile())) {
+                    fileNames += fmw.getLabel();
+                    cmd = new RestrictFileCommand(fmw.getDataFile(), dvRequestService.getDataverseRequest(), restricted);
+                    commandEngine.submit(cmd);
+                }
             }
-        }
-        
+
+        } catch (CommandException ex) {
+            if (ex.getLocalizedMessage().contains("is already restricted")) {
+                //ok we're just updating the terms here
+            } else {
+                throw ex;
+            }
+        }   
         if (fileNames != null) {
             String successMessage = BundleUtil.getStringFromBundle("file.restricted.success");
             successMessage = successMessage.replace("{0}", fileNames);
@@ -570,7 +612,7 @@ public class FilePage implements java.io.Serializable {
 
     public String save() {
         // Validate
-        Set<ConstraintViolation> constraintViolations = this.fileMetadata.getDatasetVersion().validate();
+        Set<ConstraintViolation> constraintViolations = editDataset.getEditVersion().validate();
         if (!constraintViolations.isEmpty()) {
              //JsfHelper.addFlashMessage(JH.localize("dataset.message.validationError"));
              fileDeleteInProgress = false;
@@ -718,6 +760,43 @@ public class FilePage implements java.io.Serializable {
         this.selectedTabIndex = selectedTabIndex;
     }
     
+   private Boolean hasValidTermsOfAccess = null;
+    
+    public Boolean isHasValidTermsOfAccess() {
+        //cache in page to limit processing
+        if (hasValidTermsOfAccess != null){
+            return hasValidTermsOfAccess;
+        } else {
+            if (!isHasRestrictedFiles()){
+               hasValidTermsOfAccess = true;
+               return hasValidTermsOfAccess;
+            } else {
+                hasValidTermsOfAccess = TermsOfUseAndAccessValidator.isTOUAValid(fileMetadata.getDatasetVersion().getTermsOfUseAndAccess(), null);
+                return hasValidTermsOfAccess;
+            }
+        }    
+    }
+    
+    public boolean getHasValidTermsOfAccess(){
+        return isHasValidTermsOfAccess(); //HasValidTermsOfAccess
+    }
+    
+    public void setHasValidTermsOfAccess(boolean value){
+        //dummy for ui
+    }
+    
+    private Boolean hasRestrictedFiles = null;
+    
+    public Boolean isHasRestrictedFiles(){
+        //cache in page to limit processing
+        if (hasRestrictedFiles != null){
+            return hasRestrictedFiles;
+        } else {
+            hasRestrictedFiles = fileMetadata.getDatasetVersion().isHasRestrictedFile();
+            return hasRestrictedFiles;
+        }
+    }
+    
     public boolean isSwiftStorage () {
         Boolean swiftBool = false;
         if (file.getStorageIdentifier().startsWith("swift://")){
@@ -765,7 +844,7 @@ public class FilePage implements java.io.Serializable {
         if (swiftObject != null) {
             swiftObject.open();
             //generate a temp url for a file
-            if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)) {
+            if (isHasPublicStore()) {
                 return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getFile().getOwner().getGlobalIdString() + "=" + swiftObject.getSwiftFileName();
             }
             return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getFile().getOwner().getGlobalIdString() + "=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
@@ -808,20 +887,6 @@ public class FilePage implements java.io.Serializable {
         return FileUtil.isPubliclyDownloadable(fileMetadata);
     }
 
-    /**
-     * In Dataverse 4.19 and below file preview was determined by
-     * isPubliclyDownloadable. Now we always allow a PrivateUrlUser to preview
-     * files.
-     */
-    public boolean isPreviewAllowed() {
-        if (session.getUser() instanceof PrivateUrlUser) {
-            // Always allow preview for PrivateUrlUser
-            return true;
-        } else {
-            return FileUtil.isPreviewAllowed(fileMetadata);
-        }
-    }
-
     private Boolean lockedFromEditsVar;
     private Boolean lockedFromDownloadVar; 
     
@@ -839,6 +904,9 @@ public class FilePage implements java.io.Serializable {
                 permissionService.checkEditDatasetLock(dataset, dvRequestService.getDataverseRequest(), new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest()));
                 lockedFromEditsVar = false;
             } catch (IllegalCommandException ex) {
+                lockedFromEditsVar = true;
+            }
+            if (!isHasValidTermsOfAccess()){
                 lockedFromEditsVar = true;
             }
         }
@@ -868,8 +936,8 @@ public class FilePage implements java.io.Serializable {
                 try {
                     SwiftAccessIO<DataFile> swiftIO = (SwiftAccessIO<DataFile>) storageIO;
                     swiftIO.open();
-                    //if its a public install, lets just give users the permanent URL!
-                    if (systemConfig.isPublicInstall()){                        
+                    //if its a public store, lets just give users the permanent URL!
+                    if (isHasPublicStore()){
                         fileDownloadUrl = swiftIO.getRemoteUrl();
                     } else {
                         //TODO: if a user has access to this file, they should be given the swift url
@@ -915,14 +983,8 @@ public class FilePage implements java.io.Serializable {
     public String preview(ExternalTool externalTool) {
         ApiToken apiToken = null;
         User user = session.getUser();
-        if (user instanceof AuthenticatedUser) {
-            apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
-        } else if (user instanceof PrivateUrlUser) {
-            PrivateUrlUser privateUrlUser = (PrivateUrlUser) user;
-            PrivateUrl privateUrl = privateUrlService.getPrivateUrlFromDatasetId(privateUrlUser.getDatasetId());
-            privateUrl.getToken();
-            apiToken = new ApiToken();
-            apiToken.setTokenString(privateUrl.getToken());
+        if (fileMetadata.getDatasetVersion().isDraft() || (fileMetadata.getDataFile().isRestricted()) || (FileUtil.isActivelyEmbargoed(fileMetadata))) {
+            apiToken=fileDownloadService.getApiToken(user);
         }
         if(externalTool == null){
             return "";
@@ -971,5 +1033,143 @@ public class FilePage implements java.io.Serializable {
 
     public void setFileAccessRequest(boolean fileAccessRequest) {
         this.fileAccessRequest = fileAccessRequest;
-    }  
+    }
+    public boolean isAnonymizedAccess() {
+        if(session.getUser() instanceof PrivateUrlUser) {
+            return ((PrivateUrlUser)session.getUser()).hasAnonymizedAccess();
+        }
+        return false;
+    }
+    
+    public boolean isValidEmbargoSelection() {
+        if (!fileMetadata.getDataFile().isReleased()) {
+            return true;
+        }
+        return false;
+    }
+    
+    public boolean isExistingEmbargo() {
+        if (!fileMetadata.getDataFile().isReleased() && (fileMetadata.getDataFile().getEmbargo() != null)) {
+            return true;
+        }
+        return false;
+    }
+    
+    public boolean isEmbargoForWholeSelection() {
+        return isValidEmbargoSelection();
+    }
+    
+    public Embargo getSelectionEmbargo() {
+        return selectionEmbargo;
+    }
+
+    public void setSelectionEmbargo(Embargo selectionEmbargo) {
+        this.selectionEmbargo = selectionEmbargo;
+    }
+
+    private Embargo selectionEmbargo = new Embargo();
+    
+    private boolean removeEmbargo=false;
+
+    public boolean isRemoveEmbargo() {
+        return removeEmbargo;
+    }
+
+    public void setRemoveEmbargo(boolean removeEmbargo) {
+        boolean existing = this.removeEmbargo;
+        this.removeEmbargo = removeEmbargo;
+        if (existing != this.removeEmbargo) {
+            logger.info("State flip");
+            selectionEmbargo = new Embargo();
+            if (removeEmbargo) {
+                selectionEmbargo = new Embargo(null, null);
+            }
+        }
+        PrimeFaces.current().resetInputs("fileForm:embargoInputs");
+    }
+    
+    public String saveEmbargo() {
+        
+        if(isRemoveEmbargo() || (selectionEmbargo.getDateAvailable()==null && selectionEmbargo.getReason()==null)) {
+            selectionEmbargo=null;
+        }
+        
+        Embargo emb = null;
+        // Note: this.fileMetadata.getDataFile() is not the same object as this.file.
+        // (Not sure there's a good reason for this other than that's the way it is.)
+        // So changes to this.fileMetadata.getDataFile() will not be saved with
+        // editDataset = this.file.getOwner() set as it is below.
+        if (!file.isReleased()) {
+            emb = file.getEmbargo();
+            if (emb != null) {
+                logger.fine("Before: " + emb.getDataFiles().size());
+                emb.getDataFiles().remove(fileMetadata.getDataFile());
+                logger.fine("After: " + emb.getDataFiles().size());
+            }
+            if (selectionEmbargo != null) {
+                embargoService.merge(selectionEmbargo);
+            }
+            file.setEmbargo(selectionEmbargo);
+            if (emb != null && !emb.getDataFiles().isEmpty()) {
+                emb = null;
+            }
+        }
+        if(selectionEmbargo!=null) {
+            embargoService.save(selectionEmbargo, ((AuthenticatedUser)session.getUser()).getIdentifier());
+        }
+        // success message:
+        String successMessage = BundleUtil.getStringFromBundle("file.assignedEmbargo.success");
+        logger.fine(successMessage);
+        successMessage = successMessage.replace("{0}", "Selected Files");
+        JsfHelper.addFlashMessage(successMessage);
+        selectionEmbargo = new Embargo();
+
+        //Caller has to set editDataset before calling save()
+        editDataset = this.file.getOwner();
+        
+        save();
+        init();
+        if(emb!=null) {
+            embargoService.deleteById(emb.getId(),((AuthenticatedUser)session.getUser()).getIdentifier());
+        }
+        return returnToDraftVersion();
+    }
+    
+    public void clearEmbargoPopup() {
+        setRemoveEmbargo(false);
+        selectionEmbargo = new Embargo();
+        PrimeFaces.current().resetInputs("fileForm:embargoInputs");
+    }
+    
+    public void clearSelectionEmbargo() {
+        selectionEmbargo = new Embargo();
+        PrimeFaces.current().resetInputs("fileForm:embargoInputs");
+    }
+    
+    public boolean isCantRequestDueToEmbargo() {
+        return FileUtil.isActivelyEmbargoed(fileMetadata);
+    }
+    
+    public String getEmbargoPhrase() {
+        //Should only be getting called when there is an embargo
+        if(file.isReleased()) {
+            if(FileUtil.isActivelyEmbargoed(file)) {
+                return BundleUtil.getStringFromBundle("embargoed.until");
+            } else {
+                return BundleUtil.getStringFromBundle("embargoed.wasthrough");
+            }
+        } else {
+            return BundleUtil.getStringFromBundle("embargoed.willbeuntil");
+        }
+    }
+
+    public String getIngestMessage() {
+        return BundleUtil.getStringFromBundle("file.ingestFailed.message", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), settingsWrapper.getGuidesVersion()));
+    }
+    
+    //Determines whether this File uses a public store and therefore doesn't support embargoed or restricted files
+    public boolean isHasPublicStore() {
+        return settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, StorageIO.isPublicStore(DataAccess.getStorageDriverFromIdentifier(file.getStorageIdentifier())));
+    }
+
 }

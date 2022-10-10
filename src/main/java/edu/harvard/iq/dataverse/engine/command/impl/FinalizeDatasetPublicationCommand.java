@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -36,6 +37,9 @@ import java.util.ArrayList;
 import java.util.concurrent.Future;
 import org.apache.solr.client.solrj.SolrServerException;
 
+import javax.ejb.EJB;
+import javax.inject.Inject;
+
 
 /**
  *
@@ -47,7 +51,9 @@ import org.apache.solr.client.solrj.SolrServerException;
 public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCommand<Dataset> {
 
     private static final Logger logger = Logger.getLogger(FinalizeDatasetPublicationCommand.class.getName());
-    
+
+
+
     /**
      * mirror field from {@link PublishDatasetCommand} of same name
      */
@@ -83,7 +89,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             validateDataFiles(theDataset, ctxt);
             // (this will throw a CommandException if it fails)
         }
-
+        
+        validateOrDie(theDataset.getLatestVersion(), false);
+        
 		/*
 		 * Try to register the dataset identifier. For PID providers that have registerWhenPublished == false (all except the FAKE provider at present)
 		 * the registerExternalIdentifier command will make one try to create the identifier if needed (e.g. if reserving at dataset creation wasn't done/failed).
@@ -114,13 +122,20 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             theDataset.setPublicationDate(new Timestamp(new Date().getTime()));
         } 
 
+        //Clear any external status
+        theDataset.getLatestVersion().setExternalStatusLabel(null);
+        
         // update metadata
-        theDataset.getLatestVersion().setReleaseTime(getTimestamp());
+        if (theDataset.getLatestVersion().getReleaseTime() == null) {
+            // Allow migrated versions to keep original release dates
+            theDataset.getLatestVersion().setReleaseTime(getTimestamp());
+        }
         theDataset.getLatestVersion().setLastUpdateTime(getTimestamp());
         theDataset.setModificationTime(getTimestamp());
         theDataset.setFileAccessRequest(theDataset.getLatestVersion().getTermsOfUseAndAccess().isFileAccessRequest());
         
-        updateFiles(getTimestamp(), ctxt);
+        //Use dataset pub date (which may not be the current date for migrated datasets)
+        updateFiles(new Timestamp(theDataset.getLatestVersion().getReleaseTime().getTime()), ctxt);
         
         // 
         // TODO: Not sure if this .merge() is necessary here - ? 
@@ -246,30 +261,23 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             }
         }
 
-        exportMetadata(dataset);
-                
-        ctxt.datasets().updateLastExportTimeStamp(dataset.getId());
-
-        return retVal;
-    }
-
-    /**
-     * Attempting to run metadata export, for all the formats for which we have
-     * metadata Exporters.
-     */
-    private void exportMetadata(Dataset dataset) {
-
+        // Metadata export:
+        
         try {
             ExportService instance = ExportService.getInstance();
             instance.exportAllFormats(dataset);
-
+            dataset = ctxt.datasets().merge(dataset); 
         } catch (Exception ex) {
             // Something went wrong!
             // Just like with indexing, a failure to export is not a fatal
             // condition. We'll just log the error as a warning and keep
             // going:
-            logger.log(Level.WARNING, "Dataset publication finalization: exception while exporting:{0}", ex.getMessage());
-        }
+            logger.warning("Finalization: exception caught while exporting: "+ex.getMessage());
+            // ... but it is important to only update the export time stamp if the 
+            // export was indeed successful.
+        }        
+        
+        return retVal;
     }
 
     /**
@@ -309,17 +317,31 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
 
     private void validateDataFiles(Dataset dataset, CommandContext ctxt) throws CommandException {
         try {
-            for (DataFile dataFile : dataset.getFiles()) {
-                // TODO: Should we validate all the files in the dataset, or only 
-                // the files that haven't been published previously?
-                // (the decision was made to validate all the files on every  
-                // major release; we can revisit the decision if there's any 
-                // indication that this makes publishing take significantly longer.
-                logger.log(Level.FINE, "validating DataFile {0}", dataFile.getId());
-                FileUtil.validateDataFileChecksum(dataFile);
+            long maxDatasetSize = ctxt.systemConfig().getDatasetValidationSizeLimit();
+            long maxFileSize = ctxt.systemConfig().getFileValidationSizeLimit();
+
+            long datasetSize = DatasetUtil.getDownloadSizeNumeric(dataset.getLatestVersion(), false);
+            if (maxDatasetSize == -1 || datasetSize < maxDatasetSize) {
+                for (DataFile dataFile : dataset.getFiles()) {
+                    // TODO: Should we validate all the files in the dataset, or only
+                    // the files that haven't been published previously?
+                    // (the decision was made to validate all the files on every
+                    // major release; we can revisit the decision if there's any
+                    // indication that this makes publishing take significantly longer.
+                    if (maxFileSize == -1 || dataFile.getFilesize() < maxFileSize) {
+                        FileUtil.validateDataFileChecksum(dataFile);
+                    }
+                    else {
+                        String message = "Checksum Validation skipped for this datafile: " + dataFile.getId() + ", because of the size of the datafile limit (set to " + maxFileSize + " ); ";
+                        logger.info(message);
+                    }
+                }
+            }
+            else {
+                String message = "Checksum Validation skipped for this dataset: " + dataset.getId() + ", because of the size of the dataset limit (set to " + maxDatasetSize + " ); ";
+                logger.info(message);
             }
         } catch (Throwable e) {
-            
             if (dataset.isLockedFor(DatasetLock.Reason.finalizePublication)) {
                 DatasetLock lock = dataset.getLockFor(DatasetLock.Reason.finalizePublication);
                 lock.setReason(DatasetLock.Reason.FileValidationFailed);

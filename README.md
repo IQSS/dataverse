@@ -1,4 +1,4 @@
-Dataverse&#174; 
+Dataverse&#174;  
 ===============
 
 Dataverse is an [open source][] software platform for sharing, finding, citing, and preserving research data (developed by the [Data Science and Products team](http://www.iq.harvard.edu/people/people/data-science-products) at the [Institute for Quantitative Social Science](http://iq.harvard.edu/) and the [Dataverse community][]).
@@ -19,7 +19,7 @@ Dataverse is a trademark of President and Fellows of Harvard College and is regi
 
 [![API Test Status](https://jenkins.dataverse.org/buildStatus/icon?job=IQSS-dataverse-develop&subject=API%20Test%20Status)](https://jenkins.dataverse.org/job/IQSS-dataverse-develop/)
 [![API Test Coverage](https://img.shields.io/jenkins/coverage/jacoco?jobUrl=https%3A%2F%2Fjenkins.dataverse.org%2Fjob%2FIQSS-dataverse-develop&label=API%20Test%20Coverage)](https://jenkins.dataverse.org/job/IQSS-dataverse-develop/ws/target/coverage-it/index.html)
-[![Unit Test Status](https://img.shields.io/travis/IQSS/dataverse?label=Unit%20Test%20Status)](https://travis-ci.org/IQSS/dataverse)
+[![Unit Test Status](https://github.com/IQSS/dataverse/actions/workflows/maven_unit_test.yml/badge.svg?branch=develop)](https://github.com/IQSS/dataverse/actions/workflows/maven_unit_test.yml)
 [![Unit Test Coverage](https://img.shields.io/coveralls/github/IQSS/dataverse?label=Unit%20Test%20Coverage)](https://coveralls.io/github/IQSS/dataverse?branch=develop)
 [![Guides Build Status](https://github.com/IQSS/dataverse/actions/workflows/guides_build_sphinx.yml/badge.svg)](https://github.com/IQSS/dataverse/actions/workflows/guides_build_sphinx.yml)
 

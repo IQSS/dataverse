@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.api.imports.ImportGenericServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -149,13 +150,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                              * https://github.com/IQSS/dataverse/issues/1009
                              */
                             if (cause instanceof ConstraintViolationException) {
-                                ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                                for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                                    sb.append(" Invalid value: '").append(violation.getInvalidValue()).append("' for ")
-                                            .append(violation.getPropertyPath()).append(" at ")
-                                            .append(violation.getLeafBean()).append(" - ")
-                                            .append(violation.getMessage());
-                                }
+                                sb.append(ConstraintViolationUtil.getErrorStringForConstraintViolations(cause));
                             }
                         }
                         logger.info(sb.toString());

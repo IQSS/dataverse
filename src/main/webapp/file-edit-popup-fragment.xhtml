@@ -2,7 +2,9 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:ui="http://java.sun.com/jsf/facelets"
-                xmlns:p="http://primefaces.org/ui">
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:o="http://omnifaces.org/ui"
+                xmlns:jsf="http://xmlns.jcp.org/jsf">
     
     <ui:remove>
     <!--       
@@ -25,12 +27,45 @@
         </div>
     </p:dialog>     
 
-    <p:dialog id="accessPopup" styleClass="smallPopUp" header="#{bundle['dataset.access.accessHeader']}" widgetVar="accessPopup" modal="true">
+    <p:dialog id="accessPopup" height="350px" width="700px" 
+              header="#{bean.hasValidTermsOfAccess ? bundle['dataset.access.accessHeader'] : bundle['dataset.access.accessHeader.invalid.state'] }" 
+              widgetVar="accessPopup" modal="true">
         <p:focus context="accessPopup"/>
         <p class="help-block">
-            #{bundle['dataset.access.description']}
+            <h:outputText styleClass="text-muted" value="#{bundle['dataset.access.description']}"/>
+            <h:outputText  style="font-weight:bold" value="#{bundle['dataset.access.description.disable']}"/>
+            <p></p>
+            <h:outputFormat styleClass="text-muted"  value="#{bundle['dataset.access.description.line.2']}" escape="false">
+                <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                <f:param value="#{systemConfig.guidesVersion}"/>
+            </h:outputFormat>
         </p>
+        <p:fragment>
+            <p:autoUpdate/>
+            <o:inputHidden id="termsofAccessHidden" value="#{bean.termsOfAccess}" />
+            <o:inputHidden id="fileAccessRequestHidden" value="#{bean.fileAccessRequest}" />
+        </p:fragment>
         <div class="form-horizontal">
+            <div class="form-group">
+                <label for="datasetForm:requestAccess2" class="col-sm-3 control-label">
+                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
+                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}"></span>
+                </label>
+                <div class="col-sm-9">
+                    <p:selectBooleanCheckbox id="requestAccess2"  
+                                             itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}"
+                                             value="#{bean.fileAccessRequest}" widgetVar="inputfar">
+                    <p:ajax event="change" update="restrictFileButton" />
+                    </p:selectBooleanCheckbox>
+                </div>
+            </div>
+            <p:fragment id="popupWarning">
+                
+            <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{empty bean.termsOfAccess  and !bean.fileAccessRequest}">
+                           <span class="ui-message-error-detail">#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.warning.outofcompliance']}</span>          
+            </div>
+            </p:fragment>
             <div class="form-group">
                 <label for="termsAccessInput" class="col-sm-3 control-label">
                     #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
@@ -38,32 +73,101 @@
                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}"></span>
                 </label>
                 <div class="col-sm-9">
-                    <p:inputTextarea id="termsAccessInput" value="#{bean.termsOfAccess}" autoResize="false" rows="5" styleClass="form-control" widgetVar="inputtoa"/>
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="requestAccess" class="col-sm-3 control-label">
-                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
-                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}"></span>
-                </label>
-                <div class="col-sm-9">
-                    <p:selectBooleanCheckbox id="requestAccess2" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}"
-                                             value="#{bean.fileAccessRequest}" widgetVar="inputfar"/>
+                    <p:inputTextarea id="termsAccessInput" 
+                                     value="#{bean.termsOfAccess}" autoResize="false" rows="5" styleClass="form-control" widgetVar="inputtoa">
+                     <p:ajax event="keyup" update="restrictFileButton"/>
+                    </p:inputTextarea> 
                 </div>
             </div>
         </div>
+
         <div class="button-block">
-            <p:commandButton styleClass="btn btn-default" value="#{bundle.saveChanges}" 
-                             onclick="PF('accessPopup').hide();" 
-                             action="#{bean[restrictFileAction](true)}"
-                             update=":messagePanel" />
-            <button class="btn btn-link" onclick="PF('accessPopup').hide();" type="button">
+            <p:commandLink id="restrictFileButton"  styleClass="btn btn-default" value="#{bundle.saveChanges}"                             
+                             onclick="testTOA();"
+                             update="popupWarning" />
+            <button class="btn btn-link" onclick="PF('accessPopup').hide();PF('blockDatasetForm').hide();" type="button">
                 #{bundle.cancel}
-            </button>               
+            </button> 
+
         </div>
     </p:dialog>  
 
+    <!-- Embargo Dialog-->
+    <p:dialog id="fileEmbargoPopup" styleClass="smallPopUp" resizable="false" header="#{bundle['file.editEmbargo']}" widgetVar="fileEmbargoPopup" modal="true" rendered="#{bean != EditDatafilesPage}">
+        <p:focus for="fileEmbargoDate"/>
+        <p class="help-block" jsf:rendered="#{bean.validEmbargoSelection}">#{bundle['file.editEmbargoDialog.tip']}</p>
+        <p class="text-warning embargo" jsf:rendered="#{bean.validEmbargoSelection and !bean.embargoForWholeSelection}"><span class="glyphicon glyphicon-warning-sign"/>#{bundle['file.editEmbargoDialog.some.tip']} #{bundle['file.editEmbargoDialog.partial.tip']}</p>
+        <p class="text-danger embargo" jsf:rendered="#{!bean.validEmbargoSelection}"><span class="glyphicon glyphicon-exclamation-sign"/>#{bundle['file.editEmbargoDialog.none.tip']}</p>
+
+        <h:panelGroup id="embargoInputs">
+            <div class="embargo">
+
+                <div class="form-horizontal"
+                    jsf:rendered="#{bean.validEmbargoSelection}">
+                    <div class="col-lg-3">
+                        <h:outputText class="embargolabel"
+                            value="#{bundle[ 'file.editEmbargo.add']}" />
+                    </div>
+                    <div class="col-lg-9">
+                        <div>
+                            <label class="help-block" for="datasetForm:fileEmbargoDate_input">
+                                #{bundle['file.editEmbargoDialog.newDate']} <span
+                                    class="glyphicon glyphicon-asterisk text-danger"
+                                    jsf:rendered="#{!bean.removeEmbargo}" />
+                            </label>
+                            <p:datePicker id="fileEmbargoDate"
+                                value="#{bean.selectionEmbargo.dateAvailable}"
+                                locale="#{dataverseSession.localeCode}"
+                                mindate="#{settingsWrapper.minEmbargoDate}" pattern="yyyy-MM-dd"
+                                maxdate="#{settingsWrapper.maxEmbargoDate}"
+                                disabled="#{bean.removeEmbargo}"
+                                validator="#{settingsWrapper.validateEmbargoDate}" >
+                                <p:ajax process="#{updateElements}"
+                                    update="#{updateElements}"
+                                    />
+                                </p:datePicker>
+                            <div>
+                                <h:message for="fileEmbargoDate"
+                                    styleClass="bg-danger text-danger" />
+                            </div>
+                        </div>
+                        <div class="p-field p-col-12 p-md-4">
+                            <p class="help-block">#{bundle['file.editEmbargoDialog.reason.tip']}</p>
+                            <p:inputText id="fileEmbargoAddReason" styleClass="form-control"
+                                disabled="#{bean.removeEmbargo}" type="text"
+                                value="#{bean.selectionEmbargo.reason}"
+                                placeholder="#{bundle['file.editEmbargoDialog.newReason']}"
+                                onkeypress="if (event.keyCode == 13) { return false;}" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="embargo">
+                <div jsf:rendered="#{bean.existingEmbargo}" class="embargocheckbox">
+                    <div class="col-lg-3">
+                        <h:outputText class="embargolabel"
+                            value="#{bundle[ 'file.editEmbargo.delete']}" />
+                    </div>
+                    <div class="col-lg-9">
+                        <p:selectBooleanCheckbox value="#{bean.removeEmbargo}" id="embargoCheckbox"
+                            itemLabel="#{bundle['file.editEmbargoDialog.remove']}"
+                            disabled="#{facesContext.validationFailed}">
+                            <p:ajax process="#{updateElements}"
+                                update="#{updateElements}"
+                                />
+                        </p:selectBooleanCheckbox>
+                    </div>
+                </div>
+            </div>
+        </h:panelGroup>
+        <div class="button-block">
+            <p:commandButton rendered="#{bean.validEmbargoSelection}" styleClass="btn btn-default" id="fileEmbargoPopupSaveButton" value="#{bundle.saveChanges}" 
+            oncomplete="if (args &amp;&amp; !args.validationFailed) PF('fileEmbargoPopup').hide();return false;" update="#{updateElements}" action="#{bean[saveEmbargoAction]}"/>
+            <p:commandButton styleClass="btn btn-link" id="fileEmbargoPopupCancelButton" value="#{bundle.cancel}" onclick="PF('fileEmbargoPopup').hide();
+                    PF('blockDatasetForm').hide();" action="#{bean.clearEmbargoPopup()}" update="#{updateElements}" immediate="true"/>
+        </div>
+    </p:dialog>
+    
     <p:dialog id="deleteFileConfirm" styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteFileConfirmation" modal="true">
         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.immediate']}</p>
         <ui:fragment rendered="#{datasetVersion.dataset.released}">
@@ -93,6 +197,27 @@
                 #{bundle.close}
             </button>
         </div>
-    </p:dialog>     
-        
+    </p:dialog> 
+    <p:remoteCommand name="restrictFileCommand" action="#{bean[restrictFileAction](true)}" update=":messagePanel"/>
+        <script>
+        //<![CDATA[
+            function testTOA() {
+                var termsofAccessHidden, fileAccessRequestHidden;
+                    try{
+                        termsofAccessHidden  = document.getElementById("datasetForm:termsofAccessHidden").value;
+                        fileAccessRequestHidden  =   document.getElementById("datasetForm:fileAccessRequestHidden").value;                                                    
+                    } catch (error){
+                        termsofAccessHidden  = document.getElementById("fileForm:termsofAccessHidden").value;
+                        fileAccessRequestHidden  =   document.getElementById("fileForm:fileAccessRequestHidden").value;
+                    }
+                        if (fileAccessRequestHidden === 'false' && termsofAccessHidden === '') {
+                           //Not compliant show error keep popup open...
+                        } else {
+                            PF('accessPopup').hide();
+                            restrictFileCommand();
+                        }
+                    }                    
+        //]]>
+    </script>
+       
 </ui:composition>

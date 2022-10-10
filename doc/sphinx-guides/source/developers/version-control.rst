@@ -11,7 +11,7 @@ The Dataverse Project uses git for version control and GitHub for hosting. On th
 Where to Find the Dataverse Software Code
 -----------------------------------------
 
-The main Dataverse Software code at https://github.com/IQSS/dataverse but as explained in the :doc:`intro` section under "Related Projects", there are many other code bases you can hack on if you wish!
+The main Dataverse Software code is available at https://github.com/IQSS/dataverse but as explained in the :doc:`intro` section under "Related Projects", there are many other code bases you can hack on if you wish!
 
 Branching Strategy
 ------------------
@@ -46,6 +46,13 @@ Feature branches are used for both developing features and fixing bugs. They are
 
 "3728-doc-apipolicy-fix" is an example of a fine name for your feature branch. It tells us that you are addressing https://github.com/IQSS/dataverse/issues/3728 and the "slug" is short, descriptive, and starts with the issue number.
 
+Hotfix Branches
+***************
+
+Hotfix branches are described under :doc:`making-releases`.
+
+.. _how-to-make-a-pull-request:
+
 How to Make a Pull Request
 --------------------------
 
@@ -67,7 +74,7 @@ If you tell us your GitHub username we are happy to add you to the "read only" t
 Create a New Branch off the develop Branch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Always create your feature branch from the latest code in develop, pulling the latest code if necessary. As mentioned above, your branch should have a name like "3728-doc-apipolicy-fix" that starts with the issue number you are addressing, and ends with a short, descriptive name. Dashes ("-") and underscores ("_") in your branch name are ok, but please try to avoid other special characters such as ampersands ("&") than have special meaning in Unix shells.
+Always create your feature branch from the latest code in develop, pulling the latest code if necessary. As mentioned above, your branch should have a name like "3728-doc-apipolicy-fix" that starts with the issue number you are addressing, and ends with a short, descriptive name. Dashes ("-") and underscores ("_") in your branch name are ok, but please try to avoid other special characters such as ampersands ("&") that have special meaning in Unix shells.
 
 Commit Your Change to Your New Branch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -96,10 +103,11 @@ Look at https://github.com/IQSS/dataverse/blob/master/CONTRIBUTING.md for variou
 Summary of Git commands
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-This section provides sequences of Git commands for two scenarios:
+This section provides sequences of Git commands for three scenarios:
 
 * preparing the first request, when the IQSS Dataverse Software repository and the forked repository are identical
 * creating an additional request after some time, when the IQSS Dataverse Software repository is ahead of the forked repository
+* while your pull requests are in review the develop branch has been updated, so you have to keep your code base synchronized with the current state of develop branch
 
 In the examples we use 123-COOL-FEATURE as the name of the feature branch, and https://github.com/YOUR_NAME/dataverse.git as your forked repository's URL. In practice modify both accordingly.
 
@@ -133,7 +141,7 @@ In the examples we use 123-COOL-FEATURE as the name of the feature branch, and h
 
         git checkout develop
 
-        # update local develop banch from https://github.com/IQSS/dataverse
+        # update local develop branch from https://github.com/IQSS/dataverse
         git fetch upstream develop
         git rebase upstream/develop
 
@@ -150,6 +158,35 @@ In the examples we use 123-COOL-FEATURE as the name of the feature branch, and h
         git push -u origin 123-COOL-FEATURE
 
         # ... then create pull request at github.com/YOUR_NAME/dataverse
+
+
+**3rd scenario: synchronize your branch with develop branch**
+
+.. code-block:: bash
+
+        git checkout develop
+
+        # update local develop branch from https://github.com/IQSS/dataverse
+        git fetch upstream develop
+        git rebase upstream/develop
+
+        # update remote develop branch at https://github.com/YOUR_NAME/dataverse
+        git push
+
+        # change to the already existing feature branch
+        git checkout 123-COOL-FEATURE
+
+        # merge changes of develop to the feature branch
+        git merge develop
+
+        # check if there are conflicts, if there are follow the next command, otherwise skip to next block
+        # 1. fix the relevant files (including testing)
+        # 2. commit changes
+        git add <fixed files>
+        git commit
+
+        # update remote feature branch at https://github.com/YOUR_NAME/dataverse
+        git push
 
 
 How to Resolve Conflicts in Your Pull Request

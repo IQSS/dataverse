@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.Ma
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.IOException;
@@ -291,27 +292,15 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     
     /**
      * Launch an "explore" tool which is a type of ExternalTool such as
-     * TwoRavens or Data Explorer. This method may be invoked directly from the
+     * Data Explorer. This method may be invoked directly from the
      * xhtml if no popup is required (no terms of use, no guestbook, etc.).
      */
     public void explore(GuestbookResponse guestbookResponse, FileMetadata fmd, ExternalTool externalTool) {
         ApiToken apiToken = null;
         User user = session.getUser();
         DatasetVersion version = fmd.getDatasetVersion();
-        if (version.isDraft() || (fmd.getDataFile().isRestricted())) {
-            if (user instanceof AuthenticatedUser) {
-                AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
-                apiToken = authService.findApiTokenByUser(authenticatedUser);
-                if (apiToken == null) {
-                    //No un-expired token
-                    apiToken = authService.generateApiTokenForUser(authenticatedUser);
-                }
-            } else if (user instanceof PrivateUrlUser) {
-                PrivateUrlUser privateUrlUser = (PrivateUrlUser) user;
-                PrivateUrl privateUrl = privateUrlService.getPrivateUrlFromDatasetId(privateUrlUser.getDatasetId());
-                apiToken = new ApiToken();
-                apiToken.setTokenString(privateUrl.getToken());
-            }
+        if (version.isDraft() || (fmd.getDataFile().isRestricted()) || (FileUtil.isActivelyEmbargoed(fmd))) {
+            apiToken = getApiToken(user);
         }
         DataFile dataFile = null;
         if (fmd != null) {
@@ -323,11 +312,9 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
         String localeCode = session.getLocaleCode();
         ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd, localeCode);
-        // Back when we only had TwoRavens, the downloadType was always "Explore". Now we persist the name of the tool (i.e. "TwoRavens", "Data Explorer", etc.)
+        // Persist the name of the tool (i.e. "Data Explorer", etc.)
         guestbookResponse.setDownloadtype(externalTool.getDisplayName());
-        String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
-        logger.fine("Exploring with " + toolUrl);
-        PrimeFaces.current().executeScript("window.open('"+toolUrl + "', target='_blank');");
+        PrimeFaces.current().executeScript(externalToolHandler.getExploreScript());
         // This is the old logic from TwoRavens, null checks and all.
         if (guestbookResponse != null && guestbookResponse.isWriteResponse()
                 && ((fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)) {
@@ -340,8 +327,22 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
     }
 
-    public Boolean canSeeTwoRavensExploreButton(){
-        return false;
+    public ApiToken getApiToken(User user) {
+        ApiToken apiToken = null;
+        if (user instanceof AuthenticatedUser) {
+            AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
+            apiToken = authService.findApiTokenByUser(authenticatedUser);
+            if (apiToken == null || apiToken.isExpired()) {
+                //No un-expired token
+                apiToken = authService.generateApiTokenForUser(authenticatedUser);
+            }
+        } else if (user instanceof PrivateUrlUser) {
+            PrivateUrlUser privateUrlUser = (PrivateUrlUser) user;
+            PrivateUrl privateUrl = privateUrlService.getPrivateUrlFromDatasetId(privateUrlUser.getDatasetId());
+            apiToken = new ApiToken();
+            apiToken.setTokenString(privateUrl.getToken());
+        }
+        return apiToken;
     }
 
     public void downloadDatasetCitationXML(Dataset dataset) {
@@ -500,9 +501,9 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         return false;
     }    
     
-    public void sendRequestFileAccessNotification(Dataset dataset, Long fileId, AuthenticatedUser requestor) {
-        permissionService.getUsersWithPermissionOn(Permission.ManageDatasetPermissions, dataset).stream().forEach((au) -> {
-            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, fileId, null, requestor, false);
+    public void sendRequestFileAccessNotification(DataFile datafile, AuthenticatedUser requestor) {
+        permissionService.getUsersWithPermissionOn(Permission.ManageFilePermissions, datafile).stream().forEach((au) -> {
+            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, datafile.getId(), null, requestor, false);
         });
 
     } 
@@ -541,11 +542,12 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
                 
         if (location != null && fileName != null) {
-            em.createNativeQuery("INSERT INTO CUSTOMZIPSERVICEREQUEST (KEY, STORAGELOCATION, FILENAME, ISSUETIME) VALUES ("
-                    + "'" + key + "',"
-                    + "'" + location + "',"
-                    + "'" + fileName + "',"
-                    + "'" + timestamp + "');").executeUpdate();
+            em.createNativeQuery("INSERT INTO CUSTOMZIPSERVICEREQUEST (KEY, STORAGELOCATION, FILENAME, ISSUETIME) VALUES (?1,?2,?3,?4);")
+                    .setParameter(1,key)
+                    .setParameter(2,location)
+                    .setParameter(3,fileName)
+                    .setParameter(4,timestamp)
+                    .executeUpdate();
         }
         
         // TODO:
@@ -558,12 +560,12 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     
     public String getDirectStorageLocatrion(String storageLocation) {
         String storageDriverId;
-        int separatorIndex = storageLocation.indexOf("://");
+        int separatorIndex = storageLocation.indexOf(DataAccess.SEPARATOR);
         if ( separatorIndex > 0 ) {
             storageDriverId = storageLocation.substring(0,separatorIndex);
         
             String storageType = DataAccess.getDriverType(storageDriverId);
-            if ("file".equals(storageType) || "s3".equals(storageType)) {
+            if (DataAccess.FILE.equals(storageType) || DataAccess.S3.equals(storageType)) {
                 return storageType.concat(storageLocation.substring(separatorIndex));
             }
         }

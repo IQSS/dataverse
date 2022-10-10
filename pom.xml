@@ -1,143 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd;">
     <modelVersion>4.0.0</modelVersion>
+    
+    <parent>
+        <groupId>edu.harvard.iq</groupId>
+        <artifactId>dataverse-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>modules/dataverse-parent</relativePath>
+    </parent>
+    
     <!--
     If you are doing more than bumping the version number, please read
     doc/sphinx-guides/source/developers/dependencies.rst
     -->
-    <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
-    <version>5.5</version>
     <packaging>war</packaging>
     <name>dataverse</name>
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <additionalparam>-Xdoclint:none</additionalparam>
-        <!-- Needed to avoid IDEA IDE compilation failures. See commits in GH #5059 -->
-        <compilerArgument></compilerArgument>
-        <project.timezone>UTC</project.timezone>
-        <project.language>en</project.language>
-        <project.region>US</project.region>
-        <!--
-            Moving this from plugin config to global config, because of GH-5122.
-            This seems to play well with NetBeans 8.2, IDEA 2018.1 and mvn including compatibility with JaCoCo.
-        -->
-        <argLine>-Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
         <skipUnitTests>false</skipUnitTests>
-    
-        <jakartaee-api.version>8.0.0</jakartaee-api.version>
-        <payara.version>5.2020.6</payara.version>
-        <postgresql.version>42.2.19</postgresql.version>
-        <aws.version>1.11.762</aws.version>
-        <commons.logging.version>1.2</commons.logging.version>
-        <httpcomponents.client.version>4.5.5</httpcomponents.client.version>
-        <junit.version>4.13.1</junit.version>
-        <junit.jupiter.version>5.7.0</junit.jupiter.version>
-        <junit.vintage.version>${junit.jupiter.version}</junit.vintage.version>
-        <testcontainers.version>1.15.0</testcontainers.version>
-        <microbean-mpconfig.version>0.4.1</microbean-mpconfig.version>
-        <mockito.version>2.28.2</mockito.version>
-        <flyway.version>5.2.4</flyway.version>
+        <reload4j.version>1.2.18.4</reload4j.version>
+        <flyway.version>8.5.10</flyway.version>
         <jhove.version>1.20.1</jhove.version>
-        <jacoco.version>0.8.6</jacoco.version>
+        <jacoco.version>0.8.7</jacoco.version>
+        <poi.version>5.2.1</poi.version>
+        <tika.version>2.4.1</tika.version>
     </properties>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>central</id>
-            <name>Central Repository</name>
-            <url>https://repo.maven.apache.org/maven2</url>
-            <layout>default</layout>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <releases>
-                <updatePolicy>never</updatePolicy>
-            </releases>
-        </pluginRepository>
-    </pluginRepositories>
-    <!--Maven checks for dependencies from these repos in the order shown in the pom.xml
-        This isn't well documented and seems to change between maven versions -MAD 4.9.4 -->
-    <repositories>
-        <repository>
-            <id>payara-patched-externals</id>
-            <name>Payara Patched Externals</name>
-            <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>central-repo</id>
-            <name>Central Repository</name>
-            <url>https://repo1.maven.org/maven2</url>
-            <layout>default</layout>
-        </repository>
-        <repository>
-            <id>prime-repo</id>
-            <name>PrimeFaces Maven Repository</name>
-            <url>https://repository.primefaces.org</url>
-            <layout>default</layout>
-        </repository>
-        <repository>
-            <id>dataone.org</id>
-            <url>https://maven.dataone.org</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>dvn.private</id>
-            <name>Local repository for hosting jars not available from network repositories.</name>
-            <url>file://${project.basedir}/local_lib</url>
-        </repository>
-    </repositories>
-    <!-- Transitive dependencies, bigger library "bill of materials" (BOM) and
-         versions of dependencies used both directly and transitive are managed here. -->
+    
+    <!-- Versions of dependencies used both directly and transitive are managed here.
+         REMEMBER: only manage things here that are going to be used ONLY for this module.
+                   Anything else should go into the parent POM!
+    -->
     <dependencyManagement>
         <dependencies>
+            <!-- Dependency of sword2-server and used in our codebase -->
             <dependency>
-                <groupId>fish.payara.api</groupId>
-                <artifactId>payara-bom</artifactId>
-                <version>${payara.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
+                <groupId>org.apache.abdera</groupId>
+                <artifactId>abdera-core</artifactId>
+                <version>1.1.3</version>
             </dependency>
             <dependency>
-                <groupId>com.amazonaws</groupId>
-                <artifactId>aws-java-sdk-bom</artifactId>
-                <version>${aws.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>commons-logging</groupId>
-                <artifactId>commons-logging</artifactId>
-                <version>${commons.logging.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpclient</artifactId>
-                <version>${httpcomponents.client.version}</version>
-            </dependency>
-            <dependency>
-              <groupId>com.google.cloud</groupId>
-              <artifactId>google-cloud-bom</artifactId>
-              <version>0.115.0-alpha</version>
-              <type>pom</type>
-              <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.testcontainers</groupId>
-                <artifactId>testcontainers-bom</artifactId>
-                <version>${testcontainers.version}</version>
-                <scope>import</scope>
-                <type>pom</type>
+                <groupId>org.apache.abdera</groupId>
+                <artifactId>abdera-i18n</artifactId>
+                <version>1.1.3</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -147,87 +52,72 @@
     -->
     <!-- TODO: Housekeeping is utterly needed. -->
     <dependencies>
+
+        <!-- This dependency ensures the lib is on the classpath. That way, anything coming from
+             SLF4J should flow through our usual ways of using java.util.logging.
+             (Which makes it also configurable using those mechanisms.) No direct use intended. -->
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        
+	    <dependency>
             <groupId>org.passay</groupId>
             <artifactId>passay</artifactId>
-            <version>1.1.0</version>
+            <version>1.6.0</version>
         </dependency>
+        
+        <!-- TECHNICAL DEBT
+             For a very long time, in a lots of places people used org.apache.commons.httpclient to access
+             HTTP resources, wrap responses in exceptions etc.
+             
+             This library had been used via an transitive dependency of sword2-server. During its recent updates,
+             the dependency was dropped, went missing, eventually breaking our code. Re-adding this 2007 goodie here
+             as a direct dependency.
+             
+             There is a lot of technical debt in the codebase regarding HTTP client calls. Sometimes
+             java.net.HttpUrlConnection is used, sometimes Apache, sometimes Unirest and what not.
+             A big pile of historically grown mess. Some poor dev should take a Kleenex and call for "payback time". -->
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>javax.json</artifactId>
-            <version>1.0.4</version>
-            <scope>test</scope>
+            <groupId>commons-httpclient</groupId>
+            <artifactId>commons-httpclient</artifactId>
+            <version>3.1</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpcore</artifactId>
-            <version>4.4.9</version>
-        </dependency>
+    
         <!-- BEGIN Data Deposit API v1 (SWORD v2) -->
         <dependency>
-            <groupId>org.swordapp</groupId>
+            <groupId>io.gdcc</groupId>
             <artifactId>sword2-server</artifactId>
-            <version>1.0</version>
-            <type>jar</type>
-            <classifier>classes</classifier>
+            <version>1.2.1</version>
         </dependency>
+        <!-- Dependency to use sword2-server in our codebase -->
         <dependency>
-            <groupId>org.swordapp</groupId>
-            <artifactId>sword2-server</artifactId>
-            <!--
-            Built from https://github.com/IQSS/swordv2-java-server-library
-            to return a proper SWORD error message rather than a Glassfish
-            Exception per https://github.com/IQSS/dataverse/issues/893
-            If the fix is merged upstream at
-            https://github.com/swordapp/JavaServer2.0/issues/6
-            we can switch back to the official SWORD library.
-            -->
-            <version>1.1-SNAPSHOT</version>
-            <type>war</type>
-            <exclusions>
-                <exclusion>
-                    <groupId>xerces</groupId>
-                    <artifactId>xercesImpl</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>org.apache.abdera</groupId>
+            <artifactId>abdera-core</artifactId>
+            <!-- no version here as managed in <dependencyManagement> above for convergence! -->
         </dependency>
+        <!-- Dependency to use sword2-server in our codebase -->
+        <dependency>
+            <groupId>org.apache.abdera</groupId>
+            <artifactId>abdera-i18n</artifactId>
+            <!-- no version here as managed in <dependencyManagement> above for convergence! -->
+        </dependency>
+        
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
             <!-- no version here as managed by BOM above! -->
         </dependency>
         <dependency>
-            <!-- required by org.swordapp.server.sword2-server -->
-            <groupId>org.apache.abdera</groupId>
-            <artifactId>abdera-core</artifactId>
-            <version>1.1.3</version>
-        </dependency>
-        <dependency>
-            <!-- required by org.swordapp.server.sword2-server -->
-            <groupId>org.apache.abdera</groupId>
-            <artifactId>abdera-parser</artifactId>
-            <version>1.1.3</version>
-        </dependency>
-        <dependency>
-            <!-- required by org.swordapp.server.sword2-server -->
-            <groupId>commons-fileupload</groupId>
-            <artifactId>commons-fileupload</artifactId>
-            <version>1.3.3</version>
-        </dependency>
-        <dependency>
-            <!-- a dependency of commons-fileupload, but newer version required by tika -->
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.7</version>
+          <groupId>com.apicatalog</groupId>
+          <artifactId>titanium-json-ld</artifactId>
+          <version>1.3.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.2.4</version>
+            <version>2.8.9</version>
             <scope>compile</scope>
         </dependency>
         <!-- Should be refactored and moved to transitive section above once on Java EE 8 (makes WAR smaller) -->
@@ -243,13 +133,6 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <!-- required by org.swordapp.server.sword2-server -->
-            <groupId>com.io7m.xom</groupId>
-            <artifactId>xom</artifactId>
-            <version>1.2.10</version>
-        </dependency>
-        <!-- END Data Deposit API v1 (SWORD v2) -->
-        <dependency>
             <!-- There are later versions of this lib available at jitpack.io,
                  but it seemed better to not add another repo. -->
             <groupId>org.everit.json</groupId>
@@ -259,12 +142,11 @@
         <dependency>
             <groupId>org.mindrot</groupId>
             <artifactId>jbcrypt</artifactId>
-            <version>0.3m</version>
+            <version>0.4</version>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>${postgresql.version}</version>
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
@@ -288,6 +170,18 @@
             <version>${jakartaee-api.version}</version>
             <scope>provided</scope>
         </dependency>
+        <!-- JSON-P -->
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.json</artifactId>
+            <scope>provided</scope>
+            <!-- no version here as managed by Payara BOM above! -->
+        </dependency>
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>jakarta.mail</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.faces</artifactId>
@@ -296,7 +190,7 @@
         <dependency>
             <groupId>org.primefaces</groupId>
             <artifactId>primefaces</artifactId>
-            <version>8.0</version>
+            <version>11.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.primefaces.themes</groupId>
@@ -308,24 +202,38 @@
             <artifactId>omnifaces</artifactId>
             <version>3.8</version> <!-- Or 1.8-SNAPSHOT -->
         </dependency>
+        
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
+            <scope>provided</scope>
         </dependency>
-      <dependency>
+        <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.el</artifactId>
             <scope>provided</scope>
         </dependency>
+        
         <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>2.6</version>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <!-- no version here as managed in <dependencyManagement> of parent for convergence! -->
         </dependency>
         <dependency>
-            <groupId>org.apache.solr</groupId>
-            <artifactId>solr-solrj</artifactId>
-            <version>8.8.1</version>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <!-- no version here as managed in <dependencyManagement> of parent for convergence! -->
+        </dependency>
+        <!-- Some utils from commons.lang have been moved to commons-text (especially escapeHtml()) -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>1.9</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -335,7 +243,13 @@
         <dependency>
             <groupId>commons-validator</groupId>
             <artifactId>commons-validator</artifactId>
-            <version>1.6</version>
+            <version>1.7</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.apache.solr</groupId>
+            <artifactId>solr-solrj</artifactId>
+            <version>8.11.1</version>
         </dependency>
         <dependency>
             <groupId>colt</groupId>
@@ -381,17 +295,17 @@
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
-            <version>4.1.1</version>
+            <version>${poi.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
-            <version>4.1.1</version>
+            <version>${poi.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-scratchpad</artifactId>
-            <version>4.1.1</version>
+            <version>${poi.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openpreservation.jhove</groupId>
@@ -417,12 +331,12 @@
         <dependency>
             <groupId>org.ocpsoft.rewrite</groupId>
             <artifactId>rewrite-servlet</artifactId>
-            <version>3.4.2.Final</version>
+            <version>3.5.0.Final</version>
         </dependency>
         <dependency>
             <groupId>org.ocpsoft.rewrite</groupId>
             <artifactId>rewrite-config-prettyfaces</artifactId>
-            <version>3.4.2.Final</version>
+            <version>3.5.0.Final</version>
         </dependency>
         <dependency>
             <groupId>edu.ucsb.nceas</groupId>
@@ -433,28 +347,8 @@
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>1.11.3</version>
+            <version>1.15.3</version>
         </dependency>
-        <!-- Added specific versionf of SLF4J jars; otherwise we end up with
-        conflicting versions of slf4j-api and slf4j-log4j12, loaded as
-        dependencies for different packages; which was causing some incompatibility
-        issues -L.A. 4.3 -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.7</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.7</version>
-        </dependency>
-        <!-- Added for DataCite -->
-        <!--dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>1.6.1</version>
-        </dependency -->
         <dependency>
             <groupId>io.searchbox</groupId>
             <artifactId>jest</artifactId>
@@ -463,7 +357,7 @@
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.9</version>
+            <version>1.15</version>
         </dependency>
         <!-- JavaSwift/JOSS: for accessing OpenStack cloud storage -->
         <dependency>
@@ -486,7 +380,7 @@
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>oauth2-oidc-sdk</artifactId>
-            <version>6.18</version>
+            <version>9.41.1</version>
         </dependency>
         <!-- EXPERIMENTAL: -->
         <!-- lyncode xoai OAI-PMH implementation: -->
@@ -494,6 +388,11 @@
         <!-- is still buggy. As an experiment, I'm using -->
         <!-- a patched version I built locally. -->
         <!-- (pull requests pending - L.A. -->
+        <!-- These locally-built XOAI libraries are still a serious debt -->
+        <!-- that needs to be addressed. Adding explicit "exclusion" entries -->
+        <!-- below for the immediate purpose of getting rid of the log4j library -->
+        <!-- that was being added to the project via these dependencies. (L.A. - Jan. 2022) -->
+        <!-- (note the reload4j explicitly added below as a replacement! -->
         <dependency>
             <groupId>com.lyncode</groupId>
             <artifactId>xoai-common</artifactId>
@@ -503,11 +402,32 @@
             <groupId>com.lyncode</groupId>
             <artifactId>xoai-data-provider</artifactId>
             <version>4.1.0-header-patch</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.lyncode</groupId>
             <artifactId>xoai-service-provider</artifactId>
             <version>4.1.0-header-patch</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- reload4j is a drop-in security patch/replacement for log4j1. -->
+        <!-- it is here because the XOAI libraries above need it. -->
+        <!-- (https://reload4j.qos.ch/) -->
+        <dependency>
+            <groupId>ch.qos.reload4j</groupId>
+            <artifactId>reload4j</artifactId>
+            <version>${reload4j.version}</version>
+            <scope>runtime</scope>
         </dependency>
         <!-- Added for AutoService -->
         <dependency>
@@ -538,12 +458,12 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
-            <version>1.19</version>
+            <!-- no version here as managed by <dependencyManagement> above! -->
         </dependency>
         <dependency>
             <groupId>org.duracloud</groupId>
             <artifactId>common</artifactId>
-            <version>4.4.6</version>
+            <version>7.1.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -558,7 +478,7 @@
         <dependency>
             <groupId>org.duracloud</groupId>
             <artifactId>storeclient</artifactId>
-            <version>4.4.6</version>
+            <version>7.1.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -574,16 +494,16 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>commons-cli</groupId>
-            <artifactId>commons-cli</artifactId>
-            <version>1.2</version>
-        </dependency>
         <!--  Full text indexing -->
         <dependency>
             <groupId>org.apache.tika</groupId>
-            <artifactId>tika-parsers</artifactId>
-            <version>1.24.1</version>
+            <artifactId>tika-core</artifactId>
+            <version>${tika.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-parsers-standard-package</artifactId>
+            <version>${tika.version}</version>
         </dependency>
         <!-- Named Entity Recognition -->
         <dependency>
@@ -594,9 +514,21 @@
         <dependency>
           <groupId>com.google.cloud</groupId>
           <artifactId>google-cloud-storage</artifactId>
-          <version>1.97.0</version>
+          <!-- no version here as managed in <dependencyManagement> of parent for convergence! -->
         </dependency>
-        
+        <!-- JWT support, currently in DRSSubmitToArchiveCommand-->
+        <!-- https://mvnrepository.com/artifact/com.auth0/java-jwt -->
+        <dependency>
+          <groupId>com.auth0</groupId>
+          <artifactId>java-jwt</artifactId>
+          <version>3.19.1</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/io.github.erdtman/java-json-canonicalization -->
+        <dependency>
+          <groupId>io.github.erdtman</groupId>
+          <artifactId>java-json-canonicalization</artifactId>
+          <version>1.1</version>
+        </dependency>
         
         <!-- TESTING DEPENDENCIES -->
         <dependency>
@@ -624,10 +556,34 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.20.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-assertj3</artifactId>
+            <version>2.8.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.jayway.restassured</groupId>
             <artifactId>rest-assured</artifactId>
             <version>2.4.0</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.skyscreamer</groupId>
+            <artifactId>jsonassert</artifactId>
+            <version>1.5.0</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.vaadin.external.google</groupId>
+                    <artifactId>android-json</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
@@ -657,9 +613,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.microbean</groupId>
-            <artifactId>microbean-microprofile-config</artifactId>
-            <version>${microbean-mpconfig.version}</version>
+            <groupId>io.smallrye.config</groupId>
+            <artifactId>smallrye-config</artifactId>
+            <version>${smallrye-mpconfig.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -697,16 +653,31 @@
                     <include>**/*.xml</include>
                     <include>**/firstNames/*.*</include>
                     <include>**/*.xsl</include>
-                    <include>**/*.properties</include>
                     <include>**/services/*</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <!-- Filter files matching here for Maven properties and replace -->
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/*.properties</include>
                 </includes>
             </resource>
         </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <release>${target.java.version}</release>
+                    <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
+                    <compilerArgument>${compilerArgument}</compilerArgument>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.3</version>
                 <configuration>
                     <archive>
                         <manifest>
@@ -719,7 +690,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>2.3</version>
                 <configuration>
                     <attachClasses>true</attachClasses>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
@@ -730,11 +700,6 @@
                         </manifest>
                     </archive>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.1.1</version>
             </plugin>
             <plugin>
                 <groupId>de.qaware.maven</groupId>
@@ -772,7 +737,7 @@
             <plugin>
                 <groupId>org.eluder.coveralls</groupId>
                 <artifactId>coveralls-maven-plugin</artifactId>
-                <version>4.0.0</version>
+                <version>4.3.0</version>
                 <dependencies>
                     <dependency>
                         <groupId>javax.xml.bind</groupId>
@@ -782,10 +747,10 @@
                 </dependencies>
             </plugin>
             <plugin>
-                <!-- https://stackoverflow.com/questions/46177921/how-to-run-unit-tests-in-excludedgroups-in-maven -->
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.2</version>
                 <configuration>
+                    <!-- https://stackoverflow.com/questions/46177921/how-to-run-unit-tests-in-excludedgroups-in-maven -->
                     <!-- testsToExclude come from the profile-->
                     <excludedGroups>${testsToExclude}</excludedGroups>
                     <skip>${skipUnitTests}</skip>
@@ -794,7 +759,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>3.0.0</version>
                 <configuration>
                     <configLocation>checkstyle.xml</configLocation>
                     <encoding>UTF-8</encoding>
@@ -819,26 +783,6 @@
             <id>all-unit-tests</id>
         </profile>
         <!-- TODO: Add a profile to run API tests (integration tests that end in IT.java. See conf/docker-aio/run-test-suite.sh -->
-      <profile>
-        <id>Java9Plus</id>
-        <activation>
-          <jdk>[1.9</jdk>
-        </activation>
-        <build>
-          <plugins>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-compiler-plugin</artifactId>
-              <version>3.8.0</version>
-              <configuration>
-                <release>11</release>
-                <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
-                <compilerArgument>${compilerArgument}</compilerArgument>
-              </configuration>
-            </plugin>
-          </plugins>
-        </build>
-      </profile>
         <profile>
             <id>tc</id>
             <properties>
@@ -850,7 +794,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
-                        <version>2.22.2</version>
+                        <version>${maven-failsafe-plugin.version}</version>
                         <configuration>
                             <groups>testcontainers</groups>
                             <systemPropertyVariables>
