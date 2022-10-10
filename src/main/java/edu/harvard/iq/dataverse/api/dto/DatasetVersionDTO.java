@@ -56,9 +56,6 @@ public class DatasetVersionDTO {
     }
 
     public String getTermsOfUse() {
-    	if (termsOfUse != null && termsOfUse.contains("CC0")) {
-    		termsOfUse = termsOfUse.replace("CC0", "CC BY");
-    	}
         return termsOfUse;
     }
 
@@ -310,9 +307,6 @@ public class DatasetVersionDTO {
     }
     
     public String getLicense() {
-        if (license != null && license.contains("CC0")) {
-            license = license.replace("CC0", "CC BY");
-        }
         return license;
     }
 

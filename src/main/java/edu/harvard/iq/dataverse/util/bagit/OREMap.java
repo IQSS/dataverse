@@ -150,7 +150,7 @@ public class OREMap {
         TermsOfUseAndAccess terms = version.getTermsOfUseAndAccess();
         if (terms.getLicense() == TermsOfUseAndAccess.License.CC0) {
             aggBuilder.add(JsonLDTerm.schemaOrg("license").getLabel(),
-                    "https://creativecommons.org/licenses/by/4.0/");
+                    "https://creativecommons.org/publicdomain/zero/1.0/");
         } else {
             addIfNotNull(aggBuilder, JsonLDTerm.termsOfUse, terms.getTermsOfUse());
         }
