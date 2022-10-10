@@ -1,7 +1,5 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.DOIDataCiteRegisterService;
-import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetLock.Reason;
@@ -15,27 +13,17 @@ import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.nio.charset.Charset;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 
 import java.io.File;
 import java.io.FileOutputStream;
 
-import org.apache.commons.codec.binary.Hex;
-
 import org.apache.commons.io.FileUtils;
-
-
 
 @RequiredPermissions(Permission.PublishDataset)
 public class LocalSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand implements Command<DatasetVersion> {
@@ -47,14 +35,20 @@ public class LocalSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand 
     }
 
     @Override
-    public WorkflowStepResult performArchiveSubmission(DatasetVersion dv, ApiToken token, Map<String, String> requestedSettings) {
+    public WorkflowStepResult performArchiveSubmission(DatasetVersion dv, ApiToken token,
+            Map<String, String> requestedSettings) {
         logger.fine("In LocalCloudSubmitToArchive...");
         String localPath = requestedSettings.get(":BagItLocalPath");
-
+        String zipName = null;
+        
+        //Set a failure status that will be updated if we succeed
+        JsonObjectBuilder statusObject = Json.createObjectBuilder();
+        statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
+        statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, "Bag not transferred");
+        
         try {
 
             Dataset dataset = dv.getDataset();
-
 
             if (dataset.getLockFor(Reason.finalizePublication) == null
                     && dataset.getLockFor(Reason.FileValidationFailed) == null) {
@@ -62,30 +56,40 @@ public class LocalSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand 
                 String spaceName = dataset.getGlobalId().asString().replace(':', '-').replace('/', '-')
                         .replace('.', '-').toLowerCase();
 
-                DataCitation dc = new DataCitation(dv);
-                Map<String, String> metadata = dc.getDataCiteMetadata();
-                String dataciteXml = DOIDataCiteRegisterService.getMetadataFromDvObject(
-                        dv.getDataset().getGlobalId().asString(), metadata, dv.getDataset());
-
-
-                FileUtils.writeStringToFile(new File(localPath+"/"+spaceName + "-datacite.v" + dv.getFriendlyVersionNumber()+".xml"), dataciteXml);
+                String dataciteXml = getDataCiteXml(dv);
+                
+                FileUtils.writeStringToFile(
+                        new File(localPath + "/" + spaceName + "-datacite.v" + dv.getFriendlyVersionNumber() + ".xml"),
+                        dataciteXml, StandardCharsets.UTF_8);
                 BagGenerator bagger = new BagGenerator(new OREMap(dv, false), dataciteXml);
+                bagger.setNumConnections(getNumberOfBagGeneratorThreads());
                 bagger.setAuthenticationKey(token.getTokenString());
-                bagger.generateBag(new FileOutputStream(localPath+"/"+spaceName + "v" + dv.getFriendlyVersionNumber() + ".zip"));
+                zipName = localPath + "/" + spaceName + "v" + dv.getFriendlyVersionNumber() + ".zip";
+                //ToDo: generateBag(File f, true) seems to do the same thing (with a .tmp extension) - since we don't have to use a stream here, could probably just reuse the existing code? 
+                bagger.generateBag(new FileOutputStream(zipName + ".partial"));
 
+                File srcFile = new File(zipName + ".partial");
+                File destFile = new File(zipName);
 
-                logger.fine("Localhost Submission step: Content Transferred");
-                StringBuffer sb = new StringBuffer("file://"+localPath+"/"+spaceName + "v" + dv.getFriendlyVersionNumber() + ".zip");
-                dv.setArchivalCopyLocation(sb.toString());
-
+                if (srcFile.renameTo(destFile)) {
+                    logger.fine("Localhost Submission step: Content Transferred");
+                    statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_SUCCESS);
+                    statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, "file://" + zipName);
+                } else {
+                    logger.warning("Unable to move " + zipName + ".partial to " + zipName);
+                }
             } else {
-                logger.warning("Localhost Submision Workflow aborted: Dataset locked for finalizePublication, or because file validation failed");
+                logger.warning(
+                        "Localhost Submision Workflow aborted: Dataset locked for finalizePublication, or because file validation failed");
                 return new Failure("Dataset locked");
             }
-        }  catch (Exception e) {
-            logger.warning(e.getLocalizedMessage() + "here");
+        } catch (Exception e) {
+            logger.warning("Failed to archive " + zipName + " : " + e.getLocalizedMessage());
             e.printStackTrace();
+        } finally {
+            dv.setArchivalCopyLocation(statusObject.build().toString());
         }
+        
         return WorkflowStepResult.OK;
     }
 
