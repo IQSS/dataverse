@@ -11,7 +11,10 @@ import javax.json.JsonObject;
 import javax.xml.stream.XMLStreamException;
 
 /**
- * This exporter is for the OAI
+ * This exporter is for the OAI ("short") flavor of the DDI - that is, without
+ * the variable/data information. The ddi export utility does not need the
+ * version entity to produce that.
+ *
  * @author skraffmi
  */
 @AutoService(Exporter.class)
@@ -31,7 +34,7 @@ public class OAI_DDIExporter implements Exporter {
     @Override
     public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException {
         try {
-            DdiExportUtil.datasetJson2ddi(json, version, outputStream);
+            DdiExportUtil.datasetJson2ddi(json, outputStream);
         } catch (XMLStreamException xse) {
             throw new ExportException ("Caught XMLStreamException performing DDI export");
         }

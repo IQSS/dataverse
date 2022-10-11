@@ -57,11 +57,7 @@ public class DDIExporter implements Exporter {
     
     @Override
     public Boolean isHarvestable() {
-        // No, we don't want this format to be harvested!
-        // For datasets with tabular data the <data> portions of the DDIs 
-        // become huge and expensive to parse; even as they don't contain any 
-        // metadata useful to remote harvesters. -- L.A. 4.5
-        return false;
+        return true;
     }
     
     @Override
