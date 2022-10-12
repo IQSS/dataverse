@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
@@ -16,12 +17,15 @@ import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.json.Json;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 import org.apache.commons.codec.binary.Hex;
@@ -57,9 +61,10 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
             statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, "Bag not transferred");
             
             try {
-                FileInputStream fis = new FileInputStream(System.getProperty("dataverse.files.directory") + System.getProperty("file.separator") + "googlecloudkey.json");
+                JsonObject credObj = JsonUtil.getJsonObject(Files.readString(Paths.get(System.getProperty("dataverse.files.directory"), "googlecloudkey.json")));
+                ServiceAccountCredentials creds= ServiceAccountCredentials.fromPkcs8(credObj.getString("client_id"),credObj.getString("client_email"), credObj.getString("private_key"), credObj.getString("private_key_id"), null);
                 storage = StorageOptions.newBuilder()
-                        .setCredentials(ServiceAccountCredentials.fromStream(fis))
+                        .setCredentials(creds)
                         .setProjectId(projectName)
                         .build()
                         .getService();
