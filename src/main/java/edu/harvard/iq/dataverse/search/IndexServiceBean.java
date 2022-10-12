@@ -38,6 +38,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Timestamp;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -951,6 +952,10 @@ public class IndexServiceBean {
                 
                 //ToDo - define a geom/bbox type solr field and find those instead of just this one
                 if(dsfType.getName().equals(DatasetFieldConstant.geographicBoundingBox)) {
+                    String minWestLon=null;
+                    String maxEastLon=null;
+                    String maxNorthLat=null;
+                    String minSouthLat=null;
                     for (DatasetFieldCompoundValue compoundValue : dsf.getDatasetFieldCompoundValues()) {
                         String westLon=null;
                         String eastLon=null;
@@ -984,9 +989,26 @@ public class IndexServiceBean {
                             } else if (southLat == null) {
                                 southLat = northLat;
                             }
+                            //Find the overall bounding box that includes all bounding boxes
+                            if(minWestLon==null || Float.parseFloat(minWestLon) > Float.parseFloat(westLon)) {
+                                minWestLon=westLon;
+                            }
+                            if(maxEastLon==null || Float.parseFloat(maxEastLon) < Float.parseFloat(eastLon)) {
+                                maxEastLon=eastLon;
+                            }
+                            if(minSouthLat==null || Float.parseFloat(minSouthLat) > Float.parseFloat(southLat)) {
+                                minSouthLat=southLat;
+                            }
+                            if(maxNorthLat==null || Float.parseFloat(maxNorthLat) < Float.parseFloat(northLat)) {
+                                maxNorthLat=northLat;
+                            }
                             //W, E, N, S
                             solrInputDocument.addField("solr_srpt", "ENVELOPE(" + westLon + "," + eastLon + "," + northLat + "," + southLat + ")");
                         }
+                        //Only one bbox per dataset
+                        //W, E, N, S
+                        solrInputDocument.addField("solr_bbox", "ENVELOPE(" + minWestLon + "," + maxEastLon + "," + maxNorthLat + "," + minSouthLat + ")");
+
                     }
                 }
             }
