@@ -19,6 +19,7 @@ import java.io.PipedOutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.CodeSource;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.Map;
@@ -61,6 +62,11 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
             statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, "Bag not transferred");
             
             try {
+                logger.info("Bytestreams source: " + com.google.common.io.ByteStreams.class.getResource(com.google.common.io.ByteStreams.class.getSimpleName() +".class"));
+                CodeSource src = com.google.common.io.ByteStreams.class.getProtectionDomain().getCodeSource();
+                if (src != null) {
+                    logger.info("Location: " + src.getLocation().toExternalForm());
+                }
                 JsonObject credObj = JsonUtil.getJsonObject(Files.readString(Paths.get(System.getProperty("dataverse.files.directory"), "googlecloudkey.json")));
                 ServiceAccountCredentials creds= ServiceAccountCredentials.fromPkcs8(credObj.getString("client_id"),credObj.getString("client_email"), credObj.getString("private_key"), credObj.getString("private_key_id"), null);
                 storage = StorageOptions.newBuilder()
