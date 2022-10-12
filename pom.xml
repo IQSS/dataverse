@@ -159,12 +159,7 @@
             <artifactId>flyway-core</artifactId>
             <version>${flyway.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>31.1-jre</version>
-            <type>jar</type>
-        </dependency>
+        
         <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>
@@ -535,6 +530,7 @@
         <dependency>
           <groupId>com.google.cloud</groupId>
           <artifactId>google-cloud-storage</artifactId>
+          <version>2.13.0</version>
           <!-- no version here as managed in <dependencyManagement> of parent for convergence! -->
         </dependency>
         <!-- JWT support, currently in DRSSubmitToArchiveCommand-->

@@ -37,13 +37,15 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <dependency>
+            <!--dependency>
                 <groupId>com.google.cloud</groupId>
+                        <artifactId>libraries-bom</artifactId>
+        <version>25.4.0</version>
                 <artifactId>google-cloud-bom</artifactId>
                 <version>${google.cloud.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
+            </dependency-->
             
             <!-- BASIC LIBRARIES / LOGGING / ... -->
     
