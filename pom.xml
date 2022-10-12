@@ -138,13 +138,13 @@
             <artifactId>jackson-databind</artifactId>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <!-- There are later versions of this lib available at jitpack.io,
-                 but it seemed better to not add another repo. -->
-            <groupId>org.everit.json</groupId>
-            <artifactId>org.everit.json.schema</artifactId>
-            <version>1.5.1</version>
-        </dependency>
+<!-- https://mvnrepository.com/artifact/com.github.erosb/everit-json-schema -->
+<dependency>
+    <groupId>com.github.erosb</groupId>
+    <artifactId>everit-json-schema</artifactId>
+    <version>1.14.1</version>
+</dependency>
+
         <dependency>
             <groupId>org.mindrot</groupId>
             <artifactId>jbcrypt</artifactId>
