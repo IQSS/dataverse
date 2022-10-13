@@ -138,13 +138,12 @@
             <artifactId>jackson-databind</artifactId>
             <scope>provided</scope>
         </dependency>
-<!-- https://mvnrepository.com/artifact/com.github.erosb/everit-json-schema -->
-<dependency>
-    <groupId>com.github.erosb</groupId>
-    <artifactId>everit-json-schema</artifactId>
-    <version>1.14.1</version>
-</dependency>
-
+        <!--https://mvnrepository.com/artifact/com.github.erosb/everit-json-schema -->
+        <dependency>
+            <groupId>com.github.erosb</groupId>
+            <artifactId>everit-json-schema</artifactId>
+            <version>1.14.1</version>
+        </dependency>
         <dependency>
             <groupId>org.mindrot</groupId>
             <artifactId>jbcrypt</artifactId>
@@ -159,7 +158,10 @@
             <artifactId>flyway-core</artifactId>
             <version>${flyway.version}</version>
         </dependency>
-        
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>
@@ -422,7 +424,7 @@
                     <groupId>log4j</groupId>
                     <artifactId>log4j</artifactId>
                 </exclusion>
-                                <exclusion>
+                <exclusion>
                     <groupId>com.google.guava</groupId>
                     <artifactId>guava</artifactId>
                 </exclusion>
@@ -538,7 +540,6 @@
         <dependency>
           <groupId>com.google.cloud</groupId>
           <artifactId>google-cloud-storage</artifactId>
-          <version>2.13.0</version>
           <!-- no version here as managed in <dependencyManagement> of parent for convergence! -->
         </dependency>
         <!-- JWT support, currently in DRSSubmitToArchiveCommand-->
