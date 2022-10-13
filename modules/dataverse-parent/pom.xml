@@ -39,10 +39,10 @@
             </dependency>
             <dependency>
                 <groupId>com.google.cloud</groupId>
-                <artifactId>google-cloud-bom</artifactId>
-                <version>${google.cloud.version}</version>
+                <artifactId>libraries-bom</artifactId>
+                <version>26.1.3</version>
                 <type>pom</type>
-                <scope>import</scope>
+            </dependency>
             </dependency>
             
             <!-- BASIC LIBRARIES / LOGGING / ... -->
