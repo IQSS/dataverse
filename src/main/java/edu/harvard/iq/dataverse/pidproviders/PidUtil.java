@@ -138,9 +138,12 @@ public class PidUtil {
                 return globalId;
             }
         }
+        parseUnmanagedDoiOrHandle(identifier);
         throw new IllegalArgumentException("Failed to parse identifier: " + identifier);
     }
     
+
+
     /**
      * 
      * @param identifier The string to be parsed
@@ -155,22 +158,35 @@ public class PidUtil {
                 return globalId;
             }
         }
+        return parseUnmanagedDoiOrHandle(protocol, authority, identifier);
+    }
+
+    /* These are methods that should be deprecated/removed when further refactoring to support multiple PID providers is done. At that point,
+        when the providers aren't beans, this code can be moved into other classes that go in the providerMap.
+    */
+    
+    private static void parseUnmanagedDoiOrHandle(String identifier) {
+        // TODO Auto-generated method stub
+        
+    }
+    
+    private static GlobalId parseUnmanagedDoiOrHandle(String protocol, String authority, String identifier) {
         //Default recognition - could be moved to new classes in the future.
-            if(!GlobalIdServiceBean.isValidGlobalId(protocol, authority, identifier)) {
+        if(!GlobalIdServiceBean.isValidGlobalId(protocol, authority, identifier)) {
+            return null;
+        }
+        String urlPrefix = null;
+        switch(protocol) {
+        case DOIServiceBean.DOI_PROTOCOL: 
+            if(!GlobalIdServiceBean.checkDOIAuthority(authority)) {
                 return null;
             }
-            String urlPrefix = null;
-            switch(protocol) {
-            case DOIServiceBean.DOI_PROTOCOL: 
-                if(!GlobalIdServiceBean.checkDOIAuthority(authority)) {
-                    return null;
-                }
-                urlPrefix=DOIServiceBean.DOI_RESOLVER_URL;
-                break;
-            case HandlenetServiceBean.HDL_PROTOCOL:
-                urlPrefix=HandlenetServiceBean.HDL_RESOLVER_URL;
-                break;
-            }
-            return new GlobalId(protocol, authority, identifier, "/", urlPrefix, null);
+            urlPrefix=DOIServiceBean.DOI_RESOLVER_URL;
+            break;
+        case HandlenetServiceBean.HDL_PROTOCOL:
+            urlPrefix=HandlenetServiceBean.HDL_RESOLVER_URL;
+            break;
+        }
+        return new GlobalId(protocol, authority, identifier, "/", urlPrefix, null);
     }
 }

@@ -116,7 +116,7 @@ public class PermaLinkPidProviderServiceBean extends AbstractGlobalIdServiceBean
 
     @Override
     public GlobalId parsePersistentId(String protocol, String identifierString) {
-        logger.info("Checking identifier: " + identifierString);
+        logger.info("Checking Perma: " + identifierString);
         if (!PERMA_PROTOCOL.equals(protocol)) {
             return null;
         }

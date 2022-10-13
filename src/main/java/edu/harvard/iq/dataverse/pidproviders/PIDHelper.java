@@ -29,10 +29,12 @@ import edu.harvard.iq.dataverse.HandlenetServiceBean;
         FakePidProviderServiceBean fakePidSvc;
         @EJB
         PermaLinkPidProviderServiceBean permaPidSvc;
+        @EJB
+        UnmanagedDOIServiceBean unmanagedDOISvc;
 
         @PostConstruct
         public void listServices() {
-            PidUtil.addAllToProviderList(Arrays.asList(datacitePidSvc, ezidPidSvc, handlePidSvc, permaPidSvc, fakePidSvc));
+            PidUtil.addAllToProviderList(Arrays.asList(datacitePidSvc, ezidPidSvc, handlePidSvc, permaPidSvc, fakePidSvc, unmanagedDOISvc));
         }
 
     }
