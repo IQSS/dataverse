@@ -42,6 +42,7 @@
                 <artifactId>libraries-bom</artifactId>
                 <version>${google.library.version}</version>
                 <type>pom</type>
+                <scope>import</scope>
             </dependency>
             
             <!-- BASIC LIBRARIES / LOGGING / ... -->
