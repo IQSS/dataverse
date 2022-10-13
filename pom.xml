@@ -6,7 +6,7 @@
     <parent>
         <groupId>edu.harvard.iq</groupId>
         <artifactId>dataverse-parent</artifactId>
-        <version>5.12-qdr-dev</version>
+        <version>5.12-qdr</version>
         <relativePath>modules/dataverse-parent</relativePath>
     </parent>
     
