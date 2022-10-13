@@ -1,5 +1,8 @@
 Dataset Semantic Metadata API
 =============================
+.. contents:: |toctitle|
+	:local:
+
 
 The OAI_ORE metadata export format represents Dataset metadata using json-ld (see the :doc:`/admin/metadataexport` section). As part of an RDA-supported effort to allow import of Datasets exported as Bags with an included OAI_ORE metadata file, 
 an experimental API has been created that provides a json-ld alternative to the v1.0 API calls to get/set/delete Dataset metadata in the :doc:`/api/native-api`.
