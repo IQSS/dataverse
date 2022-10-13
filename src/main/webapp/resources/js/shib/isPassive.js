@@ -22,7 +22,7 @@
 
 // QDR Custom - for Jira QDR-891, remove a cookie to trigger shib passive login for any qdr drupal windows, 
 // and set cookie to stop passive login for dv
-var loginLink = document.getElementById("login");
+var loginLink = document.getElementById("qdr-login");
 if(loginLink != null) {
   loginLink.onclick = function() {
     document.cookie = "_check_is_passive=;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain=" + window.location.hostname.substring(window.location.hostname.indexOf("."));
