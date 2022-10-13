@@ -33,6 +33,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.DateUtil;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -713,25 +714,24 @@ public class DataCitation {
 
     private Date getDateFrom(DatasetVersion dsv) {
         Date citationDate = null;
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
-        if (!dsv.getDataset().isHarvested()) {
-            citationDate = dsv.getCitationDate();
+
+        if (dsv.getDataset().isHarvested()) {
+            citationDate = DateUtil.parseDate(dsv.getProductionDate());
             if (citationDate == null) {
-                if (dsv.getDataset().getCitationDate() != null) {
-                    citationDate = dsv.getDataset().getCitationDate();
-                } else { // for drafts
-                    citationDate = dsv.getLastUpdateTime();
-                }
-            }
-        } else {
-            try {
-                citationDate= sdf.parse(dsv.getDistributionDate());
-            } catch (ParseException ex) {
-                // ignore
-            } catch (Exception ex) {
-                // ignore
+                citationDate = DateUtil.parseDate(dsv.getDistributionDate());
             }
         }
+
+        if (citationDate == null) {
+            if (dsv.getCitationDate() != null) {
+                citationDate = dsv.getCitationDate();
+            } else if (dsv.getDataset().getCitationDate() != null) {
+                citationDate = dsv.getDataset().getCitationDate();
+            } else { // for drafts
+                citationDate = dsv.getLastUpdateTime();
+            }
+        }
+
         if (citationDate == null) {
             //As a last resort, pick the current date
             logger.warning("Unable to find citation date for datasetversion: " + dsv.getId());
