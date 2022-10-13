@@ -1005,11 +1005,10 @@ public class IndexServiceBean {
                             //W, E, N, S
                             solrInputDocument.addField("solr_srpt", "ENVELOPE(" + westLon + "," + eastLon + "," + northLat + "," + southLat + ")");
                         }
-                        //Only one bbox per dataset
-                        //W, E, N, S
-                        solrInputDocument.addField("solr_bboxtype", "ENVELOPE(" + minWestLon + "," + maxEastLon + "," + maxNorthLat + "," + minSouthLat + ")");
-
                     }
+                    //Only one bbox per dataset
+                    //W, E, N, S
+                    solrInputDocument.addField("solr_bboxtype", "ENVELOPE(" + minWestLon + "," + maxEastLon + "," + maxNorthLat + "," + minSouthLat + ")");
                 }
             }
 
