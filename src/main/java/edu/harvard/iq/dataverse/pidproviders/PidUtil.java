@@ -29,15 +29,15 @@ public class PidUtil {
     private static final Logger logger = Logger.getLogger(PidUtil.class.getCanonicalName());
 
     /**
-     * @throws BadRequestException if user didn't supply a DOI.
+     * @throws BadRequestException          if user didn't supply a DOI.
      *
-     * @throws NotFoundException if DOI not found in DataCite.
+     * @throws NotFoundException            if DOI not found in DataCite.
      *
-     * @throws ServiceUnavailableException if non 200 or non 404 response from
-     * DataCite.
+     * @throws ServiceUnavailableException  if non 200 or non 404 response from
+     *                                      DataCite.
      *
      * @throws InternalServerErrorException on local misconfiguration such as
-     * DataCite hostname not in DNS.
+     *                                      DataCite hostname not in DNS.
      */
     public static JsonObjectBuilder queryDoi(GlobalId globalId, String baseUrl, String username, String password) {
         try {
@@ -45,8 +45,10 @@ public class PidUtil {
             // user-supplied param - treat this as a BadRequest in the catch statement.
             String doi = acceptOnlyDoi(globalId);
             URL url;
-            // Other errors are all internal misconfiguration (any problems creating the URL), the
-            // DOI doesn't exist (404 from DataCite), or problem at DataCite (other non-200 responses).
+            // Other errors are all internal misconfiguration (any problems creating the
+            // URL), the
+            // DOI doesn't exist (404 from DataCite), or problem at DataCite (other non-200
+            // responses).
             int status = 0;
             HttpURLConnection connection = null;
             try {
@@ -66,17 +68,20 @@ public class PidUtil {
                         BundleUtil.getStringFromBundle("pids.datacite.errors.noResponseCode", Arrays.asList(baseUrl)));
             }
             if (status == 404) {
-                //Could check to see if Dataverse expects the DOI to be registered - that would result in a 404 from Dataverse before having to contact DataCite, and DataCite could still return a 404
+                // Could check to see if Dataverse expects the DOI to be registered - that would
+                // result in a 404 from Dataverse before having to contact DataCite, and
+                // DataCite could still return a 404
                 throw new NotFoundException("404 (NOT FOUND) from DataCite for DOI " + globalId);
             }
             if (status != 200) {
-                /* We could just send back whatever status code DataCite sends, but we've seen
+                /*
+                 * We could just send back whatever status code DataCite sends, but we've seen
                  * DataCite sometimes respond with 403 when the credentials were OK, and their
-                 * 500 error doesn't mean a problem with Dataverse, so wrapping any of them in
-                 * a 503 error, to indicate this is a temporary error, might be the better option. In any case, we need to log the
-                 * issue to be able to debug it.
+                 * 500 error doesn't mean a problem with Dataverse, so wrapping any of them in a
+                 * 503 error, to indicate this is a temporary error, might be the better option.
+                 * In any case, we need to log the issue to be able to debug it.
                  */
-                logger.severe("Received " + status + " error from DataCite for DOI: " + globalId); 
+                logger.severe("Received " + status + " error from DataCite for DOI: " + globalId);
                 InputStream errorStream = connection.getErrorStream();
                 if (errorStream != null) {
                     JsonObject out = Json.createReader(connection.getErrorStream()).readObject();
@@ -113,23 +118,21 @@ public class PidUtil {
         }
         return globalId.getAuthority() + "/" + globalId.getIdentifier();
     }
-    
-    static Map<String,GlobalIdServiceBean> providerMap = new HashMap<String, GlobalIdServiceBean>();
-    static Map<String,GlobalIdServiceBean> unmanagedProviderMap = new HashMap<String, GlobalIdServiceBean>();
-    
+
+    static Map<String, GlobalIdServiceBean> providerMap = new HashMap<String, GlobalIdServiceBean>();
+    static Map<String, GlobalIdServiceBean> unmanagedProviderMap = new HashMap<String, GlobalIdServiceBean>();
+
     public static void addAllToProviderList(List<GlobalIdServiceBean> list) {
         for (GlobalIdServiceBean pidProvider : list) {
             providerMap.put(pidProvider.getProviderInformation().get(0), pidProvider);
         }
     }
-    
+
     public static void addAllToUnmanagedProviderList(List<GlobalIdServiceBean> list) {
         for (GlobalIdServiceBean pidProvider : list) {
             unmanagedProviderMap.put(pidProvider.getProviderInformation().get(0), pidProvider);
         }
     }
-
-    
 
     /**
      * 
@@ -145,7 +148,7 @@ public class PidUtil {
                 return globalId;
             }
         }
-        //If no providers can managed this PID, at least allow it to be recognized
+        // If no providers can managed this PID, at least allow it to be recognized
         for (GlobalIdServiceBean pidProvider : unmanagedProviderMap.values()) {
             logger.info(" Checking " + String.join(",", pidProvider.getProviderInformation()));
             GlobalId globalId = pidProvider.parsePersistentId(identifier);
@@ -155,8 +158,6 @@ public class PidUtil {
         }
         throw new IllegalArgumentException("Failed to parse identifier: " + identifier);
     }
-    
-
 
     /**
      * 
@@ -179,7 +180,38 @@ public class PidUtil {
                 return globalId;
             }
         }
-        throw new IllegalArgumentException("Failed to parse identifier from protocol: " + protocol + ", authority:" + authority + ", identifier: " + identifier);
+        // For unit tests which don't have any provider Beans - todo remove when
+        // providers are no longer beans and can be configured easily in tests
+        return parseUnmanagedDoiOrHandle(protocol, authority, identifier);
+        // throw new IllegalArgumentException("Failed to parse identifier from protocol:
+        // " + protocol + ", authority:" + authority + ", identifier: " + identifier);
     }
+    /*
+     * This method should be deprecated/removed when further refactoring to support
+     * multiple PID providers is done. At that point, when the providers aren't
+     * beans, this code can be moved into other classes that go in the providerMap.
+     * If this method is not kept in sync with the DOIServiceBean and
+     * HandlenetServiceBean implementations, the tests using it won't be valid tests
+     * of the production code.
+     */
 
+    private static GlobalId parseUnmanagedDoiOrHandle(String protocol, String authority, String identifier) {
+        // Default recognition - could be moved to new classes in the future.
+        if (!GlobalIdServiceBean.isValidGlobalId(protocol, authority, identifier)) {
+            return null;
+        }
+        String urlPrefix = null;
+        switch (protocol) {
+        case DOIServiceBean.DOI_PROTOCOL:
+            if (!GlobalIdServiceBean.checkDOIAuthority(authority)) {
+                return null;
+            }
+            urlPrefix = DOIServiceBean.DOI_RESOLVER_URL;
+            break;
+        case HandlenetServiceBean.HDL_PROTOCOL:
+            urlPrefix = HandlenetServiceBean.HDL_RESOLVER_URL;
+            break;
+        }
+        return new GlobalId(protocol, authority, identifier, "/", urlPrefix, null);
+    }
 }
