@@ -33,8 +33,10 @@ import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -42,6 +44,7 @@ import java.io.PrintWriter;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Formatter;
@@ -66,7 +69,7 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import javax.xml.stream.XMLStreamException;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -100,6 +103,8 @@ public class ImportServiceBean {
     
     @EJB
     IndexServiceBean indexService;
+    @EJB
+    LicenseServiceBean licenseService;
     /**
      * This is just a convenience method, for testing migration.  It creates 
      * a dummy dataverse with the directory name as dataverse name & alias.
@@ -133,10 +138,7 @@ public class ImportServiceBean {
             while (cause.getCause() != null) {
                 cause = cause.getCause();
                 if (cause instanceof ConstraintViolationException) {
-                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                    for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                        sb.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ").append(violation.getPropertyPath()).append(" at ").append(violation.getLeafBean()).append(" - ").append(violation.getMessage());
-                    }
+                    sb.append(ConstraintViolationUtil.getErrorStringForConstraintViolations(cause));
                 }
             }
             logger.log(Level.SEVERE, sb.toString());
@@ -197,7 +199,7 @@ public class ImportServiceBean {
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public Dataset doImportHarvestedDataset(DataverseRequest dataverseRequest, HarvestingClient harvestingClient, String harvestIdentifier, String metadataFormat, File metadataFile, PrintWriter cleanupLog) throws ImportException, IOException {
+    public Dataset doImportHarvestedDataset(DataverseRequest dataverseRequest, HarvestingClient harvestingClient, String harvestIdentifier, String metadataFormat, File metadataFile, Date oaiDateStamp, PrintWriter cleanupLog) throws ImportException, IOException {
         if (harvestingClient == null || harvestingClient.getDataverse() == null) {
             throw new ImportException("importHarvestedDataset called wiht a null harvestingClient, or an invalid harvestingClient.");
         }
@@ -262,7 +264,7 @@ public class ImportServiceBean {
         JsonObject obj = jsonReader.readObject();
         //and call parse Json to read it into a dataset   
         try {
-            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService);
+            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService, licenseService);
             parser.setLenient(true);
             Dataset ds = parser.parseDataset(obj);
 
@@ -275,6 +277,10 @@ public class ImportServiceBean {
             ds.setOwner(owner);
             ds.getLatestVersion().setDatasetFields(ds.getLatestVersion().initDatasetFields());
 
+            if (ds.getVersions().get(0).getReleaseTime() == null) {
+                ds.getVersions().get(0).setReleaseTime(oaiDateStamp);
+            }
+            
             // Check data against required contraints
             List<ConstraintViolation<DatasetField>> violations = ds.getVersions().get(0).validateRequired();
             if (!violations.isEmpty()) {
@@ -361,6 +367,7 @@ public class ImportServiceBean {
                 // are they going to be overwritten by the reindexing of the dataset?
                 existingDs.setFiles(null);
                 Dataset merged = em.merge(existingDs);
+                // harvested datasets don't have physical files - so no need to worry about that.
                 engineSvc.submit(new DestroyDatasetCommand(merged, dataverseRequest));
             }
             
@@ -384,14 +391,8 @@ public class ImportServiceBean {
         return importedDataset;
     }
 
-    public JsonObject ddiToJson(String xmlToParse) throws ImportException{
-        DatasetDTO dsDTO = null;
-
-        try {
-            dsDTO = importDDIService.doImport(ImportType.IMPORT, xmlToParse);
-        } catch (XMLStreamException e) {
-            throw new ImportException("XMLStreamException" + e);
-        }
+    public JsonObject ddiToJson(String xmlToParse) throws ImportException, XMLStreamException {
+        DatasetDTO dsDTO = importDDIService.doImport(ImportType.IMPORT, xmlToParse);
         // convert DTO to Json,
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String json = gson.toJson(dsDTO);
@@ -419,7 +420,7 @@ public class ImportServiceBean {
         JsonObject obj = jsonReader.readObject();
         //and call parse Json to read it into a dataset   
         try {
-            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService);
+            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService, licenseService);
             parser.setLenient(!importType.equals(ImportType.NEW));
             Dataset ds = parser.parseDataset(obj);
 
@@ -505,6 +506,7 @@ public class ImportServiceBean {
                     if (existingDs.getVersions().size() != 1) {
                         throw new ImportException("Error importing Harvested Dataset, existing dataset has " + existingDs.getVersions().size() + " versions");
                     }
+                    // harvested datasets don't have physical files - so no need to worry about that.
                     engineSvc.submit(new DestroyDatasetCommand(existingDs, dataverseRequest));
                     Dataset managedDs = engineSvc.submit(new CreateHarvestedDatasetCommand(ds, dataverseRequest));
                     status = " updated dataset, id=" + managedDs.getId() + ".";

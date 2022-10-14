@@ -2,6 +2,9 @@ nb-configuration.xml
 target
 infer-out
 nbactions.xml
+.settings
+.classpath
+.project
 michael-local
 GPATH
 GTAGS
@@ -31,6 +34,7 @@ oauth-credentials.md
 
 /src/main/webapp/oauth2/newAccount.html
 scripts/api/setup-all.sh*
+scripts/api/setup-all.*.log
 
 # ctags generated tag file
 tags
@@ -42,6 +46,10 @@ conf/docker-aio/dv/deps/
 conf/docker-aio/dv/install/dvinstall.zip
 # or copy of test data
 conf/docker-aio/testdata/
+
+# docker-aio creates maven/ which reports 86 new files. ignore this wd.
+maven/
+
 scripts/installer/default.config
 *.pem
 
@@ -49,3 +57,19 @@ scripts/installer/default.config
 .idea
 **/*.iml
 /bin/
+
+# do not track Visual Studio Code files
+.vscode
+
+# ignore UI testing related files
+tests/node_modules
+tests/package-lock.json
+venv
+
+# from thumbnail tests in SearchIT
+scripts/search/data/binary/trees.png.thumb140
+src/main/webapp/resources/images/cc0.png.thumb140
+src/main/webapp/resources/images/dataverseproject.png.thumb140
+
+# apache-maven is downloaded by docker-aio
+apache-maven*

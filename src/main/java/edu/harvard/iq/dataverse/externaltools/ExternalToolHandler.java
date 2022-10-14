@@ -2,15 +2,14 @@ package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
-import edu.harvard.iq.dataverse.externaltools.ExternalTool.ReservedWord;
-import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.URLTokenUtil;
+
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
+
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -21,44 +20,42 @@ import javax.json.JsonReader;
  * instantiated. Applies logic based on an {@link ExternalTool} specification,
  * such as constructing a URL to access that file.
  */
-public class ExternalToolHandler {
-
-    private static final Logger logger = Logger.getLogger(ExternalToolHandler.class.getCanonicalName());
+public class ExternalToolHandler extends URLTokenUtil {
 
     private final ExternalTool externalTool;
-    private final DataFile dataFile;
-    private final Dataset dataset;
-
-    private final ApiToken apiToken;
-
     /**
+     * File level tool
+     *
      * @param externalTool The database entity.
      * @param dataFile Required.
      * @param apiToken The apiToken can be null because "explore" tools can be
      * used anonymously.
      */
-    public ExternalToolHandler(ExternalTool externalTool, DataFile dataFile, ApiToken apiToken) {
+    public ExternalToolHandler(ExternalTool externalTool, DataFile dataFile, ApiToken apiToken, FileMetadata fileMetadata, String localeCode) {
+        super(dataFile, apiToken, fileMetadata, localeCode);
         this.externalTool = externalTool;
-        if (dataFile == null) {
-            String error = "A DataFile is required.";
-            logger.warning("Error in ExternalToolHandler constructor: " + error);
-            throw new IllegalArgumentException(error);
-        }
-        this.dataFile = dataFile;
-        this.apiToken = apiToken;
-        dataset = getDataFile().getFileMetadata().getDatasetVersion().getDataset();
     }
 
-    public DataFile getDataFile() {
-        return dataFile;
-    }
-
-    public ApiToken getApiToken() {
-        return apiToken;
+    /**
+     * Dataset level tool
+     *
+     * @param externalTool The database entity.
+     * @param dataset Required.
+     * @param apiToken The apiToken can be null because "explore" tools can be
+     * used anonymously.
+     */
+    public ExternalToolHandler(ExternalTool externalTool, Dataset dataset, ApiToken apiToken, String localeCode) {
+        super(dataset, apiToken, localeCode);
+        this.externalTool = externalTool;
     }
 
     // TODO: rename to handleRequest() to someday handle sending headers as well as query parameters.
     public String getQueryParametersForUrl() {
+        return getQueryParametersForUrl(false);
+    }
+    
+    // TODO: rename to handleRequest() to someday handle sending headers as well as query parameters.
+    public String getQueryParametersForUrl(boolean preview) {
         String toolParameters = externalTool.getToolParameters();
         JsonReader jsonReader = Json.createReader(new StringReader(toolParameters));
         JsonObject obj = jsonReader.readObject();
@@ -72,55 +69,41 @@ public class ExternalToolHandler {
                 String value = queryParam.getString(key);
                 String param = getQueryParam(key, value);
                 if (param != null && !param.isEmpty()) {
-                    params.add(getQueryParam(key, value));
+                    params.add(param);
                 }
             });
         });
-        return "?" + String.join("&", params);
-    }
-
-    private String getQueryParam(String key, String value) {
-        ReservedWord reservedWord = ReservedWord.fromString(value);
-        switch (reservedWord) {
-            case FILE_ID:
-                // getDataFile is never null because of the constructor
-                return key + "=" + getDataFile().getId();
-            case SITE_URL:
-                return key + "=" + SystemConfig.getDataverseSiteUrlStatic();
-            case API_TOKEN:
-                String apiTokenString = null;
-                ApiToken theApiToken = getApiToken();
-                if (theApiToken != null) {
-                    apiTokenString = theApiToken.getTokenString();
-                    return key + "=" + apiTokenString;
-                }
-                break;
-            case DATASET_ID:
-                return key + "=" + dataset.getId();
-            case DATASET_VERSION:
-                String version = null;
-                if (getApiToken() != null) {
-                    version = dataset.getLatestVersion().getFriendlyVersionNumber();
-                } else {
-                    version = dataset.getLatestVersionForCopy().getFriendlyVersionNumber();
-                }
-                if (("DRAFT").equals(version)) {
-                    version = ":draft"; // send the token needed in api calls that can be substituted for a numeric
-                                        // version.
-                }
-                return key + "=" + version;
-            default:
-                break;
+        if (!preview) {
+            return "?" + String.join("&", params);
+        } else {
+            return "?" + String.join("&", params) + "&preview=true";
         }
-        return null;
     }
 
     public String getToolUrlWithQueryParams() {
         return externalTool.getToolUrl() + getQueryParametersForUrl();
+    }
+    
+    public String getToolUrlForPreviewMode() {
+        return externalTool.getToolUrl() + getQueryParametersForUrl(true);
     }
 
     public ExternalTool getExternalTool() {
         return externalTool;
     }
 
+    public void setApiToken(ApiToken apiToken) {
+        this.apiToken = apiToken;
+    }
+
+    /**
+     * @return Returns Javascript that opens the explore tool in a new browser
+     * tab if the browser allows it.If not, it shows an alert that popups must
+     * be enabled in the browser.
+     */
+    public String getExploreScript() {
+        String toolUrl = this.getToolUrlWithQueryParams();
+        logger.fine("Exploring with " + toolUrl);
+        return getScriptForUrl(toolUrl);
+    }
 }

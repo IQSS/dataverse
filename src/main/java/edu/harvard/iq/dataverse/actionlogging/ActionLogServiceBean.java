@@ -33,4 +33,17 @@ public class ActionLogServiceBean {
         em.persist(rec);
     }
 
+    //Switches all actions from one identifier to another identifier, via native query
+    //This is needed for when we change a userIdentifier or merge one account into another
+    public void changeUserIdentifierInHistory(String oldIdentifier, String newIdentifier) {
+        em.createNativeQuery(
+                "UPDATE actionlogrecord "
+                        + "SET useridentifier='"+newIdentifier+"', "
+                        + "info='orig from "+oldIdentifier+" | ' || info "
+                        + "WHERE useridentifier='"+oldIdentifier+"'"
+        ).executeUpdate();
+    }
+   
+
+    
 }

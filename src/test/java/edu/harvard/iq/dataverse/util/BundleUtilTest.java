@@ -69,12 +69,12 @@ public class BundleUtilTest {
     @Test
     public void testGetStringFromBundleWithArgumentsAndSpecificBundle() {
         assertEquals(null, BundleUtil.getStringFromBundle(null, null, null));
-        assertEquals("Search", BundleUtil.getStringFromBundle("search", null, ResourceBundle.getBundle("Bundle", Locale.US)));
+        assertEquals("Search", BundleUtil.getStringFromBundle("search", null, BundleUtil.getResourceBundle("Bundle")));
     }
     
     @Test
     public void testStringFromPropertyFile() {
-        assertEquals("ZIP", BundleUtil.getStringFromPropertyFile("application/zip","MimeTypeFacets"));
+        assertEquals("Archive", BundleUtil.getStringFromPropertyFile("application/zip","MimeTypeFacets"));
     }
 
     //To assure that the MissingResourceException bubble up from this call

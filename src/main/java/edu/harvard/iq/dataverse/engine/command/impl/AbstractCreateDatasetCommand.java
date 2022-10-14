@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
@@ -17,6 +18,7 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.solr.client.solrj.SolrServerException;
 
 /**;
  * An abstract base class for commands that creates {@link Dataset}s.
@@ -58,6 +60,11 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         // base class - default to nothing.
     }
     
+
+    protected void postDBFlush( Dataset theDataset, CommandContext ctxt ) throws CommandException {
+        // base class - default to nothing.
+    }
+    
     protected abstract void handlePid( Dataset theDataset, CommandContext ctxt ) throws CommandException ;
     
     @Override
@@ -94,15 +101,8 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
             theDataset.setAuthority(ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound));
         }
         if (theDataset.getStorageIdentifier() == null) {
-            try {
-                DataAccess.createNewStorageIO(theDataset, "placeholder");
-            } catch (IOException ioex) {
-                // if setting the storage identifier through createNewStorageIO fails, dataset creation
-                // does not have to fail. we just set the storage id to a default -SF
-                String storageDriver = (System.getProperty("dataverse.files.storage-driver-id") != null) ? System.getProperty("dataverse.files.storage-driver-id") : "file";
-                theDataset.setStorageIdentifier(storageDriver  + "://" + theDataset.getGlobalId().asString());
-                logger.log(Level.INFO, "Failed to create StorageIO. StorageIdentifier set to default. Not fatal.({0})", ioex.getMessage());
-            }
+        	String driverId = theDataset.getEffectiveStorageDriverId();
+        	theDataset.setStorageIdentifier(driverId  + DataAccess.SEPARATOR + theDataset.getAuthorityForFileStorage() + "/" + theDataset.getIdentifierForFileStorage());
         }
         if (theDataset.getIdentifier()==null) {
             theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
@@ -128,22 +128,20 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         // Now we need the acutal dataset id, so we can start indexing.
         ctxt.em().flush();
         
+        //Use for code that requires database ids
+        postDBFlush(theDataset, ctxt);
+        
+        // TODO: this needs to be moved in to an onSuccess method; not adding to this PR as its out of scope
         // TODO: switch to asynchronous version when JPA sync works
         // ctxt.index().asyncIndexDataset(theDataset.getId(), true); 
-        ctxt.index().indexDataset(theDataset, true);
-        ctxt.solrIndex().indexPermissionsOnSelfAndChildren(theDataset.getId());
-        
-        /*
-        if (DataCaptureModuleUtil.rsyncSupportEnabled(ctxt.settings().getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
-            logger.fine("Requesting rsync support.");
-            try {
-                ScriptRequestResponse scriptRequestResponse = ctxt.engine().submit(new RequestRsyncScriptCommand(getRequest(), theDataset));
-                logger.log(Level.FINE, "script: {0}", scriptRequestResponse.getScript());
-            } catch (RuntimeException ex) {
-                logger.log(Level.WARNING, "Problem getting rsync script: {0}", ex.getLocalizedMessage());
-            }
-            logger.fine("Done with rsync request.");
-        }*/
+        try{
+              ctxt.index().indexDataset(theDataset, true);
+        } catch (IOException | SolrServerException e) {
+            String failureLogText = "Post create dataset indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + theDataset.getId().toString();
+            failureLogText += "\r\n" + e.getLocalizedMessage();
+            LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, theDataset);
+        }
+                 
         return theDataset;
     }
 

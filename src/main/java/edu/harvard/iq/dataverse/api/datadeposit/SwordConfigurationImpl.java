@@ -124,8 +124,11 @@ public class SwordConfigurationImpl implements SwordConfiguration {
     public int getMaxUploadSize() {
         
         int unlimited = -1;
-
-        Long maxUploadInBytes = systemConfig.getMaxFileUploadSize();
+        /* It doesn't look like we can determine which store will be used here, so we'll go with the default
+         * (It looks like the collection or study involved is available where this method is called, but the SwordConfiguration.getMaxUploadSize()
+         * doesn't allow a parameter)
+         */ 
+        Long maxUploadInBytes = systemConfig.getMaxFileUploadSizeForStore("default");
 
         if (maxUploadInBytes == null){
             // (a) No setting, return unlimited           

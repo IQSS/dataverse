@@ -19,10 +19,14 @@
 */
 package edu.harvard.iq.dataverse.util;
 
-import edu.harvard.hul.ois.jhove.*;
-import java.io.*;
-import java.util.*;
-import static java.lang.System.*;
+import edu.harvard.hul.ois.jhove.App;
+import edu.harvard.hul.ois.jhove.JhoveBase;
+import edu.harvard.hul.ois.jhove.Module;
+import edu.harvard.hul.ois.jhove.RepInfo;
+import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 /**
@@ -69,7 +73,8 @@ public class JhoveFileType implements java.io.Serializable  {
         try {
             // initialize the application spec object
             // name, release number, build date, usage, Copyright infor
-            App jhoveApp = new App("Jhove", "1.11", 
+            // TODO: Should the release number come from pom.xml as we upgrade from 1.11.0 to 1.20.1?
+            App jhoveApp = new App("Jhove", "1.20.1",
                            ORIGINAL_RELEASE_DATE, "Java JhoveFileType", 
                            ORIGINAL_COPR_RIGHTS);
 

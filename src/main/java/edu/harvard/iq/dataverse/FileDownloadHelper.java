@@ -7,24 +7,23 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
-import javax.faces.component.UIInput;
-import javax.faces.component.UIOutput;
-import javax.faces.context.FacesContext;
-import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.primefaces.context.RequestContext;
+import org.primefaces.PrimeFaces;
+//import org.primefaces.context.RequestContext;
 
 /**
  *
@@ -54,215 +53,48 @@ public class FileDownloadHelper implements java.io.Serializable {
     
     @EJB
     DataFileServiceBean datafileService;
-    
-    UIInput nameField;
-
-    public UIInput getNameField() {
-        return nameField;
-    }
-
-    public void setNameField(UIInput nameField) {
-        this.nameField = nameField;
-    }
-
-    public UIInput getEmailField() {
-        return emailField;
-    }
-
-    public void setEmailField(UIInput emailField) {
-        this.emailField = emailField;
-    }
-
-    public UIInput getInstitutionField() {
-        return institutionField;
-    }
-
-    public void setInstitutionField(UIInput institutionField) {
-        this.institutionField = institutionField;
-    }
-
-    public UIInput getPositionField() {
-        return positionField;
-    }
-
-    public void setPositionField(UIInput positionField) {
-        this.positionField = positionField;
-    }
-    UIInput emailField;
-    UIInput institutionField;
-    UIInput positionField;
-   
-    
-
 
     private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { FileMetadata.id : Boolean } 
 
-     public void nameValueChangeListener(AjaxBehaviorEvent e) {
-         String name= (String) ((UIOutput) e.getSource()).getValue();
-         this.guestbookResponse.setName(name);
-     }
-     
-    public void emailValueChangeListener(AjaxBehaviorEvent e) {
-         String email= (String) ((UIOutput) e.getSource()).getValue();
-         this.guestbookResponse.setEmail(email);
-     }
-    
-    public void institutionValueChangeListener(AjaxBehaviorEvent e) {        
-         String institution= (String) ((UIOutput) e.getSource()).getValue();
-         this.guestbookResponse.setInstitution(institution);
-     }
-    
-    public void positionValueChangeListener(AjaxBehaviorEvent e) {
-         String position= (String) ((UIOutput) e.getSource()).getValue();
-         this.guestbookResponse.setPosition(position);
-     }
-    
-    public void customQuestionValueChangeListener(AjaxBehaviorEvent e) {
-        String questionNo = (String) ((UIOutput) e.getSource()).getId();
-         String position= (String) ((UIOutput) e.getSource()).getValue();
-     }
-    
     public FileDownloadHelper() {
         this.filesForRequestAccess = new ArrayList<>();
     }
 
-    
+    // See also @Size(max = 255) in GuestbookResponse
      private boolean testResponseLength(String value) {
         return !(value != null && value.length() > 255);
      }
-     
-     private boolean validateGuestbookResponse(GuestbookResponse guestbookResponse){
-                Dataset dataset = guestbookResponse.getDataset();
-                boolean valid = true;
-         if (dataset.getGuestbook() != null) {
-             if (dataset.getGuestbook().isNameRequired()) {
-                 boolean nameValid = (guestbookResponse.getName() != null && !guestbookResponse.getName().isEmpty());
-                 if (!nameValid) {
-                     nameField.setValid(false);
-                     FacesContext.getCurrentInstance().addMessage(nameField.getClientId(),
-                             new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("requiredField"), null));
-                 }
-                 valid &= nameValid;
-             }
-                valid &= testResponseLength(guestbookResponse.getName());
-                 if (! testResponseLength(guestbookResponse.getName())){
-                    nameField.setValid(false);
-                     FacesContext.getCurrentInstance().addMessage(nameField.getClientId(),
-                             new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.guestbookResponse.guestbook.responseTooLong"), null));
-                 }
-             if (dataset.getGuestbook().isEmailRequired()) {
-                 boolean emailValid = (guestbookResponse.getEmail() != null && !guestbookResponse.getEmail().isEmpty());
-                 if (!emailValid) {
-                     emailField.setValid(false);
-                     FacesContext.getCurrentInstance().addMessage(emailField.getClientId(),
-                             new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("requiredField"), null));
-                 }
-                 valid &= emailValid;
-             }
-                valid &= testResponseLength(guestbookResponse.getEmail());
-                 if (! testResponseLength(guestbookResponse.getEmail())){
-                    emailField.setValid(false);
-                     FacesContext.getCurrentInstance().addMessage(emailField.getClientId(),
-                             new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.guestbookResponse.guestbook.responseTooLong"), null));
-                 }
-            if (dataset.getGuestbook().isInstitutionRequired()) {
-                 boolean institutionValid = (guestbookResponse.getInstitution()!= null && !guestbookResponse.getInstitution().isEmpty());
-                 if (!institutionValid) {
-                     institutionField.setValid(false);
-                     FacesContext.getCurrentInstance().addMessage(institutionField.getClientId(),
-                             new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("requiredField"), null));
-                 }
-                valid &= institutionValid;
-            }
-                valid &= testResponseLength(guestbookResponse.getInstitution());
-                 if (! testResponseLength(guestbookResponse.getInstitution())){
-                    institutionField.setValid(false);
-                     FacesContext.getCurrentInstance().addMessage(institutionField.getClientId(),
-                             new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.guestbookResponse.guestbook.responseTooLong"), null));
-                 }
-            if (dataset.getGuestbook().isPositionRequired()) {
-                 boolean positionValid = (guestbookResponse.getPosition()!= null && !guestbookResponse.getPosition().isEmpty());
-                 if (!positionValid) {
-                     positionField.setValid(false);
-                     FacesContext.getCurrentInstance().addMessage(positionField.getClientId(),
-                             new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("requiredField"), null));
-                 }
-                valid &= positionValid;
-            }
-                valid &= testResponseLength(guestbookResponse.getPosition());
-                 if (! testResponseLength(guestbookResponse.getPosition())){
-                    positionField.setValid(false);
-                     FacesContext.getCurrentInstance().addMessage(positionField.getClientId(),
-                             new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.guestbookResponse.guestbook.responseTooLong"), null));
-                 }
+
+    // This helper method is called from the Download terms/guestbook/etc. popup,
+    // when the user clicks the "ok" button. We use it, instead of calling
+    // downloadServiceBean directly, in order to differentiate between single
+    // file downloads and multiple (batch) downloads - sice both use the same
+    // terms/etc. popup.
+    public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse) {
+        PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
+        guestbookResponse.setDownloadtype("Download");
+         // Note that this method is only ever called from the file-download-popup -
+         // meaning we know for the fact that we DO want to save this
+         // guestbookResponse permanently in the database.
+        if (guestbookResponse.getSelectedFileIds() != null) {
+            // this is a batch (multiple file) download.
+            // Although here's a chance that this is not really a batch download - i.e.,
+            // there may only be one file on the file list. But the fileDownloadService
+            // method below will check for that, and will redirect to the single download, if
+            // that's the case. -- L.A.
+            fileDownloadService.writeGuestbookAndStartBatchDownload(guestbookResponse);
+        } else if (guestbookResponse.getDataFile() != null) {
+            // this a single file download:
+            fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse);
         }
-
-        if (dataset.getGuestbook() != null && !dataset.getGuestbook().getCustomQuestions().isEmpty()) {
-            for (CustomQuestion cq : dataset.getGuestbook().getCustomQuestions()) {
-                if (cq.isRequired()) {
-                    for (CustomQuestionResponse cqr : guestbookResponse.getCustomQuestionResponses()) {
-                        if (cqr.getCustomQuestion().equals(cq)) {
-                            valid &= (cqr.getResponse() != null && !cqr.getResponse().isEmpty());
-                            if (cqr.getResponse() == null ||  cqr.getResponse().isEmpty()){
-                                cqr.setValidationMessage(BundleUtil.getStringFromBundle("requiredField"));                               
-                            } else{
-                                cqr.setValidationMessage(""); 
-                            }                          
-                        }
-                    }
-                }
-            }
-        }       
-
-        return valid;
-         
      }
-    
-     // This helper method is called from the Download terms/guestbook/etc. popup, 
-     // when the user clicks the "ok" button. We use it, instead of calling 
-     // downloadServiceBean directly, in order to differentiate between single
-     // file downloads and multiple (batch) downloads - sice both use the same 
-     // terms/etc. popup. 
-     public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse) {
-         RequestContext requestContext = RequestContext.getCurrentInstance();
-         boolean valid = validateGuestbookResponse(guestbookResponse);
 
-         if (!valid) {
-             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
-         } else {
-             requestContext.execute("PF('downloadPopup').hide()");
-             guestbookResponse.setDownloadtype("Download");
-
-             // Note that this method is only ever called from the file-download-popup - 
-             // meaning we know for the fact that we DO want to save this 
-             // guestbookResponse permanently in the database.
-             if (guestbookResponse.getSelectedFileIds() != null) {
-                 // this is a batch (multiple file) download.
-                 // Although here's a chance that this is not really a batch download - i.e., 
-                 // there may only be one file on the file list. But the fileDownloadService 
-                 // method below will check for that, and will redirect to the single download, if
-                 // that's the case. -- L.A.
-                 fileDownloadService.writeGuestbookAndStartBatchDownload(guestbookResponse);
-             } else if (guestbookResponse.getDataFile() != null) {
-                 // this a single file download: 
-                 fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse);
-             }
-         }
-
-     }
-     
      public void writeGuestbookAndOpenSubset(GuestbookResponse guestbookResponse) {
-        RequestContext requestContext = RequestContext.getCurrentInstance();
-        boolean valid = validateGuestbookResponse(guestbookResponse);
-                  
-         if (!valid) {
-             
-         } else {
-             requestContext.execute("PF('downloadPopup').hide()"); 
-             requestContext.execute("PF('downloadDataSubsetPopup').show()");
+
+             PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
+             PrimeFaces.current().executeScript("PF('downloadDataSubsetPopup').show()");
              guestbookResponse.setDownloadtype("Subset");
              fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
-         }
 
      }
 
@@ -287,48 +119,39 @@ public class FileDownloadHelper implements java.io.Serializable {
           */
          if (externalTool == null) {
              externalTool = guestbookResponse.getExternalTool();
+         } 
+         if(fmd== null) {
+             DatasetVersion dv = guestbookResponse.getDatasetVersion();
+             for(FileMetadata fm: dv.getFileMetadatas()) {
+                 if(fm.getDataFile()==guestbookResponse.getDataFile()) {
+                     fmd=fm;
+                     break;
+                 }
+             }
          }
 
-         RequestContext requestContext = RequestContext.getCurrentInstance();
-         boolean valid = validateGuestbookResponse(guestbookResponse);
-
-         if (!valid) {
-             return;
-         }
          fileDownloadService.explore(guestbookResponse, fmd, externalTool);
-         requestContext.execute("PF('downloadPopup').hide()");
+         //requestContext.execute("PF('downloadPopup').hide()");
+         PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
     }
      
     public void writeGuestbookAndLaunchPackagePopup(GuestbookResponse guestbookResponse) {
-        RequestContext requestContext = RequestContext.getCurrentInstance();
-        boolean valid = validateGuestbookResponse(guestbookResponse);
 
-        if (!valid) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
-        } else {
-            requestContext.execute("PF('downloadPopup').hide()");
-            requestContext.execute("PF('downloadPackagePopup').show()");
-            requestContext.execute("handleResizeDialog('downloadPackagePopup')");
-
+            PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
+            PrimeFaces.current().executeScript("PF('downloadPackagePopup').show()");
+            PrimeFaces.current().executeScript("handleResizeDialog('downloadPackagePopup')");
             fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
-        }
     }
 
-    public String startWorldMapDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
-        
-        RequestContext requestContext = RequestContext.getCurrentInstance();
-        boolean valid = validateGuestbookResponse(guestbookResponse);
-                  
-         if (!valid) {
-             return "";
-         } 
-        guestbookResponse.setDownloadtype("WorldMap");
-        String retVal = fileDownloadService.startWorldMapDownloadLink(guestbookResponse, fmd);
-        requestContext.execute("PF('downloadPopup').hide()"); 
-        return retVal;
-    }
+     /**
+      * Writes a guestbook entry for either popup scenario: guestbook or terms.
+      */
+     public boolean writeGuestbookAndShowPreview(GuestbookResponse guestbookResponse) {
+         guestbookResponse.setDownloadtype("Explore");
+         fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
+         return true;
+     }
 
-        
     private List<DataFile> filesForRequestAccess;
 
     public List<DataFile> getFilesForRequestAccess() {
@@ -367,13 +190,7 @@ public class FileDownloadHelper implements java.io.Serializable {
      *  WARNING: Before calling this, make sure the user has download
      *  permission for the file!!  (See DatasetPage.canDownloadFile())
      * 
-     * Should there be a Explore WorldMap Button for this file?
-     *   See table in: https://github.com/IQSS/dataverse/issues/1618
-     * 
-     *  (1) Does the file have MapLayerMetadata?
-     *  (2) Are the proper settings in place
-     * 
-     * @param fm fileMetadata
+     * @param  fileMetadata
      * @return boolean
      */
    public boolean canDownloadFile(FileMetadata fileMetadata){
@@ -383,12 +200,17 @@ public class FileDownloadHelper implements java.io.Serializable {
        
         if ((fileMetadata.getId() == null) || (fileMetadata.getDataFile().getId() == null)){
             return false;
-        } 
+        }
+        
+        if (session.getUser() instanceof PrivateUrlUser) {
+             // Always allow download for PrivateUrlUser
+             return true;
+         }
         
         Long fid = fileMetadata.getId();
         //logger.info("calling candownloadfile on filemetadata "+fid);
         // Note that `isRestricted` at the FileMetadata level is for expressing intent by version. Enforcement is done with `isRestricted` at the DataFile level.
-        boolean isRestrictedFile = fileMetadata.isRestricted();
+        boolean isRestrictedFile = fileMetadata.isRestricted() || fileMetadata.getDataFile().isRestricted();
         
         // Has this file been checked? Look at the DatasetPage hash
         if (this.fileDownloadPermissionMap.containsKey(fid)){
@@ -407,7 +229,7 @@ public class FileDownloadHelper implements java.io.Serializable {
            }
        }
 
-        if (!isRestrictedFile){
+        if (!isRestrictedFile && !FileUtil.isActivelyEmbargoed(fileMetadata)){
             // Yes, save answer and return true
             this.fileDownloadPermissionMap.put(fid, true);
             return true;
@@ -423,7 +245,11 @@ public class FileDownloadHelper implements java.io.Serializable {
         this.fileDownloadPermissionMap.put(fid, false);
         return false;
     }
-   
+
+    public boolean isRestrictedOrEmbargoed(FileMetadata fileMetadata) {
+        return fileMetadata.isRestricted() || FileUtil.isActivelyEmbargoed(fileMetadata);
+    }
+
     public boolean doesSessionUserHavePermission(Permission permissionToCheck, FileMetadata fileMetadata){
         if (permissionToCheck == null){
             return false;
@@ -454,19 +280,34 @@ public class FileDownloadHelper implements java.io.Serializable {
         processRequestAccess(file, true);        
     }
     
-    public void requestAccessMultiple(List<DataFile> files) {
+    public void handleCommandLinkClick(FileMetadata fmd){
+        
+        if (FileUtil.isRequestAccessPopupRequired(fmd.getDatasetVersion())){
+            addFileForRequestAccess(fmd.getDataFile());
+            PrimeFaces.current().executeScript("PF('requestAccessPopup').show()");
+        } else {
+            requestAccess(fmd.getDataFile());
+        }
 
+    }
+
+     public void requestAccessMultiple(List<DataFile> files) {
+         //need to verify that a valid request was made before 
+         //sending the notification - if at least one is valid send the notification
+         boolean succeeded = false;
+         boolean test = false;
          DataFile notificationFile = null;
          for (DataFile file : files) {
              //Not sending notification via request method so that
              // we can bundle them up into one nofication at dataset level
-             processRequestAccess(file, false);
-             if (notificationFile == null){
+             test = processRequestAccess(file, false);
+             succeeded |= test;
+             if (notificationFile == null) {
                  notificationFile = file;
              }
          }
-         if ( notificationFile != null){
-             fileDownloadService.sendRequestFileAccessNotification(notificationFile.getOwner(), notificationFile.getId(), (AuthenticatedUser) session.getUser()); 
+         if (notificationFile != null && succeeded) {
+             fileDownloadService.sendRequestFileAccessNotification(notificationFile, (AuthenticatedUser) session.getUser());
          }
      }
     
@@ -480,27 +321,24 @@ public class FileDownloadHelper implements java.io.Serializable {
      }    
     
     
-     private void processRequestAccess(DataFile file, Boolean sendNotification) {
+     private boolean processRequestAccess(DataFile file, Boolean sendNotification) {
          if (fileDownloadService.requestAccess(file.getId())) {
              // update the local file object so that the page properly updates
+             if(file.getFileAccessRequesters() == null){
+                 file.setFileAccessRequesters(new ArrayList());
+             }
              file.getFileAccessRequesters().add((AuthenticatedUser) session.getUser());
              // create notification if necessary
              if (sendNotification) {
-                 fileDownloadService.sendRequestFileAccessNotification(file.getOwner(), file.getId(), (AuthenticatedUser) session.getUser());
-             }
+                 fileDownloadService.sendRequestFileAccessNotification(file, (AuthenticatedUser) session.getUser());
+             }           
+             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("file.accessRequested.success"));
+             return true;
          }
+         JsfHelper.addWarningMessage(BundleUtil.getStringFromBundle("file.accessRequested.alreadyRequested", Arrays.asList(file.getDisplayName())));
+         return false;
      } 
-     
-    private GuestbookResponse guestbookResponse;
 
-    public GuestbookResponse getGuestbookResponse() {
-        return guestbookResponse;
-    }
-
-    public void setGuestbookResponse(GuestbookResponse guestbookResponse) {
-        this.guestbookResponse = guestbookResponse;
-    }    
-    
     public GuestbookResponseServiceBean getGuestbookResponseService(){
         return this.guestbookResponseService;
     }

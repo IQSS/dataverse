@@ -24,7 +24,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -235,7 +235,7 @@ public class GuestbookPage implements java.io.Serializable {
         boolean create = false;
         if (!(guestbook.getCustomQuestions() == null)) {
             for (CustomQuestion cq : guestbook.getCustomQuestions()) {
-                if (cq.getQuestionType().equals("text")) {
+                if (cq.getQuestionType().equals("text") || cq.getQuestionType().equals("textarea")) {
                     cq.setCustomQuestionValues(null);
                 }
             }

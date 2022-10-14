@@ -178,6 +178,11 @@ public class SearchFields {
      * Indexed as text_en so it's searchable by lower case etc.
      */
     public static final String FILE_TAG_SEARCHABLE = "fileTags";
+    
+    /**
+     * Internal boolean indicating that the file has been deleted in the draft version.
+     */
+    public static final String FILE_DELETED = "fileDeleted";
     /*
      * (tabular) Data Tags are indexed as a string, since we are only planning to
      * use these in facet-like, exact searches:
@@ -201,14 +206,12 @@ public class SearchFields {
      * A dataverse, a dataset, or a file.
      */
     public static final String TYPE = "dvObjectType";
+    public static final String METADATA_TYPES = "metadata_type_ss";
     public static final String NAME_SORT = "nameSort";
     // PUBLICATION_YEAR used to be called PUBLICATION_DATE.
     public static final String PUBLICATION_YEAR = "publicationDate";
     public static final String RELEASE_OR_CREATE_DATE = "dateSort"; 
-    /**
-     * i.e. "Mar 17, 2015"
-     */
-    public static final String RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT = "dateFriendly";
+
 
     public static final String DEFINITION_POINT = "definitionPointDocId";
     public static final String DEFINITION_POINT_DVOBJECT_ID = "definitionPointDvObjectId";
@@ -218,6 +221,8 @@ public class SearchFields {
      * i.e. "Unpublished", "Draft" (multivalued)
      */
     public static final String PUBLICATION_STATUS = "publicationStatus";
+    
+    public static final String EXTERNAL_STATUS = "externalStatus";
     /**
      * @todo reconcile different with Solr schema.xml where type is Long rather
      * than String.
@@ -253,6 +258,14 @@ public class SearchFields {
 
     public static final String VARIABLE_NAME = "variableName";
     public static final String VARIABLE_LABEL = "variableLabel";
+    public static final String LITERAL_QUESTION = "literalQuestion";
+    public static final String INTERVIEW_INSTRUCTIONS = "interviewInstructions";
+    public static final String POST_QUESTION = "postQuestion";
+    public static final String VARIABLE_UNIVERSE = "variableUniverse";
+    public static final String VARIABLE_NOTES = "variableNotes";
+
+
     public static final String FULL_TEXT = "_text_";
+    public static final String EMBARGO_END_DATE = "embargoEndDate";
 
 }

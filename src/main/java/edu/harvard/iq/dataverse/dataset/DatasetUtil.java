@@ -5,11 +5,13 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -22,27 +24,34 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.IOUtils;
+import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
+import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.license.License;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.StringUtil;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+
+import org.apache.commons.io.FileUtils;
 
 public class DatasetUtil {
 
     private static final Logger logger = Logger.getLogger(DatasetUtil.class.getCanonicalName());
     public static String datasetLogoFilenameFinal = "dataset_logo_original";
     public static String datasetLogoThumbnail = "dataset_logo";
-    public static String thumb48addedByImageThumbConverter = ".thumb48";
+    public static String thumbExtension = ".thumb";
 
-    public static List<DatasetThumbnail> getThumbnailCandidates(Dataset dataset, boolean considerDatasetLogoAsCandidate) {
+    public static List<DatasetThumbnail> getThumbnailCandidates(Dataset dataset, boolean considerDatasetLogoAsCandidate, int size) {
         List<DatasetThumbnail> thumbnails = new ArrayList<>();
         if (dataset == null) {
             return thumbnails;
@@ -64,7 +73,7 @@ public class DatasetUtil {
 
             InputStream in = null;
             try {
-                    in = dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
+                    in = dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumbExtension + size);
             } catch (Exception ioex) {
             }
 
@@ -88,9 +97,10 @@ public class DatasetUtil {
 
             if (dataFile != null && FileUtil.isThumbnailSupported(dataFile)
                     && ImageThumbConverter.isThumbnailAvailable(dataFile)
-                    && !dataFile.isRestricted()) {
+                    && !dataFile.isRestricted()
+                    && !FileUtil.isActivelyEmbargoed(dataFile)) {
                 String imageSourceBase64 = null;
-                imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(dataFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+                imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(dataFile, size);
 
                 if (imageSourceBase64 != null) {
                     DatasetThumbnail datasetThumbnail = new DatasetThumbnail(imageSourceBase64, dataFile);
@@ -109,7 +119,7 @@ public class DatasetUtil {
      * @param datasetVersion
      * @return
      */
-    public static DatasetThumbnail getThumbnail(Dataset dataset, DatasetVersion datasetVersion) {
+    public static DatasetThumbnail getThumbnail(Dataset dataset, DatasetVersion datasetVersion, int size) {
         if (dataset == null) {
             return null;
         }
@@ -127,10 +137,11 @@ public class DatasetUtil {
         try {
             if (dataAccess == null) {
                 logger.warning("getThumbnail(): Failed to initialize dataset StorageIO for " + dataset.getStorageIdentifier());
-            } else if (dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter) != null) {
-                in = dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
+            } else {
+                in = dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + ".thumb" + size);
             }
         } catch (IOException ex) {
+            in = null; 
             logger.fine("Dataset-level thumbnail file does not exist, or failed to open; will try to find an image file that can be used as the thumbnail.");
         }
 
@@ -152,6 +163,10 @@ public class DatasetUtil {
         } else {
             DataFile thumbnailFile = dataset.getThumbnailFile();
 
+            if (thumbnailFile !=null && (thumbnailFile.isRestricted() || FileUtil.isActivelyEmbargoed(thumbnailFile))) {
+                logger.fine("Dataset (id :" + dataset.getId() + ") has a thumbnail (user selected or automatically chosen) but the file must have later been restricted or embargoed. Returning null.");
+                thumbnailFile= null;
+            }
             if (thumbnailFile == null) {
                 if (dataset.isUseGenericThumbnail()) {
                     logger.fine("Dataset (id :" + dataset.getId() + ") does not have a thumbnail and is 'Use Generic'.");
@@ -162,17 +177,14 @@ public class DatasetUtil {
                         logger.fine("Dataset (id :" + dataset.getId() + ") does not have a thumbnail available that could be selected automatically.");
                         return null;
                     } else {
-                        String imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(thumbnailFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+                        String imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(thumbnailFile, size);
                         DatasetThumbnail defaultDatasetThumbnail = new DatasetThumbnail(imageSourceBase64, thumbnailFile);
                         logger.fine("thumbnailFile (id :" + thumbnailFile.getId() + ") will get thumbnail through automatic selection from DataFile id " + thumbnailFile.getId());
                         return defaultDatasetThumbnail;
                     }
                 }
-            } else if (thumbnailFile.isRestricted()) {
-                logger.fine("Dataset (id :" + dataset.getId() + ") has a thumbnail the user selected but the file must have later been restricted. Returning null.");
-                return null;
             } else {
-                String imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(thumbnailFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+                String imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(thumbnailFile, size);
                 DatasetThumbnail userSpecifiedDatasetThumbnail = new DatasetThumbnail(imageSourceBase64, thumbnailFile);
                 logger.fine("Dataset (id :" + dataset.getId() + ")  will get thumbnail the user specified from DataFile id " + thumbnailFile.getId());
                 return userSpecifiedDatasetThumbnail;
@@ -181,11 +193,11 @@ public class DatasetUtil {
         }
     }
 
-    public static DatasetThumbnail getThumbnail(Dataset dataset) {
+    public static DatasetThumbnail getThumbnail(Dataset dataset, int size) {
         if (dataset == null) {
             return null;
         }
-        return getThumbnail(dataset, null);
+        return getThumbnail(dataset, null, size);
     }
 
     public static boolean deleteDatasetLogo(Dataset dataset) {
@@ -201,7 +213,8 @@ public class DatasetUtil {
             }
 
             storageIO.deleteAuxObject(datasetLogoFilenameFinal);
-            storageIO.deleteAuxObject(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
+            storageIO.deleteAuxObject(datasetLogoThumbnail + thumbExtension + ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE);
+            storageIO.deleteAuxObject(datasetLogoThumbnail + thumbExtension + ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
 
         } catch (IOException ex) {
             logger.info("Failed to delete dataset logo: " + ex.getMessage());
@@ -254,7 +267,7 @@ public class DatasetUtil {
         for (FileMetadata fmd : datasetVersion.getFileMetadatas()) {
             DataFile testFile = fmd.getDataFile();
             // We don't want to use a restricted image file as the dedicated thumbnail:
-            if (!testFile.isRestricted() && FileUtil.isThumbnailSupported(testFile) && ImageThumbConverter.isThumbnailAvailable(testFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE)) {
+            if (!testFile.isRestricted() && !FileUtil.isActivelyEmbargoed(testFile) && FileUtil.isThumbnailSupported(testFile) && ImageThumbConverter.isThumbnailAvailable(testFile, ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE)) {
                 return testFile;
             }
         }
@@ -262,7 +275,7 @@ public class DatasetUtil {
         return null;
     }
 
-    public static Dataset persistDatasetLogoToStorageAndCreateThumbnail(Dataset dataset, InputStream inputStream) {
+    public static Dataset persistDatasetLogoToStorageAndCreateThumbnails(Dataset dataset, InputStream inputStream) {
         if (dataset == null) {
             return null;
         }
@@ -270,13 +283,13 @@ public class DatasetUtil {
         try {
             tmpFile = FileUtil.inputStreamToFile(inputStream);
         } catch (IOException ex) {
-            logger.severe(ex.getMessage());
+        	logger.severe(ex.getMessage());
         }
 
         StorageIO<Dataset> dataAccess = null;
                 
         try{
-             dataAccess = DataAccess.createNewStorageIO(dataset,"placeholder");
+             dataAccess = DataAccess.getStorageIO(dataset);
         }
         catch(IOException ioex){
             //TODO: Add a suitable waing message
@@ -295,11 +308,13 @@ public class DatasetUtil {
         try {
             fullSizeImage = ImageIO.read(tmpFile);
         } catch (IOException ex) {
+        	IOUtils.closeQuietly(inputStream);
             logger.severe(ex.getMessage());
             return null;
         }
         if (fullSizeImage == null) {
             logger.fine("fullSizeImage was null!");
+            IOUtils.closeQuietly(inputStream);
             return null;
         }
         int width = fullSizeImage.getWidth();
@@ -308,6 +323,7 @@ public class DatasetUtil {
         try {
             src = new FileInputStream(tmpFile).getChannel();
         } catch (FileNotFoundException ex) {
+        	IOUtils.closeQuietly(inputStream);
             logger.severe(ex.getMessage());
             return null;
         }
@@ -315,6 +331,7 @@ public class DatasetUtil {
         try {
             dest = new FileOutputStream(tmpFile).getChannel();
         } catch (FileNotFoundException ex) {
+        	IOUtils.closeQuietly(inputStream);
             logger.severe(ex.getMessage());
             return null;
         }
@@ -326,20 +343,36 @@ public class DatasetUtil {
         }
         File tmpFileForResize = null;
         try {
+        	//The stream was used around line 274 above, so this creates an empty file (OK since all it is used for is getting a path, but not reusing it here would make it easier to close it above.)
             tmpFileForResize = FileUtil.inputStreamToFile(inputStream);
         } catch (IOException ex) {
             logger.severe(ex.getMessage());
             return null;
+        } finally {
+        	IOUtils.closeQuietly(inputStream);
         }
-        String thumbFileLocation = ImageThumbConverter.rescaleImage(fullSizeImage, width, height, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE, tmpFileForResize.toPath().toString());
+        // We'll try to pre-generate the rescaled versions in both the 
+        // DEFAULT_DATASET_LOGO (currently 140) and DEFAULT_CARDIMAGE_SIZE (48)
+        String thumbFileLocation = ImageThumbConverter.rescaleImage(fullSizeImage, width, height, ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE, tmpFileForResize.toPath().toString());
         logger.fine("thumbFileLocation = " + thumbFileLocation);
         logger.fine("tmpFileLocation=" + tmpFileForResize.toPath().toString());
         //now we must save the updated thumbnail 
         try {
-            dataAccess.savePathAsAux(Paths.get(thumbFileLocation), datasetLogoThumbnail+thumb48addedByImageThumbConverter);
+            dataAccess.savePathAsAux(Paths.get(thumbFileLocation), datasetLogoThumbnail+thumbExtension+ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE);
         } catch (IOException ex) {
             logger.severe("Failed to move updated thumbnail file from " + tmpFile.getAbsolutePath() + " to its DataAccess location" + ": " + ex);
         }
+        
+        thumbFileLocation = ImageThumbConverter.rescaleImage(fullSizeImage, width, height, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE, tmpFileForResize.toPath().toString());
+        logger.fine("thumbFileLocation = " + thumbFileLocation);
+        logger.fine("tmpFileLocation=" + tmpFileForResize.toPath().toString());
+        //now we must save the updated thumbnail 
+        try {
+            dataAccess.savePathAsAux(Paths.get(thumbFileLocation), datasetLogoThumbnail+thumbExtension+ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+        } catch (IOException ex) {
+            logger.severe("Failed to move updated thumbnail file from " + tmpFile.getAbsolutePath() + " to its DataAccess location" + ": " + ex);
+        }
+        
         //This deletes the tempfiles created for rescaling and encoding
         boolean tmpFileWasDeleted = tmpFile.delete();
         boolean originalTempFileWasDeleted = tmpFileForResize.delete();
@@ -353,11 +386,11 @@ public class DatasetUtil {
         return dataset;
     }
 
-    public static InputStream getThumbnailAsInputStream(Dataset dataset) {
+    public static InputStream getThumbnailAsInputStream(Dataset dataset, int size) {
         if (dataset == null) {
             return null;
         }
-        DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
+        DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail(size);
         if (datasetThumbnail == null) {
             return null;
         } else {
@@ -384,7 +417,7 @@ public class DatasetUtil {
      * file that is uploaded. Rather, we delete it after first creating at least
      * one thumbnail from it. 
      */
-    public static boolean isDatasetLogoPresent(Dataset dataset) {
+    public static boolean isDatasetLogoPresent(Dataset dataset, int size) {
         if (dataset == null) {
             return false;
         }
@@ -393,7 +426,7 @@ public class DatasetUtil {
 
         try {
             dataAccess = DataAccess.getStorageIO(dataset);
-            return dataAccess.isAuxObjectCached(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
+            return dataAccess.isAuxObjectCached(datasetLogoThumbnail + thumbExtension + size);
         } catch (IOException ioex) {
         }
         return false;
@@ -424,5 +457,141 @@ public class DatasetUtil {
             
         return datasetFields;
     }
+    
+    public static boolean isRsyncAppropriateStorageDriver(Dataset dataset){
+        // ToDo - rsync was written before multiple store support and currently is hardcoded to use the DataAccess.S3 store. 
+        // When those restrictions are lifted/rsync can be configured per store, this test should check that setting
+        // instead of testing for the 's3" store,
+        //This method is used by both the dataset and edit files page so one change here
+        //will fix both
+       return dataset.getEffectiveStorageDriverId().equals(DataAccess.S3);
+    }
+    
+    /**
+     * Given a dataset version, return it's size in human readable units such as
+     * 42.9 MB.There is a GetDatasetStorageSizeCommand but it's overly complex
+     * for the use case.
+     *
+     * @param original Use the original file size rather than the archival file
+     * size for tabular files.
+     */
+    public static String getDownloadSize(DatasetVersion dsv, boolean original) {
+        return FileSizeChecker.bytesToHumanReadable(getDownloadSizeNumeric(dsv, original));
+    }
 
+    public static Long getDownloadSizeNumeric(DatasetVersion dsv, boolean original) {
+        return getDownloadSizeNumericBySelectedFiles(dsv.getFileMetadatas(), original);
+    }
+
+    public static Long getDownloadSizeNumericBySelectedFiles(List<FileMetadata> fileMetadatas, boolean original) {
+        long bytes = 0l;
+        for (FileMetadata fileMetadata : fileMetadatas) {
+            DataFile dataFile = fileMetadata.getDataFile();
+            if (original && dataFile.isTabularData()) {
+                bytes += dataFile.getOriginalFileSize() == null ? 0 : dataFile.getOriginalFileSize();
+            } else {
+                bytes += dataFile.getFilesize();
+            }
+        }
+        return bytes;
+    }
+    
+    public static boolean validateDatasetMetadataExternally(Dataset ds, String executable, DataverseRequest request) {
+        String sourceAddressLabel = "0.0.0.0"; 
+        
+        if (request != null) {
+            IpAddress sourceAddress = request.getSourceAddress();
+            if (sourceAddress != null) {
+                sourceAddressLabel = sourceAddress.toString();
+            }
+        }
+        
+        String jsonMetadata; 
+        
+        try {
+            jsonMetadata = json(ds).add("datasetVersion", json(ds.getLatestVersion())).add("sourceAddress", sourceAddressLabel).build().toString();
+        } catch (Exception ex) {
+            logger.warning("Failed to export dataset metadata as json; "+ex.getMessage() == null ? "" : ex.getMessage());
+            return false; 
+        }
+        
+        if (StringUtil.isEmpty(jsonMetadata)) {
+            logger.warning("Failed to export dataset metadata as json.");
+            return false; 
+        }
+       
+        // save the metadata in a temp file: 
+        
+        try {
+            File tempFile = File.createTempFile("datasetMetadataCheck", ".tmp");
+            FileUtils.writeStringToFile(tempFile, jsonMetadata);
+                                    
+            // run the external executable: 
+            String[] params = { executable, tempFile.getAbsolutePath() };
+            Process p = Runtime.getRuntime().exec(params);
+            p.waitFor(); 
+            
+            return p.exitValue() == 0;
+ 
+        } catch (IOException | InterruptedException ex) {
+            logger.warning("Failed run the external executable.");
+            return false; 
+        }
+        
+    }
+
+    public static License getLicense(DatasetVersion dsv) {
+        License license = null;
+        TermsOfUseAndAccess tua = dsv.getTermsOfUseAndAccess();
+        if(tua!=null) {
+            license = tua.getLicense();
+        }
+        return license;
+    }
+
+    public static String getLicenseName(DatasetVersion dsv) {
+        License license = DatasetUtil.getLicense(dsv);
+        return license != null ? license.getName()
+                : BundleUtil.getStringFromBundle("license.custom");
+    }
+
+    public static String getLicenseURI(DatasetVersion dsv) {
+        License license = DatasetUtil.getLicense(dsv);
+        // Return the URI
+        // For standard licenses, just return the stored URI
+        return (license != null) ? license.getUri().toString()
+                // For custom terms, construct a URI with :draft or the version number in the URI
+                : (dsv.getVersionState().name().equals("DRAFT")
+                        ? dsv.getDataverseSiteUrl()
+                                + "/api/datasets/:persistentId/versions/:draft/customlicense?persistentId="
+                                + dsv.getDataset().getGlobalId().asString()
+                        : dsv.getDataverseSiteUrl() + "/api/datasets/:persistentId/versions/" + dsv.getVersionNumber()
+                                + "." + dsv.getMinorVersionNumber() + "/customlicense?persistentId="
+                                + dsv.getDataset().getGlobalId().asString());
+    }
+
+    public static String getLicenseIcon(DatasetVersion dsv) {
+        License license = DatasetUtil.getLicense(dsv);
+        return license != null && license.getIconUrl() != null ? license.getIconUrl().toString() : null;
+    }
+
+    public static String getLicenseDescription(DatasetVersion dsv) {
+        License license = DatasetUtil.getLicense(dsv);
+        return license != null ? license.getShortDescription() : BundleUtil.getStringFromBundle("license.custom.description");
+    }
+
+    public static String getLocaleExternalStatus(String status) {
+        String localizedName =  "" ;
+        try {
+            localizedName = BundleUtil.getStringFromPropertyFile(status.toLowerCase().replace(" ", "_"), "CurationLabels");
+        }
+        catch (Exception e) {
+            localizedName = status;
+        }
+
+        if (localizedName == null) {
+            localizedName = status ;
+        }
+        return localizedName;
+    }
 }

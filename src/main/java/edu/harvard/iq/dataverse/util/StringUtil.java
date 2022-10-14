@@ -7,6 +7,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -14,14 +15,11 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
-import org.apache.xerces.impl.dv.util.Base64;
 import org.jsoup.Jsoup;
 
 /**
@@ -96,25 +94,6 @@ public class StringUtil {
                  (c >= '0') && (c <= '9') );
     }
 
-    public static String truncateString(String originalString, int maxLength) {
-        maxLength = Math.max( 0, maxLength);
-        String finalString = originalString;
-        if (finalString != null && finalString.length() > maxLength) {
-            String regexp = "[A-Za-z0-9][\\p{Space}]";
-            Pattern pattern = Pattern.compile(regexp);
-            String startParsedString = finalString.substring(0, maxLength);
-            String endParsedString = finalString.substring(maxLength, finalString.length());
-            Matcher matcher = pattern.matcher(endParsedString);
-            boolean found = matcher.find();
-            if (found) {
-                endParsedString = endParsedString.substring(0, matcher.end());
-                finalString = startParsedString + endParsedString + "<span class='dvn_threedots'>...</span>";
-            }
-        }
-        
-        return finalString;             
-    } 
-
     public static String html2text(String html) {
         if (html == null) {
             return null;
@@ -149,7 +128,7 @@ public class StringUtil {
             final SecretKeySpec secretKeySpec = generateKeyFromString(password);
             aes.init(Cipher.ENCRYPT_MODE, secretKeySpec);
             byte[] encrypted = aes.doFinal(baseBytes);
-            String base64ed = Base64.encode(encrypted);
+            String base64ed = new String(Base64.getEncoder().encode(encrypted));
             return base64ed.replaceAll("\\+", ".")
                     .replaceAll("=", "-")
                     .replaceAll("/", "_");
@@ -166,7 +145,7 @@ public class StringUtil {
                     .replaceAll("-", "=")
                     .replaceAll("_", "/");
         
-        byte[] baseBytes = Base64.decode(base64);
+        byte[] baseBytes = Base64.getDecoder().decode(base64);
         try {
             Cipher aes = Cipher.getInstance("AES");
             aes.init( Cipher.DECRYPT_MODE, generateKeyFromString(password));
@@ -179,6 +158,36 @@ public class StringUtil {
             throw new RuntimeException(ex);
         }
     }
+    
+    public static String sanitizeFileDirectory(String value) {
+        return sanitizeFileDirectory(value, false);
+    }
+    
+    public static String sanitizeFileDirectory(String value, boolean aggressively){        
+        // Replace all the combinations of slashes and backslashes with one single 
+        // backslash:
+        value = value.replaceAll("[\\\\/][\\\\/]*", "/");
+
+        if (aggressively) {
+            value = value.replaceAll("[^A-Za-z0-9_ ./\\-]+", ".");
+            value = value.replaceAll("\\.\\.+", ".");
+        }
+        
+        // Strip any leading or trailing slashes, whitespaces, '-' or '.':
+        while (value.startsWith("/") || value.startsWith("-") || value.startsWith(".") || value.startsWith(" ")){
+            value = value.substring(1);
+        }
+        while (value.endsWith("/") || value.endsWith("-") || value.endsWith(".") || value.endsWith(" ")){
+            value = value.substring(0, value.length() - 1);
+        }
+        
+        if ("".equals(value)) {
+            return null;
+        }
+        
+        return value;
+    }
+    
     
     private static SecretKeySpec generateKeyFromString(final String secKey) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         byte[] key = (secKey).getBytes("UTF-8");

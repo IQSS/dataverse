@@ -9,13 +9,17 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseLinkingDataverse;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import java.io.IOException;
 import java.util.Collections;
+import java.util.concurrent.Future;
+import org.apache.solr.client.solrj.SolrServerException;
 
 /**
  *
@@ -47,9 +51,33 @@ public class DeleteDataverseLinkingDataverseCommand extends AbstractCommand<Data
         ctxt.em().remove(doomedAndMerged);
         
         if (index) {
-            ctxt.index().indexDataverse(editedDv);
-            ctxt.index().indexDataverse(doomed.getLinkingDataverse());
+            //can only index merged in the onSuccess method so must index doomed linking dataverse here
+            try {
+                ctxt.index().indexDataverse(doomed.getLinkingDataverse());
+            } catch (IOException | SolrServerException e) {
+                String failureLogText = "Indexing failed for Linked Dataverse. You can kickoff a re-index of this datavese with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + doomed.getLinkingDataverse().getId().toString();
+                failureLogText += "\r\n" + e.getLocalizedMessage();
+                LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, doomed.getLinkingDataverse());
+            } 
         }
         return merged;
     } 
+
+    @Override
+    public boolean onSuccess(CommandContext ctxt, Object r) {
+
+        try {
+            Future<String> retVal = ctxt.index().indexDataverse((Dataverse) r);
+        } catch (IOException | SolrServerException e) {
+            Dataverse dv = (Dataverse) r;
+            String failureLogText = "Indexing failed for Dataverse delinking. You can kickoff a re-index of this datavese with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dv.getId().toString();
+            failureLogText += "\r\n" + e.getLocalizedMessage();
+            LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, (Dataverse) r);
+            return false;
+        }
+
+        return true;
+
+    }
+
 }

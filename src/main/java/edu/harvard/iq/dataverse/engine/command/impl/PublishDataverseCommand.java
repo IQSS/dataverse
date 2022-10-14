@@ -5,19 +5,22 @@ import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import static edu.harvard.iq.dataverse.dataverse.DataverseUtil.validateDataverseMetadataExternally;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import edu.harvard.iq.dataverse.search.IndexResponse;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Logger;
 
 @RequiredPermissions(Permission.PublishDataverse)
 public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
+    private static final Logger logger = Logger.getLogger(PublishDataverseCommand.class.getName());
 
     private final Dataverse dataverse;
 
@@ -40,6 +43,20 @@ public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
             }
         }
 
+        // Perform any optional validation steps, if defined:
+        if (ctxt.systemConfig().isExternalDataverseValidationEnabled()) {
+            // For admins, an override of the external validation step may be enabled: 
+            if (!(getUser().isSuperuser() && ctxt.systemConfig().isExternalValidationAdminOverrideEnabled())) {
+                String executable = ctxt.systemConfig().getDataverseValidationExecutable();
+                boolean result = validateDataverseMetadataExternally(dataverse, executable, getRequest());
+            
+                if (!result) {
+                    String rejectionMessage = ctxt.systemConfig().getDataverseValidationFailureMsg();
+                    throw new IllegalCommandException(rejectionMessage, this);
+                }
+            }
+        }
+        
         //Before setting dataverse to released send notifications to users with download file
         List<RoleAssignment> ras = ctxt.roles().directRoleAssignments(dataverse);
         for (RoleAssignment ra : ras) {
@@ -53,16 +70,14 @@ public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
         dataverse.setPublicationDate(new Timestamp(new Date().getTime()));
         dataverse.setReleaseUser((AuthenticatedUser) getUser());
         Dataverse savedDataverse = ctxt.dataverses().save(dataverse);
-        /**
-         * @todo consider also
-         * ctxt.solrIndex().indexPermissionsOnSelfAndChildren(savedDataverse.getId());
-         */
-        /**
-         * @todo what should we do with the indexRespose?
-         */
-        IndexResponse indexResponse = ctxt.solrIndex().indexPermissionsForOneDvObject(savedDataverse);
+        
         return savedDataverse;
 
+    }
+    
+    @Override
+    public boolean onSuccess(CommandContext ctxt, Object r) {
+        return ctxt.dataverses().index((Dataverse) r,true);
     }
 
 }

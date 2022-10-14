@@ -84,8 +84,11 @@ public class BuiltinUsers extends AbstractApiBean {
     //and use the values to create BuiltinUser/AuthenticatedUser.
     //--MAD 4.9.3
     @POST
-    public Response save(BuiltinUser user, @QueryParam("password") String password, @QueryParam("key") String key) {
-        return internalSave(user, password, key);
+    public Response save(BuiltinUser user, @QueryParam("password") String password, @QueryParam("key") String key, @QueryParam("sendEmailNotification") Boolean sendEmailNotification) {   
+        if( sendEmailNotification == null )
+            sendEmailNotification = true;
+        
+        return internalSave(user, password, key, sendEmailNotification);
     }
 
     /**
@@ -105,7 +108,29 @@ public class BuiltinUsers extends AbstractApiBean {
         return internalSave(user, password, key);
     }
     
+    /**
+     * Created this new endpoint to resolve issue #6915, optionally preventing 
+     * the email notification to the new user on account creation by adding 
+     * "false" as the third path parameter.
+     *
+     * @param user
+     * @param password
+     * @param key
+     * @param sendEmailNotification
+     * @return
+     */
+    @POST
+    @Path("{password}/{key}/{sendEmailNotification}")
+    public Response create(BuiltinUser user, @PathParam("password") String password, @PathParam("key") String key, @PathParam("sendEmailNotification") Boolean sendEmailNotification) {
+        return internalSave(user, password, key, sendEmailNotification);
+    }
+    
+    // internalSave without providing an explicit "sendEmailNotification"
     private Response internalSave(BuiltinUser user, String password, String key) {
+        return internalSave(user, password, key, true);
+    }
+    
+    private Response internalSave(BuiltinUser user, String password, String key, Boolean sendEmailNotification) {
         String expectedKey = settingsSvc.get(API_KEY_IN_SETTINGS);
         
         if (expectedKey == null) {
@@ -123,9 +148,9 @@ public class BuiltinUsers extends AbstractApiBean {
                 user.updateEncryptedPassword(PasswordEncryption.get().encrypt(password), PasswordEncryption.getLatestVersionNumber());
             }
             
-            // Make sure the identifier is unique
-            if ( (builtinUserSvc.findByUserName(user.getUserName()) != null)
-                    || ( authSvc.identifierExists(user.getUserName())) ) {
+            // Make sure the identifier is unique, case insensitive. "DATAVERSEADMIN" is not allowed to be created if "dataverseAdmin" exists.
+            if ((builtinUserSvc.findByUserName(user.getUserName()) != null)
+                    || (authSvc.identifierExists(user.getUserName()))) {
                 return error(Status.BAD_REQUEST, "username '" + user.getUserName() + "' already exists");
             }
             user = builtinUserSvc.save(user);
@@ -149,21 +174,13 @@ public class BuiltinUsers extends AbstractApiBean {
             } catch (Exception e) {
                 logger.info("The root dataverse is not present. Don't send a notification to dataverseAdmin.");
             }
-            if (rootDataversePresent) {
+            if (rootDataversePresent && sendEmailNotification) {
                 userNotificationSvc.sendNotification(au,
                         new Timestamp(new Date().getTime()),
                         UserNotification.Type.CREATEACC, null);
             }
 
-            ApiToken token = new ApiToken();
-
-            token.setTokenString(java.util.UUID.randomUUID().toString());
-            token.setAuthenticatedUser(au);
-
-            Calendar c = Calendar.getInstance();
-            token.setCreateTime(new Timestamp(c.getTimeInMillis()));
-            c.roll(Calendar.YEAR, 1);
-            token.setExpireTime(new Timestamp(c.getTimeInMillis()));
+            ApiToken token = authSvc.generateApiTokenForUser(au);
             authSvc.save(token);
 
             JsonObjectBuilder resp = Json.createObjectBuilder();
@@ -176,12 +193,13 @@ public class BuiltinUsers extends AbstractApiBean {
             
         } catch ( EJBException ejbx ) {
             alr.setActionResult(ActionLogRecord.Result.InternalError);
-            alr.setInfo( alr.getInfo() + "// " + ejbx.getMessage());
+            String errorMessage = ejbx.getCausedByException().getLocalizedMessage();
+            alr.setInfo( alr.getInfo() + "// " + errorMessage);
             if ( ejbx.getCausedByException() instanceof IllegalArgumentException ) {
-                return error(Status.BAD_REQUEST, "Bad request: can't save user. " + ejbx.getCausedByException().getMessage());
+                return error(Status.BAD_REQUEST, "Bad request: can't save user. " + errorMessage);
             } else {
                 logger.log(Level.WARNING, "Error saving user: ", ejbx);
-                return error(Status.INTERNAL_SERVER_ERROR, "Can't save user: " + ejbx.getMessage());
+                return error(Status.INTERNAL_SERVER_ERROR, "Can't save user: " + errorMessage);
             }
             
         } catch (Exception e) {
@@ -195,3 +213,16 @@ public class BuiltinUsers extends AbstractApiBean {
     }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

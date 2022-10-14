@@ -6,19 +6,20 @@
 package edu.harvard.iq.dataverse.datasetutility;
 
 import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
+
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.junit.Test;
-import static org.junit.Assert.*;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  *
  * @author oscardssmith
  */
 public class FileSizeCheckerTest {
-
     @Test
     public void testBytesToHumanReadable() {
         long[] sizes = {1L, 1023L, 1986L, 125707L, 2759516000L, 12039650000000L};
@@ -34,5 +35,4 @@ public class FileSizeCheckerTest {
         assertEquals(expAns, ans);
         assertEquals(expLongAns, longAns);
     }
-
 }

@@ -4,6 +4,7 @@ import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.path.xml.XmlPath;
 import com.jayway.restassured.response.Response;
+import static edu.harvard.iq.dataverse.api.AccessIT.apiToken;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import java.util.logging.Logger;
 import javax.json.Json;
@@ -16,6 +17,7 @@ import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.Assert;
+import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -55,9 +57,7 @@ public class InReviewWorkflowIT {
         // Whoops, the curator forgot to give the author permission to create a dataset.
         Response noPermToCreateDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, authorApiToken);
         noPermToCreateDataset.prettyPrint();
-        noPermToCreateDataset.then().assertThat()
-                .body("message", equalTo("User @" + authorUsername + " is not permitted to perform requested action."))
-                .statusCode(UNAUTHORIZED.getStatusCode());
+        noPermToCreateDataset.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
 
         Response grantAuthorAddDataset = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR.toString(), "@" + authorUsername, curatorApiToken);
         grantAuthorAddDataset.prettyPrint();
@@ -237,8 +237,10 @@ public class InReviewWorkflowIT {
                 // on the phoenix server (because it's fast, I'm guessing?) - but 
                 // I kept seeing an error on my own build at this point once in a while, 
                 // because the dataset is still locked when we try to edit it, 
-                // a few lines down. -- L.A. Oct. 2018
-                Thread.sleep(10000);
+                // a few lines down. -- L.A. Oct. 2018  
+                // Changes to test for ingest lock and 3 seconds duration SEK 09/2019 #6128
+                assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFileThatGoesThroughIngest , UtilIT.sleepForLock(datasetId, "Ingest", curatorApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+               // Thread.sleep(10000);
             }
         }
 
@@ -334,10 +336,11 @@ public class InReviewWorkflowIT {
                 // TODO: Test this issue from the UI as well: https://github.com/IQSS/dataverse/issues/2526
                 .body("data.notifications[0].type", equalTo("SUBMITTEDDS"))
                 //.body("data.notifications[0].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
-                .body("data.notifications[1].type", equalTo("SUBMITTEDDS"))
+                .body("data.notifications[1].type", equalTo("INGESTCOMPLETED"))
+                .body("data.notifications[2].type", equalTo("SUBMITTEDDS"))
                 // Yes, it's a little weird that the first "SUBMITTEDDS" notification now shows the return reason when it showed nothing before. For now we are simply always showing all the reasons for return. They start to stack up. That way you can see the history.
                 //.body("data.notifications[1].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
-                .body("data.notifications[2].type", equalTo("CREATEACC"))
+                .body("data.notifications[3].type", equalTo("CREATEACC"))
                 //.body("data.notifications[2].reasonsForReturn", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
@@ -389,11 +392,12 @@ public class InReviewWorkflowIT {
                 .body("data.notifications[1].type", equalTo("SUBMITTEDDS"))
                 //  .body("data.notifications[1].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
                 //   .body("data.notifications[1].reasonsForReturn[1].message", equalTo("A README is required."))
-                .body("data.notifications[2].type", equalTo("SUBMITTEDDS"))
+                .body("data.notifications[2].type", equalTo("INGESTCOMPLETED"))
+                .body("data.notifications[3].type", equalTo("SUBMITTEDDS"))
                 // Yes, it's a little weird that the first "SUBMITTEDDS" notification now shows the return reason when it showed nothing before. We're showing the history.
                 //   .body("data.notifications[2].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
                 //   .body("data.notifications[2].reasonsForReturn[1].message", equalTo("A README is required."))
-                .body("data.notifications[3].type", equalTo("CREATEACC"))
+                .body("data.notifications[4].type", equalTo("CREATEACC"))
                 //   .body("data.notifications[3].reasonsForReturn", equalTo(null))
                 .statusCode(OK.getStatusCode());
 

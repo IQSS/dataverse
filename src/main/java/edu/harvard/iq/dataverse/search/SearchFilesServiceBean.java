@@ -21,7 +21,7 @@ public class SearchFilesServiceBean {
 
     @EJB
     SearchServiceBean searchService;
-
+    
     public FileView getFileView(DatasetVersion datasetVersion, User user, String userSuppliedQuery) {
         Dataverse dataverse = null;
         List<String> filterQueries = new ArrayList<>();
@@ -74,5 +74,5 @@ public class SearchFilesServiceBean {
             return null;
         }
     }
-
+    
 }

@@ -9,6 +9,8 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
+import edu.harvard.iq.dataverse.util.FileUtil;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
@@ -24,6 +26,9 @@ import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.Before;
 
 /**
@@ -39,6 +44,8 @@ public class FileAccessIOTest {
     private Dataset dataset;
     private DataFile dataFile;
 
+    private String dummyDriverId = "dummmy";
+    
     private Path fileSystemPath = new File("/tmp/files/tmp/dataset/Dataset").toPath();
 
     public FileAccessIOTest() {
@@ -56,10 +63,10 @@ public class FileAccessIOTest {
         dataFile = MocksFactory.makeDataFile();
         dataFile.setOwner(dataset);
         dataFile.setStorageIdentifier("DataFile");
-
-        datasetAccess = new FileAccessIO<>(dataset);
-        dataFileAccess = new FileAccessIO<>(dataFile);
-        dataverseAccess = new FileAccessIO<>(dataverse);
+        
+        datasetAccess = new FileAccessIO<>(dataset,null, dummyDriverId);
+        dataFileAccess = new FileAccessIO<>(dataFile, null, dummyDriverId);
+        dataverseAccess = new FileAccessIO<>(dataverse, null, dummyDriverId);
 
         File file = new File("/tmp/files/tmp/dataset/Dataset");
         file.getParentFile().mkdirs();
@@ -209,7 +216,7 @@ public class FileAccessIOTest {
      */
     @Test
     public void testGetStorageLocation() {
-        String expResult = "file:///tmp/files/tmp/dataset/Dataset";
+        String expResult = dummyDriverId + ":///tmp/files/tmp/dataset/Dataset";
         String result = datasetAccess.getStorageLocation();
         assertEquals(expResult, result);
     }
@@ -242,10 +249,11 @@ public class FileAccessIOTest {
      *
      * @throws java.io.IOException if test is broken
      */
+    /* dataAccess no longer supports deleting of the main physical file.
     @Test
     public void testDelete() throws IOException {
         datasetAccess.delete();
-    }
+    }*/
 
     /**
      * Test of openLocalFileAsInputStream and openLocalFileAsOutputStream method, of class
@@ -281,5 +289,32 @@ public class FileAccessIOTest {
             sb.append('\n');
         }
         assertEquals("This is a test string\n", sb.toString());
+    }
+    
+    @Test
+    public void testFileIdentifierFormats() throws IOException {
+        System.setProperty("dataverse.files.filetest.type", "file");
+        System.setProperty("dataverse.files.filetest.label", "Ftest");
+        System.setProperty("dataverse.files.filetest.directory", "/tmp/mydata");
+
+        FileUtil.generateStorageIdentifier();
+        assertTrue(DataAccess.isValidDirectStorageIdentifier("filetest://" + FileUtil.generateStorageIdentifier()));
+        //The tests here don't use a valid identifier string
+        assertFalse(DataAccess.isValidDirectStorageIdentifier(dataFile.getStorageIdentifier()));
+        //bad store id
+        String defaultType = System.getProperty("dataverse.files.file.type");
+        //Assure file isn't a defined store before test and reset afterwards if it was
+        System.clearProperty("dataverse.files.file.type");
+        assertFalse(DataAccess.isValidDirectStorageIdentifier("file://" + FileUtil.generateStorageIdentifier()));
+        if(defaultType!=null) {
+            System.out.println("dataverse.files.file.type reset to " + defaultType);
+            System.setProperty("dataverse.files.file.type", defaultType);
+        }
+        //breakout
+        assertFalse(DataAccess.isValidDirectStorageIdentifier("filetest://../" + FileUtil.generateStorageIdentifier()));
+        
+        System.clearProperty("dataverse.files.filetest.type");
+        System.clearProperty("dataverse.files.filetest.label");
+        System.clearProperty("dataverse.files.filetest.directory");
     }
 }

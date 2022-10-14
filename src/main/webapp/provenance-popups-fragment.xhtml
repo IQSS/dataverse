@@ -7,7 +7,7 @@
                 xmlns:o="http://omnifaces.org/ui"
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
-    <script type="text/javascript" language="javascript" src="#{resource['js/fileupload.js']}"></script>
+    <script src="#{resource['js/fileupload.js']}"></script>
     <p:dialog id="editProvenancePopup" styleClass="smallPopUp" header="#{bundle['file.editProvenanceDialog']}" widgetVar="editProvenancePopup" modal="true" >
         <p:fragment id="assignMessages">
             <div class="popupMessagePanel">
@@ -25,7 +25,7 @@
                         
                     </p>
                 </div>
-                <label for="provenanceBundle" class="col-sm-3 control-label">
+                <label jsf:for="provUpload_input" class="col-sm-3 control-label">
                     #{bundle['file.editProvenanceDialog.bundleFile']}
                 </label>
                 <div class="col-sm-9">
@@ -46,12 +46,11 @@
                                           auto="true"
                                           multiple="false"
                                           allowTypes="/(\.|\/)(json)$/"
-                                          fileUploadListener="#{provPopupFragmentBean.handleFileUpload}" 
+                                          listener="#{provPopupFragmentBean.handleFileUpload}" 
                                           update="provPopupOutput,assignMessages" 
                                           label="#{bundle['file.editProvenanceDialog.selectToAddBtn']}"
                                           onstart="javascript:uploadStarted();"
                                           onerror="javascript:uploadFailure();"
-                                          oncomplete="bind_bsui_components();"
                                           fileLimit="1" 
                                           invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}"/>
                         </ui:fragment>
@@ -94,9 +93,7 @@
                             forceSelection="true" 
                             converter="provEntityFileDataConverter"
                             styleClass="DropdownPopup" panelStyleClass="DropdownPopupPanel"
-                            onkeypress="if (event.keyCode == 13) {
-                                return false;
-                            }">
+                            onkeypress="if (event.keyCode == 13) {return false;}">
                             <p:column headerText="#{bundle['file.editProvenanceDialog.bundleEntity.nameHeader']}">
                                 <h:outputText value="#{provEntityFileData.fileName}" />
                             </p:column>
@@ -107,9 +104,6 @@
                                 <h:outputText value="#{provEntityFileData.entityName}" />
                             </p:column>
                         </p:autoComplete>
-                        <script type="text/javascript">
-                            handle_dropdown_popup_scroll();
-                        </script>
                         <p:message for="provJsonNameDropdown" display="text"/>
                     </div>
                 </div>
@@ -121,7 +115,7 @@
                 </div>
             </div>
             <div class="form-group text-left">
-                <label for="provenanceAddDescription" class="col-sm-3 control-label">
+                <label jsf:for="provenanceFreeform" class="col-sm-3 control-label">
                     #{bundle['file.editProvenanceDialog.description']}
                 </label>
                 <div class="col-sm-9">
@@ -135,9 +129,8 @@
                 </div>
             </div>
             <div class="button-block">              
-                <p:commandButton styleClass="btn btn-default" id="editProvenancePopupSaveButton" value="#{bundle.continue}" disabled="#{provPopupFragmentBean.isDataFilePublishedWithDraftRendering() and !provPopupFragmentBean.isDatasetInDraftRendering()}" update="provPopupOutput,assignMessages,confirmProvenancePopup" oncomplete="if (args &amp;&amp; !args.validationFailed) { PF('editProvenancePopup').hide();PF('confirmProvenancePopup').show(); }" />
-                <p:commandButton styleClass="btn btn-default" id="editProvenancePopupCancelButton" value="#{bundle.cancel}" update="provPopupOutput,assignMessages,confirmProvenancePopup" onclick="PF('editProvenancePopup').hide();" immediate="true" actionListener="#{provPopupFragmentBean.removeJsonAndRelatedData()}">
-                </p:commandButton>
+                <p:commandButton styleClass="btn btn-default" id="editProvenancePopupSaveButton" value="#{bundle.continue}" disabled="#{provPopupFragmentBean.isDataFilePublishedWithDraftRendering() and !provPopupFragmentBean.isDatasetInDraftRendering()}" update="provPopupOutput,assignMessages,confirmProvenancePopup" oncomplete="if (args &amp;&amp; !args.validationFailed) { PF('editProvenancePopup').hide();PF('confirmProvenancePopup').show();}"/>
+                <p:commandButton styleClass="btn btn-link" id="editProvenancePopupCancelButton" value="#{bundle.cancel}" update="provPopupOutput,assignMessages,confirmProvenancePopup" onclick="PF('editProvenancePopup').hide();" immediate="true" actionListener="#{provPopupFragmentBean.removeJsonAndRelatedData()}"/>
             </div>
         </div>
     </p:dialog>
@@ -173,8 +166,13 @@
             </div>
         </div>
         <div class="button-block">
-            <p:commandButton styleClass="btn btn-default" id="confirmProvenancePopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('confirmProvenancePopup').hide();" action="#{provPopupFragmentBean.stagePopupChanges(saveInPopup == 'true')}" update=":messagePanel"/>
-            <p:commandButton styleClass="btn btn-default" id="confirmProvenancePopupCancelButton" value="#{bundle.cancel}" onclick="PF('editProvenancePopup').show();PF('confirmProvenancePopup').hide();"/>
+            <p:commandButton styleClass="btn btn-default" id="confirmProvenancePopupSaveButton" 
+                             value="#{bundle.saveChanges}" oncomplete="PF('confirmProvenancePopup').hide();" 
+                             action="#{provPopupFragmentBean.stagePopupChanges(saveInPopup == 'true')}" update=":messagePanel"/>
+            <button type="button" jsf:id="confirmProvenancePopupCancelButton" class="btn btn-link" 
+                    onclick="PF('editProvenancePopup').show();PF('confirmProvenancePopup').hide();">
+                #{bundle.cancel}
+            </button>
         </div>
     </p:dialog>
 </ui:composition>

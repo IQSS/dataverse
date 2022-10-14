@@ -202,6 +202,20 @@
                   "typeClass": "primitive",
                   "value": "National Science Foundation"
                 }
+                },
+                {
+                "contributorType": {
+                  "typeName": "contributorType",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "Data Collector"
+                },
+                "contributorName": {
+                  "typeName": "contributorName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Watson, John"
+                }
               }
             ]
           },
@@ -295,10 +309,12 @@
             ]
           }
         ],
-        "displayName": "Citation Metadata"
+        "displayName": "Citation Metadata",
+        "name": "citation"
       },
       "geospatial": {
         "displayName": "Geospatial Metadata",
+        "name": "geospatial",
         "fields": [
           {
             "typeName": "geographicCoverage",

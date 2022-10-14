@@ -11,8 +11,10 @@ import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
+import edu.harvard.iq.dataverse.api.dto.LicenseDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
 import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
+import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
@@ -120,7 +122,12 @@ public class DublinCoreExportUtil {
         writeFullElementList(xmlw, dcFlavor+":"+"language", dto2PrimitiveList(version, DatasetFieldConstant.language));        
         
         writeRelPublElement(xmlw, version, dcFlavor);
-        writeFullElement(xmlw, dcFlavor+":"+"date", dto2Primitive(version, DatasetFieldConstant.productionDate));  
+        
+        String date = dto2Primitive(version, DatasetFieldConstant.productionDate);
+        if (date == null) {
+            date = datasetDto.getPublicationDate();
+        }
+        writeFullElement(xmlw, dcFlavor+":"+"date", date);
         
         writeFullElement(xmlw, dcFlavor+":"+"contributor", dto2Primitive(version, DatasetFieldConstant.depositor));  
         
@@ -139,7 +146,10 @@ public class DublinCoreExportUtil {
         writeSpatialElements(xmlw, version, dcFlavor);
         
         //License and Terms
-        writeFullElement(xmlw, dcFlavor+":"+"license", version.getLicense());        
+        LicenseDTO licDTO = version.getLicense();
+        if(licDTO != null) {
+            writeFullElement(xmlw, dcFlavor+":"+"license", licDTO.getName());
+        }
         writeFullElement(xmlw, dcFlavor+":"+"rights", version.getTermsOfUse()); 
         writeFullElement(xmlw, dcFlavor+":"+"rights", version.getRestrictions()); 
 
@@ -167,7 +177,11 @@ public class DublinCoreExportUtil {
         
         writeFullElementList(xmlw, dcFlavor+":"+"language", dto2PrimitiveList(version, DatasetFieldConstant.language));        
         
-        writeFullElement(xmlw, dcFlavor+":"+"date", dto2Primitive(version, DatasetFieldConstant.productionDate));  
+        String date = dto2Primitive(version, DatasetFieldConstant.productionDate);
+        if (date == null) {
+            date = datasetDto.getPublicationDate();
+        }
+        writeFullElement(xmlw, dcFlavor+":"+"date", date);  
         
         writeFullElement(xmlw, dcFlavor+":"+"contributor", dto2Primitive(version, DatasetFieldConstant.depositor));  
         

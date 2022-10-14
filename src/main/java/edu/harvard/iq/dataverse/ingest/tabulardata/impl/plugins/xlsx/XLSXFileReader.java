@@ -33,11 +33,11 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
-import org.apache.poi.xssf.model.SharedStringsTable;
+import org.apache.poi.xssf.model.SharedStrings;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -229,7 +229,7 @@ public class XLSXFileReader extends TabularDataFileReader {
         dbglog.info("entering processSheet");
         OPCPackage pkg = OPCPackage.open(inputStream);
         XSSFReader r = new XSSFReader(pkg);
-        SharedStringsTable sst = r.getSharedStringsTable();
+        SharedStrings sst = r.getSharedStringsTable();
 
         XMLReader parser = fetchSheetParser(sst, dataTable, tempOut);
 
@@ -241,7 +241,7 @@ public class XLSXFileReader extends TabularDataFileReader {
         sheet1.close();
     }
     
-    public XMLReader fetchSheetParser(SharedStringsTable sst, DataTable dataTable, PrintWriter tempOut) throws SAXException {
+    public XMLReader fetchSheetParser(SharedStrings sst, DataTable dataTable, PrintWriter tempOut) throws SAXException {
         // An attempt to use org.apache.xerces.parsers.SAXParser resulted 
         // in some weird conflict in the app; the default XMLReader obtained 
         // from the XMLReaderFactory (from xml-apis.jar) appears to be working
@@ -265,7 +265,7 @@ public class XLSXFileReader extends TabularDataFileReader {
     private static class SheetHandler extends DefaultHandler {
 
         private DataTable dataTable;
-        private SharedStringsTable sst;
+        private SharedStrings sst;
         private String cellContents;
         private boolean nextIsString;
         private boolean variableHeader;
@@ -277,11 +277,11 @@ public class XLSXFileReader extends TabularDataFileReader {
         String[] dataRow; 
         PrintWriter tempOut; 
 
-        private SheetHandler(SharedStringsTable sst) {
+        private SheetHandler(SharedStrings sst) {
             this(sst, null, null);
         }
 
-        private SheetHandler(SharedStringsTable sst, DataTable dataTable, PrintWriter tempOut) {
+        private SheetHandler(SharedStrings sst, DataTable dataTable, PrintWriter tempOut) {
             this.sst = sst;
             this.dataTable = dataTable;
             this.tempOut = tempOut; 
@@ -359,21 +359,43 @@ public class XLSXFileReader extends TabularDataFileReader {
             cellContents = "";
         }
 
+        /* Works from 1-702 columns. Could be made recursive to work beyond that*/
         private int getColumnCount(String columnTag) {
             int count = -1;
             if (columnTag.length() == 1 && columnTag.matches("[A-Z]")) {
                 count = columnTag.charAt(0) - 'A';
             } else {
-                dbglog.warning("Unsupported column index tag: "+columnTag);
+                if (columnTag.length() == 2) {
+                    int c1 = columnTag.charAt(0) - 'A';
+                    int c2 = columnTag.charAt(1) - 'A';
+                    if (c1 >= 0 && c1 < 26 && c2 >= 0 && c2 < 26) {
+                        dbglog.fine(columnTag + ": " + ((c1 + 1) * 26 + c2));
+                        return ((c1 + 1) * 26 + c2);
+                    } else {
+                        dbglog.warning("Unsupported column index tag: " + columnTag);
+                    }
+                } else {
+                    dbglog.warning("Unsupported column index tag: " + columnTag);
+                }
             }
             
             return count;
         }
-        
+        /* Supports A-Z and AA-ZZ (0-701 column count/position) */
         private String getColumnLetterTag(int columnCount) {
             if (columnCount < 0 || columnCount > 25) {
-                dbglog.warning("Multi-letter column codes not yet supported.");
-                return null; 
+                if(columnCount >25 && columnCount < 702) { //AA-ZZ
+                    int code1 = 'A' + columnCount/26 -1;
+                    int code2 = 'A' + columnCount%26;
+                    char[] letterTag = new char[2]; 
+                    letterTag[0] = (char)code1;
+                    letterTag[1] = (char)code2;
+                    dbglog.fine(columnCount + ": " + new String(letterTag));
+                    return new String(letterTag);
+                } else {
+                    dbglog.warning("3+ letter column codes not yet supported.");
+                    return null;
+                }
             }
             int letterCode = 'A' + columnCount;
             char[] letterTag = new char[1]; 
@@ -388,7 +410,7 @@ public class XLSXFileReader extends TabularDataFileReader {
             // Do it now, as characters() may be called more than once
             if (nextIsString) {
                 int idx = Integer.parseInt(cellContents);
-                cellContents = new XSSFRichTextString(sst.getEntryAt(idx)).toString();
+                cellContents = sst.getItemAt(idx).getString();
                 nextIsString = false;
             }
 

@@ -1,6 +1,6 @@
-=============
-Documentation
-=============
+=====================
+Writing Documentation
+=====================
 
 .. contents:: |toctitle|
 	:local:
@@ -8,60 +8,82 @@ Documentation
 Quick Fix
 -----------
 
-If you find a typo or a small error in the documentation you can easily fix it using GitHub.
+If you find a typo or a small error in the documentation you can fix it using GitHub's online web editor. Generally speaking, we will be following https://help.github.com/en/articles/editing-files-in-another-users-repository
 
-- Fork the repository
-- Go to [your GitHub username]/dataverse/doc/sphinx-guides/source and access the file you would like to fix
-- Switch to the branch that is currently under development
-- Click the Edit button in the upper-right corner and fix the error
-- Submit a pull request
+- Navigate to https://github.com/IQSS/dataverse/tree/develop/doc/sphinx-guides/source where you will see folders for each of the guides: `admin`_, `api`_, `developers`_, `installation`_, `style`_, `user`_.
+- Find the file you want to edit under one of the folders above.
+- Click the pencil icon in the upper-right corner. If this is your first contribution to the Dataverse Project, the hover text over the pencil icon will say "Fork this project and edit this file".
+- Make changes to the file and preview them.
+- In the **Commit changes** box, enter a description of the changes you have made and click **Propose file change**.
+- Under the **Write** tab, delete the long welcome message and write a few words about what you fixed.
+- Click **Create Pull Request**.
 
-Other Changes (Sphinx)
-----------------------
+That's it! Thank you for your contribution! Your pull request will be added manually to the main Dataverse Project board at https://github.com/orgs/IQSS/projects/2 and will go through code review and QA before it is merged into the "develop" branch. Along the way, developers might suggest changes or make them on your behalf. Once your pull request has been merged you will be listed as a contributor at https://github.com/IQSS/dataverse/graphs/contributors
 
-The documentation for Dataverse was written using Sphinx (http://sphinx-doc.org/). 
-If you are interested in suggesting changes or updates we recommend that you create 
-the html files using Sphinx locally and the submit a pull request through GitHub. Here are the instructions on how to proceed:
+Please see https://github.com/IQSS/dataverse/pull/5857 for an example of a quick fix that was merged (the "Files changed" tab shows how a typo was fixed).
 
+If you would like to read more about the Dataverse Project's use of GitHub, please see the :doc:`version-control` section. For bug fixes and features we request that you create an issue before making a pull request but this is not at all necessary for quick fixes to the documentation.
+
+.. _admin: https://github.com/IQSS/dataverse/tree/develop/doc/sphinx-guides/source/admin
+.. _api: https://github.com/IQSS/dataverse/tree/develop/doc/sphinx-guides/source/api
+.. _developers: https://github.com/IQSS/dataverse/tree/develop/doc/sphinx-guides/source/developers
+.. _installation: https://github.com/IQSS/dataverse/tree/develop/doc/sphinx-guides/source/installation
+.. _style: https://github.com/IQSS/dataverse/tree/develop/doc/sphinx-guides/source/style
+.. _user: https://github.com/IQSS/dataverse/tree/develop/doc/sphinx-guides/source/user
+
+Building the Guides with Sphinx
+-------------------------------
+
+The Dataverse guides are written using Sphinx (http://sphinx-doc.org). We recommend installing Sphinx and building the guides locally so you can get an accurate preview of your changes.
 
 Installing Sphinx
 ~~~~~~~~~~~~~~~~~
 
-On a Mac: 
+First, make a fork of https://github.com/IQSS/dataverse and clone your fork locally. Then change to the ``doc/sphinx-guides`` directory.
 
-Download the sphinx zip file from http://sphinx-doc.org/install.html
+``cd doc/sphinx-guides``
 
-Unzip it somewhere. In the unzipped directory, do the following as
-root, (sudo -i):
+Create a Python virtual environment, activate it, then install dependencies:
 
-python setup.py build
-python setup.py install
+``python3 -m venv venv``
 
-Alternative option (Mac/Unix/Windows):
+``source venv/bin/activate``
 
-Unless you already have it, install pip (https://pip.pypa.io/en/latest/installing.html)
+``pip install -r requirements.txt``
 
-run ``pip install sphinx`` in a terminal
+Installing GraphViz
+~~~~~~~~~~~~~~~~~~~
 
-This is all you need. You should now be able to build HTML/pdf documentation from git sources locally.
+In some parts of the documentation, graphs are rendered as images using the Sphinx GraphViz extension.
 
-Using Sphinx
-~~~~~~~~~~~~
+Building the guides requires the ``dot`` executable from GraphViz.
 
-First, you will need to make a fork of the dataverse repository in GitHub. Then, you will need to make a clone of your fork so you can manipulate the files outside GitHub.
+This requires having `GraphViz <http://graphviz.org>`_ installed and either having ``dot`` on the path or
+`adding options to the make call <https://groups.google.com/forum/#!topic/sphinx-users/yXgNey_0M3I>`_.
 
-To edit the existing documentation go to ~/dataverse/doc/sphinx-guides/source directory inside your clone. There, you will find the .rst files that correspond to the guides in the dataverse page (http://guides.dataverse.org/en/latest/user/index.html). Now, using your preferred text editor, open and edit these files, or create new .rst files and edit the others accordingly. 
+Editing and Building the Guides
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Once you are done, open a terminal and change directories to ~/dataverse/doc/sphinx-guides . Then, run the following commands:
+To edit the existing documentation:
 
-- ``make clean``
+- Create a branch (see :ref:`how-to-make-a-pull-request`).
+- In ``doc/sphinx-guides/source`` you will find the .rst files that correspond to http://guides.dataverse.org.
+- Using your preferred text editor, open and edit the necessary files, or create new ones.
 
-- ``make html``
+Once you are done, open a terminal, change directories to ``doc/sphinx-guides``, activate (or reactivate) your Python virtual environment, and build the guides.
 
-After sphinx is done processing the files you should notice that the html folder in ~/dataverse/doc/sphinx-guides/build directory has been updated.
-You can click on the files in the html folder to preview the changes.
+``cd doc/sphinx-guides``
 
-Now you can make a commit with the changes to your own fork in GitHub and submit a pull request to the dataverse repository.
+``source venv/bin/activate``
+
+``make clean``
+
+``make html``
+
+After Sphinx is done processing the files you should notice that the ``html`` folder in ``doc/sphinx-guides/build`` directory has been updated.
+You can click on the files in the ``html`` folder to preview the changes.
+
+Now you can make a commit with the changes to your own fork in GitHub and submit a pull request. See :ref:`how-to-make-a-pull-request`.
 
 Table of Contents
 -----------------
@@ -84,21 +106,15 @@ While PNGs in the git repo can be linked directly via URL, Sphinx-generated imag
 provide higher visual quality. Especially in terms of quality of content, generated images can be extendend and improved
 by a textbased and reviewable commit, without needing raw data or source files and no diff around.
 
-GraphViz based images
-~~~~~~~~~~~~~~~~~~~~~
+Cross References
+----------------
 
-In some parts of the documentation, graphs are rendered as images via Sphinx GraphViz extension.
-
-This requires `GraphViz <http://graphviz.org/>`_ installed and either ``dot`` on the path or
-`adding options to the make call <https://groups.google.com/forum/#!topic/sphinx-users/yXgNey_0M3I>`_.
-
-This has been tested and works on Mac, Linux, and Windows. If you have not properly configured GraphViz, then the worst thing that might happen is a warning and missing images in your local documentation build.
-
+**NOTE:** When adding ReStructured Text (RST) `cross references <https://www.sphinx-doc.org/en/master/usage/restructuredtext/roles.html#ref-role>`_, use the hyphen character (``-``) as the word separator for the cross reference label. For example, ``my-reference-label`` would be the preferred label for a cross reference as opposed to, for example, ``my_reference_label``.
 
 Versions
 --------
 
-For installations hosting their own copies of the guides, note that as each version of Dataverse is released, there is an updated version of the guides released with it. Google and other search engines index all versions, which may confuse users who discover your guides in the search results as to which version they should be looking at. When learning about your installation from the search results, it is best to be viewing the *latest* version.
+For installations hosting their own copies of the guides, note that as each version of the Dataverse Software is released, there is an updated version of the guides released with it. Google and other search engines index all versions, which may confuse users who discover your guides in the search results as to which version they should be looking at. When learning about your installation from the search results, it is best to be viewing the *latest* version.
 
 In order to make it clear to the crawlers that we only want the latest version discoverable in their search results, we suggest adding this to your ``robots.txt`` file::
 

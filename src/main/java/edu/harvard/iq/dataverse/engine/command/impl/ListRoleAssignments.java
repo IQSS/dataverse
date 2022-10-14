@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,6 +26,12 @@ public class ListRoleAssignments extends AbstractCommand<List<RoleAssignment>> {
 
 	@Override
 	public List<RoleAssignment> execute(CommandContext ctxt) throws CommandException {
+            if(definitionPoint.isInstanceofDataset()){
+                List <RoleAssignment> retVal = new ArrayList();
+                retVal.addAll(ctxt.permissions().assignmentsOn(definitionPoint));
+                retVal.addAll(ctxt.permissions().assignmentsOn(definitionPoint.getOwner()));
+                return retVal;
+            }
 		return ctxt.permissions().assignmentsOn(definitionPoint);
 	}
 	

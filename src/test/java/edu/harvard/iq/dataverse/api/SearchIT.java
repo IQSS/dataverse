@@ -23,14 +23,19 @@ import org.hamcrest.CoreMatchers;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import static junit.framework.Assert.assertEquals;
 import static java.lang.Thread.sleep;
+import javax.imageio.ImageIO;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import static org.junit.Assert.assertNotEquals;
+import static java.lang.Thread.sleep;
 
 public class SearchIT {
 
@@ -44,15 +49,6 @@ public class SearchIT {
         Response makeSureTokenlessSearchIsEnabled = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiRequiresToken);
         makeSureTokenlessSearchIsEnabled.then().assertThat()
                 .statusCode(OK.getStatusCode());
-
-        Response removeSearchApiNonPublicAllowed = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
-        removeSearchApiNonPublicAllowed.prettyPrint();
-        removeSearchApiNonPublicAllowed.then().assertThat()
-                .statusCode(200);
-
-        Response remove = UtilIT.deleteSetting(SettingsServiceBean.Key.ThumbnailSizeLimitImage);
-        remove.then().assertThat()
-                .statusCode(200);
 
     }
 
@@ -73,10 +69,6 @@ public class SearchIT {
                 .statusCode(CREATED.getStatusCode());
 
         Integer datasetId1 = UtilIT.getDatasetIdFromResponse(createDataset1Response);
-
-        Response enableNonPublicSearch = UtilIT.enableSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
-        enableNonPublicSearch.then().assertThat()
-                .statusCode(OK.getStatusCode());
 
         Response shouldBeVisibleToUser1 = UtilIT.search("id:dataset_" + datasetId1 + "_draft", apiToken1);
         shouldBeVisibleToUser1.prettyPrint();
@@ -109,8 +101,10 @@ public class SearchIT {
         Response grantUser2AccessOnDataset = UtilIT.grantRoleOnDataverse(dataverseAlias, roleToAssign, "@" + username2, apiToken1);
         grantUser2AccessOnDataset.prettyPrint();
         assertEquals(200, grantUser2AccessOnDataset.getStatusCode());
-        sleep(500l);
 
+        String searchPart = "id:dataset_" + datasetId1 + "_draft";        
+        assertTrue("Failed test if search exceeds max duration " + searchPart , UtilIT.sleepForSearch(searchPart, apiToken2, "", UtilIT.MAXIMUM_INGEST_LOCK_DURATION)); 
+        
         Response shouldBeVisibleToUser2 = UtilIT.search("id:dataset_" + datasetId1 + "_draft", apiToken2);
         shouldBeVisibleToUser2.prettyPrint();
         shouldBeVisibleToUser2.then().assertThat()
@@ -129,9 +123,6 @@ public class SearchIT {
         publishDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response disableNonPublicSearch = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
-        disableNonPublicSearch.then().assertThat()
-                .statusCode(OK.getStatusCode());
 
         Response makeSureTokenlessSearchIsEnabled = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiRequiresToken);
         makeSureTokenlessSearchIsEnabled.then().assertThat()
@@ -186,10 +177,6 @@ public class SearchIT {
         createDatasetResponse.prettyPrint();
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
 
-        Response enableNonPublicSearch = UtilIT.enableSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
-        enableNonPublicSearch.then().assertThat()
-                .statusCode(OK.getStatusCode());
-
         Response searchResponse = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken);
         searchResponse.prettyPrint();
         assertFalse(searchResponse.body().jsonPath().getString("data.items[0].citation").contains("href"));
@@ -209,35 +196,15 @@ public class SearchIT {
         deleteDataverseResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response disableNonPublicSearch = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
-        disableNonPublicSearch.then().assertThat()
-                .statusCode(OK.getStatusCode());
-
         Response deleteUserResponse = UtilIT.deleteUser(username);
         deleteUserResponse.prettyPrint();
         assertEquals(200, deleteUserResponse.getStatusCode());
 
     }
-
-    /*
-     * Note: this test does a lot of checking for permissions with / without privlidged api key.
-     * Thumbnails access is the same with/without that access as of 4.9.4 --MAD
-     * 
-     * If permissions come into play for thumbnails, the deprecated UtilIT.getInputStreamFromUnirest
-     * should be repaired to actually use api keys
-     */
+    
     @Test
-    public void testDatasetThumbnail() {
-        logger.info("BEGIN testDatasetThumbnail");
+    public void testAdditionalDatasetContent6300() {
 
-//        Response setSearchApiNonPublicAllowed = UtilIT.setSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed, "true");
-//        setSearchApiNonPublicAllowed.prettyPrint();
-//
-//        assertEquals("foo", "foo");
-//        if (true) {
-//            return;
-//        }
-//
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         String username = UtilIT.getUsernameFromResponse(createUser);
@@ -251,10 +218,126 @@ public class SearchIT {
         createDatasetResponse.prettyPrint();
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
 
-        Response setSearchApiNonPublicAllowed = UtilIT.setSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed, "true");
-        setSearchApiNonPublicAllowed.prettyPrint();
-        setSearchApiNonPublicAllowed.then().assertThat()
-                .statusCode(200);
+        Response datasetAsJson = UtilIT.nativeGet(datasetId, apiToken);
+        datasetAsJson.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
+
+        Response getDatasetJsonBeforePublishing = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJsonBeforePublishing.prettyPrint();
+        String protocol = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.protocol");
+        String authority = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.authority");
+
+        String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
+        String pathToJsonFile = "doc/sphinx-guides/source/_static/api/dataset-add-metadata.json";
+        Response addSubjectViaNative = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, apiToken);
+        addSubjectViaNative.prettyPrint();
+        addSubjectViaNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response searchResponse = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken);
+        searchResponse.prettyPrint();
+        /*["Astronomy and Astrophysics"]*/
+        assertTrue(searchResponse.body().jsonPath().getString("data.items[0].subjects").contains("Astronomy and Astrophysics"));
+        assertTrue(searchResponse.body().jsonPath().getString("data.items[0].versionState").equals("DRAFT"));
+        /*                "versionState": "DRAFT",*/
+
+        //We now need to publish to see version number
+        Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        publishDataverse.prettyPrint();
+        publishDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDataset.prettyPrint();
+        publishDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        searchResponse = UtilIT.search("id:dataset_" + datasetId, apiToken);
+        searchResponse.prettyPrint();
+        /*["Astronomy and Astrophysics"]*/
+        assertTrue(searchResponse.body().jsonPath().getString("data.items[0].subjects").contains("Astronomy and Astrophysics"));
+        assertTrue(searchResponse.body().jsonPath().getString("data.items[0].versionState").equals("RELEASED"));
+
+        assertTrue(searchResponse.body().jsonPath().getString("data.items[0].majorVersion").equals("1"));
+        assertTrue(searchResponse.body().jsonPath().getString("data.items[0].minorVersion").equals("0"));
+
+        assertTrue(searchResponse.body().jsonPath().getString("data.items[0].authors").contains("Spruce, Sabrina"));
+
+        assertTrue(searchResponse.body().jsonPath().getString("data.items[0].contacts[0].name").contains("Finch, Fiona"));
+        assertTrue(searchResponse.body().jsonPath().getString("data.items[0].storageIdentifier").contains(identifier));
+
+    }
+
+    @Test
+    public void testSearchDynamicMetadataFields() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+        Response searchResponseAuthor = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken, "&metadata_fields=citation:author");
+        searchResponseAuthor.prettyPrint();
+        searchResponseAuthor.then().assertThat()
+                .body("data.items[0].metadataBlocks.citation.displayName", CoreMatchers.equalTo("Citation Metadata"))
+                .body("data.items[0].metadataBlocks.citation.fields[0].typeName", CoreMatchers.equalTo("author"))
+                .body("data.items[0].metadataBlocks.citation.fields[0].value[0].authorName.value", CoreMatchers.equalTo("Finch, Fiona"))
+                .body("data.items[0].metadataBlocks.citation.fields[0].value[0].authorAffiliation.value", CoreMatchers.equalTo("Birds Inc."))
+                .statusCode(OK.getStatusCode());
+
+        // "{field_name} could not be a sub field of a compound field
+        Response subFieldsNotSupported = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken, "&metadata_fields=citation:authorAffiliation");
+        subFieldsNotSupported.prettyPrint();
+        subFieldsNotSupported.then().assertThat()
+                .body("data.items[0].metadataBlocks.citation.displayName", CoreMatchers.equalTo("Citation Metadata"))
+                // No fields returned. authorAffiliation is a subfield of author and not supported.
+                .body("data.items[0].metadataBlocks.citation.fields", Matchers.empty())
+                .statusCode(OK.getStatusCode());
+
+        Response allFieldsFromCitation = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken, "&metadata_fields=citation:*");
+        // Many more fields printed
+        allFieldsFromCitation.prettyPrint();
+        allFieldsFromCitation.then().assertThat()
+                .body("data.items[0].metadataBlocks.citation.displayName", CoreMatchers.equalTo("Citation Metadata"))
+                // Many fields returned, all of the citation block that has been filled in.
+                .body("data.items[0].metadataBlocks.citation.fields.typeName.size", Matchers.equalTo(5))
+                .statusCode(OK.getStatusCode());
+
+    }
+    
+    
+    /*
+     * Note: this test does a lot of checking for permissions with / without privlidged api key.
+     * Thumbnails access is the same with/without that access as of 4.9.4 --MAD
+     * 
+     * If permissions come into play for thumbnails, the deprecated UtilIT.getInputStreamFromUnirest
+     * should be repaired to actually use api keys
+     */
+    @Test
+    public void testDatasetThumbnail() {
+        logger.info("BEGIN testDatasetThumbnail");
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
 
         Response search1 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken);
         search1.prettyPrint();
@@ -345,6 +428,7 @@ public class SearchIT {
         search2.prettyPrint();
         search2.then().assertThat()
                 .body("data.items[0].name", CoreMatchers.equalTo("Darwin's Finches"))
+                .body("data.items[0].fileCount", CoreMatchers.equalTo(1))
                 .statusCode(200);
 
         //Unpublished datafiles no longer populate the dataset thumbnail
@@ -388,6 +472,24 @@ public class SearchIT {
         getThumbnailImageA.then().assertThat()
                 .contentType("image/png")
                 .statusCode(OK.getStatusCode());
+
+        String trueOrWidthInPixels = "true";
+        Response getFileThumbnailImageA = UtilIT.getFileThumbnail(dataFileId1.toString(), trueOrWidthInPixels, apiToken);
+        getFileThumbnailImageA.then().assertThat()
+                .contentType("image/png")
+                .statusCode(OK.getStatusCode());
+
+        try {
+            BufferedImage bufferedImage = ImageIO.read(getFileThumbnailImageA.body().asInputStream());
+            int width = bufferedImage.getWidth();
+            int height = bufferedImage.getHeight();
+            System.out.println("width: " + width);
+            System.out.println("height: " + height);
+            int expectedWidth = 64;
+            assertEquals(expectedWidth, width);
+        } catch (IOException ex) {
+            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         InputStream inputStream2creator = UtilIT.getInputStreamFromUnirest(thumbnailUrl, apiToken);
         assertEquals(treesAsBase64, UtilIT.inputStreamToDataUrlSchemeBase64Png(inputStream2creator));
@@ -610,10 +712,6 @@ public class SearchIT {
         searchResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response removeSearchApiNonPublicAllowed = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
-        removeSearchApiNonPublicAllowed.then().assertThat()
-                .statusCode(200);
-
         /**
          * @todo What happens when you delete a dataset? Does the thumbnail
          * created based on the logo get deleted too? Should it?
@@ -651,13 +749,12 @@ public class SearchIT {
         searchUnpublished.prettyPrint();
         searchUnpublished.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                // It's expected that you can't find it because it hasn't been published.
-                .body("data.total_count", CoreMatchers.equalTo(0));
+                .body("data.total_count", CoreMatchers.equalTo(1));
 
         Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
         publishDataverse.then().assertThat()
                 .statusCode(OK.getStatusCode());
-
+        
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken);
         publishDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -699,20 +796,41 @@ public class SearchIT {
         searchUnpublishedSubtree.prettyPrint();
         searchUnpublishedSubtree.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                // It's expected that you can't find it because it hasn't been published.
-                .body("data.total_count", CoreMatchers.equalTo(0));
+                .body("data.total_count", CoreMatchers.equalTo(1));
         
         Response searchUnpublishedSubtree2 = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias2);
         searchUnpublishedSubtree2.prettyPrint();
         searchUnpublishedSubtree2.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                // It's expected that you can't find it because it hasn't been published.
+                // TODO: investigate if this is a bug that nothing was found.
                 .body("data.total_count", CoreMatchers.equalTo(0));
-        
+
         Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
         publishDataverse.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException ex) {
+            /**
+             * This sleep is here because dataverseAlias2 is showing with
+             * discoverableBy of group_public first and then overwritten by
+             * group_user224 (or whatever) later. This is backward from what we
+             * expect. We expect group_user224 to be in discoverableBy first
+             * while the dataverse is unpublished (only that users can see it)
+             * and then we want discoverableBy to change to group_public when
+             * the dataverse is published (everyone can see it).
+             *
+             * The theory on this bug, this timing issue, is that the indexing
+             * from "create" is being queued up and happens after the indexing
+             * from "publish".
+             *
+             * Please note that if you remove this sleep and run SearchIT in
+             * isolation, it passes. To exercise this bug you have to run
+             * multiple API tests at once such as SearchIT and DatasetsIT.
+             */
+        }
+
         Response publishDataverse2 = UtilIT.publishDataverseViaNativeApi(dataverseAlias2, apiToken);
         publishDataverse2.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -727,6 +845,7 @@ public class SearchIT {
         searchPublishedSubtree2.prettyPrint();
         searchPublishedSubtree2.then().assertThat()
                 .statusCode(OK.getStatusCode())
+                // TODO: investigate if this is a bug that nothing was found.
                 .body("data.total_count", CoreMatchers.equalTo(0));
         
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias2, apiToken);
@@ -751,9 +870,59 @@ public class SearchIT {
         searchPublishedSubtreeWDS2.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(1));
-        
-        
                 
+    }
+    
+    //If this test fails it'll fail inconsistently as it tests underlying async role code
+    //Hopefully it will not fail as we fixed the issue in https://github.com/IQSS/dataverse/issues/3471
+    @Test
+    public void testCuratorCardDataversePopulation() throws InterruptedException {
+
+        Response createSuperUser = UtilIT.createRandomUser();
+        createSuperUser.prettyPrint();
+        assertEquals(200, createSuperUser.getStatusCode());
+        String usernameSuper = UtilIT.getUsernameFromResponse(createSuperUser);
+        String apiTokenSuper = UtilIT.getApiTokenFromResponse(createSuperUser);
+        Response makeSuperUser = UtilIT.makeSuperUser(usernameSuper);
+        assertEquals(200, makeSuperUser.getStatusCode());
+        
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String parentDataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(parentDataverseAlias, apiToken);
+        publishDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        String subDataverseAlias = "dv" + UtilIT.getRandomIdentifier();
+        Response createSubDataverseResponse = UtilIT.createSubDataverse(subDataverseAlias, null, apiTokenSuper, parentDataverseAlias);
+        createSubDataverseResponse.prettyPrint();
+        //UtilIT.getAliasFromResponse(createSubDataverseResponse);
+        
+        Response grantRoleOnDataverseResponse = UtilIT.grantRoleOnDataverse(subDataverseAlias, "curator", "@" + username, apiTokenSuper); 
+        grantRoleOnDataverseResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+                
+        String searchPart = "*"; 
+        
+        Response searchPublishedSubtreeSuper = UtilIT.search(searchPart, apiTokenSuper, "&subtree="+parentDataverseAlias);
+        assertTrue("Failed test if search exceeds max duration " + searchPart , UtilIT.sleepForSearch(searchPart, apiToken, "&subtree="+parentDataverseAlias, UtilIT.MAXIMUM_INGEST_LOCK_DURATION)); 
+        searchPublishedSubtreeSuper.prettyPrint();
+        searchPublishedSubtreeSuper.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(1));
+        
+        Response searchPublishedSubtreeCurator = UtilIT.search(searchPart, apiToken, "&subtree="+parentDataverseAlias);
+        searchPublishedSubtreeCurator.prettyPrint();
+        searchPublishedSubtreeCurator.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.equalTo(1));
+        
     }
     
     @Test
@@ -808,63 +977,59 @@ public class SearchIT {
         searchFakeSubtreeNoAPI.prettyPrint();
         searchFakeSubtreeNoAPI.then().assertThat()
                 .statusCode(400);
-        
+
         Response searchUnpublishedSubtree = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias);
         searchUnpublishedSubtree.prettyPrint();
         searchUnpublishedSubtree.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                // It's expected that you can't find it because it hasn't been published.
-                .body("data.total_count", CoreMatchers.equalTo(0));
+                .body("data.total_count", CoreMatchers.equalTo(1));
         
         Response searchUnpublishedSubtreeNoAPI = UtilIT.search(searchPart, null, "&subtree="+dataverseAlias);
         searchUnpublishedSubtreeNoAPI.prettyPrint();
         searchUnpublishedSubtreeNoAPI.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                // It's expected that you can't find it because it hasn't been published.
+                // TODO: investigate if this is a bug that nothing was found.
                 .body("data.total_count", CoreMatchers.equalTo(0));
         
         Response searchUnpublishedSubtrees = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias +"&subtree="+dataverseAlias2);
         searchUnpublishedSubtrees.prettyPrint();
         searchUnpublishedSubtrees.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                // It's expected that you can't find them because they haven't been published.
-                .body("data.total_count", CoreMatchers.equalTo(0));
+                .body("data.total_count", CoreMatchers.equalTo(2));
         
         Response searchUnpublishedSubtreesNoAPI = UtilIT.search(searchPart, null, "&subtree="+dataverseAlias +"&subtree="+dataverseAlias2);
         searchUnpublishedSubtreesNoAPI.prettyPrint();
         searchUnpublishedSubtreesNoAPI.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                // It's expected that you can't find them because they haven't been published.
+                // TODO: investigate if this is a bug that nothing was found.
                 .body("data.total_count", CoreMatchers.equalTo(0));
 
         Response searchUnpublishedRootSubtreeForDataset = UtilIT.search(identifier.replace("FK2/", ""), apiToken, "&subtree=root");
         searchUnpublishedRootSubtreeForDataset.prettyPrint();
         searchUnpublishedRootSubtreeForDataset.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                // It's expected that you can't find it because it hasn't been published.
-                .body("data.total_count", CoreMatchers.equalTo(0));
+                .body("data.total_count", CoreMatchers.equalTo(1));
 
         Response searchUnpublishedRootSubtreeForDatasetNoAPI = UtilIT.search(identifier.replace("FK2/", ""), null, "&subtree=root");
         searchUnpublishedRootSubtreeForDatasetNoAPI.prettyPrint();
         searchUnpublishedRootSubtreeForDatasetNoAPI.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                // It's expected that you can't find it because it hasn't been published.
+                // TODO: investigate if this is a bug that nothing was found.
                 .body("data.total_count", CoreMatchers.equalTo(0));
         
         Response searchUnpublishedNoSubtreeForDataset = UtilIT.search(identifier.replace("FK2/", ""), apiToken, "");
         searchUnpublishedNoSubtreeForDataset.prettyPrint();
         searchUnpublishedNoSubtreeForDataset.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                // It's expected that you can't find it because it hasn't been published.
-                .body("data.total_count", CoreMatchers.equalTo(0));
+                .body("data.total_count", CoreMatchers.equalTo(1));
         
         Response searchUnpublishedNoSubtreeForDatasetNoAPI = UtilIT.search(identifier.replace("FK2/", ""), null, "");
         searchUnpublishedNoSubtreeForDatasetNoAPI.prettyPrint();
         searchUnpublishedNoSubtreeForDatasetNoAPI.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                // It's expected that you can't find it because it hasn't been published.
+                // TODO: investigate if this is a bug that nothing was found.
                 .body("data.total_count", CoreMatchers.equalTo(0));
-        
+
         //PUBLISH
         
         Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
@@ -932,19 +1097,6 @@ public class SearchIT {
 
     @AfterClass
     public static void cleanup() {
-
-        Response enableNonPublicSearch = UtilIT.enableSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
-        assertEquals(200, enableNonPublicSearch.getStatusCode());
-
-        Response deleteSearchApiNonPublicAllowed = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
-        deleteSearchApiNonPublicAllowed.then().assertThat()
-                .statusCode(200);
-
-        Response getSearchApiNonPublicAllowed = UtilIT.getSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
-//        getSearchApiNonPublicAllowed.prettyPrint();
-        getSearchApiNonPublicAllowed.then().assertThat()
-                .body("message", CoreMatchers.equalTo("Setting " + SettingsServiceBean.Key.SearchApiNonPublicAllowed + " not found"))
-                .statusCode(404);
     }
 
 }

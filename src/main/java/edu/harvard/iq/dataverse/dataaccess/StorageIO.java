@@ -30,16 +30,17 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.nio.channels.Channel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-
-
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.methods.GetMethod;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -53,16 +54,20 @@ public abstract class StorageIO<T extends DvObject> {
     public StorageIO() {
 
     }
-
-    public StorageIO(T dvObject) {
-        this(dvObject, null);
+    
+    public StorageIO(String storageLocation, String driverId) {
+      this.driverId=driverId;
     }
 
-    public StorageIO(T dvObject, DataAccessRequest req) {
+    public StorageIO(T dvObject, DataAccessRequest req, String driverId) {
         this.dvObject = dvObject;
         this.req = req;
+        this.driverId=driverId;
         if (this.req == null) {
             this.req = new DataAccessRequest();
+        }
+        if (this.driverId == null) {
+            this.driverId = DataAccess.FILE;
         }
     }
 
@@ -74,7 +79,10 @@ public abstract class StorageIO<T extends DvObject> {
 
     protected boolean isReadAccess = false;
     protected boolean isWriteAccess = false;
-
+    //A  public store is one in which files may be accessible outside Dataverse and therefore accessible without regard to Dataverse's access controls related to restriction and embargoes.
+    //Currently, this is just used to warn users at upload time rather than disable restriction/embargo. 
+    static protected Map<String, Boolean> driverPublicAccessMap = new HashMap<String, Boolean>();
+    
     public boolean canRead() {
         return isReadAccess;
     }
@@ -84,21 +92,13 @@ public abstract class StorageIO<T extends DvObject> {
     }
 
     public abstract String getStorageLocation() throws IOException;
-    // do we need this method?
 
     // This method will return a Path, if the storage method is a 
     // local filesystem. Otherwise should throw an IOException. 
     public abstract Path getFileSystemPath() throws IOException;
-    
+        
     public abstract boolean exists() throws IOException; 
-
-    // This method will delete the physical file (object), if delete
-    // functionality is supported by the physical driver. 
-    // TODO: this method should throw something other than IOException 
-    // if delete functionality is not supported by the access driver!
-    // -- L.A. 4.0. beta
-    // (there is now a dedicated exception for this purpose: UnsupportedDataAccessOperationException,
-    // that extends IOException -- 4.6.2) 
+        
     public abstract void delete() throws IOException;
     
     // this method for copies a local Path (for ex., a
@@ -187,13 +187,20 @@ public abstract class StorageIO<T extends DvObject> {
     public abstract void deleteAllAuxObjects() throws IOException;
 
     private DataAccessRequest req;
-    private InputStream in;
+    private InputStream in = null;
     private OutputStream out; 
     protected Channel channel;
     protected DvObject dvObject;
+    protected String driverId;
 
-    private int status;
+    /*private int status;*/
     private long size;
+
+    /**
+     * Where in the file to seek to when reading (default is zero bytes, the
+     * start of the file).
+     */
+    private long offset;
     
     private String mimeType;
     private String fileName;
@@ -207,8 +214,8 @@ public abstract class StorageIO<T extends DvObject> {
     private String swiftContainerName;
 
     private boolean isLocalFile = false;
-    private boolean isRemoteAccess = false;
-    private boolean isHttpAccess = false;
+    /*private boolean isRemoteAccess = false;*/
+    /*private boolean isHttpAccess = false;*/
     private boolean noVarHeader = false;
 
     // For remote downloads:
@@ -218,12 +225,13 @@ public abstract class StorageIO<T extends DvObject> {
 
     private String swiftFileName;
 
-
+    private String remoteUrl;
+    protected String remoteStoreName = null;
+    protected URL remoteStoreUrl = null;
     
     // For HTTP-based downloads:
-    private String remoteUrl;
-    private GetMethod method = null;
-    private Header[] responseHeaders;
+    /*private GetMethod method = null;
+    private Header[] responseHeaders;*/
 
     // getters:
     
@@ -268,12 +276,16 @@ public abstract class StorageIO<T extends DvObject> {
         return req;
     }
 
-    public int getStatus() {
+    /*public int getStatus() {
         return status;
-    }
+    }*/
 
     public long getSize() {
         return size;
+    }
+
+    public long getOffset() {
+        return offset;
     }
 
     public InputStream getInputStream() throws IOException {
@@ -324,25 +336,41 @@ public abstract class StorageIO<T extends DvObject> {
         return swiftContainerName;
     }
 
-    public GetMethod getHTTPMethod() {
+    public String getRemoteStoreName() {
+        return remoteStoreName;
+    }
+
+    public URL getRemoteStoreUrl() {
+        return remoteStoreUrl;
+    }
+    
+    /*public GetMethod getHTTPMethod() {
         return method;
     }
 
     public Header[] getResponseHeaders() {
         return responseHeaders;
-    }
+    }*/
 
     public boolean isLocalFile() {
         return isLocalFile;
     }
+    
+    // "Direct Access" StorageIO is used to access a physical storage 
+    // location not associated with any dvObject. (For example, when we 
+    // are deleting a physical file left behind by a DataFile that's 
+    // already been deleted from the database). 
+    public boolean isDirectAccess() {
+        return dvObject == null; 
+    }
 
-    public boolean isRemoteAccess() {
+    /*public boolean isRemoteAccess() {
         return isRemoteAccess;
-    }
+    }*/
 
-    public boolean isHttpAccess() {
+    /*public boolean isHttpAccess() {
         return isHttpAccess;
-    }
+    }*/
 
     public boolean isDownloadSupported() {
         return isDownloadSupported;
@@ -360,7 +388,7 @@ public abstract class StorageIO<T extends DvObject> {
         return noVarHeader;
     }
 
-        // setters:
+    // setters:
     public void setDvObject(T f) {
         dvObject = f;
     }
@@ -369,12 +397,24 @@ public abstract class StorageIO<T extends DvObject> {
         req = dar;
     }
 
-    public void setStatus(int s) {
+    /*public void setStatus(int s) {
         status = s;
-    }
+    }*/
 
     public void setSize(long s) {
         size = s;
+    }
+
+    // open() has already been called. Now we can skip, if need be.
+    public void setOffset(long offset) throws IOException {
+        InputStream inputStream = getInputStream();
+        if (inputStream != null) {
+            inputStream.skip(offset);
+            // The skip has already been done. Why not record it.
+            this.offset = offset;
+        } else {
+            throw new IOException("Could not skip into InputStream because it is null");
+        }
     }
 
     public void setInputStream(InputStream is) {
@@ -429,25 +469,25 @@ public abstract class StorageIO<T extends DvObject> {
         swiftContainerName = u;
     }
 
-    public void setHTTPMethod(GetMethod hm) {
+    /*public void setHTTPMethod(GetMethod hm) {
         method = hm;
-    }
+    }*/
 
-    public void setResponseHeaders(Header[] headers) {
+    /*public void setResponseHeaders(Header[] headers) {
         responseHeaders = headers;
-    }
+    }*/
 
     public void setIsLocalFile(boolean f) {
         isLocalFile = f;
     }
 
-    public void setIsRemoteAccess(boolean r) {
+    /*public void setIsRemoteAccess(boolean r) {
         isRemoteAccess = r;
-    }
+    }*/
 
-    public void setIsHttpAccess(boolean h) {
+    /*public void setIsHttpAccess(boolean h) {
         isHttpAccess = h;
-    }
+    }*/
 
     public void setIsDownloadSupported(boolean d) {
         isDownloadSupported = d;
@@ -466,11 +506,11 @@ public abstract class StorageIO<T extends DvObject> {
     }
 
         // connection management methods:
-    public void releaseConnection() {
+    /*public void releaseConnection() {
         if (method != null) {
             method.releaseConnection();
         }
-    }
+    }*/
 
     public void closeInputStream() {
         if (in != null) {
@@ -529,4 +569,57 @@ public abstract class StorageIO<T extends DvObject> {
         // By default, we open the file in read mode:
         return false;
     }
+
+	public boolean isBelowIngestSizeLimit() {
+		long limit = Long.parseLong(System.getProperty("dataverse.files." + this.driverId + ".ingestsizelimit", "-1"));
+		if(limit>0 && getSize()>limit) {
+			return false;
+		} else {
+		    return true;
+		}
+	}
+
+    public boolean downloadRedirectEnabled() {
+        return false;
+    }
+
+    public boolean downloadRedirectEnabled(String auxObjectTag) {
+        return false;
+    }
+    
+    public String generateTemporaryDownloadUrl(String auxiliaryTag, String auxiliaryType, String auxiliaryFileName) throws IOException {
+        throw new UnsupportedDataAccessOperationException("Direct download not implemented for this storage type");
+    }
+    
+
+    public static boolean isPublicStore(String driverId) {
+        //Read once and cache
+        if(!driverPublicAccessMap.containsKey(driverId)) {
+            driverPublicAccessMap.put(driverId, Boolean.parseBoolean(System.getProperty("dataverse.files." + driverId + ".public")));
+        }
+        return driverPublicAccessMap.get(driverId);
+    }
+    
+    public static String getDriverPrefix(String driverId) {
+        return driverId+ DataAccess.SEPARATOR;
+    }
+    
+    public static boolean isDirectUploadEnabled(String driverId) {
+        return Boolean.parseBoolean(System.getProperty("dataverse.files." + driverId + ".upload-redirect"));
+    }
+    
+    //Check that storageIdentifier is consistent with store's config
+    //False will prevent direct uploads
+    protected static boolean isValidIdentifier(String driverId, String storageId) {
+        return false;
+    }
+    
+    //Utility to verify the standard UUID pattern for stored files.
+    protected static boolean usesStandardNamePattern(String identifier) {
+
+        Pattern r = Pattern.compile("^[a-f,0-9]{11}-[a-f,0-9]{12}$");
+        Matcher m = r.matcher(identifier);
+        return m.find();
+    }
+
 }

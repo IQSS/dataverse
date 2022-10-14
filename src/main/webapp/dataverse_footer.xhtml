@@ -6,43 +6,51 @@
                 xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
                 xmlns:c="http://java.sun.com/jsp/jstl/core"
-                xmlns:o="http://omnifaces.org/ui"     
+                xmlns:o="http://omnifaces.org/ui"
+                xmlns:of="http://omnifaces.org/functions"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
-
-    <div id="footer" class="#{widgetView ? 'widget-view' : ''}">
+    <div id="dataverseFooter" jsf:rendered="#{!widgetView and !dataverseHeaderFragment.isRootDataverseThemeDisabled(dataverse) and !empty dataverse.dataverseTheme.logoFooter}">
         <div class="container">
             <div class="row">
-                <div class="col-sm-8 small" jsf:rendered="#{!widgetView}">
-                    <p>
-                        <h:outputText value="#{systemConfig.footerCopyrightAndYear}#{settingsWrapper.get(':FooterCopyright')}" escape="false"/> <ui:fragment rendered="#{!empty settingsWrapper.get(':ApplicationPrivacyPolicyUrl')}">&#160;|&#160; <h:outputLink value="#{settingsWrapper.get(':ApplicationPrivacyPolicyUrl')}" target="_blank">#{bundle['footer.privacyPolicy']}</h:outputLink></ui:fragment>
-                    </p>
-                </div>
-                <div class="col-xs-7 small" jsf:rendered="#{widgetView}">
-                    <span class="widgetBrandMsg">
-                        <h:outputFormat value="#{bundle['footer.widget.datastored']}" escape="false">
-                            <o:param>
-                                <a href="/" target="_blank" title="#{dataverseServiceBean.findRootDataverse().displayName}">#{dataverseServiceBean.findRootDataverse().displayName}</a>
-                            </o:param>
-                        </h:outputFormat>
-
-                        <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
-                            <h:outputLink styleClass="margin-sides highlightBold" value="/loginpage.xhtml?#{loginRedirectPage}" target="_blank" title="#{bundle['footer.widget.login']} #{dataverseServiceBean.findRootDataverse().displayName}">
-                                #{bundle.login}
-                            </h:outputLink>
-                        </ui:fragment>
-                    </span>
-                </div>
-                <div class="#{widgetView ? 'col-xs-5' : 'col-sm-4'} text-right">
-                    <div class="poweredbylogo">
-                        <span>#{bundle['footer.poweredby']}</span>
-                        <a href="http://dataverse.org/" title="#{bundle['footer.dataverseProject']}" target="_blank"><img src="/resources/images/dataverse_project_logo.svg" width="118" height="40" onerror="this.src='/resources/images/dataverseproject_logo.png'" alt="#{bundle['footer.dataverseProject']}" /></a>
-                        <h:outputText class="version" value="v. #{systemConfig.getVersion(true)}" rendered="#{!widgetView}"/>
-                    </div>
+                <div class="dataverseFooterLogo col-xs-12" style="text-align:#{!empty dataverse.dataverseTheme.logoFooterAlignment ? dataverse.dataverseTheme.logoFooterAlignment : 'center'};background:##{!empty dataverse.dataverseTheme.logoFooterBackgroundColor ? dataverse.dataverseTheme.logoFooterBackgroundColor : 'FFFFFF'};">
+                    <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logoFooter}" alt="#{of:format1(bundle['alt.logo'], dataverse.name)}"/>
                 </div>
             </div>
         </div>
     </div>
-    
-    <o:resourceInclude path="/CustomizationFilesServlet?customFileType=footer" rendered="#{!widgetWrapper.widgetView}"/>
-    
+    <footer>
+        <div id="dvfooter" class="#{widgetView ? 'widget-view' : ''}">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-8 small" jsf:rendered="#{!widgetView}">
+                        <p>
+                            <h:outputText value="#{settingsWrapper.footerCopyrightAndYear}#{settingsWrapper.get(':FooterCopyright')}" escape="false"/> <ui:fragment rendered="#{!empty settingsWrapper.get(':ApplicationPrivacyPolicyUrl')}">&#160;|&#160; <h:outputLink value="#{settingsWrapper.get(':ApplicationPrivacyPolicyUrl')}" target="_blank" rel="noopener">#{bundle['footer.privacyPolicy']}</h:outputLink></ui:fragment>
+                        </p>
+                    </div>
+                    <div class="col-xs-7 small" jsf:rendered="#{widgetView}">
+                        <span class="widgetBrandMsg">
+                            <h:outputFormat value="#{bundle['footer.widget.datastored']}" escape="false">
+                                <o:param>
+                                    <a href="/" target="_blank" rel="noopener" title="#{settingsWrapper.rootDataverse.displayName}">#{settingsWrapper.rootDataverse.displayName}</a>
+                                </o:param>
+                            </h:outputFormat>
+                            <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
+                                <h:outputLink styleClass="margin-sides highlightBold" value="/loginpage.xhtml?#{loginRedirectPage}" target="_blank" rel="noopener" title="#{bundle['footer.widget.login']} #{settingsWrapper.rootDataverse.displayName}">
+                                    #{bundle.login}
+                                </h:outputLink>
+                            </ui:fragment>
+                        </span>
+                    </div>
+                    <div class="#{widgetView ? 'col-xs-5' : 'col-sm-4'} text-right">
+                        <div class="poweredbylogo">
+                            <span>#{bundle['footer.poweredby']}</span>
+                            <a href="http://dataverse.org/" title="#{bundle['footer.dataverseProject']}" target="_blank" rel="noopener"><img src="/resources/images/dataverse_project_logo.svg" width="118" height="40" onerror="this.src='/resources/images/dataverseproject_logo.png'" alt="#{of:format1(bundle['alt.logo'], bundle['footer.dataverseProject'])}"/></a>
+                            <h:outputText class="version" value="v. #{settingsWrapper.appVersionWithBuildNumber}" rendered="#{!widgetView}"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <o:resourceInclude path="/CustomizationFilesServlet?customFileType=footer" rendered="#{!widgetView}"/>
+    </footer>
 </ui:composition>

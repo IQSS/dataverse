@@ -12,6 +12,7 @@
         <f:metadata>
             <f:viewParam name="guestbookId" value="#{guestbookResponsesPage.guestbookId}"/>
             <f:viewParam name="dataverseId" value="#{guestbookResponsesPage.dataverseId}"/>
+            <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
             <f:viewAction action="#{guestbookResponsesPage.init}"/> 
             <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(guestbookResponsesPage.dataverse)}"/> 
             <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb('/manage-guestbooks.xhtml?dataverseId='.concat(guestbookResponsesPage.dataverseId), bundle['dataset.manageGuestbooks.pageTitle'])}"/>   
@@ -19,7 +20,8 @@
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="#{bundle['dataset.guestbookResponses.pageTitle']}"/>
-
+            <ui:param name="dataverse" value="#{guestbookResponsesPage.dataverse}"/>
+            <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
                 <h:form id="manageGuestbooksForm">
                     <p:fragment id="tooManyEntries" rendered="#{guestbookResponsesPage.guestbook.responseCount gt systemConfig.guestbookResponsesPageDisplayLimit}">
@@ -84,8 +86,12 @@
                             <h:outputText value="#{response[4]}"/>
                         </p:column>
                         <p:column headerText="#{bundle['dataset.guestbooksResponses.customQuestions']}" >
-                            <ui:repeat value="#{response[5]}" var="customQResponse"><b>#{customQResponse[0]}: </b>#{customQResponse[1]} <br></br></ui:repeat>
-                        </p:column> 
+                            <ui:repeat value="#{response[5]}" var="customQResponse">
+                            <b><h:outputText value="#{customQResponse[0]}"/>: </b>
+                            <h:outputText escape="false" value="#{customQResponse[1]}"/>
+                            <br />
+                            </ui:repeat>
+                        </p:column>
                     </p:dataTable>
                 </h:form>
             </ui:define>

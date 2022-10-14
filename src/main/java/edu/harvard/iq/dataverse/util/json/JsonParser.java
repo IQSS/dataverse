@@ -18,21 +18,27 @@ import edu.harvard.iq.dataverse.DataverseTheme;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess.License;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
+import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
+import edu.harvard.iq.dataverse.license.License;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
+import org.apache.commons.validator.routines.DomainValidator;
+
 import java.io.StringReader;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -40,8 +46,10 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -62,16 +70,25 @@ public class JsonParser {
     DatasetFieldServiceBean datasetFieldSvc;
     MetadataBlockServiceBean blockService;
     SettingsServiceBean settingsService;
+    LicenseServiceBean licenseService;
     
     /**
      * if lenient, we will accept alternate spellings for controlled vocabulary values
      */
     boolean lenient = false;  
 
+    @Deprecated
     public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService) {
         this.datasetFieldSvc = datasetFieldSvc;
         this.blockService = blockService;
         this.settingsService = settingsService;
+    }
+
+    public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService, LicenseServiceBean licenseService) {
+        this.datasetFieldSvc = datasetFieldSvc;
+        this.blockService = blockService;
+        this.settingsService = settingsService;
+        this.licenseService = licenseService;
     }
 
     public JsonParser() {
@@ -102,6 +119,7 @@ public class JsonParser {
         dv.setPermissionRoot(jobj.getBoolean("permissionRoot", false));
         dv.setFacetRoot(jobj.getBoolean("facetRoot", false));
         dv.setAffiliation(jobj.getString("affiliation", null));
+      
         if (jobj.containsKey("dataverseContacts")) {
             JsonArray dvContacts = jobj.getJsonArray("dataverseContacts");
             int i = 0;
@@ -245,6 +263,45 @@ public class JsonParser {
 
         return retVal;
     }
+    
+    public MailDomainGroup parseMailDomainGroup(JsonObject obj) throws JsonParseException {
+        MailDomainGroup grp = new MailDomainGroup();
+        
+        if (obj.containsKey("id")) {
+            grp.setId(obj.getJsonNumber("id").longValue());
+        }
+        grp.setDisplayName(getMandatoryString(obj, "name"));
+        grp.setDescription(obj.getString("description", null));
+        grp.setPersistedGroupAlias(getMandatoryString(obj, "alias"));
+        grp.setIsRegEx(obj.getBoolean("regex", false));
+        if ( obj.containsKey("domains") ) {
+            List<String> domains =
+                Optional.ofNullable(obj.getJsonArray("domains"))
+                    .orElse(Json.createArrayBuilder().build())
+                    .getValuesAs(JsonString.class)
+                    .stream()
+                    .map(JsonString::getString)
+                    // only validate if this group hasn't regex support enabled
+                    .filter(d -> (grp.isRegEx() || DomainValidator.getInstance().isValid(d)))
+                    .collect(Collectors.toList());
+            if (domains.isEmpty())
+                throw new JsonParseException("Field domains may not be an empty array or contain invalid domains. Enabled regex support?");
+            grp.setEmailDomains(domains);
+        } else {
+            throw new JsonParseException("Field domains is mandatory.");
+        }
+        
+        return grp;
+    }
+
+    public static <E extends Enum<E>> List<E> parseEnumsFromArray(JsonArray enumsArray, Class<E> enumClass) throws JsonParseException {
+        final List<E> enums = new LinkedList<>();
+
+        for (String name : enumsArray.getValuesAs(JsonString::getString)) {
+            enums.add(Enum.valueOf(enumClass, name));
+        }
+        return enums;
+    }
 
     public DatasetVersion parseDatasetVersion(JsonObject obj) throws JsonParseException {
         return parseDatasetVersion(obj, new DatasetVersion());
@@ -256,7 +313,13 @@ public class JsonParser {
         dataset.setAuthority(obj.getString("authority", null) == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Authority) : obj.getString("authority"));
         dataset.setProtocol(obj.getString("protocol", null) == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Protocol) : obj.getString("protocol"));
         dataset.setIdentifier(obj.getString("identifier",null));
-
+        String mdl = obj.getString("metadataLanguage",null);
+        if(mdl==null || settingsService.getBaseMetadataLanguageMap(new HashMap<String,String>(), true).containsKey(mdl)) {
+          dataset.setMetadataLanguage(mdl);
+        }else {
+            throw new JsonParseException("Specified metadatalanguage not allowed.");
+        }
+        
         DatasetVersion dsv = new DatasetVersion(); 
         dsv.setDataset(dataset);
         dsv = parseDatasetVersion(obj.getJsonObject("datasetVersion"), dsv);
@@ -300,26 +363,35 @@ public class JsonParser {
             dsv.setUNF(obj.getString("UNF", null));
             // Terms of Use related fields
             TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-            terms.setTermsOfUse(obj.getString("termsOfUse", null));           
+            License license = parseLicense(obj.getString("license", null));
+            if (license == null) {
+                terms.setLicense(license);
+                terms.setTermsOfUse(obj.getString("termsOfUse", null));
+                terms.setConfidentialityDeclaration(obj.getString("confidentialityDeclaration", null));
+                terms.setSpecialPermissions(obj.getString("specialPermissions", null));
+                terms.setRestrictions(obj.getString("restrictions", null));
+                terms.setCitationRequirements(obj.getString("citationRequirements", null));
+                terms.setDepositorRequirements(obj.getString("depositorRequirements", null));
+                terms.setConditions(obj.getString("conditions", null));
+                terms.setDisclaimer(obj.getString("disclaimer", null));
+            } else {
+                terms.setLicense(license);
+            }
             terms.setTermsOfAccess(obj.getString("termsOfAccess", null));
-            terms.setConfidentialityDeclaration(obj.getString("confidentialityDeclaration", null));
-            terms.setSpecialPermissions(obj.getString("specialPermissions", null));
-            terms.setRestrictions(obj.getString("restrictions", null));
-            terms.setCitationRequirements(obj.getString("citationRequirements", null));
-            terms.setDepositorRequirements(obj.getString("depositorRequirements", null));
-            terms.setConditions(obj.getString("conditions", null));
-            terms.setDisclaimer(obj.getString("disclaimer", null));
             terms.setDataAccessPlace(obj.getString("dataAccessPlace", null));
             terms.setOriginalArchive(obj.getString("originalArchive", null));
             terms.setAvailabilityStatus(obj.getString("availabilityStatus", null));
             terms.setContactForAccess(obj.getString("contactForAccess", null));
             terms.setSizeOfCollection(obj.getString("sizeOfCollection", null));
             terms.setStudyCompletion(obj.getString("studyCompletion", null));
-            terms.setLicense(parseLicense(obj.getString("license", null)));
             terms.setFileAccessRequest(obj.getBoolean("fileAccessRequest", false));
             dsv.setTermsOfUseAndAccess(terms);
-            
-            dsv.setDatasetFields(parseMetadataBlocks(obj.getJsonObject("metadataBlocks")));
+            terms.setDatasetVersion(dsv);
+            JsonObject metadataBlocks = obj.getJsonObject("metadataBlocks");
+            if (metadataBlocks == null){
+                throw new JsonParseException(BundleUtil.getStringFromBundle("jsonparser.error.metadatablocks.not.found"));
+            }
+            dsv.setDatasetFields(parseMetadataBlocks(metadataBlocks));
 
             JsonArray filesJson = obj.getJsonArray("files");
             if (filesJson == null) {
@@ -329,19 +401,25 @@ public class JsonParser {
                 dsv.setFileMetadatas(parseFiles(filesJson, dsv));
             }
             return dsv;
-
-        } catch (ParseException ex) {
-            throw new JsonParseException("Error parsing date:" + ex.getMessage(), ex);
+        } catch (ParseException ex) {      
+            throw new JsonParseException(BundleUtil.getStringFromBundle("jsonparser.error.parsing.date", Arrays.asList(ex.getMessage())) , ex);
         } catch (NumberFormatException ex) {
-            throw new JsonParseException("Error parsing number:" + ex.getMessage(), ex);
+            throw new JsonParseException(BundleUtil.getStringFromBundle("jsonparser.error.parsing.number", Arrays.asList(ex.getMessage())), ex);
         }
     }
     
-    private License parseLicense(String inString) {
-        if (inString != null && inString.equalsIgnoreCase("CC0")) {
-            return TermsOfUseAndAccess.License.CC0;
+    private edu.harvard.iq.dataverse.license.License parseLicense(String licenseNameOrUri) throws JsonParseException {
+        if (licenseNameOrUri == null){
+            boolean safeDefaultIfKeyNotFound = true;
+            if (settingsService.isTrueForKey(SettingsServiceBean.Key.AllowCustomTermsOfUse, safeDefaultIfKeyNotFound)){
+                return null;
+            } else {
+                return licenseService.getDefault();
+            }
         }
-        return TermsOfUseAndAccess.License.NONE;       
+        License license = licenseService.getByNameOrUri(licenseNameOrUri);
+        if (license == null) throw new JsonParseException("Invalid license: " + licenseNameOrUri);
+        return license;
     }
 
     public List<DatasetField> parseMetadataBlocks(JsonObject json) throws JsonParseException {
@@ -374,7 +452,10 @@ public class JsonParser {
             List<DatasetField> fields = new LinkedList<>();
             for (JsonObject fieldJson : fieldsArray.getValuesAs(JsonObject.class)) {
                 try {
-                    fields.add(parseField(fieldJson, testType));
+                    DatasetField field = parseField(fieldJson, testType);
+                    if (field != null) {
+                        fields.add(field);
+                    }
                 } catch (CompoundVocabularyException ex) {
                     DatasetFieldType fieldType = datasetFieldSvc.findByNameOpt(fieldJson.getString("typeName", ""));
                     if (lenient && (DatasetFieldConstant.geographicCoverage).equals(fieldType.getName())) {
@@ -392,7 +473,6 @@ public class JsonParser {
     
     public List<FileMetadata> parseFiles(JsonArray metadatasJson, DatasetVersion dsv) throws JsonParseException {
         List<FileMetadata> fileMetadatas = new LinkedList<>();
-
         if (metadatasJson != null) {
             for (JsonObject filemetadataJson : metadatasJson.getValuesAs(JsonObject.class)) {
                 String label = filemetadataJson.getString("label");
@@ -410,13 +490,14 @@ public class JsonParser {
                     dataFile.getFileMetadatas().add(fileMetadata);
                     dataFile.setOwner(dsv.getDataset());
                     fileMetadata.setDataFile(dataFile);
-                    if (dsv.getDataset().getFiles() == null) {
-                        dsv.getDataset().setFiles(new ArrayList<>());
+                    if (dsv.getDataset() != null) {
+                        if (dsv.getDataset().getFiles() == null) {
+                            dsv.getDataset().setFiles(new ArrayList<>());
+                        }
+                        dsv.getDataset().getFiles().add(dataFile);
                     }
-                    dsv.getDataset().getFiles().add(dataFile);
                 }
                 
-
                 fileMetadatas.add(fileMetadata);
                 fileMetadata.setCategories(getCategories(filemetadataJson, dsv.getDataset()));
             }
@@ -546,7 +627,8 @@ public class JsonParser {
     
 
         if (type == null) {
-            throw new JsonParseException("Can't find type '" + json.getString("typeName", "") + "'");
+            logger.fine("Can't find type '" + json.getString("typeName", "") + "'");
+            return null;
         }
         if (testType && type.isAllowMultiples() != json.getBoolean("multiple")) {
             throw new JsonParseException("incorrect multiple   for field " + json.getString("typeName", ""));
@@ -561,6 +643,7 @@ public class JsonParser {
             throw new JsonParseException("incorrect  typeClass for field " + json.getString("typeName", "") + ", should be controlledVocabulary");
         }
        
+        
         ret.setDatasetFieldType(type);
                
         if (type.isCompound()) {
@@ -579,6 +662,7 @@ public class JsonParser {
 
         } else {
             // primitive
+            
                 List<DatasetFieldValue> values = parsePrimitiveValue(type, json);
                 for (DatasetFieldValue val : values) {
                     val.setDatasetField(ret);
@@ -665,6 +749,13 @@ public class JsonParser {
 
     public List<DatasetFieldValue> parsePrimitiveValue(DatasetFieldType dft , JsonObject json) throws JsonParseException {
 
+        Map<Long, JsonObject> cvocMap = datasetFieldSvc.getCVocConf(true);
+        boolean extVocab=false;
+        if(cvocMap.containsKey(dft.getId())) {
+            extVocab=true;
+        }
+
+        
         List<DatasetFieldValue> vals = new LinkedList<>();
         if (dft.isAllowMultiples()) {
            try {
@@ -676,6 +767,12 @@ public class JsonParser {
                 DatasetFieldValue datasetFieldValue = new DatasetFieldValue();
                 datasetFieldValue.setDisplayOrder(vals.size() - 1);
                 datasetFieldValue.setValue(val.getString().trim());
+                if(extVocab) {
+                    if(!datasetFieldSvc.isValidCVocValue(dft, datasetFieldValue.getValue())) {
+                        throw new JsonParseException("Invalid values submitted for " + dft.getName() + " which is limited to specific vocabularies.");
+                    }
+                    datasetFieldSvc.registerExternalTerm(cvocMap.get(dft.getId()), datasetFieldValue.getValue());
+                }
                 vals.add(datasetFieldValue);
             }
 
@@ -686,6 +783,12 @@ public class JsonParser {
             }            
             DatasetFieldValue datasetFieldValue = new DatasetFieldValue();
             datasetFieldValue.setValue(json.getString("value", "").trim());
+            if(extVocab) {
+                if(!datasetFieldSvc.isValidCVocValue(dft, datasetFieldValue.getValue())) {
+                    throw new JsonParseException("Invalid values submitted for " + dft.getName() + " which is limited to specific vocabularies.");
+                }
+                datasetFieldSvc.registerExternalTerm(cvocMap.get(dft.getId()), datasetFieldValue.getValue());
+            }
             vals.add(datasetFieldValue);
         }
 

@@ -14,7 +14,10 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
+import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import java.io.File;
@@ -39,6 +42,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
+import org.mockito.Mockito;
 
 public class FeedbackUtilTest {
 
@@ -53,6 +57,8 @@ public class FeedbackUtilTest {
     private static DatasetVersion dsVersionNoContacts;
     private static MockDatasetFieldSvc datasetFieldTypeSvc;
     private static InternetAddress systemAddress;
+    private static final SettingsServiceBean settingsService = Mockito.mock(SettingsServiceBean.class);
+    private static final LicenseServiceBean licenseService = Mockito.mock(LicenseServiceBean.class);
     private static final String systemEmail = "support@librascholar.edu";
     private static final boolean weKnowHowToCreateMockAuthenticatedUsers = false;
 
@@ -68,6 +74,7 @@ public class FeedbackUtilTest {
         systemAddress = new InternetAddress(systemEmail, supportTeamName);
 
         datasetFieldTypeSvc = new MockDatasetFieldSvc();
+        datasetFieldTypeSvc.setMetadataBlock("citation");
         DatasetFieldType titleType = datasetFieldTypeSvc.add(new DatasetFieldType("title", DatasetFieldType.FieldType.TEXTBOX, false));
         DatasetFieldType authorType = datasetFieldTypeSvc.add(new DatasetFieldType("author", DatasetFieldType.FieldType.TEXT, true));
         Set<DatasetFieldType> authorChildTypes = new HashSet<>();
@@ -141,7 +148,7 @@ public class FeedbackUtilTest {
         JsonReader jsonReader1 = Json.createReader(new StringReader(datasetVersionAsJson));
         JsonObject json1 = jsonReader1.readObject();
 
-        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, null);
+        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService);
         dsVersion = jsonParser.parseDatasetVersion(json1.getJsonObject("datasetVersion"));
 
         File datasetVersionJson2 = new File("tests/data/datasetContacts1.json");
@@ -150,14 +157,14 @@ public class FeedbackUtilTest {
         JsonReader jsonReader12 = Json.createReader(new StringReader(datasetVersionAsJson2));
         JsonObject json12 = jsonReader12.readObject();
 
-        JsonParser jsonParser2 = new JsonParser(datasetFieldTypeSvc, null, null);
+        JsonParser jsonParser2 = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService);
         dsVersion2 = jsonParser2.parseDatasetVersion(json12.getJsonObject("datasetVersion"));
 
         File datasetVersionJsonNoContacts = new File("tests/data/datasetNoContacts.json");
         String datasetVersionAsJsonNoContacts = new String(Files.readAllBytes(Paths.get(datasetVersionJsonNoContacts.getAbsolutePath())));
         JsonReader jsonReaderNoContacts = Json.createReader(new StringReader(datasetVersionAsJsonNoContacts));
         JsonObject jsonNoContacts = jsonReaderNoContacts.readObject();
-        JsonParser jsonParserNoContacts = new JsonParser(datasetFieldTypeSvc, null, null);
+        JsonParser jsonParserNoContacts = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService);
         dsVersionNoContacts = jsonParserNoContacts.parseDatasetVersion(jsonNoContacts.getJsonObject("datasetVersion"));
 
         FeedbackUtil justForCodeCoverage = new FeedbackUtil();
@@ -478,40 +485,6 @@ public class FeedbackUtilTest {
         assertEquals("Help!", feedback.getBody());
         assertEquals("support@librascholar.edu", feedback.getToEmail());
         assertEquals("First.Last@someU.edu", feedback.getFromEmail());
-    }
-
-    // We are starting to accumulate a lot of these. See DDIExporterTest, SchemaDotOrgExporterTest, JsonParserTest, and JsonPrinterTest.
-    static class MockDatasetFieldSvc extends DatasetFieldServiceBean {
-
-        Map<String, DatasetFieldType> fieldTypes = new HashMap<>();
-        long nextId = 1;
-
-        public DatasetFieldType add(DatasetFieldType t) {
-            if (t.getId() == null) {
-                t.setId(nextId++);
-            }
-            fieldTypes.put(t.getName(), t);
-            return t;
-        }
-
-        @Override
-        public DatasetFieldType findByName(String name) {
-            return fieldTypes.get(name);
-        }
-
-        @Override
-        public DatasetFieldType findByNameOpt(String name) {
-            return findByName(name);
-        }
-
-        @Override
-        public ControlledVocabularyValue findControlledVocabularyValueByDatasetFieldTypeAndStrValue(DatasetFieldType dsft, String strValue, boolean lenient) {
-            ControlledVocabularyValue cvv = new ControlledVocabularyValue();
-            cvv.setDatasetFieldType(dsft);
-            cvv.setStrValue(strValue);
-            return cvv;
-        }
-
     }
 
 }

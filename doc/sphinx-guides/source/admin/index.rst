@@ -13,19 +13,21 @@ This guide documents the functionality only available to superusers (such as "da
 .. toctree::
 
    dashboard
+   external-tools
    harvestclients
    harvestserver
    metadatacustomization
    metadataexport
    timers
+   make-data-count
    integrations
-   geoconnect-worldmap
    user-administration
    dataverses-datasets
    solr-search-index
    ip-groups
+   mail-groups
    monitoring
-   reporting-tools
+   reporting-tools-and-queries
    maintenance
    backups
    troubleshooting

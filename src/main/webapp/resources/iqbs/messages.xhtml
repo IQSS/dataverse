@@ -25,16 +25,12 @@
                     <h:outputText value="#{flash['errorMsg']} " escape="false"/>
                     <h:outputFormat value="#{bundle['error.support.message']}" escape="false">
                         <o:param>
-                            <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
-                                <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
-                                <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
-                                <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
-                                <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                            <p:commandLink value="#{settingsWrapper.supportTeamName}" onclick ="clickSupportLink();" >
                             </p:commandLink>                                
                         </o:param>
                     </h:outputFormat>
                 </o:form>
-            </div>
+            </div>           
         </ui:fragment>
         <ui:fragment rendered="#{not empty flash['infoMsg']}">
             <div class="alert alert-info">

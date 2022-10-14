@@ -6,23 +6,30 @@ import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.WidgetWrapper;
+import static edu.harvard.iq.dataverse.search.SearchUtil.constructQuery;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.apache.commons.lang.StringUtils;
+import javax.json.JsonObject;
+
+import org.apache.commons.lang3.StringUtils;
 
 @ViewScoped
 @Named("AdvancedSearchPage")
@@ -37,6 +44,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
     DatasetFieldServiceBean datasetFieldService;
     
     @Inject WidgetWrapper widgetWrapper;
+    @Inject DataverseSession session;
 
     private Dataverse dataverse;
     private String dataverseIdentifier;
@@ -56,7 +64,10 @@ public class AdvancedSearchPage implements java.io.Serializable {
     private String fileFieldFiletype;
     private String fileFieldVariableName;
     private String fileFieldVariableLabel;
+    private String fileFieldFileTags;
 
+    Map<Long, JsonObject> cachedCvocMap=null;
+    
     public void init() {
 
         if (dataverseIdentifier != null) {
@@ -173,75 +184,13 @@ public class AdvancedSearchPage implements java.io.Serializable {
             queryStrings.add(constructQuery(SearchFields.VARIABLE_LABEL, fileFieldVariableLabel));
         }
 
+        if (StringUtils.isNotBlank(fileFieldFileTags)) {
+            queryStrings.add(constructQuery(SearchFields.FILE_TAG_SEARCHABLE, fileFieldFileTags));
+        }
+
         return constructQuery(queryStrings, true);
     }
-
-    private String constructQuery(List<String> queryStrings, boolean isAnd) {
-        return constructQuery(queryStrings, isAnd, true);
-    }
-
-    private String constructQuery(List<String> queryStrings, boolean isAnd, boolean surroundWithParens) {
-        StringBuilder queryBuilder = new StringBuilder();
-
-        int count = 0;
-        for (String string : queryStrings) {
-            if (!StringUtils.isBlank(string)) {
-                if (++count > 1) {
-                    queryBuilder.append(isAnd ? " AND " : " OR ");
-                }
-                queryBuilder.append(string);
-            }
-        }
-
-        if (surroundWithParens && count > 1) {
-            queryBuilder.insert(0, "(");
-            queryBuilder.append(")");
-        }
-
-        return queryBuilder.toString().trim();
-    }
-
-    private String constructQuery(String solrField, String userSuppliedQuery) {
-
-        StringBuilder queryBuilder = new StringBuilder();
-        String delimiter = "[\"]+";
-
-        List<String> queryStrings = new ArrayList<>();
-
-        if (userSuppliedQuery != null && !userSuppliedQuery.equals("")) {
-            if (userSuppliedQuery.contains("\"")) {
-                String[] tempString = userSuppliedQuery.split(delimiter);
-                for (int i = 1; i < tempString.length; i++) {
-                    if (!tempString[i].equals(" ") && !tempString[i].isEmpty()) {
-                        queryStrings.add(solrField + ":" + "\"" + tempString[i].trim() + "\"");
-                    }
-                }
-            } else {
-                StringTokenizer st = new StringTokenizer(userSuppliedQuery);
-                while (st.hasMoreElements()) {
-                    queryStrings.add(solrField + ":" + st.nextElement());
-                }
-            }
-        }
-
-        if (queryStrings.size() > 1) {
-            queryBuilder.append("(");
-        }
-
-        for (int i = 0; i < queryStrings.size(); i++) {
-            if (i > 0) {
-                queryBuilder.append(" ");
-            }
-            queryBuilder.append(queryStrings.get(i));
-        }
-
-        if (queryStrings.size() > 1) {
-            queryBuilder.append(")");
-        }
-
-        return queryBuilder.toString().trim();
-    }
-
+    
     public Dataverse getDataverse() {
         return dataverse;
     }
@@ -384,4 +333,30 @@ public class AdvancedSearchPage implements java.io.Serializable {
         this.fileFieldVariableLabel = fileFieldVariableLabel;
     }
 
+    public String getFileFieldFileTags() {
+        return fileFieldFileTags;
+    }
+
+    public void setFileFieldFileTags(String fileFieldFileTags) {
+        this.fileFieldFileTags = fileFieldFileTags;
+    }
+    
+    
+    //External Vocabulary Support
+
+    public Map<Long, JsonObject> getCVocConf() {
+        //Cache this in the view
+        if(cachedCvocMap==null) {
+        cachedCvocMap = datasetFieldService.getCVocConf(true);
+        }
+        return cachedCvocMap;
+    }
+    
+    public List<String> getVocabScripts() {
+        return datasetFieldService.getVocabScripts(getCVocConf());
+    }
+
+    public String getFieldLanguage(String languages) {
+        return datasetFieldService.getFieldLanguage(languages,session.getLocaleCode());
+    }
 }

@@ -10,6 +10,7 @@
 
     <h:body>
         <f:metadata>
+            <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
             <f:viewAction action="#{Shib.init}"/>
             <!--Only allow existing email to be specified while in development, to test account conversion.-->
             <!--<f:viewParam name="exisitingEmail" value="#{Shib.existingEmail}"/>-->

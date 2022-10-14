@@ -17,6 +17,7 @@
             <ui:define name="body">
                 <f:metadata>
                     <f:viewParam name="token" value="#{ConfirmEmailPage.token}"/>
+                    <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{ConfirmEmailPage.init}" />
                 </f:metadata>
 

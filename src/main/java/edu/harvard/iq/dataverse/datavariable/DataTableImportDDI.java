@@ -126,8 +126,8 @@ public class DataTableImportDDI {
                     if (_labl != null && !_labl.isEmpty()) {
                         dv.setLabel( _labl );
                     }
-                } else if (xmlr.getLocalName().equals("universe")) {
-                    dv.setUniverse( parseText(xmlr) );
+                //{ else if (xmlr.getLocalName().equals("universe")) {
+                    //   dv.setUniverse( parseText(xmlr) );
                 } else if (xmlr.getLocalName().equals("invalrng")) {
                     processInvalrng( xmlr, dv );
                 } else if (xmlr.getLocalName().equals("varFormat")) {

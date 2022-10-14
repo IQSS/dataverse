@@ -1,12 +1,21 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.datavariable.VarGroup;
+import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
+import edu.harvard.iq.dataverse.datavariable.VariableMetadataUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
+
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
-import org.apache.commons.lang.StringUtils;
-import java.util.ResourceBundle;
+import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
+
 import java.util.Arrays;
 import java.util.Date;
 
@@ -24,11 +33,13 @@ public final class DatasetVersionDifference {
     private List<FileMetadata> addedFiles = new ArrayList<>();
     private List<FileMetadata> removedFiles = new ArrayList<>();
     private List<FileMetadata> changedFileMetadata = new ArrayList<>();
+    private List<FileMetadata> changedVariableMetadata = new ArrayList<>();
     private List<FileMetadata[]> replacedFiles = new ArrayList<>();
     private List<String[]> changedTermsAccess = new ArrayList<>();
     private List<Object[]> summaryDataForNote = new ArrayList<>();
     private List<Object[]> blockDataForNote = new ArrayList<>();
-    String noFileDifferencesFoundLabel = "";
+
+    private VariableMetadataUtil variableMetadataUtil;
     
     private List<DifferenceSummaryGroup> differenceSummaryGroups = new ArrayList<>();
 
@@ -94,7 +105,6 @@ public final class DatasetVersionDifference {
                 addToSummary(null, dsfn);
             }
         }
-
         
         // TODO: ? 
         // It looks like we are going through the filemetadatas in both versions, 
@@ -114,6 +124,10 @@ public final class DatasetVersionDifference {
                     if (!compareFileMetadatas(fmdo, fmdn)) {
                         changedFileMetadata.add(fmdo);
                         changedFileMetadata.add(fmdn);
+                    }
+                    if (!variableMetadataUtil.compareVariableMetadata(fmdo,fmdn) || !compareVarGroup(fmdo, fmdn)) {
+                        changedVariableMetadata.add(fmdo);
+                        changedVariableMetadata.add(fmdn);
                     }
                     break;
                 }
@@ -479,7 +493,6 @@ public final class DatasetVersionDifference {
     }
 
     private void updateBlockSummary(DatasetField dsf, int added, int deleted, int changed) {
-        
         boolean addedToAll = false;
         for (Object[] blockList : blockDataForNote) {
             DatasetField dsft = (DatasetField) blockList[0];
@@ -498,7 +511,6 @@ public final class DatasetVersionDifference {
             newArray[3] = changed;
             blockDataForNote.add(newArray);
         }
-
     }
 
     private void addToNoteSummary(DatasetField dsfo, int added, int deleted, int changed) {
@@ -510,12 +522,40 @@ public final class DatasetVersionDifference {
         summaryDataForNote.add(noteArray);
     }
 
-    private boolean compareFileMetadatas(FileMetadata fmdo, FileMetadata fmdn) {
+    private boolean compareVarGroup(FileMetadata fmdo, FileMetadata fmdn) {
+        List<VarGroup> vglo = fmdo.getVarGroups();
+        List<VarGroup> vgln = fmdn.getVarGroups();
 
-        if (!StringUtils.equals(fmdo.getDescription(), fmdn.getDescription())) {
+        if (vglo.size() != vgln.size()) {
             return false;
         }
-        
+        int count = 0;
+        for (VarGroup vgo : vglo) {
+            for (VarGroup vgn : vgln) {
+                if (!variableMetadataUtil.checkDiff(vgo.getLabel(), vgn.getLabel())) {
+                    Set<DataVariable> dvo = vgo.getVarsInGroup();
+                    Set<DataVariable> dvn = vgn.getVarsInGroup();
+                    if (dvo.equals(dvn)) {
+                        count++;
+                    } else {
+                        return false;
+                    }
+                }
+            }
+        }
+        if (count == vglo.size()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static boolean compareFileMetadatas(FileMetadata fmdo, FileMetadata fmdn) {
+
+        if (!StringUtils.equals(StringUtil.nullToEmpty(fmdo.getDescription()), StringUtil.nullToEmpty(fmdn.getDescription()))) {
+            return false;
+        }
+
         if (!StringUtils.equals(fmdo.getCategoriesByName().toString(), fmdn.getCategoriesByName().toString())) {
             return false;
         }
@@ -642,6 +682,14 @@ public final class DatasetVersionDifference {
             }
         }
 
+        if (changedVariableMetadata.size()  > 0) {
+            if (retString.isEmpty()) {
+                retString = BundleUtil.getStringFromBundle("dataset.version.variablemetadata.changed", Arrays.asList(changedVariableMetadata.size() / 2+""));
+            } else {
+                retString += BundleUtil.getStringFromBundle("dataset.version.variablemetadata.changed2", Arrays.asList(changedVariableMetadata.size() / 2+""));
+            }
+        }
+
         if (!retString.isEmpty()) {
             retString += ")";
         }
@@ -734,7 +782,6 @@ public final class DatasetVersionDifference {
         datasetFilesDiffList = new ArrayList<>();
         datasetFilesReplacementList = new ArrayList <>();
         
-
         // Study Files themselves are version-less;
         // In other words, 2 different versions can have different sets of
         // study files, but the files themselves don't have versions.
@@ -746,13 +793,6 @@ public final class DatasetVersionDifference {
         // same study file, the file metadatas ARE version-specific, so some of
         // the fields there (filename, etc.) may be different. If this is the
         // case, we want to display these differences as well.
-        
-        if (originalVersion.getFileMetadatas().isEmpty() && newVersion.getFileMetadatas().isEmpty()) {
-            noFileDifferencesFoundLabel = "No data files in either version of the study";
-            return;
-        }
-
-                        
 
         int i = 0;
         int j = 0;
@@ -772,7 +812,6 @@ public final class DatasetVersionDifference {
         List<FileMetadata> fileMetadatasOriginal = new ArrayList<>(originalVersion.getFileMetadatas());
         
         if (!replacedFiles.isEmpty()) {
-            
             
             replacedFiles.stream().map((replacedPair) -> {
                 FileMetadata replacedFile = replacedPair[0];
@@ -799,7 +838,6 @@ public final class DatasetVersionDifference {
 
         }
 
-
         Collections.sort(fileMetadatasOriginal, (FileMetadata l1, FileMetadata l2) -> {
             FileMetadata fm3 = l1; //(DatasetField[]) l1.get(0);
             FileMetadata fm4 = l2;
@@ -819,7 +857,6 @@ public final class DatasetVersionDifference {
         // added file. Since we are only doing this for the purposes of generating
         // version differences, this should be OK. 
         //   -- L.A. Aug. 2014
-        
 
         Collections.sort(fileMetadatasNew, (FileMetadata l1, FileMetadata l2) -> {
             FileMetadata fm3 = l1; //(DatasetField[]) l1.get(0);
@@ -911,14 +948,6 @@ public final class DatasetVersionDifference {
             datasetFilesDiffList.add(fdi);
 
             j++;
-        }
-        
-        
-        
-        
-
-        if (datasetFilesDiffList.isEmpty()) {
-            noFileDifferencesFoundLabel = "These study versions have identical sets of data files";
         }
     }
 
@@ -1028,12 +1057,8 @@ public final class DatasetVersionDifference {
             return true;
         }
         
-        //File restrictions
-        
-        value1 = fm1.isRestricted() ? "Restricted" : "Not Restricted";
-        value2 = fm2.isRestricted() ? "Restricted" : "Not Restricted";
-        
-        return !value1.equals(value2);
+        // File restrictions
+        return fm1.isRestricted() != fm2.isRestricted();
     }
 
     private datasetFileDifferenceItem selectFileMetadataDiffs(FileMetadata fm1, FileMetadata fm2) {
@@ -1057,7 +1082,7 @@ public final class DatasetVersionDifference {
             }
 
             fdi.setFileProvFree1(fm1.getProvFreeForm());
-            fdi.setFileRest1(fm1.isRestricted() ? "Restricted" : "Not Restricted");
+            fdi.setFileRest1(BundleUtil.getStringFromBundle(getAccessLabel(fm1)));
             fdi.setFile2Empty(true);
 
         } else if (fm1 == null) {
@@ -1073,7 +1098,7 @@ public final class DatasetVersionDifference {
                 fdi.setFileCat2(fm2.getCategoriesByName().toString());
             }
             fdi.setFileProvFree2(fm2.getProvFreeForm());
-            fdi.setFileRest2(fm2.isRestricted() ? "Restricted" : "Not Restricted");
+            fdi.setFileRest2(BundleUtil.getStringFromBundle(getAccessLabel(fm2)));
         } else {
             // Both are non-null metadata objects.
             // We simply go through the 5 metadata fields, if any are
@@ -1154,16 +1179,23 @@ public final class DatasetVersionDifference {
             }
             
             // file restricted:
-            value1 = fm1.isRestricted() ? "Restricted" : "Not Restricted";
-            value2 = fm2.isRestricted() ? "Restricted" : "Not Restricted";
-            if (!value1.equals(value2)) {
-                fdi.setFileRest1(value1);
-                fdi.setFileRest2(value2);
+            if (fm1.isRestricted() != fm2.isRestricted() || fm1.getDataFile().getEmbargo() != fm2.getDataFile().getEmbargo()) {
+                fdi.setFileRest1(BundleUtil.getStringFromBundle(getAccessLabel(fm1)));
+                fdi.setFileRest2(BundleUtil.getStringFromBundle(getAccessLabel(fm2)));
             }
         }
         return fdi;
     }
     
+    private String getAccessLabel(FileMetadata fm) {
+        boolean embargoed = fm.getDataFile().getEmbargo()!=null;
+        boolean restricted = fm.isRestricted();
+        if (embargoed && restricted) return "embargoedandrestricted";
+        if(embargoed) return "embargoed";
+        if(restricted) return "restricted";
+        return "public";
+    }
+
     public String getEditSummaryForLog() {
         
         String retVal = "";        
@@ -1262,7 +1294,7 @@ public final class DatasetVersionDifference {
                 }
                 
                 if (item.fileRest1 != null || item.fileRest2 != null) {
-                    itemDiff += System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.restricted") + ": ";
+                    itemDiff += System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.fileAccess") + ": ";
                     itemDiff += item.fileRest1 != null ? item.fileRest1 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
                     itemDiff += " : ";
                     itemDiff += item.fileRest2 != null ? item.fileRest2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable") + " ";
@@ -1304,7 +1336,7 @@ public final class DatasetVersionDifference {
                 itemDiff += item.fdi.fileProvFree1 != null ? item.fdi.fileProvFree1 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
                 itemDiff += " : ";
                 itemDiff += item.fdi.fileProvFree2 != null ? item.fdi.fileProvFree2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable") + " ";
-                itemDiff += System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.restricted") + ": ";
+                itemDiff += System.lineSeparator() + " " + BundleUtil.getStringFromBundle("file.viewDiffDialog.fileAccess") + ": ";
                 itemDiff += item.fdi.fileRest1 != null ? item.fdi.fileRest1 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable");
                 itemDiff += " : ";
                 itemDiff += item.fdi.fileRest2 != null ? item.fdi.fileRest2 : BundleUtil.getStringFromBundle("file.viewDiffDialog.notAvailable") + " ";
@@ -1325,12 +1357,11 @@ public final class DatasetVersionDifference {
             retVal +=termsOfUseDiff;
         }
         
-        
         return retVal;
     }
     
     
-    public class DifferenceSummaryGroup{
+    public class DifferenceSummaryGroup {
         
         private String displayName;
         private String type;
@@ -1359,8 +1390,6 @@ public final class DatasetVersionDifference {
         public void setDifferenceSummaryItems(List<DifferenceSummaryItem> differenceSummaryItems) {
             this.differenceSummaryItems = differenceSummaryItems;
         }
-
-        
     }
     
     public class DifferenceSummaryItem {
@@ -1418,9 +1447,6 @@ public final class DatasetVersionDifference {
         public void setMultiple(boolean multiple) {
             this.multiple = multiple;
         }
-
-        
-        
     }
     
     public class datasetReplaceFileItem {
@@ -1540,8 +1566,7 @@ public final class DatasetVersionDifference {
         }
         
         public String getFileRest1() {
-            String localeFileRest1 = BundleUtil.getStringFromBundle(fileRest1.toLowerCase().replace(" ", "_"));
-            return localeFileRest1;
+            return fileRest1;
         }
 
         public void setFileRest1(String fileRest1) {
@@ -1549,8 +1574,7 @@ public final class DatasetVersionDifference {
         }
 
         public String getFileRest2() {
-            String localeFileRest2 = BundleUtil.getStringFromBundle(fileRest2.toLowerCase().replace(" ", "_"));
-            return localeFileRest2;
+            return fileRest2;
         }
 
         public void setFileRest2(String fileRest2) {
@@ -1679,7 +1703,6 @@ public final class DatasetVersionDifference {
         public void setFileChecksumValue(String fileChecksumValue) {
             this.fileChecksumValue = fileChecksumValue;
         }
-
     }
 
     public List<datasetFileDifferenceItem> getDatasetFilesDiffList() {
@@ -1690,11 +1713,4 @@ public final class DatasetVersionDifference {
         this.datasetFilesDiffList = datasetFilesDiffList;
     }
 
-    public String getNoFileDifferencesFoundLabel() {
-        return noFileDifferencesFoundLabel;
-    }
-
-    public void setNoFileDifferencesFoundLabel(String noFileDifferencesFoundLabel) {
-        this.noFileDifferencesFoundLabel = noFileDifferencesFoundLabel;
-    }
 }

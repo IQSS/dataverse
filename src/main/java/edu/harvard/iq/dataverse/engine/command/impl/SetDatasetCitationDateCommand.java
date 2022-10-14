@@ -4,12 +4,16 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import java.io.IOException;
+import java.util.concurrent.Future;
+import org.apache.solr.client.solrj.SolrServerException;
 
 /**
  *
@@ -37,9 +41,23 @@ public class SetDatasetCitationDateCommand extends AbstractCommand<Dataset>{
             }
             
             Dataset savedDataset = ctxt.datasets().merge(dataset);
-            ctxt.index().indexDataset(savedDataset, false); 
             return savedDataset;
 	}
-	
+        
+    @Override
+    public boolean onSuccess(CommandContext ctxt, Object r) {
+        boolean retVal = true;
+        Dataset dataset = (Dataset) r;
+
+        try {
+            Future<String> indexString = ctxt.index().indexDataset(dataset, false);
+        } catch (IOException | SolrServerException e) {
+            String failureLogText = "Post set dataset citation date indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
+            failureLogText += "\r\n" + e.getLocalizedMessage();
+            LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, dataset);
+            retVal = false;
+        }
+        return retVal;
+    }	
 }
 

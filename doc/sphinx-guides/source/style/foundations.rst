@@ -63,7 +63,7 @@ The default color palette is set in the `Bootstrap CSS <http://getbootstrap.com/
 Brand Colors
 ------------
 
-Dataverse uses a particular color palette to help users quickly and easily identify the different types of objects: dataverses, datasets, and files.
+The Dataverse Project uses a particular color palette to help users quickly and easily identify the different types of objects: Dataverse collections, datasets, and files.
 
 We use our brand color, a custom burnt orange ``{color:#C55B28;}``, which is set in our CSS stylesheet, "structure.css". There is also a set of blue "dataset" classes and grey "file" classes, used to help identify those objects when searching and navigating the application.
 
@@ -254,7 +254,7 @@ Contextual classes from `Bootstrap CSS <http://getbootstrap.com/css/#helper-clas
 Icons
 =====
 
-We use various icons across the application, which we get from Bootstrap, FontCustom and Socicon. They appear in buttons, in message blocks or as default thumbnails for dataverses, datasets, and files.
+We use various icons across the application, which we get from Bootstrap, FontCustom and Socicon. They appear in buttons, in message blocks or as default thumbnails for Dataverse collections, datasets, and files.
 
 Bootstrap Glyphicons
 --------------------
@@ -264,10 +264,10 @@ There are over 250 glyphs in font format from the Glyphicon Halflings set provid
 .. raw:: html
 
 	<div class="panel panel-default code-example">
-	  <div class="panel-body">
-        <span class="glyphicon glyphicon-search h1"></span>
-        <span class="glyphicon glyphicon-user h1"></span>
-        <span class="glyphicon glyphicon-lock h1"></span>
+	  <div class="panel-body h1">
+        <span class="glyphicon glyphicon-search"></span>
+        <span class="glyphicon glyphicon-user"></span>
+        <span class="glyphicon glyphicon-lock"></span>
 	  </div>
 	</div>
 
@@ -277,10 +277,12 @@ There are over 250 glyphs in font format from the Glyphicon Halflings set provid
    <span class="glyphicon glyphicon-user"></span>
    <span class="glyphicon glyphicon-lock"></span>
 
-FontCustom Icon Font
---------------------
+.. _style-guide-fontcustom:
 
-With the use of `FontCustom <https://github.com/FontCustom/fontcustom>`__ we were able to generate our own custom icon webfonts. We use these in the search result cards to help distinguish between dataverse, dataset and file results.
+Font Custom Icon Font
+---------------------
+
+With the use of `Font Custom <https://github.com/FontCustom/fontcustom>`__ we generate our own custom icon fonts. We use these in the search result cards to help distinguish between Dataverse collection, dataset and file results.
 
 .. raw:: html
 
@@ -298,6 +300,7 @@ With the use of `FontCustom <https://github.com/FontCustom/fontcustom>`__ we wer
    <span class="icon-dataset text-dataset"></span>
    <span class="icon-file text-file"></span>
 
+The :doc:`/developers/fontcustom` section of the Developer Guide explains how to update these custom icons.
 
 Socicon Icon Font 
 -----------------
@@ -308,17 +311,17 @@ We use `Socicon <http://www.socicon.com>`__ for our custom social icons. In the 
 
 	<div class="panel panel-default code-example">
 	  <div class="panel-body">
-      <span class="socicon socicon-github h1" title="Dataverse On GitHub"></span>
-      <span class="socicon socicon-twitter h1" title="Dataverse On Twitter"></span>
-      <span class="socicon socicon-facebook h1" title="Dataverse On Facebook"></span>
+      <span class="socicon socicon-github h1" title="Dataverse Project On GitHub"></span>
+      <span class="socicon socicon-twitter h1" title="Dataverse Project On Twitter"></span>
+      <span class="socicon socicon-facebook h1" title="Dataverse Project On Facebook"></span>
 	  </div>
 	</div>
 
 .. code-block:: html
 
-   <span class="socicon socicon-github" title="Dataverse On GitHub"></span>
-   <span class="socicon socicon-twitter" title="Dataverse On Twitter"></span>
-   <span class="socicon socicon-facebook" title="Dataverse On Facebook"></span>
+   <span class="socicon socicon-github" title="Dataverse Project On GitHub"></span>
+   <span class="socicon socicon-twitter" title="Dataverse Project On Twitter"></span>
+   <span class="socicon socicon-facebook" title="Dataverse Project On Facebook"></span>
 
 
 Logos
@@ -336,7 +339,9 @@ Create both print and web version of the Dataverse Project logo by downloading t
     </div>
   </div>
 
-The brand logo (below) was created as a custom icon to represent the concept of a "dataverse." It is used as the brand logo in the Bootstrap navbar component and across the application.
+The brand logo (below) was created as a custom icon to represent the concept of a Dataverse collection. It is used as the logo in the Bootstrap navbar component and across the application.
+
+Create both print and web version of the Dataverse collection logo by downloading this vector-based SVG file: :download:`Dataverse_brand_icon.svg <../_static/Dataverse_brand_icon.svg>`
 
 .. raw:: html
 

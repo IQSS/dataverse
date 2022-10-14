@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.passwordreset;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.SettingsWrapper;
-import edu.harvard.iq.dataverse.ValidateEmail;
+import edu.harvard.iq.dataverse.validation.ValidateEmail;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -24,11 +24,12 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.NotBlank;
 
 @ViewScoped
@@ -56,6 +57,9 @@ public class PasswordResetPage implements java.io.Serializable {
     @EJB
     PasswordValidatorServiceBean passwordValidatorService;
     
+    @EJB
+    SystemConfig systemConfig;
+
     /**
      * The unique string used to look up a user and continue the password reset
      * process.
@@ -87,6 +91,8 @@ public class PasswordResetPage implements java.io.Serializable {
     String newPassword;
     
     PasswordResetData passwordResetData;
+
+    boolean validationFailed = true;
     
     private List<String> passwordErrors;
 
@@ -96,6 +102,10 @@ public class PasswordResetPage implements java.io.Serializable {
             passwordResetData = passwordResetExecResponse.getPasswordResetData();
             if (passwordResetData != null) {
                 user = passwordResetData.getBuiltinUser();
+                if (passwordResetData.getReason().equals(PasswordResetData.Reason.UPGRADE_REQUIRED)){
+                    newPassword = (String) FacesContext.getCurrentInstance().getExternalContext().getFlash().get("silentUpgradePasswd");
+                    validationFailed = false;
+                }
             } else {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, 
                         BundleUtil.getStringFromBundle("passwdVal.passwdReset.resetLinkTitle"),
@@ -113,18 +123,21 @@ public class PasswordResetPage implements java.io.Serializable {
             PasswordResetData passwordResetData = passwordResetInitResponse.getPasswordResetData();
             if (passwordResetData != null) {
                 BuiltinUser foundUser = passwordResetData.getBuiltinUser();
-                passwordResetUrl = passwordResetInitResponse.getResetUrl();
+                passwordResetUrl = passwordResetInitResponse.getResetUrl(systemConfig.getDataverseSiteUrl());
                 actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.BuiltinUser, "passwordResetSent")
                             .setInfo("Email Address: " + emailAddress) );
             } else {
-                /**
-                 * @todo remove "single" when it's no longer necessary. See
-                 * https://github.com/IQSS/dataverse/issues/844 and
-                 * https://github.com/IQSS/dataverse/issues/1141
-                 */
-                logger.log(Level.INFO, "Couldn''t find single account using {0}", emailAddress);
+                logger.log(Level.INFO, "Cannot find account (or it's deactivated) given {0}", emailAddress);
             }
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("passwdVal.passwdReset.resetInitiated"), ""));
+            /**
+             * We show this "an email will be sent" message no matter what (if
+             * the account can be found or not, if the account has been
+             * deactivated or not) to prevent hackers from figuring out if you
+             * have an account based on your email address. Yes, this is a white
+             * lie sometimes, in the name of security.
+             */
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("passwdVal.passwdReset.resetInitiated"), 
+                    BundleUtil.getStringFromBundle("passwdReset.successSubmit.tip", Arrays.asList(emailAddress))));
         } catch (PasswordResetException ex) {
             /**
              * @todo do we really need a special exception for this??
@@ -136,6 +149,7 @@ public class PasswordResetPage implements java.io.Serializable {
 
     public String resetPassword() {
         PasswordChangeAttemptResponse response = passwordResetService.attemptPasswordReset(user, newPassword, this.token);
+        validationFailed = response.getMessageDetail().contains("Password Reset Problem");
         if (response.isChanged()) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, response.getMessageSummary(), response.getMessageDetail()));
             String builtinAuthProviderId = BuiltinAuthenticationProvider.PROVIDER_ID;
@@ -191,6 +205,10 @@ public class PasswordResetPage implements java.io.Serializable {
         this.token = token;
     }
 
+    public boolean isFailedValidation(){
+        return validationFailed;
+    }
+
     public BuiltinUser getUser() {
         return user;
     }
@@ -227,14 +245,13 @@ public class PasswordResetPage implements java.io.Serializable {
         // FIXME: Pass the errors in.
         return passwordValidatorService.getGoodPasswordDescription(null);
     }
-    
+
     public String getCustomPasswordResetAlertMessage() {
         String customPasswordResetAlertMessage = settingsWrapper.getValueForKey(SettingsServiceBean.Key.PVCustomPasswordResetAlertMessage);
         if(customPasswordResetAlertMessage != null && !customPasswordResetAlertMessage.isEmpty()){
             return customPasswordResetAlertMessage;
         } else {
-            String defaultPasswordResetAlertMessage = BundleUtil.getStringFromBundle("passwdReset.newPasswd.details");
-            return defaultPasswordResetAlertMessage;
+            return BundleUtil.getStringFromBundle("passwdReset.newPasswd.details");
         }
     }
 }

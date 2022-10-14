@@ -1,11 +1,80 @@
 Data Access API
 ===============
 
-The Data Access API provides programmatic download access to the files stored under Dataverse. 
+The Data Access API provides programmatic download access to the files stored in a Dataverse installation. 
 More advanced features of the Access API include format-specific transformations (thumbnail generation/resizing for images; converting tabular data into alternative file formats) and access to the data-level metadata that describes the contents of the tabular files. 
 
 .. contents:: |toctitle|
    :local:
+
+.. _download-by-dataset-api:
+
+Downloading All Files in a Dataset
+----------------------------------
+
+The "download by dataset" API downloads as many files as possible from a dataset as a zipped bundle.
+
+By default, tabular files are downloaded in their "archival" form (tab-separated values). To download the original files (Stata, for example), add ``format=original`` as a query parameter.
+
+There are a number of reasons why not all of the files can be downloaded:
+
+- Some of the files are restricted and your API token doesn't have access (you will still get the unrestricted files).
+- The Dataverse installation has limited how large the zip bundle can be.
+
+In the curl example below, the flags ``-O`` and ``J`` are used. When there are no errors, this has the effect of saving the file as "dataverse_files.zip" (just like the web interface). The flags force errors to be downloaded as a file.
+
+Please note that in addition to the files from dataset, an additional file call "MANIFEST.TXT" will be included in the zipped bundle. It has additional information about the files.
+
+There are two forms of the "download by dataset" API, a basic form and one that supports dataset versions.
+
+Basic Download By Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The basic form downloads files from the latest accessible version of the dataset. If you are not using an API token, this means the most recently published version. If you are using an API token with full access to the dataset, this means the draft version or the most recently published version if no draft exists.
+
+A curl example using a DOI (no version):
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.70122/FK2/N2XGBJ
+
+  curl -L -O -J -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/access/dataset/:persistentId/?persistentId=$PERSISTENT_ID
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -L -O -J -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/access/dataset/:persistentId/?persistentId=doi:10.70122/FK2/N2XGBJ
+
+Download By Dataset By Version
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The second form of the "download by dataset" API allows you to specify which version you'd like to download files from. As with the ``datasets`` API endpoints described in the :doc:`native-api` section, the following identifiers can be used.
+
+* ``:draft``  the draft version, if any
+* ``:latest`` either a draft (if exists) or the latest published version.
+* ``:latest-published`` the latest published version
+* ``x.y`` a specific version, where ``x`` is the major version number and ``y`` is the minor version number.
+* ``x`` same as ``x.0``
+
+A curl example using a DOI (with version):
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.70122/FK2/N2XGBJ
+  export VERSION=2.0
+
+  curl -O -J -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/access/dataset/:persistentId/versions/$VERSION?persistentId=$PERSISTENT_ID
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -O -J -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/access/dataset/:persistentId/versions/2.0?persistentId=doi:10.70122/FK2/N2XGBJ
 
 Basic File Access
 -----------------
@@ -18,7 +87,7 @@ Basic access URI:
 
   Example: Getting the file whose DOI is *10.5072/FK2/J8SJZB* ::
 
-    GET http://$SERVER/api/access/datafile/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB
+    GET http://$SERVER/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/J8SJZB
 
 
 Parameters:
@@ -58,18 +127,57 @@ the following parameter values are supported (for image and pdf files only):
 ==============  ===========
 Value           Description
 ==============  ===========
-true            Generates a thumbnail image, by rescaling to the default thumbnail size (64 pixels)
-``N``           Rescales the image to ``N`` pixels.
+true            Generates a thumbnail image by rescaling to the default thumbnail size (64 pixels wide).
+``N``           Rescales the image to ``N`` pixels wide. ``imageThumb=true`` and ``imageThumb=64`` are equivalent.
 ==============  ===========
+
+Headers:
+~~~~~~~~
+
+==============  ===========
+Header          Description
+==============  ===========
+Range           Download a specified byte range. Examples:
+
+                - ``bytes=0-9`` gets the first 10 bytes.
+                - ``bytes=10-19`` gets 10 bytes from the middle.
+                - ``bytes=-10`` gets the last 10 bytes.
+                - ``bytes=9-`` gets all bytes except the first 10.
+
+                Only a single range is supported. The "If-Range" header is not supported. For more on the "Range" header, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests
+==============  ===========
+
+Examples
+~~~~~~~~
+
+A curl example of using the ``Range`` header to download the first 10 bytes of a file using its file id (database id):
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export FILE_ID=42
+  export RANGE=0-9
+
+  curl -H "Range:bytes=$RANGE" $SERVER_URL/api/access/datafile/$FILE_ID
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "Range:bytes=0-9" https://demo.dataverse.org/api/access/datafile/42
 
 Multiple File ("bundle") download
 ---------------------------------
 
 ``/api/access/datafiles/$id1,$id2,...$idN``
 
+Alternate Form: POST to ``/api/access/datafiles`` with a ``fileIds`` input field containing the same comma separated list of file ids. This is most useful when your list of files surpasses the allowed URL length (varies but can be ~2000 characters).  
+
 Returns the files listed, zipped. 
 
-.. note:: If files requested cannot be provided, a 207 status code will be returned indicating that the result was a mixed success.
+.. note:: If the request can only be completed partially - if only *some* of the requested files can be served (because of the permissions and/or size restrictions), the file MANIFEST.TXT included in the zipped bundle will have entries specifying the reasons the missing files could not be downloaded. IN THE FUTURE the API will return a 207 status code to indicate that the result was a partial success. (As of writing this - v.4.11 - this hasn't been implemented yet)
+
+.. note:: If any of the datafiles have the ``DirectoryLabel`` attributes in the corresponding ``FileMetadata`` entries, these will be added as folders to the Zip archive, and the files will be placed in them accordingly. 
 
 Parameters: 
 ~~~~~~~~~~~
@@ -84,12 +192,12 @@ original        "Saved Original", the proprietary (SPSS, Stata, R, etc.) file fr
 ==============  ===========
 
 
-"All Formats" bundled access for Tabular Files. 
------------------------------------------------
+"All Formats" bundled download for Tabular Files. 
+-------------------------------------------------
 
 ``/api/access/datafile/bundle/$id``
 
-This is convenience packaging method is available for tabular data files. 
+This is a convenience packaging method available for tabular data files. 
 It returns a zipped bundle that contains the data in the following formats: 
 
 * Tab-delimited;
@@ -98,9 +206,19 @@ It returns a zipped bundle that contains the data in the following formats:
 * Data (Variable) metadata record, in DDI XML;
 * File citation, in Endnote and RIS formats. 
 
+
 Parameters: 
 ~~~~~~~~~~~
-none.
+
+``fileMetadataId``
+
+==============  ===========
+Value           Description
+==============  ===========
+ID              Exports file with specific file metadata ``ID``.
+==============  ===========
+
+.. _data-variable-metadata-access:
 
 Data Variable Metadata Access
 -----------------------------
@@ -175,6 +293,19 @@ Example:
       </dataDscr>
    </codeBook>
 
+
+Parameters: 
+~~~~~~~~~~~
+
+``fileMetadataId``
+
+==============  ===========
+Value           Description
+==============  ===========
+ID              Exports file with specific file metadata ``ID``. For example for data file with id 6 and file metadata id 2: ``curl 'http://localhost:8080/api/access/datafile/6/metadata/ddi?fileMetadataId=2'``
+==============  ===========
+
+
 More information on DDI is available in the :doc:`/user/tabulardataingest/ingestprocess` section of the User Guide.
 
 Advanced options/Parameters: 
@@ -188,9 +319,9 @@ especially with data files with large numbers of variables. See
 Preprocessed Data
 -----------------
 
-``/api/access/datafile/$id/metadata/preprocessed``
+``/api/access/datafile/$id?format=prep``
 
-This method provides the "preprocessed data" - a summary record that describes the values of the data vectors in the tabular file, in JSON. These metadata values are used by TwoRavens, the companion data exploration utility of the Dataverse application. Please note that this format might change in the future.
+This method provides the "preprocessed data" - a summary record that describes the values of the data vectors in the tabular file, in JSON. These metadata values are used by earlier versions of Data Explorer, an external tool that integrates with a Dataverse installation (see :doc:`/admin/external-tools`). Please note that this format might change in the future.
 
 Authentication and Authorization
 -------------------------------- 

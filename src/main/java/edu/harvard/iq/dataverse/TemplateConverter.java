@@ -7,6 +7,7 @@
 package edu.harvard.iq.dataverse;
 
 import javax.ejb.EJB;
+import javax.enterprise.inject.spi.CDI;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
@@ -19,8 +20,8 @@ import javax.faces.convert.FacesConverter;
 @FacesConverter("templateConverter")
 public class TemplateConverter implements Converter {
     
-    @EJB
-    TemplateServiceBean templateService;
+    //@EJB
+    TemplateServiceBean templateService = CDI.current().select(TemplateServiceBean.class).get();
 
     @Override
     public Object getAsObject(FacesContext facesContext, UIComponent component, String submittedValue) {

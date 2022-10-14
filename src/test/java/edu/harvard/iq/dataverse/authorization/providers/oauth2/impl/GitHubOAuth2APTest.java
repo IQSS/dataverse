@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse.authorization.providers.oauth2.impl;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import static org.junit.Assert.assertEquals;
+
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
 import org.junit.Test;
 
 public class GitHubOAuth2APTest extends GitHubOAuth2AP {
@@ -56,6 +58,11 @@ public class GitHubOAuth2APTest extends GitHubOAuth2AP {
         assertEquals(expResult.displayInfo, result.displayInfo);
         assertEquals("21006", result.userIdInProvider);
 
+    }
+    
+    public OAuth2UserRecord getExampleUserRecord() {
+        ParsedUserResponse res = parseUserResponse(GITHUB_RESPONSE);
+        return new OAuth2UserRecord(this.getId(), res.userIdInProvider, res.username, null, res.displayInfo, res.emails);
     }
 
 }

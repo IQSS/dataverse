@@ -1,0 +1,22 @@
+{
+  "displayName": "Fabulous File Tool",
+  "description": "Fabulous Fun for Files!",
+  "toolName": "fabulous",
+  "scope": "file",
+  "types": [
+    "explore",
+    "preview"
+  ],
+  "toolUrl": "https://fabulousfiletool.com",
+  "contentType": "text/tab-separated-values",
+  "toolParameters": {
+    "queryParameters": [
+      {
+        "fileid": "{fileId}"
+      },
+      {
+        "key": "{apiToken}"
+      }
+    ]
+  }
+}

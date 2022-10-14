@@ -36,6 +36,7 @@ import javax.imageio.stream.ImageOutputStream;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -49,7 +50,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
-import org.primefaces.util.Base64;
+//import org.primefaces.util.Base64;
+import java.util.Base64;
 
 /**
  *
@@ -57,11 +59,12 @@ import org.primefaces.util.Base64;
  */
 public class ImageThumbConverter {
     public static String THUMBNAIL_SUFFIX = "thumb";
-    public static String WORLDMAP_IMAGE_SUFFIX = "img";
     public static String THUMBNAIL_MIME_TYPE = "image/png";
+    public static String THUMBNAIL_FILE_EXTENSION = ".png";
 
     public static int DEFAULT_CARDIMAGE_SIZE = 48;
     public static int DEFAULT_THUMBNAIL_SIZE = 64;
+    public static int DEFAULT_DATASETLOGO_SIZE = 140;
     public static int DEFAULT_PREVIEW_SIZE = 400;
 
     private static final Logger logger = Logger.getLogger(ImageThumbConverter.class.getCanonicalName());
@@ -116,8 +119,6 @@ public class ImageThumbConverter {
             return generateImageThumbnail(storageIO, size);
         } else if (file.getContentType().equalsIgnoreCase("application/pdf")) {
             return generatePDFThumbnail(storageIO, size);
-        } else if (file.getContentType().equalsIgnoreCase("application/zipped-shapefile") || (file.isTabularData() && file.hasGeospatialTag())) {
-            return generateWorldMapThumbnail(storageIO, size);
         }
 
         return false;
@@ -125,7 +126,7 @@ public class ImageThumbConverter {
     }
 
     // Note that this method works on ALL file types for which thumbnail 
-    // generation is supported - image/*, pdf, worldmap and geo-tagged tabular; 
+    // generation is supported - image/*, pdf; 
     // not just on images! The type differentiation is handled inside 
     // isThumbnailAvailable(); if the thumbnail is not yet cached, that 
     // method will attempt to generate and cache it. And once it's cached, 
@@ -159,7 +160,7 @@ public class ImageThumbConverter {
 
             String fileName = storageIO.getFileName();
             if (fileName != null) {
-                fileName = fileName.replaceAll("\\.[^\\.]*$", ".png");
+                fileName = fileName.replaceAll("\\.[^\\.]*$", THUMBNAIL_FILE_EXTENSION);
                 inputStreamIO.setFileName(fileName);
             }
             return inputStreamIO;
@@ -176,7 +177,7 @@ public class ImageThumbConverter {
 
     private static boolean generatePDFThumbnail(StorageIO<DataFile> storageIO, int size) {
         if (isPdfFileOverSizeLimit(storageIO.getDataFile().getFilesize())) {
-            logger.fine("Image file too large (" + storageIO.getDataFile().getFilesize() + " bytes) - skipping");
+            logger.fine("PDF file too large (" + storageIO.getDataFile().getFilesize() + " bytes) - skipping");
             return false;
         }
 
@@ -233,6 +234,7 @@ public class ImageThumbConverter {
                 return false;
             } finally {
                 IOUtils.closeQuietly(tempFileChannel);
+                IOUtils.closeQuietly(pdfFileChannel);
             }
             sourcePdfFile = tempFile;
         }
@@ -270,56 +272,14 @@ public class ImageThumbConverter {
 
         try {
             storageIO.open();
-            return generateImageThumbnailFromInputStream(storageIO, size, storageIO.getInputStream());
+            try(InputStream inputStream = storageIO.getInputStream()) {
+              return generateImageThumbnailFromInputStream(storageIO, size, inputStream);
+            }
         } catch (IOException ioex) {
             logger.warning("caught IOException trying to open an input stream for " + storageIO.getDataFile().getStorageIdentifier() + ioex);
             return false;
         }
         
-    }
-
-    /*
-     * Note that the "WorldMapThumbnail" generator does the exact same thing as the 
-     * "regular image" thumbnail generator. 
-     * The only difference is that the image generator uses the main file as 
-     * as the source; and the one for the worldmap uses an auxiliary file 
-     * with the ".img" extension (or the swift, etc. equivalent). This file is 
-     * produced and dropped into the Dataset directory (Swift container, etc.)
-     * the first time the user actually runs WorldMap on the main file. 
-     * Also note that it works the exact same way for tabular-mapped-as-worldmap
-     * files as well. 
-     */
-    private static boolean generateWorldMapThumbnail(StorageIO<DataFile> storageIO, int size) {
-
-        InputStream worldMapImageInputStream = null;
-
-        try {
-            storageIO.open();
-
-            Channel worldMapImageChannel = storageIO.openAuxChannel(WORLDMAP_IMAGE_SUFFIX);
-            if (worldMapImageChannel == null) {
-                logger.warning("Could not open channel for aux ." + WORLDMAP_IMAGE_SUFFIX + " object; (" + size + ")");
-                return false;
-            }
-            worldMapImageInputStream = Channels.newInputStream((ReadableByteChannel) worldMapImageChannel);
-
-            long worldMapImageSize = storageIO.getAuxObjectSize(WORLDMAP_IMAGE_SUFFIX);
-
-            if (isImageOverSizeLimit(worldMapImageSize)) {
-                logger.fine("WorldMap image too large - skipping");
-                worldMapImageInputStream.close();
-                return false;
-            }
-        } catch (FileNotFoundException fnfe) {
-            logger.fine("No .img file for this worldmap file yet; giving up. Original Error: " + fnfe);
-            return false;
-
-        } catch (IOException ioex) {
-            logger.warning("caught IOException trying to open an input stream for worldmap .img file (" + storageIO.getDataFile().getStorageIdentifier() + "). Original Error: " + ioex);
-            return false;
-        }
-
-        return generateImageThumbnailFromInputStream(storageIO, size, worldMapImageInputStream);
     }
 
     /*
@@ -409,7 +369,7 @@ public class ImageThumbConverter {
         try {
             cached = storageIO.isAuxObjectCached(THUMBNAIL_SUFFIX + size);
         } catch (Exception ioex) {
-            logger.fine("caught Exception while checking for a cached thumbnail (file " + storageIO.getDataFile().getStorageIdentifier() + ")");
+            logger.fine("caught Exception while checking for a cached thumbnail (file " + storageIO.getDataFile().getStorageIdentifier() + "): " + ioex.getMessage());
             return false;
         }
 
@@ -482,8 +442,6 @@ public class ImageThumbConverter {
                 generated = generateImageThumbnail(storageIO, size);
             } else if (file.getContentType().equalsIgnoreCase("application/pdf")) {
                 generated = generatePDFThumbnail(storageIO, size);
-            } else if (file.getContentType().equalsIgnoreCase("application/zipped-shapefile") || (file.isTabularData() && file.hasGeospatialTag())) {
-                generated = generateWorldMapThumbnail(storageIO, size);
             }
 
             if (generated) {
@@ -528,7 +486,15 @@ public class ImageThumbConverter {
                 logger.fine("inside getImageThumbnailAsBase64FromInputStream; read " + total + " bytes of raw thumbnail image.");
 
                 if (buffer != null) {
-                    String imageDataBase64 = Base64.encodeToString(cachingByteStream.toByteArray(), false);
+                    //String imageDataBase64 = Base64.encodeToString(cachingByteStream.toByteArray(), false);
+                    String imageDataBase64 = Base64.getEncoder().encodeToString(cachingByteStream.toByteArray());
+                    // TODO: 
+                    // verify that the base64-encoded thumbnails on the dataset and dataverse pages are
+                    // still working; PrimeFace's Base64 implementation was discontinued in 7.0, 
+                    // in favor of java.util.Base64 available in Java 1.8. However, the former does not seem to 
+                    // offer a way to generate a base64 string without line breaks - and that's how we used to generate these 
+                    // thumbnail strings (the "false" argument in the commented-out line above). 
+                    // Need to verify that new lines in these strings don't break the pages. 
                     return FileUtil.DATA_URI_SCHEME + imageDataBase64;
                 }
             }
@@ -740,15 +706,14 @@ public class ImageThumbConverter {
         g2.drawImage(thumbImage, 0, 0, null);
         g2.dispose();
 
-        try {
-            ImageOutputStream ios = ImageIO.createImageOutputStream(outputStream);
+        try (ImageOutputStream ios = ImageIO.createImageOutputStream(outputStream);) {
+            
             writer.setOutput(ios);
 
             // finally, save thumbnail image:
             writer.write(lowRes);
             writer.dispose();
 
-            ios.close();
             thumbImage.flush();
             //fullSizeImage.flush();
             lowRes.flush();
@@ -961,27 +926,7 @@ public class ImageThumbConverter {
     }
 
     private static long getThumbnailSizeLimit(String type) {
-        String option = null;
-        if ("Image".equals(type)) {
-            option = System.getProperty("dataverse.dataAccess.thumbnail.image.limit");
-        } else if ("PDF".equals(type)) {
-            option = System.getProperty("dataverse.dataAccess.thumbnail.pdf.limit");
-        }
-        Long limit = null;
-
-        if (option != null && !option.equals("")) {
-            try {
-                limit = new Long(option);
-            } catch (NumberFormatException nfe) {
-                limit = null;
-            }
-        }
-
-        if (limit != null) {
-            return limit.longValue();
-        }
-
-        return 0;
+        return SystemConfig.getThumbnailSizeLimit(type);
     }
 
     private static boolean isImageMagickInstalled() {

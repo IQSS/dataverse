@@ -47,9 +47,16 @@ then
     echo "You can start Rserve daemon by executing"
     echo "  service rserve start"
     echo 
-    echo "If this is a RedHat/CentOS 7 system, you may want to use the systemctl file rserve.service instead (provided in this directory)"
+    echo "If this is a RedHat/CentOS 7/8 system, you may want to use the systemctl file rserve.service instead (provided in this directory)"
 else 
     echo "Rserve startup file already in place."
+fi
+
+if [ ! -d /var/run/rserve ]
+then
+    echo "Creating /var/run/rserve"
+    mkdir /var/run/rserve
+    chown rserve:rserve /var/run/rserve
 fi
 
 echo 

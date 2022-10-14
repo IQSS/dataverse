@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.export.ExportException;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import java.io.OutputStream;
 import java.util.ResourceBundle;
@@ -24,7 +25,7 @@ public class OAI_OREExporter implements Exporter {
     public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream)
             throws ExportException {
         try {
-            new OREMap(version, ExportService.settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false)).writeOREMap(outputStream);
+            new OREMap(version).writeOREMap(outputStream);
         } catch (Exception e) {
             logger.severe(e.getMessage());
             e.printStackTrace();
@@ -39,8 +40,8 @@ public class OAI_OREExporter implements Exporter {
 
     @Override
     public String getDisplayName() {
-        return ResourceBundle.getBundle("Bundle").getString("dataset.exportBtn.itemLabel.oai_ore") != null
-                ? ResourceBundle.getBundle("Bundle").getString("dataset.exportBtn.itemLabel.oai_ore")
+        return BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.oai_ore") != null
+                ? BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.oai_ore")
                 : "OAI_ORE";
     }
 

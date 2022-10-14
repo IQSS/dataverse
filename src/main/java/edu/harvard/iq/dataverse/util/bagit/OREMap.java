@@ -5,11 +5,16 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.export.OAI_OREExporter;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonLDNamespace;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
@@ -19,9 +24,10 @@ import java.io.OutputStream;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -30,16 +36,27 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 public class OREMap {
 
+    static SettingsServiceBean settingsService;
+    static DatasetFieldServiceBean datasetFieldService;
+    private static final Logger logger = Logger.getLogger(OREMap.class.getCanonicalName());
+    
     public static final String NAME = "OREMap";
     private Map<String, String> localContext = new TreeMap<String, String>();
     private DatasetVersion version;
-    private boolean excludeEmail = false;
-    
-    public OREMap(DatasetVersion version, boolean excludeEmail) {
+    private Boolean excludeEmail = null;
+
+    public OREMap(DatasetVersion version) {
         this.version = version;
-        this.excludeEmail = excludeEmail;
+    }
+
+    //Used when the ExcludeEmailFromExport needs to be overriden, i.e. for archiving
+    public OREMap(DatasetVersion dv, boolean exclude) {
+        this.version = dv;
+        this.excludeEmail = exclude;
     }
 
     public void writeOREMap(OutputStream outputStream) throws Exception {
@@ -48,7 +65,20 @@ public class OREMap {
     }
 
     public JsonObject getOREMap() throws Exception {
+        return getOREMap(false);
+    }
+    
+    public JsonObject getOREMap(boolean aggregationOnly) throws Exception {
+        return getOREMapBuilder(aggregationOnly).build();
+    }
+    
+    public JsonObjectBuilder getOREMapBuilder(boolean aggregationOnly) throws Exception {
 
+        //Set this flag if it wasn't provided
+        if(excludeEmail==null) {
+            excludeEmail = settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false);
+        }
+        
         // Add namespaces we'll definitely use to Context
         // Additional namespaces are added as needed below
         localContext.putIfAbsent(JsonLDNamespace.ore.getPrefix(), JsonLDNamespace.ore.getUrl());
@@ -57,71 +87,21 @@ public class OREMap {
         localContext.putIfAbsent(JsonLDNamespace.schema.getPrefix(), JsonLDNamespace.schema.getUrl());
 
         Dataset dataset = version.getDataset();
-        String id = dataset.getGlobalId().asString();
+        String id = dataset.getGlobalId().toURL().toExternalForm();
         JsonArrayBuilder fileArray = Json.createArrayBuilder();
         // The map describes an aggregation
         JsonObjectBuilder aggBuilder = Json.createObjectBuilder();
         List<DatasetField> fields = version.getDatasetFields();
         // That has it's own metadata
+        Map<Long, JsonObject> cvocMap = datasetFieldService.getCVocConf(false);
         for (DatasetField field : fields) {
             if (!field.isEmpty()) {
                 DatasetFieldType dfType = field.getDatasetFieldType();
-                if(excludeEmail && DatasetFieldType.FieldType.EMAIL.equals(dfType.getFieldType())) {
-                    continue;
+                JsonLDTerm fieldName = dfType.getJsonLDTerm();
+                JsonValue jv = getJsonLDForField(field, excludeEmail, cvocMap, localContext);
+                if(jv!=null) {
+                    aggBuilder.add(fieldName.getLabel(), jv);
                 }
-                JsonLDTerm fieldName = getTermFor(dfType);
-                if (fieldName.inNamespace()) {
-                    localContext.putIfAbsent(fieldName.getNamespace().getPrefix(), fieldName.getNamespace().getUrl());
-                } else {
-                    localContext.putIfAbsent(fieldName.getLabel(), fieldName.getUrl());
-                }
-                JsonArrayBuilder vals = Json.createArrayBuilder();
-                if (!dfType.isCompound()) {
-                    for (String val : field.getValues_nondisplay()) {
-                        vals.add(val);
-                    }
-                } else {
-                    // ToDo: Needs to be recursive (as in JsonPrinter?)
-                    for (DatasetFieldCompoundValue dscv : field.getDatasetFieldCompoundValues()) {
-                        // compound values are of different types
-                        JsonObjectBuilder child = Json.createObjectBuilder();
-
-                        for (DatasetField dsf : dscv.getChildDatasetFields()) {
-                            DatasetFieldType dsft = dsf.getDatasetFieldType();
-                            if(excludeEmail && DatasetFieldType.FieldType.EMAIL.equals(dsft.getFieldType())) {
-                                continue;
-                            }
-                            // which may have multiple values
-                            if (!dsf.isEmpty()) {
-                                // Add context entry 
-                                //ToDo - also needs to recurse here?
-                                JsonLDTerm subFieldName = getTermFor(dfType, dsft);
-                                if (subFieldName.inNamespace()) {
-                                    localContext.putIfAbsent(subFieldName.getNamespace().getPrefix(),
-                                            subFieldName.getNamespace().getUrl());
-                                } else {
-                                    localContext.putIfAbsent(subFieldName.getLabel(), subFieldName.getUrl());
-                                }
-
-                                List<String> values = dsf.getValues_nondisplay();
-                                if (values.size() > 1) {
-                                    JsonArrayBuilder childVals = Json.createArrayBuilder();
-
-                                    for (String val : dsf.getValues_nondisplay()) {
-                                        childVals.add(val);
-                                    }
-                                    child.add(subFieldName.getLabel(), childVals);
-                                } else {
-                                    child.add(subFieldName.getLabel(), values.get(0));
-                                }
-                            }
-                        }
-                        vals.add(child);
-                    }
-                }
-                // Add metadata value to aggregation, suppress array when only one value
-                JsonArray valArray = vals.build();
-                aggBuilder.add(fieldName.getLabel(), (valArray.size() != 1) ? valArray : valArray.get(0));
             }
         }
         // Add metadata related to the Dataset/DatasetVersion
@@ -130,25 +110,24 @@ public class OREMap {
                         Json.createArrayBuilder().add(JsonLDTerm.ore("Aggregation").getLabel())
                                 .add(JsonLDTerm.schemaOrg("Dataset").getLabel()))
                 .add(JsonLDTerm.schemaOrg("version").getLabel(), version.getFriendlyVersionNumber())
-                .add(JsonLDTerm.schemaOrg("datePublished").getLabel(), dataset.getPublicationDateFormattedYYYYMMDD())
                 .add(JsonLDTerm.schemaOrg("name").getLabel(), version.getTitle())
                 .add(JsonLDTerm.schemaOrg("dateModified").getLabel(), version.getLastUpdateTime().toString());
+        addIfNotNull(aggBuilder, JsonLDTerm.schemaOrg("datePublished"), dataset.getPublicationDateFormattedYYYYMMDD());
 
         TermsOfUseAndAccess terms = version.getTermsOfUseAndAccess();
-        if (terms.getLicense() == TermsOfUseAndAccess.License.CC0) {
+        if (terms.getLicense() != null) {
             aggBuilder.add(JsonLDTerm.schemaOrg("license").getLabel(),
-                    "https://creativecommons.org/publicdomain/zero/1.0/");
+                    terms.getLicense().getUri().toString());
         } else {
             addIfNotNull(aggBuilder, JsonLDTerm.termsOfUse, terms.getTermsOfUse());
+            addIfNotNull(aggBuilder, JsonLDTerm.confidentialityDeclaration, terms.getConfidentialityDeclaration());
+            addIfNotNull(aggBuilder, JsonLDTerm.specialPermissions, terms.getSpecialPermissions());
+            addIfNotNull(aggBuilder, JsonLDTerm.restrictions, terms.getRestrictions());
+            addIfNotNull(aggBuilder, JsonLDTerm.citationRequirements, terms.getCitationRequirements());
+            addIfNotNull(aggBuilder, JsonLDTerm.depositorRequirements, terms.getDepositorRequirements());
+            addIfNotNull(aggBuilder, JsonLDTerm.conditions, terms.getConditions());
+            addIfNotNull(aggBuilder, JsonLDTerm.disclaimer, terms.getDisclaimer());
         }
-        addIfNotNull(aggBuilder, JsonLDTerm.confidentialityDeclaration, terms.getConfidentialityDeclaration());
-        addIfNotNull(aggBuilder, JsonLDTerm.specialPermissions, terms.getSpecialPermissions());
-        addIfNotNull(aggBuilder, JsonLDTerm.restrictions, terms.getRestrictions());
-        addIfNotNull(aggBuilder, JsonLDTerm.citationRequirements, terms.getCitationRequirements());
-        addIfNotNull(aggBuilder, JsonLDTerm.depositorRequirements, terms.getDepositorRequirements());
-        addIfNotNull(aggBuilder, JsonLDTerm.conditions, terms.getConditions());
-        addIfNotNull(aggBuilder, JsonLDTerm.disclaimer, terms.getDisclaimer());
-
         // Add fileTermsofAccess as an object since it is compound
         JsonObjectBuilder fAccess = Json.createObjectBuilder();
         addIfNotNull(fAccess, JsonLDTerm.termsOfAccess, terms.getTermsOfAccess());
@@ -165,101 +144,147 @@ public class OREMap {
         }
 
         aggBuilder.add(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel(),
-                dataset.getDataverseContext().getDisplayName());
+                BrandingUtil.getInstallationBrandName());
 
+        aggBuilder.add(JsonLDTerm.schemaOrg("isPartOf").getLabel(), getDataverseDescription(dataset.getOwner()));
+        String mdl = dataset.getMetadataLanguage();
+        if (DvObjectContainer.isMetadataLanguageSet(mdl)) {
+            aggBuilder.add(JsonLDTerm.schemaOrg("inLanguage").getLabel(), mdl);
+        }
+        
         // The aggregation aggregates aggregatedresources (Datafiles) which each have
         // their own entry and metadata
         JsonArrayBuilder aggResArrayBuilder = Json.createArrayBuilder();
+        if (!aggregationOnly) {
 
-        for (FileMetadata fmd : version.getFileMetadatas()) {
-            DataFile df = fmd.getDataFile();
-            JsonObjectBuilder aggRes = Json.createObjectBuilder();
+            for (FileMetadata fmd : version.getFileMetadatas()) {
+                DataFile df = fmd.getDataFile();
+                JsonObjectBuilder aggRes = Json.createObjectBuilder();
 
-            if (fmd.getDescription() != null) {
-                aggRes.add(JsonLDTerm.schemaOrg("description").getLabel(), fmd.getDescription());
-            } else {
-                addIfNotNull(aggRes, JsonLDTerm.schemaOrg("description"), df.getDescription());
-            }
-            addIfNotNull(aggRes, JsonLDTerm.schemaOrg("name"), fmd.getLabel()); // "label" is the filename
-            addIfNotNull(aggRes, JsonLDTerm.restricted, fmd.isRestricted());
-            addIfNotNull(aggRes, JsonLDTerm.directoryLabel, fmd.getDirectoryLabel());
-            addIfNotNull(aggRes, JsonLDTerm.schemaOrg("version"), fmd.getVersion());
-            addIfNotNull(aggRes, JsonLDTerm.datasetVersionId, fmd.getDatasetVersion().getId());
-            JsonArray catArray = null;
-            if (fmd != null) {
-                List<String> categories = fmd.getCategoriesByName();
-                if (categories.size() > 0) {
-                    JsonArrayBuilder jab = Json.createArrayBuilder();
-                    for (String s : categories) {
-                        jab.add(s);
-                    }
-                    catArray = jab.build();
+                if (fmd.getDescription() != null) {
+                    aggRes.add(JsonLDTerm.schemaOrg("description").getLabel(), fmd.getDescription());
+                } else {
+                    addIfNotNull(aggRes, JsonLDTerm.schemaOrg("description"), df.getDescription());
                 }
-            }
-            addIfNotNull(aggRes, JsonLDTerm.categories, catArray);
-            // File DOI if it exists
-            String fileId = null;
-            String fileSameAs = null;
-            if (df.getGlobalId() != null) {
-                fileId = df.getGlobalId().asString();
-                fileSameAs = SystemConfig.getDataverseSiteUrlStatic()
-                        + "/api/access/datafile/:persistentId?persistentId=" + fileId;
-            } else {
-                fileId = SystemConfig.getDataverseSiteUrlStatic() + "/file.xhtml?fileId=" + df.getId();
-                fileSameAs = SystemConfig.getDataverseSiteUrlStatic() + "/api/access/datafile/" + df.getId();
-            }
-            aggRes.add("@id", fileId);
-            aggRes.add(JsonLDTerm.schemaOrg("sameAs").getLabel(), fileSameAs);
-            fileArray.add(fileId);
+                String fileName = fmd.getLabel();// "label" is the filename
+                long fileSize = df.getFilesize();
+                String mimeType = df.getContentType();
+                String currentIngestedName = null;
+                boolean ingested=df.getOriginalFileName()!= null || df.getOriginalFileSize()!=null || df.getOriginalFileFormat()!=null;
+                if(ingested) {
+                    if(df.getOriginalFileName()!=null) {
+                        currentIngestedName= fileName;
+                        fileName = df.getOriginalFileName();
+                    } else {
+                        logger.warning("Missing Original file name for id: " + df.getId());
+                    }
+                    if(df.getOriginalFileSize()!=null) {
+                        fileSize = df.getOriginalFileSize();
+                    } else {
+                        logger.warning("Missing Original file size for id: " + df.getId());
+                    }
+                    if(df.getOriginalFileFormat()!=null) {
+                        mimeType = df.getOriginalFileFormat();
+                    } else {
+                        logger.warning("Missing Original file format for id: " + df.getId());
+                    }
 
-            aggRes.add("@type", JsonLDTerm.ore("AggregatedResource").getLabel());
-            addIfNotNull(aggRes, JsonLDTerm.schemaOrg("fileFormat"), df.getContentType());
-            addIfNotNull(aggRes, JsonLDTerm.filesize, df.getFilesize());
-            addIfNotNull(aggRes, JsonLDTerm.storageIdentifier, df.getStorageIdentifier());
-            addIfNotNull(aggRes, JsonLDTerm.originalFileFormat, df.getOriginalFileFormat());
-            addIfNotNull(aggRes, JsonLDTerm.originalFormatLabel, df.getOriginalFormatLabel());
-            addIfNotNull(aggRes, JsonLDTerm.UNF, df.getUnf());
-            addIfNotNull(aggRes, JsonLDTerm.rootDataFileId, df.getRootDataFileId());
-            addIfNotNull(aggRes, JsonLDTerm.previousDataFileId, df.getPreviousDataFileId());
-            JsonObject checksum = null;
-            // Add checksum. RDA recommends SHA-512
-            if (df.getChecksumType() != null && df.getChecksumValue() != null) {
-                checksum = Json.createObjectBuilder().add("@type", df.getChecksumType().toString())
-                        .add("@value", df.getChecksumValue()).build();
-                aggRes.add(JsonLDTerm.checksum.getLabel(), checksum);
+                    
+                }
+                addIfNotNull(aggRes, JsonLDTerm.schemaOrg("name"), fileName); 
+                addIfNotNull(aggRes, JsonLDTerm.restricted, fmd.isRestricted());
+                addIfNotNull(aggRes, JsonLDTerm.directoryLabel, fmd.getDirectoryLabel());
+                addIfNotNull(aggRes, JsonLDTerm.schemaOrg("version"), fmd.getVersion());
+                addIfNotNull(aggRes, JsonLDTerm.datasetVersionId, fmd.getDatasetVersion().getId());
+                JsonArray catArray = null;
+                if (fmd != null) {
+                    List<String> categories = fmd.getCategoriesByName();
+                    if (categories.size() > 0) {
+                        JsonArrayBuilder jab = Json.createArrayBuilder();
+                        for (String s : categories) {
+                            jab.add(s);
+                        }
+                        catArray = jab.build();
+                    }
+                }
+                addIfNotNull(aggRes, JsonLDTerm.categories, catArray);
+                // File DOI if it exists
+                String fileId = null;
+                String fileSameAs = null;
+                if (df.getGlobalId().asString().length() != 0) {
+                    fileId = df.getGlobalId().asString();
+                    fileSameAs = SystemConfig.getDataverseSiteUrlStatic()
+                            + "/api/access/datafile/:persistentId?persistentId=" + fileId + (ingested ? "&format=original":"");
+                } else {
+                    fileId = SystemConfig.getDataverseSiteUrlStatic() + "/file.xhtml?fileId=" + df.getId();
+                    fileSameAs = SystemConfig.getDataverseSiteUrlStatic() + "/api/access/datafile/" + df.getId() + (ingested ? "?format=original":"");
+                }
+                aggRes.add("@id", fileId);
+                aggRes.add(JsonLDTerm.schemaOrg("sameAs").getLabel(), fileSameAs);
+                fileArray.add(fileId);
+
+                aggRes.add("@type", JsonLDTerm.ore("AggregatedResource").getLabel());
+                addIfNotNull(aggRes, JsonLDTerm.schemaOrg("fileFormat"), mimeType);
+                addIfNotNull(aggRes, JsonLDTerm.filesize, fileSize);
+                addIfNotNull(aggRes, JsonLDTerm.storageIdentifier, df.getStorageIdentifier());
+                addIfNotNull(aggRes, JsonLDTerm.currentIngestedName, currentIngestedName);
+                addIfNotNull(aggRes, JsonLDTerm.UNF, df.getUnf());
+                addIfNotNull(aggRes, JsonLDTerm.rootDataFileId, df.getRootDataFileId());
+                addIfNotNull(aggRes, JsonLDTerm.previousDataFileId, df.getPreviousDataFileId());
+                JsonObject checksum = null;
+                // Add checksum. RDA recommends SHA-512
+                if (df.getChecksumType() != null && df.getChecksumValue() != null) {
+                    checksum = Json.createObjectBuilder().add("@type", df.getChecksumType().toString())
+                            .add("@value", df.getChecksumValue()).build();
+                    aggRes.add(JsonLDTerm.checksum.getLabel(), checksum);
+                }
+                JsonArray tabTags = null;
+                JsonArrayBuilder jab = JsonPrinter.getTabularFileTags(df);
+                if (jab != null) {
+                    tabTags = jab.build();
+                }
+                addIfNotNull(aggRes, JsonLDTerm.tabularTags, tabTags);
+                // Add latest resource to the array
+                aggResArrayBuilder.add(aggRes.build());
             }
-            JsonArray tabTags = null;
-            JsonArrayBuilder jab = JsonPrinter.getTabularFileTags(df);
-            if (jab != null) {
-                tabTags = jab.build();
-            }
-            addIfNotNull(aggRes, JsonLDTerm.tabularTags, tabTags);
-            //Add latest resource to the array
-            aggResArrayBuilder.add(aggRes.build());
         }
         // Build the '@context' object for json-ld based on the localContext entries
         JsonObjectBuilder contextBuilder = Json.createObjectBuilder();
         for (Entry<String, String> e : localContext.entrySet()) {
             contextBuilder.add(e.getKey(), e.getValue());
         }
-        // Now create the overall map object with it's metadata
-        JsonObject oremap = Json.createObjectBuilder()
-                .add(JsonLDTerm.dcTerms("modified").getLabel(), LocalDate.now().toString())
-                .add(JsonLDTerm.dcTerms("creator").getLabel(),
-                        ResourceBundle.getBundle("Bundle").getString("institution.name"))
-                .add("@type", JsonLDTerm.ore("ResourceMap").getLabel())
-                // Define an id for the map itself (separate from the @id of the dataset being
-                // described
-                .add("@id",
-                        SystemConfig.getDataverseSiteUrlStatic() + "/api/datasets/export?exporter="
-                                + OAI_OREExporter.NAME + "&persistentId=" + id)
-                // Add the aggregation (Dataset) itself to the map.
-                .add(JsonLDTerm.ore("describes").getLabel(),
-                        aggBuilder.add(JsonLDTerm.ore("aggregates").getLabel(), aggResArrayBuilder.build())
-                                .add(JsonLDTerm.schemaOrg("hasPart").getLabel(), fileArray.build()).build())
-                // and finally add the context
-                .add("@context", contextBuilder.build()).build();
-        return oremap;
+        if (aggregationOnly) {
+            return aggBuilder.add("@context", contextBuilder.build());
+        } else {
+            // Now create the overall map object with it's metadata
+            JsonObjectBuilder oremapBuilder = Json.createObjectBuilder()
+                    .add(JsonLDTerm.dcTerms("modified").getLabel(), LocalDate.now().toString())
+                    .add(JsonLDTerm.dcTerms("creator").getLabel(), BrandingUtil.getInstallationBrandName())
+                    .add("@type", JsonLDTerm.ore("ResourceMap").getLabel())
+                    // Define an id for the map itself (separate from the @id of the dataset being
+                    // described
+                    .add("@id",
+                            SystemConfig.getDataverseSiteUrlStatic() + "/api/datasets/export?exporter="
+                                    + OAI_OREExporter.NAME + "&persistentId=" + id)
+                    // Add the aggregation (Dataset) itself to the map.
+                    .add(JsonLDTerm.ore("describes").getLabel(),
+                            aggBuilder.add(JsonLDTerm.ore("aggregates").getLabel(), aggResArrayBuilder.build())
+                                    .add(JsonLDTerm.schemaOrg("hasPart").getLabel(), fileArray.build()).build())
+                    // and finally add the context
+                    .add("@context", contextBuilder.build());
+            return oremapBuilder;
+        }
+    }
+
+    private JsonObjectBuilder getDataverseDescription(Dataverse dv) {
+        //Schema.org is already in local context, no updates needed as long as we only use chemaOrg and "@id" here
+        JsonObjectBuilder dvjob = Json.createObjectBuilder().add(JsonLDTerm.schemaOrg("name").getLabel(), dv.getCurrentName()).add("@id", dv.getLocalURL());
+        addIfNotNull(dvjob, JsonLDTerm.schemaOrg("description"), dv.getDescription());
+        Dataverse owner = dv.getOwner();
+        if(owner!=null) {
+            dvjob.add(JsonLDTerm.schemaOrg("isPartOf").getLabel(), getDataverseDescription(owner));
+        }
+        return dvjob;
     }
 
     /*
@@ -306,11 +331,11 @@ public class OREMap {
     }
 
     public JsonLDTerm getContactNameTerm() {
-        return getTermFor(DatasetFieldConstant.datasetContact, DatasetFieldConstant.datasetContactName);
+        return getTermFor(DatasetFieldConstant.datasetContactName);
     }
 
     public JsonLDTerm getContactEmailTerm() {
-        return getTermFor(DatasetFieldConstant.datasetContact, DatasetFieldConstant.datasetContactEmail);
+        return getTermFor(DatasetFieldConstant.datasetContactEmail);
     }
 
     public JsonLDTerm getDescriptionTerm() {
@@ -318,64 +343,105 @@ public class OREMap {
     }
 
     public JsonLDTerm getDescriptionTextTerm() {
-        return getTermFor(DatasetFieldConstant.description, DatasetFieldConstant.descriptionText);
+        return getTermFor(DatasetFieldConstant.descriptionText);
     }
 
     private JsonLDTerm getTermFor(String fieldTypeName) {
-        for (DatasetField dsf : version.getDatasetFields()) {
+        //Could call datasetFieldService.findByName(fieldTypeName) - is that faster/prefereable?
+        for (DatasetField dsf : version.getFlatDatasetFields()) {
             DatasetFieldType dsft = dsf.getDatasetFieldType();
             if (dsft.getName().equals(fieldTypeName)) {
-                return getTermFor(dsft);
+                return dsft.getJsonLDTerm();
             }
         }
         return null;
     }
+    
+    public static JsonValue getJsonLDForField(DatasetField field, Boolean excludeEmail, Map<Long, JsonObject> cvocMap,
+            Map<String, String> localContext) {
 
-    private JsonLDTerm getTermFor(DatasetFieldType dsft) {
-        if (dsft.getUri() != null) {
-            return new JsonLDTerm(dsft.getTitle(), dsft.getUri());
-        } else {
-            String namespaceUri = dsft.getMetadataBlock().getNamespaceUri();
-            if (namespaceUri == null) {
-                namespaceUri = SystemConfig.getDataverseSiteUrlStatic() + "/schema/" + dsft.getMetadataBlock().getName()
-                        + "#";
-            }
-            JsonLDNamespace blockNamespace = new JsonLDNamespace(dsft.getMetadataBlock().getName(), namespaceUri);
-            return new JsonLDTerm(blockNamespace, dsft.getTitle());
+        DatasetFieldType dfType = field.getDatasetFieldType();
+        if (excludeEmail && DatasetFieldType.FieldType.EMAIL.equals(dfType.getFieldType())) {
+            return null;
         }
-    }
 
-    private JsonLDTerm getTermFor(DatasetFieldType dfType, DatasetFieldType dsft) {
-        if (dsft.getUri() != null) {
-            return new JsonLDTerm(dsft.getTitle(), dsft.getUri());
+        JsonLDTerm fieldName = dfType.getJsonLDTerm();
+        if (fieldName.inNamespace()) {
+            localContext.putIfAbsent(fieldName.getNamespace().getPrefix(), fieldName.getNamespace().getUrl());
         } else {
-            // Use metadatablock URI or custom URI for this field based on the path
-            String subFieldNamespaceUri = dfType.getMetadataBlock().getNamespaceUri();
-            if (subFieldNamespaceUri == null) {
-                subFieldNamespaceUri = SystemConfig.getDataverseSiteUrlStatic() + "/schema/"
-                        + dfType.getMetadataBlock().getName() + "/";
-            }
-            subFieldNamespaceUri = subFieldNamespaceUri + dfType.getName() + "#";
-            JsonLDNamespace fieldNamespace = new JsonLDNamespace(dfType.getName(), subFieldNamespaceUri);
-            return new JsonLDTerm(fieldNamespace, dsft.getTitle());
+            localContext.putIfAbsent(fieldName.getLabel(), fieldName.getUrl());
         }
-    }
+        JsonArrayBuilder vals = Json.createArrayBuilder();
+        if (!dfType.isCompound()) {
+            for (String val : field.getValues_nondisplay()) {
+                if (cvocMap.containsKey(dfType.getId())) {
+                    try {
+                        JsonObject cvocEntry = cvocMap.get(dfType.getId());
+                        if (cvocEntry.containsKey("retrieval-filtering")) {
+                            JsonObject filtering = cvocEntry.getJsonObject("retrieval-filtering");
+                            JsonObject context = filtering.getJsonObject("@context");
+                            for (String prefix : context.keySet()) {
+                                localContext.putIfAbsent(prefix, context.getString(prefix));
+                            }
+                            vals.add(datasetFieldService.getExternalVocabularyValue(val));
+                        } else {
+                            vals.add(val);
+                        }
+                    } catch (Exception e) {
+                        logger.warning("Couldn't interpret value for : " + val + " : " + e.getMessage());
+                        logger.log(Level.FINE, ExceptionUtils.getStackTrace(e));
+                        vals.add(val);
+                    }
+                } else {
+                    vals.add(val);
+                }
+            }
+        } else {
+            // ToDo: Needs to be recursive (as in JsonPrinter?)
+            for (DatasetFieldCompoundValue dscv : field.getDatasetFieldCompoundValues()) {
+                // compound values are of different types
+                JsonObjectBuilder child = Json.createObjectBuilder();
 
-    private JsonLDTerm getTermFor(String type, String subType) {
-        for (DatasetField dsf : version.getDatasetFields()) {
-            DatasetFieldType dsft = dsf.getDatasetFieldType();
-            if (dsft.getName().equals(type)) {
-                for (DatasetFieldCompoundValue dscv : dsf.getDatasetFieldCompoundValues()) {
-                    for (DatasetField subField : dscv.getChildDatasetFields()) {
-                        DatasetFieldType subFieldType = subField.getDatasetFieldType();
-                        if (subFieldType.getName().equals(subType)) {
-                            return getTermFor(dsft, subFieldType);
+                for (DatasetField dsf : dscv.getChildDatasetFields()) {
+                    DatasetFieldType dsft = dsf.getDatasetFieldType();
+                    if (excludeEmail && DatasetFieldType.FieldType.EMAIL.equals(dsft.getFieldType())) {
+                        continue;
+                    }
+                    // which may have multiple values
+                    if (!dsf.isEmpty()) {
+                        // Add context entry
+                        // ToDo - also needs to recurse here?
+                        JsonLDTerm subFieldName = dsft.getJsonLDTerm();
+                        if (subFieldName.inNamespace()) {
+                            localContext.putIfAbsent(subFieldName.getNamespace().getPrefix(),
+                                    subFieldName.getNamespace().getUrl());
+                        } else {
+                            localContext.putIfAbsent(subFieldName.getLabel(), subFieldName.getUrl());
+                        }
+
+                        List<String> values = dsf.getValues_nondisplay();
+                        if (values.size() > 1) {
+                            JsonArrayBuilder childVals = Json.createArrayBuilder();
+
+                            for (String val : dsf.getValues_nondisplay()) {
+                                childVals.add(val);
+                            }
+                            child.add(subFieldName.getLabel(), childVals);
+                        } else {
+                            child.add(subFieldName.getLabel(), values.get(0));
                         }
                     }
                 }
+                vals.add(child);
             }
         }
-        return null;
+        // Add metadata value to aggregation, suppress array when only one value
+        JsonArray valArray = vals.build();
+        return (valArray.size() != 1) ? valArray : valArray.get(0);
     }
 
+    public static void injectSettingsService(SettingsServiceBean settingsSvc, DatasetFieldServiceBean datasetFieldSvc) {
+        settingsService = settingsSvc;
+        datasetFieldService = datasetFieldSvc;
+    }
 }

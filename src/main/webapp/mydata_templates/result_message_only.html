@@ -22,12 +22,12 @@
 <strong>
 {% if pagination_data.endCardNumber > pagination_data.startCardNumber  %}
   {# {{ pagination_data.startCardNumber }} to {{ pagination_data.endCardNumber }} of #}
-    1 to {{ pagination_data.endCardNumber }} of 
+    1 <span id="to"></span> {{ pagination_data.endCardNumber }} <span id="of"></span>
 {% endif %}
 {% if pagination_data.numResults > 1 %}
-    {{ pagination_data.numResults }} Results
+    {{ pagination_data.numResults }} <span id="results"></span>
 {% elif pagination_data.numResults == 1 %}
-    1 Result 
+    1 <span id="result"></span>
 {% endif %}
 </strong>
     </div>

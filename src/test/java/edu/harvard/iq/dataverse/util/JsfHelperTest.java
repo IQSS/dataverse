@@ -4,23 +4,28 @@
 
 package edu.harvard.iq.dataverse.util;
 
+import static org.junit.Assert.assertEquals;
+
+import java.util.Arrays;
+import java.util.Collection;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  *
  * @author michael
  */
+@RunWith(Parameterized.class)
 public class JsfHelperTest {
 	
 	enum TestEnum { Lorem, Ipsum, Dolor, Sit, Amet }
-	
-	public JsfHelperTest() {
-	}
 	
 	@BeforeClass
 	public static void setUpClass() {
@@ -38,6 +43,27 @@ public class JsfHelperTest {
 	public void tearDown() {
 	}
 
+	public TestEnum inputEnum;
+	public String inputString;
+	public TestEnum defaultEnumValue;
+	
+	public JsfHelperTest(TestEnum inputEnum, String inputString, TestEnum defaultEnumValue) {
+		this.inputEnum = inputEnum;
+		this.inputString = inputString;
+		this.defaultEnumValue = defaultEnumValue;
+	}
+
+	@Parameters
+	public static Collection<Object[]> parameters() {
+		return Arrays.asList (
+			new Object[][] {
+				{ TestEnum.Lorem, "Lorem", TestEnum.Dolor },
+				{ TestEnum.Lorem, "Lorem   ", TestEnum.Dolor },
+				{ TestEnum.Dolor, null, TestEnum.Dolor },
+				{ TestEnum.Dolor, "THIS IS A BAD VALUE", TestEnum.Dolor },
+			}
+		);
+	}
 
 	/**
 	 * Test of enumValue method, of class JsfHelper.
@@ -46,12 +72,8 @@ public class JsfHelperTest {
 	public void testEnumValue() {
 		System.out.println("enumValue");
 		JsfHelper instance = new JsfHelper();
-		
-		assertEquals( TestEnum.Lorem, instance.enumValue("Lorem", TestEnum.class, TestEnum.Dolor) );
-		assertEquals( TestEnum.Lorem, instance.enumValue("Lorem   ", TestEnum.class, TestEnum.Dolor) );
-		assertEquals( TestEnum.Dolor, instance.enumValue(null, TestEnum.class, TestEnum.Dolor) );
-		assertEquals( TestEnum.Dolor, instance.enumValue("THIS IS A BAD VALUE", TestEnum.class, TestEnum.Dolor) );
-		
+
+		assertEquals( inputEnum, instance.enumValue(inputString, TestEnum.class, defaultEnumValue) );
 	}
 	
 }

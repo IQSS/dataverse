@@ -43,4 +43,17 @@ public interface Command<R> {
     Map<String,Set<Permission>> getRequiredPermissions();
 
     public String describe();
+    
+    /**
+     * 
+     * @param ctxt 
+     * @param r - return value of the command
+     * @return - boolean indicating if the onSuccess processes where themselves successful
+     * 
+     * The purpose of the onSuccess method of a command is to 
+     * run those processes (such as indexing) that are ancillary to the command and
+     * whose failure should not rollback the transaction at the heart of the command
+     * For Indexing we have implemented a process for logging each failed index
+     */
+    public boolean onSuccess(CommandContext ctxt, Object r);
 }

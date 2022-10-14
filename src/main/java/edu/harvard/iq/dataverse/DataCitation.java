@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 
 import java.io.BufferedWriter;
@@ -32,8 +33,9 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
+import edu.harvard.iq.dataverse.util.DateUtil;
+import org.apache.commons.text.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -184,14 +186,21 @@ public class DataCitation {
     }
 
     public String toString(boolean html) {
-        // first add comma separated parts        
+        return toString(html, false);
+    }
+    public String toString(boolean html, boolean anonymized) {
+        // first add comma separated parts
         String separator = ", ";
         List<String> citationList = new ArrayList<>();
-        citationList.add(formatString(getAuthorsString(), html));
+        if(anonymized) {
+            citationList.add(BundleUtil.getStringFromBundle("file.anonymized.authorsWithheld"));
+        } else {
+            citationList.add(formatString(getAuthorsString(), html));
+        }
         citationList.add(year);
         if ((fileTitle != null) && isDirect()) {
             citationList.add(formatString(fileTitle, html, "\""));
-            citationList.add(formatString(title, html, "<i>", "</i>"));
+            citationList.add(formatString(title, html, "<em>", "</em>"));
         } else {
         citationList.add(formatString(title, html, "\""));
         }
@@ -265,12 +274,12 @@ public class DataCitation {
             out.write(title);
             out.write("},\r\n");
         } else {
-            out.write("title = \"{");
+            out.write("title = {{");
             String doubleQ = "\"";
             String doubleTick = "``";
             String doubleAp = "''";
             out.write(title.replaceFirst(doubleQ, doubleTick).replaceFirst(doubleQ, doubleAp));
-            out.write("}\",\r\n");
+            out.write("}},\r\n");
         }
         if(UNF != null){
             out.write("UNF = {");
@@ -615,12 +624,12 @@ public class DataCitation {
         String authorString = getAuthorsString();
 
         if (authorString.isEmpty()) {
-            authorString = ":unav";
+            authorString = AbstractGlobalIdServiceBean.UNAVAILABLE;
     }
         String producerString = getPublisher();
 
         if (producerString.isEmpty()) {
-            producerString = ":unav";
+            producerString =  AbstractGlobalIdServiceBean.UNAVAILABLE;
         }
 
         metadata.put("datacite.creator", authorString);
@@ -642,7 +651,7 @@ public class DataCitation {
 
     private String formatString(String value, boolean escapeHtml, String wrapperStart, String wrapperEnd) {
         if (!StringUtils.isEmpty(value)) {
-            return new StringBuilder(wrapperStart).append(escapeHtml ? StringEscapeUtils.escapeHtml(value) : value)
+            return new StringBuilder(wrapperStart).append(escapeHtml ? StringEscapeUtils.escapeHtml4(value) : value)
                     .append(wrapperEnd).toString();
         }
         return null;
@@ -654,7 +663,7 @@ public class DataCitation {
         }
 
         if (html && url != null) {
-            return "<a href=\"" + url + "\" target=\"_blank\">" + StringEscapeUtils.escapeHtml(text) + "</a>";
+            return "<a href=\"" + url + "\" target=\"_blank\">" + StringEscapeUtils.escapeHtml4(text) + "</a>";
         } else {
             return text;
         }
@@ -705,25 +714,24 @@ public class DataCitation {
 
     private Date getDateFrom(DatasetVersion dsv) {
         Date citationDate = null;
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
-        if (!dsv.getDataset().isHarvested()) {
-            citationDate = dsv.getCitationDate();
+
+        if (dsv.getDataset().isHarvested()) {
+            citationDate = DateUtil.parseDate(dsv.getProductionDate());
             if (citationDate == null) {
-                if (dsv.getDataset().getPublicationDate() != null) {
-                    citationDate = dsv.getDataset().getPublicationDate();
-                } else { // for drafts
-                    citationDate = dsv.getLastUpdateTime();
-                }
-            }
-        } else {
-            try {
-                citationDate= sdf.parse(dsv.getDistributionDate());
-            } catch (ParseException ex) {
-                // ignore
-            } catch (Exception ex) {
-                // ignore
+                citationDate = DateUtil.parseDate(dsv.getDistributionDate());
             }
         }
+
+        if (citationDate == null) {
+            if (dsv.getCitationDate() != null) {
+                citationDate = dsv.getCitationDate();
+            } else if (dsv.getDataset().getCitationDate() != null) {
+                citationDate = dsv.getDataset().getCitationDate();
+            } else { // for drafts
+                citationDate = dsv.getLastUpdateTime();
+            }
+        }
+
         if (citationDate == null) {
             //As a last resort, pick the current date
             logger.warning("Unable to find citation date for datasetversion: " + dsv.getId());
@@ -745,7 +753,7 @@ public class DataCitation {
 
     private String getPublisherFrom(DatasetVersion dsv) {
         if (!dsv.getDataset().isHarvested()) {
-            return dsv.getRootDataverseNameforCitation();
+            return BrandingUtil.getInstallationBrandName();
         } else {
             return dsv.getDistributorName();
             // remove += [distributor] SEK 8-18-2016

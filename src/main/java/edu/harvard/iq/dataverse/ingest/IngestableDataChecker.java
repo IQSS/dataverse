@@ -29,7 +29,7 @@ import java.lang.reflect.*;
 import java.util.regex.*;
 import java.util.zip.*;
 import java.util.logging.Logger;
-import org.apache.commons.lang.builder.*;
+import org.apache.commons.lang3.builder.*;
 import org.apache.commons.io.IOUtils;
 
 /**
@@ -68,7 +68,7 @@ public class IngestableDataChecker implements java.io.Serializable {
     private static String regex = "^test(\\w+)format$";
 
     // static initialization block
-    private static String rdargx = "^(52)(44)(41|42|58)(31|32)(0A)$";
+    private static String rdargx = "^(52)(44)(41|42|58)(31|32|33)(0A)$";
     private static int RDA_HEADER_SIZE = 5;
     private static Pattern ptn;
 

@@ -10,7 +10,6 @@ import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.MapLayerMetadata;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -58,7 +57,9 @@ public class UningestFileCommand extends AbstractVoidCommand  {
         if (!uningest.isTabularData()) {
             throw new IllegalCommandException("UningestFileCommand called on a non-tabular data file (id="+uningest.getId()+")", this);
         }
-        
+
+        String originalFileName = uningest.getOriginalFileName();
+
         StorageIO<DataFile> dataAccess = null;
         // size of the stored original:
         Long storedOriginalFileSize;
@@ -138,9 +139,14 @@ public class UningestFileCommand extends AbstractVoidCommand  {
         // Modify the file name - which is stored in FileMetadata, and there
         // could be more than one: 
         
-        String originalExtension = FileUtil.generateOriginalExtension(originalFileFormat);
-        
+       // String originalExtension = FileUtil.generateOriginalExtension(originalFileFormat);
         for (FileMetadata fm : uningest.getFileMetadatas()) {
+            
+            fm.setLabel(originalFileName);
+            ctxt.em().merge(fm);
+            
+            /* 
+            getOriginalFileName method replaces this code
             String filename = fm.getLabel();
             String extensionToRemove = StringUtil.substringIncludingLast(filename, ".");
             if (StringUtil.nonEmpty(extensionToRemove)) {
@@ -148,6 +154,7 @@ public class UningestFileCommand extends AbstractVoidCommand  {
                 fm.setLabel(newFileName);
                 ctxt.em().merge(fm);
             }
+             */
             
             DatasetVersion dv = fm.getDatasetVersion();
             
@@ -157,19 +164,6 @@ public class UningestFileCommand extends AbstractVoidCommand  {
             ctxt.datasetVersion().fixMissingUnf(dv.getId().toString(), true);
         }
 
-        MapLayerMetadata mapLayerMetadata = ctxt.mapLayerMetadata().findMetadataByDatafile(uningest);
-        if (mapLayerMetadata != null) {
-            try {
-                String id = getUser().getIdentifier();
-                id = id.startsWith("@") ? id.substring(1) : id;
-                AuthenticatedUser authenticatedUser = ctxt.authentication().getAuthenticatedUser(id);
-                ctxt.mapLayerMetadata().deleteMapLayerFromWorldMap(uningest, authenticatedUser);
-            } catch (Exception e) {
-                logger.warning("Unable to delete WorldMap file - may not have existed. Data File id: " + uningest.getId());
-            }
-            ctxt.mapLayerMetadata().deleteMapLayerMetadataObject(mapLayerMetadata, getUser());
-        }
-        
         try{
             dataAccess.deleteAllAuxObjects();
         } catch (IOException e){

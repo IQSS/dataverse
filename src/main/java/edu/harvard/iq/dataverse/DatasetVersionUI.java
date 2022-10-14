@@ -18,6 +18,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
+import static java.util.stream.Collectors.toList;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
@@ -39,22 +41,22 @@ public class DatasetVersionUI implements Serializable {
     public DatasetVersionUI() {
     }
 
-    private Map<MetadataBlock, List<DatasetField>> metadataBlocksForView = new HashMap<>();
-    private Map<MetadataBlock, List<DatasetField>> metadataBlocksForEdit = new HashMap<>();
+    private TreeMap<MetadataBlock, List<DatasetField>> metadataBlocksForView = new TreeMap<>();
+    private TreeMap<MetadataBlock, List<DatasetField>> metadataBlocksForEdit = new TreeMap<>();
 
-    public Map<MetadataBlock, List<DatasetField>> getMetadataBlocksForView() {
+    public TreeMap<MetadataBlock, List<DatasetField>> getMetadataBlocksForView() {
         return metadataBlocksForView;
     }
 
-    public void setMetadataBlocksForView(Map<MetadataBlock, List<DatasetField>> metadataBlocksForView) {
+    public void setMetadataBlocksForView(TreeMap<MetadataBlock, List<DatasetField>> metadataBlocksForView) {
         this.metadataBlocksForView = metadataBlocksForView;
     }
 
-    public Map<MetadataBlock, List<DatasetField>> getMetadataBlocksForEdit() {
+    public TreeMap<MetadataBlock, List<DatasetField>> getMetadataBlocksForEdit() {
         return metadataBlocksForEdit;
     }
 
-    public void setMetadataBlocksForEdit(Map<MetadataBlock, List<DatasetField>> metadataBlocksForEdit) {
+    public void setMetadataBlocksForEdit(TreeMap<MetadataBlock, List<DatasetField>> metadataBlocksForEdit) {
         this.metadataBlocksForEdit = metadataBlocksForEdit;
     }
     
@@ -110,8 +112,8 @@ public class DatasetVersionUI implements Serializable {
                 if (this.datasetRelPublications.isEmpty()) {
                     for (DatasetFieldCompoundValue relPubVal : dsf.getDatasetFieldCompoundValues()) {
                         DatasetRelPublication datasetRelPublication = new DatasetRelPublication();
-                        datasetRelPublication.setTitle(dsf.getDatasetFieldType().getTitle());
-                        datasetRelPublication.setDescription(dsf.getDatasetFieldType().getDescription());
+                        datasetRelPublication.setTitle(dsf.getDatasetFieldType().getLocaleTitle());
+                        datasetRelPublication.setDescription(dsf.getDatasetFieldType().getLocaleDescription());
                         for (DatasetField subField : relPubVal.getChildDatasetFields()) {
                             if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationCitation)) {
                                 datasetRelPublication.setText(subField.getValue());
@@ -417,7 +419,7 @@ public class DatasetVersionUI implements Serializable {
                     actualMDB.add(mdbTest);
                 }
             }
-        }       
+        }
         
         for (MetadataBlock mdb : actualMDB) {
             mdb.setEmpty(true);

@@ -68,42 +68,12 @@ public class Meta {
     @EJB
     DatasetServiceBean datasetService;
 
-    @Deprecated
-    @Path("variable/{varId}")
-    @GET
-    @Produces({ "application/xml" })
-
-    public String variable(@PathParam("varId") Long varId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
-        String retValue = "";
-        
-        ByteArrayOutputStream outStream = null;
-        try {
-            outStream = new ByteArrayOutputStream();
-
-            ddiExportService.exportDataVariable(
-                    varId,
-                    outStream,
-                    exclude,
-                    include);
-        } catch (Exception e) {
-            // For whatever reason we've failed to generate a partial 
-            // metadata record requested. We simply return an empty string.
-            return retValue;
-        }
-
-        retValue = outStream.toString();
-        
-        response.setHeader("Access-Control-Allow-Origin", "*");
-        
-        return retValue; 
-    }
-    
     // Because this API is deprecated, we prefer to continue letting it operate on fileId rather adding support for persistent identifiers.
     @Deprecated
     @Path("datafile/{fileId}")
     @GET
     @Produces({"text/xml"})
-    public String datafile(@PathParam("fileId") Long fileId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public String datafile(@PathParam("fileId") Long fileId, @QueryParam("fileMetadataId") Long fileMetadataId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
         String retValue = "";
 
         DataFile dataFile = null; 
@@ -129,7 +99,8 @@ public class Meta {
                     fileId,
                     outStream,
                     exclude,
-                    include);
+                    include,
+                    fileMetadataId);
 
             retValue = outStream.toString();
 
@@ -139,8 +110,6 @@ public class Meta {
             // We return Service Unavailable.
             throw new ServiceUnavailableException();
         }
-
-        response.setHeader("Access-Control-Allow-Origin", "*");
 
         return retValue;
     }
@@ -175,8 +144,6 @@ public class Meta {
             // metadata record requested. We simply return an empty string.
             throw new ServiceUnavailableException();
         }
-
-        response.setHeader("Access-Control-Allow-Origin", "*");
 
         return retValue;
     }

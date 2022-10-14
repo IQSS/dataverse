@@ -22,13 +22,21 @@ Developer Guide
    dependencies
    debugging
    coding-style
+   configuration
    deployment
    containers
    making-releases
    tools
    unf/index
+   make-data-count
    remote-users
    geospatial
    selinux
    big-data-support
+   aux-file-support
+   s3-direct-upload-api
+   dataset-semantic-metadata-api
+   dataset-migration-api 
    workflows
+   fontcustom
+   

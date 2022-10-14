@@ -33,18 +33,20 @@ import javax.validation.constraints.Size;
  * @author michael
  */
 @NamedQueries({
-	@NamedQuery(name = "DataverseRole.findByOwnerId",
-			    query= "SELECT r FROM DataverseRole r WHERE r.owner.id=:ownerId ORDER BY r.name"),
-	@NamedQuery(name = "DataverseRole.findBuiltinRoles",
-			    query= "SELECT r FROM DataverseRole r WHERE r.owner is null ORDER BY r.name"),
+    @NamedQuery(name = "DataverseRole.findByOwnerId",
+            query = "SELECT r FROM DataverseRole r WHERE r.owner.id=:ownerId ORDER BY r.name"),
+    @NamedQuery(name = "DataverseRole.findBuiltinRoles",
+            query = "SELECT r FROM DataverseRole r WHERE r.owner is null ORDER BY r.name"),
     @NamedQuery(name = "DataverseRole.findBuiltinRoleByAlias",
-			    query= "SELECT r FROM DataverseRole r WHERE r.alias=:alias AND r.owner is null"),
-        @NamedQuery(name = "DataverseRole.findCustomRoleByAliasAndOwner",
-			    query= "SELECT r FROM DataverseRole r WHERE r.alias=:alias and (r.owner is null or r.owner.id=:ownerId)"),
-	@NamedQuery(name = "DataverseRole.listAll",
-			    query= "SELECT r FROM DataverseRole r"),
-	@NamedQuery(name = "DataverseRole.deleteById",
-			    query= "DELETE FROM DataverseRole r WHERE r.id=:id")
+            query = "SELECT r FROM DataverseRole r WHERE r.alias=:alias AND r.owner is null"),
+    @NamedQuery(name = "DataverseRole.findDataverseRoleByAlias",
+            query = "SELECT r FROM DataverseRole r WHERE r.alias=:alias"),
+    @NamedQuery(name = "DataverseRole.findCustomRoleByAliasAndOwner",
+            query = "SELECT r FROM DataverseRole r WHERE r.alias=:alias and (r.owner is null or r.owner.id=:ownerId)"),
+    @NamedQuery(name = "DataverseRole.listAll",
+            query = "SELECT r FROM DataverseRole r"),
+    @NamedQuery(name = "DataverseRole.deleteById",
+            query = "DELETE FROM DataverseRole r WHERE r.id=:id")
 })
 @Entity
 @Table(indexes = {@Index(columnList="owner_id")
@@ -62,8 +64,10 @@ public class DataverseRole implements Serializable  {
      * Heads up that this says "editor" which comes from
      * scripts/api/data/role-editor.json but the name is "Contributor". The
      * *alias* is "editor". Don't be fooled!
+     * #6644 change EDITOR string to contributor to coincide with the "name" value 
+     * - see above note SEK 2/13/2020
      */
-    public static final String EDITOR = "editor";
+    public static final String EDITOR = "contributor";
     public static final String MANAGER = "manager";
     public static final String CURATOR = "curator";
     public static final String MEMBER = "member";

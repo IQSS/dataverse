@@ -1,0 +1,576 @@
+<?xml version="1.0" encoding="UTF-8"?><!--
+This work is licensed under a Creative Commons Attribution-Noncommercial 3.0 United States License.
+http://creativecommons.org/licenses/by-nc/3.0/us/
+--><!--This XML stylesheet is intended to serve as a generic stylesheet for HTML
+            display of codebooks marked up according to Version 2.0 of the DDI DTD. Please note that 
+            the part navigation that appears just below the title is dependent upon the 'holdings' tag
+            located at /codeBook/docDscr/citation/holdings. This navigation element allows the user
+            to selectively view any of the five parts of the DDI document, assuming those parts are
+            present. The URI attribute of the 'holdings' tag should contain the URL at which the XML
+            file is accessed on the Web. If that field is not filled in properly, the navigation
+            will not work correctly.--><!--It's also important to note that this stylesheet doesn't display all elements. 
+            The following elements do note display:
+            3.2.1 dataItem (locMap)
+            3.2.1.1 CubeCoord (locMap)
+            3.2.1.2 physLoc (locMap)
+            4.2.1 labl (nCubeGrp)
+            4.2.2 txt (nCubeGrp)
+            4.2.3 concept (nCubeGrp)
+            4.2.4 defntn (nCubeGrp)
+            4.2.5 universe (nCubeGrp)
+            4.2.6 notes (nCubeGrp)
+            4.3.18.5 mrow (nCube)
+            4.3.18.5.1 mi (nCube)
+            4.4.2 location (nCube)
+            4.4.3 txt (nCube)
+            4.4.4 universe (nCube)
+            4.4.5 imputation (nCube)
+            4.4.6 security (nCube)
+            4.4.7 embargo (nCube)
+            4.4.8 respUnit (nCube)
+            4.4.9 anlysUnit (nCube)
+            4.4.10 verStmt (nCube)
+            4.4.10.1 version (nCube)
+            4.4.10.2 verResp (nCube)
+            4.4.10.3 notes (nCube)
+            4.4.11 purpose (nCube)
+            4.4.12.1 cohort (nCube)
+            4.4.12.1.1 range (nCube)
+            4.4.13 measure (nCube)
+            4.4.14 notes (nCube)
+            
+            In addition, many of the attributes of elements have yet to be set to display.
+            --><!--
+            On 2004-06-01 I corrected some errors in this stylesheet, as lists of variables and variable 
+            groups weren't linking properly to the detailed views of said variables and variable groups.
+            
+            On 2005-06-22 I made some minor modifications to the display of variables lists, and enabled
+            use of the Link tag within catValu.
+            
+            On 2005-06-23 I enabled use of Link tag within labl and enabled catStat to display repetitions
+            in catgry.
+            --><html>
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>dct html</title>
+<style media="screen" type="text/css">
+body {
+background-color: #FFFFFF;
+margin-top: 5px;
+margin-left: 5px;
+margin-right: 5px;
+padding-left: 0px;
+padding-top: 0px;
+padding-right: 0px;
+}
+
+tr.h1 {
+background: #000000;
+color: #FFFFFF;
+}
+
+td.h3 {
+vertical-align: top;
+text-align: right;
+font-style: italic;
+}
+
+tr.h2 {
+background: #CCCCCC;
+color: #000000;
+}
+
+caption {
+font-family: arial, helvetica, geneva, verdana, sans-serif;
+font-size: 11pt;
+font-weight: bold;
+}
+
+p {
+font-family: arial, helvetica, geneva, verdana, sans-serif;
+font-size: 11pt;
+}
+
+table {
+padding-top: 10px;
+padding-bottom: 10px;
+border: none;
+}
+
+th {
+text-align: left;
+}
+
+dl {
+font-family: arial, helvetica, geneva, verdana, sans-serif;
+font-size: 11pt;
+}
+
+td {
+vertical-align: top;
+}
+
+blockquote {
+font-family: arial, helvetica, geneva, verdana, sans-serif;
+font-size: 11pt;
+}
+
+.noindent {padding-left: 0px;}
+
+.small {font-size: 9pt;}
+
+.red {color: #CC0000;}
+
+ol {
+font-family: arial, helvetica, geneva, verdana, sans-serif;
+font-size: 11pt;
+}
+
+ul {
+font-family: arial, helvetica, geneva, verdana, sans-serif;
+list-style: square;
+font-size: 11pt;
+}
+
+h1 {
+font-family: arial, helvetica, geneva, verdana, sans-serif; 
+font-size: 14pt;
+}
+
+h2 {
+font-family: arial, helvetica, geneva, verdana, sans-serif; 
+font-size: 12pt;
+}
+
+h3 {
+font-family: arial, helvetica, geneva, verdana, sans-serif; 
+font-size: 11pt;
+font-style: bold;
+}
+
+h4 {
+font-family: arial, helvetica, geneva, verdana, sans-serif; 
+font-size: 10pt;
+}
+				</style>
+</head>
+<body lang="en-US" bgcolor="#ffffff">
+<h1>dct html&nbsp;(doi:10.5072/FK2/SOLYMR)</h1>
+<table cellspacing="0" cellpadding="5" border="0">
+<tr>
+<td valign="top">
+<p>
+<b>View:</b>
+</p>
+</td><td>
+<p>
+<a href="#1.0">Part 1: Document Description</a>
+<br>
+<a href="#2.0">Part 2: Study Description</a>
+<br>
+<a href="#3.0">Part 3: Data
+                                        Files Description</a>
+<br>
+<a href="#4.0">Part 4: Variable Description</a>
+<br>
+<a href="">Entire Codebook</a>
+</p>
+</td>
+</tr>
+</table>
+<table cellspacing="5" cellpadding="5" border="0">
+<tr class="h1">
+<th colspan="2" align="left">
+<p>
+<a id="1.0" name="1.0">Document Description</a>
+</p>
+</th>
+</tr>
+<tr class="h2">
+<th colspan="2">
+<p>Citation</p>
+</th>
+</tr>
+<tr>
+<td class="h3">
+<p>Title:</p>
+</td><td>
+<p>dct html</p>
+</td>
+</tr>
+<tr>
+<td class="h3">
+<p>Identification Number:</p>
+</td><td>
+<p>doi:10.5072/FK2/SOLYMR</p>
+</td>
+</tr>
+<tr>
+<td class="h3">
+<p>Distributor:</p>
+</td><td>
+<p>Root</p>
+</td>
+</tr>
+<tr>
+<td class="h3">
+<p>Date of Distribution:</p>
+</td><td>
+<p>2019-08-12</p>
+</td>
+</tr>
+<tr>
+<td class="h3">
+<p>Version:</p>
+</td><td>
+<p>1</p>
+</td>
+</tr>
+<tr>
+<td class="h3">
+<p>Bibliographic Citation:</p>
+</td><td>
+<p>Admin, Dataverse, 2019, "dct html", https://doi.org/10.5072/FK2/SOLYMR, Root, V1, UNF:6:fbFW653KFlDctLBrYqUA8A== [fileUNF]</p>
+</td>
+</tr>
+<tr class="h1">
+<th colspan="2">
+<p>
+<a name="2.0">Study Description</a>
+</p>
+</th>
+</tr>
+<tr class="h2">
+<th colspan="2">
+<p>Citation</p>
+</th>
+</tr>
+<tr>
+<td class="h3">
+<p>Title:</p>
+</td><td>
+<p>dct html</p>
+</td>
+</tr>
+<tr>
+<td class="h3">
+<p>Identification Number:</p>
+</td><td>
+<p>doi:10.5072/FK2/SOLYMR</p>
+</td>
+</tr>
+<tr>
+<td class="h3">
+<p>Authoring Entity:</p>
+</td><td>
+<p>Admin, Dataverse (Dataverse.org)</p>
+</td>
+</tr>
+<tr>
+<td class="h3">
+<p>Distributor:</p>
+</td><td>
+<p>Root</p>
+</td>
+</tr>
+<tr>
+<td class="h3">
+<p>Date of Distribution:</p>
+</td><td>
+<p>2019-08-12</p>
+</td>
+</tr>
+<tr class="h2">
+<th colspan="2">
+<p>Study Scope</p>
+</th>
+</tr>
+<tr>
+<td class="h3">
+<p>Keywords:</p>
+</td><td>
+<p>Social Sciences</p>
+</td>
+</tr>
+<tr>
+<td class="h3">
+<p>Abstract:</p>
+</td><td>
+<p>dct html codebook test</p>
+</td>
+</tr>
+<tr>
+<td class="h3">
+<p>Notes:</p>
+</td><td>
+<p>Notes for dct</p>
+</td>
+</tr>
+<tr class="h2">
+<th colspan="2">
+<p>Methodology and Processing</p>
+</th>
+</tr>
+<tr class="h1">
+<th colspan="2">
+<p>
+<a name="3.0">File Description</a>--f768</p>
+</th>
+</tr>
+<tr class="h2">
+<th colspan="2">
+<p>File: dct.tab</p>
+</th>
+</tr>
+<tr>
+<td></td><td>
+<ul>
+<li>
+<p>Number of cases: 3045</p>
+</li>
+<li>
+<p>No. of variables per record: 3</p>
+</li>
+<li>
+<p>Type of File: text/tab-separated-values</p>
+</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td class="h3">
+<p>Notes:</p>
+</td><td>
+<p>UNF:6:fbFW653KFlDctLBrYqUA8A==</p>
+</td>
+</tr>
+<tr class="h1">
+<th colspan="2">
+<p>
+<a name="4.0">Variable Description</a>
+</p>
+</th>
+</tr>
+<tr class="h2">
+<th colspan="2">
+<p>Variable Groups</p>
+</th>
+</tr>
+<tr>
+<td></td><td>
+<ul>
+<li>
+<a href="#VG264">group2</a>
+</li>
+<li>
+<a href="#VG265">group1</a>
+</li>
+</ul>
+</td>
+</tr>
+<tr>
+<th colspan="2">
+<p>
+<a name="VG264" id="VG264">group2</a>
+</p>
+</th>
+</tr>
+<tr>
+<td></td><td>
+<p>Variables within group2</p>
+<ul>
+<li>
+<a href="#Var3">weight</a>
+</li>
+</ul>
+</td>
+</tr>
+<tr>
+<th colspan="2">
+<p>
+<a name="VG265" id="VG265">group1</a>
+</p>
+</th>
+</tr>
+<tr>
+<td></td><td>
+<p>Variables within group1</p>
+<ul>
+<li>
+<a href="#Var1">gender</a>
+</li>
+<li>
+<a href="#Var2">age_rollup</a>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="h2">
+<td colspan="2">
+<p>
+<strong>Variables</strong>
+</p>
+</td>
+</tr>
+<tr>
+<th colspan="2">
+<p>
+<a name="Var1"></a><a id="v3068"></a>gender</p>
+</th>
+</tr>
+<tr>
+<td valign="top">
+<p class="small">f768&nbsp;Location:</p>
+<p class="small"></p>
+</td><td valign="top">
+<p>Question: Literal question for gender&nbsp;Interview instruction for gender&nbsp;Post question for gender&nbsp;</p>
+<table width="90%" cellspacing="0" cellpadding="5" border="1">
+<tr>
+<th>
+<p>Value</p>
+</th><th>
+<p>Label</p>
+</th><th>
+<p>Frequency</p>
+</th><th>
+<p>Text</p>
+</th>
+</tr>
+<tr>
+<td>
+<p>2.</p>
+</td><td>
+<p>Female</p>
+</td><td>
+<p>1508</p>
+<p>1566.3592933639995</p>
+</td><td>
+<p></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>1.</p>
+</td><td>
+<p>Male</p>
+</td><td>
+<p>1537</p>
+<p>1478.6407127819975</p>
+</td><td>
+<p></p>
+</td>
+</tr>
+</table>
+<p>Universe: Universe for gender</p>
+<p>Summary Statistics: Mean 1.4952380952380968; Min. 1.0; Valid 3045.0; Max. 2.0; StDev 0.5000594420582792; </p>
+<p>Variable Format: numeric</p>
+<p>
+Notes: UNF:6:HbM1tFHAsgACfUYee9JhTQ==</p>
+<p>
+Notes: Gender notes</p>
+</td>
+</tr>
+<tr>
+<th colspan="2">
+<p>
+<a name="Var2"></a><a id="v3069"></a>age_rollup</p>
+</th>
+</tr>
+<tr>
+<td valign="top">
+<p class="small">f768&nbsp;Location:</p>
+<p class="small"></p>
+</td><td valign="top">
+<p>Question: Literal question for age&nbsp;Interview instructions for age&nbsp;Post Question for age&nbsp;</p>
+<table width="90%" cellspacing="0" cellpadding="5" border="1">
+<tr>
+<th>
+<p>Value</p>
+</th><th>
+<p>Label</p>
+</th><th>
+<p>Frequency</p>
+</th><th>
+<p>Text</p>
+</th>
+</tr>
+<tr>
+<td>
+<p>3.</p>
+</td><td>
+<p>35-54</p>
+</td><td>
+<p>1262</p>
+<p>1226.3455293050008</p>
+</td><td>
+<p></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>1.</p>
+</td><td>
+<p>Under 18</p>
+</td><td>
+<p>0</p>
+<p>0.0</p>
+</td><td>
+<p></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>4.</p>
+</td><td>
+<p>55+</p>
+</td><td>
+<p>1092</p>
+<p>952.2153135640008</p>
+</td><td>
+<p></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>2.</p>
+</td><td>
+<p>18-34</p>
+</td><td>
+<p>691</p>
+<p>866.4391632769999</p>
+</td><td>
+<p></p>
+</td>
+</tr>
+</table>
+<p>Universe: Universe for age</p>
+<p>Summary Statistics: Mean 3.1316912972085413; Max. 4.0; Valid 3045.0; StDev 0.7539191926768495; Min. 2.0</p>
+<p>Variable Format: numeric</p>
+<p>
+Notes: UNF:6:VGyH5f6KGRmMBFDAy6l6NQ==</p>
+<p>
+Notes: Notes for age</p>
+</td>
+</tr>
+<tr>
+<th colspan="2">
+<p>
+<a name="Var3"></a><a id="v3070"></a>weight</p>
+</th>
+</tr>
+<tr>
+<td valign="top">
+<p class="small">f768&nbsp;Location:</p>
+<p class="small"></p>
+</td><td valign="top">
+<p>Summary Statistics: StDev 0.5168101054682486; Valid 3045.0; Max. 6.206337719; Mean 1.0000000020183908; Min. 0.0; </p>
+<p>Variable Format: numeric</p>
+<p>
+Notes: UNF:6:j+BtC84BNZ44dNOkCwg/0Q==</p>
+<p>
+Notes: This is weight variable</p>
+</td>
+</tr>
+</table>
+</body>
+</html>

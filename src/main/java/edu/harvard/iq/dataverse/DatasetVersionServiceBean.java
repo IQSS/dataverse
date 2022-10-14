@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,7 +34,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.solr.client.solrj.SolrServerException;
     
 /**
  *
@@ -313,7 +315,15 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             }
         }
         return contNames;
-    }   
+    } 
+    
+    public List<DatasetVersionUser> getDatasetVersionUsersByAuthenticatedUser(AuthenticatedUser user){
+        
+        TypedQuery<DatasetVersionUser> typedQuery = em.createQuery("SELECT u from DatasetVersionUser u where u.authenticatedUser.id = :authenticatedUserId", DatasetVersionUser.class);
+                typedQuery.setParameter("authenticatedUserId", user.getId());
+                return typedQuery.getResultList();        
+
+    }
 
     /**
      * Query to return the last Released DatasetVersion by Persistent ID
@@ -638,13 +648,8 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
      */
     public RetrieveDatasetVersionResponse retrieveDatasetVersionById(Long datasetId, String version){
         msg("retrieveDatasetVersionById: " + datasetId + " " + version);
-        if (datasetId==null){
-            return null;
-        }        
         
-        String identifierClause = " AND ds.id = " + datasetId;
-
-        DatasetVersion ds = retrieveDatasetVersionByIdentiferClause(identifierClause, version);
+        DatasetVersion ds = getDatasetVersionById(datasetId, version);
         
         if (ds != null){
             return new RetrieveDatasetVersionResponse(ds, version);
@@ -655,6 +660,30 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
           
     } // end: retrieveDatasetVersionById
     
+    public DatasetVersion getDatasetVersionById(Long datasetId, String version){
+        msg("retrieveDatasetVersionById: " + datasetId + " " + version);
+        if (datasetId==null){
+            return null;
+        }        
+        
+        String identifierClause = this.getIdClause(datasetId);
+
+        DatasetVersion ds = retrieveDatasetVersionByIdentiferClause(identifierClause, version);
+        
+        return ds;
+
+          
+    } // end: getDatasetVersionById
+    
+    public DatasetVersion getLatestReleasedVersionFast(Long datasetId) {
+        String identifierClause = this.getIdClause(datasetId);
+        String latestVersionQuery = this.getLatestReleasedDatasetVersionQuery(identifierClause);
+        return this.getDatasetVersionByQuery(latestVersionQuery);
+    }
+    
+    private String getIdClause(Long datasetId) {
+        return " AND ds.id = " + datasetId;
+    }
     
      /**
      * Find a DatasetVersion using the dataset versionId
@@ -678,7 +707,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         }
         return null;          
     } // end: retrieveDatasetVersionByVersionId
-
+    
     // This is an optimized, native query-based method for picking an image 
     // that can be used as the thumbnail for a given dataset/version. 
     // It is primarily designed to be used when thumbnails are requested
@@ -708,6 +737,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                     + "AND fm.datasetversion_id = dv.id "
                     + "AND fm.datafile_id = df.id "
                     + "AND df.restricted = false "
+                    + "AND df.embargo_id is null "
                     + "AND o.previewImageAvailable = true "
                     + "ORDER BY df.id LIMIT 1;").getSingleResult();
         } catch (Exception ex) {
@@ -733,6 +763,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                         + "AND fm.datafile_id = df.id "
                         // + "AND o.previewImageAvailable = false "
                         + "AND df.restricted = false "
+                        + "AND df.embargo_id is null "
                         + "AND df.contenttype LIKE 'image/%' "
                         + "AND NOT df.contenttype = 'image/fits' "
                         + "AND df.filesize < " + imageThumbnailSizeLimit + " "
@@ -766,6 +797,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                         + "AND fm.datafile_id = df.id "
                         // + "AND o.previewImageAvailable = false "
                         + "AND df.restricted = false "
+                        + "AND df.embargo_id is null "
                         + "AND df.contenttype = 'application/pdf' "
                         + "AND df.filesize < " + imageThumbnailSizeLimit + " "
                         + "ORDER BY df.filesize ASC LIMIT 1;").getSingleResult();
@@ -1085,8 +1117,13 @@ w
 
         // reindexing the dataset, to make sure the new UNF is in SOLR:
         boolean doNormalSolrDocCleanUp = true;
-        Future<String> indexingResult = indexService.indexDataset(datasetVersion.getDataset(), doNormalSolrDocCleanUp);
-        
+        try {
+            Future<String> indexingResult = indexService.indexDataset(datasetVersion.getDataset(), doNormalSolrDocCleanUp);
+        } catch (IOException | SolrServerException e) {    
+            String failureLogText = "Post UNF update indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + datasetVersion.getDataset().getId().toString();
+            failureLogText += "\r\n" + e.getLocalizedMessage();
+            LoggingUtil.writeOnSuccessFailureLog(null, failureLogText,  datasetVersion.getDataset());
+        }
         return info;
     }
     
@@ -1150,4 +1187,32 @@ w
         return null;
     }
     
+    /**
+     * Merges the passed datasetversion to the persistence context.
+     * @param ver the DatasetVersion whose new state we want to persist.
+     * @return The managed entity representing {@code ver}.
+     */
+    public DatasetVersion merge( DatasetVersion ver ) {
+        return em.merge(ver);
+    }
+    
+    /**
+     * Execute a query to return DatasetVersion
+     * 
+     * @param queryString
+     * @return 
+     */
+    public List<DatasetVersion> getUnarchivedDatasetVersions(){
+        
+        try {
+            List<DatasetVersion> dsl = em.createNamedQuery("DatasetVersion.findUnarchivedReleasedVersion", DatasetVersion.class).getResultList();
+            return dsl;
+        } catch (javax.persistence.NoResultException e) {
+            logger.log(Level.FINE, "No unarchived DatasetVersions found: {0}");
+            return null;
+        } catch (EJBException e) {
+            logger.log(Level.WARNING, "EJBException exception: {0}", e.getMessage());
+            return null;
+        }
+    } // end getUnarchivedDatasetVersions
 } // end class

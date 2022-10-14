@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -123,7 +122,18 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                 logger.info("Successfully deleted the package file "+doomed.getStorageIdentifier());
                 
             } else {
-
+                logger.fine("Skipping deleting the physical file on the storage volume (will be done outside the command)");
+                /* We no longer attempt to delete the physical file from inside the command, 
+                 * since commands are executed as (potentially nested) transactions, 
+                 * and it is prudent to assume that this database transaction may 
+                 * be reversed in the end. Meaning if we delete the file here, 
+                 * we are at risk of the database entry not getting deleted, 
+                 * leaving a "ghost" DataFile with no associated physical file
+                 * on the storage medium. 
+                 * The physical file delete must happen outside the transaction, 
+                 * once the database delete has been confirmed. 
+                 */
+                /*
                 logger.log(Level.FINE, "Storage identifier for the file: {0}", doomed.getStorageIdentifier());
                 StorageIO<DataFile> storageIO = null;
 
@@ -172,6 +182,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                         physicalFileExists = false;
                     }
 
+                    
                     if (physicalFileExists) {
                         try {
                             storageIO.delete();
@@ -182,12 +193,13 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                     }
 
                     logger.log(Level.FINE, "Successfully deleted physical storage object (file) for the DataFile {0}", doomed.getId());
-
                     // Destroy the storageIO object - we will need to purge the 
                     // DataFile from the database (below), so we don't want to have any
                     // objects in this transaction that reference it:
                     storageIO = null;
+                    
                 }
+                */
             }
         }
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
@@ -198,6 +210,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
         } catch (Exception e) {
             logger.log(Level.WARNING, "Identifier deletion was not successfull:", e.getMessage());
         }
+
         DataFile doomedAndMerged = ctxt.em().merge(doomed);
         ctxt.em().remove(doomedAndMerged);
         /**
@@ -208,19 +221,40 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
          */
         // ctxt.em().flush();
 
+    }
+    
+    @Override 
+    public String describe() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(super.describe());
+        sb.append("DataFile:");
+        sb.append(doomed.getId());
+        sb.append(" ");
+        return sb.toString();
+    }
+
+    @Override
+    public boolean onSuccess(CommandContext ctxt, Object r) {
         /**
          * We *could* re-index the entire dataset but it's more efficient to
          * target individual files for deletion, which should always be drafts.
          *
          * See also https://redmine.hmdc.harvard.edu/issues/3786
          */
-        String indexingResult = ctxt.index().removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierFile + doomed.getId() + "_draft");
+        String indexingResult = ctxt.index().removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierFile + doomed.getId() + IndexServiceBean.draftSuffix);
+        String indexingResult2 = ctxt.index().removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierFile + doomed.getId() + IndexServiceBean.draftSuffix + IndexServiceBean.discoverabilityPermissionSuffix);
         /**
-         * @todo check indexing result for success or failure. Really, we need
-         * an indexing queuing system:
-         * https://redmine.hmdc.harvard.edu/issues/3643
-         */
+        * @todo: check indexing result for success or failure. This method 
+        * currently always returns true because the underlying methods 
+        * (already existing) handle exceptions and don't return a boolean value.
+        * Previously an indexing queuing system was proposed:
+        *  https://redmine.hmdc.harvard.edu/issues/3643
+        * but we are considering reworking the code such that methods throw
+        * indexing exception to callers that may need to handle effects such
+        * as on data integrity where related operations like database updates
+        * or deletes are expected to be coordinated with indexing operations
+        */
 
+        return true;
     }
-
 }

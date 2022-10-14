@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -17,6 +18,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.ByteArrayInputStream;
@@ -33,6 +35,8 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+
+import edu.harvard.iq.dataverse.util.file.CreateDataFileResult;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.Deposit;
 import org.swordapp.server.DepositReceipt;
@@ -159,9 +163,15 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                         logger.fine("preparing to delete file id " + fileIdLong);
                         DataFile fileToDelete = dataFileService.find(fileIdLong);
                         if (fileToDelete != null) {
+                            boolean deleteCommandSuccess = false; 
                             Dataset dataset = fileToDelete.getOwner();
                             Dataset datasetThatOwnsFile = fileToDelete.getOwner();
                             Dataverse dataverseThatOwnsFile = datasetThatOwnsFile.getOwner();
+                            String deleteStorageLocation = null; 
+                            
+                            
+                            deleteStorageLocation = dataFileService.getPhysicalFileToDelete(fileToDelete);
+                            
                             /**
                              * @todo it would be nice to have this check higher
                              * up. Do we really need the file ID? Should the
@@ -174,8 +184,24 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                             }
                             try {
                                 commandEngine.submit(updateDatasetCommand);
+                                deleteCommandSuccess = true; 
                             } catch (CommandException ex) {
                                 throw SwordUtil.throwSpecialSwordErrorWithoutStackTrace(UriRegistry.ERROR_BAD_REQUEST, "Could not delete file: " + ex);
+                            }
+                            
+                            if (deleteCommandSuccess) {
+                                if (deleteStorageLocation != null) {
+                                    // Finalize the delete of the physical file 
+                                    // (File service will double-check that the datafile no 
+                                    // longer exists in the database, before proceeding to 
+                                    // delete the physical file)
+                                    try {
+                                        dataFileService.finalizeFileDelete(fileIdLong, deleteStorageLocation);
+                                    } catch (IOException ioex) {
+                                        logger.warning("Failed to delete the physical file associated with the deleted datafile id="
+                                                + fileIdLong + ", storage location: " + deleteStorageLocation);
+                                    }
+                                }
                             }
                         } else {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to find file id " + fileIdLong + " from URL: " + uri);
@@ -277,7 +303,8 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             List<DataFile> dataFiles = new ArrayList<>();
             try {
                 try {
-                    dataFiles = FileUtil.createDataFiles(editVersion, deposit.getInputStream(), uploadedZipFilename, guessContentTypeForMe, systemConfig);
+                    CreateDataFileResult createDataFilesResponse =  FileUtil.createDataFiles(editVersion, deposit.getInputStream(), uploadedZipFilename, guessContentTypeForMe, null, null, systemConfig);
+                    dataFiles = createDataFilesResponse.getDataFiles();
                 } catch (EJBException ex) {
                     Throwable cause = ex.getCause();
                     if (cause != null) {
@@ -312,7 +339,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: " + violation.getMessage() + " The invalid value was \"" + violation.getInvalidValue() + "\".");
                 } else {
 
-                    ingestService.saveAndAddFilesToDataset(editVersion, dataFiles);
+                    ingestService.saveAndAddFilesToDataset(editVersion, dataFiles, null, true);
 
                 }
             } else {
@@ -339,13 +366,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                     cause = cause.getCause();
                     sb.append(cause + " ");
                     if (cause instanceof ConstraintViolationException) {
-                        ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                        for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                            sb.append(" Invalid value \"").append(violation.getInvalidValue()).append("\" for ")
-                                    .append(violation.getPropertyPath()).append(" at ")
-                                    .append(violation.getLeafBean()).append(" - ")
-                                    .append(violation.getMessage());
-                        }
+                        sb.append(ConstraintViolationUtil.getErrorStringForConstraintViolations(cause));
                     }
                 }
                 throw returnEarly("EJBException: " + sb.toString());

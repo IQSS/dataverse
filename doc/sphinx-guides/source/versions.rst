@@ -1,13 +1,41 @@
 :orphan:
 .. _guides_versions:
 
-Dataverse Guides Versions
-=========================
+Dataverse Software Documentation Versions
+=========================================
 
-This list provides a way to refer to previous versions of the Dataverse guides, which we still host. In order to learn more about the updates delivered from one version to another, visit the `Releases <https://github.com/IQSS/dataverse/releases>`__ page in our GitHub repo.
+This list provides a way to refer to the documentation for previous versions of the Dataverse Software. In order to learn more about the updates delivered from one version to another, visit the `Releases <https://github.com/IQSS/dataverse/releases>`__ page in our GitHub repo.
 
-- 4.10.1
-
+- 5.12
+- `5.11.1 </en/5.11.1/>`__
+- `5.11 </en/5.11/>`__
+- `5.10.1 </en/5.10.1/>`__
+- `5.10 </en/5.10/>`__
+- `5.9 </en/5.9/>`__
+- `5.8 </en/5.8/>`__
+- `5.7 </en/5.7/>`__
+- `5.6 </en/5.6/>`__
+- `5.5 </en/5.5/>`__
+- `5.4.1 </en/5.4.1/>`__
+- `5.4 </en/5.4/>`__
+- `5.3 </en/5.3/>`__
+- `5.2 </en/5.2/>`__
+- `5.1.1 </en/5.1.1/>`__
+- `5.1 </en/5.1/>`__
+- `5.0 </en/5.0/>`__
+- `4.20 </en/4.20/>`__
+- `4.19 </en/4.19/>`__
+- `4.18.1 </en/4.18.1/>`__
+- `4.18 </en/4.18/>`__
+- `4.17 </en/4.17/>`__
+- `4.16 </en/4.16/>`__
+- `4.15.1 </en/4.15.1/>`__
+- `4.15 </en/4.15/>`__
+- `4.14 </en/4.14/>`__
+- `4.13 </en/4.13/>`__
+- `4.12 </en/4.12/>`__
+- `4.11 </en/4.11/>`__
+- `4.10.1 </en/4.10/>`__
 - `4.10 </en/4.10/>`__
 - `4.9.4 </en/4.9.4/>`__
 - `4.9.3 </en/4.9.3/>`__

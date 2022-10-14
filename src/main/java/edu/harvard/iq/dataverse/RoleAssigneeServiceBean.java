@@ -27,7 +27,7 @@ import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * The place to obtain {@link RoleAssignee}s, based on their identifiers.
@@ -78,11 +78,33 @@ public class RoleAssigneeServiceBean {
         if (identifier == null || identifier.isEmpty()) {
             throw new IllegalArgumentException("Identifier cannot be null or empty string.");
         }
+        return (getRoleAssignee(identifier, false));
+    }
+    
+    /**
+     * @param identifier An identifier beginning with ":" (builtin), "@"
+     * @param augmented boolean to decide whether to get provider information
+     * ({@link AuthenticatedUser}), "&" ({@link Group}), or "#"
+     * ({@link PrivateUrlUser}).
+     *
+     * @return A RoleAssignee (User or Group) or null.
+     *
+     * @throws IllegalArgumentException if you pass null, empty string, or an
+     * identifier that doesn't start with one of the supported characters.
+     */
+    public RoleAssignee getRoleAssignee(String identifier, Boolean augmented) {
+        if (identifier == null || identifier.isEmpty()) {
+            throw new IllegalArgumentException("Identifier cannot be null or empty string.");
+        }
         switch (identifier.charAt(0)) {
             case ':':
                 return predefinedRoleAssignees.get(identifier);
             case '@':
-                return authSvc.getAuthenticatedUser(identifier.substring(1));
+                if (!augmented){
+                    return authSvc.getAuthenticatedUser(identifier.substring(1));
+                } else {
+                    return authSvc.getAuthenticatedUserWithProvider(identifier.substring(1));
+                }                
             case '&':
                 return groupSvc.getGroup(identifier.substring(1));
             case '#':
@@ -354,7 +376,9 @@ public class RoleAssigneeServiceBean {
                 .getResultList().stream()
                 .filter(ra -> roleAssignSelectedRoleAssignees == null || !roleAssignSelectedRoleAssignees.contains(ra))
                 .forEach((ra) -> {
-                    roleAssigneeList.add(ra);
+                    if (!ra.isDeactivated()) {
+                        roleAssigneeList.add(ra);
+                    }
                 });
 
         // now we add groups to the list, both global and explicit

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-JACOCO_HOME=${HOME}/local/jacoco-0.8.2/lib/
+JACOCO_HOME=${HOME}/local/jacoco-0.8.1/lib/
 PID=$$
 WAR_IN=$1
 WAR_OUT=$2

@@ -22,16 +22,19 @@
         <param-name>org.jboss.weld.context.conversation.lazy</param-name>
         <param-value>false</param-value>
     </context-param>
-    <!-- UI warnings that can be enabled setting to Develop or another level. 
-            See https://docs.oracle.com/javaee/6/tutorial/doc/bnaxj.html#giqxl -->
+    <!--
+        The following parameters can be changed quickly using MicroProfile Config API.
+        See also dev guide: https://guides.dataverse.org/en/latest/developers/debugging.html
+     -->
     <context-param>
         <param-name>javax.faces.PROJECT_STAGE</param-name>
-<!--        <param-value>Development</param-value>-->
-        <param-value>Production</param-value>
+        <!-- Uses Microprofile Config to replace at runtime. Not standardized, Payara App Server specific. -->
+        <param-value>${MPCONFIG=dataverse.jsf.project-stage:Production}</param-value>
     </context-param>
     <context-param>
         <param-name>primefaces.THEME</param-name>
-        <param-value>bootstrap</param-value>
+        <!-- Uses Microprofile Config to replace at runtime. Not standardized, Payara App Server specific. -->
+        <param-value>${MPCONFIG=dataverse.jsf.primefaces.theme:bootstrap}</param-value>
     </context-param>
     <!-- example of a hard-coded PrimePush configuration: -->
     <!-- context-param -->
@@ -42,11 +45,23 @@
         <param-name>
             javax.faces.INTERPRET_EMPTY_STRING_SUBMITTED_VALUES_AS_NULL
         </param-name>
-        <param-value>true</param-value>
+        <!-- Uses Microprofile Config to replace at runtime. Not standardized, Payara App Server specific. -->
+        <param-value>${MPCONFIG=dataverse.jsf.empty-string-null:true}</param-value>
     </context-param>
     <context-param>
         <param-name>javax.faces.FACELETS_SKIP_COMMENTS</param-name>
-        <param-value>true</param-value>
+        <!-- Uses Microprofile Config to replace at runtime. Not standardized, Payara App Server specific. -->
+        <param-value>${MPCONFIG=dataverse.jsf.skip-comments:true}</param-value>
+    </context-param>
+    <context-param>
+        <param-name>javax.faces.FACELETS_BUFFER_SIZE</param-name>
+        <!-- Uses Microprofile Config to replace at runtime. Not standardized, Payara App Server specific. -->
+        <param-value>${MPCONFIG=dataverse.jsf.buffer-size:102400}</param-value>
+    </context-param>
+    <context-param>
+        <param-name>javax.faces.FACELETS_REFRESH_PERIOD</param-name>
+        <!-- Uses Microprofile Config to replace at runtime. Not standardized, Payara App Server specific. -->
+        <param-value>${MPCONFIG=dataverse.jsf.refresh-period:-1}</param-value>
     </context-param>
     <!-- JSF mapping -->
     <filter>
@@ -89,10 +104,6 @@
         <servlet-class>edu.harvard.iq.dataverse.CitationServlet</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>Homepage Servlet</servlet-name>
-        <servlet-class>edu.harvard.iq.dataverse.HomepageServlet</servlet-class>
-    </servlet>
-    <servlet>
         <servlet-name>HomepageServlet</servlet-name>
         <servlet-class>edu.harvard.iq.dataverse.HomepageServlet</servlet-class>
     </servlet>
@@ -131,13 +142,20 @@
     </servlet-mapping>
 
     <session-config>
+        <!-- This is the DEFAULT HttpSession timeout, in minutes. -->
+        <!-- In practice, it will only apply to ANONYMOUS user sessions -->
+        <!-- For logged in users, the session timeout is set explicitly -->
+        <!-- in the application code, to the value that is configurable -->
+        <!-- (LoginSessionTimeout in the settings table), with the -->
+        <!-- default value of 8 hours. -->
+        
         <session-timeout>
-            1440
+            10
         </session-timeout>
         <!-- Uncomment the line below to disble `;jsessionid=` in URLs -->
 	<!-- tracking-mode>COOKIE</tracking-mode -->
     </session-config>
-    <!-- web fonts -->
+    <!-- web fonts, bootstrap css map, favicon -->
     <mime-mapping>
         <extension>eot</extension>
         <mime-type>application/vnd.ms-fontobject</mime-type>
@@ -159,8 +177,16 @@
         <mime-type>application/font-woff2</mime-type>
     </mime-mapping>
     <mime-mapping>
+        <extension>map</extension>
+        <mime-type>application/json</mime-type>
+    </mime-mapping>
+    <mime-mapping>
         <extension>svg</extension>
         <mime-type>image/svg+xml</mime-type>
+    </mime-mapping>
+    <mime-mapping>
+        <extension>webmanifest</extension>
+        <mime-type>application/manifest+json</mime-type>
     </mime-mapping>
     <!-- BEGIN Data Deposit API (SWORD v2) -->
     <!-- See also SwordConfigurationImpl for how deprecation warnings are configured -->

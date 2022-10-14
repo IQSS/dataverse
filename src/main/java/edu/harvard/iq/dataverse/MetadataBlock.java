@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonLDNamespace;
 
 import java.io.Serializable;
 import java.util.List;
@@ -33,7 +35,7 @@ import javax.persistence.Transient;
     @NamedQuery( name="MetadataBlock.findByName", query = "SELECT mdb FROM MetadataBlock mdb WHERE mdb.name=:name")
 })
 @Entity
-public class MetadataBlock implements Serializable {
+public class MetadataBlock implements Serializable, Comparable {
 
     private static final long serialVersionUID = 1L;
     
@@ -66,8 +68,25 @@ public class MetadataBlock implements Serializable {
     public String getNamespaceUri() {
         return namespaceUri;
     }
+    
     public void setNamespaceUri(String namespaceUri) {
         this.namespaceUri = namespaceUri;
+    }
+    
+    private String getAssignedNamespaceUri() {
+        String nsUri = getNamespaceUri();
+        // Standard blocks will have a namespaceUri
+        if (nsUri == null) {
+            // Locally created/edited blocks, legacy blocks may not have a defined
+            // namespaceUri, so generate one that indicates that this is a locally defined
+            // term
+            nsUri = SystemConfig.getDataverseSiteUrlStatic() + "/schema/" + name + "#";
+        }
+        return nsUri;
+    }
+    
+    public JsonLDNamespace getJsonLDNamespace() {
+        return JsonLDNamespace.defineNamespace(name, getAssignedNamespaceUri());
     }
 
     @OneToMany(mappedBy = "metadataBlock", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
@@ -183,12 +202,28 @@ public class MetadataBlock implements Serializable {
         return "edu.harvard.iq.dataverse.MetadataBlock[ id=" + id + " ]";
     }
 
-    public String getLocaleDisplayName()
-    {
+    public String getLocaleDisplayName() {
+        return getLocaleValue("metadatablock.displayName");
+    }
+
+    public String getLocaleDisplayFacet() {
+        return getLocaleValue("metadatablock.displayFacet");
+    }
+
+    // Visible for testing
+    String getLocaleValue(String metadataBlockKey) {
         try {
-            return BundleUtil.getStringFromPropertyFile("metadatablock.displayName", getName());
+            return BundleUtil.getStringFromPropertyFile(metadataBlockKey, getName());
         } catch (MissingResourceException e) {
             return displayName;
         }
+    }
+
+    @Override
+    public int compareTo(Object arg0) {
+        //guaranteeing that citation will be shown first with custom blocks in order of creation
+        MetadataBlock other = (MetadataBlock) arg0;
+        Long t = "citation".equals(name) ? -1 : this.getId();
+        return t.compareTo("citation".equals(other.name) ? -1 : other.getId());
     }
 }

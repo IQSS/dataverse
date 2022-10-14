@@ -20,34 +20,46 @@
 
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InvalidObjectException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TimeZone;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
 
-import java.io.*;
-import java.nio.*;
-import java.util.logging.*;
-
-import java.util.*;
-import java.util.regex.*;
-import java.text.*;
-
-
-import org.apache.commons.lang.*;
 import org.apache.commons.codec.binary.Hex;
-import javax.inject.Inject;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
-//import edu.harvard.iq.dataverse.datavariable.VariableFormatType;
-//import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 
-import edu.harvard.iq.dataverse.ingest.plugin.spi.*;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
+import org.apache.commons.lang3.StringUtils;
 
 
 /**
@@ -542,9 +554,9 @@ public class DTAFileReader extends TabularDataFileReader{
                     + new String(Hex.encodeHex(magic_number)) + "<-");
         }
 
-        logger.info("magic_number[0]: " + magic_number[0]);
-        logger.info("magic_number[1]: " + magic_number[1]);
-        logger.info("magic_number[2]: " + magic_number[2]);
+        logger.fine("magic_number[0]: " + magic_number[0]);
+        logger.fine("magic_number[1]: " + magic_number[1]);
+        logger.fine("magic_number[2]: " + magic_number[2]);
         if (magic_number[2] != 1) {
             dbgLog.fine("3rd byte is not 1: given file is not stata-dta type");
             // FIXME: Figure out the magic number for Stata 14.
