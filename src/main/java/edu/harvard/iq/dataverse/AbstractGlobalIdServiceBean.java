@@ -660,6 +660,9 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         return xmlMetadata;
     }
 
-
-    
+    @Override
+    public boolean canManagePID() {
+        //The default expectation is that PID providers are configured to manage some set (i.e. based on protocol/authority/shoulder) of PIDs
+        return true;
+    }
 }

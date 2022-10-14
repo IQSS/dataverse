@@ -20,6 +20,7 @@ public interface GlobalIdServiceBean {
     boolean alreadyExists(GlobalId globalId) throws Exception;
 
     boolean registerWhenPublished();
+    boolean canManagePID();
     
     List<String> getProviderInformation();
 

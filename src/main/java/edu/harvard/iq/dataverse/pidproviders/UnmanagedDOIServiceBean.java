@@ -16,7 +16,6 @@ import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
 
-
 // This class is just used to parse DOIs that are not managed by any account configured in Dataverse
 // It does not implement any of the methods related to PID CRUD 
 
@@ -29,6 +28,11 @@ public class UnmanagedDOIServiceBean extends DOIServiceBean {
     private void init() {
         // Always on
         isConfigured = true;
+    }
+
+    @Override
+    public boolean canManagePID() {
+        return false;
     }
 
     @Override

@@ -115,10 +115,17 @@ public class PidUtil {
     }
     
     static Map<String,GlobalIdServiceBean> providerMap = new HashMap<String, GlobalIdServiceBean>();
+    static Map<String,GlobalIdServiceBean> unmanagedProviderMap = new HashMap<String, GlobalIdServiceBean>();
     
     public static void addAllToProviderList(List<GlobalIdServiceBean> list) {
         for (GlobalIdServiceBean pidProvider : list) {
             providerMap.put(pidProvider.getProviderInformation().get(0), pidProvider);
+        }
+    }
+    
+    public static void addAllToUnmanagedProviderList(List<GlobalIdServiceBean> list) {
+        for (GlobalIdServiceBean pidProvider : list) {
+            unmanagedProviderMap.put(pidProvider.getProviderInformation().get(0), pidProvider);
         }
     }
 
@@ -138,7 +145,14 @@ public class PidUtil {
                 return globalId;
             }
         }
-        parseUnmanagedDoiOrHandle(identifier);
+        //If no providers can managed this PID, at least allow it to be recognized
+        for (GlobalIdServiceBean pidProvider : unmanagedProviderMap.values()) {
+            logger.info(" Checking " + String.join(",", pidProvider.getProviderInformation()));
+            GlobalId globalId = pidProvider.parsePersistentId(identifier);
+            if (globalId != null) {
+                return globalId;
+            }
+        }
         throw new IllegalArgumentException("Failed to parse identifier: " + identifier);
     }
     
@@ -158,35 +172,14 @@ public class PidUtil {
                 return globalId;
             }
         }
-        return parseUnmanagedDoiOrHandle(protocol, authority, identifier);
+        for (GlobalIdServiceBean pidProvider : unmanagedProviderMap.values()) {
+            logger.info(" Checking " + String.join(",", pidProvider.getProviderInformation()));
+            GlobalId globalId = pidProvider.parsePersistentId(protocol, authority, identifier);
+            if (globalId != null) {
+                return globalId;
+            }
+        }
+        throw new IllegalArgumentException("Failed to parse identifier from protocol: " + protocol + ", authority:" + authority + ", identifier: " + identifier);
     }
 
-    /* These are methods that should be deprecated/removed when further refactoring to support multiple PID providers is done. At that point,
-        when the providers aren't beans, this code can be moved into other classes that go in the providerMap.
-    */
-    
-    private static void parseUnmanagedDoiOrHandle(String identifier) {
-        // TODO Auto-generated method stub
-        
-    }
-    
-    private static GlobalId parseUnmanagedDoiOrHandle(String protocol, String authority, String identifier) {
-        //Default recognition - could be moved to new classes in the future.
-        if(!GlobalIdServiceBean.isValidGlobalId(protocol, authority, identifier)) {
-            return null;
-        }
-        String urlPrefix = null;
-        switch(protocol) {
-        case DOIServiceBean.DOI_PROTOCOL: 
-            if(!GlobalIdServiceBean.checkDOIAuthority(authority)) {
-                return null;
-            }
-            urlPrefix=DOIServiceBean.DOI_RESOLVER_URL;
-            break;
-        case HandlenetServiceBean.HDL_PROTOCOL:
-            urlPrefix=HandlenetServiceBean.HDL_RESOLVER_URL;
-            break;
-        }
-        return new GlobalId(protocol, authority, identifier, "/", urlPrefix, null);
-    }
 }
