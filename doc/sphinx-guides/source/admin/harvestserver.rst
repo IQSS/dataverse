@@ -26,7 +26,7 @@ The email portion of :ref:`systemEmail` will be visible via OAI-PMH (from the "I
 How does it work?
 -----------------
 
-Only the published, unrestricted datasets in your Dataverse installation can
+Only the published datasets in your Dataverse installation can
 be made harvestable. Remote clients normally keep their records in sync
 through scheduled incremental updates, daily or weekly, thus
 minimizing the load on your server. Note that it is only the metadata
