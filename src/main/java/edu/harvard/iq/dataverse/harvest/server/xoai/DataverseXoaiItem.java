@@ -1,18 +1,14 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.harvest.server.xoai;
 
-import com.lyncode.xoai.dataprovider.model.Item;
-import com.lyncode.xoai.dataprovider.model.Set;
-import com.lyncode.xoai.model.oaipmh.About;
+import io.gdcc.xoai.dataprovider.model.Item;
+import io.gdcc.xoai.dataprovider.model.Set;
+import io.gdcc.xoai.model.oaipmh.results.record.Metadata;
+import io.gdcc.xoai.model.oaipmh.results.record.About;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecord;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 
@@ -20,13 +16,13 @@ import java.util.List;
  *
  * @author Leonid Andreev
  * 
- * This is an implemention of an Lyncode XOAI Item; 
+ * This is an implemention of a Lyncode/DSpace/gdcc XOAI Item.
  * You can think of it as an XOAI Item wrapper around the
  * Dataverse OAIRecord entity.
  */
-public class Xitem implements Item {
+public final class DataverseXoaiItem implements Item {
     
-    public Xitem(OAIRecord oaiRecord) {
+    public DataverseXoaiItem(OAIRecord oaiRecord) {
         super();
         this.oaiRecord = oaiRecord;
         oaisets = new ArrayList<>();
@@ -34,7 +30,7 @@ public class Xitem implements Item {
             oaisets.add(new Set(oaiRecord.getSetName()));
         }
     }
-    
+   
     private OAIRecord oaiRecord;
     
     public OAIRecord getOaiRecord() {
@@ -51,19 +47,21 @@ public class Xitem implements Item {
         return dataset;
     }
     
-    public Xitem withDataset(Dataset dataset) {
+    public DataverseXoaiItem withDataset(Dataset dataset) {
         this.dataset = dataset; 
         return this; 
     }
     
+    private Metadata metadata;
+    
     @Override
-    public List<About> getAbout() {
-        return null;
+    public Metadata getMetadata() {
+        return metadata;
     }
-
-    @Override
-    public Xmetadata getMetadata() {
-        return new Xmetadata((String)null);
+    
+    public DataverseXoaiItem withMetadata(Metadata metadata) {
+        this.metadata = metadata;
+        return this;
     }
 
     @Override
@@ -72,8 +70,8 @@ public class Xitem implements Item {
     }
 
     @Override
-    public Date getDatestamp() {
-        return oaiRecord.getLastUpdateTime();
+    public Instant getDatestamp() {
+        return oaiRecord.getLastUpdateTime().toInstant();
     }
     
     private  List<Set> oaisets;
@@ -82,12 +80,10 @@ public class Xitem implements Item {
     public List<Set> getSets() {
         
         return oaisets;
- 
     }
 
     @Override
     public boolean isDeleted() {
         return oaiRecord.isRemoved();
     }
-
 }
