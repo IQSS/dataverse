@@ -120,7 +120,11 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
             logger.severe("Null DvObject sent to alreadyExists().");
             return false;
         }
-        return alreadyExists(dvo.getGlobalId());
+        GlobalId globalId = dvo.getGlobalId();
+        if(globalId == null) {
+            return false;
+        }
+        return alreadyExists(globalId);
     }
 
     /*
@@ -263,6 +267,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         if(!isConfigured) {
             return null;
         }
+        logger.info("Parsing: " + protocol + ":" + authority + getSeparator() + identifier + " in " + getProviderInformation().get(0));
         if(!GlobalIdServiceBean.isValidGlobalId(protocol, authority, identifier)) {
             return null;
         }
