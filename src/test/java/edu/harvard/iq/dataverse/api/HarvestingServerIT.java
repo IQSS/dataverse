@@ -20,6 +20,7 @@ import java.util.List;
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * extremely minimal API tests for creating OAI sets.
@@ -227,7 +228,6 @@ public class HarvestingServerIT {
         // - however, publish command is executed asynchronously, i.e. it may 
         // still be running after we received the OK from the publish API. 
         // So let's wait for it to finish.
-        Thread.sleep(200L);
         UtilIT.sleepForReindex(datasetPersistentId, adminUserAPIKey, 10);
         
         String setName = identifier;
@@ -247,7 +247,6 @@ public class HarvestingServerIT {
         Response exportSetResponse = UtilIT.exportOaiSet(setName);
         assertEquals(200, exportSetResponse.getStatusCode());
         //SEK 09/04/2019 resonable wait time for export OAI? #6128
-        Thread.sleep(5000L);
         
         Response getSet = given()
                 .get(apiPath);
@@ -255,21 +254,33 @@ public class HarvestingServerIT {
         logger.info("getSet.getStatusCode(): " + getSet.getStatusCode());
         logger.info("getSet printresponse:  " + getSet.prettyPrint());
         assertEquals(200, getSet.getStatusCode());
+        int i = 0;
+        for (i = 1; i < 10; i++) {
+            Thread.sleep(1000L);
 
-        // Run ListIdentifiers on this newly-created set:
-        Response listIdentifiersResponse = UtilIT.getOaiListIdentifiers(setName, "oai_dc");
-        List ret = listIdentifiersResponse.getBody().xmlPath().getList("OAI-PMH.ListIdentifiers.header");
+            // Run ListIdentifiers on this newly-created set:
+            Response listIdentifiersResponse = UtilIT.getOaiListIdentifiers(setName, "oai_dc");
+            List ret = listIdentifiersResponse.getBody().xmlPath().getList("OAI-PMH.ListIdentifiers.header");
 
-        assertEquals(OK.getStatusCode(), listIdentifiersResponse.getStatusCode());
-        assertNotNull(ret);
-        logger.info("setName: " + setName);
-        logger.info("listIdentifiersResponse.prettyPrint:..... ");
-        listIdentifiersResponse.prettyPrint();
-        // There should be 1 and only 1 record in the response:
-        assertEquals(1, ret.size());
-        // And the record should be the dataset we have just created:
-        assertEquals(datasetPersistentId, listIdentifiersResponse.getBody().xmlPath().getString("OAI-PMH.ListIdentifiers.header.identifier"));
-
+            assertEquals(OK.getStatusCode(), listIdentifiersResponse.getStatusCode());
+            assertNotNull(ret);
+            logger.info("setName: " + setName);
+            logger.info("listIdentifiersResponse.prettyPrint:..... ");
+            listIdentifiersResponse.prettyPrint();
+            if (ret.size() != 1) {
+                i++;
+            } else {
+                // There should be 1 and only 1 record in the response:
+                assertEquals(1, ret.size());
+                // And the record should be the dataset we have just created:
+                assertEquals(datasetPersistentId, listIdentifiersResponse.getBody().xmlPath()
+                        .getString("OAI-PMH.ListIdentifiers.header.identifier"));
+                break;
+            }
+        }
+        System.out.println("Waited " + i + " seconds for OIA export.");
+        //Fail if we didn't find the exported record before the timeout
+        assertTrue(i < 10);
         Response listRecordsResponse = UtilIT.getOaiListRecords(setName, "oai_dc");
         assertEquals(OK.getStatusCode(), listRecordsResponse.getStatusCode());
         List listRecords = listRecordsResponse.getBody().xmlPath().getList("OAI-PMH.ListRecords.record");
