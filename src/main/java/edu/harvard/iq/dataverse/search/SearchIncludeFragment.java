@@ -355,7 +355,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             DataverseRequest dataverseRequest = new DataverseRequest(session.getUser(), httpServletRequest);
             List<Dataverse> dataverses = new ArrayList<>();
             dataverses.add(dataverse);
-            solrQueryResponse = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false);
+            solrQueryResponse = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false, null, null);
             if (solrQueryResponse.hasError()){
                 logger.info(solrQueryResponse.getError());
                 setSolrErrorEncountered(true);
@@ -363,7 +363,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             // This 2nd search() is for populating the "type" ("dataverse", "dataset", "file") facets: -- L.A. 
             // (why exactly do we need it, again?)
             // To get the counts we display in the types facets particulary for unselected types - SEK 08/25/2021
-            solrQueryResponseAllTypes = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false);
+            solrQueryResponseAllTypes = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false, null, null);
             if (solrQueryResponse.hasError()){
                 logger.info(solrQueryResponse.getError());
                 setSolrErrorEncountered(true);

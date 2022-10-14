@@ -266,7 +266,9 @@ public class SavedSearchServiceBean {
                 paginationStart,
                 dataRelatedToMe,
                 numResultsPerPage,
-                false // do not retrieve entities
+                false, // do not retrieve entities
+                null,
+                null
         );
         return solrQueryResponse;
     }
