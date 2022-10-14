@@ -46,7 +46,7 @@
                                    <p class="help-block"><h:outputText value="#{bundle['file.dataFilesTab.terms.list.license.edit.description']}" escape="false"/></p>
                                    <p:selectOneMenu id="licenses" value="#{termsOfUseAndAccess.license}" style="width: 40%" converter="licenseConverter">
                                        <f:selectItems value="#{licenseServiceBean.listAllActive()}"
-                                                   var="license" itemLabel="#{license.name}" itemValue="#{license}"/>
+                                                   var="license" itemLabel="#{DatasetUtil:getLocalizedLicense(license.name, 'name')}" itemValue="#{license}"/>
                                        <c:if test="#{settingsWrapper.customLicenseAllowed}">
                                            <f:selectItem itemLabel="#{bundle['license.custom']}" itemValue="#{null}"/>
                                        </c:if>
@@ -55,8 +55,8 @@
                                </ui:fragment>
                                <ui:fragment rendered="#{!empty termsOfUseAndAccess.license}">
                                    <p>
-                                       <img src="#{termsOfUseAndAccess.license.iconUrl}" title="#{DatasetUtil:getLocalizedLicenseDescription(termsOfUseAndAccess.license.name)}"  style="display:none"  onload="this.style.display='inline'" />
-                                       <a href="#{termsOfUseAndAccess.license.uri}" title="#{DatasetUtil:getLocalizedLicenseDescription(termsOfUseAndAccess.license.name)}" target="_blank">#{termsOfUseAndAccess.license.name}</a>
+                                       <img src="#{termsOfUseAndAccess.license.iconUrl}" title="#{DatasetUtil:getLocalizedLicense(termsOfUseAndAccess.license.name, 'description')}"  style="display:none"  onload="this.style.display='inline'" />
+                                       <a href="#{termsOfUseAndAccess.license.uri}" title="#{DatasetUtil:getLocalizedLicense(termsOfUseAndAccess.license.name,'description')}" target="_blank">#{termsOfUseAndAccess.license.name}</a>
                                    </p>
                                </ui:fragment>
                            </div>

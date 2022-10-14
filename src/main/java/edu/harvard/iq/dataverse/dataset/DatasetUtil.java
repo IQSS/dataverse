@@ -575,27 +575,38 @@ public class DatasetUtil {
         License license = DatasetUtil.getLicense(dsv);
 
         if (license != null) {
-            return getLocalizedLicenseDescription(license.getName()) ;
+            return getLocalizedLicense(license.getName(),"description") ;
         } else {
             return BundleUtil.getStringFromBundle("license.custom.description");
         }
     }
 
-    public static String getLocalizedLicenseDescription(String licenseName) {
-        String key = "license." + licenseName.toLowerCase().replace(" ","_") + ".description";
-         if (key != null) {
+    public static String getLocalizedLicense(String licenseName,String keyPart) {
+        String key = "license." + licenseName.toLowerCase().replace(" ", "_") + "." + keyPart;
+
+        String second_key = "";
+        if (keyPart == "description")
+        {
+            second_key = "license.custom.description";
+        }
+        else
+        {
+            second_key = "license.custom";
+        }
+
+        if (key != null) {
             try {
-                String _description = BundleUtil.getStringFromPropertyFile(key, "License");
-                if (_description == null) {
-                    return BundleUtil.getStringFromBundle("license.custom.description");
+                String propertyValue = BundleUtil.getStringFromPropertyFile(key, "License");
+                if (propertyValue == null) {
+                    return BundleUtil.getStringFromBundle(second_key);
                 } else {
-                    return _description;
+                    return propertyValue;
                 }
             } catch (MissingResourceException mre) {
-                return BundleUtil.getStringFromBundle("license.custom.description");
+                return BundleUtil.getStringFromBundle(second_key);
             }
         } else {
-            return BundleUtil.getStringFromBundle("license.custom.description");
+            return BundleUtil.getStringFromBundle(second_key);
         }
     }
 
