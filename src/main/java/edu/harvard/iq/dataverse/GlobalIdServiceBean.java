@@ -52,7 +52,11 @@ public interface GlobalIdServiceBean {
     static GlobalIdServiceBean getBean(String protocol, CommandContext ctxt) {
         final Function<CommandContext, GlobalIdServiceBean> protocolHandler = BeanDispatcher.DISPATCHER.get(protocol);
         if ( protocolHandler != null ) {
-            return protocolHandler.apply(ctxt);
+            GlobalIdServiceBean theBean = protocolHandler.apply(ctxt);
+            if(theBean != null) {
+                logger.fine("getBean returns " + theBean.getProviderInformation().get(0) + " for protocol " + protocol);
+            }
+            return theBean;
         } else {
             logger.log(Level.SEVERE, "Unknown protocol: {0}", protocol);
             return null;
