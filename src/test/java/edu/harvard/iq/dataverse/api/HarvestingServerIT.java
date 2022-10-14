@@ -255,7 +255,7 @@ public class HarvestingServerIT {
         logger.info("getSet printresponse:  " + getSet.prettyPrint());
         assertEquals(200, getSet.getStatusCode());
         int i = 0;
-        for (i = 1; i < 10; i++) {
+        do {
             Thread.sleep(1000L);
 
             // Run ListIdentifiers on this newly-created set:
@@ -277,10 +277,10 @@ public class HarvestingServerIT {
                         .getString("OAI-PMH.ListIdentifiers.header.identifier"));
                 break;
             }
-        }
+        } while (i<15);
         System.out.println("Waited " + i + " seconds for OIA export.");
         //Fail if we didn't find the exported record before the timeout
-        assertTrue(i < 10);
+        assertTrue(i < 15);
         Response listRecordsResponse = UtilIT.getOaiListRecords(setName, "oai_dc");
         assertEquals(OK.getStatusCode(), listRecordsResponse.getStatusCode());
         List listRecords = listRecordsResponse.getBody().xmlPath().getList("OAI-PMH.ListRecords.record");
