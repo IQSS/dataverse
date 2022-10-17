@@ -26,7 +26,7 @@ Installing Java
 
 The Dataverse Software should run fine with only the Java Runtime Environment (JRE) installed, but installing the Java Development Kit (JDK) is recommended so that useful tools for troubleshooting production environments are available. We recommend using Oracle JDK or OpenJDK.
 
-The Oracle JDK can be downloaded from http://www.oracle.com/technetwork/java/javase/downloads/index.html
+The Oracle JDK can be downloaded from https://www.oracle.com/technetwork/java/javase/downloads/index.html
 
 On a RHEL/derivative, install OpenJDK (devel version) using yum::
 
@@ -261,7 +261,7 @@ Installing jq
 or you may install it manually::
 
         # cd /usr/bin
-        # wget http://stedolan.github.io/jq/download/linux64/jq
+        # wget https://stedolan.github.io/jq/download/linux64/jq
         # chmod +x jq
         # jq --version
 

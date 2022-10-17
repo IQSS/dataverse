@@ -432,7 +432,7 @@ epub_exclude_files = ['search.html']
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'http://docs.python.org/': None}
+intersphinx_mapping = {'https://docs.python.org/': None}
 # Suppress "WARNING: unknown mimetype for ..." https://github.com/IQSS/dataverse/issues/3391
 suppress_warnings = ['epub.unknown_project_files']
 rst_prolog = """

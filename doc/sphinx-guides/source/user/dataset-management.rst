@@ -192,7 +192,7 @@ Additional download options available for tabular data (found in the same drop-d
 - As tab-delimited data (with the variable names in the first row); 
 - The original file uploaded by the user; 
 - Saved as R data (if the original file was not in R format); 
-- Variable Metadata (as a `DDI Codebook <http://www.ddialliance.org/Specification/DDI-Codebook/>`_ XML file);
+- Variable Metadata (as a `DDI Codebook <https://www.ddialliance.org/Specification/DDI-Codebook/>`_ XML file);
 - Data File Citation (currently in either RIS, EndNote XML, or BibTeX format); 
 - All of the above, as a zipped bundle. 
 
@@ -297,7 +297,7 @@ You can also search for files within datasets that have been tagged as "Workflow
 Astronomy (FITS)
 ----------------
 
-Metadata found in the header section of `Flexible Image Transport System (FITS) files <http://fits.gsfc.nasa.gov/fits_primer.html>`_ are automatically extracted by the Dataverse Software, aggregated and displayed in the Astronomy Domain-Specific Metadata of the Dataset that the file belongs to. This FITS file metadata, is therefore searchable and browsable (facets) at the Dataset-level.
+Metadata found in the header section of `Flexible Image Transport System (FITS) files <https://fits.gsfc.nasa.gov/fits_primer.html>`_ are automatically extracted by the Dataverse Software, aggregated and displayed in the Astronomy Domain-Specific Metadata of the Dataset that the file belongs to. This FITS file metadata, is therefore searchable and browsable (facets) at the Dataset-level.
 
 Compressed Files
 ----------------
@@ -388,7 +388,7 @@ Choosing a License
 ------------------
 
 Each Dataverse installation provides a set of license(s) data can be released under, and whether users can specify custom terms instead (see below). 
-One of the available licenses (often the `Creative Commons CC0 Public Domain Dedication <http://creativecommons.org/publicdomain/zero/1.0>`_) serves as the default if you do not make an explicit choice.
+One of the available licenses (often the `Creative Commons CC0 Public Domain Dedication <https://creativecommons.org/publicdomain/zero/1.0>`_) serves as the default if you do not make an explicit choice.
 If you want to apply one of the other available licenses to your dataset, you can change it on the Terms tab of your Dataset page.
 
 License Selection and Professional Norms

@@ -9,7 +9,7 @@ The Dataverse Software exposes most of its GUI functionality via a REST-based AP
 
 .. _CORS: https://www.w3.org/TR/cors/
 
-.. warning:: The Dataverse Software's API is versioned at the URI - all API calls may include the version number like so: ``http://server-address/api/v1/...``. Omitting the ``v1`` part would default to the latest API version (currently 1). When writing scripts/applications that will be used for a long time, make sure to specify the API version, so they don't break when the API is upgraded.
+.. warning:: The Dataverse Software's API is versioned at the URI - all API calls may include the version number like so: ``https://server-address/api/v1/...``. Omitting the ``v1`` part would default to the latest API version (currently 1). When writing scripts/applications that will be used for a long time, make sure to specify the API version, so they don't break when the API is upgraded.
 
 .. contents:: |toctitle|
     :local:
@@ -508,7 +508,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X PUT https://demo.dataverse.org/api/dataverses/root/metadatablocks/isRoot
 
-.. note:: Previous endpoints ``$SERVER/api/dataverses/$id/metadatablocks/:isRoot`` and ``POST http://$SERVER/api/dataverses/$id/metadatablocks/:isRoot?key=$apiKey`` are deprecated, but supported.
+.. note:: Previous endpoints ``$SERVER/api/dataverses/$id/metadatablocks/:isRoot`` and ``POST https://$SERVER/api/dataverses/$id/metadatablocks/:isRoot?key=$apiKey`` are deprecated, but supported.
 
 
 .. _create-dataset-command: 
@@ -720,7 +720,7 @@ Getting its draft version:
   export SERVER_URL=https://demo.dataverse.org
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
 
-  curl -H "X-Dataverse-key:$API_TOKEN" http://$SERVER/api/datasets/:persistentId/versions/:draft?persistentId=$PERSISTENT_IDENTIFIER
+  curl -H "X-Dataverse-key:$API_TOKEN" https://$SERVER/api/datasets/:persistentId/versions/:draft?persistentId=$PERSISTENT_IDENTIFIER
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -2226,7 +2226,7 @@ The fully expanded example above (without environment variables) looks like this
 Currently the following methods are used to detect file types:
 
 - The file type detected by the browser (or sent via API).
-- JHOVE: http://jhove.openpreservation.org
+- JHOVE: https://jhove.openpreservation.org
 - The file extension (e.g. ".ipybn") is used, defined in a file called ``MimeTypeDetectionByFileExtension.properties``.
 - The file name (e.g. "Dockerfile") is used, defined in a file called ``MimeTypeDetectionByFileName.properties``.
 
@@ -2413,7 +2413,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST \
     -F 'jsonData={"description":"My description bbb.","provFreeform":"Test prov freeform","categories":["Data"],"restrict":false}' \
-    http://demo.dataverse.org/api/files/24/metadata
+    https://demo.dataverse.org/api/files/24/metadata
 
 A curl example using a ``PERSISTENT_ID``
 
@@ -2614,7 +2614,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/files/:persistentId/prov-freeform?persistentId=doi:10.5072/FK2/AAA000" -H "Content-type:application/json" --upload-file provenance.json
 
-See a sample JSON file :download:`file-provenance.json <../_static/api/file-provenance.json>` from http://openprovenance.org (c.f. Huynh, Trung Dong and Moreau, Luc (2014) ProvStore: a public provenance repository. At 5th International Provenance and Annotation Workshop (IPAW'14), Cologne, Germany, 09-13 Jun 2014. pp. 275-277).
+See a sample JSON file :download:`file-provenance.json <../_static/api/file-provenance.json>` from https://openprovenance.org (c.f. Huynh, Trung Dong and Moreau, Luc (2014) ProvStore: a public provenance repository. At 5th International Provenance and Annotation Workshop (IPAW'14), Cologne, Germany, 09-13 Jun 2014. pp. 275-277).
 
 Delete Provenance JSON for an uploaded file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

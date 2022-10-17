@@ -2,7 +2,7 @@
 Introduction
 ============
 
-Welcome! `The Dataverse Project <http://dataverse.org>`_ is an `open source <https://github.com/IQSS/dataverse/blob/master/LICENSE.md>`_ project that loves `contributors <https://github.com/IQSS/dataverse/blob/develop/CONTRIBUTING.md>`_!
+Welcome! `The Dataverse Project <https://dataverse.org>`_ is an `open source <https://github.com/IQSS/dataverse/blob/master/LICENSE.md>`_ project that loves `contributors <https://github.com/IQSS/dataverse/blob/develop/CONTRIBUTING.md>`_!
 
 .. contents:: |toctitle|
 	:local:
@@ -19,7 +19,7 @@ To get started, you'll want to set up your :doc:`dev-environment` and make sure 
 Getting Help
 ------------
 
-If you have any questions at all, please reach out to other developers via the channels listed in https://github.com/IQSS/dataverse/blob/develop/CONTRIBUTING.md such as http://chat.dataverse.org, the `dataverse-dev <https://groups.google.com/forum/#!forum/dataverse-dev>`_ mailing list, `community calls <https://dataverse.org/community-calls>`_, or support@dataverse.org.
+If you have any questions at all, please reach out to other developers via the channels listed in https://github.com/IQSS/dataverse/blob/develop/CONTRIBUTING.md such as https://chat.dataverse.org, the `dataverse-dev <https://groups.google.com/forum/#!forum/dataverse-dev>`_ mailing list, `community calls <https://dataverse.org/community-calls>`_, or support@dataverse.org.
 
 .. _core-technologies:
 
@@ -52,7 +52,7 @@ Related Guides
 
 If you are a developer who wants to make use of the Dataverse Software APIs, please see the :doc:`/api/index`. If you have front-end UI questions, please see the :doc:`/style/index`.
 
-If you are a sysadmin who likes to code, you may be interested in hacking on installation scripts mentioned in the :doc:`/installation/index`. We validate the installation scripts with :doc:`/developers/tools` such as `Vagrant <http://vagrantup.com>`_ and Docker (see the :doc:`containers` section).
+If you are a sysadmin who likes to code, you may be interested in hacking on installation scripts mentioned in the :doc:`/installation/index`. We validate the installation scripts with :doc:`/developers/tools` such as `Vagrant <https://vagrantup.com>`_ and Docker (see the :doc:`containers` section).
 
 Related Projects
 ----------------

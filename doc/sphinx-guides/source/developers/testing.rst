@@ -46,7 +46,7 @@ The main takeaway should be that we care about unit testing enough to measure th
 Writing Unit Tests with JUnit
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We are aware that there are newer testing tools such as TestNG, but we use `JUnit <http://junit.org>`_ because it's tried and true.
+We are aware that there are newer testing tools such as TestNG, but we use `JUnit <https://junit.org>`_ because it's tried and true.
 We support both (legacy) JUnit 4.x tests (forming the majority of our tests) and
 newer JUnit 5 based testing.
 
@@ -238,11 +238,11 @@ Remember, it’s only a test (and it's not graded)! Some guidelines to bear in m
 - Map out which logical functions you want to test
 - Understand what’s being tested and ensure it’s repeatable
 - Assert the conditions of success / return values for each operation
-  * A useful resource would be `HTTP status codes <http://www.restapitutorial.com/httpstatuscodes.html>`_
+  * A useful resource would be `HTTP status codes <https://www.restapitutorial.com/httpstatuscodes.html>`_
 - Let the code do the labor; automate everything that happens when you run your test file.
 - Just as with any development, if you’re stuck: ask for help!
 
-To execute existing integration tests on your local Dataverse installation, a helpful command line tool to use is `Maven <http://maven.apache.org/ref/3.1.0/maven-embedder/cli.html>`_. You should have Maven installed as per the `Development Environment <http://guides.dataverse.org/en/latest/developers/dev-environment.html>`_ guide, but if not it’s easily done via Homebrew: ``brew install maven``.
+To execute existing integration tests on your local Dataverse installation, a helpful command line tool to use is `Maven <https://maven.apache.org/ref/3.1.0/maven-embedder/cli.html>`_. You should have Maven installed as per the `Development Environment <https://guides.dataverse.org/en/latest/developers/dev-environment.html>`_ guide, but if not it’s easily done via Homebrew: ``brew install maven``.
 
 Once installed, you may run commands with ``mvn [options] [<goal(s)>] [<phase(s)>]``.
 
@@ -487,7 +487,7 @@ Future Work on Integration Tests
 - Automate testing of dataverse-client-python: https://github.com/IQSS/dataverse-client-python/issues/10
 - Work with @leeper on testing the R client: https://github.com/IQSS/dataverse-client-r
 - Review and attempt to implement "API Test Checklist" from @kcondon at https://docs.google.com/document/d/199Oq1YwQ4pYCguaeW48bIN28QAitSk63NbPYxJHCCAE/edit?usp=sharing
-- Generate code coverage reports for **integration** tests: https://github.com/pkainulainen/maven-examples/issues/3 and http://www.petrikainulainen.net/programming/maven/creating-code-coverage-reports-for-unit-and-integration-tests-with-the-jacoco-maven-plugin/
+- Generate code coverage reports for **integration** tests: https://github.com/pkainulainen/maven-examples/issues/3 and https://www.petrikainulainen.net/programming/maven/creating-code-coverage-reports-for-unit-and-integration-tests-with-the-jacoco-maven-plugin/
 - Consistent logging of API Tests. Show test name at the beginning and end and status codes returned.
 - expected passing and known/expected failing integration tests: https://github.com/IQSS/dataverse/issues/4438
 

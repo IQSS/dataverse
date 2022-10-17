@@ -14,7 +14,7 @@ In production you'll want to monitor the usual suspects such as CPU, memory, fre
 Munin
 +++++
 
-http://munin-monitoring.org says, "A default installation provides a lot of graphs with almost no work." From RHEL or CentOS 7, you can try the following steps.
+https://munin-monitoring.org says, "A default installation provides a lot of graphs with almost no work." From RHEL or CentOS 7, you can try the following steps.
 
 Enable the EPEL yum repo (if you haven't already):
 

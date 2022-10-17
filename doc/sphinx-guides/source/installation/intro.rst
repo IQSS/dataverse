@@ -2,7 +2,7 @@
 Introduction
 ============
 
-Welcome! Thanks for installing `The Dataverse Project <http://dataverse.org>`_!
+Welcome! Thanks for installing `The Dataverse Project <https://dataverse.org>`_!
 
 .. contents:: |toctitle|
 	:local:
@@ -36,7 +36,7 @@ Getting Help
 To get help installing or configuring a Dataverse installation, please try one or more of:
 
 - posting to the `dataverse-community <https://groups.google.com/forum/#!forum/dataverse-community>`_ Google Group.
-- asking at http://chat.dataverse.org
+- asking at https://chat.dataverse.org
 - emailing support@dataverse.org to open a private ticket at https://help.hmdc.harvard.edu
 
 Information to Send to Support When Installation Fails

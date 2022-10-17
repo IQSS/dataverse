@@ -156,7 +156,7 @@ For example, to specify a non-default precision the parameter it is specified us
 | Allowed values are {``128`` , ``192`` , ``196`` , ``256``} with ``128`` being the default. 
 | ``R1`` - **truncate** numeric values to ``N`` digits, **instead of rounding**, as previously described.
 
-`Dr. Micah Altman's classic UNF v5 paper <http://www.researchgate.net/publication/200043172_A_Fingerprint_Method_for_Scientific_Data_Verification>`_ mentions another optional parameter ``T###``, for specifying rounding of date and time values (implemented as stripping the values of entire components - fractional seconds, seconds, minutes, hours... etc., progressively) - but it doesn't specify its syntax. It is left as an exercise for a curious reader to contact the author and work out the details, if so desired. (Not implemented in UNF Version 6 by the Dataverse Project).
+`Dr. Micah Altman's classic UNF v5 paper <https://www.researchgate.net/publication/200043172_A_Fingerprint_Method_for_Scientific_Data_Verification>`_ mentions another optional parameter ``T###``, for specifying rounding of date and time values (implemented as stripping the values of entire components - fractional seconds, seconds, minutes, hours... etc., progressively) - but it doesn't specify its syntax. It is left as an exercise for a curious reader to contact the author and work out the details, if so desired. (Not implemented in UNF Version 6 by the Dataverse Project).
 
 Note: we do not recommend truncating character strings at fewer bytes than the default ``128`` (the ``X`` parameter). At the very least this number **must** be high enough so that the printable UNFs of individual variables or files are not truncated, when calculating combined UNFs of files or datasets, respectively. 
 
