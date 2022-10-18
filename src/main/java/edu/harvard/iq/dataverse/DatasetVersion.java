@@ -1973,6 +1973,7 @@ public class DatasetVersion implements Serializable {
                 }
                 if (pubUrl != null) {
                     citationEntry.add("@id", pubUrl);
+                    citationEntry.add("identifier", pubUrl);
                     citationEntry.add("url", pubUrl);
                 }
                 if (addToArray) {
