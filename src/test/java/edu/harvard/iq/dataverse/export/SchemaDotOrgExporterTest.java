@@ -129,6 +129,7 @@ public class SchemaDotOrgExporterTest {
         String jsonLd = byteArrayOutputStream.toString();
         String prettyJson = JsonUtil.prettyPrint(jsonLd);
         logger.fine("schema.org JSON-LD: " + prettyJson);
+        System.out.println(prettyJson);
         JsonReader jsonReader2 = Json.createReader(new StringReader(jsonLd));
         JsonObject json2 = jsonReader2.readObject();
         assertEquals("http://schema.org", json2.getString("@context"));
@@ -137,11 +138,11 @@ public class SchemaDotOrgExporterTest {
         assertEquals("https://doi.org/10.5072/FK2/IMK5A4", json2.getString("identifier"));
         assertEquals("Darwin's Finches", json2.getString("name"));
         assertEquals("Finch, Fiona", json2.getJsonArray("creator").getJsonObject(0).getString("name"));
-        assertEquals("Birds Inc.", json2.getJsonArray("creator").getJsonObject(0).getJsonObject("parentOrganization").getString("name"));
+        assertEquals("Birds Inc.", json2.getJsonArray("creator").getJsonObject(0).getJsonObject("affiliation").getString("name"));
         assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("creator").getJsonObject(0).getString("@id"));
         assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("creator").getJsonObject(0).getString("identifier"));
         assertEquals("Finch, Fiona", json2.getJsonArray("author").getJsonObject(0).getString("name"));
-        assertEquals("Birds Inc.", json2.getJsonArray("author").getJsonObject(0).getJsonObject("parentOrganization").getString("name"));
+        assertEquals("Birds Inc.", json2.getJsonArray("author").getJsonObject(0).getJsonObject("affiliation").getString("name"));
         assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("author").getJsonObject(0).getString("@id"));
         assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("author").getJsonObject(0).getString("identifier"));
         assertEquals("1955-11-05", json2.getString("datePublished"));
