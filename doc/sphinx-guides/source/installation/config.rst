@@ -1376,6 +1376,8 @@ When changing values these values with ``asadmin``, you'll need to delete the ol
 
 It's also possible to change these values by stopping Payara, editing ``payara5/glassfish/domains/domain1/config/domain.xml``, and restarting Payara.
 
+.. _dataverse.fqdn:
+
 dataverse.fqdn
 ++++++++++++++
 
@@ -1394,12 +1396,11 @@ The password reset feature requires ``dataverse.fqdn`` to be configured.
 dataverse.siteUrl
 +++++++++++++++++
 
-.. note::
+To configure the ``siteUrl`` JVM option, follow the procedure stated in :ref:`jvm-options` and specify the protocol, host and port number you would prefer to be used to advertise the URL for your Dataverse installation.
 
-	and specify the protocol and port number you would prefer to be used to advertise the URL for your Dataverse installation.
-	For example, configured in domain.xml:
-	``<jvm-options>-Ddataverse.fqdn=dataverse.example.edu</jvm-options>``
-	``<jvm-options>-Ddataverse.siteUrl=http://${dataverse.fqdn}:8080</jvm-options>``
+For example, if editing domain.xml:
+
+``<jvm-options>-Ddataverse.siteUrl=http://${dataverse.fqdn}:8080</jvm-options>``
 
 dataverse.files.directory
 +++++++++++++++++++++++++

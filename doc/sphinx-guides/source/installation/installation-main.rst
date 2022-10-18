@@ -134,6 +134,11 @@ Dataset Cannot Be Published
 
 Check to make sure you used a fully qualified domain name when installing the Dataverse Software. You can change the ``dataverse.fqdn`` JVM option after the fact per the :doc:`config` section.
 
+Got ERR_ADDRESS_UNREACHABLE while navigating on interface or API calls
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If You are receiving an ``ERR_ADDRESS_UNREACHABLE`` while navigating the GUI or making an API call, make sure the ``siteUrl`` JVM option is defined. For details on how to set ``siteUrl``, please refer to :ref:`dataverse.siteUrl` from the :doc:`config` section. For context on why setting this option is necessary, refer to :ref:`dataverse.fqdn` from the :doc:`config` section.
+
 Problems Sending Email
 ^^^^^^^^^^^^^^^^^^^^^^
 
