@@ -141,10 +141,12 @@ public class SchemaDotOrgExporterTest {
         assertEquals("Birds Inc.", json2.getJsonArray("creator").getJsonObject(0).getJsonObject("affiliation").getString("name"));
         assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("creator").getJsonObject(0).getString("@id"));
         assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("creator").getJsonObject(0).getString("identifier"));
+        assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("creator").getJsonObject(0).getString("sameAs"));
         assertEquals("Finch, Fiona", json2.getJsonArray("author").getJsonObject(0).getString("name"));
         assertEquals("Birds Inc.", json2.getJsonArray("author").getJsonObject(0).getJsonObject("affiliation").getString("name"));
         assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("author").getJsonObject(0).getString("@id"));
         assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("author").getJsonObject(0).getString("identifier"));
+        assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("author").getJsonObject(0).getString("sameAs"));
         assertEquals("1955-11-05", json2.getString("datePublished"));
         assertEquals("1955-11-05", json2.getString("dateModified"));
         assertEquals("1", json2.getString("version"));
@@ -156,7 +158,7 @@ public class SchemaDotOrgExporterTest {
         // This dataset, for example, has multiple keywords separated by commas: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/24034&version=2.0
         assertEquals("keywords, with, commas", json2.getJsonArray("keywords").getString(4));
         assertEquals("CreativeWork", json2.getJsonArray("citation").getJsonObject(0).getString("@type"));
-        assertEquals("Finch, Fiona 2018. \"The Finches.\" American Ornithological Journal 60 (4): 990-1005.", json2.getJsonArray("citation").getJsonObject(0).getString("text"));
+        assertEquals("Finch, Fiona 2018. \"The Finches.\" American Ornithological Journal 60 (4): 990-1005.", json2.getJsonArray("citation").getJsonObject(0).getString("name"));
         assertEquals("https://doi.org/10.5072/FK2/RV16HK", json2.getJsonArray("citation").getJsonObject(0).getString("@id"));
         assertEquals("https://doi.org/10.5072/FK2/RV16HK", json2.getJsonArray("citation").getJsonObject(0).getString("identifier"));
         assertEquals("2002/2005", json2.getJsonArray("temporalCoverage").getString(0));
