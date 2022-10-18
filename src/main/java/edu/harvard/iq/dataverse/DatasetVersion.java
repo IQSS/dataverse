@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
+import edu.harvard.iq.dataverse.util.PersonOrOrgUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
@@ -1843,27 +1844,46 @@ public class DatasetVersion implements Serializable {
         for (DatasetAuthor datasetAuthor : this.getDatasetAuthors()) {
             JsonObjectBuilder author = Json.createObjectBuilder();
             String name = datasetAuthor.getName().getDisplayValue();
+            String identifierAsUrl = datasetAuthor.getIdentifierAsUrl();
             DatasetField authorAffiliation = datasetAuthor.getAffiliation();
             String affiliation = null;
             if (authorAffiliation != null) {
                 affiliation = datasetAuthor.getAffiliation().getDisplayValue();
             }
-            // We are aware of "givenName" and "familyName" but instead of a person it might be an organization such as "Gallup Organization".
-            //author.add("@type", "Person");
-            author.add("name", name);
-            // We are aware that the following error is thrown by https://search.google.com/structured-data/testing-tool
-            // "The property affiliation is not recognized by Google for an object of type Thing."
-            // Someone at Google has said this is ok.
-            // This logic could be moved into the `if (authorAffiliation != null)` block above.
-            if (!StringUtil.isEmpty(affiliation)) {
-                author.add("affiliation", affiliation);
+            JsonObject entity = PersonOrOrgUtil.getPersonOrOrganization(name, (identifierAsUrl==null));
+            String givenName= entity.getString("givenName");
+            String familyName= entity.getString("familyName");
+            
+            if (entity.getBoolean("isPerson")) {
+                // Person
+                author.add("@type", "Person");
+                if (givenName != null) {
+                    author.add("givenName", givenName);
+                }
+                if (familyName != null) {
+                    author.add("familyName", familyName);
+                }
+                if (!StringUtil.isEmpty(affiliation)) {
+                    author.add("affiliation", Json.createObjectBuilder().add("@type", "Organization").add("name", affiliation));
+                }
+                //Currently all possible identifier URLs are for people not Organizations
+                if(identifierAsUrl != null) {
+                    author.add("sameas", identifierAsUrl);
+                    //Legacy - not sure if these are still useful
+                    author.add("@id", identifierAsUrl);
+                    author.add("identifier", identifierAsUrl);
+
+                }
+            } else {
+                // Organization
+                author.add("@type", "Organization");
+                if (!StringUtil.isEmpty(affiliation)) {
+                    author.add("parentOrganization", Json.createObjectBuilder().add("@type", "Organization").add("name", affiliation));
+                }
             }
-            String identifierAsUrl = datasetAuthor.getIdentifierAsUrl();
-            if (identifierAsUrl != null) {
-                // It would be valid to provide an array of identifiers for authors but we have decided to only provide one.
-                author.add("@id", identifierAsUrl);
-                author.add("identifier", identifierAsUrl);
-            }
+            // Both cases
+            author.add("name", entity.getString("name"));
+            //And add to the array
             authors.add(author);
         }
         JsonArray authorsArray = authors.build();
