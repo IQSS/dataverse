@@ -1841,7 +1841,7 @@ public class DatasetVersion implements Serializable {
                 }
             }
             // Both cases
-            author.add("name", entity.getString("name"));
+            author.add("name", entity.getString("fullname"));
             //And add to the array
             authors.add(author);
         }
