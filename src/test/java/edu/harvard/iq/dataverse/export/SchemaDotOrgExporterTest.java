@@ -129,7 +129,6 @@ public class SchemaDotOrgExporterTest {
         String jsonLd = byteArrayOutputStream.toString();
         String prettyJson = JsonUtil.prettyPrint(jsonLd);
         logger.fine("schema.org JSON-LD: " + prettyJson);
-        System.out.println(prettyJson);
         JsonReader jsonReader2 = Json.createReader(new StringReader(jsonLd));
         JsonObject json2 = jsonReader2.readObject();
         assertEquals("http://schema.org", json2.getString("@context"));
@@ -150,7 +149,7 @@ public class SchemaDotOrgExporterTest {
         assertEquals("1955-11-05", json2.getString("datePublished"));
         assertEquals("1955-11-05", json2.getString("dateModified"));
         assertEquals("1", json2.getString("version"));
-        assertEquals("Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.\\nBird is the word.", json2.getString("description"));
+        assertEquals("Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.\nBird is the word.", json2.getString("description"));
         assertEquals("Medicine, Health and Life Sciences", json2.getJsonArray("keywords").getString(0));
         assertEquals("tcTerm1", json2.getJsonArray("keywords").getString(1));
         assertEquals("KeywordTerm1", json2.getJsonArray("keywords").getString(2));

@@ -872,7 +872,7 @@ public class DatasetVersion implements Serializable {
         for (String htmlDescription : getDescriptions()) {
             plainTextDescriptions.add(MarkupChecker.stripAllTags(htmlDescription));
         }
-        String description = String.join("\\n", plainTextDescriptions);
+        String description = String.join("\n", plainTextDescriptions);
         if(description.length()>=5000) {
             description = description.substring(0, (description.substring(0,4997).lastIndexOf(" "))) + "...";
         }
