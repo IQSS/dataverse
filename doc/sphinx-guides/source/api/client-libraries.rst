@@ -8,6 +8,28 @@ Because a Dataverse installation is a SWORD server, additional client libraries 
 .. contents:: |toctitle|
 	:local:
 
+C / C++
+-------
+A C / C++ library to expedite deployment when connecting to a Dataverse API can be found here:
+[https://github.com/aeonSolutions/OpenScience-Dataverse-API-C-library](https://github.com/aeonSolutions/OpenScience-Dataverse-API-C-library)
+
+This C/C++ library was initialy coded and is currently maintained by [Miguel T.](https://www.linkedin.com/in/migueltomas/). A features common HTTPS GET and POST requests made to the API in a dataverse. To leanr how to install it and use it, goto the wiki page [here](https://github.com/aeonSolutions/OpenScience-Dataverse-API-C-library/wiki). 
+
+
+Java
+----
+
+https://github.com/IQSS/dataverse-client-java is the official Java library for Dataverse Software APIs.
+
+`Richard Adams <http://www.researchspace.com/electronic-lab-notebook/about_us_team.html>`_ from `ResearchSpace <http://www.researchspace.com>`_ created and maintains this library.
+
+Javascript
+----------
+
+https://github.com/IQSS/dataverse-client-javascript is the official Javascript package for Dataverse Software APIs. It can be found on npm at https://www.npmjs.com/package/js-dataverse
+
+It was created and is maintained by `The Agile Monkeys <https://www.theagilemonkeys.com>`_.
+
 Python
 ------
 
@@ -17,13 +39,6 @@ There are two Python modules for interacting with Dataverse Software APIs.
 
 `dataverse-client-python <https://github.com/IQSS/dataverse-client-python>`_ had its initial release in 2015. `Robert Liebowitz <https://github.com/rliebz>`_ created this library while at the `Center for Open Science (COS) <https://centerforopenscience.org>`_ and the COS uses it to integrate the `Open Science Framework (OSF) <https://osf.io>`_ with a Dataverse installation via an add-on which itself is open source and listed on the :doc:`/api/apps` page.
 
-Javascript
-----------
-
-https://github.com/IQSS/dataverse-client-javascript is the official Javascript package for Dataverse Software APIs. It can be found on npm at https://www.npmjs.com/package/js-dataverse
-
-It was created and is maintained by `The Agile Monkeys <https://www.theagilemonkeys.com>`_.
-
 R
 -
 
@@ -32,12 +47,6 @@ The R client can search and download datasets. It is useful when automatically (
 
 The package is currently maintained by  `Shiro Kuriwaki <https://github.com/kuriwaki>`_. It was originally created by `Thomas Leeper <http://thomasleeper.com>`_ and then formerly maintained by `Will Beasley <https://github.com/wibeasley>`_.
 
-Java
-----
-
-https://github.com/IQSS/dataverse-client-java is the official Java library for Dataverse Software APIs.
-
-`Richard Adams <http://www.researchspace.com/electronic-lab-notebook/about_us_team.html>`_ from `ResearchSpace <http://www.researchspace.com>`_ created and maintains this library.
 
 Ruby
 ----
