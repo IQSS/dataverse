@@ -861,12 +861,21 @@ public class DatasetVersion implements Serializable {
         return MarkupChecker.stripAllTags(getDescription());
     }
 
-    public List<String> getDescriptionsPlainText() {
-        List<String> plainTextDescriptions = new ArrayList<>();
+    /* This method is (only) used in creating schema.org json-jd where Google requires a text description <5000 chars.
+     * 
+     * @returns - a single string composed of all descriptions (joined with \n if more than one) truncated with a trailing '...' if >=5000 chars
+     */
+    public String getDescriptionsPlainTextTruncated() {
+        List<String> plainTextDescriptions = new ArrayList<String>();
+        
         for (String htmlDescription : getDescriptions()) {
             plainTextDescriptions.add(MarkupChecker.stripAllTags(htmlDescription));
         }
-        return plainTextDescriptions;
+        String description = String.join("\\n", plainTextDescriptions);
+        if(description.length()>=5000) {
+            description = description.substring(0, (description.substring(0,4997).lastIndexOf(" "))) + "...";
+        }
+        return description;
     }
 
     /**
@@ -1891,16 +1900,8 @@ public class DatasetVersion implements Serializable {
         job.add("dateModified", this.getPublicationDateAsString());
         job.add("version", this.getVersionNumber().toString());
 
-        JsonArrayBuilder descriptionsArray = Json.createArrayBuilder();
-        List<String> descriptions = this.getDescriptionsPlainText();
-        for (String description : descriptions) {
-            descriptionsArray.add(description);
-        }
-        /**
-         * In Dataverse 4.8.4 "description" was a single string but now it's an
-         * array.
-         */
-        job.add("description", descriptionsArray);
+        String description = this.getDescriptionsPlainTextTruncated();
+        job.add("description", description);
 
         /**
          * "keywords" - contains subject(s), datasetkeyword(s) and topicclassification(s)
