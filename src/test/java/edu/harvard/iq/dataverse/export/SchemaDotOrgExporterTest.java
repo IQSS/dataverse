@@ -160,6 +160,7 @@ public class SchemaDotOrgExporterTest {
         assertEquals("Finch, Fiona 2018. \"The Finches.\" American Ornithological Journal 60 (4): 990-1005.", json2.getJsonArray("citation").getJsonObject(0).getString("text"));
         assertEquals("https://doi.org/10.5072/FK2/RV16HK", json2.getJsonArray("citation").getJsonObject(0).getString("@id"));
         assertEquals("https://doi.org/10.5072/FK2/RV16HK", json2.getJsonArray("citation").getJsonObject(0).getString("identifier"));
+        assertEquals("https://doi.org/10.5072/FK2/RV16HK", json2.getJsonArray("citation").getJsonObject(0).getString("url"));
         assertEquals("2002/2005", json2.getJsonArray("temporalCoverage").getString(0));
         assertEquals("2001-10-01/2015-11-15", json2.getJsonArray("temporalCoverage").getString(1));
         assertEquals(null, json2.getString("schemaVersion", null));
