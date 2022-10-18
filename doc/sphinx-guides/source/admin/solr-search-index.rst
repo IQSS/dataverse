@@ -36,7 +36,7 @@ Please note that the moment you issue this command, it will appear to end users 
 Start Async Reindex
 ~~~~~~~~~~~~~~~~~~~
 
-Please note that this operation may take hours depending on the amount of data in your system. This known issue is being tracked at https://github.com/IQSS/dataverse/issues/50
+Please note that this operation may take hours depending on the amount of data in your system.
 
 ``curl http://localhost:8080/api/admin/index``
 
