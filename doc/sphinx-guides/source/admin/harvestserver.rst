@@ -115,10 +115,10 @@ Some useful examples of search queries to define OAI sets:
 
   ``keywordValue:censorship``
 
-Important: New SOLR schema required!
+Important: New Solr schema required!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In order to be able to define OAI sets, your SOLR server must be upgraded with the search schema that came with release 4.5 (or later), and all your local datasets must be re-indexed, once the new schema is installed. 
+In order to be able to define OAI sets, your Solr server must be upgraded with the search schema that came with release 4.5 (or later), and all your local datasets must be re-indexed, once the new schema is installed. 
 
 OAI Set updates
 ---------------
