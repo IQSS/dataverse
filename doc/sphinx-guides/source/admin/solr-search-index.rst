@@ -60,7 +60,7 @@ If indexing stops, this command should pick up where it left off based on which 
 Manual Reindexing
 -----------------
 
-If you have made manual changes to a dataset in the database or wish to reindex a dataset that solr didn't want to index properly, it is possible to manually reindex Dataverse collections and datasets.
+If you have made manual changes to a dataset in the database or wish to reindex a dataset that Solr didn't want to index properly, it is possible to manually reindex Dataverse collections and datasets.
 
 Reindexing Dataverse Collections
 ++++++++++++++++++++++++++++++++
@@ -89,7 +89,7 @@ To re-index a dataset by its database ID:
 Manually Querying Solr
 ----------------------
 
-If you suspect something isn't indexed properly in solr, you may bypass the Dataverse installation's web interface and query the command line directly to verify what solr returns:
+If you suspect something isn't indexed properly in Solr, you may bypass the Dataverse installation's web interface and query the command line directly to verify what Solr returns:
 
 ``curl "http://localhost:8983/solr/collection1/select?q=dsPersistentId:doi:10.15139/S3/HFV0AO"``
 
