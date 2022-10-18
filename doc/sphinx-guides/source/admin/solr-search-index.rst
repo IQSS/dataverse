@@ -9,7 +9,7 @@ A Dataverse installation requires Solr to be operational at all times. If you st
 Full Reindex
 -------------
 
-There are two ways to perform a full reindex of the Dataverse installation search index. Starting with a "clear" ensures a completely clean index but involves downtime. Reindexing in place doesn't involve downtime but does not ensure a completely clean index.
+There are two ways to perform a full reindex of the Dataverse installation search index. Starting with a "clear" ensures a completely clean index but involves downtime. Reindexing in place doesn't involve downtime but does not ensure a completely clean index (e.g. stale entries from destroyed datasets can remain in the index).
 
 Clear and Reindex
 +++++++++++++++++
