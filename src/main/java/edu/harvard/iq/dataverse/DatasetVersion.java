@@ -1925,11 +1925,16 @@ public class DatasetVersion implements Serializable {
         job.add("keywords", keywords);
         
         /**
-         * citation: (multiple) related publication citation and URLs, if
-         * present.
+         * citation: (multiple) related publication citation and URLs, if present.
          *
-         * In Dataverse 4.8.4 "citation" was an array of strings but now it's an
-         * array of objects.
+         * Schema.org allows text or a CreativeWork object. Google recommends text with
+         * either the full citation or the PID URL. This code adds an object if we have
+         * the citation text for the work and/or an entry in the URL field (i.e.
+         * https://doi.org/...) The URL is reported as the 'url' field while the
+         * citation text (which would normally include the name) is reported as 'name'
+         * since there doesn't appear to be a better field ('text', which was used
+         * previously, is the actual text of the creative work).
+         * 
          */
         List<DatasetRelPublication> relatedPublications = getRelatedPublications();
         if (!relatedPublications.isEmpty()) {
@@ -1944,11 +1949,11 @@ public class DatasetVersion implements Serializable {
                 JsonObjectBuilder citationEntry = Json.createObjectBuilder();
                 citationEntry.add("@type", "CreativeWork");
                 if (pubCitation != null) {
-                    citationEntry.add("text", pubCitation);
+                    citationEntry.add("name", pubCitation);
                 }
                 if (pubUrl != null) {
                     citationEntry.add("@id", pubUrl);
-                    citationEntry.add("identifier", pubUrl);
+                    citationEntry.add("url", pubUrl);
                 }
                 if (addToArray) {
                     jsonArrayBuilder.add(citationEntry);
