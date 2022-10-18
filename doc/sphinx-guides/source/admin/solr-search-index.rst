@@ -36,7 +36,7 @@ Please note that the moment you issue this command, it will appear to end users 
 Start Async Reindex
 ~~~~~~~~~~~~~~~~~~~
 
-Please note that this operation may take hours depending on the amount of data in your system.
+Please note that this operation may take hours depending on the amount of data in your system and whether or not you installation is using full-text indexing. More information on this, as well as some reference times, can be found at https://github.com/IQSS/dataverse/issues/50.
 
 ``curl http://localhost:8080/api/admin/index``
 
