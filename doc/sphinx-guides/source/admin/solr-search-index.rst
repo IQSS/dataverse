@@ -22,7 +22,7 @@ Get a list of all database objects that are missing in Solr, and Solr documents 
 
 ``curl http://localhost:8080/api/admin/index/status``
 
-Remove all Solr documents that are orphaned (ie not associated with objects in the database):
+Remove all Solr documents that are orphaned (i.e. not associated with objects in the database):
 
 ``curl http://localhost:8080/api/admin/index/clear-orphans``
 
