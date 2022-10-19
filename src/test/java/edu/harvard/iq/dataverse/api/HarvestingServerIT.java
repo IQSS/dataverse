@@ -258,7 +258,7 @@ public class HarvestingServerIT {
         int i = 0;
         int maxWait=10;
         do {
-            Thread.sleep(1000L);
+            
 
             // Run ListIdentifiers on this newly-created set:
             Response listIdentifiersResponse = UtilIT.getOaiListIdentifiers(setName, "oai_dc");
@@ -281,6 +281,7 @@ public class HarvestingServerIT {
                         .getString("OAI-PMH.ListIdentifiers.header.identifier"));
                 break;
             }
+            Thread.sleep(1000L);
         } while (i<maxWait);
         System.out.println("Waited " + i + " seconds for OIA export.");
         //Fail if we didn't find the exported record before the timeout
