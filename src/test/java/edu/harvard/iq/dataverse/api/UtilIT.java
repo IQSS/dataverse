@@ -2451,7 +2451,7 @@ public class UtilIT {
                 i = repeats + 1;
             }
         } while ((i <= repeats) && stale);
-        System.out.println("Waited " + (i * (sleepStep / 1000)) + " seconds");
+        System.out.println("Waited " + (i * (sleepStep / 1000.0)) + " seconds");
         return i <= repeats;
 
     }
@@ -2481,7 +2481,7 @@ public class UtilIT {
                 i = repeats + 1;
             }
         } while ((i <= repeats) && staleExport);
-        System.out.println("Waited " + (i * (sleepStep / 1000)) + " seconds for export");
+        System.out.println("Waited " + (i * (sleepStep / 1000.0)) + " seconds for export");
         return i <= repeats;
 
     }
