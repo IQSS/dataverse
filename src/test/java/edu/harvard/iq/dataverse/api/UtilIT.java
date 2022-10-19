@@ -2463,7 +2463,7 @@ public class UtilIT {
         boolean staleExport=true;
         do {
             timestampResponse = UtilIT.getDatasetTimestamps(idOrPersistentId, apiToken);
-            System.out.println(timestampResponse.body().asString());
+            //logger.fine(timestampResponse.body().asString());
             String updateTimeString = timestampResponse.body().jsonPath().getString("data.lastUpdateTime");
             String exportTimeString = timestampResponse.body().jsonPath().getString("data.lastMetadataExportTime");
             if (updateTimeString != null && exportTimeString != null) {
