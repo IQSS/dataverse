@@ -181,7 +181,7 @@ public class SchemaDotOrgExporterTest {
         assertEquals(2, json2.getJsonArray("spatialCoverage").size());
         assertEquals("DataDownload", json2.getJsonArray("distribution").getJsonObject(0).getString("@type"));
         assertEquals("README.md", json2.getJsonArray("distribution").getJsonObject(0).getString("name"));
-        assertEquals("text/plain", json2.getJsonArray("distribution").getJsonObject(0).getString("encodingFormat"));
+        assertEquals("text/plain", json2.getJsonArray("distribution").getJsonObject(0).getString("fileFormat"));
         assertEquals(1234, json2.getJsonArray("distribution").getJsonObject(0).getInt("contentSize"));
         assertEquals("README file.", json2.getJsonArray("distribution").getJsonObject(0).getString("description"));
         assertEquals("https://doi.org/10.5072/FK2/7V5MPI", json2.getJsonArray("distribution").getJsonObject(0).getString("@id"));

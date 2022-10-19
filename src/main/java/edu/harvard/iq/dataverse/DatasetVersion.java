@@ -2012,7 +2012,7 @@ public class DatasetVersion implements Serializable {
                 }
                 fileObject.add("@type", "DataDownload");
                 fileObject.add("name", fileMetadata.getLabel());
-                fileObject.add("encodingFormat", fileMetadata.getDataFile().getContentType());
+                fileObject.add("fileFormat", fileMetadata.getDataFile().getContentType());
                 fileObject.add("contentSize", fileMetadata.getDataFile().getFilesize());
                 fileObject.add("description", fileMetadata.getDescription());
                 fileObject.add("@id", filePidUrlAsString);
@@ -2021,8 +2021,10 @@ public class DatasetVersion implements Serializable {
                 if (hideFilesBoolean != null && hideFilesBoolean.equals("true")) {
                     // no-op
                 } else {
-                    String nullDownloadType = null;
-                    fileObject.add("contentUrl", dataverseSiteUrl + FileUtil.getFileDownloadUrlPath(nullDownloadType, fileMetadata.getDataFile().getId(), false, fileMetadata.getId()));
+                    if (FileUtil.isPubliclyDownloadable(fileMetadata)) {
+                        String nullDownloadType = null;
+                        fileObject.add("contentUrl", dataverseSiteUrl + FileUtil.getFileDownloadUrlPath(nullDownloadType, fileMetadata.getDataFile().getId(), false, fileMetadata.getId()));
+                    }
                 }
                 fileArray.add(fileObject);
             }
