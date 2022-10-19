@@ -44,6 +44,7 @@ public class PersonOrOrgUtil {
                 }
             } else if (isOrganization || organizationIfTied) {
                 isOrganization = true;
+                givenName=null;
             }
 
         } else {
@@ -58,6 +59,7 @@ public class PersonOrOrgUtil {
                 // default
                 if (isOrganization || organizationIfTied) {
                     isOrganization = true;
+                    givenName=null;
                 }
             }
         }
