@@ -1827,7 +1827,7 @@ public class DatasetVersion implements Serializable {
                 }
                 //Currently all possible identifier URLs are for people not Organizations
                 if(identifierAsUrl != null) {
-                    author.add("sameas", identifierAsUrl);
+                    author.add("sameAs", identifierAsUrl);
                     //Legacy - not sure if these are still useful
                     author.add("@id", identifierAsUrl);
                     author.add("identifier", identifierAsUrl);
