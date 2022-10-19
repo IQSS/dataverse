@@ -256,7 +256,10 @@ public class OpenAireExportUtil {
                                     creator_map.put("nameType", "Personal");
                                     nameType_check = true;
                                 }
-
+                                // ToDo - the algorithm to determine if this is a Person or Organization here
+                                // has been abstracted into a separate
+                                // edu.harvard.iq.dataverse.util.PersonOrOrgUtil class that could be used here
+                                // to avoid duplication/variants of the algorithm
                                 creatorName = Cleanup.normalize(creatorName);
                                 // Datacite algorithm, https://github.com/IQSS/dataverse/issues/2243#issuecomment-358615313
                                 if (creatorName.contains(",")) {
@@ -706,6 +709,11 @@ public class OpenAireExportUtil {
         boolean nameType_check = false;
         Map<String, String> contributor_map = new HashMap<String, String>();
 
+        // ToDo - the algorithm to determine if this is a Person or Organization here
+        // has been abstracted into a separate
+        // edu.harvard.iq.dataverse.util.PersonOrOrgUtil class that could be used here
+        // to avoid duplication/variants of the algorithm
+
         contributorName = Cleanup.normalize(contributorName);
         // Datacite algorithm, https://github.com/IQSS/dataverse/issues/2243#issuecomment-358615313
         if (contributorName.contains(",")) {
@@ -717,6 +725,9 @@ public class OpenAireExportUtil {
                 // givenName ok
                 contributor_map.put("nameType", "Personal");
                 nameType_check = true;
+                // re: the above toDo - the ("ContactPerson".equals(contributorType) &&
+                // !isValidEmailAddress(contributorName)) clause in the next line could/should
+                // be sent as the OrgIfTied boolean parameter
             } else if (isOrganization || ("ContactPerson".equals(contributorType) && !isValidEmailAddress(contributorName))) {
                 contributor_map.put("nameType", "Organizational");
             }
