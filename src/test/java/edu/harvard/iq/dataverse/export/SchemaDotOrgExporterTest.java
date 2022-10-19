@@ -10,16 +10,18 @@ import static edu.harvard.iq.dataverse.util.SystemConfig.SITE_URL;
 import static edu.harvard.iq.dataverse.util.SystemConfig.FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.StringReader;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,15 +30,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.json.Json;
 import javax.json.JsonObject;
-import javax.json.JsonReader;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * For docs see {@link SchemaDotOrgExporter}.
@@ -62,75 +63,19 @@ public class SchemaDotOrgExporterTest {
 
     /**
      * Test of exportDataset method, of class SchemaDotOrgExporter.
+     * @throws IOException
+     * @throws JsonParseException
+     * @throws ParseException
+     * 
      */
     @Test
-    public void testExportDataset() throws Exception {
+    public void testExportDataset() throws JsonParseException, ParseException, IOException {
         File datasetVersionJson = new File("src/test/resources/json/dataset-finch2.json");
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
-        License license = new License("CC0 1.0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0/"), URI.create("/resources/images/cc0.png"), true);
-        license.setDefault(true);
 
-        JsonReader jsonReader1 = Json.createReader(new StringReader(datasetVersionAsJson));
-        JsonObject json1 = jsonReader1.readObject();
-        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService);
-        DatasetVersion version = jsonParser.parseDatasetVersion(json1.getJsonObject("datasetVersion"));
-        version.setVersionState(DatasetVersion.VersionState.RELEASED);
-        SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
-        Date publicationDate = dateFmt.parse("19551105");
-        version.setReleaseTime(publicationDate);
-        version.setVersionNumber(1l);
-        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-        terms.setLicense(license);
-        version.setTermsOfUseAndAccess(terms);
-
-        Dataset dataset = new Dataset();
-        dataset.setProtocol("doi");
-        dataset.setAuthority("10.5072/FK2");
-        dataset.setIdentifier("IMK5A4");
-        dataset.setPublicationDate(new Timestamp(publicationDate.getTime()));
-        version.setDataset(dataset);
-        Dataverse dataverse = new Dataverse();
-        dataverse.setName("LibraScholar");
-        dataset.setOwner(dataverse);
-        System.setProperty(SITE_URL, "https://librascholar.org");
-        boolean hideFileUrls = false;
-        if (hideFileUrls) {
-            System.setProperty(FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS, "true");
-        }
-
-        FileMetadata fmd = new FileMetadata();
-        DataFile dataFile = new DataFile();
-        dataFile.setId(42l);
-        dataFile.setFilesize(1234);
-        dataFile.setContentType("text/plain");
-        dataFile.setProtocol("doi");
-        dataFile.setAuthority("10.5072/FK2");
-        dataFile.setIdentifier("7V5MPI");
-        fmd.setDatasetVersion(version);
-        fmd.setDataFile(dataFile);
-        fmd.setLabel("README.md");
-        fmd.setDescription("README file.");
-        List<FileMetadata> fileMetadatas = new ArrayList<>();
-        fileMetadatas.add(fmd);
-        dataFile.setFileMetadatas(fileMetadatas);;
-        dataFile.setOwner(dataset);
-        version.setFileMetadatas(fileMetadatas);
-
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        if(json1 == null) logger.fine("Json null");
-        if(version == null) logger.fine("ver null");
-        if(byteArrayOutputStream == null) logger.fine("bytarr null");
-        if(schemaDotOrgExporter == null) logger.fine("sdoe" + " null");
-        try {
-        schemaDotOrgExporter.exportDataset(version, json1, byteArrayOutputStream);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        String jsonLd = byteArrayOutputStream.toString();
-        String prettyJson = JsonUtil.prettyPrint(jsonLd);
-        logger.fine("schema.org JSON-LD: " + prettyJson);
-        JsonReader jsonReader2 = Json.createReader(new StringReader(jsonLd));
-        JsonObject json2 = jsonReader2.readObject();
+        JsonObject json = JsonUtil.getJsonObject(datasetVersionAsJson);
+        JsonObject json2 = createExportFromJson(json);
+        
         assertEquals("http://schema.org", json2.getString("@context"));
         assertEquals("Dataset", json2.getString("@type"));
         assertEquals("https://doi.org/10.5072/FK2/IMK5A4", json2.getString("@id"));
@@ -187,8 +132,86 @@ public class SchemaDotOrgExporterTest {
         assertEquals("https://librascholar.org/api/access/datafile/42", json2.getJsonArray("distribution").getJsonObject(0).getString("contentUrl"));
         assertEquals(1, json2.getJsonArray("distribution").size());
         try (PrintWriter printWriter = new PrintWriter("/tmp/dvjsonld.json")) {
-            printWriter.println(prettyJson);
+            printWriter.println(JsonUtil.prettyPrint(json2));
         }
+        
+    }
+
+    /**
+     * Test description truncation in exportDataset method, of class SchemaDotOrgExporter.
+     * @throws IOException
+     * @throws JsonParseException
+     * @throws ParseException
+     * 
+     */
+    @Test
+    public void testExportDescriptionTruncation() throws JsonParseException, ParseException, IOException {
+    File datasetVersionJson = new File("src/test/resources/json/dataset-long-description.json");
+    String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
+
+    JsonObject json = JsonUtil.getJsonObject(datasetVersionAsJson);
+    JsonObject json2 = createExportFromJson(json);
+
+    assertTrue(json2.getString("description").endsWith("at..."));
+    }
+    
+    private JsonObject createExportFromJson(JsonObject json) throws JsonParseException, ParseException {
+        License license = new License("CC0 1.0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0/"), URI.create("/resources/images/cc0.png"), true);
+        license.setDefault(true);
+        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService);
+        DatasetVersion version = jsonParser.parseDatasetVersion(json.getJsonObject("datasetVersion"));
+        version.setVersionState(DatasetVersion.VersionState.RELEASED);
+        SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
+        Date publicationDate = dateFmt.parse("19551105");
+        version.setReleaseTime(publicationDate);
+        version.setVersionNumber(1l);
+        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+        terms.setLicense(license);
+        version.setTermsOfUseAndAccess(terms);
+
+        Dataset dataset = new Dataset();
+        dataset.setProtocol("doi");
+        dataset.setAuthority("10.5072/FK2");
+        dataset.setIdentifier("IMK5A4");
+        dataset.setPublicationDate(new Timestamp(publicationDate.getTime()));
+        version.setDataset(dataset);
+        Dataverse dataverse = new Dataverse();
+        dataverse.setName("LibraScholar");
+        dataset.setOwner(dataverse);
+        System.setProperty(SITE_URL, "https://librascholar.org");
+        boolean hideFileUrls = false;
+        if (hideFileUrls) {
+            System.setProperty(FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS, "true");
+        }
+
+        FileMetadata fmd = new FileMetadata();
+        DataFile dataFile = new DataFile();
+        dataFile.setId(42l);
+        dataFile.setFilesize(1234);
+        dataFile.setContentType("text/plain");
+        dataFile.setProtocol("doi");
+        dataFile.setAuthority("10.5072/FK2");
+        dataFile.setIdentifier("7V5MPI");
+        fmd.setDatasetVersion(version);
+        fmd.setDataFile(dataFile);
+        fmd.setLabel("README.md");
+        fmd.setDescription("README file.");
+        List<FileMetadata> fileMetadatas = new ArrayList<>();
+        fileMetadatas.add(fmd);
+        dataFile.setFileMetadatas(fileMetadatas);
+        ;
+        dataFile.setOwner(dataset);
+        version.setFileMetadatas(fileMetadatas);
+
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        if(schemaDotOrgExporter == null) logger.fine("sdoe" + " null");
+        try {
+        schemaDotOrgExporter.exportDataset(version, json, byteArrayOutputStream);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        String jsonLdStr = byteArrayOutputStream.toString();
+        return JsonUtil.getJsonObject(jsonLdStr);
     }
 
     /**
