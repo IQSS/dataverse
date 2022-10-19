@@ -62,7 +62,7 @@ public class PersonOrOrgUtil {
             }
         }
         JsonObjectBuilder job = new NullSafeJsonBuilder();
-        job.add("fullname", name);
+        job.add("fullName", name);
         job.add("givenName", givenName);
         job.add("familyName", familyName);
         job.add("isPerson", !isOrganization);
