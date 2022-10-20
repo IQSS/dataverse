@@ -1851,8 +1851,8 @@ public class DatasetVersion implements Serializable {
                 affiliation = datasetAuthor.getAffiliation().getDisplayValue();
             }
             JsonObject entity = PersonOrOrgUtil.getPersonOrOrganization(name, (identifierAsUrl==null));
-            String givenName= entity.getString("givenName");
-            String familyName= entity.getString("familyName");
+            String givenName= entity.containsKey("givenName") ? entity.getString("givenName"):null;
+            String familyName= entity.containsKey("familyName")? entity.getString("familyName"):null;
             
             if (entity.getBoolean("isPerson")) {
                 // Person
