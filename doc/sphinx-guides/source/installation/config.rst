@@ -1627,8 +1627,6 @@ By default, download URLs to files will be included in Schema.org JSON-LD output
 
 ``./asadmin create-jvm-options '-Ddataverse.files.hide-schema-dot-org-download-urls=true'``
 
-Please note that there are other reasons why download URLs may not be included for certain files such as if a guestbook entry is required or if the file is restricted.
-
 For more on Schema.org JSON-LD, see the :doc:`/admin/metadataexport` section of the Admin Guide.
 
 .. _useripaddresssourceheader:
@@ -1658,6 +1656,14 @@ This setting is useful in cases such as running your Dataverse installation behi
 	"HTTP_FORWARDED",
 	"HTTP_VIA",
 	"REMOTE_ADDR"
+	
+dataverse.personOrOrg.assumeCommaInPersonName
++++++++++++++++++++++++++++++++++++++++++++++
+
+Please note that this setting is experimental.
+
+The Schema.org metadata export and the Schema.org metadata included in DatasetPages tries to infer whether each entry in the Author field is a Person or Organization. If you are sure that
+users are following the guidance to add people in the recommended family name, given name order, with a comma, you can set this true to always assume entries without a comma are for Organizations. The default is false.
 
 .. _:ApplicationServerSettings:
 
