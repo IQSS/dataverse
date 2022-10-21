@@ -1833,9 +1833,9 @@ public class DatasetPage implements java.io.Serializable {
                     return permissionsWrapper.notFound();
                 }
                 logger.fine("retrieved dataset, id="+dataset.getId());
-                logger.info("Dataset has " + dataset.getVersions().size() + " versions.");
+                logger.fine("Dataset has " + dataset.getVersions().size() + " versions.");
                 for(DatasetVersion dv: dataset.getVersions()) {
-                    logger.info("Version id: " + dv.getId());
+                    logger.fine("Version id: " + dv.getId());
                 }
 
                 retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
@@ -1853,7 +1853,7 @@ public class DatasetPage implements java.io.Serializable {
                 //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), version);
                 retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
                 this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
-                logger.info("retreived version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
+                logger.fine("retreived version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
 
             } else if (versionId != null) {
                 // TODO: 4.2.1 - this method is broken as of now!
