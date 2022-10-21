@@ -1240,13 +1240,18 @@ API Calls
 
 Once this configuration is complete, you, as a user with the *PublishDataset* permission, should be able to use the admin API call to manually submit a DatasetVersion for processing:
 
-``curl -X POST -H "X-Dataverse-key: <key>" http://localhost:8080/api/admin/submitDatasetVersionToArchive/{id}/{version}``
+``curl -X POST -H "X-Dataverse-key: <key>" http://localhost:8080/api/admin/submitDatasetVersionToArchive/{version}/{id}``
 
 where:
 
-``{id}`` is the DatasetId (or ``:persistentId`` with the ``?persistentId="<DOI>"`` parameter), and
+``{id}`` is the DatasetId, and
 
 ``{version}`` is the friendly version number, e.g. "1.2".
+
+or in place of the DatasetID, you can use ``:persistentId`` with the ``?persistentId="<DOI>"``:
+
+``curl -X POST -H "X-Dataverse-key: <key>" http://localhost:8080/api/admin/submitDatasetVersionToArchive/:persistentId/{version}?persistentId="<DOI>"``
+
 
 The submitDatasetVersionToArchive API (and the workflow discussed below) attempt to archive the dataset version via an archive specific method. For Chronopolis, a DuraCloud space named for the dataset (it's DOI with ':' and '.' replaced with '-') is created and two files are uploaded to it: a version-specific datacite.xml metadata file and a BagIt bag containing the data and an OAI-ORE map file. (The datacite.xml file, stored outside the Bag as well as inside is intended to aid in discovery while the ORE map file is 'complete', containing all user-entered metadata and is intended as an archival record.)
 
@@ -1256,9 +1261,10 @@ A batch version of this admin api call is also available:
 
 ``curl -X POST -H "X-Dataverse-key: <key>" 'http://localhost:8080/api/admin/archiveAllUnarchivedDatasetVersions?listonly=true&limit=10&latestonly=true'``
 
-The archiveAllUnarchivedDatasetVersions call takes 3 optional configuration parameters. 
+The archiveAllUnarchivedDatasetVersions call takes 3 optional configuration parameters.
+
 * listonly=true will cause the API to list dataset versions that would be archived but will not take any action.
-* limit=<n> will limit the number of dataset versions archived in one api call to <= <n>. 
+* limit=<n> will limit the number of dataset versions archived in one api call to ``<=`` <n>. 
 * latestonly=true will limit archiving to only the latest published versions of datasets instead of archiving all unarchived versions.
 
 Note that because archiving is done asynchronously, the calls above will return OK even if the user does not have the *PublishDataset* permission on the dataset(s) involved. Failures are indocated in the log and the archivalStatus calls in the native api can be used to check the status as well.
