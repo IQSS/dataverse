@@ -551,6 +551,14 @@ public class JsonPrinter {
         fieldsBld.add("watermark", fld.getWatermark());
         fieldsBld.add("description", fld.getDescription());
         fieldsBld.add("multiple", fld.isAllowMultiples());
+        fieldsBld.add("isControlledVocabulary", fld.isControlledVocabulary());
+        if (fld.isControlledVocabulary()) {
+            // If the field has a controlled vocabulary,
+            // add all values to the resulting JSON
+            fieldsBld.add(
+                    "controlledVocabularyValues",
+                    fld.getControlledVocabularyValues().toArray().toString());
+        }
         if (!fld.getChildDatasetFieldTypes().isEmpty()) {
             JsonObjectBuilder subFieldsBld = jsonObjectBuilder();
             for (DatasetFieldType subFld : fld.getChildDatasetFieldTypes()) {
