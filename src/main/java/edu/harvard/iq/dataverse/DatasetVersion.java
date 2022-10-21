@@ -1852,7 +1852,7 @@ public class DatasetVersion implements Serializable {
             }
             JsonObject entity = PersonOrOrgUtil.getPersonOrOrganization(name, (identifierAsUrl==null));
             String givenName= entity.containsKey("givenName") ? entity.getString("givenName"):null;
-            String familyName= entity.containsKey("familyName")? entity.getString("familyName"):null;
+            String familyName= entity.containsKey("familyName") ? entity.getString("familyName"):null;
             
             if (entity.getBoolean("isPerson")) {
                 // Person
@@ -1882,7 +1882,7 @@ public class DatasetVersion implements Serializable {
                 }
             }
             // Both cases
-            author.add("name", entity.getString("fullname"));
+            author.add("name", entity.getString("fullName"));
             //And add to the array
             authors.add(author);
         }
