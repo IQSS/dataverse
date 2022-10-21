@@ -56,6 +56,7 @@ import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.validation.URLValidator;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 
@@ -1845,7 +1846,9 @@ public class DatasetPage implements java.io.Serializable {
         return settingsWrapper.isGlobusUpload() && settingsWrapper.isGlobusEnabledStorageDriver(dataset.getEffectiveStorageDriverId());
     }
     
-    
+    public boolean webloaderUploadSupported() {
+        return settingsWrapper.isWebloaderUpload() && StorageIO.isDirectUploadEnabled(dataset.getEffectiveStorageDriverId());
+    }
 
     private String init(boolean initFull) {
 
@@ -6062,4 +6065,26 @@ public class DatasetPage implements java.io.Serializable {
         }
         PrimeFaces.current().executeScript(globusService.getGlobusDownloadScript(dataset, apiToken));
     }
+
+    public String getWebloaderUrlForDataset(Dataset d) {
+        String localeCode = session.getLocaleCode();
+        ApiToken apiToken = null;
+        User user = session.getUser();
+
+        if (user instanceof AuthenticatedUser) {
+            apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
+
+            if ((apiToken == null) || (apiToken.getExpireTime().before(new Date()))) {
+                logger.fine("Created apiToken for user: " + user.getIdentifier());
+                apiToken = authService.generateApiTokenForUser((AuthenticatedUser) user);
+            }
+        }
+        // Use URLTokenUtil for params currently in common with external tools.
+        URLTokenUtil tokenUtil = new URLTokenUtil(d, apiToken, localeCode);
+        String appUrl;
+        appUrl = settingsService.getValueForKey(SettingsServiceBean.Key.WebloaderUrl)
+                + "?datasetPid={datasetPid}&siteUrl={siteUrl}&key={apiToken}&datasetId={datasetId}&datasetVersion={datasetVersion}&dvLocale={localeCode}";
+        return tokenUtil.replaceTokensWithValues(appUrl);
+    }
+
 }

@@ -563,7 +563,9 @@ public class SettingsServiceBean {
         /*
          * Allow a custom JavaScript to control values of specific fields.
          */
-        ControlledVocabularyCustomJavaScript
+        ControlledVocabularyCustomJavaScript, 
+        
+        WebloaderUrl
         ;
 
         @Override

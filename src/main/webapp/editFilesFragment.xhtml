@@ -158,7 +158,11 @@
                                   widgetVar="fileUploadWidget">
                         <f:passThroughAttribute name="aria-label" value="#{bundle['file.uploadFiles']}"/>
                     </p:fileUpload>
-                                
+                                <div jsf:id="webloaderBlock" jsf:rendered="#{webloaderUploadSupported and !lockedFromEdits }"  class="margin-top">
+                                    <p class="help-block" jsf:rendered="#{!createDataset}">#{bundle['file.webloader.tip']}</p>
+                                    <p class="help-block" jsf:rendered="#{createDataset}">#{bundle['file.webloaderAfterCreate.tip']}</p>
+                                    <p:button target="_blank" rendered="#{!createDataset}" onclick="cancelDatasetEdit();window.open('#{DatasetPage.getWebloaderUrlForDataset(dataset)}');return false;" value="#{bundle['file.fromWebloader']}"  icon="webloader-btn" />
+                                </div>
                                 <div jsf:id="dropboxBlock" jsf:rendered="#{settingsWrapper.isHasDropBoxKey() and !lockedFromEdits }"  class="margin-top">
                                     <!-- Dropbox upload widget -->
                                     <p class="help-block">#{bundle['file.fromDropbox.tip']}</p>
