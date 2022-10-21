@@ -30,7 +30,19 @@ public class PersonOrOrgUtilTest {
         }
 
         @Test
-        public void testOrganizationComaOrDash() {
+        public void testOrganizationAcademicName() {
+
+        verifyIsOrganization("John Smith Center");
+        verifyIsOrganization("John Smith Group");
+        //An example the base algorithm doesn't handle:
+        PersonOrOrgUtil.setAssumeCommaInPersonName(true);
+        verifyIsOrganization("John Smith Project");
+        PersonOrOrgUtil.setAssumeCommaInPersonName(false);
+        }
+
+        
+        @Test
+        public void testOrganizationCommaOrDash() {
             verifyIsOrganization("Digital Archive of Massachusetts Anti-Slavery and Anti-Segregation Petitions, Massachusetts Archives, Boston MA");
             verifyIsOrganization("U.S. Department of Commerce, Bureau of the Census, Geography Division");
             verifyIsOrganization("Harvard Map Collection, Harvard College Library");

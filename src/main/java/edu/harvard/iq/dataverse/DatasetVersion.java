@@ -1811,7 +1811,7 @@ public class DatasetVersion implements Serializable {
             }
             JsonObject entity = PersonOrOrgUtil.getPersonOrOrganization(name, (identifierAsUrl==null));
             String givenName= entity.containsKey("givenName") ? entity.getString("givenName"):null;
-            String familyName= entity.containsKey("familyName")? entity.getString("familyName"):null;
+            String familyName= entity.containsKey("familyName") ? entity.getString("familyName"):null;
             
             if (entity.getBoolean("isPerson")) {
                 // Person
