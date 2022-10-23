@@ -111,7 +111,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                         MediaResource mediaResource = new MediaResource(fixmeInputStream, contentType, packaging, isPackaged);
                         return mediaResource;
                     } else {
-                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to get a media resource representation of the dataset with global ID " + dataset.getGlobalIdString());
+                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to get a media resource representation of the dataset with global ID " + dataset.getGlobalId().asString());
                     }
                 } else {
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Downloading files via the SWORD-based Dataverse Data Deposit API is not (yet) supported: https://github.com/IQSS/dataverse/issues/183");
@@ -243,7 +243,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             }
             UpdateDatasetVersionCommand updateDatasetCommand = new UpdateDatasetVersionCommand(dataset, dvReq);
             if (!permissionService.isUserAllowedOn(user, updateDatasetCommand, dataset)) {
-                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataset with global ID " + dataset.getGlobalIdString());
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataset with global ID " + dataset.getGlobalId().asString());
             }
             
             //---------------------------------------

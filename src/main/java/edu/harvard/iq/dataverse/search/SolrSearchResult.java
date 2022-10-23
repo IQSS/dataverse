@@ -1130,7 +1130,7 @@ public class SolrSearchResult {
 		 * (remoteArchiveUrl != null) { return remoteArchiveUrl; } return null; }
 		 */
 		if (entity.getIdentifier() != null) {
-			return "/file.xhtml?persistentId=" + entity.getGlobalIdString();
+			return "/file.xhtml?persistentId=" + entity.getGlobalId().asString();
 		}
 
 		return "/file.xhtml?fileId=" + entity.getId() + "&datasetVersionId=" + datasetVersionId;

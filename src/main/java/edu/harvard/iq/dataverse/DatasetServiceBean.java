@@ -781,10 +781,10 @@ public class DatasetServiceBean implements java.io.Serializable {
                         countAll++;
                         try {
                             recordService.exportAllFormatsInNewTransaction(dataset);
-                            exportLogger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalIdString());
+                            exportLogger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString());
                             countSuccess++;
                         } catch (Exception ex) {
-                            exportLogger.info("Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalIdString() + "; " + ex.getMessage());
+                            exportLogger.info("Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString() + "; " + ex.getMessage());
                             countError++;
                         }
                     }
@@ -821,9 +821,9 @@ public class DatasetServiceBean implements java.io.Serializable {
                         || dataset.getLastExportTime().before(publicationDate)))) {
                     try {
                         recordService.exportAllFormatsInNewTransaction(dataset);
-                        logger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalIdString());
+                        logger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString());
                     } catch (Exception ex) {
-                        logger.info("Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalIdString() + "; " + ex.getMessage());
+                        logger.info("Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString() + "; " + ex.getMessage());
                     }
                 }
             }

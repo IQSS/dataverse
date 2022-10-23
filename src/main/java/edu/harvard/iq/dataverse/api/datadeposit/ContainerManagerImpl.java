@@ -86,7 +86,7 @@ public class ContainerManagerImpl implements ContainerManager {
                 Dataset dataset = datasetService.findByGlobalId(globalId);
                 if (dataset != null) {
                     if (!permissionService.isUserAllowedOn(user, new GetDraftDatasetVersionCommand(dvReq, dataset), dataset)) {
-                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to retrieve entry for " + dataset.getGlobalIdString());
+                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to retrieve entry for " + dataset.getGlobalId().asString());
                     }
                     Dataverse dvThatOwnsDataset = dataset.getOwner();
                     ReceiptGenerator receiptGenerator = new ReceiptGenerator();
@@ -228,21 +228,21 @@ public class ContainerManagerImpl implements ContainerManager {
                         DatasetVersion.VersionState datasetVersionState = dataset.getLatestVersion().getVersionState();
                         if (dataset.isReleased()) {
                             if (datasetVersionState.equals(DatasetVersion.VersionState.DRAFT)) {
-                                logger.info("destroying working copy version of dataset " + dataset.getGlobalIdString());
+                                logger.info("destroying working copy version of dataset " + dataset.getGlobalId().asString());
                                 try {
                                     engineSvc.submit(deleteDatasetVersionCommand);
                                 } catch (CommandException ex) {
-                                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Can't delete dataset version for " + dataset.getGlobalIdString() + ": " + ex);
+                                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Can't delete dataset version for " + dataset.getGlobalId().asString() + ": " + ex);
                                 }
                                 logger.info("dataset version deleted for dataset id " + dataset.getId());
                             } else if (datasetVersionState.equals(DatasetVersion.VersionState.RELEASED)) {
                                 throw new SwordError(UriRegistry.ERROR_METHOD_NOT_ALLOWED, "Deaccessioning a dataset is no longer supported as of Data Deposit API version in URL (" + swordConfiguration.getBaseUrlPathV1() + ") Equivalent functionality is being developed at https://github.com/IQSS/dataverse/issues/778");
                             } else if (datasetVersionState.equals(DatasetVersion.VersionState.DEACCESSIONED)) {
-                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Lastest version of dataset " + dataset.getGlobalIdString() + " has already been deaccessioned.");
+                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Lastest version of dataset " + dataset.getGlobalId().asString() + " has already been deaccessioned.");
                             } else if (datasetVersionState.equals(DatasetVersion.VersionState.ARCHIVED)) {
-                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Lastest version of dataset " + dataset.getGlobalIdString() + " has been archived and can not be deleted or deaccessioned.");
+                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Lastest version of dataset " + dataset.getGlobalId().asString() + " has been archived and can not be deleted or deaccessioned.");
                             } else {
-                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Operation not valid for dataset " + dataset.getGlobalIdString() + " in state " + datasetVersionState);
+                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Operation not valid for dataset " + dataset.getGlobalId().asString() + " in state " + datasetVersionState);
                             }
                             /**
                              * @todo Reformat else below properly so you can

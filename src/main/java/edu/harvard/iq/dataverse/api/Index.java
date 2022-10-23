@@ -323,7 +323,7 @@ public class Index extends AbstractApiBean {
             JsonObjectBuilder data = Json.createObjectBuilder();
             data.add("message", "Reindexed dataset " + persistentId);
             data.add("id", dataset.getId());
-            data.add("persistentId", dataset.getGlobalIdString());
+            data.add("persistentId", dataset.getGlobalId().asString());
             JsonArrayBuilder versions = Json.createArrayBuilder();
             for (DatasetVersion version : dataset.getVersions()) {
                 JsonObjectBuilder versionObject = Json.createObjectBuilder();

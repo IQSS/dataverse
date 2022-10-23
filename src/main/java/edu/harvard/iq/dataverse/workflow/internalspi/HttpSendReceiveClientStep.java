@@ -109,7 +109,7 @@ public class HttpSendReceiveClientStep implements WorkflowStep {
         templateParams.put( "invocationId", ctxt.getInvocationId() );
         templateParams.put( "dataset.id", Long.toString(ctxt.getDataset().getId()) );
         templateParams.put( "dataset.identifier", ctxt.getDataset().getIdentifier() );
-        templateParams.put( "dataset.globalId", ctxt.getDataset().getGlobalIdString() );
+        templateParams.put( "dataset.globalId", ctxt.getDataset().getGlobalId().asString() );
         templateParams.put( "dataset.displayName", ctxt.getDataset().getDisplayName() );
         templateParams.put( "dataset.citation", ctxt.getDataset().getCitation() );
         templateParams.put( "minorVersion", Long.toString(ctxt.getNextMinorVersionNumber()) );

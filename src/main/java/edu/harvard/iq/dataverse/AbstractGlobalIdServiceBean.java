@@ -106,7 +106,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
 
     protected String getTargetUrl(Dataset datasetIn) {
         logger.log(Level.FINE,"getTargetUrl");
-        return systemConfig.getDataverseSiteUrl() + Dataset.TARGET_URL + datasetIn.getGlobalIdString();
+        return systemConfig.getDataverseSiteUrl() + Dataset.TARGET_URL + datasetIn.getGlobalId().asString();
     }
     
     protected String generateYear (DvObject dvObjectIn){

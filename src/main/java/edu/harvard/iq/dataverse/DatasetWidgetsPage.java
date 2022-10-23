@@ -164,7 +164,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         try {
             DatasetThumbnail datasetThumbnailFromCommand = commandEngine.submit(updateDatasetThumbnailCommand);
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.thumbnailsAndWidget.success"));
-            return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&faces-redirect=true";
+            return "/dataset.xhtml?persistentId=" + dataset.getGlobalId().asString() + "&faces-redirect=true";
         } catch (CommandException ex) {
             String error = ex.getLocalizedMessage();
             /**
@@ -179,7 +179,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
 
     public String cancel() {
         logger.fine("cancel clicked");
-        return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&faces-redirect=true";
+        return "/dataset.xhtml?persistentId=" + dataset.getGlobalId().asString() + "&faces-redirect=true";
     }
 
 }

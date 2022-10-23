@@ -623,7 +623,7 @@ public class JsonPrinter {
 
         return jsonObjectBuilder()
                 .add("id", df.getId())
-                .add("persistentId", df.getGlobalIdString())
+                .add("persistentId", df.getGlobalId().asString())
                 .add("pidURL", pidURL)
                 .add("filename", fileName)
                 .add("contentType", df.getContentType())
