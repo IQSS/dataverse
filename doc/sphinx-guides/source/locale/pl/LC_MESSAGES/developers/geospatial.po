@@ -1,0 +1,387 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/developers/geospatial.rst:3
+msgid "Geospatial Data"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:6
+msgid "|toctitle|"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:9
+msgid "Geoconnect"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:11
+msgid ""
+"Geoconnect works as a middle layer, allowing geospatial data files in "
+"Dataverse to be visualized with Harvard WorldMap. To set up a Geoconnect "
+"development environment, you can follow the steps outlined in the "
+"`local_setup.md "
+"<https://github.com/IQSS/geoconnect/blob/master/local_setup.md>`_ guide. "
+"You will need Python and a few other prerequisites."
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:13
+msgid ""
+"As mentioned under \"Architecture and Components\" in the "
+":doc:`/installation/prep` section of the Installation Guide, Geoconnect "
+"is an optional component of Dataverse, so this section is only necessary "
+"to follow it you are working on an issue related to this feature."
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:16
+msgid "How Dataverse Ingests Shapefiles"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:18
+msgid ""
+"A shapefile is a set of files, often uploaded/transferred in ``.zip`` "
+"format. This set may contain up to fifteen files. A minimum of three "
+"specific files (``.shp``, ``.shx``, ``.dbf``) are needed to be a valid "
+"shapefile and a fourth file (``.prj``) is required for WorldMap -- or any"
+" type of meaningful visualization."
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:20
+msgid ""
+"For ingest and connecting to WorldMap, four files are the minimum "
+"required:"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:22
+msgid "``.shp`` - shape format; the feature geometry itself"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:23
+msgid ""
+"``.shx`` - shape index format; a positional index of the feature geometry"
+" to allow seeking forwards and backwards quickly"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:24
+msgid ""
+"``.dbf`` - attribute format; columnar attributes for each shape, in dBase"
+" IV format"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:25
+msgid ""
+"``.prj`` - projection format; the coordinate system and projection "
+"information, a plain text file describing the projection using well-known"
+" text format"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:28
+msgid "Ingest"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:30
+msgid ""
+"When uploaded to Dataverse, the ``.zip`` is unpacked (same as all "
+"``.zip`` files). Shapefile sets are recognized by the same base name and "
+"specific extensions. These individual files constitute a shapefile set. "
+"The first four are the minimum required (``.shp``, ``.shx``, ``.dbf``, "
+"``.prj``)"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:32
+msgid "For example:"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:34
+msgid "bicycles.shp    (required extension)"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:35
+msgid "bicycles.shx    (required extension)"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:36
+msgid "bicycles.prj  (required extension)"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:37
+msgid "bicycles.dbf  (required extension)"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:38
+msgid "bicycles.sbx  (NOT required extension)"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:39
+msgid "bicycles.sbn  (NOT required extension)"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:41
+msgid ""
+"Upon recognition of the four required files, Dataverse will group them as"
+" well as any other relevant files into a shapefile set. Files with these "
+"extensions will be included in the shapefile set:"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:43
+msgid "Required: ``.shp``, ``.shx``, ``.dbf``, ``.prj``"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:44
+msgid ""
+"Optional: ``.sbn``, ``.sbx``, ``.fbn``, ``.fbx``, ``.ain``, ``.aih``, "
+"``.ixs``, ``.mxs``, ``.atx``, ``.cpg``, ``shp.xml``"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:46
+msgid ""
+"Then Dataverse creates a new ``.zip`` with mimetype as a shapefile. The "
+"shapefile set will persist as this new ``.zip``."
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:49
+msgid "Example"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:51
+msgid "**1a.** Original ``.zip`` contents:"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:53
+msgid ""
+"A file named ``bikes_and_subways.zip`` is uploaded to the Dataverse. This"
+" ``.zip`` contains the following files."
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:55
+msgid "``bicycles.shp``  (shapefile set #1)"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:56
+msgid "``bicycles.shx``  (shapefile set #1)"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:57
+msgid "``bicycles.prj``  (shapefile set #1)"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:58
+msgid "``bicycles.dbf``  (shapefile set #1)"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:59
+msgid "``bicycles.sbx``  (shapefile set #1)"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:60
+msgid "``bicycles.sbn``  (shapefile set #1)"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:61
+msgid "``bicycles.txt``"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:62
+msgid "``the_bikes.md``"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:63
+msgid "``readme.txt``"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:64
+msgid "``subway_line.shp``  (shapefile set #2)"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:65
+msgid "``subway_line.shx``  (shapefile set #2)"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:66
+msgid "``subway_line.prj``  (shapefile set #2)"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:67
+msgid "``subway_line.dbf``  (shapefile set #2)"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:69
+msgid "**1b.** Dataverse unzips and re-zips files:"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:71
+msgid ""
+"Upon ingest, Dataverse unpacks the file ``bikes_and_subways.zip``. Upon "
+"recognizing the shapefile sets, it groups those files together into new "
+"``.zip`` files:"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:73
+msgid "files making up the \"bicycles\" shapefile become a new ``.zip``"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:74
+msgid "files making up the \"subway_line\" shapefile become a new ``.zip``"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:75
+msgid "remaining files will stay as they are"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:77
+msgid ""
+"To ensure that a shapefile set remains intact, individual files such as "
+"``bicycles.sbn`` are kept in the set -- even though they are not used for"
+" mapping."
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:79
+msgid "**1c.** Dataverse final file listing:"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:81
+msgid ""
+"``bicycles.zip`` (contains shapefile set #1: ``bicycles.shp``, "
+"``bicycles.shx``, ``bicycles.prj``, ``bicycles.dbf``, ``bicycles.sbx``, "
+"``bicycles.sbn``)"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:82
+msgid "``bicycles.txt``  (separate, not part of a shapefile set)"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:83
+msgid "``the_bikes.md``  (separate, not part of a shapefile set)"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:84
+msgid "``readme.txt``  (separate, not part of a shapefile set)"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:85
+msgid ""
+"``subway_line.zip``  (contains shapefile set #2: ``subway_line.shp``, "
+"``subway_line.shx``, ``subway_line.prj``, ``subway_line.dbf``)"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:87
+msgid ""
+"For two \"final\" shapefile sets, ``bicycles.zip`` and "
+"``subway_line.zip``, a new mimetype is used:"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:89
+msgid "Mimetype: ``application/zipped-shapefile``"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:90
+msgid "Mimetype Label: \"Shapefile as ZIP Archive\""
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:93
+msgid "WorldMap JoinTargets + API Endpoint"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:95
+msgid ""
+"WorldMap supplies target layers -- or JoinTargets -- that a tabular file "
+"may be mapped against. A JSON description of these `CGA "
+"<http://gis.harvard.edu>`_-curated JoinTargets may be retrieved via API "
+"at ``http://worldmap.harvard.edu/datatables/api/jointargets/``. Please "
+"note: login is required. You may use any WorldMap account credentials via"
+" HTTP Basic Auth."
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:97
+msgid "Example of JoinTarget information returned via the API:"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:168
+msgid "How Geoconnect Uses Join Target Information"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:170
+msgid ""
+"When a user attempts to map a tabular file, the application looks in the "
+"Geoconnect database for ``JoinTargetInformation``. If this information is"
+" more than 10 minutes* old, the application will retrieve fresh "
+"information and save it to the db."
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:172
+msgid ""
+"(* Change the timing via the Django settings variable "
+"``JOIN_TARGET_UPDATE_TIME``.)"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:174
+msgid ""
+"This JoinTarget info is used to populate HTML forms used to match a "
+"tabular file column to a JoinTarget column. Once a JoinTarget is chosen, "
+"the JoinTarget ID is an essential piece of information used to make an "
+"API call to the WorldMap and attempt to map the file."
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:177
+msgid "Retrieving Join Target Information from WorldMap API"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:179
+msgid ""
+"The ``get_join_targets()`` function in ``dataverse_layer_services.py`` "
+"uses the WorldMap API, retrieves a list of available tabular file "
+"JointTargets. (See the `dataverse_layer_services code in GitHub "
+"<https://github.com/IQSS/geoconnect/blob/master/gc_apps/worldmap_connect/dataverse_layer_services.py#L275>`_.)"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:182
+msgid "Saving Join Target Information to Geoconnect Database"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:184
+msgid ""
+"The ``get_latest_jointarget_information()`` in ``utils.py`` retrieves "
+"recent JoinTarget Information from the database. (See the `utils code in "
+"GitHub "
+"<https://github.com/IQSS/geoconnect/blob/master/gc_apps/worldmap_connect/utils.py#L16>`_.)"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:187
+msgid "Setting Up WorldMap Test Data"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:189
+msgid ""
+"For the dataset page, this script gives a query to add test WorldMap map "
+"data. After the query is run, the \"Explore Map\" button should appear "
+"for a tabular file or shapefile. In the following two SQL examples, "
+"substitute ``$DATASET_ID`` and ``$DATAFILE_ID`` with the appropriate "
+"ID's."
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:191
+msgid "To add sample map data for a tabular file:"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:202
+msgid "To add sample map data for a tabular shapefile:"
+msgstr ""
+
+#: ../../source/developers/geospatial.rst:215
+msgid "Previous: :doc:`unf/index` | Next: :doc:`selinux`"
+msgstr ""
+

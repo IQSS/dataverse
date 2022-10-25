@@ -434,3 +434,8 @@ rst_prolog = """
 .. |toctitle| replace:: Contents:
 .. |anotherSub| replace:: Yes, there can be multiple.
 """
+
+# i18n config
+locale_dirs = ['locale/']   # path is example but recommended.
+gettext_compact = False     # optional.
+

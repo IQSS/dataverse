@@ -1,0 +1,107 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/admin/solr-search-index.rst:2
+msgid "Solr Search Index"
+msgstr ""
+
+#: ../../source/admin/solr-search-index.rst:4
+msgid ""
+"Dataverse requires Solr to be operational at all times. If you stop Solr,"
+" you should see a error about this on the home page, which is powered by "
+"the search index Solr provides. You can set up Solr by following the "
+"steps in our Installation Guide's :doc:`/installation/prerequisites` and "
+":doc:`/installation/config` sections explaining how to configure it. This"
+" section you're reading now is about the care and feeding of the search "
+"index. PostgreSQL is the \"source of truth\" and the Dataverse "
+"application will copy data from PostgreSQL into Solr. For this reason, "
+"the search index can be rebuilt at any time. Depending on the amount of "
+"data you have, this can be a slow process. You are encouraged to "
+"experiment with production data to get a sense of how long a full "
+"reindexing will take."
+msgstr ""
+
+#: ../../source/admin/solr-search-index.rst:7
+msgid "Contents:"
+msgstr ""
+
+#: ../../source/admin/solr-search-index.rst:10
+msgid "Full Reindex"
+msgstr ""
+
+#: ../../source/admin/solr-search-index.rst:12
+msgid ""
+"There are two ways to perform a full reindex of the Dataverse search "
+"index. Starting with a \"clear\" ensures a completely clean index but "
+"involves downtime. Reindexing in place doesn't involve downtime but does "
+"not ensure a completely clean index."
+msgstr ""
+
+#: ../../source/admin/solr-search-index.rst:15
+msgid "Clear and Reindex"
+msgstr ""
+
+#: ../../source/admin/solr-search-index.rst:18
+msgid "Clearing Data from Solr"
+msgstr ""
+
+#: ../../source/admin/solr-search-index.rst:20
+msgid ""
+"Please note that the moment you issue this command, it will appear to end"
+" users looking at the home page that all data is gone! This is because "
+"the home page is powered by the search index::"
+msgstr ""
+
+#: ../../source/admin/solr-search-index.rst:25
+msgid "Start Async Reindex"
+msgstr ""
+
+#: ../../source/admin/solr-search-index.rst:27
+msgid ""
+"Please note that this operation may take hours depending on the amount of"
+" data in your system. This known issue is being tracked at "
+"https://github.com/IQSS/dataverse/issues/50::"
+msgstr ""
+
+#: ../../source/admin/solr-search-index.rst:32
+msgid "Reindex in Place"
+msgstr ""
+
+#: ../../source/admin/solr-search-index.rst:34
+msgid ""
+"An alternative to completely clearing the search index is to reindex in "
+"place."
+msgstr ""
+
+#: ../../source/admin/solr-search-index.rst:39
+msgid "Clear Index Timestamps"
+msgstr ""
+
+#: ../../source/admin/solr-search-index.rst:46
+msgid "Start or Continue Async Reindex"
+msgstr ""
+
+#: ../../source/admin/solr-search-index.rst:48
+msgid ""
+"If indexing stops, this command should pick up where it left off based on"
+" which index timestamps have been set, which is why we start by clearing "
+"these timestamps in :ref:`clear_index_timestamps` section. These "
+"timestamps are stored in the ``dvobject`` database table::"
+msgstr ""
+

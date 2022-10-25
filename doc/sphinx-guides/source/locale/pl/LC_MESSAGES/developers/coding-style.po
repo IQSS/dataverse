@@ -1,0 +1,161 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/developers/coding-style.rst:3
+msgid "Coding Style"
+msgstr ""
+
+#: ../../source/developers/coding-style.rst:5
+msgid ""
+"Like all development teams, the `Dataverse developers at IQSS "
+"<https://dataverse.org/about>`_ have their habits and styles when it "
+"comes to writing code. Let's attempt to get on the same page. :)"
+msgstr ""
+
+#: ../../source/developers/coding-style.rst:8
+msgid "|toctitle|"
+msgstr ""
+
+#: ../../source/developers/coding-style.rst:11
+msgid "Java"
+msgstr ""
+
+#: ../../source/developers/coding-style.rst:14
+#: ../../source/developers/coding-style.rst:61
+msgid "Formatting Code"
+msgstr ""
+
+#: ../../source/developers/coding-style.rst:16
+msgid ""
+"Rules can be seen here: "
+"https://wiki.yadda.icm.edu.pl/yadda/Public:Coding_conventions"
+msgstr ""
+
+#: ../../source/developers/coding-style.rst:21
+msgid "Format Code You Changed with Netbeans"
+msgstr ""
+
+#: ../../source/developers/coding-style.rst:23
+msgid ""
+"IQSS has standardized on Netbeans. It is much appreciated when you format"
+" your code (but only the code you touched!) using the out-of-the-box "
+"Netbeans configuration. If you have created an entirely new Java class, "
+"you can just click Source -> Format. If you are adjusting code in an "
+"existing class, highlight the code you changed and then click Source -> "
+"Format. Keeping the \"diff\" in your pull requests small makes them "
+"easier to code review."
+msgstr ""
+
+#: ../../source/developers/coding-style.rst:26
+msgid "Checking Your Formatting With Checkstyle"
+msgstr ""
+
+#: ../../source/developers/coding-style.rst:28
+msgid ""
+"The easiest way to adopt Dataverse coding style is to use Netbeans as "
+"your IDE, avoid change the default Netbeans formatting settings, and only"
+" reformat code you've changed, as described in "
+":ref:`format_code_netbeans`."
+msgstr ""
+
+#: ../../source/developers/coding-style.rst:30
+msgid ""
+"If you do not use Netbeans, you are encouraged to check the formatting of"
+" your code using Checkstyle."
+msgstr ""
+
+#: ../../source/developers/coding-style.rst:32
+msgid "To check the entire project:"
+msgstr ""
+
+#: ../../source/developers/coding-style.rst:34
+msgid "``mvn checkstyle:checkstyle``"
+msgstr ""
+
+#: ../../source/developers/coding-style.rst:36
+msgid "To check a single file:"
+msgstr ""
+
+#: ../../source/developers/coding-style.rst:38
+msgid ""
+"``mvn checkstyle:checkstyle "
+"-Dcheckstyle.includes=**\\/SystemConfig*.java``"
+msgstr ""
+
+#: ../../source/developers/coding-style.rst:41
+msgid "Logging"
+msgstr ""
+
+#: ../../source/developers/coding-style.rst:43
+msgid ""
+"We have adopted a pattern where the top of every class file has a line "
+"like this::"
+msgstr ""
+
+#: ../../source/developers/coding-style.rst:47
+msgid ""
+"Use this ``logger`` field with varying levels such as ``fine`` or "
+"``info`` like this::"
+msgstr ""
+
+#: ../../source/developers/coding-style.rst:51
+msgid ""
+"Generally speaking you should use ``fine`` for everything that you don't "
+"want to show up in Glassfish's ``server.log`` file by default. If you use"
+" a higher level such as ``info`` for common operations, you will probably"
+" hear complaints that your code is too \"chatty\" in the logs. These "
+"logging levels can be controlled at runtime both on your development "
+"machine and in production as explained in the :doc:`debugging` section."
+msgstr ""
+
+#: ../../source/developers/coding-style.rst:53
+msgid ""
+"When adding logging, do not simply add ``System.out.println()`` lines "
+"because the logging level cannot be controlled."
+msgstr ""
+
+#: ../../source/developers/coding-style.rst:56
+msgid "Bash"
+msgstr ""
+
+#: ../../source/developers/coding-style.rst:58
+msgid ""
+"Generally, Google's Shell Style Guide at "
+"https://google.github.io/styleguide/shell.xml seems to have good advice."
+msgstr ""
+
+#: ../../source/developers/coding-style.rst:64
+msgid "Tabs vs. Spaces"
+msgstr ""
+
+#: ../../source/developers/coding-style.rst:66
+msgid "Don't use tabs. Use 2 spaces."
+msgstr ""
+
+#: ../../source/developers/coding-style.rst:68
+msgid ""
+"shfmt from https://github.com/mvdan/sh seems like a decent way to enforce"
+" indentation of two spaces (i.e. ``shfmt -i 2 -w path/to/script.sh``) but"
+" be aware that it makes other changes."
+msgstr ""
+
+#: ../../source/developers/coding-style.rst:72
+msgid "Previous: :doc:`debugging` | Next: :doc:`deployment`"
+msgstr ""
+

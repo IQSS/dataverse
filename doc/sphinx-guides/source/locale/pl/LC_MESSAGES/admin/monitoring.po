@@ -1,0 +1,286 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/admin/monitoring.rst:2
+msgid "Monitoring"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:4
+msgid ""
+"Once you're in production, you'll want to set up some monitoring. This "
+"page may serve as a starting point for you but you are encouraged to "
+"share your ideas with the Dataverse community!"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:7
+msgid "Contents:"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:10
+msgid "Operating System Monitoring"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:12
+msgid ""
+"In production you'll want to monitor the usual suspects such as CPU, "
+"memory, free disk space, etc. There are a variety of tools in this space "
+"but we'll highlight Munin in next section because it's relatively easy to"
+" set up."
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:15
+msgid "Munin"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:17
+msgid ""
+"http://munin-monitoring.org says, \"A default installation provides a lot"
+" of graphs with almost no work.\" From RHEL or CentOS 7, you can try the "
+"following steps."
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:19
+msgid "Enable the EPEL yum repo (if you haven't already):"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:21 ../../source/admin/monitoring.rst:79
+msgid ""
+"``yum install https://dl.fedoraproject.org/pub/epel/epel-release-"
+"latest-7.noarch.rpm``"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:23
+msgid "Install Munin:"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:25
+msgid "``yum install munin``"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:27
+msgid "Start Munin:"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:29
+msgid "``systemctl start munin-node.service``"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:31
+msgid "Configure Munin to start at boot:"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:33
+msgid "``systemctl enable munin-node.service``"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:35
+msgid "Create a username/password (i.e. \"admin\" for both):"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:37
+msgid "``htpasswd /etc/munin/munin-htpasswd admin``"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:39
+msgid ""
+"Assuming you are fronting Glassfish with Apache, prevent Apache from "
+"proxying \"/munin\" traffic to Glassfish by adding the following line to "
+"your Apache config:"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:41
+msgid "``ProxyPassMatch ^/munin !``"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:43
+msgid "Then reload Apache to pick up the config change:"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:45
+msgid "``systemctl reload httpd.service``"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:47
+msgid "Test auth for the web interface:"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:49
+msgid "``curl http://localhost/munin/ -u admin:admin``"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:51
+msgid ""
+"At this point, graphs should start being generated for disk, network, "
+"processes, system, etc."
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:54
+msgid "HTTP Traffic"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:56
+msgid ""
+"HTTP traffic can be monitored from the client side, the server side, or "
+"both."
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:59
+msgid "Monitoring HTTP Traffic from the Client Side"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:61
+msgid ""
+"HTTP traffic for web clients that have cookies enabled (most browsers) "
+"can be tracked by Google Analytics (https://www.google.com/analytics/) "
+"and Matomo (formerly \"Piwik\"; https://matomo.org/) as explained in the "
+":ref:`Web-Analytics-Code` section of the Installation Guide."
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:63
+msgid ""
+"To track analytics beyond pageviews, style classes have been added for "
+"end user action buttons, which include:"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:65
+msgid ""
+"``btn-compute``, ``btn-contact``, ``btn-download``, ``btn-explore``, "
+"``btn-export``, ``btn-preview``, ``btn-request``, ``btn-share``"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:68
+msgid "Monitoring HTTP Traffic from the Server Side"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:70
+msgid ""
+"There are a wide variety of solutions available for monitoring HTTP "
+"traffic from the server side. The following are merely suggestions and a "
+"pull request against what is written here to add additional ideas is "
+"certainly welcome! Are you excited about the ELK stack (Elasticsearch, "
+"Logstash, and Kibana)? The TICK stack (Telegraph InfluxDB Chronograph and"
+" Kapacitor)? GoAccess? Prometheus? Graphite? Splunk? Please consider "
+"sharing your work with the Dataverse community!"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:73
+msgid "AWStats"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:75
+msgid ""
+"AWStats is a venerable tool for monitoring web traffic based on Apache "
+"access logs. On RHEL/CentOS 7, you can try the following steps."
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:77
+msgid "Enable the EPEL yum repo:"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:81
+msgid "Install AWStats:"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:83
+msgid "``yum install awstats``"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:85
+msgid ""
+"Assuming you are using HTTPS rather than HTTP (and you should!), edit "
+"``/etc/awstats/awstats.standalone.conf`` and change "
+"``LogFile=\"/var/log/httpd/access_log\"`` to "
+"``LogFile=\"/var/log/httpd/ssl_access_log\"``. In the same file, change "
+"``LogFormat=1`` to ``LogFormat=4``. Make both of these changes "
+"(``LogFile`` and ``LogFormat`` in "
+"``/etc/awstats/awstats.localhost.localdomain.conf`` as well."
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:87
+msgid "Process the logs:"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:89
+msgid "``/usr/share/awstats/tools/awstats_updateall.pl now``"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:91
+msgid ""
+"Please note that load balancers (such as Amazon's ELB) might interfer "
+"with the ``LogFormat``.  To start troubleshooting errors such as "
+"``AWStats did not find any valid log lines that match your LogFormat "
+"parameter``, you might need to bump up the value of "
+"``NbOfLinesForCorruptedLog`` in the config files and re-try while you "
+"interate on your Apache and AWStats config."
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:93
+msgid ""
+"Please note that the Dataverse team has attempted to parse Glassfish logs"
+" using AWStats but it didn't seem to just work and posts have been made "
+"at https://stackoverflow.com/questions/49134154/what-logformat-"
+"definition-does-awstats-require-to-parse-glassfish-http-access-logs and "
+"https://sourceforge.net/p/awstats/discussion/43428/thread/9b1befda/ that "
+"can be followed up on some day."
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:96
+msgid "Database Connection Pool used by Glassfish"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:98
+msgid ""
+"https://github.com/IQSS/dataverse/issues/2595 contains some information "
+"on enabling monitoring of Glassfish, which is disabled by default. It's a"
+" TODO to document what to do here if there is sufficient interest."
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:102
+msgid "actionlogrecord"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:104
+msgid ""
+"There is a database table called ``actionlogrecord`` that captures events"
+" that may be of interest. See "
+"https://github.com/IQSS/dataverse/issues/2729 for more discussion around "
+"this table."
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:107
+msgid "Edit Draft Versions Logging"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:109
+msgid ""
+"Changes made to draft versions of datasets are logged in a folder called "
+"logs/edit-drafts. See https://github.com/IQSS/dataverse/issues/5145 for "
+"more information on this logging."
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:112
+msgid "EJB Timers"
+msgstr ""
+
+#: ../../source/admin/monitoring.rst:114
+msgid ""
+"Should you be interested in monitoring the EJB timers, this script may be"
+" used as an example:"
+msgstr ""
+

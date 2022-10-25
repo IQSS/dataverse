@@ -1,0 +1,167 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/versions.rst:5
+msgid "Dataverse Guides Versions"
+msgstr ""
+
+#: ../../source/versions.rst:7
+msgid ""
+"This list provides a way to refer to previous versions of the Dataverse "
+"guides, which we still host. In order to learn more about the updates "
+"delivered from one version to another, visit the `Releases "
+"<https://github.com/IQSS/dataverse/releases>`__ page in our GitHub repo."
+msgstr ""
+
+#: ../../source/versions.rst:9
+msgid "4.11"
+msgstr ""
+
+#: ../../source/versions.rst:11
+msgid "`4.10.1 </en/4.10/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:12
+msgid "`4.10 </en/4.10/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:13
+msgid "`4.9.4 </en/4.9.4/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:14
+msgid "`4.9.3 </en/4.9.3/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:15
+msgid "`4.9.2 </en/4.9.2/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:16
+msgid "`4.9.1 </en/4.9.1/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:17
+msgid "`4.9 </en/4.9/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:18
+msgid "`4.8.6 </en/4.8.6/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:19
+msgid "`4.8.5 </en/4.8.5/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:20
+msgid "`4.8.4 </en/4.8.4/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:21
+msgid "`4.8.3 </en/4.8.3/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:22
+msgid "`4.8.2 </en/4.8.2/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:23
+msgid "`4.8.1 </en/4.8.1/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:24
+msgid "`4.8 </en/4.8/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:25
+msgid "`4.7.1 </en/4.7.1/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:26
+msgid "`4.7 </en/4.7/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:27
+msgid "`4.6.2 </en/4.6.2/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:28
+msgid "`4.6.1 </en/4.6.1/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:29
+msgid "`4.6 </en/4.6/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:30
+msgid "`4.5.1 </en/4.5.1/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:31
+msgid "`4.5 </en/4.5/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:32
+msgid "`4.4 </en/4.4/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:33
+msgid "`4.3.1 </en/4.3.1/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:34
+msgid "`4.3 </en/4.3/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:35
+msgid "`4.2.4 </en/4.2.4/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:36
+msgid "`4.2.3 </en/4.2.3/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:37
+msgid "`4.2.2 </en/4.2.2/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:38
+msgid "`4.2.1 </en/4.2.1/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:39
+msgid "`4.2 </en/4.2/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:40
+msgid "`4.1 </en/4.1/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:41
+msgid "`4.0.1 </en/4.0.1/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:42
+msgid "`4.0 </en/4.0/>`__"
+msgstr ""
+
+#: ../../source/versions.rst:43
+msgid "`3.6.2 </en/3.6.2/>`__"
+msgstr ""
+

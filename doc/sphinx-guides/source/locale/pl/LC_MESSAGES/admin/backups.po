@@ -1,0 +1,48 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-24 10:27+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/admin/backups.rst:2
+msgid "Backups"
+msgstr ""
+
+#: ../../source/admin/backups.rst:7
+msgid ""
+"Running tape, or similar backups to ensure the long term preservation of "
+"all the data stored in the Dataverse is an implied responsibility that "
+"should be taken most seriously."
+msgstr ""
+
+#: ../../source/admin/backups.rst:9
+msgid ""
+"*In addition* to running these disk-level backups, we have provided an "
+"experimental script that can be run on schedule (via a cron job or "
+"something similar) to create extra archival copies of all the Datafiles "
+"stored in the Dataverse on a remote storage server, accessible via an ssh"
+" connection. The script and some documentation can be found in "
+"``scripts/backup/run_backup`` in the Dataverse source tree at "
+"https://github.com/IQSS/dataverse . Some degree of knowledge of system "
+"administration and Python is required."
+msgstr ""
+
+#: ../../source/admin/backups.rst:11
+msgid ""
+"Once again, the script is experimental and NOT a replacement of regular "
+"and reliable disk backups!"
+msgstr ""
+

@@ -1,0 +1,154 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/api/apps.rst:2
+msgid "Apps"
+msgstr ""
+
+#: ../../source/api/apps.rst:4
+msgid ""
+"The introduction of Dataverse APIs has fostered the development of apps "
+"that are listed at http://dataverse.org/integrations and the "
+":doc:`/admin/integrations` section of the Admin Guide."
+msgstr ""
+
+#: ../../source/api/apps.rst:6
+msgid ""
+"The apps listed in this document are open source, demonstrating how to "
+"use Dataverse APIs. Some of them (and others) are built on :doc:`/api"
+"/client-libraries` that are available for Dataverse APIs."
+msgstr ""
+
+#: ../../source/api/apps.rst:9
+msgid "|toctitle|"
+msgstr ""
+
+#: ../../source/api/apps.rst:12
+msgid "Javascript"
+msgstr ""
+
+#: ../../source/api/apps.rst:15
+msgid "TwoRavens"
+msgstr ""
+
+#: ../../source/api/apps.rst:17
+msgid ""
+"TwoRavens is a system of interlocking statistical tools for data "
+"exploration, analysis, and meta-analysis."
+msgstr ""
+
+#: ../../source/api/apps.rst:19
+msgid "https://github.com/IQSS/TwoRavens"
+msgstr ""
+
+#: ../../source/api/apps.rst:22
+msgid "PHP"
+msgstr ""
+
+#: ../../source/api/apps.rst:25
+msgid "OJS"
+msgstr ""
+
+#: ../../source/api/apps.rst:27
+msgid ""
+"The Open Journal Systems (OJS) Dataverse Plugin adds data sharing and "
+"preservation to the OJS publication process."
+msgstr ""
+
+#: ../../source/api/apps.rst:29
+msgid "https://github.com/pkp/ojs/tree/ojs-stable-2_4_8/plugins/generic/dataverse"
+msgstr ""
+
+#: ../../source/api/apps.rst:32
+msgid "Python"
+msgstr ""
+
+#: ../../source/api/apps.rst:35
+msgid "OSF"
+msgstr ""
+
+#: ../../source/api/apps.rst:37
+msgid ""
+"Allows you to view, download, and upload files to and from a Dataverse "
+"dataset from an Open Science Framework (OSF) project: "
+"https://github.com/CenterForOpenScience/osf.io/tree/develop/addons/dataverse"
+msgstr ""
+
+#: ../../source/api/apps.rst:40
+msgid "GeoConnect"
+msgstr ""
+
+#: ../../source/api/apps.rst:42
+msgid ""
+"GeoConnect allows Dataverse files to be visualized on "
+"http://worldmap.harvard.edu with the \"Explore\" button. Read more about "
+"it in the :doc:`/user/data-exploration/worldmap` section of the User "
+"Guide."
+msgstr ""
+
+#: ../../source/api/apps.rst:44
+msgid "https://github.com/IQSS/geoconnect"
+msgstr ""
+
+#: ../../source/api/apps.rst:47
+msgid "metrics.dataverse.org"
+msgstr ""
+
+#: ../../source/api/apps.rst:49
+msgid ""
+"metrics.dataverse.org_ aggregates metrics across multiple Dataverse "
+"installations: https://github.com/IQSS/metrics.dataverse.org"
+msgstr ""
+
+#: ../../source/api/apps.rst:54
+msgid "Java"
+msgstr ""
+
+#: ../../source/api/apps.rst:57
+msgid "DVUploader"
+msgstr ""
+
+#: ../../source/api/apps.rst:59
+msgid ""
+"The open-source DVUploader tool is a stand-alone command-line Java "
+"application that uses the Dataverse API to upload files to a specified "
+"Dataset. Files can be specified by name, or the DVUploader can upload all"
+" files in a directory or recursively from a directory tree. The "
+"DVUploader can also verify that uploaded files match their local sources "
+"by comparing the local and remote fixity checksums. Source code, release "
+"1.0.0- jar file, and documentation are available on GitHub. DVUploader's "
+"creation was supported by the Texas Digital Library."
+msgstr ""
+
+#: ../../source/api/apps.rst:61
+msgid "https://github.com/IQSS/dataverse-uploader"
+msgstr ""
+
+#: ../../source/api/apps.rst:65
+msgid "Dataverse for Android"
+msgstr ""
+
+#: ../../source/api/apps.rst:67
+msgid "For now this is only a proof of concept."
+msgstr ""
+
+#: ../../source/api/apps.rst:69
+msgid "https://github.com/IQSS/dataverse-android"
+msgstr ""
+

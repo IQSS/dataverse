@@ -1,0 +1,163 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/api/intro.rst:2
+msgid "Introduction"
+msgstr ""
+
+#: ../../source/api/intro.rst:4
+msgid ""
+"We encourage anyone interested in building tools that interoperate with "
+"Dataverse to utilize our APIs. The Dataverse community has supplied :doc"
+":`client-libraries` for Python, R, and Java and we are always interested "
+"in helping the community develop libraries for additional languages. The "
+":doc:`apps` section links to open source Javascript, PHP, Python, and "
+"Java code that you can learn from while developing against Dataverse "
+"APIs."
+msgstr ""
+
+#: ../../source/api/intro.rst:7
+msgid "|toctitle|"
+msgstr ""
+
+#: ../../source/api/intro.rst:10
+msgid "How This Guide is Organized"
+msgstr ""
+
+#: ../../source/api/intro.rst:12
+msgid "We document the Dataverse API in five sections:"
+msgstr ""
+
+#: ../../source/api/intro.rst:14
+msgid ""
+":doc:`sword`: For depositing data using a standards-based approach rather"
+" than the :doc:`native-api`."
+msgstr ""
+
+#: ../../source/api/intro.rst:15
+msgid ":doc:`search`: For searching dataverses, datasets, and files."
+msgstr ""
+
+#: ../../source/api/intro.rst:16
+msgid ":doc:`dataaccess`: For downloading and subsetting data."
+msgstr ""
+
+#: ../../source/api/intro.rst:17
+msgid ":doc:`native-api`: For performing most tasks that are possible in the GUI."
+msgstr ""
+
+#: ../../source/api/intro.rst:18
+msgid ""
+":doc:`metrics`: For query statisics about usage of a Dataverse "
+"installation."
+msgstr ""
+
+#: ../../source/api/intro.rst:20
+msgid ""
+"We use the term \"native\" to mean that the API is not based on any "
+"standard. For this reason, the :doc:`search` and :doc:`dataaccess` could "
+"also be considered \"native\" and in the future we may reorganize the API"
+" Guide to split the :doc:`native-api` section into \"Datasets API\", "
+"\"Files\" API, etc."
+msgstr ""
+
+#: ../../source/api/intro.rst:23
+msgid "Authentication"
+msgstr ""
+
+#: ../../source/api/intro.rst:25
+msgid ""
+"Most Dataverse APIs require the use of an API token. (In code we "
+"sometimes call it a \"key\" because it's shorter.) Instructions for "
+"getting a token are described in the :doc:`/user/account` section of the "
+"User Guide."
+msgstr ""
+
+#: ../../source/api/intro.rst:27
+msgid ""
+"There are two ways to pass your API token to Dataverse APIs. The "
+"preferred method is to send the token in the ``X-Dataverse-key`` HTTP "
+"header, as in the following curl example::"
+msgstr ""
+
+#: ../../source/api/intro.rst:31
+msgid ""
+"Throughout this guide you will often see Bash shell envionmental "
+"variables being used, like this::"
+msgstr ""
+
+#: ../../source/api/intro.rst:36
+msgid ""
+"The second way to pass your API token is via an extra query parameter "
+"called ``key`` in the URL like this::"
+msgstr ""
+
+#: ../../source/api/intro.rst:40
+msgid ""
+"Use of the ``X-Dataverse-key`` HTTP header form is preferred because "
+"putting the query parameters in URLs often results in them finding their "
+"way into web server access logs. Your API token should be kept as secret "
+"as your password because it can be used to perform any action *as you* in"
+" the Dataverse application."
+msgstr ""
+
+#: ../../source/api/intro.rst:43
+msgid "Testing"
+msgstr ""
+
+#: ../../source/api/intro.rst:45
+msgid ""
+"Rather than using a production installation of Dataverse, API users are "
+"welcome to use http://demo.dataverse.org for testing."
+msgstr ""
+
+#: ../../source/api/intro.rst:48
+msgid "Support"
+msgstr ""
+
+#: ../../source/api/intro.rst:50
+msgid ""
+"If you are using the APIs for an installation of Dataverse hosted by your"
+" institution, you may want to reach out to the team that supports it. At "
+"the top of the Dataverse installation's home page, there should be a form"
+" you can fill out by clicking the \"Support\" link."
+msgstr ""
+
+#: ../../source/api/intro.rst:52
+msgid ""
+"If you are having trouble with http://demo.dataverse.org or have "
+"questions about the APIs, please feel free to reach out to the Dataverse "
+"community via https://groups.google.com/forum/#!forum/dataverse-community"
+" ."
+msgstr ""
+
+#: ../../source/api/intro.rst:55
+msgid "Metrics"
+msgstr ""
+
+#: ../../source/api/intro.rst:57
+msgid ""
+"APIs described in this guide are shipped with the Dataverse software "
+"itself. Additional APIs are available if someone at your institution "
+"installs the \"miniverse\" application from "
+"https://github.com/IQSS/miniverse and gives it read only access to a "
+"production Dataverse database. http://dataverse.org/metrics is powered by"
+" miniverse."
+msgstr ""
+

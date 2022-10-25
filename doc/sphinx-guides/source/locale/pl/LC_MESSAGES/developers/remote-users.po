@@ -1,0 +1,100 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/developers/remote-users.rst:3
+#: ../../source/developers/remote-users.rst:9
+msgid "Shibboleth and OAuth"
+msgstr ""
+
+#: ../../source/developers/remote-users.rst:6
+msgid "|toctitle|"
+msgstr ""
+
+#: ../../source/developers/remote-users.rst:11
+msgid ""
+"If you are working on anything related to users, please keep in mind that"
+" your changes will likely affect Shibboleth and OAuth users. For some "
+"background on user accounts in Dataverse, see \"Auth Modes: Local vs. "
+"Remote vs. Both\" in the :doc:`/installation/config` section of the "
+"Installation Guide."
+msgstr ""
+
+#: ../../source/developers/remote-users.rst:13
+msgid ""
+"Rather than setting up Shibboleth on your laptop, developers are advised "
+"to simply add a value to their database to enable Shibboleth \"dev mode\""
+" like this:"
+msgstr ""
+
+#: ../../source/developers/remote-users.rst:15
+msgid ""
+"``curl http://localhost:8080/api/admin/settings/:DebugShibAccountType -X "
+"PUT -d RANDOM``"
+msgstr ""
+
+#: ../../source/developers/remote-users.rst:17
+msgid ""
+"For a list of possible values, please find enum ``DevShibAccountType`` in"
+" the source code."
+msgstr ""
+
+#: ../../source/developers/remote-users.rst:19
+msgid ""
+"Now when you go to http://localhost:8080/shib.xhtml you should be "
+"prompted to create a Shibboleth account."
+msgstr ""
+
+#: ../../source/developers/remote-users.rst:21
+msgid ""
+"OAuth is much more straightforward to get working on your laptop than "
+"Shibboleth. GitHub is a good identity provider to test with because you "
+"can easily request a Client ID and Client Secret that works against "
+"localhost. Follow the instructions in the :doc:`/installation/oauth2` "
+"section of the installation Guide and use "
+"\"http://localhost:8080/oauth2/callback.xhtml\" as the callback URL."
+msgstr ""
+
+#: ../../source/developers/remote-users.rst:23
+msgid ""
+"In addition to setting up OAuth on your laptop for real (as in "
+":doc:`/installation/oauth2`), you can also use a dev/debug mode:"
+msgstr ""
+
+#: ../../source/developers/remote-users.rst:25
+msgid ""
+"``curl http://localhost:8080/api/admin/settings/:DebugOAuthAccountType -X"
+" PUT -d RANDOM_EMAIL2``"
+msgstr ""
+
+#: ../../source/developers/remote-users.rst:27
+msgid ""
+"For a list of possible values, please find enum ``DevOAuthAccountType`` "
+"in the source code."
+msgstr ""
+
+#: ../../source/developers/remote-users.rst:29
+msgid ""
+"Now when you go to http://localhost:8080/firstLogin.xhtml you should be "
+"prompted to create a Shibboleth account."
+msgstr ""
+
+#: ../../source/developers/remote-users.rst:33
+msgid "Previous: :doc:`unf/index` | Next: :doc:`geospatial`"
+msgstr ""
+

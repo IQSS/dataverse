@@ -1,0 +1,51 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/admin/reporting-tools.rst:4
+msgid "Reporting Tools"
+msgstr ""
+
+#: ../../source/admin/reporting-tools.rst:6
+msgid "Reporting tools created by members of the Dataverse community."
+msgstr ""
+
+#: ../../source/admin/reporting-tools.rst:11
+msgid ""
+"Matrix (<https://github.com/rindataverse/matrix>): Collaboration Matrix "
+"is a visualization showing the connectedness and collaboration between "
+"authors and their affiliations. Visit https://rin.lipi.go.id/matrix/ to "
+"play with a production installation."
+msgstr ""
+
+#: ../../source/admin/reporting-tools.rst:14
+msgid ""
+"Dataverse Web Report (<https://github.com/scholarsportal/Dataverse-Web-"
+"Report>): Creates interactive charts showing data extracted from the "
+"Dataverse Excel Report"
+msgstr ""
+
+#: ../../source/admin/reporting-tools.rst:16
+msgid ""
+"Dataverse Reports for Texas Digital Library "
+"(<https://github.com/TexasDigitalLibrary/dataverse-reports>): A "
+"python3-based tool to generate and email statistical reports from "
+"Dataverse (https://dataverse.org/) using the native API and database "
+"queries."
+msgstr ""
+

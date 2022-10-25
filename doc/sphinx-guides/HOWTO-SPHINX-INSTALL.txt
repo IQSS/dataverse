@@ -1,22 +1,20 @@
 This is how to install sphinx: 
 
-On a Mac: 
-
-Download the sphinx zip file; I got mine from here: 
-http://sphinx-doc.org/install.html
-
-Unzip it somewhere. In the unzipped directory, do the following as
-root, (sudo -i):
-
-python setup.py build
-python setup.py install
-
-Another option (Mac/Unix/Windows): Use pip
-* Unless you already have it, install pip (https://pip.pypa.io/en/latest/installing.html)
-* run
-    pip install sphinx
+Guide will cover sphinx installation inside python virtual environment.
+Python virtual environments are helpful to ensure that everyone uses
+the same versions of packages. It also helps in maintaining what
+packages are installed for each project. It resolves  
+Guide assumes that user is using debian like operating system.
+If you are using some other operating system then you
+can find some tips in additional links. 
 
 
+# Create virtual environment in directory `env`
+python3 -m venv env
+# Activate created environment
+source env/bin/activate
+# Install sphinx (and possibly other required packages)
+pip install -r requirements.txt
 
 This is all you need. You should now be able to build HTML/pdf documentation from git sources locally. 
 
@@ -25,23 +23,50 @@ And this is how you build:
 make html
 
 in this directory will generate html files, and leave them in the build subdirectory here. 
+
+To build documentation in non default language (if available) you need to
+use additional param:
+
+make -e SPHINXOPTS="-D language='pl'" html
+
 To have it build the html files AND deploy them under your glassfish environment, type
 
 make htmldeploy
 
 For this the Makefile assumes that your glassfish is in /usr/local/glassfish4.
+
 If it's installed elsewhere, you need to specify the directory on the command line, 
 for example, like this:
 
 make htmldeploy DOCROOT=/Applications/NetBeans/glassfish-4.1/glassfish/domains/domain1/docroot
 
-If you need more information on sphinx (probably not), for ex., on how to start a new
-documentation project of your own, etc., here's a good link:
 
-http://pythonhosted.org/an_example_pypi_project/sphinx.html
 
-As always, Google is your friend. 
+Every time when there is some change in documentation the following should
+be executed to ensure that translation files are fresh
 
-For a super useful quick start doc on how to format your source
-documents in sphinx, remember to consult Eleni's ".rst cheat sheet":
-http://bit.ly/1eGnxxI (Google Doc)
+make gettext
+sphinx-intl update -p build/locale -l pl
+
+
+To deactivate virtual evironment run
+
+deactivate
+
+Some additional resources:
+ - Working with python virtual environments
+   https://packaging.python.org/en/latest/tutorials/installing-packages/#creating-and-using-virtual-environments
+
+ - How to use pip
+   https://pip.pypa.io/en/stable/user_guide/
+
+ - More information on sphinx, for ex., on how to start a new
+   documentation project of your own, etc.
+   http://pythonhosted.org/an_example_pypi_project/sphinx.html
+
+ - Super useful quick start doc on how to format your source
+   documents in sphinx: Eleni's ".rst cheat sheet"
+   http://bit.ly/1eGnxxI (Google Doc) 
+
+ - Guide about Sphinx i18n
+   https://www.sphinx-doc.org/en/master/usage/advanced/intl.html

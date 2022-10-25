@@ -1,0 +1,393 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/user/data-exploration/worldmap.rst:4
+msgid "WorldMap: Geospatial Data Exploration"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:7
+msgid "|toctitle|"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:10
+msgid "Dataverse and WorldMap"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:12
+msgid ""
+"`WorldMap <http://worldmap.harvard.edu/>`_ is developed by the Center for"
+" Geographic Analysis (CGA) at Harvard and is open source software that "
+"helps researchers visualize and explore their data in maps. The WorldMap "
+"and Dataverse collaboration allows researchers to upload shapefiles or "
+"tabular files to Dataverse for long term storage and receive a persistent"
+" identifier (through DOI), then easily navigate into WorldMap to interact"
+" with the data."
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:14
+msgid ""
+"Note: WorldMap hosts their own `user guide "
+"<http://worldmap.harvard.edu/static/docs/WorldMap_Help_en.pdf>`_ that "
+"covers some of the same material as this page."
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:17
+msgid "What is Geoconnect?"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:19
+msgid ""
+"Geoconnect is a platform that integrates Dataverse and WorldMap, allowing"
+" researchers to visualize their geospatial data. Geoconnect can be used "
+"to create maps of shapefiles or of tabular files containing geospatial "
+"information. Geoconnect is an optional component of Dataverse, so if you "
+"are interested in this feature but don't see it in the installation of "
+"Dataverse you are using, you should contact the support team for that "
+"installation and ask them to enable the Geoconnect feature."
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:21
+msgid ""
+"If a data file's owner has created a map of that data using Geoconnect, "
+"you can view the map by clicking the \"Explore\" button. If the data is "
+"in the form of a shapefile, the button takes you right to the map. If "
+"it's a tabular file, the Explore button will be a dropdown, and you'll "
+"need to select \"Worldmap\"."
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:24
+msgid "Mapping shapefiles with Geoconnect"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:26
+msgid ""
+"Geoconnect is capable of mapping shapefiles which are uploaded to "
+"Dataverse in .zip format. Specifically, Dataverse recognizes a zipped "
+"shapefile by:"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:28
+msgid "Examining the contents of the .zip file"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:30
+msgid ""
+"Checking for the existence of four similarly named files with the "
+"following extensions: .dbf, .prj, .shp, .shx"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:32
+msgid ""
+"Once you have uploaded your .zip shapefile, a Map Data button will appear"
+" next to the file in the dataset. In order to use this button, you'll "
+"need to publish your dataset. Once your dataset has been published, you "
+"can click on the Map Data button to be brought to Geoconnect, the portal "
+"between Dataverse and WorldMap that will allow you to create your map."
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:34
+msgid ""
+"To get started with visualizing your shapefile, click on the blue "
+"\"Visualize on WorldMap\" button in Geoconnect. It may take up to 45 "
+"seconds for the data to be sent to WorldMap and then back to Geoconnect."
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:36
+msgid ""
+"Once this process has finished, you will be taken to a new page where you"
+" can style your map through Attribute, Classification Method, Number of "
+"Intervals, and Colors. Clicking \"Apply Changes\" will send your map to "
+"both Dataverse and WorldMap, creating a preview of your map that will be "
+"visible on your file page and your dataset page."
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:38
+msgid ""
+"Clicking \"View on WorldMap\" will open WorldMap in a new tab, allowing "
+"you to see how your map will be displayed there."
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:40
+msgid ""
+"You can delete your map with the \"Delete\" button. If you decide to "
+"delete the map, it will no longer appear on WorldMap, and your dataset in"
+" Dataverse will no longer display the map preview."
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:42
+msgid ""
+"When you're satisfied with your map, you may click \"Return to the "
+"Dataverse\" to go back to Dataverse."
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:44
+msgid ""
+"In the future, to replace your shapefile's map with a new one, simply "
+"click the Map Data button on the dataset or file page to return to the "
+"Geoconnect edit map page."
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:47
+msgid "Mapping tabular files with Geoconnect"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:49
+msgid ""
+"Geoconnect can map tabular files that contain geospatial information such"
+" as latitude/longitude coordinates, census tracts, zip codes, Boston "
+"election wards, etc."
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:53
+msgid "Preparing a tabular file to be mapped"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:55
+msgid "**1. Ingest**"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:57
+msgid ""
+"Geospatial tabular files need a bit of preparation in Dataverse before "
+"they can be mapped in Geoconnect. When you upload your file, Dataverse "
+"will take about ten seconds to ingest it. During the ingest process it "
+"will identify the file as tabular data (see :numref:`image1`)."
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:63
+msgid "Ingested file screenshot"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:63
+msgid "Screenshot of successfully ingested file"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:66
+msgid "**2.Tag as Geospatial**"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:68
+msgid ""
+"Next, you'll need to let Dataverse know that your tabular file contains "
+"geospatial data. Select your file, click the \"Edit Files\" button, and "
+"select \"Tags\" from the dropdown menu. This will take you to the Edit "
+"Tags menu (:numref:`image2`). Under the \"Tabular Data Tags\" dropdown, "
+"select \"Geospatial\". Then click \"Save Changes\"."
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:74
+msgid "Assign Geospatial tag screenshot"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:74
+msgid "Screenshot of assigning \"Geospatial\" tag on tabular file"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:76
+msgid "**3. Publish & Map Data**"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:78
+msgid ""
+"At this point, a \"Map data\" button will appear next to your file. "
+"Publish this new version of your dataset to activate this button."
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:84
+msgid "Map data button"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:84
+msgid "Screenshot presenting file with highlighted \"Map data\" button"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:88
+msgid "Creating the map"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:90
+msgid ""
+"If your tabular file contains **latitude and longitude** columns, then "
+"the process is simple: those columns may be directly mapped. Otherwise, "
+"you will need to use a *spatial join*. Spatial joins tell WorldMap how to"
+" read your tabular data file in order to create a map that accurately "
+"represents it."
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:92
+msgid "To carry out a spatial join, you'll manually connect"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:95
+msgid "Geospatial column(s) from your Dataverse tabular file"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:95
+msgid "e.g., a census tract column from your table"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:97
+msgid "with"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:100
+msgid "A WorldMap \"target layer\" that contains the same geospatial information"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:100
+msgid "e.g., WorldMap's \"target layer\" containing census tract parameters"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:102
+msgid "The following screenshots illustrate the mapping process:"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:104
+msgid ""
+"**1. Once you've pressed the \"Map Data\" button, you're brought to this "
+"page:**"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:110
+msgid "file in Geoconnect"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:110
+msgid "Screenshot presenting file in Geoconnect application"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:112
+msgid "**2. Choose a Geospatial Data Type**"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:118
+#: ../../source/user/data-exploration/worldmap.rst:126
+msgid "Geospatial Data Type selection screenshot"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:118
+msgid "Screenshot of selecting Geospatial Data Type in Geoconnect"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:120
+msgid ""
+"**3. Choose a column from your file to match the WorldMap Layer you "
+"selected**"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:126
+msgid ""
+"Screenshot of selecting Geospatial Data Column Name from tabular file in "
+"Geoconnect"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:128
+msgid ""
+"**4. Choose from the list of WorldMap Layers available for the Geospatial"
+" Data Type you selected**"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:134
+msgid "WorldMap layer selection screenshot"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:134
+msgid "Screenshot of selecting available WorldMap layer in Geoconnect"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:136
+msgid "**5.Submit the data for mapping!**"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:142
+msgid "Map generation screenshot"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:142
+msgid "Screenshot presenting generating map in Geoconnect"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:144
+msgid "**6. View Results**"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:146
+msgid ""
+"At this point you will be presented with a basic map that can be styled "
+"to your specifications. The example pictured in :numref:`image9` below "
+"includes an error message - some of the rows weren't able to be matched "
+"properly. In this case, you could still go forward with your map, but "
+"without the information from the unmatched rows."
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:152
+msgid "Map preview screenshot"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:152
+msgid "Screenshot presenting preview of generated map in Geoconnect"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:155
+msgid "Finalizing your map"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:157
+msgid "Now that you have created your map:"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:159
+msgid ""
+"It exists on the WorldMap platform and may be viewed there -- with all of"
+" WorldMap's capabilities."
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:161
+msgid ""
+"Dataverse will contain a preview of the map and links to the larger "
+"version on WorldMap."
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:163
+msgid ""
+"The map editor (:numref:`image9`) provides a set of options you can use "
+"to style your map. Clicking \"Apply Changes\" saves the current version "
+"of your map to Dataverse and Worldmap. The \"Return to the Dataverse\" "
+"button brings you back to Dataverse. \"View on WorldMap\" takes you to "
+"the map's page on WorldMap, which offers additional views and options."
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:165
+msgid ""
+"If you'd like to make further changes to your map in the future, you can "
+"return to the editor by clicking the \"Map Data\" button on your file."
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:168
+msgid "Removing your map"
+msgstr ""
+
+#: ../../source/user/data-exploration/worldmap.rst:170
+msgid ""
+"You can delete your map at any time. If you are on Dataverse, click \"Map"
+" Data\" and click the \"Delete Map\" button on the upper right. This "
+"completely removes the map and underlying data from the WorldMap "
+"platform."
+msgstr ""
+

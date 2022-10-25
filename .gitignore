@@ -22,6 +22,8 @@ scripts/api/py_api_wrapper/demo-data/*
 scripts/api/py_api_wrapper/test_data/*
 scripts/api/py_api_wrapper/local-data/*
 doc/sphinx-guides/build
+doc/sphinx-guides/env
+doc/sphinx-guides/source/locale/**/*.mo
 faces-config.NavData
 src/main/java/BuildNumber.properties
 scripts/installer/dvinstall.zip

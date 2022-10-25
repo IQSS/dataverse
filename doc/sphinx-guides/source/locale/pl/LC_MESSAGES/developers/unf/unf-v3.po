@@ -1,0 +1,160 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/developers/unf/unf-v3.rst:4
+msgid "UNF Version 3"
+msgstr ""
+
+#: ../../source/developers/unf/unf-v3.rst:9
+msgid ""
+"Version 3 of the UNF algorithm was used by the Dataverse Network software"
+" prior to version 2.0, and was implemented in R code. This algorithm was "
+"used on digital objects containing vectors of numbers, vectors of "
+"character strings, data sets comprising such vectors, and studies "
+"comprising one or more such data sets."
+msgstr ""
+
+#: ../../source/developers/unf/unf-v3.rst:11
+msgid ""
+"The UNF V3 algorithm applied to the content of a data set or study is as "
+"follows:"
+msgstr ""
+
+#: ../../source/developers/unf/unf-v3.rst:13
+msgid ""
+"Round each element in a numeric vector to k significant digits using the "
+"IEEE 754 round towards zero rounding mode. The default value of k is "
+"seven, the maximum expressible in single-precision floating point "
+"calculations. UNF calculation for vectors of character strings is "
+"identical, except that you truncate to k characters and the default value"
+" of k is 128."
+msgstr ""
+
+#: ../../source/developers/unf/unf-v3.rst:15
+msgid ""
+"Convert each vector element to a character string in exponential "
+"notation, omitting noninformational zeros. If an element is missing, "
+"represent it as a string of three null characters. If an element is an "
+"IEEE 754, nonfinite, floating-point special value, represent it as the "
+"signed, lowercase, IEEE minimal printable equivalent (that is, +inf, "
+"-inf, or +nan)."
+msgstr ""
+
+#: ../../source/developers/unf/unf-v3.rst:17
+msgid "Each character string comprises the following:"
+msgstr ""
+
+#: ../../source/developers/unf/unf-v3.rst:19
+#: ../../source/developers/unf/unf-v3.rst:29
+msgid "A sign character."
+msgstr ""
+
+#: ../../source/developers/unf/unf-v3.rst:21
+msgid "A single leading digit."
+msgstr ""
+
+#: ../../source/developers/unf/unf-v3.rst:23
+msgid "A decimal point."
+msgstr ""
+
+#: ../../source/developers/unf/unf-v3.rst:25
+msgid ""
+"Up to k-1 digits following the decimal, consisting of the remaining k-1 "
+"digits of the number, omitting trailing zeros."
+msgstr ""
+
+#: ../../source/developers/unf/unf-v3.rst:27
+msgid "A lowercase letter \"e.\""
+msgstr ""
+
+#: ../../source/developers/unf/unf-v3.rst:31
+msgid "The digits of the exponent, omitting trailing zeros."
+msgstr ""
+
+#: ../../source/developers/unf/unf-v3.rst:33
+msgid ""
+"For example, the number pi at five digits is represented as -3.1415e+, "
+"and the number 300 is represented as the string +3.e+2."
+msgstr ""
+
+#: ../../source/developers/unf/unf-v3.rst:35
+msgid ""
+"Terminate character strings representing nonmissing values with a POSIX "
+"end-of-line character."
+msgstr ""
+
+#: ../../source/developers/unf/unf-v3.rst:37
+msgid ""
+"Encode each character string with `Unicode bit encoding "
+"<http://www.unicode.org/versions/Unicode4.0.0/>`_. Versions 3 through 4 "
+"use UTF-32BE; Version 4.1 uses UTF-8."
+msgstr ""
+
+#: ../../source/developers/unf/unf-v3.rst:39
+msgid ""
+"Combine the vector of character strings into a single sequence, with each"
+" character string separated by a POSIX end-of-line character and a null "
+"byte."
+msgstr ""
+
+#: ../../source/developers/unf/unf-v3.rst:41
+msgid ""
+"Compute a hash on the resulting sequence using the standard MD5 hashing "
+"algorithm for Version 3 and using `SHA256 "
+"<http://csrc.nist.gov/publications/fips/fips180-2/fips180-2withchangenotice.pdf>`_"
+" for Version 4. The resulting hash is `base64 "
+"<http://www.ietf.org/rfc/rfc3548.txt>`_ encoded to support readability."
+msgstr ""
+
+#: ../../source/developers/unf/unf-v3.rst:43
+msgid ""
+"Calculate the UNF for each lower-level data object, using a consistent "
+"UNF version and level of precision across the individual UNFs being "
+"combined."
+msgstr ""
+
+#: ../../source/developers/unf/unf-v3.rst:45
+msgid "Sort the base64 representation of UNFs in POSIX locale sort order."
+msgstr ""
+
+#: ../../source/developers/unf/unf-v3.rst:47
+msgid ""
+"Apply the UNF algorithm to the resulting vector of character strings "
+"using k at least as large as the length of the underlying character "
+"string."
+msgstr ""
+
+#: ../../source/developers/unf/unf-v3.rst:49
+msgid ""
+"Combine UNFs from multiple variables to form a single UNF for an entire "
+"data frame, and then combine UNFs for a set of data frames to form a "
+"single UNF that represents an entire research study."
+msgstr ""
+
+#: ../../source/developers/unf/unf-v3.rst:51
+msgid ""
+"Learn more: Software for computing UNFs is available in an R Module, "
+"which includes a Windows standalone tool and code for Stata and SAS "
+"languages. Also see the following for more details: Micah Altman and Gary"
+" King. 2007. \"A Proposed Standard for the Scholarly Citation of "
+"Quantitative Data,\" D-Lib Magazine, Vol. 13, No. 3/4 (March). (Abstract:"
+" `HTML <http://gking.harvard.edu/files/abs/cite-abs.shtml>`_ | Article: "
+"`PDF <http://gking.harvard.edu/files/cite.pdf>`_)"
+msgstr ""
+

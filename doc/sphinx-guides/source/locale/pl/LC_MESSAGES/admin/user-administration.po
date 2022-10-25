@@ -1,0 +1,187 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/admin/user-administration.rst:2
+msgid "User Administration"
+msgstr ""
+
+#: ../../source/admin/user-administration.rst:4
+msgid "This section focuses on user administration tools and tasks."
+msgstr ""
+
+#: ../../source/admin/user-administration.rst:7
+msgid "Contents:"
+msgstr ""
+
+#: ../../source/admin/user-administration.rst:10
+msgid "Manage Users"
+msgstr ""
+
+#: ../../source/admin/user-administration.rst:12
+msgid ""
+"The Manage Users table gives the network administrator a list of all user"
+" accounts in table form. You can access it by clicking the \"Manage "
+"Users\" button on the :doc:`dashboard`, which is linked from the header "
+"of all Dataverse pages (if you're logged in as an administrator). It "
+"lists username, full name, email address, affiliation, the authentication"
+" method they use, the roles their account has been granted, and whether "
+"or not they have Superuser status."
+msgstr ""
+
+#: ../../source/admin/user-administration.rst:14
+msgid ""
+"Users are listed alphabetically by username. The input labelled \"Search "
+"these users...\" above the table allows you to search for a specific "
+"user. It performs a right-truncated wildcard search of the Username, "
+"Name, and Email columns. This means, if you search \"baseba\" then it "
+"will search those three columns for any string of text that begins with "
+"\"baseba\", e.g. \"baseball\" or \"baseballfan\"."
+msgstr ""
+
+#: ../../source/admin/user-administration.rst:16
+msgid ""
+"If you would like to assign or remove a user's Superuser status, then you"
+" can do so by checking or unchecking their checkbox under the "
+"\"Superuser\" column."
+msgstr ""
+
+#: ../../source/admin/user-administration.rst:18
+msgid ""
+"If you would like to remove all roles/permissions from a user's account "
+"(in the event of their leaving your organization, for example) then you "
+"can do so by clicking the \"Remove All\" button under the Roles column. "
+"This will keep the user's account active, but will revert it to put the "
+"account on the level of a default user with default permissions."
+msgstr ""
+
+#: ../../source/admin/user-administration.rst:21
+msgid "List Users via API"
+msgstr ""
+
+#: ../../source/admin/user-administration.rst:23
+msgid ""
+"There are two ways to list users via API. If you have relatively few "
+"users, you can get them all as a dump with this command with a superuser "
+"API token::"
+msgstr ""
+
+#: ../../source/admin/user-administration.rst:27
+msgid ""
+"If you have many users and want to be able to search and paginate through"
+" the results, use the following command with a superuser API token::"
+msgstr ""
+
+#: ../../source/admin/user-administration.rst:31
+msgid ""
+"With the ``list-users`` form you can include the following optional query"
+" parameters:"
+msgstr ""
+
+#: ../../source/admin/user-administration.rst:33
+msgid ""
+"``searchTerm`` A string that matches the beginning of a user identifier, "
+"first name, last name or email address."
+msgstr ""
+
+#: ../../source/admin/user-administration.rst:34
+msgid ""
+"``itemsPerPage`` The number of detailed results to return.  The default "
+"is 25.  This number has no limit. e.g. You could set it to 1000 to return"
+" 1,000 results"
+msgstr ""
+
+#: ../../source/admin/user-administration.rst:35
+msgid "``selectedPage`` The page of results to return.  The default is 1."
+msgstr ""
+
+#: ../../source/admin/user-administration.rst:38
+msgid "Merge User Accounts"
+msgstr ""
+
+#: ../../source/admin/user-administration.rst:40
+msgid "See :ref:`merge-accounts-label`"
+msgstr ""
+
+#: ../../source/admin/user-administration.rst:43
+msgid "Change User Identifier"
+msgstr ""
+
+#: ../../source/admin/user-administration.rst:45
+msgid "See :ref:`change-identifier-label`"
+msgstr ""
+
+#: ../../source/admin/user-administration.rst:48
+msgid "Confirm Email"
+msgstr ""
+
+#: ../../source/admin/user-administration.rst:50
+msgid ""
+"Dataverse encourages builtin/local users to verify their email address "
+"upon signup or email change so that sysadmins can be assured that users "
+"can be contacted."
+msgstr ""
+
+#: ../../source/admin/user-administration.rst:52
+msgid ""
+"The app will send a standard welcome email with a URL the user can click,"
+" which, when activated, will store a ``lastconfirmed`` timestamp in the "
+"``authenticateduser`` table of the database. Any time this is \"null\" "
+"for a user (immediately after signup and/or changing of their Dataverse "
+"email address), their current email on file is considered to not be "
+"verified. The link that is sent expires after a time (the default is 24 "
+"hours), but this is configurable by a superuser via the "
+"``:MinutesUntilConfirmEmailTokenExpires`` config option."
+msgstr ""
+
+#: ../../source/admin/user-administration.rst:54
+msgid ""
+"Should users' URL token expire, they will see a \"Verify Email\" button "
+"on the account information page to send another URL."
+msgstr ""
+
+#: ../../source/admin/user-administration.rst:56
+msgid ""
+"Sysadmins can determine which users have verified their email addresses "
+"by looking for the presence of the value ``emailLastConfirmed`` in the "
+"JSON output from listing users (see the \"Admin\" section of the "
+":doc:`/api/native-api`). As mentioned in the :doc:`/user/account` section"
+" of the User Guide, the email addresses for Shibboleth users are re-"
+"confirmed on every login."
+msgstr ""
+
+#: ../../source/admin/user-administration.rst:59
+msgid "Deleting an API Token"
+msgstr ""
+
+#: ../../source/admin/user-administration.rst:61
+msgid ""
+"If an API token is compromised it should be deleted. Users can generate a"
+" new one for themselves as explained in the :doc:`/user/account` section "
+"of the User Guide, but you may want to preemptively delete tokens from "
+"the database."
+msgstr ""
+
+#: ../../source/admin/user-administration.rst:63
+msgid "Using the API token 7ae33670-be21-491d-a244-008149856437 as an example::"
+msgstr ""
+
+#: ../../source/admin/user-administration.rst:67
+msgid "You should expect the output ``DELETE 1`` after issuing this command."
+msgstr ""
+

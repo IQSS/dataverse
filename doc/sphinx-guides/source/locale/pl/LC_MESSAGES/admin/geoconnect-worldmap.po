@@ -1,0 +1,113 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/admin/geoconnect-worldmap.rst:2
+msgid "Geoconnect and WorldMap"
+msgstr ""
+
+#: ../../source/admin/geoconnect-worldmap.rst:4
+msgid ""
+"One of the optional components listed under \"Architecture and "
+"Components\" in the :doc:`/installation/prep` section of the Installation"
+" Guide is `Geoconnect <https://github.com/IQSS/geoconnect>`_, a piece of "
+"middleware that allows Dataverse users to create maps in `WorldMap "
+"<http://worldmap.harvard.edu>`_ based on geospatial data stored in "
+"Dataverse. For more details on the feature from the user perspective, see"
+" the :doc:`/user/data-exploration/worldmap` section of the User Guide."
+msgstr ""
+
+#: ../../source/admin/geoconnect-worldmap.rst:7
+msgid "|toctitle|"
+msgstr ""
+
+#: ../../source/admin/geoconnect-worldmap.rst:10
+msgid "Update \"mapitlink\""
+msgstr ""
+
+#: ../../source/admin/geoconnect-worldmap.rst:12
+msgid ""
+"SQL commands to point a Dataverse installation at different Geoconnect "
+"servers:"
+msgstr ""
+
+#: ../../source/admin/geoconnect-worldmap.rst:15
+msgid "**Geoconnect Production** *geoconnect.datascience.iq.harvard.edu*"
+msgstr ""
+
+#: ../../source/admin/geoconnect-worldmap.rst:21
+msgid "**Heroku Test** *geoconnect-dev.herokuapp.com*"
+msgstr ""
+
+#: ../../source/admin/geoconnect-worldmap.rst:28
+msgid "**View Current Settings**"
+msgstr ""
+
+#: ../../source/admin/geoconnect-worldmap.rst:36
+msgid "Removing Dead Explore Links"
+msgstr ""
+
+#: ../../source/admin/geoconnect-worldmap.rst:38
+msgid ""
+"After a map has been created in WorldMap (assuming all the setup has been"
+" done), an \"Explore\" button will appear next to the name of the file in"
+" Dataverse. The \"Explore\" button should open the map in WorldMap. In "
+"rare occasions, the map has been deleted on the WorldMap side such that "
+"the \"Explore\" button goes nowhere, resulting in a dead link, a 404."
+msgstr ""
+
+#: ../../source/admin/geoconnect-worldmap.rst:40
+msgid ""
+"Functionality has been added on the Dataverse side to iterate through all"
+" the maps Dataverse knows about (stored in the ``maplayermetadata`` "
+"database table) and to check for the existence of each map in WorldMap. "
+"The status code returned from WorldMap (200, 404, etc.) is recorded in "
+"Dataverse along with a timestamp of when the check was performed. To "
+"perform this check, you can execute the following ``curl`` command::"
+msgstr ""
+
+#: ../../source/admin/geoconnect-worldmap.rst:44
+msgid ""
+"The output will contain the ``layerLink`` being checked as well as the "
+"HTTP response status code (200, 404, etc.) in the ``lastVerifiedStatus`` "
+"field. 200 means OK and 404 means not found. 500 might indicate that the "
+"map is only temporarily unavailable. The ``lastVerifiedStatus`` and "
+"``lastVerifiedTime`` will be persisted to the ``maplayermetadata`` "
+"database table."
+msgstr ""
+
+#: ../../source/admin/geoconnect-worldmap.rst:46
+msgid ""
+"Armed with this information about WorldMap returning a 404 for a map, you"
+" may want to delete any record of the map on the Dataverse side so that "
+"the \"Explore\" button goes away (and so that thumbnail files are cleaned"
+" up). To accomplish this, use the following ``curl`` command, "
+"substituting the id of the file::"
+msgstr ""
+
+#: ../../source/admin/geoconnect-worldmap.rst:50
+msgid ""
+"End users can also run this command (if they have permission to edit the "
+"dataset) but it's more likely that the sysadmin reading this guide will "
+"run it for them. It is recommended that you add the \"check\" command to "
+"cron so that Dataverse periodically checks on the status of maps in "
+"WorldMap. In addition to the \"check all maps\" command, you can also "
+"check an individual map with the following ``curl`` command, substituting"
+" the id of the row from the ``maplayermetadata`` table::"
+msgstr ""
+

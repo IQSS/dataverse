@@ -1,0 +1,67 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/installation/geoconnect.rst:2
+msgid "Geoconnect"
+msgstr ""
+
+#: ../../source/installation/geoconnect.rst:7
+msgid ""
+"Geoconnect works as a middle layer, allowing geospatial data files in "
+"Dataverse to be visualized with Harvard WorldMap."
+msgstr ""
+
+#: ../../source/installation/geoconnect.rst:9
+msgid ""
+"To understand the feature from the user perspective, see the :doc:`/user"
+"/data-exploration/worldmap` section of the User Guide."
+msgstr ""
+
+#: ../../source/installation/geoconnect.rst:11
+msgid ""
+"As of this writing, the README at https://github.com/IQSS/geoconnect "
+"recommends not installing Geoconnect at this time due to an ongoing "
+"rewrite of the WorldMap code. If you are not deterred by this, read on!"
+msgstr ""
+
+#: ../../source/installation/geoconnect.rst:13
+msgid ""
+"To set up a Geoconnect development environment, you can follow the steps "
+"outlined in the `local_setup.md "
+"<https://github.com/IQSS/geoconnect/blob/master/local_setup.md>`_ guide. "
+"Although those instructions are for a local development setup, they may "
+"assist in installing Geoconnect in your production environment."
+msgstr ""
+
+#: ../../source/installation/geoconnect.rst:15
+msgid ""
+"Harvard Dataverse runs Geoconnect on Heroku. To make use of Heroku, you "
+"will need a Heroku account, as well as a few other prerequisites. Follow "
+"the instructions outlined in the `heroku_setup.md "
+"<https://github.com/IQSS/geoconnect/blob/master/heroku_setup.md>`_ guide."
+" The `heroku.py "
+"<https://github.com/IQSS/geoconnect/blob/master/geoconnect/settings/heroku.py>`_"
+" settings file may also be adapted for other environments. Please note, "
+"for the production environment, remember to set ``DEBUG=False``."
+msgstr ""
+
+#: ../../source/installation/geoconnect.rst:17
+msgid "See also the :doc:`/admin/geoconnect-worldmap` section of the Admin Guide."
+msgstr ""
+

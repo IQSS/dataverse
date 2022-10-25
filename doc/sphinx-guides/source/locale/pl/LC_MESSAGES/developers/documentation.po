@@ -1,0 +1,251 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/developers/documentation.rst:3
+msgid "Documentation"
+msgstr ""
+
+#: ../../source/developers/documentation.rst:6
+msgid "|toctitle|"
+msgstr ""
+
+#: ../../source/developers/documentation.rst:9
+msgid "Quick Fix"
+msgstr ""
+
+#: ../../source/developers/documentation.rst:11
+msgid ""
+"If you find a typo or a small error in the documentation you can easily "
+"fix it using GitHub."
+msgstr ""
+
+#: ../../source/developers/documentation.rst:13
+msgid "Fork the repository"
+msgstr ""
+
+#: ../../source/developers/documentation.rst:14
+msgid ""
+"Go to [your GitHub username]/dataverse/doc/sphinx-guides/source and "
+"access the file you would like to fix"
+msgstr ""
+
+#: ../../source/developers/documentation.rst:15
+msgid "Switch to the branch that is currently under development"
+msgstr ""
+
+#: ../../source/developers/documentation.rst:16
+msgid "Click the Edit button in the upper-right corner and fix the error"
+msgstr ""
+
+#: ../../source/developers/documentation.rst:17
+msgid "Submit a pull request"
+msgstr ""
+
+#: ../../source/developers/documentation.rst:20
+msgid "Other Changes (Sphinx)"
+msgstr ""
+
+#: ../../source/developers/documentation.rst:22
+msgid ""
+"The documentation for Dataverse was written using Sphinx (http://sphinx-"
+"doc.org/). If you are interested in suggesting changes or updates we "
+"recommend that you create the html files using Sphinx locally and the "
+"submit a pull request through GitHub. Here are the instructions on how to"
+" proceed:"
+msgstr ""
+
+#: ../../source/developers/documentation.rst:28
+msgid "Installing Sphinx"
+msgstr ""
+
+#: ../../source/developers/documentation.rst:30
+msgid "On a Mac:"
+msgstr ""
+
+#: ../../source/developers/documentation.rst:32
+msgid "Download the sphinx zip file from http://sphinx-doc.org/install.html"
+msgstr ""
+
+#: ../../source/developers/documentation.rst:34
+msgid ""
+"Unzip it somewhere. In the unzipped directory, do the following as root, "
+"(sudo -i):"
+msgstr ""
+
+#: ../../source/developers/documentation.rst:37
+msgid "python setup.py build python setup.py install"
+msgstr ""
+
+#: ../../source/developers/documentation.rst:40
+msgid "Alternative option (Mac/Unix/Windows):"
+msgstr ""
+
+#: ../../source/developers/documentation.rst:42
+msgid ""
+"Unless you already have it, install pip "
+"(https://pip.pypa.io/en/latest/installing.html)"
+msgstr ""
+
+#: ../../source/developers/documentation.rst:44
+msgid "run ``pip install sphinx`` in a terminal"
+msgstr ""
+
+#: ../../source/developers/documentation.rst:46
+msgid ""
+"This is all you need. You should now be able to build HTML/pdf "
+"documentation from git sources locally."
+msgstr ""
+
+#: ../../source/developers/documentation.rst:49
+msgid "Using Sphinx"
+msgstr ""
+
+#: ../../source/developers/documentation.rst:51
+msgid ""
+"First, you will need to make a fork of the dataverse repository in "
+"GitHub. Then, you will need to make a clone of your fork so you can "
+"manipulate the files outside GitHub."
+msgstr ""
+
+#: ../../source/developers/documentation.rst:53
+msgid ""
+"To edit the existing documentation go to ~/dataverse/doc/sphinx-"
+"guides/source directory inside your clone. There, you will find the .rst "
+"files that correspond to the guides in the dataverse page "
+"(http://guides.dataverse.org/en/latest/user/index.html). Now, using your "
+"preferred text editor, open and edit these files, or create new .rst "
+"files and edit the others accordingly."
+msgstr ""
+
+#: ../../source/developers/documentation.rst:55
+msgid ""
+"Once you are done, open a terminal and change directories to "
+"~/dataverse/doc/sphinx-guides . Then, run the following commands:"
+msgstr ""
+
+#: ../../source/developers/documentation.rst:57
+msgid "``make clean``"
+msgstr ""
+
+#: ../../source/developers/documentation.rst:59
+msgid "``make html``"
+msgstr ""
+
+#: ../../source/developers/documentation.rst:61
+msgid ""
+"After sphinx is done processing the files you should notice that the html"
+" folder in ~/dataverse/doc/sphinx-guides/build directory has been "
+"updated. You can click on the files in the html folder to preview the "
+"changes."
+msgstr ""
+
+#: ../../source/developers/documentation.rst:64
+msgid ""
+"Now you can make a commit with the changes to your own fork in GitHub and"
+" submit a pull request to the dataverse repository."
+msgstr ""
+
+#: ../../source/developers/documentation.rst:67
+msgid "Table of Contents"
+msgstr ""
+
+#: ../../source/developers/documentation.rst:69
+msgid ""
+"Every non-index page should use the following code to display a table of "
+"contents of internal sub-headings: ::"
+msgstr ""
+
+#: ../../source/developers/documentation.rst:74
+msgid ""
+"This code should be placed right after any introductory text/images and "
+"directly before the first subheading, much like a Wikipedia page."
+msgstr ""
+
+#: ../../source/developers/documentation.rst:77
+msgid "Images"
+msgstr ""
+
+#: ../../source/developers/documentation.rst:79
+msgid ""
+"A good documentation is just like a website enhanced and upgraded by "
+"adding high quality and self-explanatory images. Often images depict a "
+"lot of written text in a simple manner. Within our Sphinx docs, you can "
+"add them in two ways: a) add a PNG image directly and include or b) use "
+"inline description languages like GraphViz (current only option)."
+msgstr ""
+
+#: ../../source/developers/documentation.rst:83
+msgid ""
+"While PNGs in the git repo can be linked directly via URL, Sphinx-"
+"generated images do not need a manual step and might provide higher "
+"visual quality. Especially in terms of quality of content, generated "
+"images can be extendend and improved by a textbased and reviewable "
+"commit, without needing raw data or source files and no diff around."
+msgstr ""
+
+#: ../../source/developers/documentation.rst:88
+msgid "GraphViz based images"
+msgstr ""
+
+#: ../../source/developers/documentation.rst:90
+msgid ""
+"In some parts of the documentation, graphs are rendered as images via "
+"Sphinx GraphViz extension."
+msgstr ""
+
+#: ../../source/developers/documentation.rst:92
+msgid ""
+"This requires `GraphViz <http://graphviz.org/>`_ installed and either "
+"``dot`` on the path or `adding options to the make call "
+"<https://groups.google.com/forum/#!topic/sphinx-users/yXgNey_0M3I>`_."
+msgstr ""
+
+#: ../../source/developers/documentation.rst:95
+msgid ""
+"This has been tested and works on Mac, Linux, and Windows. If you have "
+"not properly configured GraphViz, then the worst thing that might happen "
+"is a warning and missing images in your local documentation build."
+msgstr ""
+
+#: ../../source/developers/documentation.rst:99
+msgid "Versions"
+msgstr ""
+
+#: ../../source/developers/documentation.rst:101
+msgid ""
+"For installations hosting their own copies of the guides, note that as "
+"each version of Dataverse is released, there is an updated version of the"
+" guides released with it. Google and other search engines index all "
+"versions, which may confuse users who discover your guides in the search "
+"results as to which version they should be looking at. When learning "
+"about your installation from the search results, it is best to be viewing"
+" the *latest* version."
+msgstr ""
+
+#: ../../source/developers/documentation.rst:103
+msgid ""
+"In order to make it clear to the crawlers that we only want the latest "
+"version discoverable in their search results, we suggest adding this to "
+"your ``robots.txt`` file::"
+msgstr ""
+
+#: ../../source/developers/documentation.rst:111
+msgid "Previous: :doc:`testing` | Next: :doc:`dependencies`"
+msgstr ""
+

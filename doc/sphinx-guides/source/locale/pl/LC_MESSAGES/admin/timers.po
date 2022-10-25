@@ -1,0 +1,142 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/admin/timers.rst:4
+msgid "Dataverse Application Timers"
+msgstr ""
+
+#: ../../source/admin/timers.rst:6
+msgid ""
+"Dataverse uses timers to automatically run scheduled Harvest and Metadata"
+" export jobs."
+msgstr ""
+
+#: ../../source/admin/timers.rst:9
+msgid "|toctitle|"
+msgstr ""
+
+#: ../../source/admin/timers.rst:12
+msgid "Dedicated timer server in a Dataverse server cluster"
+msgstr ""
+
+#: ../../source/admin/timers.rst:14
+msgid ""
+"When running a Dataverse cluster - i.e. multiple Dataverse application "
+"servers talking to the same database - **only one** of them must act as "
+"the *dedicated timer server*. This is to avoid starting conflicting batch"
+" jobs on multiple nodes at the same time."
+msgstr ""
+
+#: ../../source/admin/timers.rst:19
+msgid ""
+"This does not affect a single-server installation. So you can safely skip"
+" this section unless you are running a multi-server cluster."
+msgstr ""
+
+#: ../../source/admin/timers.rst:21
+msgid ""
+"The following JVM option instructs the application to act as the "
+"dedicated timer server:"
+msgstr ""
+
+#: ../../source/admin/timers.rst:23
+msgid "``-Ddataverse.timerServer=true``"
+msgstr ""
+
+#: ../../source/admin/timers.rst:25
+msgid ""
+"**IMPORTANT:** Note that this option is automatically set by the "
+"Dataverse installer script. That means that when **configuring a multi-"
+"server cluster**, it will be the responsibility of the installer to "
+"remove the option from the :fixedwidthplain:`domain.xml` of every node "
+"except the one intended to be the timer server."
+msgstr ""
+
+#: ../../source/admin/timers.rst:29
+msgid "Harvesting Timers"
+msgstr ""
+
+#: ../../source/admin/timers.rst:31
+msgid ""
+"These timers are created when scheduled harvesting is enabled by a local "
+"admin user (via the \"Manage Harvesting Clients\" page)."
+msgstr ""
+
+#: ../../source/admin/timers.rst:33
+msgid ""
+"In a multi-node cluster, all these timers will be created on the "
+"dedicated timer node (and not necessarily on the node where the "
+"harvesting clients were created and/or saved)."
+msgstr ""
+
+#: ../../source/admin/timers.rst:35
+msgid ""
+"A timer will be automatically removed when a harvesting client with an "
+"active schedule is deleted, or if the schedule is turned off for an "
+"existing client."
+msgstr ""
+
+#: ../../source/admin/timers.rst:38
+msgid "Metadata Export Timer"
+msgstr ""
+
+#: ../../source/admin/timers.rst:40
+msgid ""
+"This timer is created automatically whenever the application is deployed "
+"or restarted. There is no admin user-accessible configuration for this "
+"timer."
+msgstr ""
+
+#: ../../source/admin/timers.rst:42
+msgid ""
+"This timer runs a daily job that tries to export all the local, published"
+" datasets that haven't been exported yet, in all supported metadata "
+"formats, and cache the results on the filesystem. (Note that normally an "
+"export will happen automatically whenever a dataset is published. This "
+"scheduled job is there to catch any datasets for which that export did "
+"not succeed, for one reason or another). Also, since this functionality "
+"has been added in version 4.5: if you are upgrading from a previous "
+"version, none of your datasets are exported yet. So the first time this "
+"job runs, it will attempt to export them all."
+msgstr ""
+
+#: ../../source/admin/timers.rst:44
+msgid ""
+"This daily job will also update all the harvestable OAI sets configured "
+"on your server, adding new and/or newly published datasets or marking "
+"deaccessioned datasets as \"deleted\" in the corresponding sets as "
+"needed."
+msgstr ""
+
+#: ../../source/admin/timers.rst:46
+msgid "This job is automatically scheduled to run at 2AM local time every night."
+msgstr ""
+
+#: ../../source/admin/timers.rst:49
+msgid "Known Issues"
+msgstr ""
+
+#: ../../source/admin/timers.rst:51
+msgid ""
+"We've received several reports of an intermittent issue where the "
+"application fails to deploy with the error message \"EJB Timer Service is"
+" not available.\" Please see the :doc:`/admin/troubleshooting` section of"
+" this guide for a workaround."
+msgstr ""
+

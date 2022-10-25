@@ -1,0 +1,111 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/developers/sql-upgrade-scripts.rst:3
+msgid "SQL Migration"
+msgstr ""
+
+#: ../../source/developers/sql-upgrade-scripts.rst:5
+msgid ""
+"The database schema for Dataverse is constantly evolving and we have "
+"adopted a tool called Flyway to help keep your development environment up"
+" to date and in working order. As you make changes to the database schema"
+" (changes to ``@Entity`` classes), you must write SQLs when needed and "
+"follow Flyway file naming conventions."
+msgstr ""
+
+#: ../../source/developers/sql-upgrade-scripts.rst:8
+msgid "|toctitle|"
+msgstr ""
+
+#: ../../source/developers/sql-upgrade-scripts.rst:11
+msgid "Location of SQL Upgrade Scripts"
+msgstr ""
+
+#: ../../source/developers/sql-upgrade-scripts.rst:13
+msgid ""
+"``dataverse-persistence/src/main/resources/db/migration`` is the "
+"directory where we keep SQLs for Flyway to find."
+msgstr ""
+
+#: ../../source/developers/sql-upgrade-scripts.rst:16
+msgid "How to Determine if You Need to Create a SQL migration"
+msgstr ""
+
+#: ../../source/developers/sql-upgrade-scripts.rst:18
+msgid ""
+"If you are doing anything related to ``@Entity`` (Create, Remove, Edit) "
+"you must create an migration SQL."
+msgstr ""
+
+#: ../../source/developers/sql-upgrade-scripts.rst:21
+msgid "How to Create a SQL"
+msgstr ""
+
+#: ../../source/developers/sql-upgrade-scripts.rst:23
+msgid ""
+"We assume you have already read the :doc:`version-control` section and "
+"have been keeping your feature branch up to date with the \"develop\" "
+"branch."
+msgstr ""
+
+#: ../../source/developers/sql-upgrade-scripts.rst:25
+msgid ""
+"Create a new file called something like "
+"``V{NEXT_NUMBER}__renamedTermsOfUse.sql`` in the ``dataverse-"
+"persistence/src/main/resources/db/migration`` directory. Use a next "
+"number compared to the previous sql, ensuring that the number is unique. "
+"To read more about Flyway file naming conventions, see "
+"https://flywaydb.org/documentation/migrations#naming"
+msgstr ""
+
+#: ../../source/developers/sql-upgrade-scripts.rst:27
+msgid ""
+"The SQL migration script you wrote will be part of the war file and "
+"executed when the war file is deployed. To see a history of Flyway "
+"database migrations that have been applied, look at the "
+"``flyway_schema_history`` table."
+msgstr ""
+
+#: ../../source/developers/sql-upgrade-scripts.rst:30
+msgid "Troubleshooting"
+msgstr ""
+
+#: ../../source/developers/sql-upgrade-scripts.rst:33
+msgid "Renaming SQL"
+msgstr ""
+
+#: ../../source/developers/sql-upgrade-scripts.rst:35
+msgid ""
+"Please note that if you need to rename your sql (because a new version of"
+" Dataverse was released, for example), you will see the error "
+"\"FlywayException: Validate failed: Detected applied migration not "
+"resolved locally\" when you attempt to deploy and deployment will fail."
+msgstr ""
+
+#: ../../source/developers/sql-upgrade-scripts.rst:37
+msgid ""
+"To resolve this problem, delete the old migration from the "
+"``flyway_schema_history`` table and attempt to redeploy."
+msgstr ""
+
+#: ../../source/developers/sql-upgrade-scripts.rst:41
+msgid "Previous: :doc:`version-control` | Next: :doc:`testing`"
+msgstr ""
+

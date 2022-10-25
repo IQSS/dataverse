@@ -1,0 +1,118 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/admin/ror.rst:2
+msgid "ROR"
+msgstr ""
+
+#: ../../source/admin/ror.rst:5
+msgid "Contents:"
+msgstr ""
+
+#: ../../source/admin/ror.rst:8
+msgid "About ROR"
+msgstr ""
+
+#: ../../source/admin/ror.rst:10
+msgid ""
+"ROR (Research Organization Registry) is a registry of identifiers for "
+"research organizations. ROR identifiers help with matching affiliation "
+"data with institutions."
+msgstr ""
+
+#: ../../source/admin/ror.rst:13
+msgid "For more informations visit `official ROR homepage <https://ror.org/>`_"
+msgstr ""
+
+#: ../../source/admin/ror.rst:17
+msgid "ROR in Dataverse"
+msgstr ""
+
+#: ../../source/admin/ror.rst:19
+msgid ""
+"Dataverse uses ROR identifiers to enrich DataCite metadata format. In "
+"dataset metadata fields configuration there is an option for suggesting "
+"ROR identifiers based on organization name (turned on by default)."
+msgstr ""
+
+#: ../../source/admin/ror.rst:24
+msgid "Uploading ROR data"
+msgstr ""
+
+#: ../../source/admin/ror.rst:26
+msgid ""
+"To fully profit from ROR integration in Dataverse you will need to feed "
+"your Dataverse installation with ROR data. You can either use full ROR "
+"data dump with all available ROR identifiers or a subset of it."
+msgstr ""
+
+#: ../../source/admin/ror.rst:30
+msgid "Full dump"
+msgstr ""
+
+#: ../../source/admin/ror.rst:32
+msgid ""
+"First you will need to obtain ROR dump by following instructions "
+"presented in `ROR data dump documentation <https://ror.readme.io/docs"
+"/data-dump>`_."
+msgstr ""
+
+#: ../../source/admin/ror.rst:34
+msgid ""
+"The next step is to upload obtained ROR dump into your Dataverse "
+"installation. It can be done using the following REST api endpoint::"
+msgstr ""
+
+#: ../../source/admin/ror.rst:39
+msgid "Note that you will need superuser permissions to upload ROR data."
+msgstr ""
+
+#: ../../source/admin/ror.rst:42
+msgid "Partial dump"
+msgstr ""
+
+#: ../../source/admin/ror.rst:44
+msgid ""
+"It is possible to use the same REST api enpoint as in full dump case to "
+"upload only selected ROR identifiers. In such cases you will need to "
+"prepare the dump data yourself. We will show an example how it can be "
+"achieved."
+msgstr ""
+
+#: ../../source/admin/ror.rst:47
+msgid "Dump can be prepared using ROR api:"
+msgstr ""
+
+#: ../../source/admin/ror.rst:51
+msgid ""
+"In example we include ROR identifiers for institutions from `Great "
+"Britain` with type `Education`. You can modify ``ROR_FILTER`` variable in"
+" the script to obtain the data you want."
+msgstr ""
+
+#: ../../source/admin/ror.rst:54
+msgid "Next you need to execute the same api endpoint as in full dump::"
+msgstr ""
+
+#: ../../source/admin/ror.rst:58
+msgid ""
+"Note that endpoint can work with zipped dump and single file json. So you"
+" don't need to prepare zip yourself"
+msgstr ""
+

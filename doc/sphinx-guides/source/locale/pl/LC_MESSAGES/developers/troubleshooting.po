@@ -1,0 +1,318 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/developers/troubleshooting.rst:3
+msgid "Troubleshooting"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:5
+msgid ""
+"Over in the :doc:`../installation/installation-main` section we described"
+" the \"happy path\" of when everything goes right as you set up your "
+"Dataverse development environment. Here are some common problems and "
+"solutions for when things go wrong."
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:8
+msgid "|toctitle|"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:11
+msgid "context-root in glassfish-web.xml Munged by Netbeans"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:13
+msgid ""
+"For unknown reasons, Netbeans will sometimes change the following line "
+"under ``src/main/webapp/WEB-INF/glassfish-web.xml``:"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:15
+msgid "``<context-root>/</context-root>``"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:17
+msgid ""
+"Sometimes Netbeans will change ``/`` to ``/dataverse``. Sometimes it will"
+" delete the line entirely. Either way, you will see very strange behavior"
+" when attempting to click around Dataverse in a browser. The home page "
+"will load but icons will be missing. Any other page will fail to load "
+"entirely and you'll see a Glassfish error."
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:19
+msgid ""
+"The solution is to put the file back to how it was before Netbeans "
+"touched it. If anyone knows of an open Netbeans bug about this, please "
+"let us know."
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:22
+msgid "Configuring / Troubleshooting Mail Host"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:24
+msgid ""
+"If you have trouble with the SMTP server, consider editing the "
+"``install`` script to disable the SMTP check."
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:26
+msgid ""
+"Out of the box, no emails will be sent from your development environment."
+" This is because you have to set the ``SystemEmail`` setting and make "
+"sure you've configured your SMTP server correctly."
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:28
+msgid "You can configure ``SystemEmail`` like this:"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:30
+msgid ""
+"Make sure you copied ``dataverse.default.properties`` to ~/.dataverse "
+"with file name ``dataverse.properties`` and change:"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:36
+msgid ""
+"Unfortunately for developers not at Harvard, the installer script gives "
+"you by default an SMTP server of ``mail.hmdc.harvard.edu`` but you can "
+"specify an alternative SMTP server when you run the installer."
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:38
+msgid "You can check the current SMTP server with the ``asadmin`` command::"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:42
+msgid ""
+"This command helps verify what host your domain is using to send mail. "
+"Even if it's the correct hostname, you may still need to adjust settings."
+" If all else fails, there are some free SMTP service options available "
+"such as Gmail and MailGun. This can be configured from the GlassFish "
+"console or the command line."
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:44
+msgid "First, navigate to your Glassfish admin console: http://localhost:4848"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:45
+msgid "From the left-side panel, select **JavaMail Sessions**"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:46
+msgid ""
+"You should see one session named **mail/notifyMailSession** -- click on "
+"that."
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:48
+msgid ""
+"From this window you can modify certain fields of your Dataverse's "
+"notifyMailSession, which is the JavaMail session for outgoing system "
+"email (such as on user signup or data publication). Two of the most "
+"important fields we need are:"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:50
+msgid ""
+"**Mail Host:** The DNS name of the default mail server (e.g. "
+"smtp.gmail.com)"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:51
+msgid ""
+"**Default User:** The username provided to your Mail Host when you "
+"connect to it (e.g. johndoe@gmail.com)"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:53
+msgid ""
+"Most of the other defaults can safely be left as is. **Default Sender "
+"Address** indicates the address that your installation's emails are sent "
+"from."
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:55
+msgid ""
+"If your user credentials for the SMTP server require a password, you'll "
+"need to configure some **Additional Properties** at the bottom."
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:57
+msgid ""
+"**IMPORTANT:** Before continuing, it's highly recommended that your "
+"Default User account does NOT use a password you share with other "
+"accounts, as one of the additional properties includes entering the "
+"Default User's password (without concealing it on screen). For "
+"smtp.gmail.com you can safely use an `app password "
+"<https://support.google.com/accounts/answer/185833?hl=en>`_ or create an "
+"extra Gmail account for use with your Dataverse dev environment."
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:59
+msgid ""
+"Authenticating yourself to a Mail Host can be tricky. As an example, "
+"we'll walk through setting up our JavaMail Session to use smtp.gmail.com "
+"as a host by way of SSL on port 465. Use the Add Property button to "
+"generate a blank property for each name/value pair."
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:62
+msgid "Name"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:62
+msgid "Value"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:64
+msgid "mail.smtp.auth"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:64
+msgid "true"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:65
+msgid "mail.smtp.password"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:65
+msgid "[user's (*app*) password\\*]"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:66
+msgid "mail.smtp.port"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:66
+#: ../../source/developers/troubleshooting.rst:67
+msgid "465"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:67
+msgid "mail.smtp.socketFactory.port"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:68
+msgid "mail.smtp.socketFactory.fallback"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:68
+msgid "false"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:69
+msgid "mail.smtp.socketFactory.class"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:69
+msgid "javax.net.ssl.SSLSocketFactory"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:72
+msgid ""
+"**\\*WARNING**: Entering a password here will *not* conceal it on-screen."
+" It’s recommended to use an *app password* (for smtp.gmail.com users) or "
+"utilize a dedicated/non-personal user account with SMTP server auths so "
+"that you do not risk compromising your password."
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:74
+msgid ""
+"Save these changes at the top of the page and restart your Glassfish "
+"server to try it out."
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:76
+msgid ""
+"The mail session can also be set from command line. To use this method, "
+"you will need to delete your notifyMailSession and create a new one:"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:78
+#: ../../source/developers/troubleshooting.rst:88
+msgid "Delete: ``./asadmin delete-javamail-resource mail/MyMailSession``"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:79
+msgid ""
+"Create (remove brackets and replace the variables inside): ``./asadmin "
+"create-javamail-resource --mailhost [smtp.gmail.com] --mailuser "
+"[test\\@test\\.com] --fromaddress [test\\@test\\.com] --property "
+"mail.smtp.auth=[true]:mail.smtp.password=[password]:mail.smtp.port=[465]:mail.smtp.socketFactory.port=[465]:mail.smtp.socketFactory.fallback=[false]:mail.smtp.socketFactory.class=[javax.net.ssl.SSLSocketFactory]"
+" mail/notifyMailSession``"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:81
+msgid ""
+"These properties can be tailored to your own preferred mail service, but "
+"if all else fails these settings work fine with Dataverse development "
+"environments for your localhost."
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:83
+msgid ""
+"If you're seeing a \"Relay access denied\" error in your Glassfish logs "
+"when your app attempts to send an email, double check your user/password "
+"credentials for the Mail Host you're using."
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:84
+msgid ""
+"If you're seeing a \"Connection refused\" / similar error upon email "
+"sending, try another port."
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:86
+msgid ""
+"As another example, here is how to create a Mail Host via command line "
+"for Amazon SES:"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:89
+msgid ""
+"Create (remove brackets and replace the variables inside): ``./asadmin "
+"create-javamail-resource --mailhost email-smtp.us-east-1.amazonaws.com "
+"--mailuser [test\\@test\\.com] --fromaddress [test\\@test\\.com] "
+"--transprotocol aws --transprotocolclass "
+"com.amazonaws.services.simpleemail.AWSJavaMailTransport --property "
+"mail.smtp.auth=true:mail.smtp.user=[aws_access_key]:mail.smtp.password=[aws_secret_key]:mail.transport.protocol=smtp:mail.smtp.port=587:mail.smtp.starttls.enable=true"
+" mail/notifyMailSession``"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:92
+msgid "DataCite"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:94
+msgid ""
+"If you are seeing ``Response code: 400, [url] domain of URL is not "
+"allowed`` it's probably because your ``SiteUrl`` is set to localhost "
+"(``SiteUrl=http://localhost:8080``). You can try something like this in "
+"file settings:"
+msgstr ""
+
+#: ../../source/developers/troubleshooting.rst:102
+msgid "Previous: :doc:`tips` | Next: :doc:`version-control`"
+msgstr ""
+

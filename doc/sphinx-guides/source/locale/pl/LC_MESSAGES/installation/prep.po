@@ -1,0 +1,376 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/installation/prep.rst:3
+msgid "Preparation"
+msgstr ""
+
+#: ../../source/installation/prep.rst:9
+msgid ""
+"We'll try to get you up and running as quickly as possible, but we "
+"thought you might like to hear about your options. :)"
+msgstr ""
+
+#: ../../source/installation/prep.rst:12
+msgid "|toctitle|"
+msgstr ""
+
+#: ../../source/installation/prep.rst:15
+msgid "Choose Your Own Installation Adventure"
+msgstr ""
+
+#: ../../source/installation/prep.rst:18
+msgid "NDS Labs Workbench (for Testing Only)"
+msgstr ""
+
+#: ../../source/installation/prep.rst:20
+msgid ""
+"The National Data Service (NDS) is community-driven effort guided by the "
+"National Data Service Consortium. NDS Labs has packaged Dataverse as `one"
+" of many data management tools <https://github.com/nds-org/ndslabs-"
+"specs>`_ that can be quickly deployed for evaluation purposes in their "
+"tool based on Kubernetes called NDS Labs Workbench. To get started, visit"
+" http://www.nationaldataservice.org/projects/labs.html ."
+msgstr ""
+
+#: ../../source/installation/prep.rst:22
+msgid ""
+"Please note that the version of Dataverse in NDS Labs Workbench may lag "
+"behind the latest release. Craig Willis from NDS Labs did an excellent "
+"job of adding Dataverse 4 to NDS Labs Workbench and the Dataverse team "
+"hopes to some day take over the creation of Docker images so the latest "
+"version of Dataverse can be evaluated in the workbench."
+msgstr ""
+
+#: ../../source/installation/prep.rst:25
+msgid "Vagrant (for Testing Only)"
+msgstr ""
+
+#: ../../source/installation/prep.rst:27
+msgid ""
+"If you are looking to simply kick the tires on installing Dataverse and "
+"are familiar with Vagrant, you are welcome to read through the "
+"\"Vagrant\" section of the :doc:`/developers/tools` section of the "
+"Developer Guide. Checking out a tagged release is recommended rather than"
+" running ``vagrant up`` on unreleased code."
+msgstr ""
+
+#: ../../source/installation/prep.rst:30
+msgid "Pilot Installation"
+msgstr ""
+
+#: ../../source/installation/prep.rst:32
+msgid ""
+"Vagrant is not a bad way for a sysadmin to get a quick sense of how an "
+"application like Dataverse is put together in a sandbox (a virtual "
+"machine running on a laptop for example), but to allow end users to start"
+" playing with Dataverse, you'll need to install Dataverse on a server."
+msgstr ""
+
+#: ../../source/installation/prep.rst:34
+msgid ""
+"Installing Dataverse involves some system configuration followed by "
+"executing an installation script that will guide you through the "
+"installation process as described in :doc:`installation-main`, but "
+"reading about the :ref:`architecture` of Dataverse is recommended first."
+msgstr ""
+
+#: ../../source/installation/prep.rst:39
+msgid "Advanced Installation"
+msgstr ""
+
+#: ../../source/installation/prep.rst:41
+msgid ""
+"There are some community-lead projects to use configuration management "
+"tools such as Ansible and Puppet to automate Dataverse installation and "
+"configuration, but support for these solutions is limited to what the "
+"Dataverse community can offer as described in each project's webpage:"
+msgstr ""
+
+#: ../../source/installation/prep.rst:43
+msgid "https://github.com/IQSS/dataverse-ansible"
+msgstr ""
+
+#: ../../source/installation/prep.rst:44
+msgid "https://github.com/IQSS/dataverse-puppet"
+msgstr ""
+
+#: ../../source/installation/prep.rst:46
+msgid ""
+"(Please note that the \"dataverse-ansible\" repo is used in a script that"
+" allows Dataverse to be installed on Amazon Web Services (AWS) from "
+"arbitrary GitHub branches as described in the "
+":doc:`/developers/deployment` section of the Developer Guide.)"
+msgstr ""
+
+#: ../../source/installation/prep.rst:48
+msgid ""
+"The Dataverse development team is happy to \"bless\" additional community"
+" efforts along these lines (i.e. Docker, Chef, Salt, etc.) by creating a "
+"repo under https://github.com/IQSS and managing team access."
+msgstr ""
+
+#: ../../source/installation/prep.rst:50
+msgid ""
+"Dataverse permits a fair amount of flexibility in where you choose to "
+"install the various components. The diagram :numref:`3webservers` shows a"
+" load balancer, multiple proxies and web servers, redundant database "
+"servers, and offloading of potentially resource intensive work to a "
+"separate server."
+msgstr ""
+
+#: ../../source/installation/prep.rst:57
+msgid "Three web servers installation"
+msgstr ""
+
+#: ../../source/installation/prep.rst:57
+msgid ""
+"Diagram presenting Dataverse installation on three servers behind a load "
+"balancer"
+msgstr ""
+
+#: ../../source/installation/prep.rst:59
+msgid ""
+"A setup such as this is advanced enough to be considered out of scope for"
+" this guide (apart from a stub in the :doc:`advanced` section) but you "
+"are welcome to ask questions about similar configurations via the support"
+" channels listed in the :doc:`intro`."
+msgstr ""
+
+#: ../../source/installation/prep.rst:64
+msgid "Architecture and Components"
+msgstr ""
+
+#: ../../source/installation/prep.rst:66
+msgid ""
+"Dataverse is a Java Enterprise Edition (EE) web application that is "
+"shipped as a war (web archive) file."
+msgstr ""
+
+#: ../../source/installation/prep.rst:69
+msgid "Required Components"
+msgstr ""
+
+#: ../../source/installation/prep.rst:71
+msgid ""
+"When planning your installation you should be aware of the following "
+"components of the Dataverse architecture:"
+msgstr ""
+
+#: ../../source/installation/prep.rst:73
+msgid ""
+"Linux: RHEL/CentOS is highly recommended since all development and QA "
+"happens on this distribution."
+msgstr ""
+
+#: ../../source/installation/prep.rst:74
+msgid ""
+"Glassfish: a Java EE application server to which the Dataverse "
+"application (war file) is to be deployed."
+msgstr ""
+
+#: ../../source/installation/prep.rst:75
+msgid "PostgreSQL: a relational database."
+msgstr ""
+
+#: ../../source/installation/prep.rst:76
+msgid "Solr: a search engine. A Dataverse-specific schema is provided."
+msgstr ""
+
+#: ../../source/installation/prep.rst:77
+msgid "SMTP server: for sending mail for password resets and other notifications."
+msgstr ""
+
+#: ../../source/installation/prep.rst:78
+msgid ""
+"Persistent identifier service: DOI and Handle support are provided. "
+"Production use requires a registered DOI or Handle.net authority."
+msgstr ""
+
+#: ../../source/installation/prep.rst:81
+msgid "Optional Components"
+msgstr ""
+
+#: ../../source/installation/prep.rst:83
+msgid ""
+"There are a number of optional components you may choose to install or "
+"configure, including:"
+msgstr ""
+
+#: ../../source/installation/prep.rst:85
+msgid ""
+"R, rApache, Zelig, and TwoRavens: :doc:`/user/data-exploration/tworavens`"
+" describes the feature and :doc:`r-rapache-tworavens` describes how to "
+"install these components. :doc:`external-tools` explains how third-party "
+"tools like TwoRavens can be added to Dataverse."
+msgstr ""
+
+#: ../../source/installation/prep.rst:86
+msgid ""
+"Dropbox integration :ref:`dataverse.dropbox.key`: for uploading files "
+"from the Dropbox API."
+msgstr ""
+
+#: ../../source/installation/prep.rst:87
+msgid ""
+"Apache: a web server that can \"reverse proxy\" Glassfish applications "
+"and rewrite HTTP traffic."
+msgstr ""
+
+#: ../../source/installation/prep.rst:88
+msgid ""
+"Shibboleth: an authentication system described in :doc:`shibboleth`. Its "
+"use with Dataverse requires Apache."
+msgstr ""
+
+#: ../../source/installation/prep.rst:89
+msgid "OAuth2: an authentication system described in :doc:`oauth2`."
+msgstr ""
+
+#: ../../source/installation/prep.rst:90
+msgid ""
+"Geoconnect: a system that allows users to create maps from geospatial "
+"files, described in :doc:`geoconnect`."
+msgstr ""
+
+#: ../../source/installation/prep.rst:92
+msgid "See also the :doc:`/admin/integrations` section of the Admin Guide."
+msgstr ""
+
+#: ../../source/installation/prep.rst:95
+msgid "System Requirements"
+msgstr ""
+
+#: ../../source/installation/prep.rst:98
+msgid "Hardware Requirements"
+msgstr ""
+
+#: ../../source/installation/prep.rst:100
+msgid ""
+"A basic installation of Dataverse runs fine on modest hardware. For "
+"example, as of this writing the test installation at "
+"http://phoenix.dataverse.org is backed by a single virtual machine with "
+"two 2.8 GHz processors, 8 GB of RAM and 50 GB of disk."
+msgstr ""
+
+#: ../../source/installation/prep.rst:102
+msgid ""
+"In contrast, before we moved it to the Amazon Cloud, the production "
+"installation at https://dataverse.harvard.edu was backed by six servers "
+"with two Intel Xeon 2.53 Ghz CPUs and either 48 or 64 GB of RAM. The "
+"three servers with 48 GB of RAM run were web frontends running Glassfish "
+"and Apache and were load balanced by a hardware device. The remaining "
+"three servers with 64 GB of RAM were the primary and backup database "
+"servers and a server dedicated to running Rserve. Multiple TB of storage "
+"were mounted from a SAN via NFS."
+msgstr ""
+
+#: ../../source/installation/prep.rst:104
+msgid ""
+"Currently, Harvard Dataverse is served by four AWS server nodes: two "
+"\"m4.4xlarge\" instances (64GB/16 vCPU) as web frontends, one 32GB/8 vCPU"
+" (\"m4.2xlarge\") instance for the Solr search engine, and one 16GB/4 "
+"vCPU (\"m4.xlarge\") instance for R and TwoRavens. The PostgreSQL "
+"database is served by Amazon RDS, and physical files are stored on Amazon"
+" S3."
+msgstr ""
+
+#: ../../source/installation/prep.rst:106
+msgid ""
+"The Dataverse installation script will attempt to give Glassfish the "
+"right amount of RAM based on your system."
+msgstr ""
+
+#: ../../source/installation/prep.rst:108
+msgid ""
+"Experimentation and testing with various hardware configurations is "
+"encouraged, or course, but do reach out as explained in the :doc:`intro` "
+"as needed for assistance."
+msgstr ""
+
+#: ../../source/installation/prep.rst:111
+msgid "Software Requirements"
+msgstr ""
+
+#: ../../source/installation/prep.rst:113
+msgid ""
+"See :ref:`architecture` for an overview of required and optional "
+"components. The :doc:`prerequisites` section is oriented toward "
+"installing the software necessary to successfully run the Dataverse "
+"installation script. Pages on optional components contain more detail of "
+"software requirements for each component."
+msgstr ""
+
+#: ../../source/installation/prep.rst:115
+msgid "Clients are expected to be running a relatively modern browser."
+msgstr ""
+
+#: ../../source/installation/prep.rst:118
+msgid "Decisions to Make"
+msgstr ""
+
+#: ../../source/installation/prep.rst:120
+msgid ""
+"Here are some questions to keep in the back of your mind as you test and "
+"move into production:"
+msgstr ""
+
+#: ../../source/installation/prep.rst:122
+msgid "How much storage do I need?"
+msgstr ""
+
+#: ../../source/installation/prep.rst:123
+msgid "Which features do I want based on :ref:`architecture`?"
+msgstr ""
+
+#: ../../source/installation/prep.rst:124
+msgid ""
+"How do I want my users to log in to Dataverse? With local accounts? With "
+"Shibboleth/SAML? With OAuth providers such as ORCID, GitHub, or Google?"
+msgstr ""
+
+#: ../../source/installation/prep.rst:125
+msgid ""
+"Do I want to to run Glassfish on the standard web ports (80 and 443) or "
+"do I want to \"front\" Glassfish with a proxy such as Apache or nginx? "
+"See \"Network Ports\" in the :doc:`config` section."
+msgstr ""
+
+#: ../../source/installation/prep.rst:126
+msgid ""
+"How many points of failure am I willing to tolerate? How much complexity "
+"do I want?"
+msgstr ""
+
+#: ../../source/installation/prep.rst:127
+msgid ""
+"How much does it cost to subscribe to a service to create persistent "
+"identifiers such as DOIs or handles?"
+msgstr ""
+
+#: ../../source/installation/prep.rst:130
+msgid "Next Steps"
+msgstr ""
+
+#: ../../source/installation/prep.rst:132
+msgid ""
+"Proceed to the :doc:`prerequisites` section which will help you get ready"
+" to run the Dataverse installation script."
+msgstr ""
+

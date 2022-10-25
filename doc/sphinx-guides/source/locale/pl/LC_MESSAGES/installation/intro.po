@@ -1,0 +1,134 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/installation/intro.rst:3
+msgid "Introduction"
+msgstr ""
+
+#: ../../source/installation/intro.rst:5
+msgid "Welcome! Thanks for installing `Dataverse <http://dataverse.org>`_!"
+msgstr ""
+
+#: ../../source/installation/intro.rst:8
+msgid "|toctitle|"
+msgstr ""
+
+#: ../../source/installation/intro.rst:11
+msgid "Quick Links"
+msgstr ""
+
+#: ../../source/installation/intro.rst:13
+msgid ""
+"If you are installing Dataverse for the first time, please proceed to the"
+" :doc:`prep` section."
+msgstr ""
+
+#: ../../source/installation/intro.rst:15
+msgid ""
+"Jump ahead to :doc:`config` or :doc:`upgrading` for an existing Dataverse"
+" installation."
+msgstr ""
+
+#: ../../source/installation/intro.rst:18
+msgid "Intended Audience"
+msgstr ""
+
+#: ../../source/installation/intro.rst:20
+msgid ""
+"This guide is intended primarily for sysadmins who are installing, "
+"configuring, and upgrading Dataverse."
+msgstr ""
+
+#: ../../source/installation/intro.rst:22
+msgid ""
+"Sysadmins are expected to be comfortable using standard Linux commands, "
+"issuing ``curl`` commands, and running SQL scripts."
+msgstr ""
+
+#: ../../source/installation/intro.rst:25
+msgid "Related Guides"
+msgstr ""
+
+#: ../../source/installation/intro.rst:27
+msgid ""
+"Many \"admin\" functions can be performed by Dataverse users themselves "
+"(non-superusers) as documented in the :doc:`/user/index` and that guide "
+"is a good introduction to the features of Dataverse from an end user "
+"perspective."
+msgstr ""
+
+#: ../../source/installation/intro.rst:29
+msgid ""
+"If you are a sysadmin who likes to code, you may find the "
+":doc:`/api/index` useful, and you may want to consider improving the "
+"installation script or hacking on the community-lead configuration "
+"management options mentioned in the :doc:`prep` section. If you "
+"**really** like to code and want to help with the Dataverse code, please "
+"check out the :doc:`/developers/index`!"
+msgstr ""
+
+#: ../../source/installation/intro.rst:34
+msgid "Getting Help"
+msgstr ""
+
+#: ../../source/installation/intro.rst:36
+msgid ""
+"To get help installing or configuring Dataverse, please try one or more "
+"of:"
+msgstr ""
+
+#: ../../source/installation/intro.rst:38
+msgid ""
+"posting to the `dataverse-community "
+"<https://groups.google.com/forum/#!forum/dataverse-community>`_ Google "
+"Group."
+msgstr ""
+
+#: ../../source/installation/intro.rst:39
+msgid ""
+"asking at http://chat.dataverse.org (#dataverse on the freenode IRC "
+"network)"
+msgstr ""
+
+#: ../../source/installation/intro.rst:40
+msgid ""
+"emailing support@dataverse.org to open a private ticket at "
+"https://help.hmdc.harvard.edu"
+msgstr ""
+
+#: ../../source/installation/intro.rst:43
+msgid "Improving this Guide"
+msgstr ""
+
+#: ../../source/installation/intro.rst:45
+msgid ""
+"If you spot a typo in this guide or would like to suggest an improvement,"
+" please find the appropriate file in "
+"https://github.com/IQSS/dataverse/tree/develop/doc/sphinx-"
+"guides/source/installation and send a pull request as explained in the "
+":doc:`/developers/documentation` section of the Developer Guide. You are "
+"also welcome to simply open an issue at "
+"https://github.com/IQSS/dataverse/issues to describe the problem with "
+"this guide."
+msgstr ""
+
+#: ../../source/installation/intro.rst:47
+msgid "Next is the :doc:`prep` section."
+msgstr ""
+

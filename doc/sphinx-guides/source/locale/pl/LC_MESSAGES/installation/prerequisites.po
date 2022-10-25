@@ -1,0 +1,702 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/installation/prerequisites.rst:5
+msgid "Prerequisites"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:7
+msgid ""
+"Before running the Dataverse installation script, you must install and "
+"configure the following software."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:9
+msgid ""
+"After following all the steps in this document, you can proceed to the "
+":doc:`installation-main` section."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:11
+msgid ""
+"You **may** find it helpful to look at how the configuration is done "
+"automatically by various tools such as Vagrant, Puppet, or Ansible. See "
+"the :doc:`prep` section for pointers on diving into these scripts."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:14
+msgid "|toctitle|"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:17
+msgid "Linux"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:19
+msgid ""
+"We assume you plan to run Dataverse on Linux and we recommend "
+"RHEL/CentOS, which is the Linux distribution tested by the Dataverse "
+"development team. Please be aware that while el7 (RHEL/CentOS 7) is the "
+"recommended platform, the steps in this document were originally written "
+"for el6 and may need to be updated (please feel free to make a pull "
+"request!)."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:22
+msgid "Java"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:24
+msgid "Dataverse requires Java SE 8 (8u74/JDK 1.8.0u74 or higher)."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:27
+msgid "Installing Java"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:29
+msgid ""
+"Dataverse should run fine with only the Java Runtime Environment (JRE) "
+"installed, but installing the Java Development Kit (JDK) is recommended "
+"so that useful tools for troubleshooting production environments are "
+"available. We recommend using Oracle JDK or OpenJDK."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:31
+msgid ""
+"The Oracle JDK can be downloaded from "
+"http://www.oracle.com/technetwork/java/javase/downloads/index.html"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:33
+msgid "On a RHEL/CentOS, install OpenJDK (devel version) using yum::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:37
+msgid ""
+"If you have multiple versions of Java installed, Java 8 should be the "
+"default when ``java`` is invoked from the command line. You can test this"
+" by running ``java -version``."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:39
+msgid ""
+"On RHEL/CentOS you can make Java 8 the default with the ``alternatives`` "
+"command, having it prompt you to select the version of Java from a list::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:43
+msgid ""
+"If you don't want to be prompted, here is an example of the non-"
+"interactive invocation::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:48
+msgid "Glassfish"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:50
+msgid "Glassfish Version 4.1.2 is required."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:53
+msgid "Installing Glassfish"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:55
+msgid ""
+"The Dataverse installer need not be run as root, and it is recommended "
+"that Glassfish not run as root either. We suggest the creation of a "
+"glassfish service account for this purpose."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:57
+msgid ""
+"Examples in this section assume that you want to install glassfish in "
+"``/usr/local/glassfish4.1.2`` directory."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:59
+msgid "Download and install Glassfish::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:65
+msgid ""
+"If you intend to install and run Glassfish under a service account (and "
+"we hope you do), chown -R the Glassfish hierarchy to root to protect it "
+"but give the service account access to the ``lib/`` and "
+"``domains/domain1/`` directories::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:71
+msgid ""
+"After installation, you may chown the ``lib/`` directory back to root; "
+"the installer only needs write access to copy the JDBC driver into that "
+"directory."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:73
+msgid ""
+"The Certificate Authority (CA) certificate bundle file from Glassfish "
+"contains certs that expired in August 2018, causing problems with ORCID "
+"login."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:75
+msgid ""
+"The actual expiration date is August 22, 2018, which you can see with the"
+" following command::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:79
+msgid ""
+"Overwrite Glassfish's CA certs file with the file that ships with the "
+"operating system and restart Glassfish::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:86
+msgid "Launching Glassfish on system boot"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:88
+msgid ""
+"The Dataverse installation script will start Glassfish if necessary, but "
+"you may find the following scripts helpful to launch Glassfish start "
+"automatically on boot."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:90
+msgid ""
+"This :download:`Systemd "
+"file<../_static/installation/files/etc/systemd/glassfish.service>` may be"
+" serve as a reference for systems using Systemd (such as RHEL/CentOS 7 or"
+" Ubuntu 16+)"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:91
+msgid ""
+"This :download:`init "
+"script<../_static/installation/files/etc/init.d/glassfish.init.service>` "
+"may be useful for RHEL/CentOS 6 or Ubuntu >= 14 if you're using a "
+"Glassfish service account, or"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:92
+msgid ""
+"This :download:`Glassfish init script "
+"<../_static/installation/files/etc/init.d/glassfish.init.root>` may be "
+"helpful if you're just going to run Glassfish as root."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:94
+msgid ""
+"It is not necessary for Glassfish to be running before you execute the "
+"Dataverse installation script; it will start Glassfish for you."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:96
+msgid ""
+"Please note that you must run Glassfish in an English locale. If you are "
+"using something like ``LANG=de_DE.UTF-8``, ingest of tabular data will "
+"fail with the message \"RoundRoutines:decimal separator no in right "
+"place\"."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:98
+msgid ""
+"Also note that Glassfish may utilize more than the default number of file"
+" descriptors, especially when running batch jobs such as harvesting. We "
+"have increased ours by adding ulimit -n 32768 to our glassfish init "
+"script. On operating systems which use systemd such as RHEL or CentOS 7, "
+"file descriptor limits may be increased by adding a line like "
+"LimitNOFILE=32768 to the systemd unit file. You may adjust the file "
+"descriptor limits on running processes by using the prlimit utility::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:103
+msgid "PostgreSQL"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:108
+msgid "Installing PostgreSQL"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:110
+msgid "Version 9.6 is required. Previous versions have not been tested."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:112
+msgid ""
+"Version 9.6 is anticipated as an \"LTS\" release in RHEL and on other "
+"platforms::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:121
+msgid "Note these steps are specific to RHEL/CentOS 7. For RHEL/CentOS 6 use::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:127
+msgid ""
+"Configuring Database Access for the Dataverse Application (and the "
+"Dataverse Installer)"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:129
+msgid ""
+"The application and the installer script will be connecting to PostgreSQL"
+" over TCP/IP, using password authentication. In this section we explain "
+"how to configure PostgreSQL to accept these connections."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:132
+msgid ""
+"If PostgreSQL is running on the same server as Glassfish, find the "
+"localhost (127.0.0.1) entry that's already in the ``pg_hba.conf`` and "
+"modify it to look like this::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:136
+msgid ""
+"Once you are done with the prerequisites and run the installer script "
+"(documented here: :doc:`installation-main`) it will ask you to enter the "
+"address of the Postgres server. Simply accept the default value "
+"``127.0.0.1`` there."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:139
+msgid ""
+"The Dataverse installer script will need to connect to PostgreSQL **as "
+"the admin user**, in order to create and set up the database that the "
+"Dataverse will be using. If for whatever reason it is failing to connect "
+"(for example, if you don't know/remember what your Postgres admin "
+"password is), you may choose to temporarily disable all the access "
+"restrictions on localhost connections, by changing the line to::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:143
+msgid ""
+"Note that this rule opens access to the database server **via localhost "
+"only**. Still, in a production environment, this may constitute a "
+"security risk. So you will likely want to change it back to \"md5\" once "
+"the installer has finished."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:146
+msgid ""
+"If the Dataverse application is running on a different server, you will "
+"need to add a new entry to the ``pg_hba.conf`` granting it access by its "
+"network address::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:150
+msgid ""
+"Where ``[ADDRESS]`` is the numeric IP address of the Glassfish server. "
+"Enter this address when the installer asks for the PostgreSQL server "
+"address."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:152
+msgid ""
+"In some distributions, PostgreSQL is pre-configured so that it doesn't "
+"accept network connections at all. Check that the ``listen_address`` line"
+" in the configuration file ``postgresql.conf`` is not commented out and "
+"looks like this::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:156
+msgid ""
+"The file ``postgresql.conf`` will be located in the same directory as the"
+" ``pg_hba.conf``."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:158
+msgid ""
+"**Important: PostgreSQL must be restarted** for the configuration changes"
+" to take effect! On RHEL/CentOS 7 and similar (provided you installed "
+"Postgres as instructed in :ref:`install_postgresql`)::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:162
+msgid "or on RHEL/CentOS 6::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:166
+msgid ""
+"On MacOS X a \"Reload Configuration\" icon is usually supplied in the "
+"PostgreSQL application folder. Or you could look up the process id of the"
+" PostgreSQL postmaster process, and send it the SIGHUP signal::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:171
+msgid "Solr"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:173
+msgid "The Dataverse search index is powered by Solr."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:176
+msgid "Installing Solr"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:178
+msgid ""
+"You should not run Solr as root. Create a user called ``solr`` and a "
+"directory to install Solr into::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:184
+msgid "Become the ``solr`` user and then download and configure Solr::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:194
+msgid ""
+"You should already have a \"dvinstall.zip\" file that you downloaded from"
+" https://github.com/IQSS/dataverse/releases . Unzip it into ``/tmp``. "
+"Then copy the files into place::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:201
+msgid ""
+"Note: Dataverse has customized Solr to boost results that come from "
+"certain indexed elements inside Dataverse, for example prioritizing "
+"results from Dataverses over Datasets. If you would like to remove this, "
+"edit your ``solrconfig.xml`` and remove the ``<str name=\"qf\">`` element"
+" and its contents. If you have ideas about how this boosting could be "
+"improved, feel free to contact us through our Google Group "
+"https://groups.google.com/forum/#!forum/dataverse-dev ."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:203
+msgid ""
+"Solr will warn about needing to increase the number of file descriptors "
+"and max processes in a production environment but will still run with "
+"defaults. We have increased these values to the recommended levels by "
+"adding ulimit -n 65000 to the init script, and the following to "
+"``/etc/security/limits.conf``::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:210
+msgid ""
+"On operating systems which use systemd such as RHEL or CentOS 7, you may "
+"then add a line like LimitNOFILE=65000 for the number of open file "
+"descriptors and a line with LimitNPROC=65000 for the max processes to the"
+" systemd unit file, or adjust the limits on a running process using the "
+"prlimit tool::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:214
+msgid ""
+"Solr launches asynchronously and attempts to use the ``lsof`` binary to "
+"watch for its own availability. Installation of this package isn't "
+"required but will prevent a warning in the log at startup."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:216
+msgid ""
+"Next, you need to tell Solr to create the core ``collection1`` and "
+"``rorSuggestions`` on startup::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:221
+msgid "Finally, you may start Solr::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:228
+msgid "Solr Init Script"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:230
+msgid ""
+"For systems running systemd, as root, download "
+":download:`solr.service<../_static/installation/files/etc/systemd/solr.service>`"
+" and place it in ``/tmp``. Then start Solr and configure it to start at "
+"boot with the following commands::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:236
+msgid ""
+"For systems using init.d, download this :download:`Solr init script "
+"<../_static/installation/files/etc/init.d/solr>` and place it in "
+"``/tmp``. Then start Solr and configure it to start at boot with the "
+"following commands::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:243
+msgid "Securing Solr"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:245
+msgid ""
+"Solr must be firewalled off from all hosts except the server(s) running "
+"Dataverse. Otherwise, any host  that can reach the Solr port (8983 by "
+"default) can add or delete data, search unpublished data, and even "
+"reconfigure Solr. For more information, please see "
+"https://lucene.apache.org/solr/guide/7_2/securing-solr.html"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:248
+msgid "jq"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:251
+msgid "Installing jq"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:253
+msgid ""
+"``jq`` is a command line tool for parsing JSON output that is used by the"
+" Dataverse installation script. https://stedolan.github.io/jq explains "
+"various ways of installing it, but following example shows a relatively "
+"straightforward method. Please note that you must download the 64- or "
+"32-bit version based on your architecture. In the example, the 64-bit "
+"version is installed. We confirm it's executable and in our ``$PATH`` by "
+"checking the version (1.4 or higher should be fine)::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:261
+msgid "ImageMagick"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:263
+msgid ""
+"Dataverse uses `ImageMagick <https://www.imagemagick.org>`_ to generate "
+"thumbnail previews of PDF files. This is an optional component, meaning "
+"that if you don't have ImageMagick installed, there will be no thumbnails"
+" for PDF files, in the search results and on the dataset pages; but "
+"everything else will be working. (Thumbnail previews for non-PDF image "
+"files are generated using standard Java libraries and do not require any "
+"special installation steps)."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:266
+msgid "Installing and configuring ImageMagick"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:268
+msgid ""
+"On a Red Hat and similar Linux distributions, you can install ImageMagick"
+" with something like::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:272
+msgid ""
+"(most RedHat systems will have it pre-installed). When installed using "
+"standard ``yum`` mechanism, the executable for the ImageMagick convert "
+"utility will be located at ``/usr/bin/convert``. No further configuration"
+" steps will then be required."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:275
+msgid ""
+"On MacOS you can compile ImageMagick from sources, or use one of the "
+"popular installation frameworks, such as brew."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:277
+msgid ""
+"If the installed location of the convert executable is different from "
+"``/usr/bin/convert``, you will also need to specify it in your Glassfish "
+"configuration using the JVM option. For example::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:281
+msgid "(see the :doc:`config` section for more information on the JVM options)"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:284
+msgid "Maven"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:286
+msgid ""
+"Maven is a tool for managing developer dependencies in various projects. "
+"It is needed in order to create war package that will be deployed::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:292
+msgid "Git"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:294
+msgid "Git is used for cloning a project from our sources::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:299
+msgid "R"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:301
+msgid ""
+"Dataverse uses `R <https://https://cran.r-project.org/>`_ to handle "
+"tabular data files. The instructions in this section describes a "
+"**minimal** R installation. It will allow you to ingest R (.RData) files "
+"as tabular data; to export tabular data as .RData files; and to run `Data"
+" Explorer <https://github.com/scholarsportal/Dataverse-Data-Explorer>`_ "
+"(specifically, R is used to generate .prep metadata files that Data "
+"Explorer uses).  R can be considered an optional component, meaning that "
+"if you don't have R installed, you will still be able to run and use "
+"Dataverse - but the mentioned functionality specific to tabular data will"
+" not be available to your users."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:312
+msgid ""
+"If you choose to also install `TwoRavens "
+"<https://github.com/IQSS/TwoRavens>`_, it will require some extra R "
+"components and libraries.  Please consult the instructions in the "
+"TowRavens section of the Installation Guide."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:319
+msgid "Installing R"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:321
+msgid "Can be installed with :fixedwidthplain:`yum`::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:325
+msgid ""
+"EPEL distribution is strongly recommended. The version of R currently "
+"available from epel6 and epel7 is 3.5; it has been tested and is known to"
+" work on RedHat and CentOS versions 6 and 7."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:327
+msgid ""
+"If :fixedwidthplain:`yum` isn't configured to use EPEL repositories ( "
+"https://fedoraproject.org/wiki/EPEL ):"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:329
+msgid ""
+"RHEL/CentOS users can install the RPM :fixedwidthplain:`epel-release`. "
+"For RHEL/CentOS 7::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:333
+msgid ""
+"RHEL/CentOS users can install the RPM :fixedwidthplain:`epel-release`. "
+"For RHEL/CentOS 6::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:337
+msgid ""
+"RHEL users will want to log in to their organization's respective RHN "
+"interface, find the particular machine in question and:"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:339
+msgid "click on \"Subscribed Channels: Alter Channel Subscriptions\""
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:340
+msgid "enable EPEL, Server Extras, Server Optional"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:345
+msgid "Installing the required R libraries"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:352
+msgid "The following R packages (libraries) are required:"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:348
+msgid "R2HTML"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:349
+msgid "rjson"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:350
+msgid "DescTools"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:351
+#: ../../source/installation/prerequisites.rst:363
+msgid "Rserve"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:352
+msgid "haven"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:354
+msgid ""
+"Install them following the normal R package installation procedures. For "
+"example, with the following R commands::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:365
+msgid ""
+"Dataverse uses `Rserve <https://rforge.net/Rserve/>`_ to communicate to "
+"R. Rserve is installed as a library package, as described in the previous"
+" section (:ref:`install_r_libraries`). It runs as a daemon process on the"
+" server, accepting network connections on a dedicated port. This requires"
+" some extra configuration and we provide a  script "
+"(:fixedwidthplain:`scripts/r/rserve/rserve-setup.sh`) for setting it up. "
+"Run the script as follows (as root)::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:375
+msgid ""
+"The setup script will create a system user :fixedwidthplain:`rserve` that"
+" will run the daemon process.  It will install the startup script for the"
+" daemon (:fixedwidthplain:`/etc/init.d/rserve`), so that it gets started "
+"automatically when the system boots.  This is an "
+":fixedwidthplain:`init.d`-style startup file. If this is a RedHat/CentOS "
+"7 system, you may want to use the :fixedwidthplain:`systemctl`-style file"
+" :fixedwidthplain:`rserve.service` instead. (Copy it into the "
+":fixedwidthplain:`/usr/lib/systemd/system/` directory)"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:387
+msgid ""
+"Note that the setup will also set the Rserve password to "
+"\":fixedwidthplain:`rserve`\".  Rserve daemon runs under a non-privileged"
+" user id, so there's not much potential for security damage through "
+"unauthorized access. It is however still a good idea **to change the "
+"password**. The password is specified in "
+":fixedwidthplain:`/etc/Rserv.pwd`.  You can consult `Rserve documentation"
+" <https://rforge.net/Rserve/doc.html>`_ for more information on password "
+"encryption and access security."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:396
+msgid "You should have the following 5 file options::"
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:404
+msgid ""
+"If you have changed the password, make sure it is correctly specified in "
+"the :fixedwidthplain:`RservePassword` option. If Rserve is running on a "
+"host that's different from your Dataverse server, change the "
+":fixedwidthplain:`RserveHost` option as well (and make sure the port 6311"
+" on the Rserve host is not firewalled from your Dataverse host)."
+msgstr ""
+
+#: ../../source/installation/prerequisites.rst:411
+msgid ""
+"Now that you have all the prerequisites in place, you can proceed to the "
+":doc:`installation-main` section."
+msgstr ""
+

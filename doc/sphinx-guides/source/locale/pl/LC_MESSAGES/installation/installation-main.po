@@ -1,0 +1,715 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/installation/installation-main.rst:3
+msgid "Installation"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:5
+msgid ""
+"Now that the :doc:`prerequisites` are in place, we are ready to execute "
+"the Dataverse installation script (the \"installer\") and verify that the"
+" installation was successful by logging in with a \"superuser\" account."
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:8
+msgid "|toctitle|"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:13
+msgid "Running the Dataverse Installer"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:15
+msgid ""
+"A scripted, interactive installer is provided. This script will configure"
+" your Glassfish environment, create the database, set some required "
+"options and start the application. Some configuration tasks will still be"
+" required after you run the installer! So make sure to consult the next "
+"section."
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:17
+msgid ""
+"As mentioned in the :doc:`prerequisites` section, RHEL/CentOS is the "
+"recommended Linux distribution. (The installer is also known to work on "
+"Mac OS X for setting up a development environment.)"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:19
+msgid ""
+"Generally, the installer has a better chance of succeeding if you run it "
+"against a freshly installed Glassfish node that still has all the default"
+" configuration settings. In any event, please make sure that it is still "
+"configured to accept http connections on port 8080 - because that's where"
+" the installer expects to find the application once it's deployed."
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:21
+msgid "You should clone the project from https://github.com/CeON/dataverse ::"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:26
+msgid "when setting up and starting Solr under the :doc:`prerequisites` section."
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:28
+msgid "Cloning the version this will create the directory ``dataverse``."
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:30
+msgid ""
+"**Important:** The installer will need to use the PostgreSQL command line"
+" utility ``psql`` in order to configure the database. If the executable "
+"is not in your system PATH, the installer will try to locate it on your "
+"system. However, we strongly recommend that you check and make sure it is"
+" in the PATH. This is especially important if you have multiple versions "
+"of PostgreSQL installed on your system. Make sure the psql that came with"
+" the version that you want to use with your Dataverse is the first on "
+"your path. For example, if the PostgreSQL distribution you are running is"
+" installed in  /Library/PostgreSQL/9.6, add /Library/PostgreSQL/9.6/bin "
+"to the beginning of your $PATH variable. If you are *running* multiple "
+"PostgreSQL servers, make sure you know the port number of the one you "
+"want to use, as the installer will need it in order to connect to the "
+"database (the first PostgreSQL distribution installed on your system is "
+"likely using the default port 5432; but the second will likely be on "
+"5433, etc.) Does every word in this paragraph make sense? If it does, "
+"great - because you definitely need to be comfortable with basic system "
+"tasks in order to install Dataverse. If not - if you don't know how to "
+"check where your PostgreSQL is installed, or what port it is running on, "
+"or what a $PATH is... it's not too late to stop. Because it will most "
+"likely not work. And if you contact us for help, these will be the "
+"questions we'll be asking you - so, again, you need to be able to answer "
+"them comfortably for it to work."
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:32
+msgid ""
+"**It is no longer necessary to run the installer as root!** Just make "
+"sure the user running the installer has write permission to:"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:34
+msgid "/usr/local/glassfish4.1.2/glassfish/lib"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:35
+msgid "/usr/local/glassfish4.1.2/glassfish/domains/domain1"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:36
+msgid ""
+"the current working directory of the installer (it currently writes its "
+"logfile there), and"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:37
+msgid "your jvm-option specified files.dir"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:39
+msgid ""
+"The only reason to run Glassfish as root would be to allow Glassfish "
+"itself to listen on the default HTTP(S) ports 80 and 443, or any other "
+"port below 1024. However, it is simpler and more secure to run Glassfish "
+"run on its default port of 8080 and hide it behind an Apache Proxy, via "
+"AJP, running on port 80 or 443. This configuration is required if you're "
+"going to use Shibboleth authentication. See more discussion on this here:"
+" :doc:`shibboleth`.)"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:41
+msgid "Execute the installer script like this::"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:47
+msgid ""
+"The script will prompt you for some configuration values. If this is a "
+"test/evaluation installation, it may be possible to accept the default "
+"values provided for most of the settings:"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:49
+msgid "Internet Address of your host: localhost"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:50
+msgid "Glassfish Directory: /usr/local/glassfish4.1.2"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:51
+msgid "Glassfish User: current user running the installer script"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:52
+msgid "Administrator email address for this Dataverse: (none)"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:53
+msgid "SMTP (mail) server to relay notification messages: localhost"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:54
+msgid "Postgres Server Address: [127.0.0.1]"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:55
+msgid "Postgres Server Port: 5432"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:56
+msgid "Postgres ADMIN password: secret"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:57
+msgid "Name of the Postgres Database: dvndb"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:58
+msgid "Name of the Postgres User: dvnapp"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:59
+msgid "Postgres user password: secret"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:60
+msgid "Remote Solr indexing service: LOCAL"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:61
+msgid "Rserve Server: localhost"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:62
+msgid "Rserve Server Port: 6311"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:63
+msgid "Rserve User Name: rserve"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:64
+msgid "Rserve User Password: rserve"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:65
+msgid "Administration Email address for the installation;"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:66
+msgid ""
+"Postgres admin password - We'll need it in order to create the database "
+"and user for the Dataverse to use, without having to run the installer as"
+" root. If you don't know your Postgres admin password, you may simply set"
+" the authorization level for localhost to \"trust\" in the PostgreSQL "
+"``pg_hba.conf`` file (See the PostgreSQL section in the Prerequisites). "
+"If this is a production evnironment, you may want to change it back to "
+"something more secure, such as \"password\" or \"md5\", after the "
+"installation is complete."
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:67
+msgid ""
+"Network address of a remote Solr search engine service (if needed) - In "
+"most cases, you will be running your Solr server on the same host as the "
+"Dataverse application (then you will want to leave this set to the "
+"default value of ``LOCAL``). But in a serious production environment you "
+"may set it up on a dedicated separate server."
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:69
+msgid ""
+"If desired, these default values can be configured by creating a "
+"``default.config`` (example :download:`here "
+"<../_static/util/default.config>`) file in the installer's working "
+"directory with new values (if this file isn't present, preconfigured "
+"defaults will be used)."
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:71
+msgid ""
+"This allows the installer to be run in non-interactive mode (with "
+"``./install -y -f > install.out 2> install.err``), which can allow for "
+"easier interaction with automated provisioning tools."
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:73
+msgid ""
+"All the Glassfish configuration tasks performed by the installer are "
+"isolated in the shell script ``dvinstall/glassfish-setup.sh`` (as "
+"``asadmin`` commands)."
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:75
+msgid ""
+"**IMPORTANT:** As a security measure, the ``glassfish-setup.sh`` script "
+"stores passwords as \"aliases\" rather than plaintext. If you change your"
+" database password, for example, you will need to update the alias with "
+"``asadmin update-password-alias db_password_alias``, for example. Here is"
+" a list of the password aliases that are set by the installation process "
+"and entered into Glassfish's ``domain.xml`` file:"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:77
+msgid "``db_password_alias``"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:78
+msgid "``doi_password_alias``"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:79
+msgid "``rserve_password_alias``"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:81
+msgid ""
+"Glassfish does not provide up to date documentation but Payara (a fork of"
+" Glassfish) does so for more information, please see "
+"https://docs.payara.fish/documentation/payara-server/password-aliases"
+"/password-alias-asadmin-commands.html"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:83
+msgid ""
+"**IMPORTANT:** The installer will also ask for an external site URL for "
+"Dataverse. It is *imperative* that this value be supplied accurately, or "
+"a long list of functions will be inoperable, including:"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:85
+msgid "email confirmation links"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:86
+msgid "password reset links"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:87
+msgid "generating a Private URL"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:88
+msgid "exporting to Schema.org format (and showing JSON-LD in HTML's <meta/> tag)"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:89
+msgid "exporting to DDI format"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:90
+msgid "which Dataverse installation an \"external tool\" should return to"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:91
+msgid "which Dataverse installation Geoconnect should return to"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:93
+msgid ""
+"**IMPORTANT:** Please note, that \"out of the box\" the installer will "
+"configure the Dataverse to leave unrestricted access to the "
+"administration APIs from (and only from) localhost. Please consider the "
+"security implications of this arrangement (anyone with shell access to "
+"the server can potentially mess with your Dataverse). An alternative "
+"solution would be to block open access to these sensitive API endpoints "
+"completely; and to only allow requests supplying a pre-defined \"unblock "
+"token\" (password). If you prefer that as a solution, please consult the "
+"supplied script ``post-install-api-block.sh`` for examples on how to set "
+"it up. See also \"Securing Your Installation\" under the :doc:`config` "
+"section."
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:95
+msgid ""
+"The script is to a large degree a derivative of the old installer from "
+"DVN 3.x. It is written in Perl. If someone in the community is eager to "
+"rewrite it, perhaps in a different language, please get in touch. :)"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:98
+msgid "Logging In"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:100
+msgid ""
+"Out of the box, Glassfish runs on port 8080 and 8181 rather than 80 and "
+"443, respectively, so visiting http://localhost:8080 (substituting your "
+"hostname) should bring up a login page. See the :doc:`shibboleth` page "
+"for more on ports, but for now, let's confirm we can log in by using port"
+" 8080. Poke a temporary hole in your firewall, if needed."
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:103
+msgid "Superuser Account"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:105
+msgid ""
+"We'll use the superuser account created by the installer to make sure you"
+" can log into Dataverse. For more on the difference between being a "
+"superuser and having the \"Admin\" role, read about configuring the root "
+"dataverse in the :doc:`config` section."
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:107
+msgid "Use the following credentials to log in:"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:109
+msgid "URL: http://localhost:8080"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:110
+msgid "username: dataverseAdmin"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:111
+msgid "password: admin"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:113
+msgid ""
+"Congratulations! You have a working Dataverse installation. Soon you'll "
+"be tweeting at `@dataverseorg <https://twitter.com/dataverseorg>`_ asking"
+" to be added to the map at http://dataverse.org :)"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:115
+msgid ""
+"Trouble? See if you find an answer in the "
+":ref:`installation_troubleshooting` section."
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:117
+msgid ""
+"Next you'll want to check out the :doc:`config` section, especially the "
+"section :ref:`securing_installation`."
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:122
+msgid "Troubleshooting"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:124
+msgid ""
+"If the following doesn't apply, please get in touch as explained in the "
+":doc:`intro`. You may be asked to provide "
+"``glassfish4.1.2/glassfish/domains/domain1/logs/server.log`` for "
+"debugging."
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:127
+msgid "Dataset Cannot Be Published"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:129
+msgid ""
+"Check to make sure you used a fully qualified domain name when installing"
+" Dataverse. You can change the ``SiteUrl`` File setting after the fact "
+"per the :doc:`config` section."
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:132
+msgid "Problems Sending Email"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:134
+msgid ""
+"If your Dataverse installation is not sending system emails, you may need"
+" to provide authentication for your mail host. First, double check the "
+"SMTP server being used with this Glassfish asadmin command::"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:138
+msgid ""
+"This should return the DNS of the mail host you configured during or "
+"after installation. mail/notifyMailSession is the JavaMail Session that's"
+" used to send emails to users."
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:140
+msgid ""
+"If the command returns a host you don't want to use, you can modify your "
+"notifyMailSession with the Glassfish ``asadmin set`` command with "
+"necessary options (`click here for the manual page "
+"<https://docs.oracle.com/cd/E18930_01/html/821-2433/set-1.html>`_), or "
+"via the admin console at http://localhost:4848 with your domain running."
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:142
+msgid ""
+"If your mail host requires a username/password for access, continue to "
+"the next section."
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:145
+msgid "Mail Host Configuration & Authentication"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:147
+msgid ""
+"If you need to alter your mail host address, user, or provide a password "
+"to connect with, these settings are easily changed in the Glassfish admin"
+" console or via command line."
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:149
+msgid ""
+"For the Glassfish console, load a browser with your domain online, "
+"navigate to http://localhost:4848 and on the side panel find JavaMail "
+"Sessions. By default, Dataverse uses a session named "
+"mail/notifyMailSession for routing outgoing emails. Click this mail "
+"session in the window to modify it."
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:151
+msgid ""
+"When fine tuning your JavaMail Session, there are a number of fields you "
+"can edit. The most important are:"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:153
+msgid "**Mail Host:** Desired mail host’s DNS address (e.g. smtp.gmail.com)"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:154
+msgid ""
+"**Default User:** Username mail host will recognize (e.g. "
+"user\\@gmail.com)"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:155
+msgid ""
+"**Default Sender Address:** Email address that your Dataverse will send "
+"mail from"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:157
+msgid ""
+"Depending on the SMTP server you're using, you may need to add additional"
+" properties (\"Additional Properties\" table in \"Advanced\" section)"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:159
+msgid ""
+"From the \"Add Properties\" utility at the bottom, use the “Add Property”"
+" button for each entry you need, and include the name / corresponding "
+"value as needed. Descriptions are optional, but can be used for your own "
+"organizational needs."
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:161
+msgid ""
+"**Note:** These properties are just an example. You may need "
+"different/more/fewer properties all depending on the SMTP server you’re "
+"using."
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:164
+#: ../../source/installation/installation-main.rst:176
+msgid "Name"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:164
+#: ../../source/installation/installation-main.rst:176
+msgid "Value"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:166
+msgid "mail.smtp.auth"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:166
+msgid "true"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:167
+msgid "mail.smtp.password"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:167
+msgid "[Default User password*]"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:168
+#: ../../source/installation/installation-main.rst:179
+msgid "mail.smtp.port"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:168
+msgid "[Port number to route through]"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:171
+msgid ""
+"**\\*WARNING**: Entering a password here will *not* conceal it on-screen."
+" It’s recommended to use an *app password* (for smtp.gmail.com users) or "
+"utilize a dedicated/non-personal user account with SMTP server auths so "
+"that you do not risk compromising your password."
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:173
+msgid ""
+"If your installation’s mail host uses SSL (like smtp.gmail.com) you’ll "
+"need these name/value pair properties in place:"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:178
+msgid "mail.smtp.socketFactory.port"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:178
+#: ../../source/installation/installation-main.rst:179
+msgid "465"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:180
+msgid "mail.smtp.socketFactory.fallback"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:180
+msgid "false"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:181
+msgid "mail.smtp.socketFactory.class"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:181
+msgid "javax.net.ssl.SSLSocketFactory"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:184
+msgid ""
+"The mail session can also be set from command line. To use this method, "
+"you will need to delete your notifyMailSession and create a new one:"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:186
+msgid "Delete: ``./asadmin delete-javamail-resource mail/notifyMailSession``"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:187
+msgid ""
+"Create (remove brackets and replace the variables inside): ``./asadmin "
+"create-javamail-resource --mailhost [smtp.gmail.com] --mailuser "
+"[test\\@test\\.com] --fromaddress [test\\@test\\.com] --property "
+"mail.smtp.auth=[true]:mail.smtp.password=[password]:mail.smtp.port=[465]:mail.smtp.socketFactory.port=[465]:mail.smtp.socketFactory.fallback=[false]:mail.smtp.socketFactory.class=[javax.net.ssl.SSLSocketFactory]"
+" mail/notifyMailSession``"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:189
+msgid ""
+"Be sure you save the changes made here and then restart your Glassfish "
+"server to test it out."
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:192
+msgid "UnknownHostException While Deploying"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:194
+msgid ""
+"If you are seeing \"Caused by: java.net.UnknownHostException: myhost: "
+"Name or service not known\" in server.log and your hostname is \"myhost\""
+" the problem is likely that \"myhost\" doesn't appear in ``/etc/hosts``. "
+"See also http://stackoverflow.com/questions/21817809/glassfish-exception-"
+"during-deployment-project-with-stateful-ejb/21850873#21850873"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:197
+msgid "Fresh Reinstall"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:199
+msgid ""
+"Early on when you're installing Dataverse, you may think, \"I just want "
+"to blow away what I've installed and start over.\" That's fine. You don't"
+" have to uninstall the various components like Glassfish, PostgreSQL and "
+"Solr, but you should be conscious of how to clear out their data."
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:202
+msgid "Drop database"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:204
+msgid ""
+"In order to drop the database, you have to stop Glassfish, which will "
+"have open connections. Before you stop Glassfish, you may as well "
+"undeploy the war file. First, find the name like this::"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:208
+msgid "Then undeploy it like this::"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:212
+msgid ""
+"Stop Glassfish with the init script provided in the :doc:`prerequisites` "
+"section or just use::"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:216
+msgid ""
+"With Glassfish down, you should now be able to drop your database and "
+"recreate it::"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:221
+msgid "Clear Solr"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:223
+msgid ""
+"The database is fresh and new but Solr has stale data it in. Clear it out"
+" with this command::"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:229
+msgid "Deleting Uploaded Files"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:231
+msgid ""
+"The path in the following command will depend on the value for "
+"``dataverse.files.directory`` as described in the :doc:`config` section::"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:236
+msgid "Rerun Installer"
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:238
+msgid ""
+"With all the data cleared out, you should be ready to rerun the installer"
+" (:ref:`dataverse-installer`)."
+msgstr ""
+
+#: ../../source/installation/installation-main.rst:240
+msgid ""
+"Related to all this is a series of scripts at "
+"https://github.com/IQSS/dataverse/blob/develop/scripts/deploy/phoenix.dataverse.org/deploy"
+" that Dataverse developers use have the test server "
+"http://phoenix.dataverse.org rise from the ashes before integration tests"
+" are run against it. Your mileage may vary. :)."
+msgstr ""
+

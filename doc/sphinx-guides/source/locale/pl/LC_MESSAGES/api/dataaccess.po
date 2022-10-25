@@ -1,0 +1,436 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/api/dataaccess.rst:2
+msgid "Data Access API"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:4
+msgid ""
+"The Data Access API provides programmatic download access to the files "
+"stored under Dataverse. More advanced features of the Access API include "
+"format-specific transformations (thumbnail generation/resizing for "
+"images; converting tabular data into alternative file formats) and access"
+" to the data-level metadata that describes the contents of the tabular "
+"files."
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:8
+msgid "|toctitle|"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:11
+msgid "Basic File Access"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:13
+msgid "Basic access URI:"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:15
+msgid "``/api/access/datafile/$id``"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:17
+msgid ""
+"Files can be accessed using persistent identifiers. This is done by "
+"passing the constant ``:persistentId`` where the numeric id of the file "
+"is expected, and then passing the actual persistent id as a query "
+"parameter with the name ``persistentId``."
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:19
+msgid "Example: Getting the file whose DOI is *10.5072/FK2/J8SJZB* ::"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:27 ../../source/api/dataaccess.rst:79
+#: ../../source/api/dataaccess.rst:106
+msgid "Parameters:"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:29
+msgid "``format``"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:31
+msgid ""
+"the following parameter values are supported (for tabular data files "
+"only):"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:34 ../../source/api/dataaccess.rst:49
+#: ../../source/api/dataaccess.rst:61 ../../source/api/dataaccess.rst:85
+msgid "Value"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:34 ../../source/api/dataaccess.rst:49
+#: ../../source/api/dataaccess.rst:61 ../../source/api/dataaccess.rst:85
+msgid "Description"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:36 ../../source/api/dataaccess.rst:87
+msgid "original"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:36 ../../source/api/dataaccess.rst:87
+#: ../../source/api/dataaccess.rst:100
+msgid ""
+"\"Saved Original\", the proprietary (SPSS, Stata, R, etc.) file from "
+"which the tabular data was ingested;"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:37
+msgid "RData"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:37
+msgid ""
+"Tabular data as an R Data frame (generated; unless the \"original\" file "
+"was in R);"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:38
+msgid "prep"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:38
+msgid "\"Pre-processed data\", in JSON."
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:39
+msgid "subset"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:39
+msgid ""
+"Column-wise subsetting. You must also supply a comma separated list of "
+"variables in the \"variables\" query parameter. In this example, 123 and "
+"127 are the database ids of data variables that belong to the data file "
+"with the id 6: ``curl "
+"'http://localhost:8080/api/access/datafile/6?format=subset&variables=123,127'``."
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:44
+msgid "``noVarHeader``"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:46
+msgid "(supported for tabular data files only; ignored for all other file types)"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:51
+msgid "true|1"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:51
+msgid ""
+"Tab-delimited data file, without the variable name header (added to tab. "
+"files by default)"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:56
+msgid "``imageThumb``"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:58
+msgid ""
+"the following parameter values are supported (for image and pdf files "
+"only):"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:63
+msgid "true"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:63
+msgid ""
+"Generates a thumbnail image, by rescaling to the default thumbnail size "
+"(64 pixels)"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:64
+msgid "``N``"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:64
+msgid "Rescales the image to ``N`` pixels."
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:68
+msgid "Multiple File (\"bundle\") download"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:70
+msgid "``/api/access/datafiles/$id1,$id2,...$idN``"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:72
+msgid "Returns the files listed, zipped."
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:74
+msgid ""
+"If the request can only be completed partially - if only *some* of the "
+"requested files can be served (because of the permissions and/or size "
+"restrictions), the file MANIFEST.TXT included in the zipped bundle will "
+"have entries specifying the reasons the missing files could not be "
+"downloaded. IN THE FUTURE the API will return a 207 status code to "
+"indicate that the result was a partial success. (As of writing this - "
+"v.4.11 - this hasn't been implemented yet)"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:76
+msgid ""
+"If any of the datafiles have the ``DirectoryLabel`` attributes in the "
+"corresponding ``FileMetadata`` entries, these will be added as folders to"
+" the Zip archive, and the files will be placed in them accordingly."
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:81
+msgid ""
+"``format`` the following parameter values are supported (for tabular data"
+" files only):"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:92
+msgid "\"All Formats\" bundled download for Tabular Files."
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:94
+msgid "``/api/access/datafile/bundle/$id``"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:96
+msgid ""
+"This is a convenience packaging method available for tabular data files. "
+"It returns a zipped bundle that contains the data in the following "
+"formats:"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:99
+msgid "Tab-delimited;"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:101
+msgid "Generated R Data frame (unless the \"original\" was already in R);"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:102
+msgid "Data (Variable) metadata record, in DDI XML;"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:103
+msgid "File citation, in Endnote and RIS formats."
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:107
+msgid "none."
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:110
+msgid "Data Variable Metadata Access"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:112
+msgid ""
+"**These methods are only available for tabular data files. (i.e., data "
+"files with associated data table and variable objects).**"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:115
+msgid "``/api/access/datafile/$id/metadata/ddi``"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:117
+msgid ""
+"In its basic form this command returns a DDI fragment that describes the "
+"file and the data variables in it."
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:119
+msgid "The DDI returned will only have two top-level sections:"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:121
+msgid ""
+"a single ``fileDscr``, with the basic file information plus the numbers "
+"of variables and observations and the UNF of the file."
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:122
+msgid "a single ``dataDscr`` section, with one ``var`` section for each variable."
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:124
+msgid "Example:"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:126
+msgid "``http://localhost:8080/api/access/datafile/6/metadata/ddi``"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:182
+msgid ""
+"More information on DDI is available in the "
+":doc:`/user/tabulardataingest/ingestprocess` section of the User Guide."
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:184
+msgid "Advanced options/Parameters:"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:186
+msgid ""
+"It is possible to request only specific subsets of, rather than the full "
+"file-level DDI record. This can be a useful optimization, in cases such "
+"as when an application needs to look up a single variable; especially "
+"with data files with large numbers of variables. See ``subset`` param in "
+"the :ref:`dataaccess_parameters` section."
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:193
+msgid "Preprocessed Data"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:195
+msgid "``/api/access/datafile/$id/metadata/preprocessed``"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:197
+msgid ""
+"This method provides the \"preprocessed data\" - a summary record that "
+"describes the values of the data vectors in the tabular file, in JSON. "
+"These metadata values are used by TwoRavens, the companion data "
+"exploration utility of the Dataverse application. Please note that this "
+"format might change in the future."
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:200
+msgid "Authentication and Authorization"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:202
+msgid "Data Access API supports both session- and API key-based authentication."
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:204
+msgid ""
+"If a session is available, and it is already associated with an "
+"authenticated user, it will be used for access authorization. If not, or "
+"if the user in question is not authorized to access the requested object,"
+" an attempt will be made to authorize based on an API key, if supplied. "
+"All of the API endpoints presented in this document support the key "
+"parameter ``key=...`` as well as the newer ``X-Dataverse-key`` header. "
+"For more details, see \"Authentication\" in the :doc:`intro` section."
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:208
+msgid "Access Requests and Processing"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:210
+msgid ""
+"All of the following endpoints take the persistent identifier as a "
+"parameter in place of 'id'."
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:213
+msgid "Request Access:"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:214
+msgid "``/api/access/datafile/$id/requestAccess``"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:216
+msgid ""
+"This method requests access to the datafile whose id is passed on the "
+"behalf of an authenticated user whose key is passed. Note that not all "
+"datasets allow access requests to restricted files."
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:218 ../../source/api/dataaccess.rst:229
+#: ../../source/api/dataaccess.rst:240 ../../source/api/dataaccess.rst:251
+#: ../../source/api/dataaccess.rst:262
+msgid "A curl example using an ``id``::"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:223
+msgid "Grant File Access:"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:225
+msgid "``/api/access/datafile/{id}/grantAccess/{identifier}``"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:227
+msgid ""
+"This method grants access to the datafile whose id is passed on the "
+"behalf of an authenticated user whose user identifier is passed with an @"
+" prefix. The key of a user who can manage permissions of the datafile is "
+"required to use this method."
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:234
+msgid "Reject File Access:"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:236
+msgid "``/api/access/datafile/{id}/rejectAccess/{identifier}``"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:238
+msgid ""
+"This method rejects the access request to the datafile whose id is passed"
+" on the behalf of an authenticated user whose user identifier is passed "
+"with an @ prefix. The key of a user who can manage permissions of the "
+"datafile is required to use this method."
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:245
+msgid "Revoke File Access:"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:247
+msgid "``/api/access/datafile/{id}/revokeAccess/{identifier}``"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:249
+msgid ""
+"This method revokes previously granted access to the datafile whose id is"
+" passed on the behalf of an authenticated user whose user identifier is "
+"passed with an @ prefix. The key of a user who can manage permissions of "
+"the datafile is required to use this method."
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:256
+msgid "List File Access Requests:"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:258
+msgid "``/api/access/datafile/{id}/listRequests``"
+msgstr ""
+
+#: ../../source/api/dataaccess.rst:260
+msgid ""
+"This method returns a list of Authenticated Users who have requested "
+"access to the datafile whose id is passed. The key of a user who can "
+"manage permissions of the datafile is required to use this method."
+msgstr ""
+

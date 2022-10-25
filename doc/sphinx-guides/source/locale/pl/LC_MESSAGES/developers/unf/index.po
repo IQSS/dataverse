@@ -1,0 +1,66 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/developers/unf/index.rst:5
+msgid "Universal Numerical Fingerprint (UNF)"
+msgstr ""
+
+#: ../../source/developers/unf/index.rst:12
+msgid "alternate text"
+msgstr ""
+
+#: ../../source/developers/unf/index.rst:12
+msgid "Fig.1 UNF: used to uniquely identify and verify data."
+msgstr ""
+
+#: ../../source/developers/unf/index.rst:14
+msgid ""
+"Universal Numerical Fingerprint (UNF) is a unique signature of the "
+"**semantic content** of a digital object. It is **not** simply a checksum"
+" of a binary data file. Instead, the UNF algorithm approximates and "
+"normalizes the data stored within. A cryptographic hash of that "
+"normalized (or canonicalized) representation is then computed. The "
+"signature is thus independent of the storage format. E.g., the same data "
+"object stored in, say, SPSS and Stata, will have the same UNF."
+msgstr ""
+
+#: ../../source/developers/unf/index.rst:23
+msgid ""
+"Early versions of Dataverse were using the first released implementation "
+"of the UNF algorithm (v.3, implemented in R).  Starting with Dataverse "
+"2.0 and throughout the 3.* lifecycle, UNF v.5 (implemented in Java) was "
+"used. Dataverse 4.0 uses the latest release, UNF v.6. Two parallel "
+"implementation, in R and Java, will be available, for cross-validation."
+msgstr ""
+
+#: ../../source/developers/unf/index.rst:30
+msgid ""
+"Learn more: Micah Altman and Gary King. 2007. “A Proposed Standard for "
+"the Scholarly Citation of Quantitative Data.” D-Lib Magazine, 13. "
+"Publisher’s Version Copy at http://j.mp/2ovSzoT"
+msgstr ""
+
+#: ../../source/developers/unf/index.rst:32
+msgid "**Contents:**"
+msgstr ""
+
+#: ../../source/developers/unf/index.rst:43
+msgid "Previous: :doc:`/developers/tools` | Next: :doc:`/developers/remote-users`"
+msgstr ""
+

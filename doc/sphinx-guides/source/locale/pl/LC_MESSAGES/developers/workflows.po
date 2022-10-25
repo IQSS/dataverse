@@ -1,0 +1,228 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/developers/workflows.rst:2
+msgid "Workflows"
+msgstr ""
+
+#: ../../source/developers/workflows.rst:4
+msgid ""
+"Dataverse has a flexible workflow mechanism that can be used to trigger "
+"actions before and after Dataset publication."
+msgstr ""
+
+#: ../../source/developers/workflows.rst:8
+msgid "|toctitle|"
+msgstr ""
+
+#: ../../source/developers/workflows.rst:11
+msgid "Introduction"
+msgstr ""
+
+#: ../../source/developers/workflows.rst:13
+msgid ""
+"Dataverse can perform two sequences of actions when datasets are "
+"published: one prior to publishing (marked by a ``PrePublishDataset`` "
+"trigger), and one after the publication has succeeded "
+"(``PostPublishDataset``). The pre-publish workflow is useful for having "
+"an external system prepare a dataset for being publicly accessed (a "
+"possibly lengthy activity that requires moving files around, uploading "
+"videos to a streaming server, etc.), or to start an approval process. A "
+"post-publish workflow might be used for sending notifications about the "
+"newly published dataset."
+msgstr ""
+
+#: ../../source/developers/workflows.rst:15
+msgid ""
+"Workflow steps are created using *step providers*. Dataverse ships with "
+"an internal step provider that offers some basic functionality, and with "
+"the ability to load 3rd party step providers. This allows installations "
+"to implement functionality they need without changing the Dataverse "
+"source code."
+msgstr ""
+
+#: ../../source/developers/workflows.rst:17
+msgid ""
+"Steps can be internal (say, writing some data to the log) or external. "
+"External steps involve Dataverse sending a request to an external system,"
+" and waiting for the system to reply. The wait period is arbitrary, and "
+"so allows the external system unbounded operation time. This is useful, "
+"e.g., for steps that require human intervension, such as manual approval "
+"of a dataset publication."
+msgstr ""
+
+#: ../../source/developers/workflows.rst:19
+msgid ""
+"The external system reports the step result back to dataverse, by sending"
+" a HTTP ``POST`` command to ``api/workflows/{invocation-id}``. The body "
+"of the request is passed to the paused step for further processing."
+msgstr ""
+
+#: ../../source/developers/workflows.rst:21
+msgid ""
+"If a step in a workflow fails, Dataverse make an effort to roll back all "
+"the steps that preceded it. Some actions, such as writing to the log, "
+"cannot be rolled back. If such an action has a public external effect "
+"(e.g. send an EMail to a mailing list) it is advisable to put it in the "
+"post-release workflow."
+msgstr ""
+
+#: ../../source/developers/workflows.rst:24
+msgid ""
+"For invoking external systems using a REST api, Dataverse's internal step"
+" provider offers a step for sending and receiving customizable HTTP "
+"requests. It's called *http/sr*, and is described in :ref:`http_sr_step` "
+"section."
+msgstr ""
+
+#: ../../source/developers/workflows.rst:29
+msgid "Administration"
+msgstr ""
+
+#: ../../source/developers/workflows.rst:31
+msgid ""
+"A Dataverse instance stores a set of workflows in its database. Workflows"
+" can be managed using the ``api/admin/workflows/`` endpoints of the "
+":doc:`/api/native-api`. Sample workflow files are available in "
+"``scripts/api/data/workflows``."
+msgstr ""
+
+#: ../../source/developers/workflows.rst:33
+msgid ""
+"At the moment, defining a workflow for each trigger is done for the "
+"entire instance, using the endpoint "
+"``api/admin/workflows/default/«trigger type»``."
+msgstr ""
+
+#: ../../source/developers/workflows.rst:35
+msgid ""
+"In order to prevent unauthorized resuming of workflows, Dataverse "
+"maintains a \"white list\" of IP addresses from which resume requests are"
+" honored. This list is maintained using the ``/api/admin/workflows/ip-"
+"whitelist`` endpoint of the :doc:`/api/native-api`. By default, Dataverse"
+" honors resume requests from localhost only (``127.0.0.1;::1``), so set-"
+"ups that use a single server work with no additional configuration."
+msgstr ""
+
+#: ../../source/developers/workflows.rst:39
+msgid "Available Steps"
+msgstr ""
+
+#: ../../source/developers/workflows.rst:41
+msgid ""
+"Dataverse has an internal step provider, whose id is ``:internal``. It "
+"offers the following steps:"
+msgstr ""
+
+#: ../../source/developers/workflows.rst:44
+msgid "log"
+msgstr ""
+
+#: ../../source/developers/workflows.rst:46
+msgid ""
+"A step that writes data about the current workflow invocation to the "
+"instance log. It also writes the messages in its ``parameters`` map."
+msgstr ""
+
+#: ../../source/developers/workflows.rst:61
+msgid "pause"
+msgstr ""
+
+#: ../../source/developers/workflows.rst:63
+msgid ""
+"A step that pauses the workflow. The workflow is paused until a POST "
+"request is sent to ``/api/workflows/{invocation-id}``."
+msgstr ""
+
+#: ../../source/developers/workflows.rst:75
+msgid "http/sr"
+msgstr ""
+
+#: ../../source/developers/workflows.rst:77
+msgid ""
+"A step that sends a HTTP request to an external system, and then waits "
+"for a response. The response has to match a regular expression specified "
+"in the step parameters. The url, content type, and message body can use "
+"data from the workflow context, using a simple markup language. This step"
+" has specific parameters for rollback."
+msgstr ""
+
+#: ../../source/developers/workflows.rst:95
+msgid "Available variables are:"
+msgstr ""
+
+#: ../../source/developers/workflows.rst:97
+msgid "``invocationId``"
+msgstr ""
+
+#: ../../source/developers/workflows.rst:98
+msgid "``dataset.id``"
+msgstr ""
+
+#: ../../source/developers/workflows.rst:99
+msgid "``dataset.identifier``"
+msgstr ""
+
+#: ../../source/developers/workflows.rst:100
+msgid "``dataset.globalId``"
+msgstr ""
+
+#: ../../source/developers/workflows.rst:101
+msgid "``dataset.displayName``"
+msgstr ""
+
+#: ../../source/developers/workflows.rst:102
+msgid "``dataset.citation``"
+msgstr ""
+
+#: ../../source/developers/workflows.rst:103
+msgid "``minorVersion``"
+msgstr ""
+
+#: ../../source/developers/workflows.rst:104
+msgid "``majorVersion``"
+msgstr ""
+
+#: ../../source/developers/workflows.rst:105
+msgid "``releaseStatus``"
+msgstr ""
+
+#: ../../source/developers/workflows.rst:108
+msgid "archiver"
+msgstr ""
+
+#: ../../source/developers/workflows.rst:110
+msgid ""
+"A step that sends an archival copy of a Dataset Version to a configured "
+"archiver, e.g. the DuraCloud interface of Chronopolis. See the "
+"`DuraCloud/Chronopolis Integration documentation "
+"<http://guides.dataverse.org/en/latest/admin/integrations.html#id15>`_ "
+"for further detail."
+msgstr ""
+
+#: ../../source/developers/workflows.rst:112
+msgid ""
+"Note - the example step includes two settings required for any archiver "
+"and three (DuraCloud*) that are specific to DuraCloud."
+msgstr ""
+
+#: ../../source/developers/workflows.rst:132
+msgid "Previous: :doc:`big-data-support`"
+msgstr ""
+

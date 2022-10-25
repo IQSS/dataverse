@@ -1,0 +1,259 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/api/search.rst:2
+msgid "Search API"
+msgstr ""
+
+#: ../../source/api/search.rst:5
+msgid "|toctitle|"
+msgstr ""
+
+#: ../../source/api/search.rst:7
+msgid ""
+"The Search API supports the same searching, sorting, and faceting "
+"operations as the Dataverse web interface."
+msgstr ""
+
+#: ../../source/api/search.rst:9
+msgid "Unlike the web interface, this new API is limited to *published* data."
+msgstr ""
+
+#: ../../source/api/search.rst:11
+msgid ""
+"The parameters and JSON response are partly inspired by the `GitHub "
+"Search API <https://developer.github.com/v3/search/>`_."
+msgstr ""
+
+#: ../../source/api/search.rst:13
+msgid ""
+"|CORS| The search API can be used from scripts running in web browsers, "
+"as it allows cross-origin resource sharing (CORS)."
+msgstr ""
+
+#: ../../source/api/search.rst:18
+msgid ""
+"Please note that in Dataverse 4.3 and older the \"citation\" field "
+"wrapped the persistent ID URL in an ``<a>`` tag but this has been changed"
+" to plaintext. If you want the old value with HTML in it, a new field "
+"called \"citationHtml\" can be used."
+msgstr ""
+
+#: ../../source/api/search.rst:22
+msgid "Parameters"
+msgstr ""
+
+#: ../../source/api/search.rst:25
+msgid "Name"
+msgstr ""
+
+#: ../../source/api/search.rst:25
+msgid "Type"
+msgstr ""
+
+#: ../../source/api/search.rst:25
+msgid "Description"
+msgstr ""
+
+#: ../../source/api/search.rst:27
+msgid "q"
+msgstr ""
+
+#: ../../source/api/search.rst:27 ../../source/api/search.rst:28
+#: ../../source/api/search.rst:29 ../../source/api/search.rst:30
+#: ../../source/api/search.rst:31 ../../source/api/search.rst:36
+msgid "string"
+msgstr ""
+
+#: ../../source/api/search.rst:27
+msgid ""
+"The search term or terms. Using \"title:data\" will search only the "
+"\"title\" field. \"*\" can be used as a wildcard either alone or adjacent"
+" to a term (i.e. \"bird*\"). For example, "
+"https://demo.dataverse.org/api/search?q=title:data"
+msgstr ""
+
+#: ../../source/api/search.rst:28
+msgid "type"
+msgstr ""
+
+#: ../../source/api/search.rst:28
+msgid ""
+"Can be either \"dataverse\", \"dataset\", or \"file\". Multiple \"type\" "
+"parameters can be used to include multiple types (i.e. "
+"``type=dataset&type=file``). If omitted, all types will be returned.  For"
+" example, https://demo.dataverse.org/api/search?q=*&type=dataset"
+msgstr ""
+
+#: ../../source/api/search.rst:29
+msgid "subtree"
+msgstr ""
+
+#: ../../source/api/search.rst:29
+msgid ""
+"The identifier of the dataverse to which the search should be narrowed. "
+"The subtree of this dataverse and all its children will be searched.  "
+"Multiple \"subtree\" parameters can be used to include multiple "
+"Dataverses. For example, "
+"https://demo.dataverse.org/api/search?q=data&subtree=birds&subtree=cats ."
+msgstr ""
+
+#: ../../source/api/search.rst:30
+msgid "sort"
+msgstr ""
+
+#: ../../source/api/search.rst:30
+msgid ""
+"The sort field. Supported values include \"name\" and \"date\". See "
+"example under \"order\"."
+msgstr ""
+
+#: ../../source/api/search.rst:31
+msgid "order"
+msgstr ""
+
+#: ../../source/api/search.rst:31
+msgid ""
+"The order in which to sort. Can either be \"asc\" or \"desc\".  For "
+"example, https://demo.dataverse.org/api/search?q=data&sort=name&order=asc"
+msgstr ""
+
+#: ../../source/api/search.rst:32
+msgid "per_page"
+msgstr ""
+
+#: ../../source/api/search.rst:32 ../../source/api/search.rst:33
+msgid "int"
+msgstr ""
+
+#: ../../source/api/search.rst:32
+msgid ""
+"The number of results to return per request. The default is 10. The max "
+"is 1000. See :ref:`iteration example <iteration-example>`."
+msgstr ""
+
+#: ../../source/api/search.rst:33
+msgid "start"
+msgstr ""
+
+#: ../../source/api/search.rst:33
+msgid ""
+"A cursor for paging through search results. See :ref:`iteration example "
+"<iteration-example>`."
+msgstr ""
+
+#: ../../source/api/search.rst:34
+msgid "show_relevance"
+msgstr ""
+
+#: ../../source/api/search.rst:34 ../../source/api/search.rst:35
+#: ../../source/api/search.rst:37 ../../source/api/search.rst:38
+msgid "boolean"
+msgstr ""
+
+#: ../../source/api/search.rst:34
+msgid ""
+"Whether or not to show details of which fields were matched by the query."
+" False by default. See :ref:`advanced search example <advancedsearch-"
+"example>`."
+msgstr ""
+
+#: ../../source/api/search.rst:35
+msgid "show_facets"
+msgstr ""
+
+#: ../../source/api/search.rst:35
+msgid ""
+"Whether or not to show facets that can be operated on by the \"fq\" "
+"parameter. False by default. See :ref:`advanced search example "
+"<advancedsearch-example>`."
+msgstr ""
+
+#: ../../source/api/search.rst:36
+msgid "fq"
+msgstr ""
+
+#: ../../source/api/search.rst:36
+msgid ""
+"A filter query on the search term. Multiple \"fq\" parameters can be "
+"used. See :ref:`advanced search example <advancedsearch-example>`."
+msgstr ""
+
+#: ../../source/api/search.rst:37
+msgid "show_entity_ids"
+msgstr ""
+
+#: ../../source/api/search.rst:37
+msgid ""
+"Whether or not to show the database IDs of the search results (for "
+"developer use)."
+msgstr ""
+
+#: ../../source/api/search.rst:38
+msgid "query_entities"
+msgstr ""
+
+#: ../../source/api/search.rst:38
+msgid ""
+"Whether entities are queried via direct database calls (for developer "
+"use)."
+msgstr ""
+
+#: ../../source/api/search.rst:42
+msgid "Basic Search Example"
+msgstr ""
+
+#: ../../source/api/search.rst:44
+msgid "https://demo.dataverse.org/api/search?q=trees"
+msgstr ""
+
+#: ../../source/api/search.rst:111
+msgid "Advanced Search Example"
+msgstr ""
+
+#: ../../source/api/search.rst:113
+msgid "https://demo.dataverse.org/api/search?q=finch&show_relevance=true&show_facets=true&fq=publicationDate:2016&subtree=birds"
+msgstr ""
+
+#: ../../source/api/search.rst:115
+msgid ""
+"In this example, ``show_relevance=true`` matches per field are shown. "
+"Available facets are shown with ``show_facets=true`` and of the facets is"
+" being used with ``fq=publicationDate:2016``. The search is being "
+"narrowed to the dataverse with the identifier \"birds\" with the "
+"parameter ``subtree=birds``."
+msgstr ""
+
+#: ../../source/api/search.rst:228
+msgid "Iteration"
+msgstr ""
+
+#: ../../source/api/search.rst:230
+msgid ""
+"Be default, up to 10 results are returned with every request (though this"
+" can be increased with the ``per_page`` parameter). To iterate through "
+"many results, increase the ``start`` parameter on each iteration until "
+"you reach the ``total_count`` in the response. An example of such "
+"iteration in Python:"
+msgstr ""
+
+#: ../../source/api/search.rst:255
+msgid "Output from iteration example:"
+msgstr ""
+

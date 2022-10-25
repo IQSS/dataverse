@@ -1,0 +1,33 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/user/tabulardataingest/excel.rst:2
+msgid "Excel"
+msgstr ""
+
+#: ../../source/user/tabulardataingest/excel.rst:7
+msgid "Excel files (**New** in Dataverse 4.0!)"
+msgstr ""
+
+#: ../../source/user/tabulardataingest/excel.rst:9
+msgid ""
+"Note: only the \"new\", XLSX Excel files are supported. We are not "
+"planning to add support for the old-style, binary XLS files."
+msgstr ""
+

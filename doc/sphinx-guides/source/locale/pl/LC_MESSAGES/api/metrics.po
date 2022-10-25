@@ -1,0 +1,160 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/api/metrics.rst:2
+msgid "Metrics API"
+msgstr ""
+
+#: ../../source/api/metrics.rst:5
+msgid "|toctitle|"
+msgstr ""
+
+#: ../../source/api/metrics.rst:7
+msgid ""
+"|CORS| The Metrics API can be used from scripts running in web browsers, "
+"as it allows cross-origin resource sharing (CORS)."
+msgstr ""
+
+#: ../../source/api/metrics.rst:9
+msgid ""
+"For all metrics `besides` Past Days Count (``/pastDays/$days``), Database"
+" setting ``MetricsCacheTimeoutMinutes`` defines how long the cached value"
+" will be returned by subsequent queries."
+msgstr ""
+
+#: ../../source/api/metrics.rst:14
+msgid "Total"
+msgstr ""
+
+#: ../../source/api/metrics.rst:16
+msgid "Returns a count of various objects in dataverse over all-time::"
+msgstr ""
+
+#: ../../source/api/metrics.rst:20 ../../source/api/metrics.rst:31
+#: ../../source/api/metrics.rst:43
+msgid ""
+"``$type`` can be set to ``dataverses``, ``datasets``, ``files`` or "
+"``downloads``."
+msgstr ""
+
+#: ../../source/api/metrics.rst:22
+msgid "Example: ``curl https://demo.dataverse.org/api/info/metrics/downloads``"
+msgstr ""
+
+#: ../../source/api/metrics.rst:25
+msgid "To-Month"
+msgstr ""
+
+#: ../../source/api/metrics.rst:27
+msgid ""
+"Returns a count of various objects in dataverse up to a specified month "
+"``$YYYY-DD`` in YYYY-MM format (e.g. ``2018-01``)::"
+msgstr ""
+
+#: ../../source/api/metrics.rst:33
+msgid ""
+"Example: ``curl "
+"https://demo.dataverse.org/api/info/metrics/dataverses/toMonth/2018-01``"
+msgstr ""
+
+#: ../../source/api/metrics.rst:37
+msgid "Past Days"
+msgstr ""
+
+#: ../../source/api/metrics.rst:39
+msgid ""
+"Returns a count of various objects in dataverse for the past ``$days`` "
+"(e.g. ``30``)::"
+msgstr ""
+
+#: ../../source/api/metrics.rst:45
+msgid ""
+"Example: ``curl "
+"https://demo.dataverse.org/api/info/metrics/datasets/pastDays/30``"
+msgstr ""
+
+#: ../../source/api/metrics.rst:49
+msgid "Dataverse Specific Metrics"
+msgstr ""
+
+#: ../../source/api/metrics.rst:52 ../../source/api/metrics.rst:71
+msgid "By Subject"
+msgstr ""
+
+#: ../../source/api/metrics.rst:54
+msgid "Returns the number of dataverses by each subject::"
+msgstr ""
+
+#: ../../source/api/metrics.rst:60
+msgid "By Category"
+msgstr ""
+
+#: ../../source/api/metrics.rst:62
+msgid "Returns the number of dataverses by each category::"
+msgstr ""
+
+#: ../../source/api/metrics.rst:68
+msgid "Dataset Specific Metrics"
+msgstr ""
+
+#: ../../source/api/metrics.rst:73
+msgid "Returns the number of datasets by each subject::"
+msgstr ""
+
+#: ../../source/api/metrics.rst:79
+msgid "By Subject, and to Month"
+msgstr ""
+
+#: ../../source/api/metrics.rst:81
+msgid ""
+"Returns the number of datasets by each subject, and up to a specified "
+"month ``$YYYY-DD`` in YYYY-MM format (e.g. ``2018-01``)::"
+msgstr ""
+
+#: ../../source/api/metrics.rst:85
+msgid ""
+"Example: ``curl "
+"https://demo.dataverse.org/api/info/metrics/datasets/bySubject/toMonth/2018-01``"
+msgstr ""
+
+#: ../../source/api/metrics.rst:95
+msgid "Metric Query Parameters"
+msgstr ""
+
+#: ../../source/api/metrics.rst:97
+msgid "To further tailor your metric, query parameters can be provided."
+msgstr ""
+
+#: ../../source/api/metrics.rst:100
+msgid "dataLocation"
+msgstr ""
+
+#: ../../source/api/metrics.rst:102
+msgid ""
+"Specifies whether the metric should query ``local`` data, ``remote`` data"
+" (e.g. harvested), or ``all`` data when getting results. Only works for "
+"dataset metrics."
+msgstr ""
+
+#: ../../source/api/metrics.rst:104
+msgid ""
+"Example: ``curl "
+"https://demo.dataverse.org/api/info/metrics/datasets/?dataLocation=remote``"
+msgstr ""
+

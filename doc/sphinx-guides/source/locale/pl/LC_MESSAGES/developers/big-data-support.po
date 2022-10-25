@@ -1,0 +1,477 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/developers/big-data-support.rst:2
+msgid "Big Data Support"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:4
+msgid ""
+"Big data support is highly experimental. Eventually this content will "
+"move to the Installation Guide."
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:7
+msgid "|toctitle|"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:9
+msgid ""
+"Various components need to be installed and configured for big data "
+"support."
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:12
+msgid "Data Capture Module (DCM)"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:14
+msgid ""
+"Data Capture Module (DCM) is an experimental component that allows users "
+"to upload large datasets via rsync over ssh."
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:19
+msgid "Install a DCM"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:21
+msgid ""
+"Installation instructions can be found at https://github.com/sbgrid/data-"
+"capture-module/blob/master/doc/installation.md. Note that shared storage "
+"(posix or AWS S3) between Dataverse and your DCM is required."
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:25
+msgid ""
+"Once you have installed a DCM, you will need to configure two database "
+"settings on the Dataverse side. These settings are documented in the "
+":doc:`/installation/config` section of the Installation Guide:"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:27
+msgid "``:DataCaptureModuleUrl`` should be set to the URL of a DCM you installed."
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:28
+msgid "``:UploadMethods`` should include ``dcm/rsync+ssh``."
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:30
+msgid ""
+"This will allow your Dataverse installation to communicate with your DCM,"
+" so that Dataverse can download rsync scripts for your users."
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:33
+msgid "Downloading rsync scripts via Dataverse API"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:35
+msgid ""
+"The rsync script can be downloaded from Dataverse via API using an "
+"authorized API token. In the following curl example substitute "
+"``$PERSISTENT_ID`` with a DOI or Handle::"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:42
+msgid "How a DCM reports checksum success or failure to Dataverse"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:44
+msgid ""
+"Once the user uploads files to a DCM, that DCM will perform checksum "
+"validation and report to Dataverse the results of that validation. The "
+"DCM must be configured to pass the API token of a superuser."
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:46
+msgid ""
+"The JSON that a DCM sends to Dataverse on successful checksum validation "
+"looks something like the contents of "
+":download:`checksumValidationSuccess.json "
+"<../_static/installation/files/root/big-data-"
+"support/checksumValidationSuccess.json>`:"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:51
+msgid "Where:"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:53
+msgid ""
+"``status`` - The valid strings to send are ``validation passed`` and "
+"``validation failed``."
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:54
+msgid ""
+"``uploadFolder`` - This is the directory on disk where Dataverse should "
+"attempt to find the files that a DCM has moved into place. There should "
+"always be a ``files.sha`` file and a least one data file. ``files.sha`` "
+"is a manifest of all the data files and their checksums. The "
+"``uploadFolder`` directory is inside the directory where data is stored "
+"for the dataset and may have the same name as the \"identifier\" of the "
+"persistent id (DOI or Handle). For example, you would send "
+"``\"uploadFolder\": \"DNXV2H\"`` in the JSON file when the absolute path "
+"to this directory is "
+"``/usr/local/glassfish4/glassfish/domains/domain1/files/10.5072/FK2/DNXV2H/DNXV2H``."
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:55
+msgid ""
+"``totalSize`` - Dataverse will use this value to represent the total size"
+" in bytes of all the files in the \"package\" that's created. If 360 data"
+" files and one ``files.sha`` manifest file are in the ``uploadFolder``, "
+"this value is the sum of the 360 data files."
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:58
+msgid "Here's the syntax for sending the JSON::"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:64
+msgid "Steps to set up a DCM mock for Development"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:66
+msgid ""
+"See instructions at https://github.com/sbgrid/data-capture-"
+"module/blob/master/doc/mock.md"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:69
+msgid ""
+"Add Dataverse settings to use mock (same settings as when using non-mock "
+"DCM noted in :ref:`install_dcm`)::"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:74
+msgid ""
+"At this point you should be able to download a placeholder rsync script. "
+"Dataverse is then waiting for news from the DCM about if checksum "
+"validation has succeeded or not. First, you have to put files in place, "
+"which is usually the job of the DCM. You should substitute \"X1METO\" for"
+" the \"identifier\" of the dataset you create. You must also use the "
+"proper path for where you store files in your dev environment::"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:84
+msgid ""
+"Now the files are in place and you need to send JSON to Dataverse with a "
+"success or failure message as described in "
+":ref:`dcm_success_failure_report`. Make a copy of ``doc/sphinx-"
+"guides/source/_static/installation/files/root/big-data-"
+"support/checksumValidationSuccess.json`` and put the identifier in place "
+"such as \"X1METO\" under \"uploadFolder\"). Then use curl as described in"
+" :ref:`dcm_success_failure_report` to send the JSON."
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:87
+msgid "Troubleshooting"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:89
+msgid ""
+"The following low level command should only be used when troubleshooting "
+"the \"import\" code a DCM uses but is documented here for completeness::"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:94
+msgid "Steps to set up a DCM via Docker for Development"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:96
+msgid ""
+"If you need a fully operating DCM client for development purposes, these "
+"steps will guide you to setting one up. This includes steps to set up the"
+" DCM on S3 variant."
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:99
+msgid "Docker Image Set-up"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:101
+msgid ""
+"See https://github.com/CeON/dataverse/blob/develop/conf/docker-"
+"dcm/readme.txt"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:103
+msgid "Install docker if you do not have it"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:106
+msgid "Optional steps for setting up the S3 Docker DCM Variant"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:108
+msgid ""
+"Before: the default bucket for DCM to hold files in S3 is named test-dcm."
+" It is coded into `post_upload_s3.bash` (line 30). Change to a different "
+"bucket if needed."
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:110
+msgid "Add AWS credentials to ``~/.aws/credentials`` (on dcmsrv)::"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:116
+msgid "Dataverse configuration (on dvsrv):"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:118
+msgid "Set S3 as the storage driver::"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:124
+msgid "Add AWS credentials to ``~/.aws/credentials``::"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:130
+msgid ""
+"Also: set region in ``~/.aws/config`` to create a region file. Add these "
+"contents::"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:135
+msgid "Add the S3 bucket names to Dataverse"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:137
+msgid "S3 bucket for Dataverse::"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:141
+msgid "S3 bucket for DCM (as Dataverse needs to do the copy over)::"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:145
+msgid ""
+"Set download method to be HTTP, as DCM downloads through S3 are over this"
+" protocol::"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:150
+msgid "Using the DCM Docker Containers"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:152
+msgid ""
+"For using these commands, you will need to connect to the shell prompt "
+"inside various containers (e.g. ``docker exec -it dvsrv /bin/bash``)"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:154
+msgid "Create a dataset and download rsync upload script"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:156
+msgid "connect to client container: ``docker exec -it dcm_client bash``"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:157
+msgid ""
+"create dataset: ``cd /mnt ; ./create.bash`` ; this will echo the database"
+" ID to stdout"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:158
+msgid ""
+"download transfer script: ``./get_transfer.bash "
+"$database_id_from_create_script``"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:159
+msgid ""
+"execute the transfer script: ``bash ./upload-${database_id_from-"
+"create_script}.bash`` , and follow instructions from script."
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:161
+msgid "Run script"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:163
+msgid ""
+"e.g. ``bash ./upload-3.bash`` (``3`` being the database id from earlier "
+"commands in this example)."
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:165
+msgid "Manually run post upload script on dcmsrv"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:167
+msgid ""
+"for posix implementation: ``docker exec -it dcmsrv "
+"/opt/dcm/scn/post_upload.bash``"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:168
+msgid ""
+"for S3 implementation: ``docker exec -it dcmsrv "
+"/opt/dcm/scn/post_upload_s3.bash``"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:171
+msgid "Additional DCM docker development tips"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:173
+msgid ""
+"You can completely blow away all the docker images with these commands "
+"(including non DCM ones!) - ``docker-compose -f docmer-compose.yml down "
+"-v``"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:176
+msgid "There are a few logs to tail"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:178
+msgid ""
+"dvsrv : ``tail -n 2000 -f "
+"/opt/glassfish4/glassfish/domains/domain1/logs/server.log``"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:179
+msgid "dcmsrv : ``tail -n 2000 -f /var/log/lighttpd/breakage.log``"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:180
+msgid "dcmsrv : ``tail -n 2000 -f /var/log/lighttpd/access.log``"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:182
+msgid ""
+"You may have to restart the glassfish domain occasionally to deal with "
+"memory filling up. If deployment is getting reallllllly slow, its a good "
+"time."
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:185
+msgid "Repository Storage Abstraction Layer (RSAL)"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:188
+msgid "Configuring the RSAL Mock"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:190
+msgid ""
+"Info for configuring the RSAL Mock: "
+"https://github.com/sbgrid/rsal/tree/master/mocks"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:192
+msgid ""
+"Also, to configure Dataverse to use the new workflow you must do the "
+"following (see also the :doc:`workflows` section):"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:194
+msgid "Configure the RSAL URL::"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:198
+msgid ""
+"Update workflow json with correct URL information. Edit internal-httpSR-"
+"workflow.json and replace url and rollbackUrl to be the url of your RSAL "
+"mock."
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:200
+msgid "Create the workflow::"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:204
+msgid "List available workflows::"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:208
+msgid ""
+"Set the workflow (id) as the default workflow for the appropriate "
+"trigger::"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:212
+msgid "Check that the trigger has the appropriate default workflow set::"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:216
+msgid "Add RSAL to whitelist"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:218
+msgid "When finished testing, unset the workflow::"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:223
+msgid "Configuring download via rsync"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:225
+msgid "In order to see the rsync URLs, you must run this command::"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:231
+msgid "To specify replication sites that appear in rsync URLs:"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:233
+msgid ""
+"Download :download:`add-storage-site.json "
+"<../../../../scripts/api/data/storageSites/add-storage-site.json>` and "
+"adjust it to meet your needs. The file should look something like this:"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:237
+msgid "Then add the storage site using curl::"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:241
+msgid ""
+"You make a storage site the primary site by passing \"true\". Pass "
+"\"false\" to make it not the primary site. (id \"1\" in the example)::"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:245
+msgid "You can delete a storage site like this (id \"1\" in the example)::"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:249
+msgid "You can view a single storage site like this: (id \"1\" in the example)::"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:253
+msgid "You can view all storage site like this::"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:257
+msgid ""
+"In the GUI, this is called \"Local Access\". It's where you can compute "
+"on files on your cluster::"
+msgstr ""
+
+#: ../../source/developers/big-data-support.rst:262
+msgid "Previous: :doc:`selinux` | Next: :doc:`workflows`"
+msgstr ""
+

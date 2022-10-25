@@ -1,0 +1,274 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/developers/deployment.rst:3
+msgid "Deployment"
+msgstr ""
+
+#: ../../source/developers/deployment.rst:6
+msgid "|toctitle|"
+msgstr ""
+
+#: ../../source/developers/deployment.rst:9
+msgid "Deploying Dataverse to Amazon Web Services (AWS)"
+msgstr ""
+
+#: ../../source/developers/deployment.rst:11
+msgid ""
+"We have written scripts to deploy Dataverse to Amazon Web Services (AWS) "
+"but they require some setup."
+msgstr ""
+
+#: ../../source/developers/deployment.rst:14
+msgid "Install AWS CLI"
+msgstr ""
+
+#: ../../source/developers/deployment.rst:16
+msgid ""
+"First, you need to have AWS Command Line Interface (AWS CLI) installed, "
+"which is called ``aws`` in your terminal. Launching your terminal and "
+"running the following command to print out the version of AWS CLI will "
+"tell you if it is installed or not:"
+msgstr ""
+
+#: ../../source/developers/deployment.rst:18
+msgid "``aws --version``"
+msgstr ""
+
+#: ../../source/developers/deployment.rst:20
+msgid ""
+"If you have not yet installed AWS CLI you should install it by following "
+"the instructions at "
+"https://docs.aws.amazon.com/cli/latest/userguide/installing.html"
+msgstr ""
+
+#: ../../source/developers/deployment.rst:22
+msgid ""
+"Afterwards, you should re-run the \"version\" command to verify that AWS "
+"CLI has been properly installed. If \"version\" still doesn't work, read "
+"on for troubleshooting advice. If \"version\" works, you can skip down to"
+" the \"Configure AWS CLI\" step."
+msgstr ""
+
+#: ../../source/developers/deployment.rst:25
+msgid "Troubleshooting \"aws: command not found\""
+msgstr ""
+
+#: ../../source/developers/deployment.rst:27
+msgid ""
+"Please note that as of this writing the AWS docs are not especially clear"
+" about how to fix errors such as ``aws: command not found``. If the AWS "
+"CLI cannot be found after you followed the AWS installation docs, it is "
+"very likely that the ``aws`` program is not in your ``$PATH``. ``$PATH`` "
+"is an \"environment variable\" that tells your shell (usually Bash) where"
+" to look for programs."
+msgstr ""
+
+#: ../../source/developers/deployment.rst:29
+msgid "To see what ``$PATH`` is set to, run the following command:"
+msgstr ""
+
+#: ../../source/developers/deployment.rst:31
+msgid "``echo $PATH``"
+msgstr ""
+
+#: ../../source/developers/deployment.rst:33
+msgid ""
+"On Mac, to update your ``$PATH`` to include the location where the "
+"current AWS docs install AWS CLI on the version of Python included with "
+"your Mac, run the following command:"
+msgstr ""
+
+#: ../../source/developers/deployment.rst:35
+msgid "``export PATH=$PATH:$HOME/Library/Python/2.7/bin``"
+msgstr ""
+
+#: ../../source/developers/deployment.rst:37
+msgid "After all this, you can try the \"version\" command again."
+msgstr ""
+
+#: ../../source/developers/deployment.rst:39
+msgid ""
+"Note that it's possible to add an ``export`` command to your "
+"``~/.bash_profile`` file so you don't have to run it yourself when you "
+"open a new terminal."
+msgstr ""
+
+#: ../../source/developers/deployment.rst:42
+msgid "Configure AWS CLI"
+msgstr ""
+
+#: ../../source/developers/deployment.rst:44
+msgid "Next you need to configure AWS CLI."
+msgstr ""
+
+#: ../../source/developers/deployment.rst:46
+msgid ""
+"Create a ``.aws`` directory in your home directory (which is called "
+"``~``) like this:"
+msgstr ""
+
+#: ../../source/developers/deployment.rst:48
+msgid "``mkdir ~/.aws``"
+msgstr ""
+
+#: ../../source/developers/deployment.rst:50
+msgid ""
+"We will be creating two plain text files in the ``.aws`` directory and it"
+" is important that these files do not end in \".txt\" or any other "
+"extension. After creating the files, you can verify their names with the "
+"following command:"
+msgstr ""
+
+#: ../../source/developers/deployment.rst:52
+msgid "``ls ~/.aws``"
+msgstr ""
+
+#: ../../source/developers/deployment.rst:54
+msgid "Create a plain text file at ``~/.aws/config`` with the following content::"
+msgstr ""
+
+#: ../../source/developers/deployment.rst:59
+msgid ""
+"Please note that at this time the region must be set to \"us-east-1\" but"
+" in the future we could improve our scripts to support other regions."
+msgstr ""
+
+#: ../../source/developers/deployment.rst:61
+msgid ""
+"Create a plain text file at ``~/.aws/credentials`` with the following "
+"content::"
+msgstr ""
+
+#: ../../source/developers/deployment.rst:67
+msgid ""
+"Then update the file and replace the values for \"aws_access_key_id\" and"
+" \"aws_secret_access_key\" with your actual credentials by following the "
+"instructions at https://aws.amazon.com/blogs/security/wheres-my-secret-"
+"access-key/"
+msgstr ""
+
+#: ../../source/developers/deployment.rst:69
+msgid ""
+"If you are having trouble configuring the files manually, see "
+"https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-"
+"started.html which documents the ``aws configure`` command."
+msgstr ""
+
+#: ../../source/developers/deployment.rst:74
+msgid "Configure Ansible File (Optional)"
+msgstr ""
+
+#: ../../source/developers/deployment.rst:76
+msgid ""
+"In order to configure Dataverse settings such as the password of the "
+"dataverseAdmin user, download https://raw.githubusercontent.com/IQSS"
+"/dataverse-ansible/master/defaults/main.yml and edit the file to your "
+"liking."
+msgstr ""
+
+#: ../../source/developers/deployment.rst:78
+msgid ""
+"You can skip this step if you're fine with the values in the \"main.yml\""
+" file."
+msgstr ""
+
+#: ../../source/developers/deployment.rst:81
+msgid "Download and Run the \"Create Instance\" Script"
+msgstr ""
+
+#: ../../source/developers/deployment.rst:83
+msgid ""
+"Once you have done the configuration, you are ready to try running the "
+"\"create instance\" script to spin up Dataverse in AWS."
+msgstr ""
+
+#: ../../source/developers/deployment.rst:85
+msgid ""
+"Download :download:`ec2-create-instance.sh "
+"<../../../../scripts/installer/ec2-create-instance.sh>` and put it "
+"somewhere reasonable. For the purpose of these instructions we'll assume "
+"it's in the \"Downloads\" directory in your home directory."
+msgstr ""
+
+#: ../../source/developers/deployment.rst:87
+msgid ""
+"You need to decide which branch you'd like to deploy to AWS. Select a "
+"branch from https://github.com/IQSS/dataverse/branches/all such as "
+"\"develop\" and pass it to the script with ``-b`` as in the following "
+"example. (Branches such as \"master\" and \"develop\" are described in "
+"the :doc:`version-control` section.)"
+msgstr ""
+
+#: ../../source/developers/deployment.rst:89
+msgid "``bash ~/Downloads/ec2-create-instance.sh -b develop``"
+msgstr ""
+
+#: ../../source/developers/deployment.rst:91
+msgid ""
+"You must specify the branch with ``-b`` but you can also specify a non-"
+"IQSS git repo URL with ``-r`` as in the following example."
+msgstr ""
+
+#: ../../source/developers/deployment.rst:93
+msgid ""
+"``bash ~/Downloads/ec2-create-instance.sh -b develop -r "
+"https://github.com/scholarsportal/dataverse.git``"
+msgstr ""
+
+#: ../../source/developers/deployment.rst:95
+msgid ""
+"If you configured an Ansible file (:ref:`configure_ansible_file`) and "
+"want to make use of it, add ``-g main.yml`` (or whatever you named your "
+"file) as in the following example."
+msgstr ""
+
+#: ../../source/developers/deployment.rst:97
+msgid ""
+"``bash ~/Downloads/ec2-create-instance.sh -b develop -r "
+"https://github.com/scholarsportal/dataverse.git -b main.yml``"
+msgstr ""
+
+#: ../../source/developers/deployment.rst:99
+msgid ""
+"Now you will need to wait around 15 minutes until the deployment is "
+"finished. Eventually, the output should tell you how to access the "
+"installation of Dataverse in a web browser or via ssh. It will also "
+"provide instructions on how to delete the instance when you are finished "
+"with it. Please be aware that AWS charges per minute for a running "
+"instance. You can also delete your instance from "
+"https://console.aws.amazon.com/console/home?region=us-east-1 ."
+msgstr ""
+
+#: ../../source/developers/deployment.rst:102
+msgid "Caveats"
+msgstr ""
+
+#: ../../source/developers/deployment.rst:104
+msgid ""
+"Please note that while the script should work fine on newish branches, "
+"older branches that have different dependencies such as an older version "
+"of Solr are now expected to yield a working Dataverse installation. Your "
+"mileage may vary."
+msgstr ""
+
+#: ../../source/developers/deployment.rst:108
+msgid "Previous: :doc:`coding-style` | Next: :doc:`containers`"
+msgstr ""
+

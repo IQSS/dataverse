@@ -1,0 +1,2047 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/api/native-api.rst:2
+msgid "Native API"
+msgstr ""
+
+#: ../../source/api/native-api.rst:4
+msgid ""
+"Dataverse 4 exposes most of its GUI functionality via a REST-based API. "
+"This section describes that functionality. Most API endpoints require an "
+"API token that can be passed as the ``X-Dataverse-key`` HTTP header or in"
+" the URL as the ``key`` query parameter."
+msgstr ""
+
+#: ../../source/api/native-api.rst:6
+msgid ""
+"|CORS| Some API endpoint allow CORS_ (cross-origin resource sharing), "
+"which makes them usable from scripts runing in web browsers. These "
+"endpoints are marked with a *CORS* badge."
+msgstr ""
+
+#: ../../source/api/native-api.rst:10
+msgid ""
+"Dataverse 4's API is versioned at the URI - all API calls may include the"
+" version number like so: ``http://server-address/api/v1/...``. Omitting "
+"the ``v1`` part would default to the latest API version (currently 1). "
+"When writing scripts/applications that will be used for a long time, make"
+" sure to specify the API version, so they don't break when the API is "
+"upgraded."
+msgstr ""
+
+#: ../../source/api/native-api.rst:13
+msgid "|toctitle|"
+msgstr ""
+
+#: ../../source/api/native-api.rst:16
+msgid "Dataverses"
+msgstr ""
+
+#: ../../source/api/native-api.rst:19
+msgid "Create a Dataverse"
+msgstr ""
+
+#: ../../source/api/native-api.rst:21
+msgid ""
+"Generates a new dataverse under ``$id``. Expects a JSON content "
+"describing the dataverse, for example:"
+msgstr ""
+
+#: ../../source/api/native-api.rst:25
+msgid ""
+"If ``$id`` is omitted, a root dataverse is created. ``$id`` can either be"
+" a dataverse id (long) or a dataverse alias (more robust). ::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:29
+msgid ""
+"Download the :download:`JSON example <../_static/api/dataverse-"
+"complete.json>` file and modify it to suit your needs. The fields "
+"``name``, ``alias``, and ``dataverseContacts`` are required. The allowed "
+"values for ``dataverseType`` are:"
+msgstr ""
+
+#: ../../source/api/native-api.rst:31
+msgid "``DEPARTMENT``"
+msgstr ""
+
+#: ../../source/api/native-api.rst:32
+msgid "``JOURNALS``"
+msgstr ""
+
+#: ../../source/api/native-api.rst:33
+msgid "``LABORATORY``"
+msgstr ""
+
+#: ../../source/api/native-api.rst:34
+msgid "``ORGANIZATIONS_INSTITUTIONS``"
+msgstr ""
+
+#: ../../source/api/native-api.rst:35
+msgid "``RESEARCHERS``"
+msgstr ""
+
+#: ../../source/api/native-api.rst:36
+msgid "``RESEARCH_GROUP``"
+msgstr ""
+
+#: ../../source/api/native-api.rst:37
+msgid "``RESEARCH_PROJECTS``"
+msgstr ""
+
+#: ../../source/api/native-api.rst:38
+msgid "``TEACHING_COURSES``"
+msgstr ""
+
+#: ../../source/api/native-api.rst:39
+msgid "``UNCATEGORIZED``"
+msgstr ""
+
+#: ../../source/api/native-api.rst:43
+msgid "View a Dataverse"
+msgstr ""
+
+#: ../../source/api/native-api.rst:45
+msgid ""
+"|CORS| View data about the dataverse identified by ``$id``. ``$id`` can "
+"be the id number of the dataverse, its alias, or the special value "
+"``:root``. ::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:50
+msgid "Delete a Dataverse"
+msgstr ""
+
+#: ../../source/api/native-api.rst:52
+msgid "Deletes the dataverse whose ID is given::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:57
+msgid "Show Contents of a Dataverse"
+msgstr ""
+
+#: ../../source/api/native-api.rst:59
+msgid "|CORS| Lists all the DvObjects under dataverse ``id``. ::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:64
+msgid "List Roles Defined in a Dataverse"
+msgstr ""
+
+#: ../../source/api/native-api.rst:66
+msgid "All the roles defined directly in the dataverse identified by ``id``::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:71
+msgid "List Facets Configured for a Dataverse"
+msgstr ""
+
+#: ../../source/api/native-api.rst:73
+msgid "|CORS| List all the facets for a given dataverse ``id``. ::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:78
+msgid "Set Facets for a Dataverse"
+msgstr ""
+
+#: ../../source/api/native-api.rst:80
+msgid "Assign search facets for a given dataverse with alias ``$alias``"
+msgstr ""
+
+#: ../../source/api/native-api.rst:82
+msgid ""
+"``curl -H \"X-Dataverse-key: $apiKey\" -X POST "
+"http://$server/api/dataverses/$alias/facets --upload-file facets.json``"
+msgstr ""
+
+#: ../../source/api/native-api.rst:84
+msgid ""
+"Where ``facets.json`` contains a JSON encoded list of metadata keys (e.g."
+" ``[\"authorName\",\"authorAffiliation\"]``)."
+msgstr ""
+
+#: ../../source/api/native-api.rst:87 ../../source/api/native-api.rst:901
+msgid "Create a New Role in a Dataverse"
+msgstr ""
+
+#: ../../source/api/native-api.rst:89
+msgid ""
+"Creates a new role under dataverse ``id``. Needs a json file with the "
+"role description::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:93 ../../source/api/native-api.rst:128
+#: ../../source/api/native-api.rst:1303
+msgid "POSTed JSON example::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:105
+msgid "List Role Assignments in a Dataverse"
+msgstr ""
+
+#: ../../source/api/native-api.rst:107
+msgid "List all the role assignments at the given dataverse::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:112
+msgid "Assign Default Role to User Creating a Dataset in a Dataverse"
+msgstr ""
+
+#: ../../source/api/native-api.rst:114
+msgid ""
+"Assign a default role to a user creating a dataset in a dataverse ``id`` "
+"where ``roleAlias`` is the database alias of the role to be assigned::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:118
+msgid ""
+"Note: You may use \"none\" as the ``roleAlias``. This will prevent a user"
+" who creates a dataset from having any role on that dataset. It is not "
+"recommended for dataverses with human contributors."
+msgstr ""
+
+#: ../../source/api/native-api.rst:122
+msgid "Assign a New Role on a Dataverse"
+msgstr ""
+
+#: ../../source/api/native-api.rst:124
+msgid "Assigns a new role, based on the POSTed JSON. ::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:136
+msgid "Delete Role Assignment from a Dataverse"
+msgstr ""
+
+#: ../../source/api/native-api.rst:138
+msgid "Delete the assignment whose id is ``$id``::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:143
+msgid "List Metadata Blocks Defined on a Dataverse"
+msgstr ""
+
+#: ../../source/api/native-api.rst:145
+msgid "|CORS| Get the metadata blocks defined on the passed dataverse::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:150
+msgid "Define Metadata Blocks for a Dataverse"
+msgstr ""
+
+#: ../../source/api/native-api.rst:152
+msgid ""
+"Sets the metadata blocks of the dataverse. Makes the dataverse a "
+"metadatablock root. The query body is a JSON array with a list of "
+"metadatablocks identifiers (either id or name), such as \"journal\" and "
+"\"geospatial\" in the example::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:156
+msgid ""
+"Command requires \"EditDataverse\" permission. In the example the "
+"\"root\" dataverse is being modified but you can substitute it with any "
+"dataverse alias."
+msgstr ""
+
+#: ../../source/api/native-api.rst:159
+msgid "Determine if a Dataverse Inherits Its Metadata Blocks from Its Parent"
+msgstr ""
+
+#: ../../source/api/native-api.rst:161
+msgid ""
+"Get whether the dataverse is a metadata block root, or does it uses its "
+"parent blocks::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:166
+msgid "Configure a Dataverse to Inherit Its Metadata Blocks from Its Parent"
+msgstr ""
+
+#: ../../source/api/native-api.rst:168
+msgid ""
+"Set whether the dataverse is a metadata block root, or does it uses its "
+"parent blocks. Possible values are ``true`` and ``false`` (both are valid"
+" JSON expressions). ::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:173
+msgid ""
+"Previous endpoints ``GET "
+"http://$SERVER/api/dataverses/$id/metadatablocks/:isRoot?key=$apiKey`` "
+"and ``POST "
+"http://$SERVER/api/dataverses/$id/metadatablocks/:isRoot?key=$apiKey`` "
+"are deprecated, but supported."
+msgstr ""
+
+#: ../../source/api/native-api.rst:179
+msgid "Create a Dataset in a Dataverse"
+msgstr ""
+
+#: ../../source/api/native-api.rst:181
+msgid ""
+"To create a dataset, you must create a JSON file containing all the "
+"metadata you want such as in this example file: :download:`dataset-"
+"finch1.json <../../../../scripts/search/tests/data/dataset-finch1.json>`."
+" Then, you must decide which dataverse to create the dataset in and "
+"target that datavese with either the \"alias\" of the dataverse (e.g. "
+"\"root\" or the database id of the dataverse (e.g. \"1\"). The initial "
+"version state will be set to ``DRAFT``::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:186
+msgid "Import a Dataset into a Dataverse"
+msgstr ""
+
+#: ../../source/api/native-api.rst:188 ../../source/api/native-api.rst:216
+msgid "This action requires a Dataverse account with super-user permissions."
+msgstr ""
+
+#: ../../source/api/native-api.rst:190
+msgid ""
+"To import a dataset with an existing persistent identifier (PID), the "
+"dataset's metadata should be prepared in Dataverse's native JSON format. "
+"The PID is provided as a parameter at the URL. The following line imports"
+" a dataset with the PID ``PERSISTENT_IDENTIFIER`` to Dataverse, and then "
+"releases it::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:194
+msgid ""
+"The ``pid`` parameter holds a persistent identifier (such as a DOI or "
+"Handle). The import will fail if no PID is provided, or if the provided "
+"PID fails validation."
+msgstr ""
+
+#: ../../source/api/native-api.rst:196 ../../source/api/native-api.rst:224
+msgid ""
+"The optional ``release`` parameter tells Dataverse to immediately publish"
+" the dataset. If the parameter is changed to ``no``, the imported dataset"
+" will remain in ``DRAFT`` status."
+msgstr ""
+
+#: ../../source/api/native-api.rst:198
+msgid ""
+"The JSON format is the same as that supported by the native API's "
+":ref:`create dataset command<create-dataset-command>`, although it also "
+"allows packages.  For example:"
+msgstr ""
+
+#: ../../source/api/native-api.rst:202
+msgid ""
+"Before calling the API, make sure the data files referenced by the "
+"``POST``\\ ed JSON are placed in the dataset directory with filenames "
+"matching their specified storage identifiers. In installations using "
+"POSIX storage, these files must be made readable by GlassFish."
+msgstr ""
+
+#: ../../source/api/native-api.rst:204
+msgid ""
+"If possible, it's best to avoid spaces and special characters in the "
+"storage identifier in order to avoid potential portability problems. The "
+"storage identifier corresponds with the filesystem name (or bucket "
+"identifier) of the data file, so these characters may cause "
+"unpredictability with filesystem tools."
+msgstr ""
+
+#: ../../source/api/native-api.rst:208
+msgid ""
+"This API does not cover staging files (with correct contents, checksums, "
+"sizes, etc.) in the corresponding places in the Dataverse filestore."
+msgstr ""
+
+#: ../../source/api/native-api.rst:209
+msgid ""
+"This API endpoint does not support importing *files'* persistent "
+"identifiers."
+msgstr ""
+
+#: ../../source/api/native-api.rst:210 ../../source/api/native-api.rst:231
+msgid ""
+"A Dataverse server can import datasets with a valid PID that uses a "
+"different protocol or authority than said server is configured for. "
+"However, the server will not update the PID metadata on subsequent update"
+" and publish actions."
+msgstr ""
+
+#: ../../source/api/native-api.rst:214
+msgid "Import a Dataset into a Dataverse with a DDI file"
+msgstr ""
+
+#: ../../source/api/native-api.rst:218
+msgid ""
+"To import a dataset with an existing persistent identifier (PID), you "
+"have to provide the PID as a parameter at the URL. The following line "
+"imports a dataset with the PID ``PERSISTENT_IDENTIFIER`` to Dataverse, "
+"and then releases it::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:222
+msgid ""
+"The optional ``pid`` parameter holds a persistent identifier (such as a "
+"DOI or Handle). The import will fail if the provided PID fails "
+"validation."
+msgstr ""
+
+#: ../../source/api/native-api.rst:226
+msgid "The file is a DDI xml file."
+msgstr ""
+
+#: ../../source/api/native-api.rst:230
+msgid "This API does not handle files related to the DDI file."
+msgstr ""
+
+#: ../../source/api/native-api.rst:235
+msgid "Publish a Dataverse"
+msgstr ""
+
+#: ../../source/api/native-api.rst:237
+msgid ""
+"Publish the Dataverse pointed by ``identifier``, which can either by the "
+"dataverse alias or its numerical id. ::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:242
+msgid "Datasets"
+msgstr ""
+
+#: ../../source/api/native-api.rst:244
+msgid ""
+"**Note** Creation of new datasets is done with a ``POST`` onto "
+"dataverses. See Dataverses_ section."
+msgstr ""
+
+#: ../../source/api/native-api.rst:246
+msgid ""
+"**Note** In all commands in this section and its subsections, except "
+"where it's stated that version is referred by its ID, dataset versions "
+"can be referred to as:"
+msgstr ""
+
+#: ../../source/api/native-api.rst:248
+msgid "``:draft``  the draft version, if any"
+msgstr ""
+
+#: ../../source/api/native-api.rst:249
+msgid "``:latest`` either a draft (if exists) or the latest published version."
+msgstr ""
+
+#: ../../source/api/native-api.rst:250
+msgid "``:latest-published`` the latest published version"
+msgstr ""
+
+#: ../../source/api/native-api.rst:251
+msgid ""
+"``x.y`` a specific version, where ``x`` is the major version number and "
+"``y`` is the minor version number."
+msgstr ""
+
+#: ../../source/api/native-api.rst:252
+msgid "``x`` same as ``x.0``"
+msgstr ""
+
+#: ../../source/api/native-api.rst:255
+msgid "Get JSON Representation of a Dataset"
+msgstr ""
+
+#: ../../source/api/native-api.rst:257
+msgid ""
+"Datasets can be accessed using persistent identifiers. This is done by "
+"passing the constant ``:persistentId`` where the numeric id of the "
+"dataset is expected, and then passing the actual persistent id as a query"
+" parameter with the name ``persistentId``."
+msgstr ""
+
+#: ../../source/api/native-api.rst:259
+msgid "Example: Getting the dataset whose DOI is *10.5072/FK2/J8SJZB* ::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:263
+msgid "Getting its draft version::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:267
+msgid "|CORS| Show the dataset whose id is passed::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:272
+msgid "Delete Dataset"
+msgstr ""
+
+#: ../../source/api/native-api.rst:274
+msgid "Delete the dataset whose id is passed::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:279
+msgid "List Versions of a Dataset"
+msgstr ""
+
+#: ../../source/api/native-api.rst:281
+msgid "|CORS| List versions of the dataset::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:286
+msgid "Get Version of a Dataset"
+msgstr ""
+
+#: ../../source/api/native-api.rst:288
+msgid ""
+"|CORS| Show a version of the dataset. The Dataset also include any "
+"metadata blocks the data might have::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:293
+msgid "Export Metadata of a Dataset in Various Formats"
+msgstr ""
+
+#: ../../source/api/native-api.rst:295
+msgid ""
+"|CORS| Export the metadata of the current published version of a dataset "
+"in various formats::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:299
+msgid ""
+"Supported exporters (export formats) are ``ddi``, ``oai_ddi``, "
+"``dcterms``, ``oai_dc``, ``schema.org`` , ``OAI_ORE`` , ``Datacite``, "
+"``oai_datacite`` and ``dataverse_json``."
+msgstr ""
+
+#: ../../source/api/native-api.rst:302
+msgid "Schema.org JSON-LD"
+msgstr ""
+
+#: ../../source/api/native-api.rst:304
+msgid ""
+"Please note that the ``schema.org`` format has changed in backwards-"
+"incompatible ways after Dataverse 4.9.4:"
+msgstr ""
+
+#: ../../source/api/native-api.rst:306
+msgid "\"description\" was a single string and now it is an array of strings."
+msgstr ""
+
+#: ../../source/api/native-api.rst:307
+msgid "\"citation\" was an array of strings and now it is an array of objects."
+msgstr ""
+
+#: ../../source/api/native-api.rst:309
+msgid ""
+"Both forms are valid according to Google's Structured Data Testing Tool "
+"at https://search.google.com/structured-data/testing-tool . (This tool "
+"will report \"The property affiliation is not recognized by Google for an"
+" object of type Thing\" and this known issue is being tracked at "
+"https://github.com/IQSS/dataverse/issues/5029 .) Schema.org JSON-LD is an"
+" evolving standard that permits a great deal of flexibility. For example,"
+" https://schema.org/docs/gs.html#schemaorg_expected indicates that even "
+"when objects are expected, it's ok to just use text. As with all metadata"
+" export formats, we will try to keep the Schema.org JSON-LD format "
+"Dataverse emits backward-compatible to made integrations more stable, "
+"despite the flexibility that's afforded by the standard."
+msgstr ""
+
+#: ../../source/api/native-api.rst:314
+msgid "List Files in a Dataset"
+msgstr ""
+
+#: ../../source/api/native-api.rst:316
+msgid "|CORS| Lists all the file metadata, for the given dataset and version::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:321
+msgid "Download Files in a Dataset Version"
+msgstr ""
+
+#: ../../source/api/native-api.rst:323
+msgid ""
+"|CORS| Downloads, available to a given user, files from a specified "
+"dataset version."
+msgstr ""
+
+#: ../../source/api/native-api.rst:325
+msgid ""
+"A ``format=original`` parameter can be added in order to download tabular"
+" data files in their original, not-ingested, format.::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:329
+msgid ""
+"As a result a zip file called ``dataverse_files.zip`` will be saved in "
+"your current directory. Except dataset version files this archive "
+"includes ``MANIFEST.txt`` file with additional information - like why "
+"some files couldn't have been downloaded."
+msgstr ""
+
+#: ../../source/api/native-api.rst:331
+msgid ""
+"To get specific dataset version id you can call :ref:`list-dataset-"
+"version-files` endpoint."
+msgstr ""
+
+#: ../../source/api/native-api.rst:333
+msgid "A curl example using a DOI::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:343
+msgid "List All Metadata Blocks for a Dataset"
+msgstr ""
+
+#: ../../source/api/native-api.rst:345
+msgid ""
+"|CORS| Lists all the metadata blocks and their content, for the given "
+"dataset and version::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:350
+msgid "List Single Metadata Block for a Dataset"
+msgstr ""
+
+#: ../../source/api/native-api.rst:352
+msgid ""
+"|CORS| Lists the metadata block block named `blockname`, for the given "
+"dataset and version::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:357
+msgid "Update Metadata For a Dataset"
+msgstr ""
+
+#: ../../source/api/native-api.rst:359
+msgid ""
+"Updates the metadata for a dataset. If a draft of the dataset already "
+"exists, the metadata of that draft is overwritten; otherwise, a new draft"
+" is created with this metadata."
+msgstr ""
+
+#: ../../source/api/native-api.rst:361
+msgid ""
+"You must download a JSON representation of the dataset, edit the JSON you"
+" download, and then send the updated JSON to the Dataverse server."
+msgstr ""
+
+#: ../../source/api/native-api.rst:363
+msgid ""
+"For example, after making your edits, your JSON file might look like "
+":download:`dataset-update-metadata.json <../_static/api/dataset-update-"
+"metadata.json>` which you would send to Dataverse like this::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:367
+msgid ""
+"Note that in the example JSON file (:download:`dataset-update-"
+"metadata.json <../_static/api/dataset-update-metadata.json>`), there is a"
+" single JSON object with ``metadataBlocks`` as a key. When you download a"
+" representation of your dataset in JSON format, the ``metadataBlocks`` "
+"object you need is nested inside another object called ``json``. To "
+"extract just the ``metadataBlocks`` key when downloading a JSON "
+"representation, you can use a tool such as ``jq`` like this::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:371
+msgid ""
+"Now that the resulting JSON file only contains the ``metadataBlocks`` "
+"key, you can edit the JSON such as with ``vi`` in the example::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:375
+msgid ""
+"Now that you've made edits to the metadata in your JSON file, you can "
+"send it to Dataverse."
+msgstr ""
+
+#: ../../source/api/native-api.rst:378
+msgid "Edit Dataset Metadata"
+msgstr ""
+
+#: ../../source/api/native-api.rst:380
+msgid ""
+"Alternatively to replacing an entire dataset version with its JSON "
+"representation you may add data to dataset fields that are blank or "
+"accept multiple values with the following ::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:384
+msgid ""
+"You may also replace existing metadata in dataset fields with the "
+"following (adding the parameter replace=true)   ::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:388
+msgid ""
+"For these edits your JSON file need only include those dataset fields "
+"which you would like to edit. A sample JSON file may be downloaded here: "
+":download:`dataset-edit-metadata-sample.json <../_static/api/dataset-"
+"edit-metadata-sample.json>`"
+msgstr ""
+
+#: ../../source/api/native-api.rst:391
+msgid "Delete Dataset Metadata"
+msgstr ""
+
+#: ../../source/api/native-api.rst:393
+msgid ""
+"You may delete some of the metadata of a dataset version by supplying a "
+"file with a JSON representation of dataset fields that you would like to "
+"delete with the following ::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:397
+msgid ""
+"For these deletes your JSON file must include an exact match of those "
+"dataset fields which you would like to delete. A sample JSON file may be "
+"downloaded here: :download:`dataset-delete-author-metadata.json "
+"<../_static/api/dataset-delete-author-metadata.json>`"
+msgstr ""
+
+#: ../../source/api/native-api.rst:403
+msgid "Publish a Dataset"
+msgstr ""
+
+#: ../../source/api/native-api.rst:405
+msgid ""
+"Publishes the dataset whose id is passed. If this is the first version of"
+" the dataset, its version number will be set to ``1.0``. Otherwise, the "
+"new dataset version number is determined by the most recent version "
+"number and the ``type`` parameter. Passing ``type=minor`` increases the "
+"minor version number (2.3 is updated to 2.4). Passing ``type=major`` "
+"increases the major version number (2.3 is updated to 3.0). Superusers "
+"can pass ``type=updatecurrent`` to update metadata without changing the "
+"version number::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:409
+msgid ""
+"POST should be used to publish a dataset. GET is supported for backward "
+"compatibility but is deprecated and may be removed: "
+"https://github.com/IQSS/dataverse/issues/2431"
+msgstr ""
+
+#: ../../source/api/native-api.rst:411
+msgid ""
+"When there are no default workflows, a successful publication process "
+"will result in ``200 OK`` response. When there are workflows, it is "
+"impossible for Dataverse to know how long they are going to take and "
+"whether they will succeed or not (recall that some stages might require "
+"human intervention). Thus, a ``202 ACCEPTED`` is returned immediately. To"
+" know whether the publication process succeeded or not, the client code "
+"has to check the status of the dataset periodically, or perform some push"
+" request in the post-publish workflow."
+msgstr ""
+
+#: ../../source/api/native-api.rst:417
+msgid "Delete Dataset Draft"
+msgstr ""
+
+#: ../../source/api/native-api.rst:419
+msgid ""
+"Deletes the draft version of dataset ``$id``. Only the draft version can "
+"be deleted::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:424
+msgid "Set Citation Date Field for a Dataset"
+msgstr ""
+
+#: ../../source/api/native-api.rst:426
+msgid ""
+"Sets the dataset field type to be used as the citation date for the given"
+" dataset (if the dataset does not include the dataset field type, the "
+"default logic is used). The name of the dataset field type should be sent"
+" in the body of the reqeust. To revert to the default logic, use "
+"``:publicationDate`` as the ``$datasetFieldTypeName``. Note that the "
+"dataset field used has to be a date field::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:433
+msgid "Revert Citation Date Field to Default for Dataset"
+msgstr ""
+
+#: ../../source/api/native-api.rst:435
+msgid ""
+"Restores the default logic of the field type to be used as the citation "
+"date. Same as ``PUT`` with ``:publicationDate`` body::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:440
+msgid "List Role Assignments for a Dataset"
+msgstr ""
+
+#: ../../source/api/native-api.rst:442
+msgid "List all the role assignments at the given dataset::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:447
+msgid "Create a Private URL for a Dataset"
+msgstr ""
+
+#: ../../source/api/native-api.rst:449
+msgid "Create a Private URL (must be able to manage dataset permissions)::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:454
+msgid "Get the Private URL for a Dataset"
+msgstr ""
+
+#: ../../source/api/native-api.rst:456
+msgid "Get a Private URL from a dataset (if available)::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:461
+msgid "Delete the Private URL from a Dataset"
+msgstr ""
+
+#: ../../source/api/native-api.rst:463
+msgid "Delete a Private URL from a dataset (if it exists)::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:468
+msgid "Set Embargo date for a Dataset"
+msgstr ""
+
+#: ../../source/api/native-api.rst:470
+msgid "Set Embargo date for a Dataset (must be able to edit dataset)::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:474 ../../source/api/native-api.rst:485
+#: ../../source/api/native-api.rst:694 ../../source/api/native-api.rst:708
+msgid "For example::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:479
+msgid "Lift Embargo date from a Dataset"
+msgstr ""
+
+#: ../../source/api/native-api.rst:481
+msgid "Lift Embargo date from a Dataset (must be able to edit dataset)::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:493
+msgid "Add a File to a Dataset"
+msgstr ""
+
+#: ../../source/api/native-api.rst:495
+msgid ""
+"Add a file to an existing Dataset. Description and tags are optional, "
+"terms of use are required::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:499
+msgid "When adding a file to a dataset, you must specify:"
+msgstr ""
+
+#: ../../source/api/native-api.rst:501
+msgid "Terms of use and access for the file."
+msgstr ""
+
+#: ../../source/api/native-api.rst:503
+msgid "When adding a file to a dataset, you can optionally specify:"
+msgstr ""
+
+#: ../../source/api/native-api.rst:505
+msgid "A description of the file."
+msgstr ""
+
+#: ../../source/api/native-api.rst:506
+msgid "Tags and categories for the file."
+msgstr ""
+
+#: ../../source/api/native-api.rst:508
+msgid ""
+"All parameters are passed in a ``jsonData`` object. To build a valid "
+"jsonData you pass:"
+msgstr ""
+
+#: ../../source/api/native-api.rst:511 ../../source/api/native-api.rst:523
+msgid "Name"
+msgstr ""
+
+#: ../../source/api/native-api.rst:511 ../../source/api/native-api.rst:523
+msgid "Type"
+msgstr ""
+
+#: ../../source/api/native-api.rst:511 ../../source/api/native-api.rst:523
+msgid "Description"
+msgstr ""
+
+#: ../../source/api/native-api.rst:513
+msgid "description"
+msgstr ""
+
+#: ../../source/api/native-api.rst:513 ../../source/api/native-api.rst:525
+#: ../../source/api/native-api.rst:526 ../../source/api/native-api.rst:527
+#: ../../source/api/native-api.rst:528
+msgid "string"
+msgstr ""
+
+#: ../../source/api/native-api.rst:513
+msgid "File description"
+msgstr ""
+
+#: ../../source/api/native-api.rst:514
+msgid "categories"
+msgstr ""
+
+#: ../../source/api/native-api.rst:514
+msgid "array<string>"
+msgstr ""
+
+#: ../../source/api/native-api.rst:514
+msgid ""
+"List of file tags (e.g. "
+"\"categories\":[\"Data\",\"Documentation\",\"Example\"]"
+msgstr ""
+
+#: ../../source/api/native-api.rst:515
+msgid "termsOfUseAndAccess"
+msgstr ""
+
+#: ../../source/api/native-api.rst:515
+msgid "json"
+msgstr ""
+
+#: ../../source/api/native-api.rst:515
+msgid "A Json object that models terms of use and access for a file."
+msgstr ""
+
+#: ../../source/api/native-api.rst:519
+msgid ""
+"Detailed description of ``termsOfUseAndAccess`` object passed to set "
+"terms of use and access conditions on a file. To build a valid object you"
+" must pass termsType and all available and required parameters for a "
+"given termsType."
+msgstr ""
+
+#: ../../source/api/native-api.rst:525
+msgid "termsType"
+msgstr ""
+
+#: ../../source/api/native-api.rst:525
+msgid ""
+"Type of terms of use. Possible values are: LICENSE_BASED, "
+"ALL_RIGHTS_RESERVED or RESTRICTED."
+msgstr ""
+
+#: ../../source/api/native-api.rst:526
+msgid "accessConditions"
+msgstr ""
+
+#: ../../source/api/native-api.rst:526
+msgid ""
+"Conditions under which a file can be accessed. Available and required "
+"when termsType=RESTRICTED. Possible values are: ACADEMIC_PURPOSE, "
+"NOT_FOR_REDISTRIBUTION, ACADEMIC_PURPOSE_AND_NOT_FOR_REDISTRIBUTION, "
+"CUSTOM."
+msgstr ""
+
+#: ../../source/api/native-api.rst:527
+msgid "license"
+msgstr ""
+
+#: ../../source/api/native-api.rst:527
+msgid ""
+"Standardized name of a specific license. Available and required when "
+"termsType=LICENSE_BASED. To list all valid values see `Active Licenses`_."
+msgstr ""
+
+#: ../../source/api/native-api.rst:528
+msgid "accessConditionsCustomText"
+msgstr ""
+
+#: ../../source/api/native-api.rst:528
+msgid ""
+"Description on how exactly a file is restricted and how it can be access."
+" Available and required when accessConditions=CUSTOM."
+msgstr ""
+
+#: ../../source/api/native-api.rst:532
+msgid "A more detailed \"add\" examples using curl::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:540
+msgid ""
+"Example python code to add a file. This may be run by changing these "
+"parameters in the sample code:"
+msgstr ""
+
+#: ../../source/api/native-api.rst:542 ../../source/api/native-api.rst:763
+msgid "``dataverse_server`` - e.g. https://demo.dataverse.org"
+msgstr ""
+
+#: ../../source/api/native-api.rst:543 ../../source/api/native-api.rst:764
+msgid "``api_key`` - See the top of this document for a description"
+msgstr ""
+
+#: ../../source/api/native-api.rst:544
+msgid "``persistentId`` - Example: ``doi:10.5072/FK2/6XACVA``"
+msgstr ""
+
+#: ../../source/api/native-api.rst:545
+msgid "``dataset_id`` - Database id of the dataset"
+msgstr ""
+
+#: ../../source/api/native-api.rst:547
+msgid ""
+"In practice, you only need one the ``dataset_id`` or the "
+"``persistentId``. The following example shows both uses."
+msgstr ""
+
+#: ../../source/api/native-api.rst:628
+msgid "Submit a Dataset for Review"
+msgstr ""
+
+#: ../../source/api/native-api.rst:630
+msgid ""
+"When dataset authors do not have permission to publish directly, they can"
+" click the \"Submit for Review\" button in the web interface (see "
+":doc:`/user/dataset-management`), or perform the equivalent operation via"
+" API::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:634
+msgid ""
+"The people who need to review the dataset (often curators or journal "
+"editors) can check their notifications periodically via API to see if any"
+" new datasets have been submitted for review and need their attention. "
+"See the :ref:`Notifications` section for details. Alternatively, these "
+"curators can simply check their email or notifications to know when "
+"datasets have been submitted (or resubmitted) for review."
+msgstr ""
+
+#: ../../source/api/native-api.rst:637
+msgid "Return a Dataset to Author"
+msgstr ""
+
+#: ../../source/api/native-api.rst:639
+msgid ""
+"After the curators or journal editors have reviewed a dataset that has "
+"been submitted for review (see :ref:`submit_for_review`) they can either "
+"choose to publish the dataset (see :ref:`publish_dataset`) or return the "
+"dataset to its authors. In the web interface there is a \"Return to "
+"Author\" button (see :doc:`/user/dataset-management`), but the interface "
+"does not provide a way to explain **why** the dataset is being returned. "
+"There is a way to do this outside of this interface, however. Instead of "
+"clicking the \"Return to Author\" button in the UI, a curator can write a"
+" \"reason for return\" into the database via API."
+msgstr ""
+
+#: ../../source/api/native-api.rst:641
+msgid ""
+"Here's how curators can send a \"reason for return\" to the dataset "
+"authors. First, the curator creates a JSON file that contains the reason "
+"for return:"
+msgstr ""
+
+#: ../../source/api/native-api.rst:645
+msgid ""
+"In the following example, the curator has saved the JSON file as "
+":download:`reason-for-return.json <../_static/api/reason-for-"
+"return.json>` in their current working directory. Then, the curator sends"
+" this JSON file to the ``returnToAuthor`` API endpoint like this::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:649
+msgid ""
+"The review process can sometimes resemble a tennis match, with the "
+"authors submitting and resubmitting the dataset over and over until the "
+"curators are satisfied. Each time the curators send a \"reason for "
+"return\" via API, that reason is persisted into the database, stored at "
+"the dataset version level."
+msgstr ""
+
+#: ../../source/api/native-api.rst:652
+msgid "Link a Dataset"
+msgstr ""
+
+#: ../../source/api/native-api.rst:654
+msgid ""
+"Creates a link between a dataset and a dataverse (see the Linked "
+"Dataverses + Linked Datasets section of the :doc:`/user/dataverse-"
+"management` guide for more information). ::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:659
+msgid "Dataset Locks"
+msgstr ""
+
+#: ../../source/api/native-api.rst:661
+msgid "To check if a dataset is locked::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:665
+msgid ""
+"Optionally, you can check if there's a lock of a specific type on the "
+"dataset::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:669
+msgid ""
+"Currently implemented lock types are ``Ingest, Workflow, InReview, "
+"DcmUpload and pidRegister``."
+msgstr ""
+
+#: ../../source/api/native-api.rst:671
+msgid "The API will output the list of locks, for example::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:688
+msgid ""
+"If the dataset is not locked (or if there is no lock of the requested "
+"type), the API will return an empty list."
+msgstr ""
+
+#: ../../source/api/native-api.rst:690
+msgid ""
+"The following API end point will lock a Dataset with a lock of specified "
+"type::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:700
+msgid ""
+"Use the following API to unlock the dataset, by deleting all the locks "
+"currently on the dataset::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:704
+msgid "Or, to delete a lock of the type specified only::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:712
+msgid ""
+"If the dataset is not locked (or if there is no lock of the specified "
+"type), the API will exit with a warning message."
+msgstr ""
+
+#: ../../source/api/native-api.rst:714
+msgid ""
+"(Note that all of these API calls support both the database id and "
+"persistent identifier notation for referencing the dataset)"
+msgstr ""
+
+#: ../../source/api/native-api.rst:718
+msgid "Files"
+msgstr ""
+
+#: ../../source/api/native-api.rst:721
+msgid "Adding Files"
+msgstr ""
+
+#: ../../source/api/native-api.rst:723
+msgid ""
+"Files can be added via the native API but the operation is performed on "
+"the parent object, which is a dataset. Please see the Datasets_ endpoint "
+"for more information."
+msgstr ""
+
+#: ../../source/api/native-api.rst:726
+msgid "Accessing (downloading) files"
+msgstr ""
+
+#: ../../source/api/native-api.rst:728
+msgid "Access API has its own section in the Guide: :doc:`/api/dataaccess`"
+msgstr ""
+
+#: ../../source/api/native-api.rst:730
+msgid ""
+"**Note** Data Access API calls can now be made using persistent "
+"identifiers (in addition to database ids). This is done by passing the "
+"constant ``:persistentId`` where the numeric id of the file is expected, "
+"and then passing the actual persistent id as a query parameter with the "
+"name ``persistentId``."
+msgstr ""
+
+#: ../../source/api/native-api.rst:732
+msgid "Example: Getting the file whose DOI is *10.5072/FK2/J8SJZB* ::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:738
+msgid "Restrict Files"
+msgstr ""
+
+#: ../../source/api/native-api.rst:740
+msgid ""
+"Restrict or unrestrict an existing file where ``id`` is the database id "
+"of the file or ``pid`` is the persistent id (DOI or Handle) of the file "
+"to restrict. Note that some Dataverse installations do not allow the "
+"ability to restrict files."
+msgstr ""
+
+#: ../../source/api/native-api.rst:742
+msgid "A curl example using an ``id``::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:746
+msgid "A curl example using a ``pid``::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:751
+msgid "Replacing Files"
+msgstr ""
+
+#: ../../source/api/native-api.rst:753
+msgid ""
+"Replace an existing file where ``id`` is the database id of the file to "
+"replace or ``pid`` is the persistent id (DOI or Handle) of the file. Note"
+" that metadata such as description and tags are not carried over from the"
+" file being replaced"
+msgstr ""
+
+#: ../../source/api/native-api.rst:761
+msgid ""
+"Example python code to replace a file.  This may be run by changing these"
+" parameters in the sample code:"
+msgstr ""
+
+#: ../../source/api/native-api.rst:765
+msgid ""
+"``file_id`` - Database id of the file to replace (returned in the GET API"
+" for a Dataset)"
+msgstr ""
+
+#: ../../source/api/native-api.rst:828
+msgid "Uningest a File"
+msgstr ""
+
+#: ../../source/api/native-api.rst:830
+msgid ""
+"Reverse the tabular data ingest process performed on a file where "
+"``{id}`` is the database id of the file to process. Note that this "
+"requires \"super user\" credentials::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:836
+msgid "Reingest a File"
+msgstr ""
+
+#: ../../source/api/native-api.rst:838
+msgid ""
+"Attempt to ingest an existing datafile as tabular data. This API can be "
+"used on a file that was not ingested as tabular back when it was "
+"uploaded. For example, a Stata v.14 file that was uploaded before ingest "
+"support for Stata 14 was added (in Dataverse v.4.9). It can also be used "
+"on a file that failed to ingest due to a bug in the ingest plugin that "
+"has since been fixed (hence the name \"re-ingest\")."
+msgstr ""
+
+#: ../../source/api/native-api.rst:840
+msgid "Note that this requires \"super user\" credentials::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:844
+msgid "(``{id}`` is the database id of the file to process)"
+msgstr ""
+
+#: ../../source/api/native-api.rst:846
+msgid ""
+"Also, note that, at present the API cannot be used on a file that's "
+"already ingested as tabular."
+msgstr ""
+
+#: ../../source/api/native-api.rst:849
+msgid "Provenance"
+msgstr ""
+
+#: ../../source/api/native-api.rst:850
+msgid "Get Provenance JSON for an uploaded file::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:854
+msgid "Get Provenance Description for an uploaded file::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:858
+msgid ""
+"Create/Update Provenance JSON and provide related entity name for an "
+"uploaded file::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:862
+msgid ""
+"Create/Update Provenance Description for an uploaded file. Requires a "
+"JSON file with the description connected to a key named \"text\"::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:866
+msgid "Delete Provenance JSON for an uploaded file::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:871
+msgid "Datafile Integrity"
+msgstr ""
+
+#: ../../source/api/native-api.rst:873
+msgid ""
+"Starting the release 4.10 the size of the saved original file (for an "
+"ingested tabular datafile) is stored in the database. The following API "
+"will retrieve and permanently store the sizes for any already existing "
+"saved originals::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:877
+msgid ""
+"Note the optional \"limit\" parameter. Without it, the API will attempt "
+"to populate the sizes for all the saved originals that don't have them in"
+" the database yet. Otherwise it will do so for the first N such "
+"datafiles."
+msgstr ""
+
+#: ../../source/api/native-api.rst:880
+msgid "Builtin Users"
+msgstr ""
+
+#: ../../source/api/native-api.rst:882
+msgid ""
+"Builtin users are known as \"Username/Email and Password\" users in the "
+":doc:`/user/account` of the User Guide. Dataverse stores a password "
+"(encrypted, of course) for these users, which differs from \"remote\" "
+"users such as Shibboleth or OAuth users where the password is stored "
+"elsewhere. See also \"Auth Modes: Local vs. Remote vs. Both\" in the "
+":doc:`/installation/config` section of the Installation Guide. It's a "
+"valid configuration of Dataverse to not use builtin users at all."
+msgstr ""
+
+#: ../../source/api/native-api.rst:885
+msgid "Create a Builtin User"
+msgstr ""
+
+#: ../../source/api/native-api.rst:887
+msgid ""
+"For security reasons, builtin users cannot be created via API unless the "
+"team who runs the Dataverse installation has populated a database setting"
+" called ``BuiltinUsers.KEY``, which is described under \"Securing Your "
+"Installation\" and \"Database Settings\" in the "
+":doc:`/installation/config` section of the Installation Guide. You will "
+"need to know the value of ``BuiltinUsers.KEY`` before you can proceed."
+msgstr ""
+
+#: ../../source/api/native-api.rst:889
+msgid ""
+"To create a builtin user via API, you must first construct a JSON "
+"document.  You can download :download:`user-add.json <../_static/api"
+"/user-add.json>` or copy the following example as a starting point and "
+"edit as necessary."
+msgstr ""
+
+#: ../../source/api/native-api.rst:893
+msgid ""
+"Place this ``user-add.json`` file in your current directory and run the "
+"following curl command, substituting variables as necessary. Note that "
+"both the password of the new user and the value of ``BuiltinUsers.KEY`` "
+"are passed as query parameters::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:898
+msgid "Roles"
+msgstr ""
+
+#: ../../source/api/native-api.rst:903
+msgid ""
+"Creates a new role in dataverse object whose Id is ``dataverseIdtf`` "
+"(that's an id/alias)::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:908
+msgid "Show Role"
+msgstr ""
+
+#: ../../source/api/native-api.rst:910
+msgid "Shows the role with ``id``::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:915
+msgid "Delete Role"
+msgstr ""
+
+#: ../../source/api/native-api.rst:917
+msgid "Deletes the role with ``id``::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:922
+msgid "Explicit Groups"
+msgstr ""
+
+#: ../../source/api/native-api.rst:925
+msgid "Create New Explicit Group"
+msgstr ""
+
+#: ../../source/api/native-api.rst:927
+msgid ""
+"Explicit groups list their members explicitly. These groups are defined "
+"in dataverses, which is why their API endpoint is under "
+"``api/dataverses/$id/``, where ``$id`` is the id of the dataverse."
+msgstr ""
+
+#: ../../source/api/native-api.rst:929
+msgid "Create a new explicit group under dataverse ``$id``::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:933
+msgid "Data being POSTed is json-formatted description of the group::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:942
+msgid "List Explicit Groups in a Dataverse"
+msgstr ""
+
+#: ../../source/api/native-api.rst:944
+msgid "List explicit groups under dataverse ``$id``::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:949
+msgid "Show Single Group in a Dataverse"
+msgstr ""
+
+#: ../../source/api/native-api.rst:951
+msgid "Show group ``$groupAlias`` under dataverse ``$dv``::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:956
+msgid "Update Group in a Dataverse"
+msgstr ""
+
+#: ../../source/api/native-api.rst:958
+msgid ""
+"Update group ``$groupAlias`` under dataverse ``$dv``. The request body is"
+" the same as the create group one, except that the group alias cannot be "
+"changed. Thus, the field ``aliasInOwner`` is ignored. ::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:963
+msgid "Delete Group from a Dataverse"
+msgstr ""
+
+#: ../../source/api/native-api.rst:965
+msgid "Delete group ``$groupAlias`` under dataverse ``$dv``::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:970
+msgid "Add Multiple Role Assignees to an Explicit Group"
+msgstr ""
+
+#: ../../source/api/native-api.rst:972
+msgid ""
+"Bulk add role assignees to an explicit group. The request body is a JSON "
+"array of role assignee identifiers, such as ``@admin``, "
+"``&ip/localhosts`` or ``:authenticated-users``::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:977
+msgid "Add a Role Assignee to an Explicit Group"
+msgstr ""
+
+#: ../../source/api/native-api.rst:979
+msgid "Add a single role assignee to a group. Request body is ignored::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:984
+msgid "Remove a Role Assignee from an Explicit Group"
+msgstr ""
+
+#: ../../source/api/native-api.rst:986
+msgid "Remove a single role assignee from an explicit group::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:991
+msgid "Shibboleth Groups"
+msgstr ""
+
+#: ../../source/api/native-api.rst:993
+msgid ""
+"Management of Shibboleth groups via API is documented in the "
+":doc:`/installation/shibboleth` section of the Installation Guide."
+msgstr ""
+
+#: ../../source/api/native-api.rst:996
+msgid "Info"
+msgstr ""
+
+#: ../../source/api/native-api.rst:999
+msgid "Show Dataverse Version and Build Number"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1001
+msgid ""
+"|CORS| Get the Dataverse version. The response contains the version and "
+"build numbers::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1006
+msgid "Show Dataverse Server Name"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1008
+msgid ""
+"Get the server name. This is useful when a Dataverse system is composed "
+"of multiple Java EE servers behind a load balancer::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1013
+msgid "Show Custom Popup Text for Publishing Datasets"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1015
+msgid ""
+"For now, only the value for the ``:DatasetPublishPopupCustomText`` "
+"setting from the :doc:`/installation/config` section of the Installation "
+"Guide is exposed::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1020
+msgid "Get API Terms of Use URL"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1022
+msgid ""
+"Get API Terms of Use. The response contains the text value inserted as "
+"API Terms of use which uses the database setting  ``:ApiTermsOfUse``::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1029
+msgid "Get Active Licenses"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1031
+msgid ""
+"Get list of standardized license names that are active on current "
+"installation. This is useful when a user wants to set a license on a file"
+" when adding it through api (see `Add a File to a Dataset`_)::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1036
+msgid "Metadata Blocks"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1039
+msgid "Show Info About All Metadata Blocks"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1041
+msgid ""
+"|CORS| Lists brief info about all metadata blocks registered in the "
+"system::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1046
+msgid "Show Info About Single Metadata Block"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1048
+msgid ""
+"|CORS| Return data about the block whose ``identifier`` is passed. "
+"``identifier`` can either be the block's id, or its name::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1055
+msgid "Notifications"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1058
+msgid "Get All Notifications by User"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1060
+msgid ""
+"Each user can get a dump of their notifications by passing in their API "
+"token::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1065
+msgid "Admin"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1067
+msgid ""
+"This is the administrative part of the API. For security reasons, it is "
+"absolutely essential that you block it before allowing public access to a"
+" Dataverse installation. Blocking can be done using settings. See the "
+"``post-install-api-block.sh`` script in the ``scripts/api`` folder for "
+"details. See also \"Blocking API Endpoints\" under \"Securing Your "
+"Installation\" in the :doc:`/installation/config` section of the "
+"Installation Guide."
+msgstr ""
+
+#: ../../source/api/native-api.rst:1070
+msgid "List All Database Settings"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1072
+msgid "List all settings::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1077
+msgid "Configure Database Setting"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1079
+msgid "Sets setting ``name`` to the body of the request::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1084
+msgid "Get Single Database Setting"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1086
+msgid "Get the setting under ``name``::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1091
+msgid "Delete Database Setting"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1093
+msgid "Delete the setting under ``name``::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1098
+msgid "List Authentication Provider Factories"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1100
+msgid ""
+"List the authentication provider factories. The alias field of these is "
+"used while configuring the providers themselves. ::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1105
+msgid "List Authentication Providers"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1107
+msgid ""
+"List all the authentication providers in the system (both enabled and "
+"disabled)::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1112
+msgid "Add Authentication Provider"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1114
+msgid ""
+"Add new authentication provider. The POST data is in JSON format, similar"
+" to the JSON retrieved from this command's ``GET`` counterpart. ::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1119
+msgid "Show Authentication Provider"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1121
+msgid "Show data about an authentication provider::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1126
+msgid "Enable or Disable an Authentication Provider"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1128
+msgid "Enable or disable an authentication provider (denoted by ``id``)::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1132
+msgid ""
+"The former endpoint, ending with ``:enabled`` (that is, with a colon), is"
+" still supported, but deprecated."
+msgstr ""
+
+#: ../../source/api/native-api.rst:1135
+msgid "Check If an Authentication Provider is Enabled"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1137
+msgid "Check whether an authentication proider is enabled::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1141
+msgid ""
+"The body of the request should be either ``true`` or ``false``. Content "
+"type has to be ``application/json``, like so::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1146
+msgid "Delete an Authentication Provider"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1148
+msgid ""
+"Deletes an authentication provider from the system. The command succeeds "
+"even if there is no such provider, as the postcondition holds: there is "
+"no provider by that id after the command returns. ::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1153
+msgid "List Global Roles"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1155
+msgid "List all global roles in the system. ::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1160
+msgid "Create Global Role"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1162
+msgid ""
+"Creates a global role in the Dataverse installation. The data POSTed are "
+"assumed to be a role JSON. ::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1167
+msgid "List Users"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1169
+msgid ""
+"List users with the options to search and \"page\" through results. Only "
+"accessible to superusers. Optional parameters:"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1171
+msgid ""
+"``searchTerm`` A string that matches the beginning of a user identifier, "
+"first name, last name or email address."
+msgstr ""
+
+#: ../../source/api/native-api.rst:1172
+msgid ""
+"``itemsPerPage`` The number of detailed results to return.  The default "
+"is 25.  This number has no limit. e.g. You could set it to 1000 to return"
+" 1,000 results"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1173
+msgid "``selectedPage`` The page of results to return.  The default is 1."
+msgstr ""
+
+#: ../../source/api/native-api.rst:1180
+msgid "Sample output:"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1182
+msgid ""
+"When multiple pages of results exist, the ``selectedPage`` parameters may"
+" be specified."
+msgstr ""
+
+#: ../../source/api/native-api.rst:1183
+msgid ""
+"Note, the resulting ``pagination`` section includes ``pageCount``, "
+"``previousPageNumber``, ``nextPageNumber``, and other variables that may "
+"be used to re-create the UI."
+msgstr ""
+
+#: ../../source/api/native-api.rst:1274
+msgid ""
+"\"List all users\" ``GET http://$SERVER/api/admin/authenticatedUsers`` is"
+" deprecated, but supported."
+msgstr ""
+
+#: ../../source/api/native-api.rst:1277
+msgid "List Single User"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1279
+msgid "List user whose ``identifier`` (without the ``@`` sign) is passed::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1283
+msgid "Sample output using \"dataverseAdmin\" as the ``identifier``::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1299
+msgid "Create an authenticateUser::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1317
+msgid "Merge User Accounts"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1319
+msgid ""
+"If a user has created multiple accounts and has been performed actions "
+"under both accounts that need to be preserved, these accounts can be "
+"combined.  One account can be merged into another account and all data "
+"associated with both accounts will be combined in the surviving account. "
+"Only accessible to superusers.::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1323
+msgid ""
+"Example: ``curl -H \"X-Dataverse-key: $API_TOKEN\" -X POST "
+"http://demo.dataverse.org/api/users/jsmith2/mergeIntoUser/jsmith``"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1325
+msgid ""
+"This action moves account data from jsmith2 into the account jsmith and "
+"deletes jsmith2 account."
+msgstr ""
+
+#: ../../source/api/native-api.rst:1330
+msgid "Change User Identifier"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1332
+msgid ""
+"Changes identifier for user in ``AuthenticatedUser``, ``BuiltinUser``, "
+"``AuthenticatedUserLookup`` & ``RoleAssignment``. Allows them to log in "
+"with the new identifier. Only accessible to superusers.::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1336
+msgid ""
+"Example: ``curl -H \"X-Dataverse-key: $API_TOKEN\" -X POST  "
+"https://demo.dataverse.org/api/users/johnsmith/changeIdentifier/jsmith``"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1338
+msgid "This action changes the identifier of user johnsmith to jsmith."
+msgstr ""
+
+#: ../../source/api/native-api.rst:1341
+msgid "Make User a SuperUser"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1343
+msgid ""
+"Toggles superuser mode on the ``AuthenticatedUser`` whose ``identifier`` "
+"(without the ``@`` sign) is passed. ::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1348
+msgid "List Role Assignments of a Role Assignee"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1350
+msgid "List all role assignments of a role assignee (i.e. a user or a group)::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1354
+msgid ""
+"Note that ``identifier`` can contain slashes (e.g. ``&ip/localhost-"
+"users``)."
+msgstr ""
+
+#: ../../source/api/native-api.rst:1357
+msgid "List Permissions a User Has on a Dataverse or Dataset"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1359
+msgid ""
+"List permissions a user (based on API Token used) has on a dataverse or "
+"dataset::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1363
+msgid ""
+"The ``$identifier`` can be a dataverse alias or database id or a dataset "
+"persistent ID or database id."
+msgstr ""
+
+#: ../../source/api/native-api.rst:1366
+msgid "Show Role Assignee"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1368
+msgid "List a role assignee (i.e. a user or a group)::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1372
+msgid ""
+"The ``$identifier`` should start with an ``@`` if it's a user. Groups "
+"start with ``&``. \"Built in\" users and groups start with ``:``. Private"
+" URL users start with ``#``."
+msgstr ""
+
+#: ../../source/api/native-api.rst:1375
+msgid "Saved Search"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1377
+msgid ""
+"The Saved Search, Linked Dataverses, and Linked Datasets features shipped"
+" with Dataverse 4.0, but as a \"`superuser-only "
+"<https://github.com/IQSS/dataverse/issues/90#issuecomment-86094663>`_\" "
+"because they are **experimental** (see `#1364 "
+"<https://github.com/IQSS/dataverse/issues/1364>`_, `#1813 "
+"<https://github.com/IQSS/dataverse/issues/1813>`_, `#1840 "
+"<https://github.com/IQSS/dataverse/issues/1840>`_, `#1890 "
+"<https://github.com/IQSS/dataverse/issues/1890>`_, `#1939 "
+"<https://github.com/IQSS/dataverse/issues/1939>`_, `#2167 "
+"<https://github.com/IQSS/dataverse/issues/2167>`_, `#2186 "
+"<https://github.com/IQSS/dataverse/issues/2186>`_, `#2053 "
+"<https://github.com/IQSS/dataverse/issues/2053>`_, and `#2543 "
+"<https://github.com/IQSS/dataverse/issues/2543>`_). The following API "
+"endpoints were added to help people with access to the \"admin\" API make"
+" use of these features in their current form. Of particular interest "
+"should be the \"makelinks\" endpoint because it needs to be called "
+"periodically (via cron or similar) to find new dataverses and datasets "
+"that match the saved search and then link the search results to the "
+"dataverse in which the saved search is defined (`#2531 "
+"<https://github.com/IQSS/dataverse/issues/2531>`_ shows an example). "
+"There is a known issue (`#1364 "
+"<https://github.com/IQSS/dataverse/issues/1364>`_) that once a link to a "
+"dataverse or dataset is created, it cannot be removed (apart from "
+"database manipulation and reindexing) which is why a ``DELETE`` endpoint "
+"for saved searches is neither documented nor functional. The Linked "
+"Dataverses feature is `powered by Saved Search "
+"<https://github.com/IQSS/dataverse/issues/1852>`_ and therefore requires "
+"that the \"makelinks\" endpoint be executed on a periodic basis as well."
+msgstr ""
+
+#: ../../source/api/native-api.rst:1379
+msgid "List all saved searches. ::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1383
+msgid "List a saved search by database id. ::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1387
+msgid ""
+"Execute a saved search by database id and make links to dataverses and "
+"datasets that are found. The JSON response indicates which dataverses and"
+" datasets were newly linked versus already linked. The ``debug=true`` "
+"query parameter adds to the JSON response extra information about the "
+"saved search being executed (which you could also get by listing the "
+"saved search). ::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1391
+msgid ""
+"Execute all saved searches and make links to dataverses and datasets that"
+" are found. ``debug`` parameter works in the same manner as in making "
+"links for single saved search::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1396
+msgid "Dataset Integrity"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1398
+msgid ""
+"Recalculate the UNF value of a dataset version, if it's missing, by "
+"supplying the dataset version database id::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1403
+msgid "Workflows"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1405
+msgid "List all available workflows in the system::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1409
+msgid "Get details of a workflow with a given id::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1413
+msgid ""
+"Add a new workflow. Request body specifies the workflow properties and "
+"steps in JSON format. Sample ``json`` files are available at "
+"``scripts/api/data/workflows/``::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1418
+msgid "Delete a workflow with a specific id::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1422
+msgid ""
+"If the workflow designated by ``$id`` is a default workflow, a 403 "
+"FORBIDDEN response will be returned, and the deletion will be canceled."
+msgstr ""
+
+#: ../../source/api/native-api.rst:1424
+msgid "List the default workflow for each trigger type::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1428
+msgid ""
+"Set the default workflow for a given trigger. This workflow is run when a"
+" dataset is published. The body of the PUT request is the id of the "
+"workflow. Trigger types are ``PrePublishDataset, PostPublishDataset``::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1432
+msgid ""
+"Get the default workflow for ``triggerType``. Returns a JSON "
+"representation of the workflow, if present, or 404 NOT FOUND. ::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1436
+msgid ""
+"Unset the default workflow for ``triggerType``. After this call, dataset "
+"releases are done with no workflow. ::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1440
+msgid ""
+"Set the whitelist of IP addresses separated by a semicolon (``;``) "
+"allowed to resume workflows. Request body is a list of IP addresses "
+"allowed to send \"resume workflow\" messages to this Dataverse instance::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1444
+msgid "Get the whitelist of IP addresses allowed to resume workflows::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1448
+msgid ""
+"Restore the whitelist of IP addresses allowed to resume workflows to "
+"default (localhost only)::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1453
+msgid "Metrics"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1455
+msgid "Clear all cached metric results::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1459
+msgid ""
+"Clear a specific metric cache. Currently this must match the name of the "
+"row in the table, which is named *metricName*_*metricYYYYMM* (or just "
+"*metricName* if there is no date range for the metric). For example "
+"dataversesToMonth_2018-05::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1464
+msgid "Inherit Dataverse Role Assignments"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1466
+msgid ""
+"Recursively applies the role assignments of the specified dataverse, for "
+"the roles specified by the ``:InheritParentRoleAssignments`` setting, to "
+"all dataverses contained within it::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:1470
+msgid ""
+"Note: setting ``:InheritParentRoleAssignments`` will automatically "
+"trigger inheritance of the parent dataverse's role assignments for a "
+"newly created dataverse. Hence this API call is intended as a way to "
+"update existing child dataverses or to update children after a change in "
+"role assignments has been made on a parent dataverse."
+msgstr ""
+

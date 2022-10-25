@@ -1,0 +1,121 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/admin/ip-groups.rst:2
+msgid "IP Groups"
+msgstr ""
+
+#: ../../source/admin/ip-groups.rst:4
+msgid ""
+"IP Groups can be used to permit download of restricted files by IP "
+"addresses rather than people. For example, you may want to allow "
+"restricted files to be downloaded by researchers who physically enter a "
+"library and make use of the library's network."
+msgstr ""
+
+#: ../../source/admin/ip-groups.rst:7
+msgid "Contents:"
+msgstr ""
+
+#: ../../source/admin/ip-groups.rst:10
+msgid "Listing IP Groups"
+msgstr ""
+
+#: ../../source/admin/ip-groups.rst:12
+msgid "IP Groups can be listed with the following curl command:"
+msgstr ""
+
+#: ../../source/admin/ip-groups.rst:14
+msgid "``curl http://localhost:8080/api/admin/groups/ip``"
+msgstr ""
+
+#: ../../source/admin/ip-groups.rst:20
+msgid "Creating an IP Group"
+msgstr ""
+
+#: ../../source/admin/ip-groups.rst:22
+msgid ""
+"IP Groups must be expressed as ranges in IPv4 or IPv6 format. For "
+"illustrative purposes, here is a example of the entire IPv4 and IPv6 "
+"range that you can :download:`download "
+"<../_static/admin/ipGroupAll.json>` and edit to have a narrower range to "
+"meet your needs. If you need your IP Group to only encompass a single IP "
+"address, you must enter that IP address for the \"start\" and \"end\" of "
+"the range. If you don't use IPv6 addresses, you can delete that section "
+"of the JSON. Please note that the \"alias\" must be unique if you define "
+"multiple IP Groups. You should give it a meaningful \"name\" since both "
+"\"alias\" and \"name\" will appear and be searchable in the GUI when your"
+" users are assigning roles."
+msgstr ""
+
+#: ../../source/admin/ip-groups.rst:26
+msgid ""
+"Let's say you download this example and edit it to give it a range used "
+"by your library, giving it a filename of ``ipGroup1.json`` and putting it"
+" in the ``/tmp`` directory. Next, load it into Dataverse using the "
+"following curl command:"
+msgstr ""
+
+#: ../../source/admin/ip-groups.rst:28
+msgid ""
+"``curl -X POST -H 'Content-type: application/json' "
+"http://localhost:8080/api/admin/groups/ip --upload-file "
+"/tmp/ipGroup1.json``"
+msgstr ""
+
+#: ../../source/admin/ip-groups.rst:30
+msgid ""
+"Note that you can update a group the same way, as long as you use the "
+"same alias."
+msgstr ""
+
+#: ../../source/admin/ip-groups.rst:33
+msgid "Listing an IP Group"
+msgstr ""
+
+#: ../../source/admin/ip-groups.rst:35
+msgid ""
+"Let's say you used \"ipGroup1\" as the alias of the IP Group you created "
+"in :ref:`ip_group_create`. To list just that IP Group, you can include "
+"the alias in the curl command like this:"
+msgstr ""
+
+#: ../../source/admin/ip-groups.rst:37
+msgid "``curl http://localhost:8080/api/admin/groups/ip/ipGroup1``"
+msgstr ""
+
+#: ../../source/admin/ip-groups.rst:40
+msgid "Deleting an IP Group"
+msgstr ""
+
+#: ../../source/admin/ip-groups.rst:42
+msgid ""
+"It is not recommended to delete an IP Group that has been assigned roles."
+" If you want to delete an IP Group, you should first remove its "
+"permissions."
+msgstr ""
+
+#: ../../source/admin/ip-groups.rst:44
+msgid "To delete an IP Group with an alias of \"ipGroup1\", use the curl command:"
+msgstr ""
+
+#: ../../source/admin/ip-groups.rst:46
+msgid "``curl -X DELETE http://localhost:8080/api/admin/groups/ip/ipGroup1``"
+msgstr ""
+

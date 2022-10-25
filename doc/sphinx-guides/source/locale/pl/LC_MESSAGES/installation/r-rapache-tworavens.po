@@ -1,0 +1,1141 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/installation/r-rapache-tworavens.rst:4
+msgid "TwoRavens"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:6
+msgid ""
+"TwoRavens is a web application for tabular data exploration and "
+"statistical analysis. It can be integrated with Dataverse, as an "
+"**optional** component.  While TwoRavens was originally created at IQSS, "
+"its developers have since left the organization. Plans for the future of "
+"the Dataverse/TwoRavens collaboration are still being worked out. As "
+"such, **support for TwoRavens is somewhat limited at the moment (as of "
+"Spring of 2017).**"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:12
+msgid ""
+"Any questions regarding the features of TwoRavens, bug reports and such, "
+"should be addressed directly to the developers of the application.  The "
+"`TwoRavens GitHub repository <https://github.com/IQSS/TwoRavens>`_ and "
+"the `TwoRavens project page <http://2ra.vn/community/index.html>`_ are "
+"good places to start."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:18
+msgid ""
+"For now, the Dataverse project will continue providing installation and "
+"integration support. We have created a new (as of Dataverse v.4.6.1) "
+"version of the installer scripts and updated this guide. We have tried to"
+" improve and simplify the installation process, particularly the "
+"difficult process of installing correct versions of the required third "
+"party R packages."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:24
+msgid ""
+"**Note that the installation process described in this document "
+"supercedes the basic R setup described in the \"Prerequisites\" portion "
+"of the Installation Guide. Meaning that once completed, it installs "
+"everything needed to run TwoRavens, PLUS all the libraries and components"
+" required to ingest RData files, export as RData, and use Data "
+"Explorer.**"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:32
+msgid "Please be warned:"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:34
+msgid "This process may still require some system administration skills."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:35
+msgid ""
+"This guide is very Linux-specific. Described process has been tested on "
+"RedHat/CentOS servers only. In some ways it *may* actually be easier to "
+"get it all installed on MacOS X (because MacOS X versions of third party "
+"R packages are available pre-compiled), or even on Windows. But it hasn't"
+" been attempted, and is not supported by the Dataverse team."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:42
+msgid ""
+"In addition to the TwoRavens web application proper, several required "
+"components need to be installed and configured. This includes R, rApache "
+"and a collection of required third-party R packages. The installation "
+"steps for these components are described in the individual sections of "
+"the document."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:49
+msgid "|toctitle|"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:52
+msgid "0. Overview"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:54
+msgid ""
+"TwoRavens is itself a compact JavaScript application that **runs on the "
+"user's browser**. These JavaScript files, and the accompanying HTML, CSS,"
+" etc. files are served by an HTTP server (Apache) as static objects."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:58
+msgid ""
+"The statistical calculations are performed by R programs that run **on "
+"the server**. `rApache <http://rapache.net/>`_ is used as the web front "
+"end for R on the server, so that the browser application can talk to R "
+"over HTTP."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:62
+msgid ""
+"See the \"Advanced Installation\" section of the :doc:`prep` section for "
+"an example of running various components on more than one server."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:64
+msgid ""
+"TwoRavens will need to obtain some tabular-data-specific metadata from "
+"Dataverse -- the DDI fragment that describes the variables and some pre-"
+"processed summary statistics for the data vectors. In order to produce "
+"the latter, the Dataverse application also needs to be able to execute "
+"some R code on the server. Instead of ``rApache``, Dataverse uses `Rserve"
+" <https://rforge.net/Rserve/>`_ to communicate to R. Rserve is installed "
+"as a \"contributor\" R package. It runs as a daemon process on the "
+"server, accepting network connections on a dedicated port. Dataverse "
+"project supplies an :fixedwidthplain:`init.d`-style startup file for the "
+"daemon. The R setup in step :ref:`tworavens_install_r_packages` will set "
+"it up so that the daemon gets started automatically when the system "
+"boots."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:75
+msgid ""
+"When a user requests to run a statistical model on a data file, TwoRavens"
+" will instruct the R code on the server to download the file **directly "
+"from the Dataverse application**. Access URLs need to be configured for "
+"this to work properly (this is done by the TwoRavens installer script in "
+"step :ref:`install_tworavens_app`)"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:81
+msgid ""
+"If you install all components on a single server and front Glassfish with"
+" Apache (see \"Network Ports\" under the :doc:`config` section), the "
+"component and data flow diagram might looks something like this:"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:89
+msgid "Dataverse installation with TwoRavens support"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:89
+msgid ""
+"Diagram presenting Dataverse installation with TwoRavens support on "
+"single server"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:91
+msgid ""
+"In addition to Rserve, there are 14 more R library packages that the "
+"TwoRavens R code requires in order to run. These in turn require 30 more "
+"as their own dependencies, so a total of 45 packages must be installed. "
+"\"Installed\" in the context of an R package means R must download the "
+"**source code** from the `CRAN <https://cran.r-project.org/>`_ code "
+"repository and compile it locally. This historically has been the "
+"trickiest, least stable part of the installation process, since the "
+"packages in question are being constantly (and independently) developed. "
+"This means that every time you attempt to install these packages, you are"
+" building from potentially different versions of the source code. An "
+"incompatibility introduced between any two of the packages can result in "
+"a failure to install. In this release we have attempted to resolve this "
+"by installing the **specific  versions of the R packages that have been "
+"proven** to work together. If you have attempted to install TwoRavens in "
+"the past, and it didn't work, please see the part of section "
+":ref:`prerequisites_r` where we explain how to completely erase all the "
+"previously built packages."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:108
+msgid "1. Prerequisites"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:113
+msgid "a. httpd (Apache):"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:115
+msgid "It's probably installed already, but if not:"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:117
+msgid "``yum install httpd``"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:119
+msgid ""
+"This rApache configuration does not work with SELinux. Execute the "
+"following commands to disable SELinux:"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:122
+msgid "``setenforce permissive``"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:124
+msgid "``getenforce``"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:126
+msgid ""
+"(Note: If you can get rApache to work with SELinux, we encourage you to "
+"make a pull request! Please see the :doc:`/developers/selinux` section of"
+" the Developer Guide to get started.)"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:128
+msgid ""
+"If you choose to serve TwoRavens and run rApache under "
+":fixedwidthplain:`https`, a \"real\" signed certificate (as opposed to "
+"self-signed) is recommended."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:130
+msgid ""
+"For security reasons, directory listing needs to be disabled on the web "
+"documents folder served by Apache:"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:132
+msgid ""
+"In the main Apache configuration file (``/etc/httpd/conf/httpd.conf`` in "
+"the default setup), find the section that configures your web directory. "
+"For example, if the ``DocumentRoot``, defined elsewhere in the file, is "
+"set to the default ``\"/var/www/html\"``, the opening line of the section"
+" will look like this:"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:134
+msgid "``<Directory \"/var/www/html\">``"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:136
+msgid ""
+"Find the ``Options`` line in that section, and make sure that it doesn't "
+"contain the ``Indexes`` statement. For example, if the options line in "
+"your configuration is"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:139
+msgid "``Options Indexes FollowSymLinks``"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:141
+msgid "change it to"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:143
+msgid "``Options FollowSymLinks``"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:148
+msgid "b. R:"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:150
+msgid ""
+"The simplest way to install R on RHEL/CentOS systems is with yum, using "
+"the EPEL repository::"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:155
+msgid ""
+"Both EPEL6 and EPEL7 currently provide R 3.5, which has been tested and "
+"appears to work well. R 3.4, offered by EPEL until also works well. We "
+"recommend using the currently available EPEL version for all the new "
+"installations. But if you already have a working R 3.4 installation from "
+"EPEL and you don't have a specific need to upgrade, you may lock that "
+"version in place using the ``yum-versionlock`` yum plugin, or simply add "
+"this line to the \"epel\" section of /etc/yum.repos.d/epel.repo::"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:159
+msgid ""
+"RHEL users may need to log in to their organization's respective RHN "
+"interface, find the particular machine in question and:"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:161
+msgid "click on \"Subscribed Channels: Alter Channel Subscriptions\""
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:162
+msgid "enable EPEL, Server Extras, Server Optional"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:164
+msgid ""
+"If you are upgrading an existing installation of TwoRavens, or if you "
+"have attempted to install it in the past and it didn't work, **we "
+"strongly recommend reinstalling R completely**, erasing all the extra R "
+"packages that may have been already built."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:168
+msgid "Uninstall R::"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:172
+msgid "Wipe clean any R packages that were left behind::"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:177
+msgid "... then re-install R with :fixedwidthplain:`yum install`"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:180
+msgid "c. rApache:"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:182
+msgid ""
+"We maintain the following rpms of rApache, built for the following "
+"version of RedHat/CentOS distribution:"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:184
+msgid ""
+"For RHEL/CentOS 6 and R 3.4, download "
+":download:`rapache-1.2.6-rpm0.x86_64.rpm "
+"<../_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.6-rpm0.x86_64.rpm>`"
+" and install it with::"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:188
+msgid ""
+"For RHEL/CentOS 6 and R 3.5, download "
+":download:`rapache-1.2.9_R-3.5-RH6.x86_64.rpm "
+"<../_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.9_R-3.5-RH6.x86_64.rpm>`"
+" and install it with::"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:192
+msgid ""
+"If you are using RHEL/CentOS 7 and R 3.4, download "
+":download:`rapache-1.2.7-rpm0.x86_64.rpm "
+"<../_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.7-rpm0.x86_64.rpm>`"
+" and install it with::"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:196
+msgid ""
+"If you are using RHEL/CentOS 7 in combination with R 3.5, download "
+":download:`rapache-1.2.9_R-3.5.x86_64.rpm "
+"<../_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.9_R-3.5.x86_64.rpm>`"
+" and install it with::"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:200
+msgid ""
+"**Please note:** The rpms cannot be *guaranteed* to work on your system. "
+"You may have a collection of system libraries installed on your system "
+"that will create a version conflict. If that's the case, or if you are "
+"trying to install on an different operating system, do not despair: "
+"simply build rApache from `source <http://rapache.net/downloads.html>`_ ."
+" **Make sure** to build with the R that's the same version you are "
+"planning on using."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:210
+msgid "d. Install the build environment for R:"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:212
+msgid ""
+"Once again, extra R packages will need to be built from sources. Make "
+"sure you have the standard GNU compilers installed: ``gcc``, ``gcc-c++`` "
+"and ``gcc-gfortran``."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:214
+msgid ""
+"One of the required packages needed :fixedwidthplain:`/bin/ed`. The R "
+"package build script needs :fixedwidthplain:`/usr/bin/wget`. If these are"
+" missing, the rpms can be installed with::"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:218
+msgid ""
+"Depending on how your system was originally set up, you may end up "
+"needing to install some other missing rpms. We'll explain how to "
+"troubleshoot compiler errors caused by missing libraries and/or "
+"executables."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:223
+msgid "2. Install Extra R Packages"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:225
+msgid ""
+"We provide a shell script (``r-setup.sh``) that will try to install all "
+"the needed packages. **Note:** the script is now part of the TwoRavens "
+"distribution (it **used to be** in the Dataverse source tree)."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:228
+msgid ""
+"The script will attempt to download the packages from CRAN (or a mirror),"
+" so the system must have access to the Internet."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:230
+msgid "In order to run the script:"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:232
+msgid ""
+"Download the current snapshot of the \"dataverse-distribution\" branch of"
+" TwoRavens from github: `https://github.com/IQSS/TwoRavens/archive"
+"/dataverse-distribution.zip <https://github.com/IQSS/TwoRavens/archive"
+"/dataverse-distribution.zip>`_. Once again, it is important that you "
+"download the \"dataverse-distribution\" branch, and NOT the master "
+"distribution! Unpack the zip file, then run the script::"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:246
+msgid ""
+"See :ref:`what_r_setup_sh_does` section of the Appendix for trouble-"
+"shooting tips."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:248
+msgid ""
+"For the Rserve package the setup script will also create a system user "
+":fixedwidthplain:`rserve`, and install the startup script for the daemon "
+"(``/etc/init.d/rserve``).  The script will skip this part, if this has "
+"already been done on this system (i.e., it should be safe to run it "
+"repeatedly)."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:254
+msgid ""
+"Note that the setup will set the Rserve password to "
+":fixedwidthplain:`\"rserve\"`. Rserve daemon runs under a non-privileged "
+"user id, and there appears to be a very limited potential for security "
+"damage through unauthorized access. It is however still a good idea **to "
+"change the password**. The password is specified in ``/etc/Rserv.pwd``. "
+"Please see `Rserve documentation <https://rforge.net/Rserve/doc.html>`_ "
+"for more information on password encryption and access security."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:261
+msgid ""
+"Make sure the rserve password is correctly specified in the "
+"``domain.xml`` of your Dataverse::"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:269
+msgid "3. Install the TwoRavens Application"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:272
+msgid "a. download and unzip the application"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:274
+msgid ""
+"(though you may have already done so, in step "
+":ref:`tworavens_install_r_packages` - see the instructions there)."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:278
+msgid "b. Rename the resulting directory \"dataexplore\" ..."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:280
+msgid ""
+"...and place it in the web root directory of your apache server. We'll "
+"assume ``/var/www/html/dataexplore`` here and in whole "
+":ref:`install_tworavens_app` section::"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:288
+msgid "c. run the installer"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:290
+msgid ""
+"A scripted, interactive installer is provided at the top level of the "
+"TwoRavens distribution."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:293
+msgid "The installer will ask you to provide the following:"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:296
+msgid "Setting"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:296
+msgid "default"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:296
+msgid "Comment"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:298
+msgid "TwoRavens directory"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:298
+msgid "``/var/www/html/dataexplore``"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:298
+msgid "File directory where TwoRavens is installed."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:299
+msgid "Apache config dir."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:299
+msgid "``/etc/httpd``"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:299
+msgid "rApache config file for TwoRavens will be placed under ``conf.d/`` there."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:300
+msgid "Apache web dir."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:300
+msgid "``/var/www/html``"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:301
+msgid "rApache/TwoRavens URL"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:301
+msgid "``http://{your hostname}:80``"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:301
+msgid "URL of the Apache server hosting TwoRavens and rApache."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:302
+msgid "Dataverse URL"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:302
+msgid "``http://{your hostname}:8080``"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:302
+msgid "URL of the Dataverse that integrates with this TwoRavens installation."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:305
+msgid "Please note that for default values the installer assumes"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:307
+msgid ""
+"that you are running both the Dataverse and TwoRavens/rApache on the same"
+" host;"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:308
+msgid ""
+"the default ports for Apache (80) and Glassfish that is serving your "
+"Dataverse (8080);"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:309
+msgid "``http`` (not ``https``!) for both ."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:311
+msgid ""
+"This configuration is recommended if you are simply trying out/testing "
+"Dataverse and TwoRavens. Accept all the defaults, and you should have a "
+"working installation in no time."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:315
+msgid ""
+"However, if you are planning to use this installation to actually serve "
+"data to users, you'll most likely want to run under HTTPS. Please refer "
+"to :ref:`ports_configuration_discussion` in the Appendix for more "
+"information on setting it up. Configuring HTTPS takes a little extra "
+"work. But note that the TwoRavens configuration can actually end up being"
+" simpler. If you use our recommended configuration for HTTPS (described "
+"in the Appendix), both the \"TwoRavens URL\" and \"Dataverse URL\" **will"
+" be the same**: ``https://{your hostname}``."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:323
+msgid "Run the installer as::"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:332
+msgid ""
+"Once everything is installed and configured, the installer script will "
+"print out a confirmation message with the URL of the TwoRavens "
+"application. For example::"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:339
+msgid "d. Version conflict check  (preprocess.R)"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:341
+msgid ""
+"One of the R files in the TwoRavens distribution, "
+"``rook/preprocess/preprocess.R`` is used by both TwoRavens and Dataverse."
+" Dataverse application maintains its own copy of the file, ``<DOMAIN "
+"DIRECTORY>/applications/dataverse-<VERSION>/WEB-"
+"INF/classes/edu/harvard/iq/dataverse/rserve/scripts/preprocess.R``. (Why "
+"not share the file from the same location? Because the two applications "
+"can potentially be installed on 2 different servers). Compare the two "
+"files. **It is important that the two copies are identical**."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:347
+msgid "**If different**:"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:349
+msgid ""
+"the **TwoRavens version wins**. Meaning, you need to copy the version "
+"supplied with this TwoRavens distribution and overwrite the Glassfish "
+"version (``<DOMAIN DIRECTORY>/applications/dataverse-<VERSION>/WEB-"
+"INF/classes/edu/harvard/iq/dataverse/rserve/scripts/preprocess.R``); then"
+" restart Glassfish."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:351
+msgid ""
+"unless this is a brand new Dataverse installation, it may have cached "
+"summary statistics fragments that were produced with the older version of"
+" this R code. You **must remove** all such cached files::"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:356
+msgid ""
+"*(Yes, this is a HACK! We are working on finding a better way to ensure "
+"this compatibility between TwoRavens and Dataverse!)*"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:362
+msgid "e. Enable TwoRavens Button in Dataverse"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:364
+msgid ""
+"Now that you have installed TwoRavens, you can make it available to your "
+"users by adding it an \"external tool\" for your Dataverse installation. "
+"(For more on external tools in general, see the :doc:`external-tools` "
+"section.)"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:366
+msgid ""
+"First, download :download:`twoRavens.json "
+"<../_static/installation/files/root/external-tools/twoRavens.json>` as a "
+"starting point and edit ``toolUrl`` in that external tool manifest file "
+"to be the URL where you want TwoRavens to run. This is the URL reported "
+"by the installer script (as in the example at the end of step "
+":ref:`run_the_installer`)."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:368
+msgid ""
+"Once you have made your edits, make the tool available within Dataverse "
+"with the following curl command (assuming ``twoRavens.json`` is in your "
+"current working directory):"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:370
+msgid ""
+"``curl -X POST -H 'Content-type: application/json' --upload-file "
+"twoRavens.json http://localhost:8080/api/admin/externalTools``"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:372
+msgid ""
+"Once enabled, an \"Explore\" dropdown will appear next to ingested "
+"tabular data files a \"TwoRavens\" button; clicking it will redirect the "
+"user to the instance of TwoRavens, initialized with the data variables "
+"from the selected file."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:376
+msgid "f. Perform a quick test of TwoRavens functionality"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:378
+msgid ""
+"Ingest the dummy data file ``50by1000.dta`` (supplied in the Dataverse "
+"source tree in ``dataverse/scripts/search/data/tabular``). If "
+"successfully ingested as tabular data, the file should appear on the "
+"Dataset page as shown in :numref:`tworavens_test_file_ingested`."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:387
+msgid "Ingested file screenshot"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:387
+msgid "Screenshot of successfully ingested file"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:391
+msgid ""
+"If the file does NOT appear as Tabular Data - if it is shown as "
+"Stata/dta, and no tabular attributes - the numbers of Variables and "
+"Observations and the UNF - are being displayed, try to refresh the page a"
+" couple of times. If that doesn't change the view to Tabular, it likely "
+"means that something went very wrong with the tabular ingest. Consult the"
+" Glassfish server log for any error messages that may explain the "
+"failure."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:398
+msgid ""
+"If the file is showing as Tabular Data, but the ``Explore`` button isn't "
+"present, double-check that the steps in :ref:`enable_tworavens_button` "
+"were correctly performed."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:401
+msgid ""
+"Otherwise, click on the ``Explore`` button. This will open TwoRavens in a"
+" new browser window. If the application initializes successfully, you "
+"should see the \"data pebbles\" representing the first 3 variables in the"
+" file (see: :numref:`tworavens_test_init`)."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:410
+msgid "50by1000.dta in TwoRavens"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:410
+msgid "Screenshot presenting ``50by1000.dta`` file exploration in TwoRavens"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:412
+msgid ""
+"If instead TwoRavens opens with an empty view - no variables listed in "
+"``Data Selection`` panel on the left, and/or no \"data pebbles\" in the "
+"main panel located in the middle, we'll provide some diagnostics tips in "
+":ref:`tworavens_troubleshooting` section."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:414
+msgid ""
+"Otherwise, mouse over ``var1``, and click on ``Dep Var``, selecting the "
+"variable as \"dependent\" (:numref:`tworavens_test_select_var`)."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:420
+msgid "Screenshot of selecting variable as dependent in TwoRavens"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:422
+msgid ""
+"Then select ``ls`` from the list in ``Model Selection`` panel on the "
+"right (:numref:`tworavens_test_select_model`)"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:428
+msgid "Screenshot of selecting of model in TwoRavens"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:430
+msgid ""
+"Then click the ``Estimate`` button, above. If the model is successfully "
+"executed, the results will appear in a new popup panel, with some "
+"generated graph images, as shown in :numref:`tworavens_test_output`"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:437
+msgid "Screenshot presenting result of seleted model in TwoRavens"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:443
+msgid "4. Troubleshooting"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:445
+msgid "If TwoRavens fails to initialize properly:"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:447
+msgid ""
+"Symptom: instead of the \"data pebbles\" display shown in the "
+":numref:`tworavens_test_init`, you are getting an empty view "
+"(:numref:`tworavens_test_empty`)"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:453
+msgid "Screenshot presenting failed initialization of file in TwoRavens"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:455
+msgid ""
+"A very likely cause of this condition is TwoRavens not being able to "
+"obtain the metadata describing the variables from your Dataverse. "
+"Specifically, the \"preprocessed summary statistics\"."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:458
+msgid ""
+"To diagnose: note the value of the ``dfId`` URL parameter in the browser "
+"address box. Try to request the preprocessed fragment by going to the API"
+" end point directly::"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:463
+msgid ""
+"Where the :fixedwidthplain:`<FILE ID>` should be the same as the "
+":fixedwidthplain:`dfId` parameter. You should get the output that looks "
+"like this::"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:469
+msgid ""
+"If you are getting an error message instead, this is likely an Rserve "
+"connection problem. Consult the Glassfish server log for any Rserve-"
+"related \"connection refused\" messages. See if Rserve is running, and "
+"start it with ``service rserve start``, if necessary. Check if the Rserve"
+" host name, username and password in the Glassfish configuration match "
+"the actual Rserve configuration. (this is discussed in the section "
+":ref:`tworavens_install_r_packages` of the guide). Correct this, if "
+"necessary, then try again."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:476
+msgid "If you ARE getting JSON output, but the TwoRavens view is still broken:"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:478
+msgid ""
+"Look closely at the very beginning of the JSON fragment. Does it have the"
+" ``{\"private\":false}`` entry, as shown in the example? If not, this "
+"likely an R code version mismatch, described in section "
+":ref:`version_conflict_check`. Correct the problem as described there, "
+"then try again."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:480
+msgid ""
+"If the JSON looks *exactly* as in the example, yet still no data pebbles "
+"- enable the JavaScript error console in the TwoRavens window, and try "
+"again. Look for any error messages; and, specifically, for any URLs that "
+"TwoRavens is failing to access. Look for the debugging entry that shows "
+"TwoRavens attempting to download the ``format=prep`` fragment. Does the "
+"URL have the correct host name, port and/or the protocol (http vs. "
+"https)? If not, re-run the installer, specifying the correct Dataverse "
+"URL, and try again."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:482
+msgid ""
+"Symptom: the variables view is initialized properly, but no model output "
+"appears when you click ``Estimate``, with or without error messages."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:484
+msgid ""
+"Make sure you properly selected the dependent variable "
+"(:fixedwidthplain:`var1`) and the model (:fixedwidthplain:`ls`)."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:486
+msgid ""
+"Consult the Apache error log files (``error_log`` and/or "
+"``ssl_error_log``, in ``/var/log/httpd``) for any error messages. "
+"Possible error condition may include: missing R packages (double-check "
+"that the R setup, in step :ref:`tworavens_install_r_packages` completed "
+"without errors); ``selinux`` (\"Secure Linux\") errors related to the "
+"rApache shared libraries, or directory permissions (disable Selinux, as "
+"described in :ref:`prerequisites_apache`)"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:490
+msgid "5. Appendix"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:496
+msgid "I. Ports configuration discussion"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:498
+msgid ""
+"By default, Glassfish will install itself on ports 8080 and 8181 (for "
+"``HTTP`` and ``HTTPS``, respectively). Apache will install itself on port"
+" 80 (the default port for ``HTTP``). Under this configuration, your "
+"Dataverse will be accessible at ``http://{your host}:8080``, and rApache "
+"at ``http://{your host}/``. The TwoRavens installer (see "
+":ref:`run_the_installer`) will default to these values (and assume you "
+"are running both the Dataverse and TwoRavens/rApache on the same host)."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:506
+msgid ""
+"This configuration is the easiest to set up if you are simply trying "
+"out/testing the Dataverse and TwoRavens integration. Accept all the "
+"defaults, and you should have a working installation in no time. However,"
+" if you are planning to use this installation to actually serve data to "
+"real users, you will most likely want to run your Dataverse on a standard"
+" port; and to use ``HTTPS``. It is definitely possible to configure "
+"Glassfish to serve the application under ``HTTPS`` on port 443. However, "
+"we **do not recommend** this setup! For at least 2 reasons:"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:515
+msgid ""
+"Running Glassfish on port 443 will require you to **run it as root** "
+"user; which should be avoided, if possible, for reasons of security. "
+"Also,"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:516
+msgid ""
+"installing ``SSL`` certificates under Glassfish is unnecessarily "
+"complicated."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:518
+msgid ""
+"The alternative configuration that we recommend is to \"hide\" your "
+"Glassfish behind Apache. In this setup Apache serves as the ``HTTPS`` "
+"front running on port 443, proxying the traffic to Glassfish using "
+"``mod_proxy_ajp``; and Glassfish is running as an non-privileged user on "
+"a high port that's not accessible from the outside. Unlike Glassfish, "
+"Apache has a mechanism for running on a privileged port (in this case, "
+"443) as a non-privileged user. It is possible to use this configuration, "
+"and have this Apache instance serve TwoRavens and rApache too, all on the"
+" same server. Please see \"Network Ports\" under the :doc:`config` "
+"section, and the :doc:`shibboleth` section of the Installation Guide for "
+"more information and configuration instructions."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:534
+msgid "II. What the r-setup.sh script does:"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:536
+msgid ""
+"The script uses the list of 45 R library packages and specified package "
+"versions, supplied in ``TwoRavens/r-setup/package-versions.txt`` to "
+"replicate the library environment that has been proven to work on the "
+"Dataverse servers."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:541
+msgid "If any packages fail to build, the script will alert the user."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:543
+msgid ""
+"For every package, the (potentially verbose) output of the build process "
+"is saved in its own file, ``RINSTALL.{PACKAGE NAME}.LOG``. So if, for "
+"example, the package Zelig fails to install, the log file "
+":fixedwidthplain:`RINSTALL.Zelig.LOG` should be consulted for any error "
+"messages that may explain the reason for the failure; such as a missing "
+"library, or a missing compiler, etc. Be aware that diagnosing compiler "
+"errors will require at least some programming and/or system "
+"administration skills."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:553
+msgid "III. What the install.pl script does:"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:555
+msgid ""
+"The instruction presented in this section are performed by the "
+"``install.pl`` script. **Provided for reference only!** It could be used "
+"to configure it all by hand, if necessary, or to verify that the "
+"installer has done it correctly. Once again: **normally you would NOT "
+"need to individually perform these steps**!"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:560
+msgid ""
+"TwoRavens is distributed with a few hard-coded host and directory names. "
+"So these need to be replaced with  the values specific to your system."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:564
+msgid ""
+"**In the file** ``/var/www/html/dataexplore/app_ddi.js`` **the following "
+"3 lines need to be edited:**"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:567
+msgid "``var production=false;``"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:569
+msgid "changed to ``true``;"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:571
+msgid "``hostname=\"localhost:8080\";``"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:573
+msgid ""
+"changed to point to the dataverse app, from which TwoRavens will be "
+"obtaining the metadata and data files. (don't forget to change 8080 to "
+"the correct port number!)"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:575
+msgid "``var rappURL = \"http://0.0.0.0:8000/custom/\";``"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:577
+msgid "changed to the URL of your rApache server, i.e."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:579
+msgid "``\"http(s)://<rapacheserver>:<rapacheport>/custom/\";``"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:581
+msgid "**In** ``dataexplore/rook`` **the following files need to be edited:**"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:583
+msgid ""
+"``rookdata.R, rookzelig.R, rooksubset.R, rooktransform.R, rookselector.R,"
+" rooksource.R``"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:585
+msgid ""
+"replacing *every* instance of ``production<-FALSE`` line with "
+"``production<-TRUE``."
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:587
+msgid "(yeah, that's why we provide that installer script...)"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:590
+msgid "**In** ``dataexplore/rook/rooksource.R`` **the following line:**"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:592
+msgid "``setwd(\"/usr/local/glassfish4/glassfish/domains/domain1/docroot/dataexplore/rook\")``"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:594
+msgid "needs to be changed to:"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:596
+msgid "``setwd(\"/var/www/html/dataexplore/rook\")``"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:598
+msgid "(or your :fixedwidthplain:`dataexplore` directory, if different)"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:600
+msgid ""
+"**In** ``dataexplore/rook/rookutils.R`` **the following lines need to be "
+"edited:**"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:602
+msgid ""
+"``url <- "
+"paste(\"https://beta.dataverse.org/custom/preprocess_dir/preprocessSubset_\",sessionid,\".txt\",sep=\"\")``"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:604
+msgid "and"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:606
+msgid ""
+"``imageVector[[qicount]]<<-paste(\"https://beta.dataverse.org/custom/pic_dir/\","
+" mysessionid,\"_\",mymodelcount,qicount,\".png\", sep = \"\")``"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:608
+msgid ""
+"changing the URL to reflect the correct location of your rApache "
+"instance. make sure that the protocol (http vs. https) and the port "
+"number are correct too, not just the host name!"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:611
+msgid ""
+"**Next, in order to configure rApache to serve several TwoRavens \"mini-"
+"apps\",**"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:613
+msgid ""
+"the installer creates the file ``tworavens-rapache.conf`` in the Apache's"
+" ``/etc/httpd/conf.d`` directory with the following configuration:"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:635
+msgid ""
+"**The following directories are created by the installer to store various"
+" output files produced by TwoRavens:**"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:645
+msgid ""
+"**The ownership of the TwoRavens directories is changed to user** "
+"``apache``:"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:653
+msgid ""
+"**Finally, the installer restarts Apache, for all the changes to take "
+"effect:**"
+msgstr ""
+
+#: ../../source/installation/r-rapache-tworavens.rst:655
+msgid "``service httpd restart``"
+msgstr ""
+

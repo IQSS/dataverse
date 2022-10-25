@@ -1,2 +1,2 @@
-# match version used by Jenkins
 Sphinx==4.2.0
+sphinx-intl==2.0.1

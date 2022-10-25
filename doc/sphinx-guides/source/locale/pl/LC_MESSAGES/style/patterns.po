@@ -1,0 +1,297 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/style/patterns.rst:2
+msgid "Patterns"
+msgstr ""
+
+#: ../../source/style/patterns.rst:4
+msgid ""
+"Patterns are what emerge when using the foundation elements together with"
+" basic objects like buttons and alerts, more complex Javascript "
+"components from `Bootstrap <http://getbootstrap.com/components/>`__ like "
+"tooltips and dropdowns, and AJAX components from `PrimeFaces "
+"<https://www.primefaces.org/showcase/>`__ like datatables and "
+"commandlinks."
+msgstr ""
+
+#: ../../source/style/patterns.rst:7
+msgid "|toctitle|"
+msgstr ""
+
+#: ../../source/style/patterns.rst:10
+msgid "Navbar"
+msgstr ""
+
+#: ../../source/style/patterns.rst:12
+msgid ""
+"The `Navbar component <http://getbootstrap.com/components/#navbar>`__ "
+"from Bootstrap spans the top of the application and contains the "
+"logo/branding, aligned to the left, plus search form and links, aligned "
+"to the right."
+msgstr ""
+
+#: ../../source/style/patterns.rst:14
+msgid ""
+"When logged in, the account name is a dropdown menu, linking the user to "
+"account-specific content and the log out link."
+msgstr ""
+
+#: ../../source/style/patterns.rst:77
+msgid "Breadcrumbs"
+msgstr ""
+
+#: ../../source/style/patterns.rst:79
+msgid ""
+"The breadcrumbs are displayed under the header, and provide a trail of "
+"links for users to navigate the hierarchy of containing objects, from "
+"file to dataset to dataverse. It utilizes a JSF `repeat component "
+"<http://docs.oracle.com/javaee/6/javaserverfaces/2.0/docs/pdldocs/facelets/ui/repeat.html>`_"
+" to iterate through the breadcrumbs."
+msgstr ""
+
+#: ../../source/style/patterns.rst:116
+msgid "Tables"
+msgstr ""
+
+#: ../../source/style/patterns.rst:118
+msgid ""
+"Most tables use the `DataTable components "
+"<https://www.primefaces.org/showcase/ui/data/datatable/basic.xhtml>`__ "
+"from PrimeFaces and are styled using the `Tables component "
+"<http://getbootstrap.com/css/#tables>`__ from Bootstrap."
+msgstr ""
+
+#: ../../source/style/patterns.rst:172
+msgid "Forms"
+msgstr ""
+
+#: ../../source/style/patterns.rst:174
+msgid ""
+"Forms fulfill various functions across the site, but we try to style them"
+" consistently. We use the ``.form-horizontal`` layout, which uses "
+"``.form-group`` to create a grid of rows for the labels and inputs. The "
+"consistent style of forms is maintained using the `Forms component "
+"<http://getbootstrap.com/css/#forms>`__ from Bootstrap. Form elements "
+"like the `InputText component "
+"<https://www.primefaces.org/showcase/ui/input/inputText.xhtml>`__ from "
+"PrimeFaces are kept looking clean and consistent across each page."
+msgstr ""
+
+#: ../../source/style/patterns.rst:216
+msgid ""
+"Here are additional form elements that are common across many pages, "
+"including required asterisks, icon tooltips, placeholder text, input info"
+" message with popover link, and validation error message."
+msgstr ""
+
+#: ../../source/style/patterns.rst:277
+msgid "Buttons"
+msgstr ""
+
+#: ../../source/style/patterns.rst:279
+msgid ""
+"There are various types of buttons for various actions, so we have many "
+"components to use, including the `CommandButton component "
+"<https://www.primefaces.org/showcase/ui/button/commandButton.xhtml>`__ "
+"and `CommandLink component "
+"<https://www.primefaces.org/showcase/ui/button/commandLink.xhtml>`__ from"
+" PrimeFaces, as well as the basic JSF `Link component "
+"<http://docs.oracle.com/javaee/6/javaserverfaces/2.0/docs/pdldocs/facelets/h/link.html>`__"
+" and `OutputLink component "
+"<http://docs.oracle.com/javaee/6/javaserverfaces/2.0/docs/pdldocs/facelets/h/outputLink.html>`__."
+" Those are styled using the `Buttons component "
+"<http://getbootstrap.com/css/#buttons>`__, `Button Groups component "
+"<http://getbootstrap.com/components/#btn-groups>`__ and `Buttons "
+"Dropdowns component <http://getbootstrap.com/components/#btn-"
+"dropdowns>`__ from Bootstrap."
+msgstr ""
+
+#: ../../source/style/patterns.rst:282
+msgid "Action Buttons"
+msgstr ""
+
+#: ../../source/style/patterns.rst:284
+msgid ""
+"For action buttons on a page, we include an icon and text label. Action "
+"buttons are generally aligned to the right side of the page."
+msgstr ""
+
+#: ../../source/style/patterns.rst:337
+msgid "Form Buttons"
+msgstr ""
+
+#: ../../source/style/patterns.rst:339
+msgid ""
+"Form buttons typically appear at the bottom of a form, aligned to the "
+"left. They do not have icons, just text labels."
+msgstr ""
+
+#: ../../source/style/patterns.rst:366
+msgid "Icon-Only Buttons"
+msgstr ""
+
+#: ../../source/style/patterns.rst:368
+msgid ""
+"There are a few places where we use icon-only buttons with no text label."
+" For these buttons, we do utilize tooltips that display on hover, "
+"containing a text label."
+msgstr ""
+
+#: ../../source/style/patterns.rst:370
+msgid ""
+"We use the style class ``.no-text`` with the ``.glyphicon`` class to fix "
+"spacing issues from margins and padding applied to buttons with text "
+"labels."
+msgstr ""
+
+#: ../../source/style/patterns.rst:396
+msgid "Pagination"
+msgstr ""
+
+#: ../../source/style/patterns.rst:398
+msgid ""
+"We use the `Pagination component "
+"<http://getbootstrap.com/components/#pagination>`__ from Bootstrap for "
+"paging through search results."
+msgstr ""
+
+#: ../../source/style/patterns.rst:466
+msgid "Labels"
+msgstr ""
+
+#: ../../source/style/patterns.rst:468
+msgid ""
+"The `Labels component <http://getbootstrap.com/components/#labels>`__ "
+"from Bootstrap is used for publication status (DRAFT, In Review, "
+"Unpublished, Deaccessioned), and Dataset version, as well as Tabular Data"
+" Tags (Survey, Time Series, Panel, Event, Genomics, Network, Geospatial)."
+msgstr ""
+
+#: ../../source/style/patterns.rst:496
+msgid "Alerts"
+msgstr ""
+
+#: ../../source/style/patterns.rst:498
+msgid ""
+"For our help/information, success, warning, and error message blocks we "
+"use a custom built UI component based on the `Alerts component "
+"<http://getbootstrap.com/components/#alerts>`__ from Bootstrap."
+msgstr ""
+
+#: ../../source/style/patterns.rst:530
+msgid "Message Classes"
+msgstr ""
+
+#: ../../source/style/patterns.rst:532
+msgid ""
+"Style classes can be added to ``p``, ``div``, ``span`` and other elements"
+" to add emphasis to inline message blocks."
+msgstr ""
+
+#: ../../source/style/patterns.rst:586
+msgid "Images"
+msgstr ""
+
+#: ../../source/style/patterns.rst:588
+msgid ""
+"For images, we use the `GraphicImage  component "
+"<https://www.primefaces.org/showcase/ui/multimedia/graphicImage.xhtml>`__"
+" from PrimeFaces, or the basic JSF `GraphicImage component "
+"<http://docs.oracle.com/javaee/6/javaserverfaces/2.1/docs/vdldocs/facelets/h/graphicImage.html>`__."
+msgstr ""
+
+#: ../../source/style/patterns.rst:590
+msgid ""
+"To display images in a responsive way, they are styled with ``.img-"
+"responsive``, an `Images CSS class "
+"<http://getbootstrap.com/css/#images>`__ from Bootstrap."
+msgstr ""
+
+#: ../../source/style/patterns.rst:606
+msgid "Panels"
+msgstr ""
+
+#: ../../source/style/patterns.rst:608
+msgid ""
+"The most common of our containers, the `Panels component "
+"<http://getbootstrap.com/components/#panels>`__ from Bootstrap is used to"
+" add a border and padding around sections of content like metadata "
+"blocks. Displayed with a header and/or footer, it can also be used with "
+"the  `Collapse plugin <http://getbootstrap.com/javascript/#collapse>`__ "
+"from Bootstrap."
+msgstr ""
+
+#: ../../source/style/patterns.rst:668
+msgid "Tabs"
+msgstr ""
+
+#: ../../source/style/patterns.rst:670
+msgid ""
+"Tabs are used to provide content panes on a page that allow the user to "
+"view different sections of content without navigating to a different "
+"page."
+msgstr ""
+
+#: ../../source/style/patterns.rst:672
+msgid ""
+"We use the `TabView component "
+"<https://www.primefaces.org/showcase/ui/panel/tabView.xhtml>`__ from "
+"PrimeFaces, which is styled using the `Tab component "
+"<http://getbootstrap.com/javascript/#tabs>`__ from Bootstrap."
+msgstr ""
+
+#: ../../source/style/patterns.rst:712
+msgid "Modals"
+msgstr ""
+
+#: ../../source/style/patterns.rst:714
+msgid ""
+"Modals are dialog prompts that act as popup overlays, but don't create a "
+"new browser window. We use them for confirmation on a delete to make sure"
+" the user is aware of the consequences of their actions. We also use them"
+" to allow users to execute simple actions on a page without requiring "
+"them to navigate to and from a separate page."
+msgstr ""
+
+#: ../../source/style/patterns.rst:716
+msgid ""
+"Buttons usually provide the UI prompt. A user clicks the button, which "
+"then opens a `Dialog component "
+"<https://www.primefaces.org/showcase/ui/overlay/dialog/basic.xhtml>`__  "
+"or `Confirm Dialog component "
+"<https://www.primefaces.org/showcase/ui/overlay/confirmDialog.xhtml>`__  "
+"from PrimeFaces that displays the modal with the necessary information "
+"and actions to take."
+msgstr ""
+
+#: ../../source/style/patterns.rst:718
+msgid ""
+"The modal is styled using the `Modal component "
+"<http://getbootstrap.com/javascript/#modals>`__ from Bootstrap, for a "
+"popup window that prompts a user for information, with overlay and a "
+"backdrop, then header, content, and buttons. We can use style classes "
+"from Bootstrap for large (``.bs-example-modal-lg``) and small (``.bs-"
+"example-modal-sm``) width options."
+msgstr ""
+
+#: ../../source/style/patterns.rst:758
+msgid "image1"
+msgstr ""
+

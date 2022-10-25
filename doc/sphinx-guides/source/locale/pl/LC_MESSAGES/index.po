@@ -1,0 +1,139 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/index.rst:7
+msgid "Dataverse |version| Guides"
+msgstr ""
+
+#: ../../source/index.rst:9
+msgid ""
+"These guides are for the |version| version of Dataverse. To find guides "
+"belonging to previous versions, :ref:`guides_versions` has a list of all "
+"available versions."
+msgstr ""
+
+#: ../../source/index.rst:24
+msgid "How the Guides Are Organized"
+msgstr ""
+
+#: ../../source/index.rst:26
+msgid ""
+"The Guides are reference documents that explain how to use Dataverse, "
+"which are divided into the following sections: User Guide, Installation "
+"Guide, Developer Guide, and API Guide. The User Guide is further divided "
+"into primary activities: finding & using data, adding Datasets, "
+"administering dataverses or Datasets, and Dataset "
+"exploration/visualizations. Details on all of the those tasks can be "
+"found in the Users Guide. The Installation Guide is for people or "
+"organizations who want to host their own Dataverse. The Developer Guide "
+"contains instructions for people who want to contribute to the Open "
+"Source Dataverse project or who want to modify the code to suit their own"
+" needs. Finally, the API Guide is for Developers that work on other "
+"applications and are interested in connecting with Dataverse through our "
+"APIs."
+msgstr ""
+
+#: ../../source/index.rst:38
+msgid "Other Resources"
+msgstr ""
+
+#: ../../source/index.rst:40
+msgid "**Dataverse Project Site**"
+msgstr ""
+
+#: ../../source/index.rst:42
+msgid ""
+"Additional information about the Dataverse Project itself including "
+"presentations, information about upcoming releases, data management and "
+"citation, and announcements can be found at `http://dataverse.org/ "
+"<http://dataverse.org/>`__"
+msgstr ""
+
+#: ../../source/index.rst:47
+msgid "**User Group**"
+msgstr ""
+
+#: ../../source/index.rst:49
+msgid ""
+"As the user community grows we encourage people to shares ideas, ask "
+"questions, or offer suggestions for improvement. Go to "
+"`https://groups.google.com/group/dataverse-community "
+"<https://groups.google.com/group/dataverse-community>`__ to register to "
+"our dataverse community group."
+msgstr ""
+
+#: ../../source/index.rst:53
+msgid "**Follow Us on Twitter**"
+msgstr ""
+
+#: ../../source/index.rst:55
+msgid ""
+"For up to date news, information and developments, follow our twitter "
+"account: `https://twitter.com/dataverseorg "
+"<https://twitter.com/dataverseorg>`__"
+msgstr ""
+
+#: ../../source/index.rst:57
+msgid "**Support**"
+msgstr ""
+
+#: ../../source/index.rst:59
+msgid ""
+"We maintain an email based support service that's free of charge. We "
+"attempt to respond within one business day to all questions and if it "
+"cannot be resolved immediately, we'll let you know what to expect."
+msgstr ""
+
+#: ../../source/index.rst:63
+msgid ""
+"The support email address is `support@dataverse.org "
+"<mailto:support@dataverse.org>`__."
+msgstr ""
+
+#: ../../source/index.rst:65
+msgid "**Reporting Issues and Contributing**"
+msgstr ""
+
+#: ../../source/index.rst:67
+msgid ""
+"Report bugs and add feature requests in `GitHub Issues "
+"<https://github.com/IQSS/dataverse/issues>`__ or use `GitHub pull "
+"requests <http://guides.dataverse.org/en/latest/developers/version-"
+"control.html#how-to-make-a-pull-request>`__, if you have some code, "
+"scripts or documentation that you'd like to share. If you have a "
+"**security issue** to report, please email `security@dataverse.org "
+"<mailto:security@dataverse.org>`__."
+msgstr ""
+
+#: ../../source/index.rst:74
+msgid "Indices and tables"
+msgstr ""
+
+#: ../../source/index.rst:76
+msgid ":ref:`genindex`"
+msgstr ""
+
+#: ../../source/index.rst:77
+msgid ":ref:`modindex`"
+msgstr ""
+
+#: ../../source/index.rst:78
+msgid ":ref:`search`"
+msgstr ""
+

@@ -1,0 +1,120 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/user/appendix.rst:4
+msgid "Appendix"
+msgstr ""
+
+#: ../../source/user/appendix.rst:6
+msgid "Additional documentation complementary to the User Guide."
+msgstr ""
+
+#: ../../source/user/appendix.rst:9
+msgid "|toctitle|"
+msgstr ""
+
+#: ../../source/user/appendix.rst:12
+msgid "Metadata References"
+msgstr ""
+
+#: ../../source/user/appendix.rst:14
+msgid ""
+"Dataverse is committed to using standard-compliant metadata to ensure "
+"that Dataverse metadata can be mapped easily to standard metadata schemas"
+" and be exported into JSON format (XML for tabular file metadata) for "
+"preservation and interoperability."
+msgstr ""
+
+#: ../../source/user/appendix.rst:18
+msgid ""
+"Detailed below are what metadata schemas we support for Citation and "
+"Domain Specific Metadata in Dataverse:"
+msgstr ""
+
+#: ../../source/user/appendix.rst:20
+msgid ""
+"`Citation Metadata "
+"<https://docs.google.com/spreadsheet/ccc?key=0AjeLxEN77UZodHFEWGpoa19ia3pldEFyVFR0aFVGa0E#gid=0>`__:"
+" compliant with `DDI Lite "
+"<http://www.ddialliance.org/specification/ddi2.1/lite/index.html>`_, `DDI"
+" 2.5 Codebook <http://www.ddialliance.org/>`__, `DataCite 3.1 "
+"<http://schema.datacite.org/meta/kernel-3.1/doc/DataCite-"
+"MetadataKernel_v3.1.pdf>`__, and Dublin Core's `DCMI Metadata Terms "
+"<http://dublincore.org/documents/dcmi-terms/>`__ (`see .tsv version "
+"<https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/citation.tsv>`__)."
+" Language field uses `ISO 639-1 "
+"<https://www.loc.gov/standards/iso639-2/php/English_list.php>`__ "
+"controlled vocabulary."
+msgstr ""
+
+#: ../../source/user/appendix.rst:21
+msgid ""
+"`Geospatial Metadata "
+"<https://docs.google.com/spreadsheet/ccc?key=0AjeLxEN77UZodHFEWGpoa19ia3pldEFyVFR0aFVGa0E#gid=4>`__:"
+" compliant with DDI Lite, DDI 2.5 Codebook, DataCite, and Dublin Core "
+"(`see .tsv version "
+"<https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/geospatial.tsv>`__)."
+" Country / Nation field uses `ISO 3166-1 "
+"<http://en.wikipedia.org/wiki/ISO_3166-1>`_ controlled vocabulary."
+msgstr ""
+
+#: ../../source/user/appendix.rst:22
+msgid ""
+"`Social Science & Humanities Metadata "
+"<https://docs.google.com/spreadsheet/ccc?key=0AjeLxEN77UZodHFEWGpoa19ia3pldEFyVFR0aFVGa0E#gid=1>`__:"
+" compliant with DDI Lite, DDI 2.5 Codebook, and Dublin Core (`see .tsv "
+"version "
+"<https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/social_science.tsv>`__)."
+msgstr ""
+
+#: ../../source/user/appendix.rst:23
+msgid ""
+"`Astronomy and Astrophysics Metadata "
+"<https://docs.google.com/spreadsheet/ccc?key=0AjeLxEN77UZodHFEWGpoa19ia3pldEFyVFR0aFVGa0E#gid=3>`__"
+" : These metadata elements can be mapped/exported to the International "
+"Virtual Observatory Alliance’s (IVOA) `VOResource Schema format "
+"<http://www.ivoa.net/documents/latest/RM.html>`__ and is based on "
+"`Virtual Observatory (VO) Discovery and Provenance Metadata "
+"<http://perma.cc/H5ZJ-4KKY>`__ (`see .tsv version "
+"<https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/astrophysics.tsv>`__)."
+msgstr ""
+
+#: ../../source/user/appendix.rst:27
+msgid ""
+"`Life Sciences Metadata "
+"<https://docs.google.com/spreadsheet/ccc?key=0AjeLxEN77UZodHFEWGpoa19ia3pldEFyVFR0aFVGa0E#gid=2>`__:"
+" based on `ISA-Tab Specification <https://isa-"
+"specs.readthedocs.io/en/latest/isamodel.html>`__, along with controlled "
+"vocabulary from subsets of the `OBI Ontology "
+"<http://bioportal.bioontology.org/ontologies/OBI>`__ and the `NCBI "
+"Taxonomy for Organisms "
+"<http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/>`__ (`see .tsv "
+"version "
+"<https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/biomedical.tsv>`__)."
+msgstr ""
+
+#: ../../source/user/appendix.rst:29
+msgid ""
+"See also the `Dataverse 4.0 Metadata Crosswalk: DDI, DataCite, DC, "
+"DCTerms, VO, ISA-Tab <https://docs.google.com/spreadsheets/d"
+"/10Luzti7svVTVKTA-px27oq3RxCUM-QbiTkm8iMd5C54/edit?usp=sharing>`__ "
+"document and the :doc:`/admin/metadatacustomization` section of the Admin"
+" Guide."
+msgstr ""
+

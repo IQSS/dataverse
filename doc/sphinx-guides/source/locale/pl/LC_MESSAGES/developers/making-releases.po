@@ -1,0 +1,168 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, The President & Fellows of Harvard College
+# This file is distributed under the same license as the Dataverse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Dataverse 4.11\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.10.3\n"
+
+#: ../../source/developers/making-releases.rst:3
+msgid "Making Releases"
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:6
+msgid "|toctitle|"
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:8
+msgid ""
+"Use the number of the milestone with a \"v\" in front for the relase tag."
+" For example: ``v4.6.2``."
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:11
+msgid "Create the release GitHub issue and branch"
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:13
+msgid ""
+"Use the GitHub issue number and the release tag for the name of the "
+"branch. For example: 4734-update-v-4.8.6-to-4.9"
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:16
+msgid "Make the following changes in the release branch:"
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:18
+msgid ""
+"..note:: changes must be the very last commits merged into the develop "
+"branch before it is merged into master and tagged for the release!"
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:21
+msgid "1. Bump Version Numbers"
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:23
+msgid ""
+"Increment the version number to the milestone (e.g. 4.6.2) in the "
+"following files:"
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:25
+msgid "pom.xml"
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:26
+msgid "dataverse-webapp/pom.xml"
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:27
+msgid "dataverse-test-common/pom.xml"
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:28
+msgid "dataverse-persistence/pom.xml"
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:29
+msgid "doc/sphinx-guides/source/conf.py (two places)"
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:31
+msgid "Add the version being released to the lists in the following two files:"
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:33
+msgid "doc/sphinx-guides/source/versions.rst"
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:34
+msgid "scripts/database/releases.txt"
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:37
+msgid "2. Check in the Bumping Version Numbers Changes..."
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:39
+msgid ""
+"... into the release branch, make a pull request and merge the release "
+"branch into develop."
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:43
+msgid "Merge \"develop\" into \"master\""
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:45
+msgid ""
+"The \"develop\" branch should be merged into \"master\" before tagging. "
+"See also the branching strategy described in the :doc:`version-control` "
+"section."
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:48
+msgid "Write Release Notes"
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:50
+msgid "Create a draft release at https://github.com/CeON/dataverse/releases/new"
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:52
+msgid ""
+"The \"tag version\" and \"title\" should be the number of the milestone "
+"with a \"v\" in front (i.e. v4.6.2)."
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:53
+msgid ""
+"For the description, follow previous examples at "
+"https://github.com/CeON/dataverse/releases"
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:57
+msgid "Make Artifacts Available for Download"
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:59
+msgid "Upload the following artifacts to the draft release you created:"
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:61
+msgid "war file (``mvn package`` from Jenkins)"
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:62
+msgid "installer (``cd scripts/installer && make``)"
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:63
+msgid "other files as needed, such as an updated Solr schema"
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:66
+msgid "Publish Release"
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:68
+msgid "Click the \"Publish release\" button."
+msgstr ""
+
+#: ../../source/developers/making-releases.rst:72
+msgid "Previous: :doc:`containers` | Next: :doc:`tools`"
+msgstr ""
+
