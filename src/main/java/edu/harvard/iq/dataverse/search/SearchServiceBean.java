@@ -221,7 +221,8 @@ public class SearchServiceBean {
         if (geoPoint != null && !geoPoint.isBlank() && geoRadius != null && !geoRadius.isBlank()) {
             solrQuery.setParam("pt", geoPoint);
             solrQuery.setParam("d", geoRadius);
-            solrQuery.addFilterQuery("{!bbox sfield=solr_srpt}");
+            // See https://solr.apache.org/guide/8_11/spatial-search.html#bbox
+            solrQuery.addFilterQuery("{!bbox sfield=" + SearchFields.SOLR_SRPT + "}");
         }
 
         // -----------------------------------
