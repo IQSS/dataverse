@@ -883,7 +883,7 @@ div.panel-body.read-terms{max-height:220px; overflow-y:scroll; width:100%; backg
 #dragdropMsg {padding:20px;font-size:1.3em;color:#808080;text-align:center;}
 .dropin-btn-status.ui-icon {background: url("https://www.dropbox.com/static/images/widgets/dbx-saver-status.png") no-repeat;}
 .globus-btn.ui-icon {background: url("https://docs.globus.org/images/home/transfer.png") no-repeat;background-size:contain;display:inline-block;}
-.webloader-btn.ui-icon {background: url("resources/images/folders.png") no-repeat;background-size:contain;display:inline-block;}
+.webloader-btn.ui-icon {background: url("/resources/images/folders.png") no-repeat;background-size:contain;display:inline-block;}
 
 
 /* VERSIONS */

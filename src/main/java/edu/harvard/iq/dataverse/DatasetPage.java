@@ -57,6 +57,7 @@ import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
+import edu.harvard.iq.dataverse.util.WebloaderUtil;
 import edu.harvard.iq.dataverse.validation.URLValidator;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 
@@ -6068,23 +6069,16 @@ public class DatasetPage implements java.io.Serializable {
 
     public String getWebloaderUrlForDataset(Dataset d) {
         String localeCode = session.getLocaleCode();
-        ApiToken apiToken = null;
         User user = session.getUser();
-
         if (user instanceof AuthenticatedUser) {
-            apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
-
-            if ((apiToken == null) || (apiToken.getExpireTime().before(new Date()))) {
-                logger.fine("Created apiToken for user: " + user.getIdentifier());
-                apiToken = authService.generateApiTokenForUser((AuthenticatedUser) user);
-            }
+            ApiToken apiToken = authService.getValidApiTokenForUser((AuthenticatedUser) user);
+            return WebloaderUtil.getWebloaderUrl(d, apiToken, localeCode,
+                    settingsService.getValueForKey(SettingsServiceBean.Key.WebloaderUrl));
+        } else {
+            // Shouldn't normally happen (seesion timeout? bug?)
+            logger.warning("getWebloaderUrlForDataset called for non-Authenticated user");
+            return null;
         }
-        // Use URLTokenUtil for params currently in common with external tools.
-        URLTokenUtil tokenUtil = new URLTokenUtil(d, apiToken, localeCode);
-        String appUrl;
-        appUrl = settingsService.getValueForKey(SettingsServiceBean.Key.WebloaderUrl)
-                + "?datasetPid={datasetPid}&siteUrl={siteUrl}&key={apiToken}&datasetId={datasetId}&datasetVersion={datasetVersion}&dvLocale={localeCode}";
-        return tokenUtil.replaceTokensWithValues(appUrl);
     }
 
 }

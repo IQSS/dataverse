@@ -938,4 +938,14 @@ public class AuthenticationServiceBean {
         return query.getResultList();
     }
 
+    public ApiToken getValidApiTokenForUser(AuthenticatedUser user) {
+        ApiToken apiToken = null;
+        apiToken = findApiTokenByUser(user);
+        if ((apiToken == null) || (apiToken.getExpireTime().before(new Date()))) {
+            logger.fine("Created apiToken for user: " + user.getIdentifier());
+            apiToken = generateApiTokenForUser(user);
+        }
+        return apiToken;
+    }
+
 }
