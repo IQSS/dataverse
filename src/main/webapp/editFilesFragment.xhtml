@@ -162,7 +162,7 @@
                                 <div jsf:id="webloaderBlock" jsf:rendered="#{webloaderUploadSupported}"  class="ui-fileupload-buttonbar ui-widget-header ui-corner-top">
                                     <p class="help-block" jsf:rendered="#{!createDataset}">#{bundle['file.fromWebloader.tip']}</p>
                                     <p class="help-block" jsf:rendered="#{createDataset}">#{bundle['file.fromWebloaderAfterCreate.tip']}</p>
-                                    <p:button target="_blank" rendered="#{!createDataset}" onclick="cancelDatasetEdit();window.open('#{(datasetPage==true) ? DatasetPage.getWebloaderUrlForDataset(dataset):EditDatafilesPage.getWebloaderUrlForDataset(dataset)}');return false;" value="#{bundle['file.fromWebloader']}"  icon="webloader-btn" />
+                                    <p:button target="_blank" rendered="#{!createDataset}" onclick="cancelDatasetEdit();window.open('#{(datasetPage==true) ? DatasetPage.getWebloaderUrlForDataset(dataset):EditDatafilesPage.getWebloaderUrlForDataset(dataset)}');return false;" value="#{bundle['file.fromWebloader']}"  icon="ui-icon-plusthick" />
                                 </div>
                                 <div jsf:id="dropboxBlock" jsf:rendered="#{settingsWrapper.isHasDropBoxKey()}"  class="margin-top">
                                     <!-- Dropbox upload widget -->
