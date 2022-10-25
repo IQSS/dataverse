@@ -407,6 +407,20 @@ public class UtilIT {
         return createDatasetResponse;
     }
 
+    static Response createDataset(String dataverseAlias, JsonObjectBuilder datasetJson, String apiToken) {
+        return createDataset(dataverseAlias, datasetJson.build().toString(), apiToken);
+    }
+
+    static Response createDataset(String dataverseAlias, String datasetJson, String apiToken) {
+        System.out.println("creating with " + datasetJson);
+        Response createDatasetResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(datasetJson)
+                .contentType("application/json")
+                .post("/api/dataverses/" + dataverseAlias + "/datasets");
+        return createDatasetResponse;
+    }
+
     static String getDatasetJson(String pathToJsonFile) {
         File datasetVersionJson = new File(pathToJsonFile);
         try {
@@ -542,6 +556,14 @@ public class UtilIT {
           .contentType("text/tab-separated-values; charset=utf-8")
           .body(body)
           .post("/api/admin/datasetfield/load");
+    }
+
+    static Response setMetadataBlocks(String dataverseAlias, JsonArrayBuilder blocks, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .body(blocks.build().toString())
+                .post("/api/dataverses/" + dataverseAlias + "/metadatablocks");
     }
 
     static private String getDatasetXml(String title, String author, String description) {

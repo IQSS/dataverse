@@ -36,6 +36,7 @@ import org.hamcrest.Matchers;
 import org.junit.After;
 import static org.junit.Assert.assertNotEquals;
 import static java.lang.Thread.sleep;
+import javax.json.JsonObjectBuilder;
 
 public class SearchIT {
 
@@ -1084,7 +1085,158 @@ public class SearchIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(1));
     }
-    
+
+    @Test
+    public void testGeospatialSearch() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response setMetadataBlocks = UtilIT.setMetadataBlocks(dataverseAlias, Json.createArrayBuilder().add("citation").add("geospatial"), apiToken);
+        setMetadataBlocks.prettyPrint();
+        setMetadataBlocks.then().assertThat().statusCode(OK.getStatusCode());
+
+        JsonObjectBuilder datasetJson = Json.createObjectBuilder()
+                .add("datasetVersion", Json.createObjectBuilder()
+                        .add("metadataBlocks", Json.createObjectBuilder()
+                                .add("citation", Json.createObjectBuilder()
+                                        .add("fields", Json.createArrayBuilder()
+                                                .add(Json.createObjectBuilder()
+                                                        .add("typeName", "title")
+                                                        .add("value", "Dataverse HQ")
+                                                        .add("typeClass", "primitive")
+                                                        .add("multiple", false)
+                                                )
+                                                .add(Json.createObjectBuilder()
+                                                        .add("value", Json.createArrayBuilder()
+                                                                .add(Json.createObjectBuilder()
+                                                                        .add("authorName",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "Simpson, Homer")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "authorName"))
+                                                                )
+                                                        )
+                                                        .add("typeClass", "compound")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "author")
+                                                )
+                                                .add(Json.createObjectBuilder()
+                                                        .add("value", Json.createArrayBuilder()
+                                                                .add(Json.createObjectBuilder()
+                                                                        .add("datasetContactEmail",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "hsimpson@mailinator.com")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "datasetContactEmail"))
+                                                                )
+                                                        )
+                                                        .add("typeClass", "compound")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "datasetContact")
+                                                )
+                                                .add(Json.createObjectBuilder()
+                                                        .add("value", Json.createArrayBuilder()
+                                                                .add(Json.createObjectBuilder()
+                                                                        .add("dsDescriptionValue",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "Headquarters for Dataverse.")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "dsDescriptionValue"))
+                                                                )
+                                                        )
+                                                        .add("typeClass", "compound")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "dsDescription")
+                                                )
+                                                .add(Json.createObjectBuilder()
+                                                        .add("value", Json.createArrayBuilder()
+                                                                .add("Other")
+                                                        )
+                                                        .add("typeClass", "controlledVocabulary")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "subject")
+                                                )
+                                        )
+                                )
+                                .add("geospatial", Json.createObjectBuilder()
+                                        .add("fields", Json.createArrayBuilder()
+                                                .add(Json.createObjectBuilder()
+                                                        .add("typeName", "geographicBoundingBox")
+                                                        .add("typeClass", "compound")
+                                                        .add("multiple", true)
+                                                        .add("value", Json.createArrayBuilder()
+                                                                .add(Json.createObjectBuilder()
+                                                                        // The box is roughly on Cambridge, MA
+                                                                        // See https://linestrings.com/bbox/#-71.187346,42.33661,-71.043056,42.409599
+                                                                        .add("westLongitude",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "-71.187346")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "westLongitude")
+                                                                        )
+                                                                        .add("southLongitude",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "42.33661")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "southLongitude")
+                                                                        )
+                                                                        .add("eastLongitude",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "-71.043056")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "eastLongitude")
+                                                                        )
+                                                                        .add("northLongitude",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "42.409599")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "northLongitude")
+                                                                        )
+                                                                )
+                                                        )
+                                                )
+                                        )
+                                )
+                        ));
+
+        Response createDatasetResponse = UtilIT.createDataset(dataverseAlias, datasetJson, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        String datasetPid = JsonPath.from(createDatasetResponse.getBody().asString()).getString("data.persistentId");
+
+        // Plymouth rock (41.9580775,-70.6621063) is within 50 km of Cambridge. Hit.
+        Response search1 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken, "&show_entity_ids=true&geo_point=41.9580775,-70.6621063&geo_radius=50");
+        search1.prettyPrint();
+        search1.then().assertThat()
+                .body("data.total_count", CoreMatchers.is(1))
+                .body("data.count_in_response", CoreMatchers.is(1))
+                .body("data.items[0].entity_id", CoreMatchers.is(datasetId))
+                .statusCode(OK.getStatusCode());
+
+        // Plymouth rock (41.9580775,-70.6621063) is not within 1 km of Cambridge. Miss.
+        Response search2 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken, "&geo_point=41.9580775,-70.6621063&geo_radius=1");
+        search2.prettyPrint();
+        search2.then().assertThat()
+                .body("data.total_count", CoreMatchers.is(0))
+                .body("data.count_in_response", CoreMatchers.is(0))
+                .statusCode(OK.getStatusCode());
+
+    }
+
     @After
     public void tearDownDataverse() {
         File treesThumb = new File("scripts/search/data/binary/trees.png.thumb48");
