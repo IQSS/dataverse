@@ -222,7 +222,7 @@ public class SearchServiceBean {
             solrQuery.setParam("pt", geoPoint);
             solrQuery.setParam("d", geoRadius);
             // See https://solr.apache.org/guide/8_11/spatial-search.html#bbox
-            solrQuery.addFilterQuery("{!bbox sfield=" + SearchFields.SOLR_SRPT + "}");
+            solrQuery.addFilterQuery("{!bbox sfield=" + SearchFields.GEOLOCATION + "}");
         }
 
         // -----------------------------------

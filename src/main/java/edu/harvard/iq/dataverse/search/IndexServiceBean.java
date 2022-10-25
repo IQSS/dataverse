@@ -1003,13 +1003,13 @@ public class IndexServiceBean {
                                 maxNorthLat=northLat;
                             }
                             //W, E, N, S
-                            solrInputDocument.addField(SearchFields.SOLR_SRPT, "ENVELOPE(" + westLon + "," + eastLon + "," + northLat + "," + southLat + ")");
+                            solrInputDocument.addField(SearchFields.GEOLOCATION, "ENVELOPE(" + westLon + "," + eastLon + "," + northLat + "," + southLat + ")");
                         }
                     }
                     //Only one bbox per dataset
                     //W, E, N, S
                     if ((minWestLon != null || maxEastLon != null) && (maxNorthLat != null || minSouthLat != null)) {
-                        solrInputDocument.addField(SearchFields.SOLR_BBOXTYPE, "ENVELOPE(" + minWestLon + "," + maxEastLon + "," + maxNorthLat + "," + minSouthLat + ")");
+                        solrInputDocument.addField(SearchFields.BOUNDING_BOX, "ENVELOPE(" + minWestLon + "," + maxEastLon + "," + maxNorthLat + "," + minSouthLat + ")");
                     }
 
                 }

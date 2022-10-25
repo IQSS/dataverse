@@ -228,6 +228,11 @@
 
     <field name="dsPersistentId" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="filePersistentId" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <!-- Dataverse geospatial search -->
+    <!-- https://solr.apache.org/guide/8_11/spatial-search.html#rpt -->
+    <field name="geolocation" type="location_rpt" multiValued="true" stored="true" indexed="true"/>
+    <!-- https://solr.apache.org/guide/8_11/spatial-search.html#bboxfield -->
+    <field name="boundingBox" type="bbox" multiValued="true" stored="true" indexed="true"/>
     
     <!--
         METADATA SCHEMA FIELDS
@@ -676,10 +681,7 @@
     <dynamicField name="*_dt"  type="pdate"    indexed="true"  stored="true"/>
     <dynamicField name="*_dts" type="pdate"    indexed="true"  stored="true" multiValued="true"/>
     <dynamicField name="*_p"  type="location" indexed="true" stored="true"/>
-    <dynamicField name="*_srpt"  type="location_rpt" indexed="true" stored="true"  multiValued="true"/>
-    <!--  Dataverse - adding bbox field per Geobloacklight -->
-    <dynamicField name="*_bboxtype" type="bbox" stored="true" indexed="true" multiValued="true"/>
-    
+    <dynamicField name="*_srpt"  type="location_rpt" indexed="true" stored="true"/>
     
     <!-- payloaded dynamic fields -->
     <dynamicField name="*_dpf" type="delimited_payloads_float" indexed="true"  stored="true"/>
@@ -1107,7 +1109,7 @@
     -->
     <fieldType name="location_rpt" class="solr.SpatialRecursivePrefixTreeFieldType"
                geo="true" distErrPct="0.025" maxDistErr="0.001" distanceUnits="kilometers" />
-    <!-- Dataverse - per Geoblacklight, Adding field type for bboxField that enables, among other things, overlap ratio calculations -->
+    <!-- Dataverse - per GeoBlacklight, adding field type for bboxField that enables, among other things, overlap ratio calculations -->
     <fieldType name="bbox" class="solr.BBoxField"
            geo="true" distanceUnits="kilometers" numberType="pdouble" />
 

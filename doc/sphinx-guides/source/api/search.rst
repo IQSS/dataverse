@@ -742,7 +742,7 @@ For example, a query of the form
 
 .. code-block:: none
 
-    q=*.*&fq={!bbox sfield=solr_srpt}=&pt=10,10&d=5 
+    q=*.*&fq={!bbox sfield=geolocation}=&pt=10,10&d=5
     
     
 would find datasets with information near the point latitude=10, longitude=10.
