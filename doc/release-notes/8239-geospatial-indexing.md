@@ -1,1 +1,5 @@
-Support for indexing the Geographic Bounding Box fields from the Geospatial metadata block has been added. This allows trusted applications with access to solr to perform geospatial queries to find datasets, e.g. those near a given point. This is also a step towards enabling geospatial queries via the Dataverse API and UI.
+Support for indexing the "Geographic Bounding Box" fields ("West Longitude", "East Longitude", "North Latitude", and "South Latitude") from the Geospatial metadata block has been added.
+
+Geospatial search is supported but only via API using two new parameters: `geo_point` and `geo_radius`.
+
+A Solr schema update is required.
