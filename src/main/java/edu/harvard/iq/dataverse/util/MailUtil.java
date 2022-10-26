@@ -33,9 +33,11 @@ public class MailUtil {
     public static String getSubjectTextBasedOnNotification(UserNotification userNotification, Object objectOfNotification) {
         List<String> rootDvNameAsList = Arrays.asList(BrandingUtil.getInstallationBrandName());
         String datasetDisplayName = "";
-        if (objectOfNotification != null) {
+
+        if (objectOfNotification != null && (objectOfNotification instanceof Dataset)  ) {
             datasetDisplayName = ((Dataset)objectOfNotification).getDisplayName();
         }
+
         switch (userNotification.getType()) {
             case ASSIGNROLE:
                 return BundleUtil.getStringFromBundle("notification.email.assign.role.subject", rootDvNameAsList);
