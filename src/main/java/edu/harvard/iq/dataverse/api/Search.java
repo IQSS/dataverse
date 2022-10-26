@@ -126,6 +126,14 @@ public class Search extends AbstractApiBean {
                 geoPoint = getGeoPoint(geoPointRequested);
                 geoRadius = getGeoRadius(geoRadiusRequested);
 
+                if (geoPoint != null && geoRadius == null) {
+                    return error(Response.Status.BAD_REQUEST, "If you supply geo_point you must also supply geo_radius.");
+                }
+
+                if (geoRadius != null && geoPoint == null) {
+                    return error(Response.Status.BAD_REQUEST, "If you supply geo_radius you must also supply geo_point.");
+                }
+
             } catch (Exception ex) {
                 return error(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
             }
@@ -350,13 +358,11 @@ public class Search extends AbstractApiBean {
     }
 
     private String getGeoPoint(String geoPointRequested) {
-        // TODO add error checking
-        return geoPointRequested;
+        return SearchUtil.getGeoPoint(geoPointRequested);
     }
 
     private String getGeoRadius(String geoRadiusRequested) {
-        // TODO add error checking
-        return geoRadiusRequested;
+        return SearchUtil.getGeoRadius(geoRadiusRequested);
     }
 
 }

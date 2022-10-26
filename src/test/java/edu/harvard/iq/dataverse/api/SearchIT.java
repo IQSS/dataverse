@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Base64;
 import javax.json.JsonArray;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import org.hamcrest.CoreMatchers;
@@ -1222,18 +1223,47 @@ public class SearchIT {
         Response search1 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken, "&show_entity_ids=true&geo_point=41.9580775,-70.6621063&geo_radius=50");
         search1.prettyPrint();
         search1.then().assertThat()
+                .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.is(1))
                 .body("data.count_in_response", CoreMatchers.is(1))
-                .body("data.items[0].entity_id", CoreMatchers.is(datasetId))
-                .statusCode(OK.getStatusCode());
+                .body("data.items[0].entity_id", CoreMatchers.is(datasetId));
 
         // Plymouth rock (41.9580775,-70.6621063) is not within 1 km of Cambridge. Miss.
         Response search2 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken, "&geo_point=41.9580775,-70.6621063&geo_radius=1");
         search2.prettyPrint();
         search2.then().assertThat()
+                .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.is(0))
-                .body("data.count_in_response", CoreMatchers.is(0))
-                .statusCode(OK.getStatusCode());
+                .body("data.count_in_response", CoreMatchers.is(0));
+
+    }
+
+    @Test
+    public void testGeospatialSearchInvalid() {
+
+        Response noRadius = UtilIT.search("*", null, "&geo_point=40,60");
+        noRadius.prettyPrint();
+        noRadius.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", CoreMatchers.equalTo("If you supply geo_point you must also supply geo_radius."));
+
+        Response noPoint = UtilIT.search("*", null, "&geo_radius=5");
+        noPoint.prettyPrint();
+        noPoint.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", CoreMatchers.equalTo("If you supply geo_radius you must also supply geo_point."));
+
+        Response junkPoint = UtilIT.search("*", null, "&geo_point=junk&geo_radius=5");
+        junkPoint.prettyPrint();
+        junkPoint.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", CoreMatchers.equalTo("Must contain a single comma to separate latitude and longitude."));
+
+        Response junkRadius = UtilIT.search("*", null, "&geo_point=40,60&geo_radius=junk");
+        junkRadius.prettyPrint();
+        junkRadius.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", CoreMatchers.equalTo("Non-number radius supplied."));
 
     }
 
