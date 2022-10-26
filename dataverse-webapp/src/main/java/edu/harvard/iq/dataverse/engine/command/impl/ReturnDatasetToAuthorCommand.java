@@ -43,13 +43,13 @@ public class ReturnDatasetToAuthorCommand extends AbstractDatasetCommand<Dataset
         dataset.getEditVersion().setLastUpdateTime(getTimestamp());
         dataset.setModificationTime(getTimestamp());
 
-        ctxt.engine().submit(new RemoveLockCommand(getRequest(), getDataset(), DatasetLock.Reason.InReview));
         WorkflowComment workflowComment = new WorkflowComment(dataset.getEditVersion(), WorkflowComment.Type.RETURN_TO_AUTHOR, comment, (AuthenticatedUser) this.getUser());
         ctxt.datasets().addWorkflowComment(workflowComment);
 
         updateDatasetUser(ctxt);
-        ctxt.em().flush();
         Dataset savedDataset = ctxt.em().merge(dataset);
+        ctxt.em().flush();
+        ctxt.engine().submit(new RemoveLockCommand(getRequest(), getDataset(), DatasetLock.Reason.InReview));
 
         sendNotification(ctxt, savedDataset);
 
