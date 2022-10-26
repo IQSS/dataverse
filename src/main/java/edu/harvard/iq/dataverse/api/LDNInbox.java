@@ -80,6 +80,7 @@ public class LDNInbox extends AbstractApiBean {
     @Path("/")
     @Consumes("application/ld+json, application/json-ld")
     public Response acceptMessage(String body) {
+        try {
         IpAddress origin = new DataverseRequest(null, httpRequest).getSourceAddress();
         String whitelist = settingsService.get(SettingsServiceBean.Key.LDNMessageHosts.toString(), "");
         // Only do something if we listen to this host
@@ -231,6 +232,12 @@ public class LDNInbox extends AbstractApiBean {
         } else {
             logger.info("Ignoring message from IP address: " + origin.toString());
             throw new ForbiddenException("Inbox does not acept messages from this address");
+        }
+        } catch (Throwable t) {
+            logger.severe(t.getLocalizedMessage());
+            t.printStackTrace();
+            
+            throw t;
         }
         return ok("Message Received");
     }
