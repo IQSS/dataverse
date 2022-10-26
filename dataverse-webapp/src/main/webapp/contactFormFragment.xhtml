@@ -4,7 +4,7 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:o="http://omnifaces.org/ui"
                 xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
-    
+
     <!-- Command that will fill and display contact dialog with initial values for contacting with main support team  -->
     <o:form useRequestURI="true">
         <p:remoteCommand name="showRepositorySupportContactDialog"
@@ -17,13 +17,13 @@
             <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
         </p:remoteCommand>
     </o:form>
-    
+
     <!-- Dialog Contact Form -->
     <p:dialog id="contactDialog" header="#{sendFeedbackDialog.getFormHeader()}" widgetVar="contactForm" modal="true" >
         <p:fragment>
             <h:form id="emailForm" class="form-horizontal">
                 <p:focus context="emailForm" rendered="#{facesContext.validationFailed}" />
-                
+
                 <div class="form-group">
                     <div class="col-sm-12">
                         <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
@@ -73,10 +73,10 @@
                     </p:outputLabel>
                     <div class="col-sm-9">
                         <p:inputText id="messageSubject" styleClass="form-control" value="#{sendFeedbackDialog.messageSubject}"
-                                     requiredMessage="#{bundle['contact.subject.required']}" required="true"/>                        
+                                     requiredMessage="#{bundle['contact.subject.required']}" required="true"/>
                         <p:message for="messageSubject" styleClass="bg-danger text-danger" display="text"/>
                     </div>
-                </div>   
+                </div>
                 <!-- message -->
                 <div class="form-group">
                     <p:outputLabel for="userMessage" styleClass="col-sm-3 control-label" indicateRequired="false">
@@ -88,6 +88,16 @@
                         <p:message for="userMessage" styleClass="bg-danger text-danger" display="text" />
                     </div>
                 </div>
+
+                <!-- send copy -->
+                <div class="form-group" for="sendCopy" styleClass="col-sm-3 control-label">
+                    <div class="col-sm-3"></div>
+                    <div class="col-sm-9">
+                        <p:selectBooleanCheckbox value="#{sendFeedbackDialog.sendCopy}"
+                                                 itemLabel="#{bundle['contact.copy.checkbox']}"/>
+                    </div>
+                </div>
+
                 <!-- validation -->
                 <div class="form-group">
                     <div class="col-sm-offset-3 col-sm-9">
