@@ -126,7 +126,7 @@ public class LDNInbox extends AbstractApiBean {
                     String objectId = msgObject.getJsonObject(new JsonLDTerm(activityStreams, "object").getUrl()).getString("@id");
                     // Best-effort to get name by following redirects and looing for a 'name' field in the returned json
                     try (CloseableHttpClient client = HttpClients.createDefault()) {
-                        logger.fine("Getting " + subjectId);
+                        logger.info("Getting " + subjectId);
                         HttpGet get = new HttpGet(new URI(subjectId));
                         get.addHeader("Accept", "application/json");
                         
@@ -138,25 +138,25 @@ public class LDNInbox extends AbstractApiBean {
                             case 302:
                             case 303:
                                 String location=response.getFirstHeader("location").getValue();
-                                logger.fine("Redirecting to: " + location);
+                                logger.info("Redirecting to: " + location);
                                 get = new HttpGet(location);
                                 get.addHeader("Accept", "application/json");
                                 
                                 break;
                             case 200: 
                                 String responseString = EntityUtils.toString(response.getEntity(), "UTF-8");
-                                logger.fine("Received: " + responseString);
+                                logger.info("Received: " + responseString);
                                 JsonObject job = JsonUtil.getJsonObject(responseString);
                                 name = job.getString("name", null);
                                 itemType = job.getString("type", null);
                                 break;
                             default:
-                                logger.fine("Received " + statusCode + " when accessing " + objectId);
+                                logger.info("Received " + statusCode + " when accessing " + subjectId);
                             }
                         } while(statusCode == 302);
                     } catch (Exception e) {
-                        logger.fine("Unable to get name from " + objectId);
-                        logger.fine(e.getLocalizedMessage());
+                        logger.info("Unable to get name from " + subjectId);
+                        logger.info(e.getLocalizedMessage());
                     }
                     String relationshipId = msgObject
                             .getJsonObject(new JsonLDTerm(activityStreams, "relationship").getUrl()).getString("@id");
@@ -164,7 +164,7 @@ public class LDNInbox extends AbstractApiBean {
                         // Strip the URL part from a relationship ID/URL assuming a usable label exists
                         // after a # char. Default is to use the whole URI.
                         int index = relationshipId.indexOf("#");
-                        logger.fine("Found # at " + index + " in " + relationshipId);
+                        logger.info("Found # at " + index + " in " + relationshipId);
                         String relationship = relationshipId.substring(index + 1);
                         // Parse the URI as a PID and see if this Dataverse instance has this dataset
                         String pid = GlobalId.getInternalFormOfPID(objectId);
@@ -186,7 +186,7 @@ public class LDNInbox extends AbstractApiBean {
                                     jw.write(citingResource);
                                 }
                                 String jsonstring = sw.toString();
-                                logger.fine("Storing: " + jsonstring);
+                                logger.info("Storing: " + jsonstring);
                                 Set<RoleAssignment> ras = roleService.rolesAssignments(dataset);
 
                                 roleService.rolesAssignments(dataset).stream()
@@ -209,6 +209,7 @@ public class LDNInbox extends AbstractApiBean {
                                 sent = true;
                             }
                         } else {
+                            logger.info("Didn't find dataset");
                             // We don't have a dataset corresponding to the object of the relationship - do
                             // nothing
                         }
