@@ -267,7 +267,6 @@ public class Shib implements java.io.Serializable {
                 logger.info("Unable to redirect user to homepage at " + prettyFacesHomePageString);
             }
         } else {
-            state = State.PROMPT_TO_CREATE_NEW_ACCOUNT;
             displayNameToPersist = displayInfo.getTitle();
             emailToPersist = emailAddress;
             /**
@@ -309,12 +308,43 @@ public class Shib implements java.io.Serializable {
                     debugSummary = "getting username from the builtin user we looked up via email";
                     builtinUsername = existingBuiltInUserFoundByEmail.getUserName();
                 } else {
-                    debugSummary = "Could not find a builtin account based on the username. Here we should simply create a new Shibboleth user";
+                    debugSummary = "There is already a NON-BUILTIN user with this email address. This is a problem!";
+                    String errorMessage = "";
+                    // is it a Shib account?
+                    if (existingAuthUserFoundByEmail.getAuthenticatedUserLookup().getAuthenticationProviderId().equals(shibAuthProvider.getId())) {
+                        String storedUserLookupIdentifier = existingAuthUserFoundByEmail.getAuthenticatedUserLookup().getPersistentUserId();
+                        
+                        String storedShibProvider = storedUserLookupIdentifier.substring(0, storedUserLookupIdentifier.indexOf(persistentUserIdSeparator));
+                        String storedShibEppn = storedUserLookupIdentifier.substring(storedUserLookupIdentifier.indexOf(persistentUserIdSeparator));
+                        
+                        if (!shibIdp.equals(storedShibProvider)) {
+                            errorMessage = "A Shibboleth account associated with this email address already exists, and it was originally authenticated by the provider "+
+                                    storedShibProvider+
+                                    ". You are now attempting to log in using "+shibIdp+" as the authentication provider. Please contact support...";
+                        } else { 
+                            // must be the eppn that has changed:
+                            errorMessage = "A Shibboleth account associated with this email address already exists, and it was originally authenticated by the same " +
+                                    "institutional provider. However, the eduPersonPrincipalName (eppn) being provided by the remote service does not match the eppn " +
+                                    "used for the original account. For security purposes, please contact our support to have your account reviewed and updated";
+                        }
+                    } else {
+                        errorMessage = "A remotely-authenticated, non-Shibboleth (" + existingAuthUserFoundByEmail.getAuthenticatedUserLookup().getAuthenticationProviderId() + 
+                                ") account associated with this email address already exists. Please log in using that authentication method. " + 
+                                "If you prefer to switch to using Shibboleth authentication, please contact support."; 
+                    }
+                     
+                    JsfHelper.addErrorMessage(errorMessage);
+                    try {
+                        FacesContext.getCurrentInstance().getExternalContext().redirect(loginpage);
+                    } catch (IOException ex) {
+                        logger.info("Unable to redirect user to login page at " + loginpage);
+                    }
+                    return;
                 }
             } else {
-                debugSummary = "Could not find an auth user based on email address";
+                debugSummary = "Could not find an auth user based on email address. We will create a new Shibboleth user. ";
             }
-
+            state = State.PROMPT_TO_CREATE_NEW_ACCOUNT;
         }
         logger.fine("Debug summary: " + debugSummary + " (state: " + state + ").");
         logger.fine("redirectPage: " + redirectPage);
