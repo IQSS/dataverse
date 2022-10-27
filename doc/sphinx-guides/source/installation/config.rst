@@ -1235,8 +1235,8 @@ The :S3ArchiverConfig setting is a JSON object that must include an "s3_bucket_n
 
 .. _Archiving API Call:
 
-API Calls
-+++++++++
+BagIt Export API Calls
+++++++++++++++++++++++
 
 Once this configuration is complete, you, as a user with the *PublishDataset* permission, should be able to use the admin API call to manually submit a DatasetVersion for processing:
 
@@ -1244,25 +1244,29 @@ Once this configuration is complete, you, as a user with the *PublishDataset* pe
 
 where:
 
-``{id}`` is the DatasetId (or ``:persistentId`` with the ``?persistentId="<DOI>"`` parameter), and
+``{id}`` is the DatasetId (the database id of the dataset) and
 
 ``{version}`` is the friendly version number, e.g. "1.2".
 
-The submitDatasetVersionToArchive API (and the workflow discussed below) attempt to archive the dataset version via an archive specific method. For Chronopolis, a DuraCloud space named for the dataset (it's DOI with ':' and '.' replaced with '-') is created and two files are uploaded to it: a version-specific datacite.xml metadata file and a BagIt bag containing the data and an OAI-ORE map file. (The datacite.xml file, stored outside the Bag as well as inside is intended to aid in discovery while the ORE map file is 'complete', containing all user-entered metadata and is intended as an archival record.)
+or in place of the DatasetID, you can use the string ``:persistentId`` as the ``{id}`` and add the DOI/PID as a query parameter like this: ``?persistentId="<DOI>"``. Here is how the full command would look:
 
-In the Chronopolis case, since the transfer from the DuraCloud front-end to archival storage in Chronopolis can take significant time, it is currently up to the admin/curator to submit a 'snap-shot' of the space within DuraCloud and to monitor its successful transfer. Once transfer is complete the space should be deleted, at which point the Dataverse Software API call can be used to submit a Bag for other versions of the same Dataset. (The space is reused, so that archival copies of different Dataset versions correspond to different snapshots of the same DuraCloud space.).
+``curl -X POST -H "X-Dataverse-key: <key>" http://localhost:8080/api/admin/submitDatasetVersionToArchive/:persistentId/{version}?persistentId="<DOI>"``
 
-A batch version of this admin api call is also available:
+The submitDatasetVersionToArchive API (and the workflow discussed below) attempt to archive the dataset version via an archive specific method. For Chronopolis, a DuraCloud space named for the dataset (its DOI with ":" and "." replaced with "-", e.g. ``doi-10-5072-fk2-tgbhlb``) is created and two files are uploaded to it: a version-specific datacite.xml metadata file and a BagIt bag containing the data and an OAI-ORE map file. (The datacite.xml file, stored outside the Bag as well as inside, is intended to aid in discovery while the ORE map file is "complete", containing all user-entered metadata and is intended as an archival record.)
+
+In the Chronopolis case, since the transfer from the DuraCloud front-end to archival storage in Chronopolis can take significant time, it is currently up to the admin/curator to submit a 'snap-shot' of the space within DuraCloud and to monitor its successful transfer. Once transfer is complete the space should be deleted, at which point the Dataverse Software API call can be used to submit a Bag for other versions of the same dataset. (The space is reused, so that archival copies of different dataset versions correspond to different snapshots of the same DuraCloud space.).
+
+A batch version of this admin API call is also available:
 
 ``curl -X POST -H "X-Dataverse-key: <key>" 'http://localhost:8080/api/admin/archiveAllUnarchivedDatasetVersions?listonly=true&limit=10&latestonly=true'``
 
-The archiveAllUnarchivedDatasetVersions call takes 3 optional configuration parameters. 
+The archiveAllUnarchivedDatasetVersions call takes 3 optional configuration parameters.
+
 * listonly=true will cause the API to list dataset versions that would be archived but will not take any action.
-* limit=<n> will limit the number of dataset versions archived in one api call to <= <n>. 
+* limit=<n> will limit the number of dataset versions archived in one API call to ``<=`` <n>. 
 * latestonly=true will limit archiving to only the latest published versions of datasets instead of archiving all unarchived versions.
 
-Note that because archiving is done asynchronously, the calls above will return OK even if the user does not have the *PublishDataset* permission on the dataset(s) involved. Failures are indocated in the log and the archivalStatus calls in the native api can be used to check the status as well.
-
+Note that because archiving is done asynchronously, the calls above will return OK even if the user does not have the *PublishDataset* permission on the dataset(s) involved. Failures are indicated in the log and the archivalStatus calls in the native API can be used to check the status as well.
 
 PostPublication Workflow
 ++++++++++++++++++++++++
@@ -2714,9 +2718,9 @@ Part of the database settings to configure the BagIt file handler. This is the p
 ++++++++++++++++++
 
 Your Dataverse installation can export archival "Bag" files to an extensible set of storage systems (see :ref:`BagIt Export` above for details about this and for further explanation of the other archiving related settings below).
-This setting specifies which storage system to use by identifying the particular Java class that should be run. Current options include DuraCloudSubmitToArchiveCommand, LocalSubmitToArchiveCommand, and GoogleCloudSubmitToArchiveCommand.
+This setting specifies which storage system to use by identifying the particular Java class that should be run. Current configuration options include DuraCloudSubmitToArchiveCommand, LocalSubmitToArchiveCommand, GoogleCloudSubmitToArchiveCommand, and S3SubmitToArchiveCommand.
 
-``curl -X PUT -d 'LocalSubmitToArchiveCommand' http://localhost:8080/api/admin/settings/:ArchiverClassName`` 
+For examples, see the specific configuration above in :ref:`BagIt Export`.
  
 :ArchiverSettings
 +++++++++++++++++
