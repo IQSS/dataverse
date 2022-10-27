@@ -33,6 +33,7 @@ import edu.harvard.iq.dataverse.error.DataverseError;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.ExporterType;
 import edu.harvard.iq.dataverse.guestbook.GuestbookResponseServiceBean;
+import edu.harvard.iq.dataverse.ingest.UningestInfoService;
 import edu.harvard.iq.dataverse.mail.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.persistence.datafile.MapLayerMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
@@ -65,7 +66,6 @@ import org.omnifaces.cdi.ViewScoped;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
-import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
@@ -76,6 +76,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.time.Clock;
 import java.time.Instant;
@@ -98,53 +99,32 @@ import java.util.stream.Stream;
  */
 @ViewScoped
 @Named("DatasetPage")
-public class DatasetPage implements java.io.Serializable {
+public class DatasetPage implements Serializable {
 
     private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
 
-
-    @EJB
-    DatasetVersionServiceBean datasetVersionService;
-    @EJB
-    DataFileServiceBean datafileService;
-    @EJB
-    PermissionServiceBean permissionService;
-    @EJB
-    EjbDataverseEngine commandEngine;
-    @Inject
-    DataverseSession session;
-    @EJB
-    MapLayerMetadataServiceBean mapLayerMetadataService;
-    @Inject
-    SettingsServiceBean settingsService;
-    @Inject
-    DataverseRequestServiceBean dvRequestService;
-    @Inject
-    PermissionsWrapper permissionsWrapper;
-    @Inject
-    ThumbnailServiceWrapper thumbnailServiceWrapper;
-    @Inject
-    private ExportService exportService;
-    @Inject
-    private DatasetService datasetService;
-    @Inject
-    private DatasetThumbnailService datasetThumbnailService;
-    @Inject
-    private DatasetSummaryService datasetSummaryService;
-    @Inject
-    private SystemConfig systemConfig;
-    @Inject
-    private CitationFactory citationFactory;
-    @Inject
-    private DatasetPageFacade datasetPageFacade;
-    @Inject
+    private DataverseSession session;
+    private EjbDataverseEngine commandEngine;
+    private PermissionsWrapper permissionsWrapper;
     private DatasetCitationsCountRepository datasetCitationsCountRepository;
-    @Inject
+    private SystemConfig systemConfig;
+    private DatasetVersionServiceBean datasetVersionService;
+    private DataFileServiceBean datafileService;
+    private PermissionServiceBean permissionService;
+    private MapLayerMetadataServiceBean mapLayerMetadataService;
+    private SettingsServiceBean settingsService;
+    private DataverseRequestServiceBean dvRequestService;
+    private ThumbnailServiceWrapper thumbnailServiceWrapper;
+    private ExportService exportService;
+    private DatasetService datasetService;
+    private DatasetThumbnailService datasetThumbnailService;
+    private DatasetSummaryService datasetSummaryService;
     private GuestbookResponseServiceBean guestbookResponseService;
-    @Inject
     private ConfirmEmailServiceBean confirmEmailService;
-    @Inject
     private AuthenticationServiceBean authenticationService;
+    private DatasetPageFacade datasetPageFacade;
+    private CitationFactory citationFactory;
+    private UningestInfoService uningestInfoService;
 
     private Dataset dataset = new Dataset();
 
@@ -178,6 +158,48 @@ public class DatasetPage implements java.io.Serializable {
     private List<DatasetFileTermDifferenceItem> fileTermDiffsWithLatestReleased;
 
     private Date currentEmbargoDate;
+
+    // -------------------- CONSTRUCTORS --------------------
+
+
+    public DatasetPage() { }
+
+    @Inject
+    public DatasetPage(DataverseSession session, EjbDataverseEngine commandEngine,
+                       PermissionsWrapper permissionsWrapper, DatasetCitationsCountRepository datasetCitationsCountRepository,
+                       SystemConfig systemConfig, DatasetVersionServiceBean datasetVersionService,
+                       DataFileServiceBean datafileService, PermissionServiceBean permissionService,
+                       MapLayerMetadataServiceBean mapLayerMetadataService, SettingsServiceBean settingsService,
+                       DataverseRequestServiceBean dvRequestService, ThumbnailServiceWrapper thumbnailServiceWrapper,
+                       ExportService exportService, DatasetService datasetService,
+                       DatasetThumbnailService datasetThumbnailService, DatasetSummaryService datasetSummaryService,
+                       GuestbookResponseServiceBean guestbookResponseService, ConfirmEmailServiceBean confirmEmailService,
+                       AuthenticationServiceBean authenticationService, DatasetPageFacade datasetPageFacade,
+                       CitationFactory citationFactory, UningestInfoService uningestInfoService) {
+        this.session = session;
+        this.commandEngine = commandEngine;
+        this.permissionsWrapper = permissionsWrapper;
+        this.datasetCitationsCountRepository = datasetCitationsCountRepository;
+        this.systemConfig = systemConfig;
+        this.datasetVersionService = datasetVersionService;
+        this.datafileService = datafileService;
+        this.permissionService = permissionService;
+        this.mapLayerMetadataService = mapLayerMetadataService;
+        this.settingsService = settingsService;
+        this.dvRequestService = dvRequestService;
+        this.thumbnailServiceWrapper = thumbnailServiceWrapper;
+        this.exportService = exportService;
+        this.datasetService = datasetService;
+        this.datasetThumbnailService = datasetThumbnailService;
+        this.datasetSummaryService = datasetSummaryService;
+        this.guestbookResponseService = guestbookResponseService;
+        this.confirmEmailService = confirmEmailService;
+        this.authenticationService = authenticationService;
+        this.datasetPageFacade = datasetPageFacade;
+        this.citationFactory = citationFactory;
+        this.uningestInfoService = uningestInfoService;
+    }
+
 
     // This is the Dataset-level thumbnail;
     // it's either the thumbnail of the designated datafile,
@@ -327,6 +349,10 @@ public class DatasetPage implements java.io.Serializable {
      */
     public boolean isSessionUserAuthenticated() {
         return session.getUser().isAuthenticated();
+    }
+
+    public boolean hasAnythingToUningest() {
+        return uningestInfoService.hasUningestableFiles(dataset);
     }
 
     private final Map<Long, MapLayerMetadata> mapLayerMetadataLookup = new HashMap<>();
@@ -487,7 +513,7 @@ public class DatasetPage implements java.io.Serializable {
             logger.fine("retrieved version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
 
         } else if (dataset.getId() != null) {
-            // Set Working Version and Dataset by Datasaet Id and Version
+            // Set Working Version and Dataset by Dataset Id and Version
             dataset = datasetPageFacade.retrieveDataset(dataset.getId());
             if (dataset == null) {
                 logger.warning("No such dataset: " + dataset);
@@ -500,7 +526,7 @@ public class DatasetPage implements java.io.Serializable {
 
         } else if (versionId != null) {
             // TODO: 4.2.1 - this method is broken as of now!
-            // Set Working Version and Dataset by DatasaetVersion Id
+            // Set Working Version and Dataset by DatasetVersion Id
             //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByVersionId(versionId);
 
         }
@@ -602,9 +628,7 @@ public class DatasetPage implements java.io.Serializable {
     public boolean isViewedFromPrivateUrl() {
         if (session.getUser() instanceof PrivateUrlUser) {
             PrivateUrlUser privateUrlUser = (PrivateUrlUser) session.getUser();
-            if (dataset != null && dataset.getId().equals(privateUrlUser.getDatasetId())) {
-                return true;
-            }
+            return dataset != null && dataset.getId().equals(privateUrlUser.getDatasetId());
         }
         return false;
     }

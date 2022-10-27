@@ -6,6 +6,7 @@
 
 package edu.harvard.iq.dataverse.persistence.datafile.ingest;
 
+import edu.harvard.iq.dataverse.persistence.JpaEntity;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 
 import javax.persistence.ElementCollection;
@@ -35,7 +36,7 @@ import java.util.Optional;
  */
 @Entity
 @Table(indexes = {@Index(columnList = "datafile_id")})
-public class IngestReport implements Serializable {
+public class IngestReport implements JpaEntity<Long>, Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

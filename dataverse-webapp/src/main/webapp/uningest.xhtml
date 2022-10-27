@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+
+<h:head>
+</h:head>
+<h:body>
+    <ui:composition template="/dataverse_template.xhtml">
+        <ui:param name="pageTitle" value="#{bundle['uningest.page.title']}"/>
+        <ui:param name="dataverse" value="#{UningestPage.dataset.owner}"/>
+        <ui:param name="showMessagePanel" value="#{true}"/>
+        <ui:define name="robots_info">
+            <meta name="robots" content="noindex"/>
+        </ui:define>
+        <ui:define name="body">
+            <f:metadata>
+                <f:viewParam name="datasetId" value="#{UningestPage.datasetId}"/>
+                <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
+                <f:viewAction action="#{UningestPage.init}"/>
+                <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(UningestPage.dataset, bundle['uningest.page.title'])}"/>
+            </f:metadata>
+
+            <p:outputPanel>
+                <div class="alert alert-info" role="alert">
+                    <p class="text-block">
+                        <span class="glyphicon glyphicon-info-sign"></span>
+                        #{bundle['uningest.page.info']}
+                    </p>
+                </div>
+            </p:outputPanel>
+
+            <h:form id="uningestForm">
+                <p:outputPanel>
+                    <p:fragment id="uningestList">
+                        <p:dataTable var="item" value="#{UningestPage.uningestableFiles}"
+                                     style="word-break: break-all">
+                            <p:column headerText="#{bundle['uningest.table.filename']}">
+                                <h:outputText value="#{item.fileName}" />
+                            </p:column>
+
+                            <p:column headerText="#{bundle['uningest.table.originalFormat']}">
+                                <h:outputText value="#{item.originalFormat}" />
+                            </p:column>
+
+                            <p:column headerText="#{bundle['uningest.table.md5']}">
+                                <h:outputText value="#{item.md5}" />
+                            </p:column>
+
+                            <p:column headerText="#{bundle['uningest.table.unf']}">
+                                <h:outputText value="#{item.unf}" />
+                            </p:column>
+
+                            <p:column style="text-align: center">
+                                <p:commandButton value="#{bundle['uningest.table.uningest.button']}"
+                                                 onclick="primeFacesShowModal('uningestConfirm', this)"
+                                                 action="#{UningestPage.setToUningest(item)}"/>
+                            </p:column>
+                        </p:dataTable>
+                    </p:fragment>
+                </p:outputPanel>
+                <div class="button-block">
+                    <p:outputPanel>
+                        <p:commandButton id="cancel" value="#{bundle.cancel}" action="#{UningestPage.cancel}"/>
+                    </p:outputPanel>
+                </div>
+
+                <p:dialog styleClass="smallPopUp" header="#{bundle['uningest.dialog.title']}" widgetVar="uningestConfirm" modal="true">
+                    <p class="text-warning">
+                        <span class="glyphicon glyphicon-warning-sign"/>#{bundle['uningest.dialog.text']}
+                    </p>
+                    <div class="button-block">
+                        <p:commandButton value="#{bundle.continue}"
+                                         onclick="PF('uningestConfirm').hide()"
+                                         action="#{UningestPage.uningest()}"
+                                         update="uningestForm"/>
+                        <p:commandButton value="#{bundle.cancel}"
+                                         onclick="PF('uningestConfirm').hide();"
+                                         type="button"/>
+                    </div>
+                </p:dialog>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>

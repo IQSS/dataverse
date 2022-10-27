@@ -363,11 +363,15 @@
                                                                action="#{DatasetPage.initCurrentEmbargo()}"
                                                                update="setEmbargoPanel"
                                                                oncomplete="primeFacesShowModal('setEmbargoConfirmation', this)"
-                                                               rendered="#{DatasetPage.isUserAbleToSetOrUpdateEmbargo() or DatasetPage.isUserAbleToLiftEmbargo()}"
-                                                >
+                                                               rendered="#{DatasetPage.isUserAbleToSetOrUpdateEmbargo() or DatasetPage.isUserAbleToLiftEmbargo()}">
                                                     <h:outputText
                                                             value="#{bundle['dataset.editBtn.itemLabel.embargo']}"/>
                                                 </p:commandLink>
+                                            </li>
+                                            <li jsf:rendered="#{DatasetPage.hasAnythingToUningest()}">
+                                                <h:outputLink value="/uningest.xhtml?datasetId=#{DatasetPage.dataset.id}">
+                                                    <h:outputText value="#{bundle['dataset.editBtn.itemLabel.uningest']}"/>
+                                                </h:outputLink>
                                             </li>
                                             <ui:fragment
                                                     rendered="#{DatasetPage.canManagePermissions()}">

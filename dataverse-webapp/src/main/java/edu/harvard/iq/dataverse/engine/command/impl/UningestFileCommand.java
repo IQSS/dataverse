@@ -64,47 +64,46 @@ public class UningestFileCommand extends AbstractVoidCommand {
         // size of the stored original:
         Long storedOriginalFileSize;
 
-        // Try to open the main storageIO for the file; look up the AUX file for 
+        // Try to open the main storageIO for the file; look up the AUX file for
         // the saved original and check its size:
         try {
             storageIO = ctxt.dataAccess().getStorageIO(uningest);
             storageIO.open();
             storedOriginalFileSize = storageIO.getAuxObjectSize(StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION);
-        } catch (IOException ioex) {
-            String errorMessage = "Failed to open StorageIO for " + uningest.getStorageIdentifier() + " attempting to revert tabular ingest" + " aborting. (";
-            if (ioex.getMessage() != null) {
-                errorMessage += "(" + ioex.getMessage() + ")";
-            } else {
-                errorMessage += "(IOException caught; no further information is available)";
-            }
+        } catch (IOException ioe) {
+            String errorMessage = "Failed to open StorageIO for "
+                    + uningest.getStorageIdentifier()
+                    + " attempting to revert tabular ingest aborting. "
+                    + (ioe.getMessage() != null
+                        ? "(" + ioe.getMessage() + ")"
+                        : "(IOException caught; no further information is available)");
             logger.warning(errorMessage);
             throw new CommandException(errorMessage, this);
-
         }
 
         // Try to revert the backup-as-Aux:
-        // (i.e., try to overwrite the current, tabular file, with the stored 
+        // (i.e., try to overwrite the current, tabular file, with the stored
         // original file:
         // (if this fails, we definitely want to abort the whole thing and bail!)
         // -- L.A. May 2018
 
         try {
             storageIO.revertBackupAsAux(StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION);
-        } catch (IOException ioex) {
-            String errorMessage = "Failed to revert backup as Aux for " + uningest.getStorageIdentifier() + " attempting to revert tabular ingest" + " aborting. (";
-            if (ioex.getMessage() != null) {
-                errorMessage += "(" + ioex.getMessage() + ")";
-            } else {
-                errorMessage += "(IOException caught; no further information is available)";
-            }
+        } catch (IOException ioe) {
+            String errorMessage = "Failed to revert backup as Aux for "
+                    + uningest.getStorageIdentifier()
+                    + " attempting to revert tabular ingest aborting. "
+                    + (ioe.getMessage() != null
+                        ? "(" + ioe.getMessage() + ")"
+                        : "(IOException caught; no further information is available)");
             logger.warning(errorMessage);
             throw new CommandException(errorMessage, this);
         }
 
-        // OK, we have successfully reverted the backup - now let's change 
-        // all the attribute of the file that are stored in the database: 
+        // OK, we have successfully reverted the backup - now let's change
+        // all the attribute of the file that are stored in the database:
 
-        // the file size: 
+        // the file size:
         uningest.setFilesize(storedOriginalFileSize);
 
         // original file format:
@@ -121,8 +120,8 @@ public class UningestFileCommand extends AbstractVoidCommand {
         ctxt.em().remove(dataTable);
         uningest.setDataTable(null);
 
-        // remove the IngestReport associated with this datafile: 
-        // (this is a single table entry; ok to just issue an explicit 
+        // remove the IngestReport associated with this datafile:
+        // (this is a single table entry; ok to just issue an explicit
         // DELETE query for it - as there's no complex cascade to resolve)
         resetIngestStats(uningest, ctxt);
 
@@ -137,7 +136,7 @@ public class UningestFileCommand extends AbstractVoidCommand {
         ctxt.em().merge(uningest);
 
         // Modify the file name - which is stored in FileMetadata, and there
-        // could be more than one: 
+        // could be more than one:
 
         String originalExtension = FileUtil.generateOriginalExtension(originalFileFormat);
 
@@ -176,18 +175,14 @@ public class UningestFileCommand extends AbstractVoidCommand {
         } catch (IOException e) {
             logger.warning("Io Exception deleting all aux objects : " + uningest.getId());
         }
-
     }
 
 
     private void resetIngestStats(DataFile uningest, CommandContext ctxt) {
-
         Long fileid = uningest.getId();
         Query query = ctxt.em().createQuery("DELETE from IngestReport as o where o.dataFile.id  =:fileid");
         query.setParameter("fileid", fileid);
         query.executeUpdate();
-        uningest.setIngestStatus("A".charAt(0));
-
+        uningest.setIngestStatus(DataFile.INGEST_STATUS_NONE);
     }
-
 }

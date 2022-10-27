@@ -6,6 +6,7 @@
 
 package edu.harvard.iq.dataverse.persistence.datafile;
 
+import edu.harvard.iq.dataverse.persistence.JpaEntity;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.Column;
@@ -38,8 +39,9 @@ import java.util.Map;
                 query = "SELECT DATAFILE_ID, TYPE FROM DATAFILETAG WHERE DATAFILE_ID IN (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"),
 })
 @Table(indexes = {@Index(columnList = "datafile_id")})
-public class DataFileTag implements Serializable {
+public class DataFileTag implements JpaEntity<Long>, Serializable {
     private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -68,10 +68,10 @@ public class DataFile extends DvObject implements Comparable<DataFile> {
     private static final long serialVersionUID = 1L;
 
     public static final String TARGET_URL = "/file.xhtml?persistentId=";
-    public static final char INGEST_STATUS_NONE = 65;
-    public static final char INGEST_STATUS_SCHEDULED = 66;
-    public static final char INGEST_STATUS_INPROGRESS = 67;
-    public static final char INGEST_STATUS_ERROR = 68;
+    public static final char INGEST_STATUS_NONE = 'A';
+    public static final char INGEST_STATUS_SCHEDULED = 'B';
+    public static final char INGEST_STATUS_INPROGRESS = 'C';
+    public static final char INGEST_STATUS_ERROR = 'D';
 
     public static final Long ROOT_DATAFILE_ID_DEFAULT = -1L;
 
@@ -131,7 +131,8 @@ public class DataFile extends DvObject implements Comparable<DataFile> {
     @BatchFetch(BatchFetchType.JOIN)
     private DataTable dataTable;
 
-    @OneToMany(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToMany(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST},
+            orphanRemoval = true)
     private List<IngestReport> ingestReports;
 
     @OneToOne(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
@@ -247,6 +248,10 @@ public class DataFile extends DvObject implements Comparable<DataFile> {
 
     public Long getUncompressedSize() {
         return uncompressedSize;
+    }
+
+    public List<IngestReport> getIngestReports() {
+        return ingestReports;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.persistence.datafile;
 
+import edu.harvard.iq.dataverse.persistence.JpaEntity;
 import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
 
 import javax.persistence.CascadeType;
@@ -27,15 +28,15 @@ import java.util.Objects;
 
 @Entity
 @Table(indexes = {@Index(columnList = "datafile_id")})
-public class DataTable implements Serializable {
+public class DataTable implements JpaEntity<Long>, Serializable {
 
     /**
      * Creates a new instance of DataTable
      */
-    public DataTable() {
-    }
+    public DataTable() { }
 
     private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
