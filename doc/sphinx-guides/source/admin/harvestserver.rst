@@ -26,7 +26,7 @@ The email portion of :ref:`systemEmail` will be visible via OAI-PMH (from the "I
 How does it work?
 -----------------
 
-Only the published, unrestricted datasets in your Dataverse installation can
+Only the published datasets in your Dataverse installation can
 be made harvestable. Remote clients normally keep their records in sync
 through scheduled incremental updates, daily or weekly, thus
 minimizing the load on your server. Note that it is only the metadata
@@ -115,10 +115,10 @@ Some useful examples of search queries to define OAI sets:
 
   ``keywordValue:censorship``
 
-Important: New SOLR schema required!
+Important: New Solr schema required!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In order to be able to define OAI sets, your SOLR server must be upgraded with the search schema that came with release 4.5 (or later), and all your local datasets must be re-indexed, once the new schema is installed. 
+In order to be able to define OAI sets, your Solr server must be upgraded with the search schema that came with release 4.5 (or later), and all your local datasets must be re-indexed, once the new schema is installed. 
 
 OAI Set updates
 ---------------

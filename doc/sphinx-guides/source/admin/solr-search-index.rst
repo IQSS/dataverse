@@ -1,7 +1,7 @@
 Solr Search Index
 =================
 
-A Dataverse installation requires Solr to be operational at all times. If you stop Solr, you should see a error about this on the root Dataverse installation page, which is powered by the search index Solr provides. You can set up Solr by following the steps in our Installation Guide's :doc:`/installation/prerequisites` and :doc:`/installation/config` sections explaining how to configure it. This section you're reading now is about the care and feeding of the search index. PostgreSQL is the "source of truth" and the Dataverse installation will copy data from PostgreSQL into Solr. For this reason, the search index can be rebuilt at any time. Depending on the amount of data you have, this can be a slow process. You are encouraged to experiment with production data to get a sense of how long a full reindexing will take.
+A Dataverse installation requires Solr to be operational at all times. If you stop Solr, you should see an error about this on the root Dataverse installation page, which is powered by the search index Solr provides. You can set up Solr by following the steps in our Installation Guide's :doc:`/installation/prerequisites` and :doc:`/installation/config` sections explaining how to configure it. This section you're reading now is about the care and feeding of the search index. PostgreSQL is the "source of truth" and the Dataverse installation will copy data from PostgreSQL into Solr. For this reason, the search index can be rebuilt at any time. Depending on the amount of data you have, this can be a slow process. You are encouraged to experiment with production data to get a sense of how long a full reindexing will take.
 
 .. contents:: Contents:
 	:local:
@@ -9,7 +9,7 @@ A Dataverse installation requires Solr to be operational at all times. If you st
 Full Reindex
 -------------
 
-There are two ways to perform a full reindex of the Dataverse installation search index. Starting with a "clear" ensures a completely clean index but involves downtime. Reindexing in place doesn't involve downtime but does not ensure a completely clean index.
+There are two ways to perform a full reindex of the Dataverse installation search index. Starting with a "clear" ensures a completely clean index but involves downtime. Reindexing in place doesn't involve downtime but does not ensure a completely clean index (e.g. stale entries from destroyed datasets can remain in the index).
 
 Clear and Reindex
 +++++++++++++++++
@@ -22,7 +22,7 @@ Get a list of all database objects that are missing in Solr, and Solr documents 
 
 ``curl http://localhost:8080/api/admin/index/status``
 
-Remove all Solr documents that are orphaned (ie not associated with objects in the database):
+Remove all Solr documents that are orphaned (i.e. not associated with objects in the database):
 
 ``curl http://localhost:8080/api/admin/index/clear-orphans``
 
@@ -36,7 +36,7 @@ Please note that the moment you issue this command, it will appear to end users 
 Start Async Reindex
 ~~~~~~~~~~~~~~~~~~~
 
-Please note that this operation may take hours depending on the amount of data in your system. This known issue is being tracked at https://github.com/IQSS/dataverse/issues/50
+Please note that this operation may take hours depending on the amount of data in your system and whether or not you installation is using full-text indexing. More information on this, as well as some reference times, can be found at https://github.com/IQSS/dataverse/issues/50.
 
 ``curl http://localhost:8080/api/admin/index``
 
@@ -60,7 +60,7 @@ If indexing stops, this command should pick up where it left off based on which 
 Manual Reindexing
 -----------------
 
-If you have made manual changes to a dataset in the database or wish to reindex a dataset that solr didn't want to index properly, it is possible to manually reindex Dataverse collections and datasets.
+If you have made manual changes to a dataset in the database or wish to reindex a dataset that Solr didn't want to index properly, it is possible to manually reindex Dataverse collections and datasets.
 
 Reindexing Dataverse Collections
 ++++++++++++++++++++++++++++++++
@@ -69,7 +69,7 @@ Dataverse collections must be referenced by database object ID. If you have dire
 
 ``select id from dataverse where alias='dataversealias';``
 
-should work, or you may click the Dataverse Software's "Edit" menu and look for dataverseId= in the URLs produced by the drop-down. Then, to re-index:
+should work, or you may click the Dataverse Software's "Edit" menu and look for *dataverseId=* in the URLs produced by the drop-down. Then, to re-index:
 
 ``curl http://localhost:8080/api/admin/index/dataverses/135``
 
@@ -89,7 +89,7 @@ To re-index a dataset by its database ID:
 Manually Querying Solr
 ----------------------
 
-If you suspect something isn't indexed properly in solr, you may bypass the Dataverse installation's web interface and query the command line directly to verify what solr returns:
+If you suspect something isn't indexed properly in Solr, you may bypass the Dataverse installation's web interface and query the command line directly to verify what Solr returns:
 
 ``curl "http://localhost:8983/solr/collection1/select?q=dsPersistentId:doi:10.15139/S3/HFV0AO"``
 
