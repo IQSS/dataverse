@@ -101,7 +101,7 @@ public class PersonOrOrgUtil {
             }
 
         } else {
-            if (assumeCommaInPersonName) {
+            if (assumeCommaInPersonName && !isPerson) {
                 isOrganization = true;
             } else {
                 givenName = FirstNames.getInstance().getFirstName(name);
@@ -115,6 +115,7 @@ public class PersonOrOrgUtil {
                     // default
                     if (isOrganization || organizationIfTied) {
                         isOrganization = true;
+                        givenName=null;
                     }
                 }
             }
