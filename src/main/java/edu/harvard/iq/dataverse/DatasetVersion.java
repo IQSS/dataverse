@@ -1807,7 +1807,7 @@ public class DatasetVersion implements Serializable {
             DatasetField authorAffiliation = datasetAuthor.getAffiliation();
             String affiliation = null;
             if (authorAffiliation != null) {
-                affiliation = datasetAuthor.getAffiliation().getDisplayValue();
+                affiliation = datasetAuthor.getAffiliation().getValue();
             }
             JsonObject entity = PersonOrOrgUtil.getPersonOrOrganization(name, false, (identifierAsUrl==null));
             String givenName= entity.containsKey("givenName") ? entity.getString("givenName"):null;
