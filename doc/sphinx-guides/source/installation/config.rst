@@ -1657,6 +1657,8 @@ This setting is useful in cases such as running your Dataverse installation behi
 	"HTTP_VIA",
 	"REMOTE_ADDR"
 	
+.. _dataverse.personOrOrg.assumeCommaInPersonName:
+
 dataverse.personOrOrg.assumeCommaInPersonName
 +++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1664,6 +1666,8 @@ Please note that this setting is experimental.
 
 The Schema.org metadata and OpenAIRE exports and the Schema.org metadata included in DatasetPages try to infer whether each entry in the various fields (e.g. Author, Contributor) is a Person or Organization. If you are sure that
 users are following the guidance to add people in the recommended family name, given name order, with a comma, you can set this true to always assume entries without a comma are for Organizations. The default is false.
+
+.. _dataverse.personOrOrg.orgPhraseArray:
 
 dataverse.personOrOrg.orgPhraseArray
 ++++++++++++++++++++++++++++++++++++
