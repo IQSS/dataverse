@@ -986,6 +986,7 @@ public class Datasets extends AbstractApiBean {
                                     dsf.setSingleValue("");
                                     dsf.setSingleControlledVocabularyValue(null);
                                 }
+                              cvvDisplay="";
                             }
                             if (updateField.getDatasetFieldType().isControlledVocabulary()) {
                                 if (dsf.getDatasetFieldType().isAllowMultiples()) {
