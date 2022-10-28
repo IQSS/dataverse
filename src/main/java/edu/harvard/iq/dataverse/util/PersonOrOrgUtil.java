@@ -76,6 +76,7 @@ public class PersonOrOrgUtil {
             for (String phrase : orgPhrases) {
                 if (name.contains(phrase)) {
                     isOrganization = true;
+                    break;
                 }
             }
         }
