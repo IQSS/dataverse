@@ -27,6 +27,16 @@ public class PersonOrOrgUtilTest {
             verifyIsOrganization("The Ford Foundation");
             verifyIsOrganization("United Nations Economic and Social Commission for Asia and the Pacific (UNESCAP)");
             verifyIsOrganization("Michael J. Fox Foundation for Parkinson's Research");
+            // The next example is one known to be asserted to be a Person without an entry
+            // in the OrgWordArray
+            // So we test with it in the array and then when the array is empty to verify
+            // the array works, resetting the array works, and the problem still exists in
+            // the underlying algorithm
+            PersonOrOrgUtil.setOrgPhraseArray("[\"Portable\"]");
+            verifyIsOrganization("Portable Antiquities of the Netherlands");
+            PersonOrOrgUtil.setOrgPhraseArray(null);
+            JsonObject obj = PersonOrOrgUtil.getPersonOrOrganization("Portable Antiquities of the Netherlands", false, false);
+            assertTrue(obj.getBoolean("isPerson"));
         }
 
         @Test
@@ -79,7 +89,7 @@ public class PersonOrOrgUtilTest {
         }
         
         private void verifyIsOrganization(String fullName) {
-            JsonObject obj = PersonOrOrgUtil.getPersonOrOrganization(fullName, false);
+            JsonObject obj = PersonOrOrgUtil.getPersonOrOrganization(fullName, false, false);
             System.out.println(JsonUtil.prettyPrint(obj));
             assertEquals(obj.getString("fullName"),fullName);
             assertFalse(obj.getBoolean("isPerson"));
@@ -87,7 +97,11 @@ public class PersonOrOrgUtilTest {
         }
         
         private void verifyIsPerson(String fullName, String givenName, String familyName) {
-            JsonObject obj = PersonOrOrgUtil.getPersonOrOrganization(fullName, false);
+            verifyIsPerson(fullName, givenName, familyName, false);
+        }
+        
+        private void verifyIsPerson(String fullName, String givenName, String familyName, boolean isPerson) {
+            JsonObject obj = PersonOrOrgUtil.getPersonOrOrganization(fullName, false, isPerson);
             System.out.println(JsonUtil.prettyPrint(obj));
             assertEquals(obj.getString("fullName"),fullName);
             assertTrue(obj.getBoolean("isPerson"));
