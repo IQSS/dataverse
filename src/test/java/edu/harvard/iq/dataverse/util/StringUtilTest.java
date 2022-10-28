@@ -354,5 +354,23 @@ public class StringUtilTest {
             String expected = "";
             assertFalse(StringUtil.nonEmpty(expected));
         }
+        
+        /**
+         * full name or organization name cleanup.
+         * 
+         * @author francesco.cadili@4science.it
+         * 
+         *         Name is composed of: <First Names> <Family Name>
+         */
+        @Test
+        public void testNormalize() {
+            assertEquals(StringUtil.normalize("    Francesco    "), "Francesco");
+            assertEquals(StringUtil.normalize("Francesco  Cadili "), "Francesco Cadili");
+            assertEquals(StringUtil.normalize("  Cadili,Francesco"), "Cadili, Francesco");
+            assertEquals(StringUtil.normalize("Cadili,     Francesco  "), "Cadili, Francesco");
+            assertEquals(StringUtil.normalize(null), "");
+
+            // TODO: organization examples...
+        }
     }
 }

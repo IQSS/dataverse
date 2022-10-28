@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.util;
 
-import edu.harvard.iq.dataverse.export.openaire.Organizations;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
 import org.junit.Ignore;
