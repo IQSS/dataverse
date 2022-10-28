@@ -267,6 +267,7 @@ public class Shib implements java.io.Serializable {
                 logger.info("Unable to redirect user to homepage at " + prettyFacesHomePageString);
             }
         } else {
+            state = State.PROMPT_TO_CREATE_NEW_ACCOUNT;
             displayNameToPersist = displayInfo.getTitle();
             emailToPersist = emailAddress;
             /**
@@ -310,7 +311,7 @@ public class Shib implements java.io.Serializable {
                 } else {
                     debugSummary = "There is already a NON-BUILTIN user with this email address. This is a problem!";
                     String errorMessage = "";
-                    // is it a Shib account?
+                    // is this a Shib account?
                     if (existingAuthUserFoundByEmail.getAuthenticatedUserLookup().getAuthenticationProviderId().equals(shibAuthProvider.getId())) {
                         String storedUserLookupIdentifier = existingAuthUserFoundByEmail.getAuthenticatedUserLookup().getPersistentUserId();
                         
@@ -320,7 +321,7 @@ public class Shib implements java.io.Serializable {
                         if (!shibIdp.equals(storedShibProvider)) {
                             errorMessage = "A Shibboleth account associated with this email address already exists, and it was originally authenticated by the provider "+
                                     storedShibProvider+
-                                    ". You are now attempting to log in using "+shibIdp+" as the authentication provider. Please contact support...";
+                                    ". You are now attempting to log in using "+shibIdp+" as the authentication provider.";
                         } else { 
                             // must be the eppn that has changed:
                             errorMessage = "A Shibboleth account associated with this email address already exists, and it was originally authenticated by the same " +
@@ -344,7 +345,6 @@ public class Shib implements java.io.Serializable {
             } else {
                 debugSummary = "Could not find an auth user based on email address. We will create a new Shibboleth user. ";
             }
-            state = State.PROMPT_TO_CREATE_NEW_ACCOUNT;
         }
         logger.fine("Debug summary: " + debugSummary + " (state: " + state + ").");
         logger.fine("redirectPage: " + redirectPage);
