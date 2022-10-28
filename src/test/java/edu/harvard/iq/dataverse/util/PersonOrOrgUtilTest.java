@@ -77,10 +77,12 @@ public class PersonOrOrgUtilTest {
             verifyIsPerson("Francesco", "Francesco", null);
             // test only family name
             verifyIsPerson("Cadili", null, null);
+            //Verify override works
+            verifyIsPerson("IBM", null, null, true);
         }
         
         private void verifyIsOrganization(String fullName) {
-            JsonObject obj = PersonOrOrgUtil.getPersonOrOrganization(fullName, false);
+            JsonObject obj = PersonOrOrgUtil.getPersonOrOrganization(fullName, false, false);
             System.out.println(JsonUtil.prettyPrint(obj));
             assertEquals(obj.getString("fullName"),fullName);
             assertFalse(obj.getBoolean("isPerson"));
@@ -88,7 +90,11 @@ public class PersonOrOrgUtilTest {
         }
         
         private void verifyIsPerson(String fullName, String givenName, String familyName) {
-            JsonObject obj = PersonOrOrgUtil.getPersonOrOrganization(fullName, false);
+            verifyIsPerson(fullName, givenName, familyName, false);
+        }
+        
+        private void verifyIsPerson(String fullName, String givenName, String familyName, boolean isPerson) {
+            JsonObject obj = PersonOrOrgUtil.getPersonOrOrganization(fullName, false, isPerson);
             System.out.println(JsonUtil.prettyPrint(obj));
             assertEquals(obj.getString("fullName"),fullName);
             assertTrue(obj.getBoolean("isPerson"));

@@ -38,14 +38,14 @@ public class PersonOrOrgUtil {
         setAssumeCommaInPersonName(Boolean.parseBoolean(System.getProperty("dataverse.personOrOrg.assumeCommaInPersonName", "false")));
     }
 
-    public static JsonObject getPersonOrOrganization(String name, boolean organizationIfTied) {
+    public static JsonObject getPersonOrOrganization(String name, boolean organizationIfTied, boolean isPerson) {
         name = Cleanup.normalize(name);
 
         String givenName = null;
         String familyName = null;
         // adapted from a Datacite algorithm,
         // https://github.com/IQSS/dataverse/issues/2243#issuecomment-358615313
-        boolean isOrganization = Organizations.getInstance().isOrganization(name);
+        boolean isOrganization = !isPerson && Organizations.getInstance().isOrganization(name);
         // ToDo - could add a check of stop words to handle problem cases, i.e. if name
         // contains something in that list, it is an org
         if (name.contains(",")) {
@@ -63,6 +63,7 @@ public class PersonOrOrgUtil {
                 }
             } else if (isOrganization || organizationIfTied) {
                 isOrganization = true;
+                givenName = null;
             }
 
         } else {
