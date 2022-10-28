@@ -115,6 +115,7 @@ public class PersonOrOrgUtil {
                     // default
                     if (isOrganization || organizationIfTied) {
                         isOrganization = true;
+                        givenName=null;
                     }
                 }
             }
