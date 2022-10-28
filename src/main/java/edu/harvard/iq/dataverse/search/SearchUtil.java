@@ -117,6 +117,10 @@ public class SearchUtil {
     }
 
     public static String constructQuery(String solrField, String userSuppliedQuery) {
+       return constructQuery(solrField, userSuppliedQuery, false);
+    }
+    
+    public static String constructQuery(String solrField, String userSuppliedQuery, boolean addQuotes) {
 
         StringBuilder queryBuilder = new StringBuilder();
         String delimiter = "[\"]+";
@@ -134,7 +138,12 @@ public class SearchUtil {
             } else {
                 StringTokenizer st = new StringTokenizer(userSuppliedQuery);
                 while (st.hasMoreElements()) {
-                    queryStrings.add(solrField + ":" + st.nextElement());
+                    String nextElement = (String) st.nextElement();
+                    //Entries such as URIs will get tokenized into individual words by solr unless they are in quotes
+                    if(addQuotes) {
+                        nextElement = "\"" + nextElement + "\"";
+                    }
+                    queryStrings.add(solrField + ":" + nextElement);
                 }
             }
         }
