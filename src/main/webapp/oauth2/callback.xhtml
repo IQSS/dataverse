@@ -21,7 +21,7 @@
             <ui:define name="body">
 	    <div class="alert alert-danger" role="alert" style="margin-top:3em;">
 		    <p>
-                    <h:outputFormat value="#{bundle['oauth2.callback.message']}" escape="false">
+                        <h:outputFormat value="#{bundle['oauth2.callback.message']}" escape="false" rendered="#{(!OAuth2Page.disabled) and (!OAuth2Page.signUpDisabled)}">
                                     <f:param value="#{systemConfig.guidesBaseUrl}"/>
                                     <f:param value="#{systemConfig.guidesVersion}"/>
 				    </h:outputFormat>
