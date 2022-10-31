@@ -65,7 +65,7 @@ public class OAISetServiceBean implements java.io.Serializable {
         return em.find(OAISet.class, pk);
     }
     
-    public boolean specExists(String spec) {
+    public boolean setExists(String spec) {
         boolean specExists = false;
         OAISet set = findBySpec(spec);
         

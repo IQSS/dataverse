@@ -43,12 +43,10 @@ public class FileChecksumValidationJob implements Runnable {
             if (fileChecksum.equals(calculatedChecksum)) {
                 result.setSuccess();
             } else {
-                result.setError();
-                result.setMessage(getMessage("bagit.checksum.validation.error", filePath, bagChecksumType, fileChecksum, calculatedChecksum));
+                result.setError(getMessage("bagit.checksum.validation.error", filePath, bagChecksumType, fileChecksum, calculatedChecksum));
             }
         } catch (Exception e) {
-            result.setError();
-            result.setMessage(getMessage("bagit.checksum.validation.exception", filePath, bagChecksumType, e.getMessage()));
+            result.setError(getMessage("bagit.checksum.validation.exception", filePath, bagChecksumType, e.getMessage()));
             logger.log(Level.WARNING, String.format("action=validate-checksum result=error filePath=%s type=%s", filePath, bagChecksumType), e);
         } finally {
             IOUtils.closeQuietly(inputStream);

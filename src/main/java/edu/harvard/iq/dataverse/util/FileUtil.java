@@ -32,6 +32,7 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
@@ -479,8 +480,8 @@ public class FileUtil implements java.io.Serializable  {
         // step 4: 
         // Additional processing; if we haven't gotten much useful information 
         // back from Jhove, we'll try and make an educated guess based on 
-        // the file extension:
-        
+        // the file name and extension:
+
         if ( fileExtension != null) {
             logger.fine("fileExtension="+fileExtension);
 
@@ -488,13 +489,18 @@ public class FileUtil implements java.io.Serializable  {
                 if (fileType != null && fileType.startsWith("text/plain") && STATISTICAL_FILE_EXTENSION.containsKey(fileExtension)) {
                     fileType = STATISTICAL_FILE_EXTENSION.get(fileExtension);
                 } else {
-                    fileType = determineFileTypeByExtension(fileName);
+                    fileType = determineFileTypeByNameAndExtension(fileName);
                 }
-                
+
                 logger.fine("mime type recognized by extension: "+fileType);
             }
         } else {
             logger.fine("fileExtension is null");
+            String fileTypeByName = lookupFileTypeFromPropertiesFile(fileName);
+            if(!StringUtil.isEmpty(fileTypeByName)) {
+                logger.fine(String.format("mime type: %s recognized by filename: %s", fileTypeByName, fileName));
+                fileType = fileTypeByName;
+            }
         }
         
         // step 5: 
@@ -540,11 +546,14 @@ public class FileUtil implements java.io.Serializable  {
              }
         } 
         
+        if(fileType==null) {
+            fileType = MIME_TYPE_UNDETERMINED_DEFAULT;
+        }
         logger.fine("returning fileType "+fileType);
         return fileType;
     }
 
-    public static String determineFileTypeByExtension(String fileName) {
+    public static String determineFileTypeByNameAndExtension(String fileName) {
         String mimetypesFileTypeMapResult = MIME_TYPE_MAP.getContentType(fileName);
         logger.fine("MimetypesFileTypeMap type by extension, for " + fileName + ": " + mimetypesFileTypeMapResult);
         if (mimetypesFileTypeMapResult != null) {
@@ -559,14 +568,19 @@ public class FileUtil implements java.io.Serializable  {
     }
 
     public static String lookupFileTypeFromPropertiesFile(String fileName) {
-        String fileExtension = FilenameUtils.getExtension(fileName);
+        String fileKey = FilenameUtils.getExtension(fileName);
         String propertyFileName = "MimeTypeDetectionByFileExtension";
+        if(fileKey == null || fileKey.isEmpty()) {
+            fileKey = fileName;
+            propertyFileName = "MimeTypeDetectionByFileName";
+
+        }
         String propertyFileNameOnDisk = propertyFileName + ".properties";
         try {
-            logger.fine("checking " + propertyFileNameOnDisk + " for file extension " + fileExtension);
-            return BundleUtil.getStringFromPropertyFile(fileExtension, propertyFileName);
+            logger.fine("checking " + propertyFileNameOnDisk + " for file key " + fileKey);
+            return BundleUtil.getStringFromPropertyFile(fileKey, propertyFileName);
         } catch (MissingResourceException ex) {
-            logger.info(fileExtension + " is a file extension Dataverse doesn't know about. Consider adding it to the " + propertyFileNameOnDisk + " file.");
+            logger.info(fileKey + " is a filename/extension Dataverse doesn't know about. Consider adding it to the " + propertyFileNameOnDisk + " file.");
             return null;
         }
     }
@@ -868,7 +882,7 @@ public class FileUtil implements java.io.Serializable  {
                     }
 
                     datafiles.add(datafile);
-                    return CreateDataFileResult.success(finalType, datafiles);
+                    return CreateDataFileResult.success(fileName, finalType, datafiles);
                 }
 
                 // If it's a ZIP file, we are going to unpack it and create multiple
@@ -1044,7 +1058,7 @@ public class FileUtil implements java.io.Serializable  {
                         logger.warning("Could not remove temp file " + tempFile.getFileName().toString());
                     }
                     // and return:
-                    return CreateDataFileResult.success(finalType, datafiles);
+                    return CreateDataFileResult.success(fileName, finalType, datafiles);
                 }
 
             } else if (finalType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)) {
@@ -1060,7 +1074,7 @@ public class FileUtil implements java.io.Serializable  {
                 boolean didProcessWork = shpIngestHelper.processFile();
                 if (!(didProcessWork)) {
                     logger.severe("Processing of zipped shapefile failed.");
-                    return CreateDataFileResult.error(finalType);
+                    return CreateDataFileResult.error(fileName, finalType);
                 }
 
                 try {
@@ -1121,11 +1135,11 @@ public class FileUtil implements java.io.Serializable  {
                         logger.warning("Unable to delete: " + tempFile.toString() + "due to Security Exception: "
                                 + se.getMessage());
                     }
-                    return CreateDataFileResult.success(finalType, datafiles);
+                    return CreateDataFileResult.success(fileName, finalType, datafiles);
                 } else {
                     logger.severe("No files added from directory of rezipped shapefiles");
                 }
-                return CreateDataFileResult.error(finalType);
+                return CreateDataFileResult.error(fileName, finalType);
 
             } else if (finalType.equalsIgnoreCase(BagItFileHandler.FILE_TYPE)) {
                 Optional<BagItFileHandler> bagItFileHandler = CDI.current().select(BagItFileHandlerFactory.class).get().getBagItFileHandler();
@@ -1137,7 +1151,7 @@ public class FileUtil implements java.io.Serializable  {
         } else {
             // Default to suppliedContentType if set or the overall undetermined default if a contenttype isn't supplied
             finalType = StringUtils.isBlank(suppliedContentType) ? FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT : suppliedContentType;
-            String type = determineFileTypeByExtension(fileName);
+            String type = determineFileTypeByNameAndExtension(fileName);
             if (!StringUtils.isBlank(type)) {
                 //Use rules for deciding when to trust browser supplied type
                 if (useRecognizedType(finalType, type)) {
@@ -1168,14 +1182,14 @@ public class FileUtil implements java.io.Serializable  {
             }
             datafiles.add(datafile);
 
-            return CreateDataFileResult.success(finalType, datafiles);
+            return CreateDataFileResult.success(fileName, finalType, datafiles);
         }
 
-        return CreateDataFileResult.error(finalType);
+        return CreateDataFileResult.error(fileName, finalType);
     }   // end createDataFiles
     
 
-	private static boolean useRecognizedType(String suppliedContentType, String recognizedType) {
+	public static boolean useRecognizedType(String suppliedContentType, String recognizedType) {
 		// is it any better than the type that was supplied to us,
 		// if any?
 		// This is not as trivial a task as one might expect...
@@ -1405,7 +1419,7 @@ public class FileUtil implements java.io.Serializable  {
     	String driverId = dataFile.getOwner().getEffectiveStorageDriverId();
 		
         String bucketName = System.getProperty("dataverse.files." + driverId + ".bucket-name");
-        String storageId = driverId + "://" + bucketName + ":" + dataFile.getFileMetadata().getLabel();
+        String storageId = driverId + DataAccess.SEPARATOR + bucketName + ":" + dataFile.getFileMetadata().getLabel();
         dataFile.setStorageIdentifier(storageId);
     }
     
@@ -1524,7 +1538,7 @@ public class FileUtil implements java.io.Serializable  {
         }
         // 1. License and Terms of Use:
         if (datasetVersion.getTermsOfUseAndAccess() != null) {
-            License license = datasetVersion.getTermsOfUseAndAccess().getLicense();
+            License license = DatasetUtil.getLicense(datasetVersion);
             if ((license == null && StringUtils.isNotBlank(datasetVersion.getTermsOfUseAndAccess().getTermsOfUse()))
                     || (license != null && !license.isDefault())) {
                 logger.fine("Popup required because of license or terms of use.");
@@ -1607,32 +1621,33 @@ public class FileUtil implements java.io.Serializable  {
      */
     public static String getFileDownloadUrlPath(String downloadType, Long fileId, boolean gbRecordsWritten, Long fileMetadataId) {
         String fileDownloadUrl = "/api/access/datafile/" + fileId;
-        if (downloadType != null && downloadType.equals("bundle")) {
-            if (fileMetadataId == null) {
-                fileDownloadUrl = "/api/access/datafile/bundle/" + fileId;
-            } else {
-                fileDownloadUrl = "/api/access/datafile/bundle/" + fileId + "?fileMetadataId=" + fileMetadataId;
+        if (downloadType != null) {
+            switch(downloadType) {
+            case "original":
+            case"RData":
+            case "tab":
+            case "GlobusTransfer":
+                    fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=" + downloadType;
+                    break;
+            case "bundle":
+                    if (fileMetadataId == null) {
+                        fileDownloadUrl = "/api/access/datafile/bundle/" + fileId;
+                    } else {
+                        fileDownloadUrl = "/api/access/datafile/bundle/" + fileId + "?fileMetadataId=" + fileMetadataId;
+                    }
+                    break;
+            case "var":
+                    if (fileMetadataId == null) {
+                        fileDownloadUrl = "/api/access/datafile/" + fileId + "/metadata";
+                    } else {
+                        fileDownloadUrl = "/api/access/datafile/" + fileId + "/metadata?fileMetadataId=" + fileMetadataId;
+                    }
+                    break;
+                }
+                
             }
-        }
-        if (downloadType != null && downloadType.equals("original")) {
-            fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=original";
-        }
-        if (downloadType != null && downloadType.equals("RData")) {
-            fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=RData";
-        }
-        if (downloadType != null && downloadType.equals("var")) {
-            if (fileMetadataId == null) {
-                fileDownloadUrl = "/api/access/datafile/" + fileId + "/metadata";
-            } else {
-                fileDownloadUrl = "/api/access/datafile/" + fileId + "/metadata?fileMetadataId=" + fileMetadataId;
-            }
-        }
-        if (downloadType != null && downloadType.equals("tab")) {
-            fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=tab";
-        }
         if (gbRecordsWritten) {
-            if (downloadType != null && ((downloadType.equals("original") || downloadType.equals("RData") || downloadType.equals("tab")) ||
-                    ((downloadType.equals("var") || downloadType.equals("bundle") ) && fileMetadataId != null))) {
+            if (fileDownloadUrl.contains("?")) {
                 fileDownloadUrl += "&gbrecs=true";
             } else {
                 fileDownloadUrl += "?gbrecs=true";
@@ -1770,10 +1785,10 @@ public class FileUtil implements java.io.Serializable  {
 
         StorageIO<DataFile> storage = dataFile.getStorageIO();
         InputStream in = null;
-        
+
         try {
             storage.open(DataAccessOption.READ_ACCESS);
-            
+
             if (!dataFile.isTabularData()) {
                 in = storage.getInputStream();
             } else {
@@ -1828,7 +1843,7 @@ public class FileUtil implements java.io.Serializable  {
                     } finally {
                         IOUtils.closeQuietly(in);
                     }
-                    // try again: 
+                    // try again:
                     if (recalculatedChecksum.equals(dataFile.getChecksumValue())) {
                         fixed = true;
                         try {
@@ -1839,10 +1854,11 @@ public class FileUtil implements java.io.Serializable  {
                     }
                 }
             }
-            
+
             if (!fixed) {
                 String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.wrongChecksumValue", Arrays.asList(dataFile.getId().toString()));
                 logger.log(Level.INFO, info);
+                logger.fine("Expected: " + dataFile.getChecksumValue() +", calculated: " + recalculatedChecksum);
                 throw new IOException(info);
             }
         }
@@ -1851,7 +1867,7 @@ public class FileUtil implements java.io.Serializable  {
     }
     
     public static String getStorageIdentifierFromLocation(String location) {
-    	int driverEnd = location.indexOf("://") + 3;
+    	int driverEnd = location.indexOf(DataAccess.SEPARATOR) + DataAccess.SEPARATOR.length();
     	int bucketEnd = driverEnd + location.substring(driverEnd).indexOf("/");
     	return location.substring(0,bucketEnd) + ":" + location.substring(location.lastIndexOf("/") + 1);
     }
@@ -1887,7 +1903,7 @@ public class FileUtil implements java.io.Serializable  {
     			}
     		}
     		String si = dataFile.getStorageIdentifier();
-    		if (si.contains("://")) {
+    		if (si.contains(DataAccess.SEPARATOR)) {
     			//Direct upload files will already have a store id in their storageidentifier
     			//but they need to be associated with a dataset for the overall storagelocation to be calculated
     			//so we temporarily set the owner
@@ -1906,7 +1922,7 @@ public class FileUtil implements java.io.Serializable  {
     	} catch (IOException ioEx) {
     		// safe to ignore - it's just a temp file. 
     		logger.warning(ioEx.getMessage());
-    		if(dataFile.getStorageIdentifier().contains("://")) {
+    		if(dataFile.getStorageIdentifier().contains(DataAccess.SEPARATOR)) {
     			logger.warning("Failed to delete temporary file " + dataFile.getStorageIdentifier());
     		} else {
     			logger.warning("Failed to delete temporary file " + FileUtil.getFilesTempDirectory() + "/"

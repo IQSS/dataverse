@@ -18,12 +18,14 @@ authentication providers, harvesters and others.
 Simple Configuration Options
 ----------------------------
 
-Developers have accessed the simple properties via
+Developers can access simple properties via:
 
-1. ``System.getProperty(...)`` for JVM system property settings
-2. ``SettingsServiceBean.get(...)`` for database settings and
+1. ``JvmSettings.<SETTING NAME>.lookup(...)`` for JVM system property settings.
+2. ``SettingsServiceBean.get(...)`` for database settings.
 3. ``SystemConfig.xxx()`` for specially treated settings, maybe mixed from 1 and 2 and other sources.
-4. ``SettingsWrapper`` must be used to obtain settings from 2 and 3 in frontend JSF (xhtml) pages. Please see the note on how to :ref:`avoid common efficiency issues with JSF render logic expressions <avoid-efficiency-issues-with-render-logic-expressions>`.
+4. ``SettingsWrapper`` for use in frontend JSF (xhtml) pages to obtain settings from 2 and 3. Using the wrapper is a must for performance as explained in :ref:`avoid common efficiency issues with JSF render logic expressions
+   <avoid-efficiency-issues-with-render-logic-expressions>`.
+5. ``System.getProperty()`` only for very special use cases not covered by ``JvmSettings``.
 
 As of Dataverse Software 5.3, we start to streamline our efforts into using a more consistent approach, also bringing joy and
 happiness to all the system administrators out there. This will be done by adopting the use of
@@ -49,6 +51,7 @@ Developers benefit from:
 - Config API is also pushing for validation of configuration, as it's typesafe and converters for non-standard types
   can be added within our codebase.
 - Defaults in code or bundled in ``META-INF/microprofile-config.properties`` allow for optional values without much hassle.
+- A single place to lookup any existing JVM setting in code, easier to keep in sync with the documentation.
 
 System administrators benefit from:
 
@@ -57,9 +60,9 @@ System administrators benefit from:
 - Running a Dataverse installation in containers gets much easier when configuration can be provisioned in a
   streamlined fashion, mitigating the need for scripting glue and distinguishing between setting types.
 - Classic installations have a profit, too: we can enable using a single config file, e.g. living in
-  ``/etc/dataverse/config.properties``.
+  ``/etc/dataverse/config.properties`` by adding our own, hot-reload config source.
 - Features for monitoring resources and others are easier to use with this streamlined configuration, as we can
-  avoid people having to deal with ``asadmin`` commands and change a setting comfortably instead.
+  avoid people having to deal with ``asadmin`` commands and change a setting with comfort instead.
 
 Adopting MicroProfile Config API
 ---------------------------------
@@ -68,33 +71,41 @@ This technology is introduced on a step-by-step basis. There will not be a big s
 Instead, we will provide backward compatibility by deprecating renamed or moved config options, while still
 supporting the old way of setting them.
 
-- Introducing a new setting or moving and old one should result in a key ``dataverse.<scope/task/module/...>.<setting>``.
-  That way we enable sys admins to recognize the meaning of an option and avoid name conflicts.
+- Introducing a new setting or moving an old one should result in a scoped key
+  ``dataverse.<scope/task/module/...>.<setting>``. That way we enable sys admins to recognize the meaning of an option
+  and avoid name conflicts.
   Starting with ``dataverse`` makes it perfectly clear that this is a setting meant for this application, which is
   important when using environment variables, system properties or other MPCONFIG sources.
-- Replace ``System.getProperty()`` calls with either injected configs or retrieve programmatically if more complex
-  handling is necessary. If you rename the property, you should provide an alias. See below.
-- Database settings need to be refactored in multiple steps. First you need to change the code retrieving it to use
-  MicroProfile Config API instead (just like above). Then you should provide an alias to retain backward compatibility.
-  See below.
+- Replace ``System.getProperty()`` calls with ``JvmSettings.<SETTING NAME>.lookup(...)``, adding the setting there first.
+  This might be paired with renaming and providing backward-compatible aliases.
+- Database settings need to be refactored in multiple steps and it is not yet clear how this will be done.
+  Many Database settings are of very static nature and might be moved to JVM settings (in backward compatible ways).
+
+Adding a JVM Setting
+^^^^^^^^^^^^^^^^^^^^
+
+Whenever a new option gets added or an existing configuration gets migrated to
+``edu.harvard.iq.dataverse.settings.JvmSettings``, you will attach the setting to an existing scope or create new
+sub-scopes first.
+
+- Scopes and settings are organised in a tree-like structure within a single enum ``JvmSettings``.
+- The root scope is "dataverse".
+- All sub-scopes are below that.
+- Scopes are separated by dots (periods).
+- A scope may be a placeholder, filled with a variable during lookup. (Named object mapping.)
+
+Any consumer of the setting can choose to use one of the fluent ``lookup()`` methods, which hides away alias handling,
+conversion etc from consuming code. See also the detailed Javadoc for these methods.
 
 Moving or Replacing a JVM Setting
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When moving an old key to a new (especially when doing so with a former JVM system property setting), you should
-add an alias to ``src/main/resources/META-INF/microprofile-aliases.properties`` to enable backward compatibility.
-The format is always like ``dataverse.<scope/....>.newname...=old.property.name``.
+add an alias to the ``JvmSettings`` definition to enable backward compatibility. Old names given there are capable of
+being used with patterned lookups.
+
+Another option is to add the alias in ``src/main/resources/META-INF/microprofile-aliases.properties``. The format is
+always like ``dataverse.<scope/....>.newname...=old.property.name``. Note this doesn't provide support for patterned
+aliases.
 
 Details can be found in ``edu.harvard.iq.dataverse.settings.source.AliasConfigSource``
-
-Aliasing Database Setting
-^^^^^^^^^^^^^^^^^^^^^^^^^
-
-When moving a database setting (``:ExampleSetting``), configure an alias
-``dataverse.my.example.setting=dataverse.settings.fromdb.ExampleSetting`` in
-``src/main/resources/META-INF/microprofile-aliases.properties``. This will enable backward compatibility.
-
-A database setting with an i18n attribute using *lang* will have available language codes appended to the name.
-Example: ``dataverse.settings.fromdb.ExampleI18nSetting.en``, ``dataverse.settings.fromdb.ExampleI18nSetting.de``
-
-More details in ``edu.harvard.iq.dataverse.settings.source.DbSettingConfigSource``

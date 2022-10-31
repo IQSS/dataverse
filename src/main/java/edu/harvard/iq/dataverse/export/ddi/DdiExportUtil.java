@@ -121,7 +121,7 @@ public class DdiExportUtil {
         xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
         xmlw.writeAttribute("xsi:schemaLocation", DDIExporter.DEFAULT_XML_NAMESPACE + " " + DDIExporter.DEFAULT_XML_SCHEMALOCATION);
         writeAttribute(xmlw, "version", DDIExporter.DEFAULT_XML_VERSION);
-        if(isMetadataLanguageSet(datasetDto.getMetadataLanguage())) {
+        if(DvObjectContainer.isMetadataLanguageSet(datasetDto.getMetadataLanguage())) {
             writeAttribute(xmlw, "xml:lang", datasetDto.getMetadataLanguage());
         }
         createStdyDscr(xmlw, datasetDto);
@@ -143,7 +143,7 @@ public class DdiExportUtil {
         xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
         xmlw.writeAttribute("xsi:schemaLocation", DDIExporter.DEFAULT_XML_NAMESPACE + " " + DDIExporter.DEFAULT_XML_SCHEMALOCATION);
         writeAttribute(xmlw, "version", DDIExporter.DEFAULT_XML_VERSION);
-        if(isMetadataLanguageSet(datasetDto.getMetadataLanguage())) {
+        if(DvObjectContainer.isMetadataLanguageSet(datasetDto.getMetadataLanguage())) {
             writeAttribute(xmlw, "xml:lang", datasetDto.getMetadataLanguage());
         }
         createStdyDscr(xmlw, datasetDto);
@@ -152,14 +152,6 @@ public class DdiExportUtil {
         createOtherMatsFromFileMetadatas(xmlw, version.getFileMetadatas());
         xmlw.writeEndElement(); // codeBook
         xmlw.flush();
-    }
-    
-    
-    private static boolean isMetadataLanguageSet(String mdLang) {
-       if(mdLang!=null && !mdLang.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
-           return true;
-       }
-        return false;
     }
 
     /**
@@ -936,7 +928,7 @@ public class DdiExportUtil {
                             }
                             if (!distributorName.isEmpty()) {
                                 xmlw.writeStartElement("distrbtr");
-                                if(isMetadataLanguageSet(lang)) {
+                                if(DvObjectContainer.isMetadataLanguageSet(lang)) {
                                     writeAttribute(xmlw, "xml:lang", lang);
                                 }
                                 if (!distributorAffiliation.isEmpty()) {
@@ -1056,7 +1048,7 @@ public class DdiExportUtil {
                                 if(!descriptionDate.isEmpty()){
                                    writeAttribute(xmlw,"date",descriptionDate); 
                                 } 
-                                if(isMetadataLanguageSet(lang)) {
+                                if(DvObjectContainer.isMetadataLanguageSet(lang)) {
                                     writeAttribute(xmlw, "xml:lang", lang);
                                 }
                                 xmlw.writeCharacters(descriptionText);
@@ -1530,7 +1522,7 @@ public class DdiExportUtil {
         //For the simplest Elements we can 
         if (!StringUtilisEmpty(value)) {
             xmlw.writeStartElement(name);
-            if(isMetadataLanguageSet(lang)) {
+            if(DvObjectContainer.isMetadataLanguageSet(lang)) {
                 writeAttribute(xmlw, "xml:lang", lang);
             }
             xmlw.writeCharacters(value);

@@ -57,6 +57,8 @@ public class ShibServiceBean {
         UID_WITH_LEADING_SPACE,
         IDENTIFIER_WITH_LEADING_SPACE,
         MISSING_REQUIRED_ATTR,
+        ONE_AFFILIATION,
+        TWO_AFFILIATIONS,
     };
 
     public DevShibAccountType getDevShibAccountType() {
@@ -137,6 +139,14 @@ public class ShibServiceBean {
 
             case MISSING_REQUIRED_ATTR:
                 ShibUtil.mutateRequestForDevConstantMissingRequiredAttributes(request);
+                break;
+
+            case ONE_AFFILIATION:
+                ShibUtil.mutateRequestForDevConstantOneAffiliation(request);
+                break;
+
+            case TWO_AFFILIATIONS:
+                ShibUtil.mutateRequestForDevConstantTwoAffiliations(request);
                 break;
 
             default:

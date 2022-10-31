@@ -16,12 +16,14 @@ import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetStorageSizeCommand;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -95,6 +97,12 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     @EJB
     SystemConfig systemConfig;
+
+    @EJB
+    GlobusServiceBean globusServiceBean;
+
+    @EJB
+    UserNotificationServiceBean userNotificationService;
 
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 
@@ -802,6 +810,35 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     }
     
+
+    @Asynchronous
+    public void reExportDatasetAsync(Dataset dataset) {
+        exportDataset(dataset, true);
+    }
+
+    public void exportDataset(Dataset dataset, boolean forceReExport) {
+        if (dataset != null) {
+            // Note that the logic for handling a dataset is similar to what is implemented in exportAllDatasets, 
+            // but when only one dataset is exported we do not log in a separate export logging file
+            if (dataset.isReleased() && dataset.getReleasedVersion() != null && !dataset.isDeaccessioned()) {
+
+                // can't trust dataset.getPublicationDate(), no. 
+                Date publicationDate = dataset.getReleasedVersion().getReleaseTime(); // we know this dataset has a non-null released version! Maybe not - SEK 8/19 (We do now! :)
+                if (forceReExport || (publicationDate != null
+                        && (dataset.getLastExportTime() == null
+                        || dataset.getLastExportTime().before(publicationDate)))) {
+                    try {
+                        recordService.exportAllFormatsInNewTransaction(dataset);
+                        logger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalIdString());
+                    } catch (Exception ex) {
+                        logger.info("Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalIdString() + "; " + ex.getMessage());
+                    }
+                }
+            }
+        }
+        
+    }
+
     public String getReminderString(Dataset dataset, boolean canPublishDataset) {
         return getReminderString( dataset, canPublishDataset, false);
     }
@@ -842,9 +879,11 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
     }
 
-    public void updateLastExportTimeStamp(Long datasetId) {
-        Date now = new Date();
-        em.createNativeQuery("UPDATE Dataset SET lastExportTime='"+now.toString()+"' WHERE id="+datasetId).executeUpdate();
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public int clearAllExportTimes() {
+        Query clearExportTimes = em.createQuery("UPDATE Dataset SET lastExportTime = NULL");
+        int numRowsUpdated = clearExportTimes.executeUpdate();
+        return numRowsUpdated;
     }
 
     public Dataset setNonDatasetFileAsThumbnail(Dataset dataset, InputStream inputStream) {
@@ -1135,4 +1174,5 @@ public class DatasetServiceBean implements java.io.Serializable {
             hdLogger.warning("Failed to destroy the dataset");
         }
     }
+
 }

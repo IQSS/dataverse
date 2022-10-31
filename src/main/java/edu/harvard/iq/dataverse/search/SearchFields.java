@@ -206,6 +206,7 @@ public class SearchFields {
      * A dataverse, a dataset, or a file.
      */
     public static final String TYPE = "dvObjectType";
+    public static final String METADATA_TYPES = "metadata_type_ss";
     public static final String NAME_SORT = "nameSort";
     // PUBLICATION_YEAR used to be called PUBLICATION_DATE.
     public static final String PUBLICATION_YEAR = "publicationDate";

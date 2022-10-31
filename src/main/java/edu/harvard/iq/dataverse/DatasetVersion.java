@@ -1,15 +1,16 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.license.License;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.DateUtil;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.io.Serializable;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -37,6 +39,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.OrderBy;
@@ -57,6 +61,13 @@ import org.apache.commons.lang3.StringUtils;
  *
  * @author skraffmiller
  */
+
+@NamedQueries({
+    @NamedQuery(name = "DatasetVersion.findUnarchivedReleasedVersion",
+               query = "SELECT OBJECT(o) FROM DatasetVersion AS o WHERE o.dataset.harvestedFrom IS NULL and o.releaseTime IS NOT NULL and o.archivalCopyLocation IS NULL"
+    )})
+    
+    
 @Entity
 @Table(indexes = {@Index(columnList="dataset_id")},
         uniqueConstraints = @UniqueConstraint(columnNames = {"dataset_id,versionnumber,minorversionnumber"}))
@@ -91,6 +102,14 @@ public class DatasetVersion implements Serializable {
 
     public static final int ARCHIVE_NOTE_MAX_LENGTH = 1000;
     public static final int VERSION_NOTE_MAX_LENGTH = 1000;
+    
+    //Archival copies: Status message required components
+    public static final String ARCHIVAL_STATUS = "status";
+    public static final String ARCHIVAL_STATUS_MESSAGE = "message";
+    //Archival Copies: Allowed Statuses
+    public static final String ARCHIVAL_STATUS_PENDING = "pending";
+    public static final String ARCHIVAL_STATUS_SUCCESS = "success";
+    public static final String ARCHIVAL_STATUS_FAILURE = "failure";
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -150,6 +169,11 @@ public class DatasetVersion implements Serializable {
     // removed pending further investigation (v4.13)
     private String archiveNote;
     
+    // Originally a simple string indicating the location of the archival copy. As
+    // of v5.12, repurposed to provide a more general json archival status (failure,
+    // pending, success) and message (serialized as a string). The archival copy
+    // location is now expected as the contents of the message for the status
+    // 'success'. See the /api/datasets/{id}/{version}/archivalStatus API calls for more details
     @Column(nullable=true, columnDefinition = "TEXT")
     private String archivalCopyLocation;
     
@@ -178,6 +202,8 @@ public class DatasetVersion implements Serializable {
     @Transient
     private DatasetVersionDifference dvd;
     
+    @Transient 
+    private JsonObject archivalStatus;
     
     public Long getId() {
         return this.id;
@@ -317,9 +343,39 @@ public class DatasetVersion implements Serializable {
     public String getArchivalCopyLocation() {
         return archivalCopyLocation;
     }
+    
+    public String getArchivalCopyLocationStatus() {
+        populateArchivalStatus(false);
+        
+        if(archivalStatus!=null) {
+            return archivalStatus.getString(ARCHIVAL_STATUS);
+        } 
+        return null;
+    }
+    public String getArchivalCopyLocationMessage() {
+        populateArchivalStatus(false);
+        if(archivalStatus!=null) {
+            return archivalStatus.getString(ARCHIVAL_STATUS_MESSAGE);
+        } 
+        return null;
+    }
+    
+    private void populateArchivalStatus(boolean force) {
+        if(archivalStatus ==null || force) {
+            if(archivalCopyLocation!=null) {
+                try {
+            archivalStatus = JsonUtil.getJsonObject(archivalCopyLocation);
+                } catch(Exception e) {
+                    logger.warning("DatasetVersion id: " + id + "has a non-JsonObject value, parsing error: " + e.getMessage());
+                    logger.fine(archivalCopyLocation);
+                }
+            }
+        }
+    }
 
     public void setArchivalCopyLocation(String location) {
         this.archivalCopyLocation = location;
+        populateArchivalStatus(true);
     }
 
     public String getDeaccessionLink() {

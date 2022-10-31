@@ -27,7 +27,22 @@ import java.util.Map;
 import java.util.logging.Logger;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.Pattern;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -600,7 +615,11 @@ public class DataFile extends DvObject implements Comparable {
      * @return 
      */
     public String getFriendlySize() {
-        return FileSizeChecker.bytesToHumanReadable(filesize);
+        if (filesize != null) {
+            return FileSizeChecker.bytesToHumanReadable(filesize);
+        } else {
+            return BundleUtil.getStringFromBundle("file.sizeNotAvailable");
+        }
     }
 
     public boolean isRestricted() {

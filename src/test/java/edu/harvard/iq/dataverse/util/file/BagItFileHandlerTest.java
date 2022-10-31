@@ -96,6 +96,7 @@ public class BagItFileHandlerTest {
 
         CreateDataFileResult result = target.handleBagItPackage(SYSTEM_CONFIG, DATASET_VERSION, FILE.getName(), FILE);
         MatcherAssert.assertThat(result.success(), Matchers.is(false));
+        createDataFileResultAsserts(result);
 
         handleBagItPackageAsserts(fileDataProvider);
         Mockito.verifyZeroInteractions(postProcessor);
@@ -113,6 +114,7 @@ public class BagItFileHandlerTest {
 
         CreateDataFileResult result = target.handleBagItPackage(SYSTEM_CONFIG, DATASET_VERSION, FILE.getName(), FILE);
         MatcherAssert.assertThat(result.success(), Matchers.is(true));
+        createDataFileResultAsserts(result);
         for(DataFile expectedDataFile: dataProviderWithDataFiles.dataFiles) {
             MatcherAssert.assertThat(result.getDataFiles(), Matchers.hasItems(expectedDataFile));
         }
@@ -133,6 +135,7 @@ public class BagItFileHandlerTest {
 
         CreateDataFileResult result = target.handleBagItPackage(SYSTEM_CONFIG, DATASET_VERSION, FILE.getName(), FILE);
         MatcherAssert.assertThat(result.success(), Matchers.is(true));
+        createDataFileResultAsserts(result);
         Mockito.verify(postProcessor).process(Mockito.any());
         handleBagItPackageAsserts(dataProviderSpy);
         createDataFileAsserts(dataProviderWithDataFiles.dataProvider.getFilePaths());
@@ -151,6 +154,7 @@ public class BagItFileHandlerTest {
 
         CreateDataFileResult result = target.handleBagItPackage(SYSTEM_CONFIG, DATASET_VERSION, FILE.getName(), FILE);
         MatcherAssert.assertThat(result.success(), Matchers.is(true));
+        createDataFileResultAsserts(result);
         MatcherAssert.assertThat(result.getDataFiles().size(), Matchers.is(1));
         MatcherAssert.assertThat(result.getDataFiles().get(0), Matchers.is(dataProviderWithDataFiles.dataFiles.get(0)));
         MatcherAssert.assertThat(result.getDataFiles().get(0).getDirectoryLabel(), Matchers.is("dir/path"));
@@ -173,6 +177,7 @@ public class BagItFileHandlerTest {
 
         CreateDataFileResult result = target.handleBagItPackage(SYSTEM_CONFIG, DATASET_VERSION, FILE.getName(), FILE);
         MatcherAssert.assertThat(result.success(), Matchers.is(true));
+        createDataFileResultAsserts(result);
         MatcherAssert.assertThat(result.getDataFiles().size(), Matchers.is(1));
         MatcherAssert.assertThat(result.getDataFiles().get(0), Matchers.is(dataProviderWithDataFiles.dataFiles.get(0)));
         MatcherAssert.assertThat(result.getDataFiles().get(0).getContentType(), Matchers.nullValue());
@@ -194,6 +199,7 @@ public class BagItFileHandlerTest {
 
         CreateDataFileResult result = target.handleBagItPackage(SYSTEM_CONFIG, DATASET_VERSION, FILE.getName(), FILE);
         MatcherAssert.assertThat(result.success(), Matchers.is(true));
+        createDataFileResultAsserts(result);
 
         DataFile expectedDataFile = dataProviderWithDataFiles.dataFiles.stream().filter(dataFile -> dataFile.getCurrentName().equals(bagEntry)).findFirst().get();
         MatcherAssert.assertThat(result.getDataFiles().size(), Matchers.is(1));
@@ -220,9 +226,8 @@ public class BagItFileHandlerTest {
 
         CreateDataFileResult result = target.handleBagItPackage(SYSTEM_CONFIG, DATASET_VERSION, FILE.getName(), FILE);
         MatcherAssert.assertThat(result.success(), Matchers.is(false));
+        createDataFileResultAsserts(result);
         MatcherAssert.assertThat(result.getErrors().size(), Matchers.is(1));
-        MatcherAssert.assertThat(result.getErrors().get(0), Matchers.containsString(exceptionDataFile));
-        MatcherAssert.assertThat(result.getErrors().get(0), Matchers.containsString("exceeds the size limit"));
 
         handleBagItPackageAsserts(dataProviderSpy);
         createDataFileAsserts(Arrays.asList(Path.of(bagEntry)), 2);
@@ -240,9 +245,8 @@ public class BagItFileHandlerTest {
 
         CreateDataFileResult result = target.handleBagItPackage(SYSTEM_CONFIG, DATASET_VERSION, FILE.getName(), FILE);
         MatcherAssert.assertThat(result.success(), Matchers.is(false));
+        createDataFileResultAsserts(result);
         MatcherAssert.assertThat(result.getErrors().size(), Matchers.is(1));
-        MatcherAssert.assertThat(result.getErrors().get(0), Matchers.containsString(FILE.getName()));
-        MatcherAssert.assertThat(result.getErrors().get(0), Matchers.containsString("exceeds the number of files limit"));
 
         handleBagItPackageAsserts(dataProviderSpy);
         Mockito.verifyZeroInteractions(postProcessor);
@@ -258,10 +262,16 @@ public class BagItFileHandlerTest {
 
         CreateDataFileResult result = target.handleBagItPackage(SYSTEM_CONFIG, DATASET_VERSION, FILE.getName(), FILE);
         MatcherAssert.assertThat(result.success(), Matchers.is(false));
+        createDataFileResultAsserts(result);
 
         handleBagItPackageAsserts(dataProviderSpy);
         createDataFileAsserts(dataProviderWithDataFiles.dataProvider.getFilePaths());
         Mockito.verifyZeroInteractions(postProcessor);
+    }
+
+    private void createDataFileResultAsserts(CreateDataFileResult result) {
+        MatcherAssert.assertThat(result.getFilename(), Matchers.is(FILE.getName()));
+        MatcherAssert.assertThat(result.getType(), Matchers.is(BagItFileHandler.FILE_TYPE));
     }
 
     private void handleBagItPackageAsserts(FileDataProvider dataProviderMock) throws IOException{

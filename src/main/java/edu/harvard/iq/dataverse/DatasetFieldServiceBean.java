@@ -672,6 +672,10 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         for(JsonObject jo: cvocConf.values()) {
             scripts.add(jo.getString("js-url"));
         }
+        String customScript = settingsService.getValueForKey(SettingsServiceBean.Key.ControlledVocabularyCustomJavaScript);
+        if (customScript != null && !customScript.isEmpty()) {
+            scripts.add(customScript);
+        }
         return Arrays.asList(scripts.toArray(new String[0]));
     }
 
