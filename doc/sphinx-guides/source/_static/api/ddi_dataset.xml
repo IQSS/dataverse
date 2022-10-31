@@ -142,6 +142,7 @@
     </method>
     <dataAccs>
       <notes type="DVN:TOA" level="dv">Terms of Access</notes>
+      <notes type="DVN:TOU" level="dv">Terms of Use</notes>
       <setAvail>
         <accsPlac>Data Access Place</accsPlac>
         <origArch>Original Archive</origArch>

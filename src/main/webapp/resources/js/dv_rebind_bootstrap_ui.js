@@ -35,9 +35,6 @@ function bind_bsui_components(){
     // Sharrre
     sharrre();
     
-    // Custom Popover with HTML content
-    popoverHTML();
-    
     // clipboard.js click to copy
     clickCopyClipboard();
     
@@ -213,7 +210,6 @@ function contentTruncate(truncSelector, truncMoreBtn, truncMoreTip, truncLessBtn
  */
 function checksumTruncate(){
     $('span.checksum-truncate').each(function () {
-        $(this).toggleClass('sr-only').toggleClass('visisble');
         var checksumText = $(this).text();
         var checksumLength = checksumText.length;
         if (checksumLength > 25) {

@@ -25,6 +25,7 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 
 import org.apache.commons.compress.utils.IOUtils;
 
@@ -41,13 +42,15 @@ public class BagValidationJob implements Runnable {
 
     private String hash;
     private String name;
-    private static String hashtype;
+    private String basePath;
+    private static ChecksumType hashtype;
 
-    public BagValidationJob(String value, String key) throws IllegalStateException {
+    public BagValidationJob(String bagName, String value, String key) throws IllegalStateException {
         if (zf == null || bagGenerator == null) {
             throw new IllegalStateException(
                     "Static Zipfile and BagGenerator must be set before creating ValidationJobs");
         }
+        basePath=bagName;
         hash = value;
         name = key;
 
@@ -60,11 +63,11 @@ public class BagValidationJob implements Runnable {
      */
     public void run() {
 
-        String realHash = generateFileHash(name, zf);
+        String realHash = generateFileHash(basePath + "/" + name, zf);
         if (hash.equals(realHash)) {
             log.fine("Valid hash for " + name);
         } else {
-            log.severe("Invalid " + bagGenerator.getHashtype() + " for " + name);
+            log.severe("Invalid " + bagGenerator.getHashtype().name() + " for " + name);
             log.fine("As sent: " + hash);
             log.fine("As calculated: " + realHash);
         }
@@ -72,12 +75,16 @@ public class BagValidationJob implements Runnable {
 
     private String generateFileHash(String name, ZipFile zf) {
 
+        String realHash = null;
+        
         ZipArchiveEntry archiveEntry1 = zf.getEntry(name);
+        
+        if(archiveEntry1 != null) {
         // Error check - add file sizes to compare against supplied stats
-
+        log.fine("Getting stream for " + name);
         long start = System.currentTimeMillis();
         InputStream inputStream = null;
-        String realHash = null;
+        
         try {
             inputStream = zf.getInputStream(archiveEntry1);
             if (hashtype.equals(DataFile.ChecksumType.SHA1)) {
@@ -89,7 +96,7 @@ public class BagValidationJob implements Runnable {
             } else if (hashtype.equals(DataFile.ChecksumType.MD5)) {
                 realHash = DigestUtils.md5Hex(inputStream);
             } else {
-                log.warning("Unknown hash type: " + hashtype);
+                log.warning("Unknown hash type: " + hashtype.name());
             }
 
         } catch (ZipException e) {
@@ -104,6 +111,9 @@ public class BagValidationJob implements Runnable {
         log.fine("Retrieve/compute time = " + (System.currentTimeMillis() - start) + " ms");
         // Error check - add file sizes to compare against supplied stats
         bagGenerator.incrementTotalDataSize(archiveEntry1.getSize());
+        } else {
+            log.warning("Entry " + name + " not found in zipped bag: not validated");
+        }
         return realHash;
     }
 

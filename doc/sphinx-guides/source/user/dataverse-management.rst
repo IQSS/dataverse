@@ -44,7 +44,7 @@ To edit your Dataverse collection, navigate to your Dataverse collection's landi
 - :ref:`Theme <theme>`: upload a logo for your Dataverse collection, add a link to your department or personal website, add a custom footer image, and select colors for your Dataverse collection in order to brand it
 - :ref:`Widgets <dataverse-widgets>`: get code to add to your website to have your Dataverse collection display on it
 - :ref:`Permissions <dataverse-permissions>`: give other users permissions to your Dataverse collection, i.e.-can edit datasets, and see which users already have which permissions for your Dataverse collection
-- :ref:`Dataset Templates <dataset-templates>`: these are useful when you have several datasets that have the same information in multiple metadata fields that you would prefer not to have to keep manually typing in
+- :ref:`Dataset Templates <dataset-templates>`: these are useful when you want to provide custom instructions on how to fill out fields or have several datasets that have the same information in multiple metadata fields that you would prefer not to have to keep manually typing in
 - :ref:`Dataset Guestbooks <dataset-guestbooks>`: allows you to collect data about who is downloading the files from your datasets
 - :ref:`Featured Dataverse collections <featured-dataverses>`: if you have one or more Dataverse collection, you can use this option to show them at the top of your Dataverse collection page to help others easily find interesting or important Dataverse collections
 - **Delete Dataverse**: you are able to delete your Dataverse collection as long as it is not published and does not have any draft datasets 
@@ -52,7 +52,7 @@ To edit your Dataverse collection, navigate to your Dataverse collection's landi
 .. _general-information:
 
 General Information
----------------------
+-------------------
 
 The General Information page is how you edit the information you filled in while creating your Dataverse collection. If you need to change or add a contact email address, this is the place to do it. Additionally, you can update the metadata elements used for datasets within the Dataverse collection, change which metadata fields are hidden, required, or optional, and update the facets you would like displayed for browsing the Dataverse collection. If you plan on using templates, you need to select the metadata fields on the General Information page.
 
@@ -60,8 +60,8 @@ Tip: The metadata fields you select as required will appear on the Create Datase
 
 .. _theme:
 
-Theme 
----------
+Theme
+-----
 
 The Theme features provides you with a way to customize the look of your Dataverse collection. You can:
 
@@ -77,7 +77,7 @@ Supported image types for logo images and footer images are JPEG, TIFF, or PNG a
 .. _dataverse-widgets:
 
 Widgets
---------------
+-------
 
 The Widgets feature provides you with code for you to put on your personal website to have your Dataverse collection displayed there. There are two types of Widgets for a Dataverse collection, a Dataverse collection Search Box widget and a Dataverse collection Listing widget. Once a Dataverse collection has been published, from the Widgets tab on the Dataverse collection's Theme + Widgets page, it is possible to copy the code snippets for the widget(s) you would like to add to your website. If you need to adjust the height of the widget on your website, you may do so by editing the `heightPx=500` parameter in the code snippet.
 
@@ -94,7 +94,7 @@ The Dataverse Collection Listing Widget provides a listing of all your Dataverse
 .. _openscholar-dataverse-level:
 
 Adding Widgets to an OpenScholar Website
-******************************************
+****************************************
 #. Log in to your OpenScholar website
 #. Either build a new page or navigate to the page you would like to use to show the Dataverse collection widgets.
 #. Click on the Settings Cog and select Layout
@@ -102,8 +102,8 @@ Adding Widgets to an OpenScholar Website
 
 .. _dataverse-permissions:
 
-Roles & Permissions 
----------------------
+Roles & Permissions
+-------------------
 Dataverse installation user accounts can be granted roles that define which actions they are allowed to take on specific Dataverse collections, datasets, and/or files. Each role comes with a set of permissions, which define the specific actions that users may take.
 
 Roles and permissions may also be granted to groups. Groups can be defined as a collection of Dataverse installation user accounts, a collection of IP addresses (e.g. all users of a library's computers), or a collection of all users who log in using a particular institutional login (e.g. everyone who logs in with a particular university's account credentials).
@@ -127,7 +127,7 @@ When you access a Dataverse collection's permissions page, you will see three se
 Please note that even on a newly created Dataverse collection, you may see user and groups have already been granted role(s) if your installation has ``:InheritParentRoleAssignments`` set. For more on this setting, see the :doc:`/installation/config` section of the Installation Guide.
 
 Setting Access Configurations
-*******************************
+*****************************
 
 Under the Permissions tab, you can click the "Edit Access" button to open a box where you can add to your Dataverse collection and what permissions are granted to those who add to your Dataverse collection.
 
@@ -140,7 +140,7 @@ The second question on this page allows you to choose the role (and thus the per
 Both of these settings can be changed at any time.
 
 Assigning Roles to Users and Groups
-*************************************
+***********************************
 
 Under the Users/Groups tab, you can add, edit, or remove the roles granted to users and groups on your Dataverse collection. A role is a set of permissions granted to a user or group when they're using your Dataverse collection. For example, giving your research assistant the "Contributor" role would give them the following self-explanatory permissions on your Dataverse collection and all datasets within your Dataverse collection: "ViewUnpublishedDataset", "DownloadFile", "EditDataset", and "DeleteDatasetDraft". They would, however, lack the "PublishDataset" permission, and thus would be unable to publish datasets on your Dataverse collection. If you wanted to give them that permission, you would give them a role with that permission, like the Curator role. Users and groups can hold multiple roles at the same time if needed. Roles can be removed at any time. All roles and their associated permissions are listed under the "Roles" tab of the same page.
 
@@ -155,15 +155,16 @@ Note: If you need to assign a role to ALL user accounts in a Dataverse installat
 .. _dataset-templates: 
 
 Dataset Templates
--------------------
+-----------------
 
-Templates are useful when you have several datasets that have the same information in multiple metadata fields that you would prefer not to have to keep manually typing in, or if you want to use a custom set of Terms of Use and Access for multiple datasets in a Dataverse collection. In Dataverse Software 4.0+, templates are created at the Dataverse collection level, can be deleted (so it does not show for future datasets), set to default (not required), or can be copied so you do not have to start over when creating a new template with similar metadata from another template. When a template is deleted, it does not impact the datasets that have used the template already.
+Templates are useful when you want to provide custom instructions on how to fill out a field, have several datasets that have the same information in multiple metadata fields that you would prefer not to have to keep manually typing in, or if you want to use a custom set of Terms of Use and Access for multiple datasets in a Dataverse collection. In Dataverse Software 4.0+, templates are created at the Dataverse collection level, can be deleted (so it does not show for future datasets), set to default (not required), or can be copied so you do not have to start over when creating a new template with similar metadata from another template. When a template is deleted, it does not impact the datasets that have used the template already.
 
 How do you create a template? 
 
 #. Navigate to your Dataverse collection, click on the Edit Dataverse button and select Dataset Templates. 
 #. Once you have clicked on Dataset Templates, you will be brought to the Dataset Templates page. On this page, you can 1) decide to use the dataset templates from your parent Dataverse collection 2) create a new dataset template or 3) do both.
 #. Click on the Create Dataset Template to get started. You will see that the template is the same as the create dataset page with an additional field at the top of the page to add a name for the template.
+#. To add custom instructions, click on ''(None - click to add)'' and enter the instructions you wish users to see. If you wish to edit existing instructions, click on them to make the text editable.
 #. After adding information into the metadata fields you have information for and clicking Save and Add Terms, you will be brought to the page where you can add custom Terms of Use and Access. If you do not need custom Terms of Use and Access, click the Save Dataset Template, and only the metadata fields will be saved.
 #. After clicking Save Dataset Template, you will be brought back to the Manage Dataset Templates page and should see your template listed there now with the make default, edit, view, or delete options. 
 #. A Dataverse collection does not have to have a default template and users can select which template they would like to use while on the Create Dataset page. 
@@ -174,7 +175,7 @@ How do you create a template?
 .. _dataset-guestbooks:
 
 Dataset Guestbooks
------------------------------
+------------------
 
 Guestbooks allow you to collect data about who is downloading the files from your datasets. You can decide to collect account information (username, given name & last name, affiliation, etc.) as well as create custom questions (e.g., What do you plan to use this data for?). You are also able to download the data collected from the enabled guestbooks as CSV files to store and use outside of the Dataverse installation.
 
@@ -227,7 +228,7 @@ Similarly to dataset linking, Dataverse collection linking allows a Dataverse co
 If you need to have a Dataverse collection linked to your Dataverse collection, please contact the support team for the Dataverse installation you are using.
 
 Publish Your Dataverse Collection
-=================================================================
+=================================
 
 Once your Dataverse collection is ready to go public, go to your Dataverse collection page, click on the "Publish" button on the right 
 hand side of the page. A pop-up will appear to confirm that you are ready to actually Publish, since once a Dataverse collection

@@ -19,12 +19,10 @@ import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.api.Files;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.AbstractCreateDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
@@ -43,7 +41,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,7 +56,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.io.IOUtils;
 import org.ocpsoft.common.util.Strings;
 
@@ -619,7 +615,7 @@ public class AddReplaceFileHelper{
         if (!this.step_050_checkForConstraintViolations()){
             return false;            
         }
-        
+
         msgt("step_055_loadOptionalFileParams");
         if (!this.step_055_loadOptionalFileParams(optionalFileParams)){
             return false;            
@@ -778,7 +774,7 @@ public class AddReplaceFileHelper{
                 }
             }
         }
-        
+
         msgt("step_090_notifyUser");
         if (!this.step_090_notifyUser()){
             return false;            
@@ -1379,7 +1375,7 @@ public class AddReplaceFileHelper{
             String fileType = fileToReplace.getOriginalFileFormat() != null ? fileToReplace.getOriginalFileFormat() : fileToReplace.getContentType();
             if (!finalFileList.get(0).getContentType().equalsIgnoreCase(fileType)) {
                 String friendlyType = fileToReplace.getOriginalFormatLabel() != null ? fileToReplace.getOriginalFormatLabel() : fileToReplace.getFriendlyType();
-                
+
                 List<String> errParams = Arrays.asList(friendlyType,
                                                 finalFileList.get(0).getFriendlyType());
                 
@@ -1519,8 +1515,16 @@ public class AddReplaceFileHelper{
         // violations found: gather all error messages
         // -----------------------------------------------------------   
         List<String> errMsgs = new ArrayList<>();
-        for (ConstraintViolation violation : constraintViolations){
-            this.addError(violation.getMessage());
+        for (ConstraintViolation violation : constraintViolations) {
+            /*
+            for 8859 return conflict response status if the validation fails
+            due to terms of use/access out of compliance
+            */
+            if (workingVersion.getTermsOfUseAndAccess().getValidationMessage() != null) {
+                addError(Response.Status.CONFLICT,workingVersion.getTermsOfUseAndAccess().getValidationMessage());
+            } else {
+                this.addError(violation.getMessage());
+            }
         }
         
         return this.hasError();
@@ -2049,6 +2053,10 @@ public class AddReplaceFileHelper{
                         String newStorageIdentifier = null;
                         if (optionalFileParams.hasStorageIdentifier()) {
                             newStorageIdentifier = optionalFileParams.getStorageIdentifier();
+                            newStorageIdentifier = DataAccess.expandStorageIdentifierIfNeeded(newStorageIdentifier);
+                            if(!DataAccess.uploadToDatasetAllowed(dataset,  newStorageIdentifier)) {
+                                addErrorSevere("Dataset store configuration does not allow provided storageIdentifier.");
+                            }
                             if (optionalFileParams.hasFileName()) {
                                 newFilename = optionalFileParams.getFileName();
                                 if (optionalFileParams.hasMimetype()) {
@@ -2057,14 +2065,10 @@ public class AddReplaceFileHelper{
                             }
 
                             msgt("ADD!  = " + newFilename);
-
-                            runAddFileByDataset(dataset,
-                                    newFilename,
-                                    newFileContentType,
-                                    newStorageIdentifier,
-                                    null,
-                                    optionalFileParams, true);
-
+                            if (!hasError()) {
+                                runAddFileByDataset(dataset, newFilename, newFileContentType, newStorageIdentifier,
+                                        null, optionalFileParams, true);
+                            }
                             if (hasError()) {
                                 JsonObjectBuilder fileoutput = Json.createObjectBuilder()
                                         .add("storageIdentifier", newStorageIdentifier)
@@ -2088,8 +2092,8 @@ public class AddReplaceFileHelper{
                                             .add("fileDetails", successresult.getJsonArray("files").getJsonObject(0));
                                     jarr.add(fileoutput);
                                 }
-                            }
                             successNumberofFiles = successNumberofFiles + 1;
+                            }
                         } else {
                             JsonObjectBuilder fileoutput = Json.createObjectBuilder()
                                     .add("errorMessage", "You must provide a storageidentifier, filename, and mimetype.")

@@ -222,6 +222,7 @@ public class JsonResponseBuilder {
         metadata.deleteCharAt(metadata.length()-1);
         
         if (ex.isPresent()) {
+            ex.get().printStackTrace();
             metadata.append("|");
             logger.log(level, metadata.toString(), ex);
             if(includeStackTrace) {

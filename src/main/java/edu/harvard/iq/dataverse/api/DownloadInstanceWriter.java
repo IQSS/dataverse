@@ -27,9 +27,12 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
+import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.net.URI;
@@ -59,6 +62,10 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
 
     @Inject
     MakeDataCountLoggingServiceBean mdcLogService;
+    @Inject
+    SystemConfig systemConfig;
+    @Inject
+    GlobusServiceBean globusService;
 
     private static final Logger logger = Logger.getLogger(DownloadInstanceWriter.class.getCanonicalName());
 
@@ -91,9 +98,14 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     throw new NotFoundException("Datafile " + dataFile.getId() + ": Failed to locate and/or open physical file.");
                 }
 
+                
+                boolean redirectSupported = false;
+                String auxiliaryTag = null;
+                String auxiliaryType = null;
+                String auxiliaryFileName = null; 
                 // Before we do anything else, check if this download can be handled 
                 // by a redirect to remote storage (only supported on S3, as of 5.4):
-                if (storageIO instanceof S3AccessIO && ((S3AccessIO) storageIO).downloadRedirectEnabled()) {
+                if (storageIO.downloadRedirectEnabled()) {
 
                     // Even if the above is true, there are a few cases where a  
                     // redirect is not applicable. 
@@ -101,10 +113,8 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     // for a saved original; but CANNOT if it is a column subsetting 
                     // request (must be streamed in real time locally); or a format
                     // conversion that hasn't been cached and saved on S3 yet. 
-                    boolean redirectSupported = true;
-                    String auxiliaryTag = null;
-                    String auxiliaryType = null;
-                    String auxiliaryFileName = null; 
+                    redirectSupported = true;
+
 
                     if ("imageThumb".equals(di.getConversionParam())) {
 
@@ -112,7 +122,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         int requestedSize = 0;
                         if (!"".equals(di.getConversionParamValue())) {
                             try {
-                                requestedSize = new Integer(di.getConversionParamValue());
+                                requestedSize = Integer.parseInt(di.getConversionParamValue());
                             } catch (java.lang.NumberFormatException ex) {
                                 // it's ok, the default size will be used.
                             }
@@ -120,7 +130,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
 
                         auxiliaryTag = ImageThumbConverter.THUMBNAIL_SUFFIX + (requestedSize > 0 ? requestedSize : ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
 
-                        if (isAuxiliaryObjectCached(storageIO, auxiliaryTag)) {
+                        if (storageIO.downloadRedirectEnabled(auxiliaryTag) && isAuxiliaryObjectCached(storageIO, auxiliaryTag)) {
                             auxiliaryType = ImageThumbConverter.THUMBNAIL_MIME_TYPE;
                             String fileName = storageIO.getFileName();
                             if (fileName != null) {
@@ -139,7 +149,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             auxiliaryTag = auxiliaryTag + "_" + auxVersion;
                         }
                     
-                        if (isAuxiliaryObjectCached(storageIO, auxiliaryTag)) {
+                        if (storageIO.downloadRedirectEnabled(auxiliaryTag) && isAuxiliaryObjectCached(storageIO, auxiliaryTag)) {
                             String fileExtension = getFileExtension(di.getAuxiliaryFile());
                             auxiliaryFileName = storageIO.getFileName() + "." + auxiliaryTag + fileExtension;
                             auxiliaryType = di.getAuxiliaryFile().getContentType();
@@ -162,7 +172,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                     // it has been cached already. 
 
                                     auxiliaryTag = di.getConversionParamValue();
-                                    if (isAuxiliaryObjectCached(storageIO, auxiliaryTag)) {
+                                    if (storageIO.downloadRedirectEnabled(auxiliaryTag) && isAuxiliaryObjectCached(storageIO, auxiliaryTag)) {
                                         auxiliaryType = di.getServiceFormatType(di.getConversionParam(), auxiliaryTag);
                                         auxiliaryFileName = FileUtil.replaceExtension(storageIO.getFileName(), auxiliaryTag);
                                     } else {
@@ -177,40 +187,52 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             redirectSupported = false;
                         }
                     }
+                }
+                String redirect_url_str=null;
 
-                    if (redirectSupported) {
-                        // definitely close the (potentially still open) input stream, 
-                        // since we are not going to use it. The S3 documentation in particular
-                        // emphasizes that it is very important not to leave these
-                        // lying around un-closed, since they are going to fill 
-                        // up the S3 connection pool!
-                        storageIO.closeInputStream();
-                        // [attempt to] redirect: 
-                        String redirect_url_str;
-                        try {
-                            redirect_url_str = ((S3AccessIO) storageIO).generateTemporaryS3Url(auxiliaryTag, auxiliaryType, auxiliaryFileName);
-                        } catch (IOException ioex) {
-                            redirect_url_str = null;
+                if (redirectSupported) {
+                    // definitely close the (potentially still open) input stream, 
+                    // since we are not going to use it. The S3 documentation in particular
+                    // emphasizes that it is very important not to leave these
+                    // lying around un-closed, since they are going to fill 
+                    // up the S3 connection pool!
+                    storageIO.closeInputStream();
+                    // [attempt to] redirect: 
+                    try {
+                        redirect_url_str = storageIO.generateTemporaryDownloadUrl(auxiliaryTag, auxiliaryType, auxiliaryFileName);
+                    } catch (IOException ioex) {
+                        logger.warning("Unable to generate downloadURL for " + dataFile.getId() + ": " + auxiliaryTag);
+                        //Setting null will let us try to get the file/aux file w/o redirecting 
+                        redirect_url_str = null;
+                    }
+                }
+                
+                if (systemConfig.isGlobusFileDownload() && systemConfig.getGlobusStoresList()
+                        .contains(DataAccess.getStorageDriverFromIdentifier(dataFile.getStorageIdentifier()))) {
+                    if (di.getConversionParam() != null) {
+                        if (di.getConversionParam().equals("format")) {
+
+                            if ("GlobusTransfer".equals(di.getConversionParamValue())) {
+                                redirect_url_str = globusService.getGlobusAppUrlForDataset(dataFile.getOwner(), false, dataFile);
+                            }
                         }
+                    }
+                    if (redirect_url_str!=null) {
 
-                        if (redirect_url_str == null) {
-                            throw new ServiceUnavailableException();
-                        }
-
-                        logger.fine("Data Access API: direct S3 url: " + redirect_url_str);
+                        logger.fine("Data Access API: redirect url: " + redirect_url_str);
                         URI redirect_uri;
 
                         try {
                             redirect_uri = new URI(redirect_url_str);
                         } catch (URISyntaxException ex) {
-                            logger.info("Data Access API: failed to create S3 redirect url (" + redirect_url_str + ")");
+                            logger.info("Data Access API: failed to create redirect url (" + redirect_url_str + ")");
                             redirect_uri = null;
                         }
                         if (redirect_uri != null) {
                             // increment the download count, if necessary:
                             if (di.getGbr() != null && !(isThumbnailDownload(di) || isPreprocessedMetadataDownload(di))) {
                                 try {
-                                    logger.fine("writing guestbook response, for an S3 download redirect.");
+                                    logger.fine("writing guestbook response, for a download redirect.");
                                     Command<?> cmd = new CreateGuestbookResponseCommand(di.getDataverseRequestService().getDataverseRequest(), di.getGbr(), di.getGbr().getDataFile().getOwner());
                                     di.getCommand().submit(cmd);
                                     MakeDataCountEntry entry = new MakeDataCountEntry(di.getRequestUriInfo(), di.getRequestHttpHeaders(), di.getDataverseRequestService(), di.getGbr().getDataFile());
@@ -221,7 +243,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
 
                             // finally, issue the redirect:
                             Response response = Response.seeOther(redirect_uri).build();
-                            logger.fine("Issuing redirect to the file location on S3.");
+                            logger.fine("Issuing redirect to the file location.");
                             throw new RedirectionException(response);
                         }
                         throw new ServiceUnavailableException();

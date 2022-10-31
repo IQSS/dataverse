@@ -202,10 +202,18 @@ public class MetadataBlock implements Serializable, Comparable {
         return "edu.harvard.iq.dataverse.MetadataBlock[ id=" + id + " ]";
     }
 
-    public String getLocaleDisplayName()
-    {
+    public String getLocaleDisplayName() {
+        return getLocaleValue("metadatablock.displayName");
+    }
+
+    public String getLocaleDisplayFacet() {
+        return getLocaleValue("metadatablock.displayFacet");
+    }
+
+    // Visible for testing
+    String getLocaleValue(String metadataBlockKey) {
         try {
-            return BundleUtil.getStringFromPropertyFile("metadatablock.displayName", getName());
+            return BundleUtil.getStringFromPropertyFile(metadataBlockKey, getName());
         } catch (MissingResourceException e) {
             return displayName;
         }
