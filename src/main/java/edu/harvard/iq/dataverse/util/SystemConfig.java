@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.util;
 
-// THIS HAS BEEN TEMPORARILY REMOVED TO EXCLUDE THE PRETTYFACES DEPS FOR JAKARTA EE 10
-// import com.ocpsoft.pretty.PrettyContext;
+import com.ocpsoft.pretty.PrettyContext;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
@@ -372,14 +371,9 @@ public class SystemConfig {
     /**
      * URL Tracking: 
      */
-    /*
-    
-    THIS HAS BEEN TEMPORARILY REMOVED TO EXCLUDE THE PRETTYFACES DEPS FOR JAKARTA EE 10
-    
     public String getPageURLWithQueryString() {
         return PrettyContext.getCurrentInstance().getRequestURL().toURL() + PrettyContext.getCurrentInstance().getRequestQueryString().toQueryString();
     }
-    */
 
     /**
      * The "official" server's fully-qualified domain name: 
