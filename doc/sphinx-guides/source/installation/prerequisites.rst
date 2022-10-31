@@ -288,10 +288,10 @@ If the installed location of the convert executable is different from ``/usr/bin
 
 (see the :doc:`config` section for more information on the JVM options)
 
-The R Project for Statistical Computing
+R
 -
 
-The Dataverse Software uses `R Project <https://cran.r-project.org>`_ to handle
+The Dataverse Software uses `R <https://cran.r-project.org>`_ to handle
 tabular data files. The instructions below describe a **minimal** R Project
 installation. It will allow you to ingest R (.RData) files as tabular
 data and to export tabular data as .RData files.  R can be considered an optional component, meaning
@@ -300,7 +300,7 @@ use the Dataverse Software - but the functionality specific to tabular data
 mentioned above will not be available to your users.
 
 
-Installing R Project
+Installing R
 ============
 
 For RHEL/derivative, the EPEL distribution is strongly recommended:
