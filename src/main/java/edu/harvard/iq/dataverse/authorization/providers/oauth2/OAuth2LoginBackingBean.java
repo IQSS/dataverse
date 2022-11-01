@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.ClockUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.BufferedReader;
@@ -28,8 +29,8 @@ import javax.validation.constraints.NotNull;
 
 import static edu.harvard.iq.dataverse.util.StringUtil.toOption;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import org.omnifaces.util.Faces;
 
 /**
@@ -102,21 +103,23 @@ public class OAuth2LoginBackingBean implements Serializable {
                 oauthUser = idp.getUserRecord(code.get(), systemConfig.getOAuth2CallbackUrl());
                 
                 // Throw an error if this authentication method is disabled:
+                // (it's not clear if it's possible at all, for somebody to get here with 
+                // the provider really disabled; but, shouldn't hurt either).
                 if (isProviderDisabled(idp.getId())) {
                     disabled = true; 
-                    throw new OAuth2Exception(-1, "", "This authentication method ("+idp.getId()+") is currently disabled. Please log in using one of the supported methods.");
+                    throw new OAuth2Exception(-1, "", MessageFormat.format(BundleUtil.getStringFromBundle("oauth2.callback.error.providerDisabled"), idp.getId()));
                 }
                 
                 UserRecordIdentifier idtf = oauthUser.getUserRecordIdentifier();
                 AuthenticatedUser dvUser = authenticationSvc.lookupUser(idtf);
     
                 if (dvUser == null) {
-                    // need to create the user - unless signups are disabled 
+                    // Need to create a new user - unless signups are disabled 
                     // for this authentication method; in which case, throw 
                     // an error:
                     if (systemConfig.isSignupDisabledForRemoteAuthProvider(idp.getId())) {
                         signUpDisabled = true; 
-                        throw new OAuth2Exception(-1, "", "Sorry, signup for new accounts using "+idp.getId()+" authentication is currently disabled."); 
+                        throw new OAuth2Exception(-1, "", MessageFormat.format(BundleUtil.getStringFromBundle("oauth2.callback.error.signupDisabledForProvider"), idp.getId())); 
                     } else {
                         newAccountPage.setNewUser(oauthUser);
                         Faces.redirect("/oauth2/firstLogin.xhtml");

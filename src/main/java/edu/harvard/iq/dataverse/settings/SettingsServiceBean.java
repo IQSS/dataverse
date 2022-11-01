@@ -675,8 +675,8 @@ public class SettingsServiceBean {
        
     /**
      * Same, but with Booleans 
-     * (returns null if not set; the calling method will decide what that shouldall
-     * default to)
+     * (returns null if not set; up to the calling method to decide what that should
+     * default to in each specific case)
      * Example:
      * :AllowRemoteAuthSignUp	{"default":"true","google":"false"}
      */
