@@ -325,12 +325,6 @@
             </snapshots>
         </repository>
         <!-- -->
-    
-        <!-- Temporal for Jakarta EE 10 development until the jar files are available on maven central -->
-        <repository>
-            <id>staged-jakarta-releases</id>
-            <url>https://jakarta.oss.sonatype.org/content/groups/staging/</url>
-        </repository>
     </repositories>
     
 </project>
