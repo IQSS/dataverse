@@ -34,8 +34,8 @@ import jakarta.validation.constraints.Size;
 import edu.harvard.iq.dataverse.util.DateUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**

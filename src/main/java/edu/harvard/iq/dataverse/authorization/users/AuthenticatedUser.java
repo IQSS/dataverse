@@ -36,8 +36,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import javax.persistence.PostLoad;
-import javax.persistence.PrePersist;
+import jakarta.persistence.PostLoad;
+import jakarta.persistence.PrePersist;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**

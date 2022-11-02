@@ -31,6 +31,7 @@ import jakarta.inject.Named;
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
@@ -1207,7 +1208,7 @@ w
         try {
             List<DatasetVersion> dsl = em.createNamedQuery("DatasetVersion.findUnarchivedReleasedVersion", DatasetVersion.class).getResultList();
             return dsl;
-        } catch (javax.persistence.NoResultException e) {
+        } catch (NoResultException e) {
             logger.log(Level.FINE, "No unarchived DatasetVersions found: {0}");
             return null;
         } catch (EJBException e) {
