@@ -547,7 +547,7 @@ public class DatasetUtil {
 
     public static String getLicenseName(DatasetVersion dsv) {
         License license = DatasetUtil.getLicense(dsv);
-        return license != null ? license.getName()
+        return license != null ? getLocalizedLicenseDetails(license.getName(),".name")
                 : BundleUtil.getStringFromBundle("license.custom");
     }
 
@@ -573,41 +573,25 @@ public class DatasetUtil {
 
     public static String getLicenseDescription(DatasetVersion dsv) {
         License license = DatasetUtil.getLicense(dsv);
-
-        if (license != null) {
-            return getLocalizedLicense(license.getName(),"description") ;
-        } else {
-            return BundleUtil.getStringFromBundle("license.custom.description");
-        }
+        return license != null ? getLocalizedLicenseDetails(license.getName(),".description") : BundleUtil.getStringFromBundle("license.custom.description");
     }
 
-    public static String getLocalizedLicense(String licenseName,String keyPart) {
-        String key = "license." + licenseName.toLowerCase().replace(" ", "_") + "." + keyPart;
+    public static String getLocalizedLicenseDetails(String licenseName,String keyPart) {
+        String key = "license." + licenseName.toLowerCase().replace(" ", "_") +  keyPart;
 
-        String second_key = "";
-        if (keyPart == "description")
-        {
-            second_key = "license.custom.description";
+        String localizedLicenseValue =  "" ;
+        try {
+            localizedLicenseValue = BundleUtil.getStringFromPropertyFile(key, "License");
         }
-        else
-        {
-            second_key = "license.custom";
+        catch (Exception e) {
+            localizedLicenseValue = licenseName.toLowerCase();
         }
 
-        if (key != null) {
-            try {
-                String propertyValue = BundleUtil.getStringFromPropertyFile(key, "License");
-                if (propertyValue == null) {
-                    return BundleUtil.getStringFromBundle(second_key);
-                } else {
-                    return propertyValue;
-                }
-            } catch (MissingResourceException mre) {
-                return BundleUtil.getStringFromBundle(second_key);
-            }
-        } else {
-            return BundleUtil.getStringFromBundle(second_key);
+        if (localizedLicenseValue == null) {
+            localizedLicenseValue = licenseName.toLowerCase() ;
         }
+        return localizedLicenseValue;
+
     }
 
     public static String getLocaleExternalStatus(String status) {
