@@ -1623,7 +1623,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         //Assume file is not over the limit
 
         GetMethod hypothesisMethod = new GetMethod("https://hypothes.is/api/search?group="
-            + hypothesisGroupSelection + "&uri=" + hypothesisUrlSelection + "&limit=20");
+            + hypothesisGroupSelection + "&uri=" + hypothesisUrlSelection + "&limit=200");
         String apiKey = getHypothesisKey();
         hypothesisMethod.addRequestHeader("Authorization","Bearer " + apiKey);
         
