@@ -1044,6 +1044,14 @@ On a new Dataverse installation, users may select from the following licenses or
 
 (Note that existing Dataverse installations which are upgraded from 5.9 or previous will only offer CC0 1.0, added automatically during the upgrade to version 5.10.)
 
+If the Dataverse Installation supports multiple languages, the license name/description translations should be added to the ``License`` properties files. (See :ref:`i18n` for more on properties files and internationalization in general.)
+To create the key, the license name has to be converted to lowercase, replace space with underscore.
+
+Example::
+
+  license.cc0_1.0.description=Creative Commons CC0 1.0 Universal Public Domain Dedication.
+  license.cc0_1.0.name=CC0 1.0
+
 You have a lot of control over which licenses and terms are available. You can remove licenses and add new ones. You can decide which license is the default. You can remove "Custom Dataset Terms" as a option. You can remove all licenses and make "Custom Dataset Terms" the only option.
 
 Before making changes, you are encouraged to read the :ref:`license-terms` section of the User Guide about why CC0 is the default and what the "Custom Dataset Terms" option allows.
