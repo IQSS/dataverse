@@ -584,11 +584,11 @@ public class DatasetUtil {
             localizedLicenseValue = BundleUtil.getStringFromPropertyFile(key, "License");
         }
         catch (Exception e) {
-            localizedLicenseValue = licenseName.toLowerCase();
+            localizedLicenseValue = licenseName;
         }
 
         if (localizedLicenseValue == null) {
-            localizedLicenseValue = licenseName.toLowerCase() ;
+            localizedLicenseValue = licenseName ;
         }
         return localizedLicenseValue;
 
