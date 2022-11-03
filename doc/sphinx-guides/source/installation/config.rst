@@ -800,7 +800,7 @@ Refer to :ref:`:NavbarSupportUrl` for setting to a fully-qualified URL which wil
 Sign Up
 #######
 
-Refer to :ref:`:SignUpUrl` and :ref:`conf-allow-signup` for setting a relative path URL to which users will be sent for signup and for controlling the ability for creating local user accounts.
+Refer to :ref:`:SignUpUrl` and :ref:`conf-allow-signup` for setting a relative path URL to which users will be sent for sign up and for controlling the ability for creating local user accounts.
 
 Custom Header
 ^^^^^^^^^^^^^
@@ -2197,7 +2197,7 @@ If ``:SolrFullTextIndexing`` is set to true, the content of files of any size wi
 :SignUpUrl
 ++++++++++
 
-The relative path URL to which users will be sent for signup. The default setting is below.
+The relative path URL to which users will be sent for sign up. The default setting is below.
 
 ``curl -X PUT -d '/dataverseuser.xhtml?editMode=CREATE' http://localhost:8080/api/admin/settings/:SignUpUrl``
 
@@ -2272,6 +2272,31 @@ Here is an example of setting the default auth provider back to ``builtin``:
 Set to false to disallow local accounts from being created. See also the sections on :doc:`shibboleth` and :doc:`oauth2`.
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:AllowSignUp``
+
+.. _:AllowRemoteAuthSignUp:
+
+:AllowRemoteAuthSignUp
+++++++++++++++++++++++
+
+This is a **compound** setting that enables or disables sign up for new accounts for individual OAuth2 authentication methods (such as Orcid, Google and GitHub). This way it is possible to continue allowing logins via an OAuth2 provider for already existing accounts, without letting new users create accounts with this method.
+
+By default, if the setting is not present, all configured OAuth sign ups are allowed. If the setting is present, but the value for this specific method is not specified, it is assumed that the sign ups are allowed for it.
+
+Examples:
+
+This curl command...
+
+``curl -X PUT -d '{"default":"false"}' http://localhost:8080/api/admin/settings/:AllowRemoteAuthSignUp``
+
+...disables all OAuth sign ups.
+
+This curl command...
+
+``curl -X PUT -d '{"default":"true","google":"false"}' http://localhost:8080/api/admin/settings/:AllowRemoteAuthSignUp``
+
+...keeps sign ups open for all the OAuth login providers except google. (That said, note that the ``"default":"true"`` part in this example is redundant, since it would default to true anyway for all the methods other than google.)
+
+See also :doc:`oauth2`.
 
 :FileFixityChecksumAlgorithm
 ++++++++++++++++++++++++++++
