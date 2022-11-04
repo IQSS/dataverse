@@ -1,4 +1,4 @@
-# Copyright 2019 Forschungszentrum Jülich GmbH
+# Copyright 2022 Forschungszentrum Jülich GmbH
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -38,7 +38,7 @@ ENV PAYARA_DIR="${HOME_DIR}/appserver" \
     SCRIPT_DIR="${HOME_DIR}/scripts" \
     CONFIG_DIR="${HOME_DIR}/config" \
     DEPLOY_DIR="${HOME_DIR}/deployments" \
-    DOCROOT_DIR="/docroot" \
+    STORAGE_DIR="/dv" \
     SECRETS_DIR="/secrets" \
     DUMPS_DIR="/dumps" \
     PASSWORD_FILE="${HOME_DIR}/passwordFile" \
@@ -73,17 +73,19 @@ ARG GID=1000
 USER root
 WORKDIR /
 SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
+# Mark these directories as mutuable data containers to avoid cluttering the images overlayfs at runtime.
+VOLUME ${STORAGE_DIR} ${SECRETS_DIR} ${DUMPS_DIR}
 RUN <<EOF
     # Create pathes
     mkdir -p "${HOME_DIR}" "${PAYARA_DIR}" "${DEPLOY_DIR}" "${CONFIG_DIR}" "${SCRIPT_DIR}"
-    mkdir -p "${DOCROOT_DIR}" "${SECRETS_DIR}" "${DUMPS_DIR}"
+    mkdir -p "${STORAGE_DIR}" "${SECRETS_DIR}" "${DUMPS_DIR}"
     # Create user
     addgroup --gid ${GID} payara
     adduser --system --uid ${UID} --no-create-home --shell /bin/bash --home "${HOME_DIR}" --gecos "" --ingroup payara payara
     echo payara:payara | chpasswd
     # Set permissions
     chown -R payara: "${HOME_DIR}"
-    chown -R payara: "${DOCROOT_DIR}" "${SECRETS_DIR}" "${DUMPS_DIR}"
+    chown -R payara: "${STORAGE_DIR}" "${SECRETS_DIR}" "${DUMPS_DIR}"
 EOF
 
 ARG JATTACH_VERSION="v2.1"
@@ -209,15 +211,6 @@ RUN <<EOF
         "/tmp/password-change-file.txt" \
         "${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/osgi-cache" \
         "${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/logs"
-EOF
-
-# Make docroot of Payara reside in higher level directory for easier targeting
-# Due to gdcc/dataverse-kubernetes#177: create the generated pathes so they are
-# writeable by us. TBR with gdcc/dataverse-kubernetes#178.
-RUN <<EOF
-    rm -rf "${DOMAIN_DIR}"/docroot
-    ln -s "${DOCROOT_DIR}" "${DOMAIN_DIR}"/docroot
-    mkdir -p "${DOMAIN_DIR}"/generated/jsp/dataverse
 EOF
 
 # Set the entrypoint to tini (as a process supervisor)

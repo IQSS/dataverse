@@ -218,7 +218,16 @@ Locations
 +++++++++
 
 This environment variables represent certain locations and might be reused in your scripts etc.
-These variables aren't meant to be reconfigurable and reflect state in the filesystem layout!
+All of these variables aren't meant to be reconfigurable and reflect state in the filesystem layout!
+
+**Writeable at build time:**
+
+The overlay filesystem of Docker and other container technologies is not meant to be used for any performance IO.
+You should avoid *writing* data anywhere in the file tree at runtime, except for well known locations with mounted
+volumes backing them (see below).
+
+The locations below are meant to be written to when you build a container image, either this base or anything
+building upon it. You can also use these for references in scripts, etc.
 
 .. list-table::
     :align: left
@@ -245,10 +254,35 @@ These variables aren't meant to be reconfigurable and reflect state in the files
     * - ``DEPLOY_DIR``
       - ``${HOME_DIR}/deployments``
       - Any EAR or WAR file, exploded WAR directory etc are autodeployed on start
-    * - ``DOCROOT_DIR``
-      - ``/docroot``
-      - Mount a volume here to store i18n language bundle files, sitemaps, images for Dataverse collections, logos,
-        custom themes and stylesheets, etc here. You might need to replicate this data or place on shared file storage.
+    * - ``DOMAIN_DIR``
+      - ``${PAYARA_DIR}/glassfish`` ``/domains/${DOMAIN_NAME}``
+      - Path to root of the Payara domain applications will be deployed into. Usually ``${DOMAIN_NAME}`` will be ``domain1``.
+
+
+**Writeable at runtime:**
+
+The locations below are defined as `Docker volumes <https://docs.docker.com/storage/volumes/>`_ by the base image.
+They will by default get backed by an "anonymous volume", but you can (and should) bind-mount a host directory or
+named Docker volume in these places to avoid data loss, gain performance and/or use a network file system.
+
+**Notes:**
+1. On Kubernetes you still need to provide volume definitions for these places in your deployment objects!
+2. You should not write data into these locations at build time - it will be shadowed by the mounted volumes!
+
+.. list-table::
+    :align: left
+    :width: 100
+    :widths: 10 10 50
+    :header-rows: 1
+
+    * - Env. variable
+      - Value
+      - Description
+    * - ``STORAGE_DIR``
+      - ``/dv``
+      - This place is writeable by the Payara user, making it usable as a place to store research data, customizations
+        or other. Images inheriting the base image should create distinct folders here, backed by different
+        mounted volumes.
     * - ``SECRETS_DIR``
       - ``/secrets``
       - Mount secrets or other here, being picked up automatically by
@@ -258,10 +292,6 @@ These variables aren't meant to be reconfigurable and reflect state in the files
       - ``/dumps``
       - Default location where heap dumps will be stored (see above).
         You should mount some storage here (disk or ephemeral).
-    * - ``DOMAIN_DIR``
-      - ``${PAYARA_DIR}/glassfish`` ``/domains/${DOMAIN_NAME}``
-      - Path to root of the Payara domain applications will be deployed into. Usually ``${DOMAIN_NAME}`` will be ``domain1``.
-
 
 
 Exposed Ports
