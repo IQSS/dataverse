@@ -341,6 +341,34 @@
                                                         <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
                                                     </h:outputFormat>
                                                 </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'GLOBUSUPLOADCOMPLETED'}">
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
+                                                    <h:outputFormat value="#{bundle['notification.globus.upload.completed']}" escape="false">
+                                                        <f:param value="#{item.theObject.getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'GLOBUSDOWNLOADCOMPLETED'}">
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
+                                                    <h:outputFormat value="#{bundle['notification.globus.download.completed']}" escape="false">
+                                                        <f:param value="#{item.theObject.getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'GLOBUSUPLOADCOMPLETEDWITHERRORS'}">
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
+                                                    <h:outputFormat value="#{bundle['notification.globus.upload.completedWithErrors']}" escape="false">
+                                                        <f:param value="#{item.theObject.getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'GLOBUSDOWNLOADCOMPLETEDWITHERRORS'}">
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
+                                                    <h:outputFormat value="#{bundle['notification.globus.download.completedWithErrors']}" escape="false">
+                                                        <f:param value="#{item.theObject.getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'CHECKSUMIMPORT'}">
                                                     <span class="icon-dataset text-icon-inline text-muted"></span>
                                                     <h:outputFormat value="#{bundle['notification.import.checksum']}" escape="false">

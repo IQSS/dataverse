@@ -242,13 +242,13 @@
                                         or !empty termsOfUseAndAccess.contactForAccess or !empty termsOfUseAndAccess.sizeOfCollection 
                                         or !empty termsOfUseAndAccess.studyCompletion)}">
            <div data-toggle="collapse" data-target="#panelCollapseTOA" class="panel-heading text-info">
-               <h:outputText value="#{settingsWrapper.publicInstall ? bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess'] : bundle['file.dataFilesTab.terms.list.termsOfAccess.header']}"/>
+               <h:outputText value="#{publicStore ? bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess'] : bundle['file.dataFilesTab.terms.list.termsOfAccess.header']}"/>
                &#160;<span class="glyphicon glyphicon-chevron-up"/>
            </div>
-           <div id="panelCollapseTOA" jsf:class="#{!datasetPage.hasValidTermsOfAccess ? 'collapse' : ''}">
+           <div id="panelCollapseTOA" class="#{!datasetPage or DatasetPage.hasValidTermsOfAccess ? 'collapse in' : 'collapse'}">
                <div class="panel-body">
                    <ui:fragment rendered="#{empty editMode}">
-                       <div class="form-group" jsf:rendered="#{!settingsWrapper.publicInstall and datasetPage== true and DatasetPage.hasRestrictedFiles}">
+                       <div class="form-group" jsf:rendered="#{!publicStore  and datasetPage== true and DatasetPage.hasRestrictedFiles}">
                            <label for="datasetForm:tabView:metadata_RestrictedFiles" class="col-sm-3 control-label">
                                #{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles']}
                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
@@ -274,7 +274,7 @@
                                <p><h:outputText id="metadata_TermsAccessText" value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.termsOfAccess)}" escape="false"/></p>
                            </div>
                        </div>
-                       <div class="form-group" jsf:rendered="#{!settingsWrapper.publicInstall and ( datasetPage == true and DatasetPage.hasRestrictedFiles)}">
+                       <div class="form-group" jsf:rendered="#{!publicStore and ( datasetPage == true and DatasetPage.hasRestrictedFiles)}">
                            <label for="datasetForm:tabView:metadata_RequestAccessSelected" class="col-sm-3 control-label">
                                #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
@@ -293,7 +293,7 @@
                        </div>
                    </ui:fragment>
                    <ui:fragment rendered="#{!empty editMode}">
-                        <div class="form-group" jsf:rendered="#{!settingsWrapper.publicInstall}"> 
+                        <div class="form-group" jsf:rendered="#{!publicStore}"> 
                             <p:fragment id="termsOfAccessHelp">
                                 <ui:fragment rendered="#{datasetPage == true and DatasetPage.hasRestrictedFiles}">
                                     <div class="alert alert-info">
