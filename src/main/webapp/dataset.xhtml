@@ -217,6 +217,14 @@
                                                                 <h:outputText value="#{bundle['dataset.accessBtn.too.big']}">                                           
                                                                 </h:outputText>                                                            
                                                             </ui:fragment>
+                                                            <ui:fragment rendered="#{settingsWrapper.globusDownload and settingsWrapper.isGlobusEnabledStorageDriver(DatasetPage.dataset.effectiveStorageDriverId)}">
+                                                                <li>
+                                                                    <h:commandLink styleClass="btn-download" action="#{DatasetPage.startGlobusTransfer()}">
+                                                                        <h:outputText value="Globus Transfer"/>
+                                                                    </h:commandLink>
+                                                                </li>
+                                                            </ui:fragment>
+                                                            
                                                         </ui:fragment>
                                                                                                             
                                                         <!-- END: DOWNLOAD -->
@@ -401,8 +409,8 @@
                                                             </p:commandLink>
                                                         </li>
                                                         <ui:fragment rendered="#{permissionsWrapper.canManagePermissions(DatasetPage.dataset) || permissionsWrapper.canManageFilesOnDataset(DatasetPage.dataset)}">
-                                                            <li class="#{settingsWrapper.publicInstall ? '' : 'dropdown-submenu pull-left'}">
-                                                                <ui:fragment rendered="#{!settingsWrapper.publicInstall}">
+                                                            <li class="#{DatasetPage.hasPublicStore ? '' : 'dropdown-submenu pull-left'}">
+                                                                <ui:fragment rendered="#{!DatasetPage.hasPublicStore}">
                                                                 <a tabindex="0">#{bundle['dataset.editBtn.itemLabel.permissions']}</a>
                                                                     <ul class="dropdown-menu">
                                                                         <li jsf:rendered="#{permissionsWrapper.canManagePermissions(DatasetPage.dataset)}">
@@ -419,7 +427,7 @@
                                                                         </li>
                                                                     </ul>
                                                                 </ui:fragment>
-                                                                <h:link id="managePermissions" rendered="#{settingsWrapper.publicInstall}"
+                                                                <h:link id="managePermissions" rendered="#{DatasetPage.hasPublicStore}"
                                                                         styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
                                                                     <h:outputText value="#{bundle['dataset.editBtn.itemLabel.permissions']}" />
                                                                     <f:param name="id" value="#{DatasetPage.dataset.id}" />
@@ -837,6 +845,7 @@
                                 <ui:param name="datasetPage" value="true"/>
                                 <ui:param name="editDatafilesPage" value="false"/>
                                 <ui:param name="rsyncSupported" value="#{DatasetPage.rsyncUploadSupported()}"/>
+                                <ui:param name="globusUploadSupported" value="#{DatasetPage.globusUploadSupported()}"/>
                                 <ui:param name="dataverse" value="#{DatasetPage.dataset.owner}"/>
                                 <ui:param name="dataset" value="#{DatasetPage.dataset}"/>
                                 <ui:param name="version" value="#{DatasetPage.workingVersion}"/>
@@ -906,6 +915,7 @@
                                     <ui:param name="editMode" value="#{!empty DatasetPage.editMode ? 'LICENSE': ''}"/>
                                     <ui:param name="termsOfUseAndAccess" value="#{DatasetPage.workingVersion.termsOfUseAndAccess}"/>
                                     <ui:param name="datasetPage" value="true"/>
+                                    <ui:param name="publicStore" value="DatasetPage.hasPublicStore"/>
                                 </ui:include>
                             </p:tab>
                             <!-- 4.2.1: see above -->

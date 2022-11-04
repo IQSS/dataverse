@@ -547,6 +547,9 @@ public class FileUtil implements java.io.Serializable  {
              }
         } 
         
+        if(fileType==null) {
+            fileType = MIME_TYPE_UNDETERMINED_DEFAULT;
+        }
         logger.fine("returning fileType "+fileType);
         return fileType;
     }
@@ -1187,7 +1190,7 @@ public class FileUtil implements java.io.Serializable  {
     }   // end createDataFiles
     
 
-	private static boolean useRecognizedType(String suppliedContentType, String recognizedType) {
+	public static boolean useRecognizedType(String suppliedContentType, String recognizedType) {
 		// is it any better than the type that was supplied to us,
 		// if any?
 		// This is not as trivial a task as one might expect...
@@ -1616,32 +1619,33 @@ public class FileUtil implements java.io.Serializable  {
      */
     public static String getFileDownloadUrlPath(String downloadType, Long fileId, boolean gbRecordsWritten, Long fileMetadataId) {
         String fileDownloadUrl = "/api/access/datafile/" + fileId;
-        if (downloadType != null && downloadType.equals("bundle")) {
-            if (fileMetadataId == null) {
-                fileDownloadUrl = "/api/access/datafile/bundle/" + fileId;
-            } else {
-                fileDownloadUrl = "/api/access/datafile/bundle/" + fileId + "?fileMetadataId=" + fileMetadataId;
+        if (downloadType != null) {
+            switch(downloadType) {
+            case "original":
+            case"RData":
+            case "tab":
+            case "GlobusTransfer":
+                    fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=" + downloadType;
+                    break;
+            case "bundle":
+                    if (fileMetadataId == null) {
+                        fileDownloadUrl = "/api/access/datafile/bundle/" + fileId;
+                    } else {
+                        fileDownloadUrl = "/api/access/datafile/bundle/" + fileId + "?fileMetadataId=" + fileMetadataId;
+                    }
+                    break;
+            case "var":
+                    if (fileMetadataId == null) {
+                        fileDownloadUrl = "/api/access/datafile/" + fileId + "/metadata";
+                    } else {
+                        fileDownloadUrl = "/api/access/datafile/" + fileId + "/metadata?fileMetadataId=" + fileMetadataId;
+                    }
+                    break;
+                }
+                
             }
-        }
-        if (downloadType != null && downloadType.equals("original")) {
-            fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=original";
-        }
-        if (downloadType != null && downloadType.equals("RData")) {
-            fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=RData";
-        }
-        if (downloadType != null && downloadType.equals("var")) {
-            if (fileMetadataId == null) {
-                fileDownloadUrl = "/api/access/datafile/" + fileId + "/metadata";
-            } else {
-                fileDownloadUrl = "/api/access/datafile/" + fileId + "/metadata?fileMetadataId=" + fileMetadataId;
-            }
-        }
-        if (downloadType != null && downloadType.equals("tab")) {
-            fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=tab";
-        }
         if (gbRecordsWritten) {
-            if (downloadType != null && ((downloadType.equals("original") || downloadType.equals("RData") || downloadType.equals("tab")) ||
-                    ((downloadType.equals("var") || downloadType.equals("bundle") ) && fileMetadataId != null))) {
+            if (fileDownloadUrl.contains("?")) {
                 fileDownloadUrl += "&gbrecs=true";
             } else {
                 fileDownloadUrl += "?gbrecs=true";
@@ -1779,10 +1783,10 @@ public class FileUtil implements java.io.Serializable  {
 
         StorageIO<DataFile> storage = dataFile.getStorageIO();
         InputStream in = null;
-        
+
         try {
             storage.open(DataAccessOption.READ_ACCESS);
-            
+
             if (!dataFile.isTabularData()) {
                 in = storage.getInputStream();
             } else {
@@ -1837,7 +1841,7 @@ public class FileUtil implements java.io.Serializable  {
                     } finally {
                         IOUtils.closeQuietly(in);
                     }
-                    // try again: 
+                    // try again:
                     if (recalculatedChecksum.equals(dataFile.getChecksumValue())) {
                         fixed = true;
                         try {
@@ -1848,7 +1852,7 @@ public class FileUtil implements java.io.Serializable  {
                     }
                 }
             }
-            
+
             if (!fixed) {
                 String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.wrongChecksumValue", Arrays.asList(dataFile.getId().toString()));
                 logger.log(Level.INFO, info);

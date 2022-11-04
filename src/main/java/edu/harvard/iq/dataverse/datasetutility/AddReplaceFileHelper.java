@@ -615,7 +615,7 @@ public class AddReplaceFileHelper{
         if (!this.step_050_checkForConstraintViolations()){
             return false;            
         }
-        
+
         msgt("step_055_loadOptionalFileParams");
         if (!this.step_055_loadOptionalFileParams(optionalFileParams)){
             return false;            
@@ -774,7 +774,7 @@ public class AddReplaceFileHelper{
                 }
             }
         }
-        
+
         msgt("step_090_notifyUser");
         if (!this.step_090_notifyUser()){
             return false;            
@@ -1375,7 +1375,7 @@ public class AddReplaceFileHelper{
             String fileType = fileToReplace.getOriginalFileFormat() != null ? fileToReplace.getOriginalFileFormat() : fileToReplace.getContentType();
             if (!finalFileList.get(0).getContentType().equalsIgnoreCase(fileType)) {
                 String friendlyType = fileToReplace.getOriginalFormatLabel() != null ? fileToReplace.getOriginalFormatLabel() : fileToReplace.getFriendlyType();
-                
+
                 List<String> errParams = Arrays.asList(friendlyType,
                                                 finalFileList.get(0).getFriendlyType());
                 
@@ -1515,8 +1515,16 @@ public class AddReplaceFileHelper{
         // violations found: gather all error messages
         // -----------------------------------------------------------   
         List<String> errMsgs = new ArrayList<>();
-        for (ConstraintViolation violation : constraintViolations){
-            this.addError(violation.getMessage());
+        for (ConstraintViolation violation : constraintViolations) {
+            /*
+            for 8859 return conflict response status if the validation fails
+            due to terms of use/access out of compliance
+            */
+            if (workingVersion.getTermsOfUseAndAccess().getValidationMessage() != null) {
+                addError(Response.Status.CONFLICT,workingVersion.getTermsOfUseAndAccess().getValidationMessage());
+            } else {
+                this.addError(violation.getMessage());
+            }
         }
         
         return this.hasError();
