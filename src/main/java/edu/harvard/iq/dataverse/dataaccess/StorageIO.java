@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,6 +52,8 @@ import java.util.regex.Pattern;
 
 public abstract class StorageIO<T extends DvObject> {
 
+    private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.StorageIO");
+    
     public StorageIO() {
 
     }
@@ -580,6 +583,7 @@ public abstract class StorageIO<T extends DvObject> {
 	}
 
     public boolean downloadRedirectEnabled() {
+        logger.info("Base method returning false");
         return false;
     }
 

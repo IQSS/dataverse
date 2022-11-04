@@ -846,8 +846,10 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     @Override
     public boolean downloadRedirectEnabled() {
+        logger.info("Calling S3 method");
         String optionValue = System.getProperty("dataverse.files." + this.driverId + ".download-redirect");
         if ("true".equalsIgnoreCase(optionValue)) {
+            logger.info("Returning true");
             return true;
         }
         return false;
