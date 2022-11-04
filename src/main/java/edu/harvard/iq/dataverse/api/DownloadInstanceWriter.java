@@ -217,6 +217,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             }
                         }
                     }
+                }
                     if (redirect_url_str!=null) {
 
                         logger.fine("Data Access API: redirect url: " + redirect_url_str);
@@ -582,7 +583,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     }
                 }
             }
-        }
+       
 
         throw new NotFoundException();
 
