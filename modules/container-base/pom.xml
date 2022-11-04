@@ -97,6 +97,7 @@
                                                 <platform>linux/arm64</platform>
                                                 <platform>linux/amd64</platform>
                                             </platforms>
+                                            <dockerStateDir>${project.build.directory}/buildx-state</dockerStateDir>
                                         </buildx>
                                         <dockerFile>Dockerfile</dockerFile>
                                         <args>
