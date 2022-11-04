@@ -478,7 +478,7 @@ named config in the same folder")
 Console Commands to Set Up Access Configuration
 ###############################################
 
-Begin by installing the CLI tool `pip <https://pip.pypa.io//en/latest/>`_ to install the
+Begin by installing the CLI tool `pip (package installer for Python) <https://pip.pypa.io/en/latest/>`_ to install the
 `AWS command line interface <https://aws.amazon.com/cli/>`_ if you don't have it.
 
 First, we'll get our access keys set up. If you already have your access keys configured, skip this step.
@@ -676,7 +676,7 @@ In addition to having the type "remote" and requiring a label, Trusted Remote St
 These and other available options are described in the table below.
 
 Trusted remote stores can range from being a static trusted website to a sophisticated service managing access requests and logging activity
-and/or managing access to a secure enclave. For specific remote stores, consult their documentation when configuring the remote store in your Dataverse installation.
+and/or managing access to a secure enclave.  See :doc:`/developers/big-data-support` for additional information on how to use a trusted remote store. For specific remote stores, consult their documentation when configuring the remote store in your Dataverse installation.
 
 Note that in the current implementation, activites where Dataverse needs access to data bytes, e.g. to create thumbnails or validate hash values at publication will fail if a remote store does not allow Dataverse access. Implementers of such trusted remote stores should consider using Dataverse's settings to disable ingest, validation of files at publication, etc. as needed.
 
@@ -1235,8 +1235,8 @@ The :S3ArchiverConfig setting is a JSON object that must include an "s3_bucket_n
 
 .. _Archiving API Call:
 
-API Calls
-+++++++++
+BagIt Export API Calls
+++++++++++++++++++++++
 
 Once this configuration is complete, you, as a user with the *PublishDataset* permission, should be able to use the admin API call to manually submit a DatasetVersion for processing:
 
@@ -1244,25 +1244,29 @@ Once this configuration is complete, you, as a user with the *PublishDataset* pe
 
 where:
 
-``{id}`` is the DatasetId (or ``:persistentId`` with the ``?persistentId="<DOI>"`` parameter), and
+``{id}`` is the DatasetId (the database id of the dataset) and
 
 ``{version}`` is the friendly version number, e.g. "1.2".
 
-The submitDatasetVersionToArchive API (and the workflow discussed below) attempt to archive the dataset version via an archive specific method. For Chronopolis, a DuraCloud space named for the dataset (it's DOI with ':' and '.' replaced with '-') is created and two files are uploaded to it: a version-specific datacite.xml metadata file and a BagIt bag containing the data and an OAI-ORE map file. (The datacite.xml file, stored outside the Bag as well as inside is intended to aid in discovery while the ORE map file is 'complete', containing all user-entered metadata and is intended as an archival record.)
+or in place of the DatasetID, you can use the string ``:persistentId`` as the ``{id}`` and add the DOI/PID as a query parameter like this: ``?persistentId="<DOI>"``. Here is how the full command would look:
 
-In the Chronopolis case, since the transfer from the DuraCloud front-end to archival storage in Chronopolis can take significant time, it is currently up to the admin/curator to submit a 'snap-shot' of the space within DuraCloud and to monitor its successful transfer. Once transfer is complete the space should be deleted, at which point the Dataverse Software API call can be used to submit a Bag for other versions of the same Dataset. (The space is reused, so that archival copies of different Dataset versions correspond to different snapshots of the same DuraCloud space.).
+``curl -X POST -H "X-Dataverse-key: <key>" http://localhost:8080/api/admin/submitDatasetVersionToArchive/:persistentId/{version}?persistentId="<DOI>"``
 
-A batch version of this admin api call is also available:
+The submitDatasetVersionToArchive API (and the workflow discussed below) attempt to archive the dataset version via an archive specific method. For Chronopolis, a DuraCloud space named for the dataset (its DOI with ":" and "." replaced with "-", e.g. ``doi-10-5072-fk2-tgbhlb``) is created and two files are uploaded to it: a version-specific datacite.xml metadata file and a BagIt bag containing the data and an OAI-ORE map file. (The datacite.xml file, stored outside the Bag as well as inside, is intended to aid in discovery while the ORE map file is "complete", containing all user-entered metadata and is intended as an archival record.)
+
+In the Chronopolis case, since the transfer from the DuraCloud front-end to archival storage in Chronopolis can take significant time, it is currently up to the admin/curator to submit a 'snap-shot' of the space within DuraCloud and to monitor its successful transfer. Once transfer is complete the space should be deleted, at which point the Dataverse Software API call can be used to submit a Bag for other versions of the same dataset. (The space is reused, so that archival copies of different dataset versions correspond to different snapshots of the same DuraCloud space.).
+
+A batch version of this admin API call is also available:
 
 ``curl -X POST -H "X-Dataverse-key: <key>" 'http://localhost:8080/api/admin/archiveAllUnarchivedDatasetVersions?listonly=true&limit=10&latestonly=true'``
 
-The archiveAllUnarchivedDatasetVersions call takes 3 optional configuration parameters. 
+The archiveAllUnarchivedDatasetVersions call takes 3 optional configuration parameters.
+
 * listonly=true will cause the API to list dataset versions that would be archived but will not take any action.
-* limit=<n> will limit the number of dataset versions archived in one api call to <= <n>. 
+* limit=<n> will limit the number of dataset versions archived in one API call to ``<=`` <n>. 
 * latestonly=true will limit archiving to only the latest published versions of datasets instead of archiving all unarchived versions.
 
-Note that because archiving is done asynchronously, the calls above will return OK even if the user does not have the *PublishDataset* permission on the dataset(s) involved. Failures are indocated in the log and the archivalStatus calls in the native api can be used to check the status as well.
-
+Note that because archiving is done asynchronously, the calls above will return OK even if the user does not have the *PublishDataset* permission on the dataset(s) involved. Failures are indicated in the log and the archivalStatus calls in the native API can be used to check the status as well.
 
 PostPublication Workflow
 ++++++++++++++++++++++++
@@ -1376,30 +1380,37 @@ When changing values these values with ``asadmin``, you'll need to delete the ol
 
 It's also possible to change these values by stopping Payara, editing ``payara5/glassfish/domains/domain1/config/domain.xml``, and restarting Payara.
 
+.. _dataverse.fqdn:
+
 dataverse.fqdn
 ++++++++++++++
 
-If the Dataverse installation has multiple DNS names, this option specifies the one to be used as the "official" host name. For example, you may want to have dataverse.example.edu, and not the less appealing server-123.socsci.example.edu to appear exclusively in all the registered global identifiers, Data Deposit API records, etc.
+If the Dataverse installation has multiple DNS names, this option specifies the one to be used as the "official" hostname. For example, you may want to have ``dataverse.example.edu``, and not the less appealing ``server-123.example.edu`` to appear exclusively in all the registered global identifiers, etc.
 
 The password reset feature requires ``dataverse.fqdn`` to be configured.
 
-.. note::
-
-	Do note that whenever the system needs to form a service URL, by default, it will be formed with ``https://`` and port 443. I.e.,
-	``https://{dataverse.fqdn}/``
-	If that does not suit your setup, you can define an additional option, ``dataverse.siteUrl``, explained below.
+Configuring ``dataverse.fqdn`` is not enough. Read on for the importance of also setting ``dataverse.siteUrl``.
 
 .. _dataverse.siteUrl:
 
 dataverse.siteUrl
 +++++++++++++++++
 
-.. note::
+``dataverse.siteUrl`` is used to configure the URL for your Dataverse installation that you plan to advertise to your users. As explained in the :ref:`installation <importance-of-siteUrl>` docs, this setting is critical for the correct operation of your installation.
 
-	and specify the protocol and port number you would prefer to be used to advertise the URL for your Dataverse installation.
-	For example, configured in domain.xml:
-	``<jvm-options>-Ddataverse.fqdn=dataverse.example.edu</jvm-options>``
-	``<jvm-options>-Ddataverse.siteUrl=http://${dataverse.fqdn}:8080</jvm-options>``
+For example, your site URL could be https://dataverse.example.edu
+
+That is, even though the server might also be available at uglier URLs such as https://server-123.example.edu the site URL is the "official" URL.
+
+The ``dataverse.siteUrl`` JVM option can be configured by following the procedure under :ref:`jvm-options` or by editing ``domain.xml`` directly. You can specify the protocol, host, and port number. Your ``domain.xml`` file could look like this, for example:
+
+``<jvm-options>-Ddataverse.siteUrl=https://dataverse.example.edu</jvm-options>``
+
+Note that it's also possible to use the ``dataverse.fqdn`` as a variable, if you wish. Here's an example of this as well as a custom port (which is usually not necessary):
+
+``<jvm-options>-Ddataverse.siteUrl=https://${dataverse.fqdn}:444</jvm-options>``
+
+We are absolutely aware that it's confusing to have both ``dataverse.fqdn`` and ``dataverse.siteUrl``. https://github.com/IQSS/dataverse/issues/6636 is about resolving this confusion.
 
 dataverse.files.directory
 +++++++++++++++++++++++++
@@ -2788,9 +2799,9 @@ Part of the database settings to configure the BagIt file handler. This is the p
 ++++++++++++++++++
 
 Your Dataverse installation can export archival "Bag" files to an extensible set of storage systems (see :ref:`BagIt Export` above for details about this and for further explanation of the other archiving related settings below).
-This setting specifies which storage system to use by identifying the particular Java class that should be run. Current options include DuraCloudSubmitToArchiveCommand, LocalSubmitToArchiveCommand, and GoogleCloudSubmitToArchiveCommand.
+This setting specifies which storage system to use by identifying the particular Java class that should be run. Current configuration options include DuraCloudSubmitToArchiveCommand, LocalSubmitToArchiveCommand, GoogleCloudSubmitToArchiveCommand, and S3SubmitToArchiveCommand.
 
-``curl -X PUT -d 'LocalSubmitToArchiveCommand' http://localhost:8080/api/admin/settings/:ArchiverClassName`` 
+For examples, see the specific configuration above in :ref:`BagIt Export`.
  
 :ArchiverSettings
 +++++++++++++++++
@@ -2905,6 +2916,23 @@ Scripts that implement this association for specific service protocols are maint
 ``wget https://gdcc.github.io/dataverse-external-vocab-support/examples/config/cvoc-conf.json``
 
 ``curl -X PUT --upload-file cvoc-conf.json http://localhost:8080/api/admin/settings/:CVocConf``
+
+.. _:ControlledVocabularyCustomJavaScript:
+
+:ControlledVocabularyCustomJavaScript
++++++++++++++++++++++++++++++++++++++
+
+``:ControlledVocabularyCustomJavaScript`` allows a JavaScript file to be loaded into the dataset page for the purpose of showing controlled vocabulary as a list (with optionally translated values) such as author names.
+
+To specify the URL for a custom script ``covoc.js`` to be loaded from an external site:
+
+``curl -X PUT -d 'https://example.com/js/covoc.js' http://localhost:8080/api/admin/settings/:ControlledVocabularyCustomJavaScript``
+
+To remove the custom script URL:
+
+``curl -X DELETE http://localhost:8080/api/admin/settings/:ControlledVocabularyCustomJavaScript``
+
+Please note that :ref:`:CVocConf` is a better option if the list is large or needs to be searchable from an external service using protocols such as SKOSMOS.
 
 .. _:AllowedCurationLabels:
 
@@ -3056,3 +3084,35 @@ The URL of an LDN Inbox to which the LDN Announce workflow step will send messag
 ++++++++++++++++++++++++++
 
 The list of parent dataset field names for which the LDN Announce workflow step should send messages. See :doc:`/developers/workflows` for details.
+
+.. _:GlobusBasicToken:
+
+:GlobusBasicToken
++++++++++++++++++
+
+GlobusBasicToken encodes credentials for Globus integration. See :ref:`globus-support` for details.
+
+:GlobusEndpoint
++++++++++++++++
+
+GlobusEndpoint is Globus endpoint id used with Globus integration. See :ref:`globus-support` for details.
+
+:GlobusStores
++++++++++++++
+
+A comma-separated list of the S3 stores that are configured to support Globus integration. See :ref:`globus-support` for details.
+
+:GlobusAppURL
++++++++++++++
+
+The URL where the `dataverse-globus <https://github.com/scholarsportal/dataverse-globus>`_ "transfer" app has been deployed to support Globus integration. See :ref:`globus-support` for details.
+
+:GlobusPollingInterval
+++++++++++++++++++++++
+
+The interval in seconds between Dataverse calls to Globus to check on upload progress. Defaults to 50 seconds. See :ref:`globus-support` for details.
+
+:GlobusSingleFileTransfer
++++++++++++++++++++++++++
+
+A true/false option to add a Globus transfer option to the file download menu which is not yet fully supported in the dataverse-globus app. See :ref:`globus-support` for details.

@@ -43,7 +43,7 @@
         </p:commandLink>
     </li>
 
-    <ui:fragment rendered="#{!settingsWrapper.publicInstall}">
+    <ui:fragment rendered="#{!bean.hasPublicStore}">
         <ui:fragment rendered="#{fileMetadata == null or !fileMetadata.restricted}">
             <li>
                 <p:commandLink  onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))

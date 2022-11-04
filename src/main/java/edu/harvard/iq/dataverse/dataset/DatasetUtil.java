@@ -37,6 +37,7 @@ import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.license.License;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
@@ -457,7 +458,7 @@ public class DatasetUtil {
         return datasetFields;
     }
     
-    public static boolean isAppropriateStorageDriver(Dataset dataset){
+    public static boolean isRsyncAppropriateStorageDriver(Dataset dataset){
         // ToDo - rsync was written before multiple store support and currently is hardcoded to use the DataAccess.S3 store. 
         // When those restrictions are lifted/rsync can be configured per store, this test should check that setting
         // instead of testing for the 's3" store,
@@ -477,16 +478,16 @@ public class DatasetUtil {
     public static String getDownloadSize(DatasetVersion dsv, boolean original) {
         return FileSizeChecker.bytesToHumanReadable(getDownloadSizeNumeric(dsv, original));
     }
-    
+
     public static Long getDownloadSizeNumeric(DatasetVersion dsv, boolean original) {
         return getDownloadSizeNumericBySelectedFiles(dsv.getFileMetadatas(), original);
     }
-    
+
     public static Long getDownloadSizeNumericBySelectedFiles(List<FileMetadata> fileMetadatas, boolean original) {
         long bytes = 0l;
         for (FileMetadata fileMetadata : fileMetadatas) {
             DataFile dataFile = fileMetadata.getDataFile();
-            if (original && dataFile.isTabularData()) {                
+            if (original && dataFile.isTabularData()) {
                 bytes += dataFile.getOriginalFileSize() == null ? 0 : dataFile.getOriginalFileSize();
             } else {
                 bytes += dataFile.getFilesize();

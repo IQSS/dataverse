@@ -57,7 +57,7 @@ Ingest is both CPU- and memory-intensive, and depending on your system resources
 
 ``/usr/local/payara5/mq/bin/imqcmd -u admin purge dst -t q -n DataverseIngest`` will purge the DataverseIngest queue, and prompt for your confirmation.
 
-Finally, list destinations to verify that the purge was successful::
+Finally, list destinations to verify that the purge was successful:
 
 ``/usr/local/payara5/mq/bin/imqcmd -u admin list dst``
 
@@ -96,10 +96,8 @@ Sometimes your Dataverse installation fails to deploy, or Payara fails to restar
 
 We don't know what's causing this issue, but here's a known workaround: 
 
-- Stop Payara; 
-
-- Remove the ``generated`` and ``osgi-cache`` directories;
-
+- Stop Payara;
+- Remove the ``generated`` and ``osgi-cache`` directories from the ``domain1`` directory;
 - Start Payara
 
 The shell script below performs the steps above. 
