@@ -1,0 +1,3 @@
+A new option :AllowRemoteAuthSignUp has been added providing a mechanism for disabling new account signups for specific OAuth2 authentication providers (Orcid, GitHub, Google etc.) while still allowing logins for already-existing accounts using this authentication method.
+
+See the config guide (https://guides.dataverse.org/en/latest/installation/config.html) for more information on the setting. 
