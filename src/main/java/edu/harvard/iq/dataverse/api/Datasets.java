@@ -601,7 +601,7 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/versions/{versionId}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response updateDraftVersion( String jsonBody, @PathParam("id") String id,  @PathParam("versionId") String versionId ){
-        
+      
         if ( ! ":draft".equals(versionId) ) {
             return error( Response.Status.BAD_REQUEST, "Only the :draft version can be updated");
         }
@@ -629,14 +629,22 @@ public class Datasets extends AbstractApiBean {
             boolean updateDraft = ds.getLatestVersion().isDraft();
             
             DatasetVersion managedVersion;
-            if ( updateDraft ) {
+            if (updateDraft) {
                 final DatasetVersion editVersion = ds.getEditVersion();
                 editVersion.setDatasetFields(incomingVersion.getDatasetFields());
-                editVersion.setTermsOfUseAndAccess( incomingVersion.getTermsOfUseAndAccess() );
+                editVersion.setTermsOfUseAndAccess(incomingVersion.getTermsOfUseAndAccess());
                 editVersion.getTermsOfUseAndAccess().setDatasetVersion(editVersion);
+                boolean hasValidTerms = TermsOfUseAndAccessValidator.isTOUAValid(editVersion.getTermsOfUseAndAccess(), null);
+                if (!hasValidTerms) {
+                    return error(Status.CONFLICT, BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
+                }
                 Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
                 managedVersion = managedDataset.getEditVersion();
             } else {
+                boolean hasValidTerms = TermsOfUseAndAccessValidator.isTOUAValid(incomingVersion.getTermsOfUseAndAccess(), null);
+                if (!hasValidTerms) {
+                    return error(Status.CONFLICT, BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
+                }
                 managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, incomingVersion));
             }
 //            DatasetVersion managedVersion = execCommand( updateDraft
@@ -694,6 +702,10 @@ public class Datasets extends AbstractApiBean {
             boolean updateDraft = ds.getLatestVersion().isDraft();
             dsv = JSONLDUtil.updateDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, datasetFieldSvc, !replaceTerms, false, licenseSvc);
             dsv.getTermsOfUseAndAccess().setDatasetVersion(dsv);
+            boolean hasValidTerms = TermsOfUseAndAccessValidator.isTOUAValid(dsv.getTermsOfUseAndAccess(), null);
+            if (!hasValidTerms) {
+                return error(Status.CONFLICT, BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
+            }
             DatasetVersion managedVersion;
             if (updateDraft) {
                 Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
@@ -1102,6 +1114,12 @@ public class Datasets extends AbstractApiBean {
             }
 
             Dataset ds = findDatasetOrDie(id);
+            
+            boolean hasValidTerms = TermsOfUseAndAccessValidator.isTOUAValid(ds.getLatestVersion().getTermsOfUseAndAccess(), null);
+            if (!hasValidTerms) {
+                return error(Status.CONFLICT, BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
+            }
+            
             if (mustBeIndexed) {
                 logger.fine("IT: " + ds.getIndexTime());
                 logger.fine("MT: " + ds.getModificationTime());
@@ -1323,6 +1341,12 @@ public class Datasets extends AbstractApiBean {
             dataset = findDatasetOrDie(id);
         } catch (WrappedResponse ex) {
             return ex.getResponse();
+        }
+        
+        boolean hasValidTerms = TermsOfUseAndAccessValidator.isTOUAValid(dataset.getLatestVersion().getTermsOfUseAndAccess(), null);
+        
+        if (!hasValidTerms){
+            return error(Status.CONFLICT, BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
         }
 
         // client is superadmin or (client has EditDataset permission on these files and files are unreleased)
@@ -2442,7 +2466,11 @@ public class Datasets extends AbstractApiBean {
                 optionalFileParams);
 
 
-        if (addFileHelper.hasError()) {
+        if (addFileHelper.hasError()){
+            //conflict response status added for 8859
+            if (Response.Status.CONFLICT.equals(addFileHelper.getHttpErrorCode())){
+                return conflict(addFileHelper.getErrorMessagesAsString("\n"));
+            }
             return error(addFileHelper.getHttpErrorCode(), addFileHelper.getErrorMessagesAsString("\n"));
         } else {
             String successMsg = BundleUtil.getStringFromBundle("file.addreplace.success.add");
