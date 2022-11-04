@@ -46,6 +46,11 @@ Feature branches are used for both developing features and fixing bugs. They are
 
 "3728-doc-apipolicy-fix" is an example of a fine name for your feature branch. It tells us that you are addressing https://github.com/IQSS/dataverse/issues/3728 and the "slug" is short, descriptive, and starts with the issue number.
 
+Hotfix Branches
+***************
+
+Hotfix branches are described under :doc:`making-releases`.
+
 .. _how-to-make-a-pull-request:
 
 How to Make a Pull Request
