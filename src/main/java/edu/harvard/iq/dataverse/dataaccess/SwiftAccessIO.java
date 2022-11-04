@@ -22,7 +22,10 @@ import java.util.Collection;
 import java.util.Formatter;
 import java.util.List;
 import java.util.Properties;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import org.javaswift.joss.client.factory.AccountFactory;
@@ -897,8 +900,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         return toHexString(mac.doFinal(data.getBytes()));
     }
 
-    @Override
-    public List<String> listAllFiles() throws IOException {
+    private List<String> listAllFiles() throws IOException {
         if (!this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);
         }
@@ -922,8 +924,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         return ret;
     }
 
-    @Override
-    public void deleteFile(String fileName) throws IOException {
+    private void deleteFile(String fileName) throws IOException {
         if (!this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);
         }
@@ -940,5 +941,14 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         }
 
         fileObject.delete();
+    }
+
+    @Override
+    public List<String> cleanUp(Predicate<String> filter) throws IOException {
+        List<String> toDelete = this.listAllFiles().stream().filter(filter).collect(Collectors.toList());
+        for (String f : toDelete) {
+            this.deleteFile(f);
+        }
+        return toDelete;
     }
 }

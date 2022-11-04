@@ -114,6 +114,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.Predicate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Map.Entry;
@@ -2546,13 +2547,11 @@ public class Datasets extends AbstractApiBean {
                 }
             }
             StorageIO<DvObject> datasetIO = DataAccess.getStorageIO(dataset);
-            List<String> allDatasetFiles = datasetIO.listAllFiles();
-            for (String f : allDatasetFiles) {
-                if (!files.contains(f)) {
-                    datasetIO.deleteFile(f);
-                    deleted.add(f);
-                }
-            }
+            Predicate<String> filter = f -> {
+                return !files.contains(f);
+            };
+
+            deleted.addAll(datasetIO.cleanUp(filter));
         } catch (IOException ex) {
             logger.log(Level.SEVERE, null, ex);
             return error(Response.Status.INTERNAL_SERVER_ERROR, "IOException! Serious Error! See administrator!");

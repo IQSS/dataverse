@@ -60,7 +60,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import org.apache.commons.io.IOUtils;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
@@ -1308,8 +1311,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     
 
 
-    @Override
-    public List<String> listAllFiles() throws IOException {
+    private List<String> listAllFiles() throws IOException {
         if (!this.canWrite()) {
             open();
         }
@@ -1351,8 +1353,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         return ret;
     }
 
-    @Override
-    public void deleteFile(String fileName) throws IOException {
+    private void deleteFile(String fileName) throws IOException {
         if (!this.canWrite()) {
             open();
         }
@@ -1370,4 +1371,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
 
+    @Override
+    public List<String> cleanUp(Predicate<String> filter) throws IOException {
+        List<String> toDelete = this.listAllFiles().stream().filter(filter).collect(Collectors.toList());
+        for (String f : toDelete) {
+            this.deleteFile(f);
+        }
+        return toDelete;
+    }
 }

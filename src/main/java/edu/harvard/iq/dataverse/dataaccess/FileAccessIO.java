@@ -33,9 +33,11 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 // Dataverse imports:
 import edu.harvard.iq.dataverse.DataFile;
@@ -684,7 +686,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         return true;
     }
 
-    public List<String> listAllFiles() throws IOException {
+    private List<String> listAllFiles() throws IOException {
         Dataset dataset = this.getDataset();
         if (dataset == null) {
             throw new IOException("This FileAccessIO object hasn't been properly initialized.");
@@ -708,8 +710,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         return res;
     }
     
-    @Override
-    public void deleteFile(String fileName) throws IOException {
+    private void deleteFile(String fileName) throws IOException {
         Dataset dataset = this.getDataset();
         if (dataset == null) {
             throw new IOException("This FileAccessIO object hasn't been properly initialized.");
@@ -722,6 +723,15 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
 
         Path p = Paths.get(this.getFilesRootDirectory(), datasetDirectoryPath.toString(), fileName);
         Files.delete(p);
+    }
+
+    @Override
+    public List<String> cleanUp(Predicate<String> filter) throws IOException {
+        List<String> toDelete = this.listAllFiles().stream().filter(filter).collect(Collectors.toList());
+        for (String f : toDelete) {
+            this.deleteFile(f);
+        }
+        return toDelete;
     }
 
 }
