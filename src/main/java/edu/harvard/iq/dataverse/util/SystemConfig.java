@@ -1233,4 +1233,15 @@ public class SystemConfig {
         }
         return labelMap;
     }
+    
+    public boolean isSignupDisabledForRemoteAuthProvider(String providerId) {
+        Boolean ret =  settingsService.getValueForCompoundKeyAsBoolean(SettingsServiceBean.Key.AllowRemoteAuthSignUp, providerId);
+        
+        // we default to false - i.e., "not disabled" if the setting is not present: 
+        if (ret == null) {
+            return false; 
+        }
+        
+        return !ret; 
+    }
 }

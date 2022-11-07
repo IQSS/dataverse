@@ -478,7 +478,7 @@ named config in the same folder")
 Console Commands to Set Up Access Configuration
 ###############################################
 
-Begin by installing the CLI tool `pip <https://pip.pypa.io//en/latest/>`_ to install the
+Begin by installing the CLI tool `pip (package installer for Python) <https://pip.pypa.io/en/latest/>`_ to install the
 `AWS command line interface <https://aws.amazon.com/cli/>`_ if you don't have it.
 
 First, we'll get our access keys set up. If you already have your access keys configured, skip this step.
@@ -800,7 +800,7 @@ Refer to :ref:`:NavbarSupportUrl` for setting to a fully-qualified URL which wil
 Sign Up
 #######
 
-Refer to :ref:`:SignUpUrl` and :ref:`conf-allow-signup` for setting a relative path URL to which users will be sent for signup and for controlling the ability for creating local user accounts.
+Refer to :ref:`:SignUpUrl` and :ref:`conf-allow-signup` for setting a relative path URL to which users will be sent for sign up and for controlling the ability for creating local user accounts.
 
 Custom Header
 ^^^^^^^^^^^^^
@@ -1380,30 +1380,37 @@ When changing values these values with ``asadmin``, you'll need to delete the ol
 
 It's also possible to change these values by stopping Payara, editing ``payara5/glassfish/domains/domain1/config/domain.xml``, and restarting Payara.
 
+.. _dataverse.fqdn:
+
 dataverse.fqdn
 ++++++++++++++
 
-If the Dataverse installation has multiple DNS names, this option specifies the one to be used as the "official" host name. For example, you may want to have dataverse.example.edu, and not the less appealing server-123.socsci.example.edu to appear exclusively in all the registered global identifiers, Data Deposit API records, etc.
+If the Dataverse installation has multiple DNS names, this option specifies the one to be used as the "official" hostname. For example, you may want to have ``dataverse.example.edu``, and not the less appealing ``server-123.example.edu`` to appear exclusively in all the registered global identifiers, etc.
 
 The password reset feature requires ``dataverse.fqdn`` to be configured.
 
-.. note::
-
-	Do note that whenever the system needs to form a service URL, by default, it will be formed with ``https://`` and port 443. I.e.,
-	``https://{dataverse.fqdn}/``
-	If that does not suit your setup, you can define an additional option, ``dataverse.siteUrl``, explained below.
+Configuring ``dataverse.fqdn`` is not enough. Read on for the importance of also setting ``dataverse.siteUrl``.
 
 .. _dataverse.siteUrl:
 
 dataverse.siteUrl
 +++++++++++++++++
 
-.. note::
+``dataverse.siteUrl`` is used to configure the URL for your Dataverse installation that you plan to advertise to your users. As explained in the :ref:`installation <importance-of-siteUrl>` docs, this setting is critical for the correct operation of your installation.
 
-	and specify the protocol and port number you would prefer to be used to advertise the URL for your Dataverse installation.
-	For example, configured in domain.xml:
-	``<jvm-options>-Ddataverse.fqdn=dataverse.example.edu</jvm-options>``
-	``<jvm-options>-Ddataverse.siteUrl=http://${dataverse.fqdn}:8080</jvm-options>``
+For example, your site URL could be https://dataverse.example.edu
+
+That is, even though the server might also be available at uglier URLs such as https://server-123.example.edu the site URL is the "official" URL.
+
+The ``dataverse.siteUrl`` JVM option can be configured by following the procedure under :ref:`jvm-options` or by editing ``domain.xml`` directly. You can specify the protocol, host, and port number. Your ``domain.xml`` file could look like this, for example:
+
+``<jvm-options>-Ddataverse.siteUrl=https://dataverse.example.edu</jvm-options>``
+
+Note that it's also possible to use the ``dataverse.fqdn`` as a variable, if you wish. Here's an example of this as well as a custom port (which is usually not necessary):
+
+``<jvm-options>-Ddataverse.siteUrl=https://${dataverse.fqdn}:444</jvm-options>``
+
+We are absolutely aware that it's confusing to have both ``dataverse.fqdn`` and ``dataverse.siteUrl``. https://github.com/IQSS/dataverse/issues/6636 is about resolving this confusion.
 
 dataverse.files.directory
 +++++++++++++++++++++++++
@@ -2190,7 +2197,7 @@ If ``:SolrFullTextIndexing`` is set to true, the content of files of any size wi
 :SignUpUrl
 ++++++++++
 
-The relative path URL to which users will be sent for signup. The default setting is below.
+The relative path URL to which users will be sent for sign up. The default setting is below.
 
 ``curl -X PUT -d '/dataverseuser.xhtml?editMode=CREATE' http://localhost:8080/api/admin/settings/:SignUpUrl``
 
@@ -2265,6 +2272,31 @@ Here is an example of setting the default auth provider back to ``builtin``:
 Set to false to disallow local accounts from being created. See also the sections on :doc:`shibboleth` and :doc:`oauth2`.
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:AllowSignUp``
+
+.. _:AllowRemoteAuthSignUp:
+
+:AllowRemoteAuthSignUp
+++++++++++++++++++++++
+
+This is a **compound** setting that enables or disables sign up for new accounts for individual OAuth2 authentication methods (such as Orcid, Google and GitHub). This way it is possible to continue allowing logins via an OAuth2 provider for already existing accounts, without letting new users create accounts with this method.
+
+By default, if the setting is not present, all configured OAuth sign ups are allowed. If the setting is present, but the value for this specific method is not specified, it is assumed that the sign ups are allowed for it.
+
+Examples:
+
+This curl command...
+
+``curl -X PUT -d '{"default":"false"}' http://localhost:8080/api/admin/settings/:AllowRemoteAuthSignUp``
+
+...disables all OAuth sign ups.
+
+This curl command...
+
+``curl -X PUT -d '{"default":"true","google":"false"}' http://localhost:8080/api/admin/settings/:AllowRemoteAuthSignUp``
+
+...keeps sign ups open for all the OAuth login providers except google. (That said, note that the ``"default":"true"`` part in this example is redundant, since it would default to true anyway for all the methods other than google.)
+
+See also :doc:`oauth2`.
 
 :FileFixityChecksumAlgorithm
 ++++++++++++++++++++++++++++
