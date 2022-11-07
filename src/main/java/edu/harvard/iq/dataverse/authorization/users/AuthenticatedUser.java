@@ -148,7 +148,7 @@ public class AuthenticatedUser implements User, Serializable {
     }
     
     @PostLoad
-    public void postLoad() {
+    public void initialize() {
         mutedNotificationsSet = Type.tokenizeToSet(mutedNotifications);
         mutedEmailsSet = Type.tokenizeToSet(mutedEmails);
     }
