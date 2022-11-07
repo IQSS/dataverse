@@ -57,7 +57,7 @@ Ingest is both CPU- and memory-intensive, and depending on your system resources
 
 ``/usr/local/payara5/mq/bin/imqcmd -u admin purge dst -t q -n DataverseIngest`` will purge the DataverseIngest queue, and prompt for your confirmation.
 
-Finally, list destinations to verify that the purge was successful::
+Finally, list destinations to verify that the purge was successful:
 
 ``/usr/local/payara5/mq/bin/imqcmd -u admin list dst``
 
