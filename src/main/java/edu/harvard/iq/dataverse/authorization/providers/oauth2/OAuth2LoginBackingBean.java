@@ -1,9 +1,11 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.ClockUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.BufferedReader;
@@ -27,6 +29,8 @@ import javax.validation.constraints.NotNull;
 
 import static edu.harvard.iq.dataverse.util.StringUtil.toOption;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.text.MessageFormat;
+import java.util.ArrayList;
 import org.omnifaces.util.Faces;
 
 /**
@@ -45,6 +49,8 @@ public class OAuth2LoginBackingBean implements Serializable {
     private String responseBody;
     Optional<String> redirectPage = Optional.empty();
     private OAuth2Exception error;
+    private boolean disabled = false; 
+    private boolean signUpDisabled = false; 
     /**
      * TODO: Only used in exchangeCodeForToken(). Make local var in method.
      */
@@ -96,13 +102,28 @@ public class OAuth2LoginBackingBean implements Serializable {
                 AbstractOAuth2AuthenticationProvider idp = oIdp.get();
                 oauthUser = idp.getUserRecord(code.get(), systemConfig.getOAuth2CallbackUrl());
                 
+                // Throw an error if this authentication method is disabled:
+                // (it's not clear if it's possible at all, for somebody to get here with 
+                // the provider really disabled; but, shouldn't hurt either).
+                if (isProviderDisabled(idp.getId())) {
+                    disabled = true; 
+                    throw new OAuth2Exception(-1, "", MessageFormat.format(BundleUtil.getStringFromBundle("oauth2.callback.error.providerDisabled"), idp.getId()));
+                }
+                
                 UserRecordIdentifier idtf = oauthUser.getUserRecordIdentifier();
                 AuthenticatedUser dvUser = authenticationSvc.lookupUser(idtf);
     
                 if (dvUser == null) {
-                    // need to create the user
-                    newAccountPage.setNewUser(oauthUser);
-                    Faces.redirect("/oauth2/firstLogin.xhtml");
+                    // Need to create a new user - unless signups are disabled 
+                    // for this authentication method; in which case, throw 
+                    // an error:
+                    if (systemConfig.isSignupDisabledForRemoteAuthProvider(idp.getId())) {
+                        signUpDisabled = true; 
+                        throw new OAuth2Exception(-1, "", MessageFormat.format(BundleUtil.getStringFromBundle("oauth2.callback.error.signupDisabledForProvider"), idp.getId())); 
+                    } else {
+                        newAccountPage.setNewUser(oauthUser);
+                        Faces.redirect("/oauth2/firstLogin.xhtml");
+                    }
         
                 } else {
                     // login the user and redirect to HOME of intended page (if any).
@@ -270,5 +291,33 @@ public class OAuth2LoginBackingBean implements Serializable {
      */
     public boolean isOAuth2ProvidersDefined() {
         return !authenticationSvc.getOAuth2Providers().isEmpty();
+    }
+    
+    public boolean isDisabled() {
+        return disabled;
+    }
+    
+    public boolean isSignUpDisabled() {
+        return signUpDisabled; 
+    }
+    
+    private boolean isProviderDisabled(String providerId) {
+        // Compare this provider id against the list of *enabled* auth providers 
+        // returned by the Authentication Service:
+        List<AuthenticationProvider> idps = new ArrayList<>(authenticationSvc.getAuthenticationProviders());
+        
+        // for the tests to work:
+        if (idps.isEmpty()) {
+            return false; 
+        }
+        
+        for (AuthenticationProvider idp : idps) {
+            if (idp != null) {
+                if (providerId.equals(idp.getId())) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }
