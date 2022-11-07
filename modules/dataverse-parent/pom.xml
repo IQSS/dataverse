@@ -129,7 +129,7 @@
  
     <properties>
         <!-- This is a special Maven property name, do not change! -->
-        <revision>5.12</revision>
+        <revision>5.12.1</revision>
     
         <target.java.version>11</target.java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -161,6 +161,9 @@
         <commons.compress.version>1.21</commons.compress.version>
         <apache.httpcomponents.client.version>4.5.13</apache.httpcomponents.client.version>
         <apache.httpcomponents.core.version>4.4.14</apache.httpcomponents.core.version>
+        
+        <!-- NEW gdcc XOAI library implementation -->
+        <gdcc.xoai.version>5.0.0-RC1</gdcc.xoai.version>
     
         <!-- Testing dependencies -->
         <testcontainers.version>1.15.0</testcontainers.version>
@@ -301,7 +304,7 @@
             <name>Local repository for hosting jars not available from network repositories.</name>
             <url>file://${project.basedir}/local_lib</url>
         </repository>
-        <!-- Uncomment when using snapshot releases from Maven Central
+        <!-- Uncomment when using snapshot releases from Maven Central 
         <repository>
             <id>oss-sonatype</id>
             <name>oss-sonatype</name>
