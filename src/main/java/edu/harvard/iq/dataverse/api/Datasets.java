@@ -2512,7 +2512,7 @@ public class Datasets extends AbstractApiBean {
      */
     @GET
     @Path("{id}/cleanStorage")
-    public Response cleanStorage(@PathParam("id") String idSupplied) {
+    public Response cleanStorage(@PathParam("id") String idSupplied, @QueryParam("dryrun") Boolean dryrun) {
         // get user and dataset
         User authUser;
         try {
@@ -2548,7 +2548,7 @@ public class Datasets extends AbstractApiBean {
             }
             StorageIO<DvObject> datasetIO = DataAccess.getStorageIO(dataset);
             Predicate<String> filter = f -> {
-                return f.startsWith("export_") || files.stream().noneMatch(x -> f.startsWith(x));
+                return !f.startsWith("export_") || files.stream().noneMatch(x -> f.startsWith(x));
             };
 
             deleted.addAll(datasetIO.cleanUp(filter));
