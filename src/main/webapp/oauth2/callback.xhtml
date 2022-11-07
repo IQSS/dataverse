@@ -21,14 +21,18 @@
             <ui:define name="body">
 	    <div class="alert alert-danger" role="alert" style="margin-top:3em;">
 		    <p>
-                    <h:outputFormat value="#{bundle['oauth2.callback.message']}" escape="false">
+                            <!-- This first, generic error message from the bundle should be displayed when something went wrong, 
+                                 but we are not sure what exactly has happened. There is no need to show it however when we know
+                                 exactly what it is, such as when new signups are disabled for this authentication method. Then the 
+                                 second error message provided by the page, below, will be specific enough. Hence the rendering rules: -->
+                            <h:outputFormat value="#{bundle['oauth2.callback.message']}" escape="false" rendered="#{(!OAuth2Page.disabled) and (!OAuth2Page.signUpDisabled)}">
                                     <f:param value="#{systemConfig.guidesBaseUrl}"/>
                                     <f:param value="#{systemConfig.guidesVersion}"/>
 				    </h:outputFormat>
-				    </p>
-				    <p>
-				    <h:outputText value="#{OAuth2Page.error.message}"/>
-				    </p>
+                    </p>
+                    <p>
+                            <h:outputText value="#{OAuth2Page.error.message}"/>
+                    </p>
                     <h:outputFormat value="#{bundle['error.support.message']}" escape="false">
                             <o:param>
                                 <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
