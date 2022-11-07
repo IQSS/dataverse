@@ -2551,7 +2551,11 @@ public class Datasets extends AbstractApiBean {
                 return !f.startsWith("export_") || files.stream().noneMatch(x -> f.startsWith(x));
             };
 
-            deleted.addAll(datasetIO.cleanUp(filter));
+            if (dryrun != null && dryrun.booleanValue()) {
+                deleted.addAll(files.stream().filter(filter).collect(Collectors.toList()));
+            } else {
+                deleted.addAll(datasetIO.cleanUp(filter));
+            }
         } catch (IOException ex) {
             logger.log(Level.SEVERE, null, ex);
             return error(Response.Status.INTERNAL_SERVER_ERROR, "IOException! Serious Error! See administrator!");
