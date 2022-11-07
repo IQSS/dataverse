@@ -76,7 +76,7 @@ public class License {
     @Column(nullable = false)
     private boolean isDefault;
 
-    @Column(nullable = true)
+    @Column(nullable = false)
     private Long sortOrder;
     
     @OneToMany(mappedBy="license")
