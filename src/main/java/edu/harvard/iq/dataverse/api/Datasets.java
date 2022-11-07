@@ -2548,7 +2548,7 @@ public class Datasets extends AbstractApiBean {
             }
             StorageIO<DvObject> datasetIO = DataAccess.getStorageIO(dataset);
             Predicate<String> filter = f -> {
-                return files.stream().noneMatch(x -> f.startsWith(x));
+                return f.startsWith("export_") || files.stream().noneMatch(x -> f.startsWith(x));
             };
 
             deleted.addAll(datasetIO.cleanUp(filter));
