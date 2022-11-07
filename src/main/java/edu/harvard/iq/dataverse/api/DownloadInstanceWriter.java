@@ -217,37 +217,37 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             }
                         }
                     }
-                    if (redirect_url_str!=null) {
+                }
+                if (redirect_url_str != null) {
 
-                        logger.fine("Data Access API: redirect url: " + redirect_url_str);
-                        URI redirect_uri;
+                    logger.fine("Data Access API: redirect url: " + redirect_url_str);
+                    URI redirect_uri;
 
-                        try {
-                            redirect_uri = new URI(redirect_url_str);
-                        } catch (URISyntaxException ex) {
-                            logger.info("Data Access API: failed to create redirect url (" + redirect_url_str + ")");
-                            redirect_uri = null;
-                        }
-                        if (redirect_uri != null) {
-                            // increment the download count, if necessary:
-                            if (di.getGbr() != null && !(isThumbnailDownload(di) || isPreprocessedMetadataDownload(di))) {
-                                try {
-                                    logger.fine("writing guestbook response, for a download redirect.");
-                                    Command<?> cmd = new CreateGuestbookResponseCommand(di.getDataverseRequestService().getDataverseRequest(), di.getGbr(), di.getGbr().getDataFile().getOwner());
-                                    di.getCommand().submit(cmd);
-                                    MakeDataCountEntry entry = new MakeDataCountEntry(di.getRequestUriInfo(), di.getRequestHttpHeaders(), di.getDataverseRequestService(), di.getGbr().getDataFile());
-                                    mdcLogService.logEntry(entry);
-                                } catch (CommandException e) {
-                                }
-                            }
-
-                            // finally, issue the redirect:
-                            Response response = Response.seeOther(redirect_uri).build();
-                            logger.fine("Issuing redirect to the file location.");
-                            throw new RedirectionException(response);
-                        }
-                        throw new ServiceUnavailableException();
+                    try {
+                        redirect_uri = new URI(redirect_url_str);
+                    } catch (URISyntaxException ex) {
+                        logger.info("Data Access API: failed to create redirect url (" + redirect_url_str + ")");
+                        redirect_uri = null;
                     }
+                    if (redirect_uri != null) {
+                        // increment the download count, if necessary:
+                        if (di.getGbr() != null && !(isThumbnailDownload(di) || isPreprocessedMetadataDownload(di))) {
+                            try {
+                                logger.fine("writing guestbook response, for a download redirect.");
+                                Command<?> cmd = new CreateGuestbookResponseCommand(di.getDataverseRequestService().getDataverseRequest(), di.getGbr(), di.getGbr().getDataFile().getOwner());
+                                di.getCommand().submit(cmd);
+                                MakeDataCountEntry entry = new MakeDataCountEntry(di.getRequestUriInfo(), di.getRequestHttpHeaders(), di.getDataverseRequestService(), di.getGbr().getDataFile());
+                                mdcLogService.logEntry(entry);
+                            } catch (CommandException e) {
+                            }
+                        }
+
+                        // finally, issue the redirect:
+                        Response response = Response.seeOther(redirect_uri).build();
+                        logger.fine("Issuing redirect to the file location.");
+                        throw new RedirectionException(response);
+                    }
+                    throw new ServiceUnavailableException();
                 }
 
                 if (di.getConversionParam() != null) {
