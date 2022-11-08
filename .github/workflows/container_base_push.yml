@@ -58,7 +58,7 @@ jobs:
             # Run anything below only if this is not a pull request.
             # Accessing, pushing tags etc. to DockerHub will only succeed in upstream because secrets.
 
-            - if: ${{ github.event_name != 'pull_request' && github.ref == 'develop' }}
+            - if: ${{ github.event_name == 'push' && github.ref_name == 'develop' }}
               name: Push description to DockerHub
               uses: peter-evans/dockerhub-description@v3
               with:
@@ -78,7 +78,7 @@ jobs:
               name: Set up QEMU for multi-arch builds
               uses: docker/setup-qemu-action@v2
             - name: Re-set image tag based on branch
-              if: ${{ github.ref == 'master' }}
+              if: ${{ github.ref_name == 'master' }}
               run: echo "IMAGE_TAG=release"
             - if: ${{ github.event_name != 'pull_request' }}
               name: Deploy multi-arch base container image to Docker Hub
