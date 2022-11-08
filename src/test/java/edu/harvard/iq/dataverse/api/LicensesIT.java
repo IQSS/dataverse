@@ -92,7 +92,7 @@ public class LicensesIT {
         body = getLicensesResponse.getBody().asString();
         status = JsonPath.from(body).getString("status");
         //Last added licens; with the highest id
-        long licenseId = JsonPath.from(body).<Long>getList("data[*].id").stream().max((x, y) -> Long.compare(x, y)).get();
+        long licenseId = (long) JsonPath.from(body).<Integer>getList("data.id").stream().max((x, y) -> Integer.compare(x, y)).get();
         //Assumes the first license is active, which should be true on a test server 
         long activeLicenseId = JsonPath.from(body).getLong("data[0].id");
         assertEquals("OK", status);
