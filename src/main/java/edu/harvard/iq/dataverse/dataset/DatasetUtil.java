@@ -39,6 +39,7 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.EnumUtils;
 
 public class DatasetUtil {
 
@@ -547,7 +548,7 @@ public class DatasetUtil {
 
     public static String getLicenseName(DatasetVersion dsv) {
         License license = DatasetUtil.getLicense(dsv);
-        return license != null ? getLocalizedLicenseDetails(license.getName(),".name")
+        return license != null ? getLocalizedLicenseDetails(license,"NAME")
                 : BundleUtil.getStringFromBundle("license.custom");
     }
 
@@ -573,15 +574,21 @@ public class DatasetUtil {
 
     public static String getLicenseDescription(DatasetVersion dsv) {
         License license = DatasetUtil.getLicense(dsv);
-        return license != null ? getLocalizedLicenseDetails(license.getName(),".description") : BundleUtil.getStringFromBundle("license.custom.description");
+        return license != null ? getLocalizedLicenseDetails(license,"DESCRIPTION") : BundleUtil.getStringFromBundle("license.custom.description");
     }
 
-    public static String getLocalizedLicenseDetails(String licenseName,String keyPart) {
-        String key = "license." + licenseName.toLowerCase().replace(" ", "_") +  keyPart;
+    public enum LicenseOption {
+        NAME, DESCRIPTION
+    };
 
+    public static String getLocalizedLicenseDetails(License license,String keyPart) {
+        String licenseName = license.getName();
         String localizedLicenseValue =  "" ;
         try {
-            localizedLicenseValue = BundleUtil.getStringFromPropertyFile(key, "License");
+            if (EnumUtils.isValidEnum(LicenseOption.class, keyPart ) ){
+                String key = "license." + licenseName.toLowerCase().replace(" ", "_") + "." + keyPart.toLowerCase();
+                localizedLicenseValue = BundleUtil.getStringFromPropertyFile(key, "License");
+            }
         }
         catch (Exception e) {
             localizedLicenseValue = licenseName;
@@ -591,7 +598,6 @@ public class DatasetUtil {
             localizedLicenseValue = licenseName ;
         }
         return localizedLicenseValue;
-
     }
 
     public static String getLocaleExternalStatus(String status) {
