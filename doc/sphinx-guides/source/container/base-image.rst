@@ -4,8 +4,13 @@ Application Base Image
 .. contents:: |toctitle|
     :local:
 
+A "base image" offers you a pre-installed and pre-tuned application server to deploy Dataverse software to.
+Adding basic functionality like executing scripts at container boot, monitoring, memory tweaks etc is all done
+at this layer, to make the application image focus on the app itself.
+
 Within the main repository, you may find the base image's files at ``<git root>/modules/container-base``.
 This Maven module uses the `Maven Docker Plugin <https://dmp.fabric8.io>`_ to build and ship the image.
+You may use, extend, or alter this image to your liking and/or host in some different registry if you want to.
 
 **NOTE: This image is created, maintained and supported by the Dataverse community on a best-effort basis.**
 IQSS will not offer you support how to deploy or run it, please reach out to the community for help on using it.
