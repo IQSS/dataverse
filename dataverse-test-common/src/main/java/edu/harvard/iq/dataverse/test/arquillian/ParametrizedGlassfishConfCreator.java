@@ -11,6 +11,7 @@ import org.dom4j.io.XMLWriter;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -35,12 +36,17 @@ public class ParametrizedGlassfishConfCreator {
             Path dataversePropertiesDirectory = Paths.get(System.getProperty("user.home") + "/.dataverse");
             Path propertiesPath = Paths.get(dataversePropertiesDirectory.toString() + "/glassfish.properties");
 
-            if (!isPropertiesFileExists(propertiesPath)) {
-                propertiesPath = Paths.get(ParametrizedGlassfishConfCreator.class.getResource("/glassfish.properties").getPath());
-            }
-
             Properties properties = new Properties();
-            properties.load(new FileInputStream(propertiesPath.toString()));
+            if (!isPropertiesFilePresent(propertiesPath)) {
+                try (InputStream propertiesStream
+                             = ParametrizedGlassfishConfCreator.class.getResourceAsStream("/glassfish.properties")) {
+                    properties.load(propertiesStream);
+                }
+            } else {
+                try (FileInputStream propertiesFile = new FileInputStream(propertiesPath.toString())) {
+                    properties.load(propertiesFile);
+                }
+            }
 
             Document document = replaceGlassfishXmlValues(properties);
 
@@ -106,7 +112,7 @@ public class ParametrizedGlassfishConfCreator {
         return document;
     }
 
-    private boolean isPropertiesFileExists(Path propertiesPath) {
+    private boolean isPropertiesFilePresent(Path propertiesPath) {
         return propertiesPath.toFile().exists();
     }
 
