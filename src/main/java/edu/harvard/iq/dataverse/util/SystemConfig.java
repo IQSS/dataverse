@@ -1112,7 +1112,7 @@ public class SystemConfig {
     }
 
 	public boolean directUploadEnabled(DvObjectContainer container) {
-        // this method is used in UI only, therfore "dataverse.files." + driverId + ".api-direct-upload" is not used here
+        // this method is used in UI only, therfore "dataverse.files." + driverId + ".allow-out-of-band-upload" is not used here
     	return Boolean.parseBoolean(System.getProperty("dataverse.files." + container.getEffectiveStorageDriverId() + ".upload-redirect"));
 	}
 	
