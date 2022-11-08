@@ -108,6 +108,8 @@ import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import java.util.Arrays;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import ucar.nc2.NetcdfFile;
+import ucar.nc2.NetcdfFiles;
 
 /**
  * a 4.0 implementation of the DVN FileUtil;
@@ -467,6 +469,11 @@ public class FileUtil implements java.io.Serializable  {
                 fileType = "application/fits";
             }
         }
+
+        // step 3: Check if NetCDF or HDF5
+        if (fileType == null) {
+            fileType = checkNetcdfOrHdf5(f);
+        }
        
         // step 3: check the mime type of this file with Jhove
         if (fileType == null){
@@ -667,6 +674,32 @@ public class FileUtil implements java.io.Serializable  {
         }
         logger.fine("end isGraphML()");
         return isGraphML;
+    }
+
+    public static String checkNetcdfOrHdf5(File file) {
+        try ( NetcdfFile netcdfFile = NetcdfFiles.open(file.getAbsolutePath())) {
+            if (netcdfFile == null) {
+                // Can't open as a NetCDF or HDF5 file.
+                return null;
+            }
+            String type = netcdfFile.getFileTypeId();
+            if (type == null) {
+                return null;
+            }
+            switch (type) {
+                case "NETCDF":
+                    return "application/netcdf";
+                case "NetCDF-4":
+                    return "application/netcdf";
+                case "HDF5":
+                    return "application/x-hdf5";
+                default:
+                    break;
+            }
+        } catch (IOException ex) {
+            return null;
+        }
+        return null;
     }
 
     // from MD5Checksum.java
