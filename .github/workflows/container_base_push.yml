@@ -9,6 +9,7 @@ on:
         paths:
             - 'modules/container-base/**'
             - 'modules/dataverse-parent/pom.xml'
+            - '.github/workflows/container_base_push.yml'
     pull_request:
         branches:
             - 'develop'
@@ -16,6 +17,7 @@ on:
         paths:
             - 'modules/container-base/**'
             - 'modules/dataverse-parent/pom.xml'
+            - '.github/workflows/container_base_push.yml'
 
 env:
     IMAGE_TAG: develop
@@ -53,18 +55,31 @@ jobs:
             - name: Build base container image with local architecture
               run: mvn -f modules/container-base -Pct package
 
-            - if: ${{ github.event_name != 'pull_request' }} # run only if this is not a pull request - PRs have no access to secrets
+            # Run anything below only if this is not a pull request.
+            # Accessing, pushing tags etc. to DockerHub will only succeed in upstream because secrets.
+
+            - if: ${{ github.event_name != 'pull_request' && github.ref == 'develop' }}
+              name: Push description to DockerHub
+              uses: peter-evans/dockerhub-description@v3
+              with:
+                  username: ${{ secrets.DOCKERHUB_USERNAME }}
+                  password: ${{ secrets.DOCKERHUB_TOKEN }}
+                  repository: gdcc/base
+                  short-description: "Dataverse Base Container image providing Payara application server and optimized configuration"
+                  readme-filepath: ./modules/container-base/README.md
+
+            - if: ${{ github.event_name != 'pull_request' }}
               name: Log in to the Container registry
               uses: docker/login-action@v1
               with:
                   username: ${{ secrets.DOCKERHUB_USERNAME }}
                   password: ${{ secrets.DOCKERHUB_TOKEN }}
-            - if: ${{ github.event_name != 'pull_request' }} # run only if this is not a pull request - multi-arch makes no sense with PR
+            - if: ${{ github.event_name != 'pull_request' }}
               name: Set up QEMU for multi-arch builds
               uses: docker/setup-qemu-action@v2
             - name: Re-set image tag based on branch
               if: ${{ github.ref == 'master' }}
               run: echo "IMAGE_TAG=release"
-            - if: ${{ github.event_name != 'pull_request' }} # run only if this is not a pull request - tag push will only succeed in upstream
+            - if: ${{ github.event_name != 'pull_request' }}
               name: Deploy multi-arch base container image to Docker Hub
               run: mvn -f modules/container-base -Pct deploy -Dbase.image.tag=${{ env.IMAGE_TAG }} -Ddocker.registry=${{ env.REGISTRY }}
