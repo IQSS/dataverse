@@ -31,7 +31,7 @@ The User Guide is further divided into primary activities: finding & using
 data, adding Datasets, administering dataverses or Datasets, and Dataset exploration/visualizations. Details
 on all of the above tasks can be found in the Users Guide. The
 Installation Guide is for people or organizations who want to host their
-own Dataverse. The Container Guide adds to this information on container-based installations.
+own Dataverse. The Container Guide gives information on how to deploy Dataverse with containers.
 The Developer Guide contains instructions for
 people who want to contribute to the Open Source Dataverse
 project or who want to modify the code to suit their own needs. Finally, the API Guide is for
