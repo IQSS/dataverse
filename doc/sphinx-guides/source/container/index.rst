@@ -9,7 +9,7 @@ Container Guide
 
 Running Dataverse software in containers is quite different than in a :doc:`classic installation <../installation/prep>`.
 
-Both approaches have pros and cons. These days (2022) containers are very often used for development and testing,
+Both approaches have pros and cons. These days, containers are very often used for development and testing,
 but there is an ever rising move for running applications in the cloud using container technology.
 
 **NOTE:**

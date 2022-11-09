@@ -1,7 +1,7 @@
 # Dataverse Base Container Image
 
 A "base image" offers you a pre-installed and pre-tuned application server to deploy Dataverse software to.
-Adding basic functionality like executing scripts at container boot, monitoring, memory tweaks etc is all done
+Adding basic functionality like executing scripts at container boot, monitoring, memory tweaks, etc., is all done
 at this layer, to make the application image focus on the app itself.
 
 ## Quick Reference
@@ -17,14 +17,14 @@ provides in-depth information about content, building, tuning and so on for this
 
 **Where to get help and ask questions:**
 
-IQSS will not offer you support how to deploy or run it, please reach out to the community for help on using it.
+IQSS will not offer you support how to deploy or run it. Please reach out to the community for help on using it.
 You can join the Community Chat on Matrix at https://chat.dataverse.org or the Community Slack at
 https://dataversecommunity.slack.com to ask for help and guidance.
 
 ## Supported Image Tags
 
 This image is sourced within the main upstream code [repository of the Dataverse software](https://github.com/IQSS/dataverse).
-Development and maintenance happens there (again, by the community). Community supported image tags are based on the two
+Development and maintenance happens there (again, by the community). Community-supported image tags are based on the two
 most important branches:
 
 - `develop` representing the unstable state of affairs in Dataverse's development branch
@@ -32,7 +32,7 @@ most important branches:
 - `release` representing the latest stable release in Dataverse's main branch
   ([`Dockerfile`](https://github.com/IQSS/dataverse/tree/master/modules/container-base/src/main/docker/Dockerfile))
 
-Within the main repository, you may find the base image's files at `<git root>/modules/container-base`.
+Within the main repository, you may find the base image files at `<git root>/modules/container-base`.
 This Maven module uses the `Maven Docker Plugin <https://dmp.fabric8.io>`_ to build and ship the image.
 You may use, extend, or alter this image to your liking and/or host in some different registry if you want to.
 
@@ -49,7 +49,7 @@ Unless required by applicable law or agreed to in writing, software distributed 
 See the License for the specific language governing permissions and limitations under the License.
 
 As with all Docker images, all images likely also contain other software which may be under other licenses (such as 
-[Payara Server](https://github.com/payara/Payara/blob/master/LICENSE.txt), Bash, etc from the base
+[Payara Server](https://github.com/payara/Payara/blob/master/LICENSE.txt), Bash, etc., from the base
 distribution, along with any direct or indirect (Java) dependencies contained).
 
 As for any pre-built image usage, it is the image user's responsibility to ensure that any use of this image complies
