@@ -97,8 +97,8 @@ public class ExternalTool implements Serializable {
 
     /**
      * Set of API calls the tool would like to be able to use (e,.g. for retrieving
-     * data through the Dataverse REST api). Used to build signedUrls for POST
-     * headers, as in DPCreator
+     * data through the Dataverse REST API). Used to build signedUrls for POST
+     * headers, as in DP Creator
      */
     @Column(nullable = true, columnDefinition = "TEXT")
     private String allowedApiCalls;
