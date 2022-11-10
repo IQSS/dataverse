@@ -92,6 +92,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeactivateUserCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteTemplateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
@@ -2280,12 +2281,12 @@ public class Admin extends AbstractApiBean {
         }
         
         String baseUrl = urlInfo.getString("url");
-        int timeout = urlInfo.getInt("timeout", 10);
-        String method = urlInfo.getString("httpMethod", "GET");
+        int timeout = urlInfo.getInt(ExternalToolHandler.TIMEOUT, 10);
+        String method = urlInfo.getString(ExternalToolHandler.HTTP_METHOD, "GET");
         
         String signedUrl = UrlSignerUtil.signUrl(baseUrl, timeout, userId, method, key); 
         
-        return ok(Json.createObjectBuilder().add("signedUrl", signedUrl));
+        return ok(Json.createObjectBuilder().add(ExternalToolHandler.SIGNED_URL, signedUrl));
     }
  
 }

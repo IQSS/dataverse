@@ -363,7 +363,7 @@ public abstract class AbstractApiBean {
     protected User findUserOrDie() throws WrappedResponse {
         final String requestApiKey = getRequestApiKey();
         final String requestWFKey = getRequestWorkflowInvocationID();
-        if (requestApiKey == null && requestWFKey == null && getRequestParameter("token")==null) {
+        if (requestApiKey == null && requestWFKey == null && getRequestParameter(UrlSignerUtil.SIGNED_URL_TOKEN)==null) {
             return GuestUser.get();
         }
         PrivateUrlUser privateUrlUser = privateUrlSvc.getPrivateUrlUserFromToken(requestApiKey);
@@ -420,7 +420,7 @@ public abstract class AbstractApiBean {
             } else {
                 throw new WrappedResponse(badWFKey(wfid));
             }
-        } else if (getRequestParameter("token") != null) {
+        } else if (getRequestParameter(UrlSignerUtil.SIGNED_URL_TOKEN) != null) {
             AuthenticatedUser authUser = getAuthenticatedUserFromSignedUrl();
             if (authUser != null) {
                 return authUser;

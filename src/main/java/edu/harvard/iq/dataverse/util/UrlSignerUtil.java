@@ -20,6 +20,10 @@ public class UrlSignerUtil {
 
     private static final Logger logger = Logger.getLogger(UrlSignerUtil.class.getName());
 
+    public static final String SIGNED_URL_TOKEN="token";
+    public static final String SIGNED_URL_METHOD="method";
+    public static final String SIGNED_URL_USER="user";
+    public static final String SIGNED_URL_UNTIL="until";
     /**
      * 
      * @param baseUrl - the URL to sign - cannot contain query params
@@ -45,18 +49,18 @@ public class UrlSignerUtil {
             LocalDateTime validTime = LocalDateTime.now();
             validTime = validTime.plusMinutes(timeout);
             validTime.toString();
-            signedUrlBuilder.append(firstParam ? "?" : "&").append("until=").append(validTime);
+            signedUrlBuilder.append(firstParam ? "?" : "&").append(SIGNED_URL_UNTIL + "=").append(validTime);
             firstParam = false;
         }
         if (user != null) {
-            signedUrlBuilder.append(firstParam ? "?" : "&").append("user=").append(user);
+            signedUrlBuilder.append(firstParam ? "?" : "&").append(SIGNED_URL_USER + "=").append(user);
             firstParam = false;
         }
         if (method != null) {
-            signedUrlBuilder.append(firstParam ? "?" : "&").append("method=").append(method);
+            signedUrlBuilder.append(firstParam ? "?" : "&").append(SIGNED_URL_METHOD + "=").append(method);
             firstParam=false;
         }
-        signedUrlBuilder.append(firstParam ? "?" : "&").append("token=");
+        signedUrlBuilder.append(firstParam ? "?" : "&").append(SIGNED_URL_TOKEN + "=");
         logger.fine("String to sign: " + signedUrlBuilder.toString() + "<key>");
         String signedUrl = signedUrlBuilder.toString();
         signedUrl= signedUrl + (DigestUtils.sha512Hex(signedUrl + key));
@@ -98,19 +102,19 @@ public class UrlSignerUtil {
             String allowedMethod = null;
             String allowedUser = null;
             for (NameValuePair nvp : params) {
-                if (nvp.getName().equals("token")) {
+                if (nvp.getName().equals(SIGNED_URL_TOKEN)) {
                     hash = nvp.getValue();
                     logger.fine("Hash: " + hash);
                 }
-                if (nvp.getName().equals("until")) {
+                if (nvp.getName().equals(SIGNED_URL_UNTIL)) {
                     dateString = nvp.getValue();
                     logger.fine("Until: " + dateString);
                 }
-                if (nvp.getName().equals("method")) {
+                if (nvp.getName().equals(SIGNED_URL_METHOD)) {
                     allowedMethod = nvp.getValue();
                     logger.fine("Method: " + allowedMethod);
                 }
-                if (nvp.getName().equals("user")) {
+                if (nvp.getName().equals(SIGNED_URL_USER)) {
                     allowedUser = nvp.getValue();
                     logger.fine("User: " + allowedUser);
                 }
@@ -154,7 +158,7 @@ public class UrlSignerUtil {
             URL url = new URL(urlString);
             List<NameValuePair> params = URLEncodedUtils.parse(url.getQuery(), Charset.forName("UTF-8"));
             for (NameValuePair nvp : params) {
-                if (nvp.getName().equals("token")) {
+                if (nvp.getName().equals(SIGNED_URL_TOKEN)) {
                     return true;
                 }
             }

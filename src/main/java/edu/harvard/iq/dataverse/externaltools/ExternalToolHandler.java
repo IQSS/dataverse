@@ -43,6 +43,13 @@ public class ExternalToolHandler extends URLTokenUtil {
     private final ExternalTool externalTool;
 
     private String requestMethod;
+    
+    public static final String HTTP_METHOD="httpMethod";
+    public static final String TIMEOUT="timeOut";
+    public static final String SIGNED_URL="signedUrl";
+    public static final String NAME="name";
+    public static final String URL_TEMPLATE="urlTemplate";
+    
 
     /**
      * File level tool
@@ -71,17 +78,13 @@ public class ExternalToolHandler extends URLTokenUtil {
         this.externalTool = externalTool;
     }
 
-    // TODO: rename to handleRequest() to someday handle sending headers as well as
-    // query parameters.
     public String handleRequest() {
         return handleRequest(false);
     }
 
-    // TODO: rename to handleRequest() to someday handle sending headers as well as
-    // query parameters.
     public String handleRequest(boolean preview) {
         JsonObject toolParameters = JsonUtil.getJsonObject(externalTool.getToolParameters());
-        JsonString method = toolParameters.getJsonString("httpMethod");
+        JsonString method = toolParameters.getJsonString(HTTP_METHOD);
         requestMethod = method != null ? method.getString() : HttpMethod.GET;
         JsonObject params = getParams(toolParameters);
         logger.fine("Found params: " + JsonUtil.prettyPrint(params));
@@ -172,11 +175,11 @@ public class ExternalToolHandler extends URLTokenUtil {
         JsonArrayBuilder apisBuilder = Json.createArrayBuilder();
         
         apiArray.getValuesAs(JsonObject.class).forEach(((apiObj) -> {
-            logger.info(JsonUtil.prettyPrint(apiObj));
-            String name = apiObj.getJsonString("name").getString();
-            String httpmethod = apiObj.getJsonString("httpMethod").getString();
-            int timeout = apiObj.getInt("timeOut");
-            String urlTemplate = apiObj.getJsonString("urlTemplate").getString();
+            logger.fine(JsonUtil.prettyPrint(apiObj));
+            String name = apiObj.getJsonString(NAME).getString();
+            String httpmethod = apiObj.getJsonString(HTTP_METHOD).getString();
+            int timeout = apiObj.getInt(TIMEOUT);
+            String urlTemplate = apiObj.getJsonString(URL_TEMPLATE).getString();
             logger.fine("URL Template: " + urlTemplate);
             urlTemplate = SystemConfig.getDataverseSiteUrlStatic() + urlTemplate;
             String apiPath = replaceTokensWithValues(urlTemplate);
@@ -189,8 +192,8 @@ public class ExternalToolHandler extends URLTokenUtil {
                         System.getProperty(SystemConfig.API_SIGNING_SECRET, "") + getApiToken().getTokenString());
             }
             logger.fine("Signed URL: " + url);
-            apisBuilder.add(Json.createObjectBuilder().add("name", name).add("httpMethod", httpmethod)
-                    .add("signedUrl", url).add("timeOut", timeout));
+            apisBuilder.add(Json.createObjectBuilder().add(NAME, name).add(HTTP_METHOD, httpmethod)
+                    .add(SIGNED_URL, url).add(TIMEOUT, timeout));
         }));
         bodyBuilder.add("signedUrls", apisBuilder);
         return bodyBuilder;

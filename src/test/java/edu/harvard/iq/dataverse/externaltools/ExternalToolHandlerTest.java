@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import edu.harvard.iq.dataverse.util.testing.SystemProperty;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -206,8 +207,8 @@ public class ExternalToolHandlerTest {
     }
 
     @Test
+    @SystemProperty(key = SystemConfig.SITE_URL, value = "https://librascholar.org")
     public void testGetToolUrlWithAllowedApiCalls() {
-        String oldVal = System.setProperty(SystemConfig.SITE_URL, "https://librascholar.org");
         System.out.println("allowedApiCalls test");
         Dataset ds = new Dataset();
         ds.setId(1L);
@@ -233,10 +234,5 @@ public class ExternalToolHandlerTest {
         assertTrue(signedUrl.contains("&method=GET"));
         assertTrue(signedUrl.contains("&token="));
         System.out.println(JsonUtil.prettyPrint(jo));
-        if(oldVal==null) {
-            System.clearProperty(SystemConfig.SITE_URL);
-        } else {
-            System.setProperty(SystemConfig.SITE_URL, oldVal);
-        }
     }
 }
