@@ -20,7 +20,7 @@ on:
             - '.github/workflows/container_base_push.yml'
 
 env:
-    IMAGE_TAG: develop
+    IMAGE_TAG: unstable
     REGISTRY: docker.io
 
 jobs:
@@ -80,7 +80,7 @@ jobs:
               uses: docker/setup-qemu-action@v2
             - name: Re-set image tag based on branch
               if: ${{ github.ref_name == 'master' }}
-              run: echo "IMAGE_TAG=release"
+              run: echo "IMAGE_TAG=stable"
             - if: ${{ github.event_name != 'pull_request' }}
               name: Deploy multi-arch base container image to Docker Hub
               run: mvn -f modules/container-base -Pct deploy -Dbase.image.tag=${{ env.IMAGE_TAG }} -Ddocker.registry=${{ env.REGISTRY }}

@@ -29,12 +29,12 @@ https://dataversecommunity.slack.com to ask for help and guidance.
 ## Supported Image Tags
 
 This image is sourced within the main upstream code [repository of the Dataverse software](https://github.com/IQSS/dataverse).
-Development and maintenance happens there (again, by the community). Community-supported image tags are based on the two
-most important branches:
+Development and maintenance of the [image's code](https://github.com/IQSS/dataverse/tree/develop/modules/container-base)
+happens there (again, by the community). Community-supported image tags are based on the two most important branches:
 
-- `develop` representing the unstable state of affairs in Dataverse's development branch
+- The `unstable` tag corresponds to the `develop` branch, where pull requests are merged.
   ([`Dockerfile`](https://github.com/IQSS/dataverse/tree/develop/modules/container-base/src/main/docker/Dockerfile))
-- `release` representing the latest stable release in Dataverse's main branch
+- The `stable` tag corresponds to the `master` branch, where releases are cut from.
   ([`Dockerfile`](https://github.com/IQSS/dataverse/tree/master/modules/container-base/src/main/docker/Dockerfile))
 
 Within the main repository, you may find the base image files at `<git root>/modules/container-base`.
