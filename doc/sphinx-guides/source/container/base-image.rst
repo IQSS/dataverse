@@ -8,6 +8,8 @@ A "base image" offers you a pre-installed and pre-tuned application server to de
 Adding basic functionality like executing scripts at container boot, monitoring, memory tweaks etc is all done
 at this layer, to make the application image focus on the app itself.
 
+**NOTE: The base image does not contain the Dataverse application itself.**
+
 Within the main repository, you may find the base image's files at ``<git root>/modules/container-base``.
 This Maven module uses the `Maven Docker Plugin <https://dmp.fabric8.io>`_ to build and ship the image.
 You may use, extend, or alter this image to your liking and/or host in some different registry if you want to.

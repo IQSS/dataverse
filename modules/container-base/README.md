@@ -1,8 +1,13 @@
 # Dataverse Base Container Image
 
-A "base image" offers you a pre-installed and pre-tuned application server to deploy Dataverse software to.
+The Dataverse Base Container Image contains primarily a pre-installed and pre-tuned application server with the
+necessary software dependencies for deploying and launching a Dataverse repository installation.
+
 Adding basic functionality like executing scripts at container boot, monitoring, memory tweaks, etc., is all done
-at this layer, to make the application image focus on the app itself.
+at this layer. Application images building from this very base focus on adding deployable Dataverse code and 
+actual scripts.
+
+*Note:* Currently, there is no application image. Please watch https://github.com/IQSS/dataverse/issues/8934
 
 ## Quick Reference
 
@@ -17,7 +22,7 @@ provides in-depth information about content, building, tuning and so on for this
 
 **Where to get help and ask questions:**
 
-IQSS will not offer you support how to deploy or run it. Please reach out to the community for help on using it.
+IQSS will not offer support on how to deploy or run it. Please reach out to the community for help on using it.
 You can join the Community Chat on Matrix at https://chat.dataverse.org or the Community Slack at
 https://dataversecommunity.slack.com to ask for help and guidance.
 
@@ -33,7 +38,7 @@ most important branches:
   ([`Dockerfile`](https://github.com/IQSS/dataverse/tree/master/modules/container-base/src/main/docker/Dockerfile))
 
 Within the main repository, you may find the base image files at `<git root>/modules/container-base`.
-This Maven module uses the `Maven Docker Plugin <https://dmp.fabric8.io>`_ to build and ship the image.
+This Maven module uses the [Maven Docker Plugin](https://dmp.fabric8.io) to build and ship the image.
 You may use, extend, or alter this image to your liking and/or host in some different registry if you want to.
 
 **Supported architectures:** This image is created as a "multi-arch image", supporting the most common architectures 

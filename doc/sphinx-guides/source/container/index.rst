@@ -7,10 +7,10 @@ Container Guide
 
   base-image
 
-Running Dataverse software in containers is quite different than in a :doc:`classic installation <../installation/prep>`.
+Running Dataverse software in containers is quite different than in a :doc:`standard installation <../installation/prep>`.
 
 Both approaches have pros and cons. These days, containers are very often used for development and testing,
-but there is an ever rising move for running applications in the cloud using container technology.
+but there is an ever rising move toward running applications in the cloud using container technology.
 
 **NOTE:**
 **As the Institute for Quantitative Social Sciences (IQSS) at Harvard is running their installations in the classic
@@ -22,5 +22,5 @@ solutions to run containers in production. There is the `Dataverse on K8s projec
 purpose.
 
 This guide focuses on describing the container images managed from the main Dataverse repository (again: by the
-community, not IQSS), their features and limitations. Instructions on how to build the images yourself, how to
-extend them and how to use them for development purposes may be found in respective subpages.
+community, not IQSS), their features and limitations. Instructions on how to build the images yourself and how to
+develop and extend them further may be found in respective subpages.
