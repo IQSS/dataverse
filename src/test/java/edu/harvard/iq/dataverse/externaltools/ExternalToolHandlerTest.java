@@ -7,12 +7,11 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
 import javax.json.Json;
 import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -21,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
+import org.mockito.Mockito;
 
 public class ExternalToolHandlerTest {
 
@@ -206,8 +206,8 @@ public class ExternalToolHandlerTest {
     }
 
     @Test
-    public void testGetToolUrlWithallowedApiCalls() {
-
+    public void testGetToolUrlWithAllowedApiCalls() {
+        String oldVal = System.setProperty(SystemConfig.SITE_URL, "https://librascholar.org");
         System.out.println("allowedApiCalls test");
         Dataset ds = new Dataset();
         ds.setId(1L);
@@ -233,5 +233,10 @@ public class ExternalToolHandlerTest {
         assertTrue(signedUrl.contains("&method=GET"));
         assertTrue(signedUrl.contains("&token="));
         System.out.println(JsonUtil.prettyPrint(jo));
+        if(oldVal==null) {
+            System.clearProperty(SystemConfig.SITE_URL);
+        } else {
+            System.setProperty(SystemConfig.SITE_URL, oldVal);
+        }
     }
 }

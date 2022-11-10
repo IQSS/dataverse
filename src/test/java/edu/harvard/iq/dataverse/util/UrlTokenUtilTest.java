@@ -7,21 +7,18 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.Mockito;
 
 public class UrlTokenUtilTest {
 
     @Test
     public void testGetToolUrlWithOptionalQueryParameters() {
 
+        String oldVal = System.setProperty(SystemConfig.SITE_URL, "https://librascholar.org");
         DataFile dataFile = new DataFile();
         dataFile.setId(42l);
         FileMetadata fmd = new FileMetadata();
@@ -46,5 +43,10 @@ public class UrlTokenUtilTest {
         URLTokenUtil urlTokenUtil2 = new URLTokenUtil(ds, apiToken, "en");
         assertEquals("https://librascholar.org/api/datasets/50?key=" + apiToken.getTokenString(), urlTokenUtil2.replaceTokensWithValues("{siteUrl}/api/datasets/{datasetId}?key={apiToken}"));
         assertEquals("https://librascholar.org/api/datasets/:persistentId/?persistentId=doi:10.5072/FK2ABCDEF&key=" + apiToken.getTokenString(), urlTokenUtil2.replaceTokensWithValues("{siteUrl}/api/datasets/:persistentId/?persistentId={datasetPid}&key={apiToken}"));
+        if(oldVal==null) {
+            System.clearProperty(SystemConfig.SITE_URL);
+        } else {
+            System.setProperty(SystemConfig.SITE_URL, oldVal);
+        }
     }
 }
