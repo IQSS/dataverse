@@ -2281,7 +2281,7 @@ public class Admin extends AbstractApiBean {
         
         String baseUrl = urlInfo.getString("url");
         int timeout = urlInfo.getInt("timeout", 10);
-        String method = urlInfo.getString("method", "GET");
+        String method = urlInfo.getString("httpMethod", "GET");
         
         String signedUrl = UrlSignerUtil.signUrl(baseUrl, timeout, userId, method, key); 
         
