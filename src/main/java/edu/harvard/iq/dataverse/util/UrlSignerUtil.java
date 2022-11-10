@@ -71,7 +71,7 @@ public class UrlSignerUtil {
      * This method will only return true if the URL and parameters except the
      * "token" are unchanged from the original/match the values sent to this method,
      * and the "token" parameter matches what this method recalculates using the
-     * shared key THe method also assures that the "until" timestamp is after the
+     * shared key. The method also assures that the "until" timestamp is after the
      * current time.
      * 
      * @param signedUrl - the signed URL as received from Dataverse
