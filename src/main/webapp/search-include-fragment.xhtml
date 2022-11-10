@@ -644,7 +644,7 @@
                             <h:outputText value=" - #{SearchIncludeFragment.dataFileSizeDisplay(result.entity)}" rendered="#{!result.harvested}"/>
                             <h:outputText value=" - " rendered="#{!result.harvested and !SearchIncludeFragment.isTabular(result.entity) and !(empty result.fileChecksumValue)}"/>
                             <span class="checksum-block" jsf:rendered="#{!result.harvested and !SearchIncludeFragment.isTabular(result.entity) and !(empty result.fileChecksumValue)}">
-                                <span class="sr-only checksum-truncate checksum-tooltip" style="margin-right:3px;"
+                                <span class="checksum-truncate checksum-tooltip" style="margin-right:3px;"
                                           data-toggle="tooltip" data-placement="top" data-html="true"
                                           data-clipboard-action="copy"
                                           data-clipboard-text="#{result.fileChecksumValue}"
@@ -658,7 +658,7 @@
                             <span class="unf-block" jsf:rendered="#{!empty SearchIncludeFragment.tabularDataDisplayInfo(result.entity)}">
                                 <h:outputText value=" - #{SearchIncludeFragment.tabularDataDisplayInfo(result.entity)}"/>
                                 <h:outputText value=" - " rendered="#{!empty SearchIncludeFragment.tabularDataUnfDisplay(result.entity)}"/>
-                                <span class="sr-only checksum-truncate checksum-tooltip" style="margin-right:3px;" jsf:rendered="#{!empty SearchIncludeFragment.tabularDataUnfDisplay(result.entity)}"
+                                <span class="checksum-truncate checksum-tooltip" style="margin-right:3px;" jsf:rendered="#{!empty SearchIncludeFragment.tabularDataUnfDisplay(result.entity)}"
                                           data-toggle="tooltip" data-placement="top" data-html="true"
                                           data-clipboard-action="copy"
                                           data-clipboard-text="#{SearchIncludeFragment.tabularDataUnfDisplay(result.entity)}"

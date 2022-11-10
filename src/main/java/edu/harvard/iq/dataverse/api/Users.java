@@ -83,7 +83,7 @@ public class Users extends AbstractApiBean {
             return error(Response.Status.BAD_REQUEST, "Error calling ChangeUserIdentifierCommand: " + e.getLocalizedMessage());
         }
 
-        return ok("All account data for " + consumedIdentifier + " has been merged into " + baseIdentifier + " .");
+        return ok(String.format("All account data for %s has been merged into %s.", consumedIdentifier, baseIdentifier));
     }
 
     @POST

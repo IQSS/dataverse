@@ -44,7 +44,7 @@ On RHEL/derivative you can make Java 11 the default with the ``alternatives`` co
 Payara
 ------
 
-Payara 5.2021.6 is recommended. Newer versions might work fine, regular updates are recommended.
+Payara 5.2022.3 is recommended. Newer versions might work fine, regular updates are recommended.
 
 Installing Payara
 =================
@@ -55,8 +55,8 @@ Installing Payara
 
 - Download and install Payara (installed in ``/usr/local/payara5`` in the example commands below)::
 
-	# wget https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2021.6/payara-5.2021.6.zip
-	# unzip payara-5.2021.6.zip
+	# wget https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2022.3/payara-5.2022.3.zip
+	# unzip payara-5.2022.3.zip
 	# mv payara5 /usr/local
 
 If you intend to install and run Payara under a service account (and we hope you do), chown -R the Payara hierarchy to root to protect it but give the service account access to the below directories:
@@ -291,8 +291,8 @@ If the installed location of the convert executable is different from ``/usr/bin
 R
 -
 
-The Dataverse Software uses `R <https://https://cran.r-project.org/>`_ to handle
-tabular data files. The instructions below describe a **minimal** R
+The Dataverse Software uses `R <https://cran.r-project.org>`_ to handle
+tabular data files. The instructions below describe a **minimal** R Project
 installation. It will allow you to ingest R (.RData) files as tabular
 data and to export tabular data as .RData files.  R can be considered an optional component, meaning
 that if you don't have R installed, you will still be able to run and

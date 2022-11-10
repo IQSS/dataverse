@@ -79,6 +79,22 @@ greatly extended parameterized testing. Some guidance how to write those:
 - https://blog.codefx.org/libraries/junit-5-parameterized-tests/
 - See also some examples in our codebase.
 
+JUnit 5 Test Helper Extensions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Our codebase provides little helpers to ease dealing with state during tests.
+Some tests might need to change something which should be restored after the test ran.
+
+For unit tests, the most interesting part is to set a JVM setting just for the current test.
+Please use the ``@JvmSetting(key = JvmSettings.XXX, value = "")`` annotation on a test method or
+a test class to set and clear the property automatically.
+
+To set arbitrary system properties for the current test, a similar extension
+``@SystemProperty(key = "", value = "")`` has been added.
+
+Both extensions will ensure the global state of system properties is non-interfering for
+test executions. Tests using these extensions will be executed in serial.
+
 Observing Changes to Code Coverage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
