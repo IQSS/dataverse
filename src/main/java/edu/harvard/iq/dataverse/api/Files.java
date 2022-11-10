@@ -392,7 +392,7 @@ public class Files extends AbstractApiBean {
             }
 
             try {
-                DatasetVersion editVersion = df.getOwner().getEditVersion();
+                DatasetVersion editVersion = df.getOwner().getOrCreateEditVersion();
 
                 //We get the new fileMetadata from the new version
                 //This is because after generating the draft with getEditVersion,
