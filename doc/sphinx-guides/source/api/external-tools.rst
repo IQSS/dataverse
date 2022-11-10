@@ -106,11 +106,11 @@ Terminology
     
     allowedApiCalls              An array of objects defining callbacks the tool is allowed to make to the Dataverse API. If the dataset or file being accessed is not public, the callback URLs will be signed to allow the tool access for a defined time.
     
-    allowdApiCalls name          A name the tool will use to identify this callback URL
+    allowedApiCalls name          A name the tool will use to identify this callback URL
     
     allowedApiCalls urlTemplate  The relative URL for the callback using the reserved words to indicate where values should by dynamically substituted
     
-    allowdApiCalls httpMethod    Which HTTP method the specified callback uses 
+    allowedApiCalls httpMethod    Which HTTP method the specified callback uses 
     
     allowedApiCalls timeOut      For non-public datasets and datafiles, how long the signed URLs given to the tool should be valid for.
     
