@@ -32,74 +32,67 @@ public class FeedbackUtil {
         if (isLoggedIn(dataverseSession)) {
             userEmail = loggedInUserEmail(dataverseSession);
         }
-        if (recipient != null) {
-            messageSubject = BundleUtil.getStringFromBundle("contact.context.subject.dvobject", installationBrandName, messageSubject);
-            if (recipient.isInstanceofDataverse()) {
-                Dataverse dataverse = (Dataverse) recipient;
-                String dataverseContextEnding = BundleUtil.getStringFromBundle("contact.context.dataverse.ending", supportTeamName, systemEmail, dataverseSiteUrl, dataverse.getAlias(), supportTeamName, systemEmail);
-                List<DvObjectContact> dataverseContacts = getDataverseContacts(dataverse);
-                for (DvObjectContact dataverseContact : dataverseContacts) {
-                    String placeHolderIfDataverseContactsGetNames = "";
-                    String dataverseContextIntro = BundleUtil.getStringFromBundle("contact.context.dataverse.intro", placeHolderIfDataverseContactsGetNames, userEmail, installationBrandName, dataverse.getAlias());
-                    Feedback feedback = new Feedback(userEmail, dataverseContact.getEmail(), messageSubject, dataverseContextIntro + userMessage + dataverseContextEnding);
-                    feedbacks.add(feedback);
-                }
-                if (!feedbacks.isEmpty()) {
-                    return feedbacks;
-                } else {
-                    String dataverseContextIntroError = BundleUtil.getStringFromBundle("contact.context.dataverse.noContact");
-                    Feedback feedback = new Feedback(userEmail, systemEmail, messageSubject, dataverseContextIntroError + userMessage + dataverseContextEnding);
-                    feedbacks.add(feedback);
-                    return feedbacks;
-                }
-            } else if (recipient.isInstanceofDataset()) {
-                Dataset dataset = (Dataset) recipient;
-                String datasetTitle = dataset.getLatestVersion().getParsedTitle();
-                String datasetPid = dataset.getGlobalIdString();
-                String datasetContextEnding = BundleUtil.getStringFromBundle("contact.context.dataset.ending", supportTeamName, systemEmail, dataverseSiteUrl, dataset.getGlobalIdString(), supportTeamName, systemEmail);
-                List<DvObjectContact> datasetContacts = getDatasetContacts(dataset);
-                for (DvObjectContact datasetContact : datasetContacts) {
-                    String contactFullName = getGreeting(datasetContact);
-                    String datasetContextIntro = BundleUtil.getStringFromBundle("contact.context.dataset.intro", contactFullName, userEmail, installationBrandName, datasetTitle, datasetPid);
-                    Feedback feedback = new Feedback(userEmail, datasetContact.getEmail(), messageSubject, datasetContextIntro + userMessage + datasetContextEnding);
-                    feedbacks.add(feedback);
-                }
-                if (!feedbacks.isEmpty()) {
-                    return feedbacks;
-                } else {
-                    // TODO: Add more of an intro for the person receiving the system email in this "no dataset contact" scenario?
-                    Feedback feedback = new Feedback(userEmail, systemEmail, messageSubject, NO_DATASET_CONTACT_INTRO + userMessage + datasetContextEnding);
-                    feedbacks.add(feedback);
-                    return feedbacks;
-                }
-            } else {
-                DataFile datafile = (DataFile) recipient;
-                String datasetTitle = datafile.getOwner().getLatestVersion().getParsedTitle();
-                String datasetPid = datafile.getOwner().getGlobalIdString();
-                String filename = datafile.getFileMetadatas().get(0).getLabel();
-                List<DvObjectContact> datasetContacts = getDatasetContacts(datafile.getOwner());
-                String fileContextEnding = BundleUtil.getStringFromBundle("contact.context.file.ending", supportTeamName, systemEmail, dataverseSiteUrl, datafile.getId().toString(), supportTeamName, systemEmail);
-                for (DvObjectContact datasetContact : datasetContacts) {
-                    String contactFullName = getGreeting(datasetContact);
-                    String fileContextIntro = BundleUtil.getStringFromBundle("contact.context.file.intro", contactFullName, userEmail, installationBrandName, filename, datasetTitle, datasetPid);
-                    Feedback feedback = new Feedback(userEmail, datasetContact.getEmail(), messageSubject, fileContextIntro + userMessage + fileContextEnding);
-                    feedbacks.add(feedback);
-                }
-                if (!feedbacks.isEmpty()) {
-                    return feedbacks;
-                } else {
-                    // TODO: Add more of an intro for the person receiving the system email in this "no dataset contact" scenario?
-                    Feedback feedback = new Feedback(userEmail, systemEmail, messageSubject, NO_DATASET_CONTACT_INTRO + userMessage + fileContextEnding);
-                    feedbacks.add(feedback);
-                    return feedbacks;
-                }
-            }
-        } else {
+        if (recipient == null) {
             messageSubject = BundleUtil.getStringFromBundle("contact.context.subject.support", installationBrandName, messageSubject);
             String noDvObjectContextIntro = BundleUtil.getStringFromBundle("contact.context.support.intro", supportTeamName, userEmail);
             String noDvObjectContextEnding = BundleUtil.getStringFromBundle("contact.context.support.ending", "");
             Feedback feedback = new Feedback(userEmail, systemEmail, messageSubject, noDvObjectContextIntro + userMessage + noDvObjectContextEnding);
             feedbacks.add(feedback);
+            return feedbacks;
+        }
+        messageSubject = BundleUtil.getStringFromBundle("contact.context.subject.dvobject", installationBrandName, messageSubject);
+        if (recipient.isInstanceofDataverse()) {
+            Dataverse dataverse = (Dataverse) recipient;
+            String dataverseContextEnding = BundleUtil.getStringFromBundle("contact.context.dataverse.ending", supportTeamName, systemEmail, dataverseSiteUrl, dataverse.getAlias(), supportTeamName, systemEmail);
+            List<DvObjectContact> dataverseContacts = getDataverseContacts(dataverse);
+            for (DvObjectContact dataverseContact : dataverseContacts) {
+                String placeHolderIfDataverseContactsGetNames = "";
+                String dataverseContextIntro = BundleUtil.getStringFromBundle("contact.context.dataverse.intro", placeHolderIfDataverseContactsGetNames, userEmail, installationBrandName, dataverse.getAlias());
+                Feedback feedback = new Feedback(userEmail, dataverseContact.getEmail(), messageSubject, dataverseContextIntro + userMessage + dataverseContextEnding);
+                feedbacks.add(feedback);
+            }
+            if (feedbacks.isEmpty()) {
+                String dataverseContextIntroError = BundleUtil.getStringFromBundle("contact.context.dataverse.noContact");
+                Feedback feedback = new Feedback(userEmail, systemEmail, messageSubject, dataverseContextIntroError + userMessage + dataverseContextEnding);
+                feedbacks.add(feedback);
+            }
+            return feedbacks;
+        } else if (recipient.isInstanceofDataset()) {
+            Dataset dataset = (Dataset) recipient;
+            String datasetTitle = dataset.getLatestVersion().getParsedTitle();
+            String datasetPid = dataset.getGlobalIdString();
+            String datasetContextEnding = BundleUtil.getStringFromBundle("contact.context.dataset.ending", supportTeamName, systemEmail, dataverseSiteUrl, dataset.getGlobalIdString(), supportTeamName, systemEmail);
+            List<DvObjectContact> datasetContacts = getDatasetContacts(dataset);
+            for (DvObjectContact datasetContact : datasetContacts) {
+                String contactFullName = getGreeting(datasetContact);
+                String datasetContextIntro = BundleUtil.getStringFromBundle("contact.context.dataset.intro", contactFullName, userEmail, installationBrandName, datasetTitle, datasetPid);
+                Feedback feedback = new Feedback(userEmail, datasetContact.getEmail(), messageSubject, datasetContextIntro + userMessage + datasetContextEnding);
+                feedbacks.add(feedback);
+            }
+            if (feedbacks.isEmpty()) {
+                // TODO: Add more of an intro for the person receiving the system email in this "no dataset contact" scenario?
+                Feedback feedback = new Feedback(userEmail, systemEmail, messageSubject, NO_DATASET_CONTACT_INTRO + userMessage + datasetContextEnding);
+                feedbacks.add(feedback);
+            }
+            return feedbacks;
+        } else {
+            DataFile datafile = (DataFile) recipient;
+            String datasetTitle = datafile.getOwner().getLatestVersion().getParsedTitle();
+            String datasetPid = datafile.getOwner().getGlobalIdString();
+            String filename = datafile.getFileMetadatas().get(0).getLabel();
+            List<DvObjectContact> datasetContacts = getDatasetContacts(datafile.getOwner());
+            String fileContextEnding = BundleUtil.getStringFromBundle("contact.context.file.ending", supportTeamName, systemEmail, dataverseSiteUrl, datafile.getId().toString(), supportTeamName, systemEmail);
+            for (DvObjectContact datasetContact : datasetContacts) {
+                String contactFullName = getGreeting(datasetContact);
+                String fileContextIntro = BundleUtil.getStringFromBundle("contact.context.file.intro", contactFullName, userEmail, installationBrandName, filename, datasetTitle, datasetPid);
+                Feedback feedback = new Feedback(userEmail, datasetContact.getEmail(), messageSubject, fileContextIntro + userMessage + fileContextEnding);
+                feedbacks.add(feedback);
+            }
+            if (feedbacks.isEmpty()) {
+                // TODO: Add more of an intro for the person receiving the system email in this "no dataset contact" scenario?
+                Feedback feedback = new Feedback(userEmail, systemEmail, messageSubject, NO_DATASET_CONTACT_INTRO + userMessage + fileContextEnding);
+                feedbacks.add(feedback);
+            }
             return feedbacks;
         }
     }

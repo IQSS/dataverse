@@ -6,6 +6,8 @@ import edu.harvard.iq.dataverse.feedback.Feedback;
 import edu.harvard.iq.dataverse.feedback.FeedbackUtil;
 import edu.harvard.iq.dataverse.mail.MailService;
 import edu.harvard.iq.dataverse.persistence.DvObject;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.MailUtil;
@@ -128,6 +130,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
         userSum = null;
         String systemEmail = settingsService.getValueForKey(SettingsServiceBean.Key.SystemEmail);
         systemAddress = MailUtil.parseSystemAddress(systemEmail);
+        sendCopy = false;
     }
 
     public void initUserInput(ActionEvent ae) {
@@ -186,10 +189,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
             mailService.sendMailAsync(feedback.getFromEmail(), feedback.getToEmail(), feedback.getSubject(), feedback.getBody());
         }
         if (sendCopy) {
-            String mail = isLoggedIn() ? loggedInUserEmail() : userEmail;
-            mailService.sendMailAsync(null, mail,
-                    BundleUtil.getStringFromBundle("contact.copy.message.subject", messageSubject),
-                    BundleUtil.getStringFromBundle("contact.copy.message.template", userMessage));
+            sendCopy(rootDataverseName);
         }
         JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("contact.send.success"));
 
@@ -202,6 +202,31 @@ public class SendFeedbackDialog implements java.io.Serializable {
 
     public String loggedInUserEmail() {
         return dataverseSession.getUser().getDisplayInfo().getEmailAddress();
+    }
+
+    // -------------------- PRIVATE --------------------
+
+    private void sendCopy(String rootDataverseName) {
+        String mail = isLoggedIn() ? loggedInUserEmail() : userEmail;
+        String header;
+        String siteUrl = systemConfig.getDataverseSiteUrl();
+        if (recipient != null && recipient.isInstanceofDataverse()) {
+            Dataverse dataverse = (Dataverse) recipient;
+            header = BundleUtil.getStringFromBundle("contact.copy.message.header.dataverse",
+                    rootDataverseName, dataverse.getName(),
+                    siteUrl + "/dataverse/" + dataverse.getAlias());
+        } else if (recipient != null && recipient.isInstanceofDataset()) {
+            Dataset dataset = (Dataset) recipient;
+            header = BundleUtil.getStringFromBundle("contact.copy.message.header.dataset",
+                    rootDataverseName, dataset.getDisplayName(),
+                    siteUrl + "/dataset.xhtml?persistentId=" + dataset.getGlobalId().asString());
+        } else {
+            header = BundleUtil.getStringFromBundle("contact.copy.message.header.general", rootDataverseName);
+        }
+        String content = header + BundleUtil.getStringFromBundle("contact.copy.message.template", userMessage)
+                + mailService.getFooterMailMessage(null, dataverseSession.getLocale());
+        mailService.sendMailAsync(null, mail,
+                BundleUtil.getStringFromBundle("contact.copy.message.subject", messageSubject), content);
     }
 
     // -------------------- SETTERS --------------------

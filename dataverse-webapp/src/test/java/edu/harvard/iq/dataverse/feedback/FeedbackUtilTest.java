@@ -80,9 +80,9 @@ public class FeedbackUtilTest {
         authorIdentifierSchemeType.setAllowControlledVocabulary(true);
         authorIdentifierSchemeType.setControlledVocabularyValues(Arrays.asList(
                 // Why aren't these enforced? Should be ORCID, etc.
-                new ControlledVocabularyValue(1l, "ark", authorIdentifierSchemeType),
-                new ControlledVocabularyValue(2l, "doi", authorIdentifierSchemeType),
-                new ControlledVocabularyValue(3l, "url", authorIdentifierSchemeType)
+                new ControlledVocabularyValue(1L, "ark", authorIdentifierSchemeType),
+                new ControlledVocabularyValue(2L, "doi", authorIdentifierSchemeType),
+                new ControlledVocabularyValue(3L, "url", authorIdentifierSchemeType)
         ));
         authorChildTypes.add(datasetFieldTypeSvc.add(authorIdentifierSchemeType));
         for (DatasetFieldType t : authorChildTypes) {
@@ -114,17 +114,17 @@ public class FeedbackUtilTest {
         DatasetFieldType subjectType = datasetFieldTypeSvc.add(new DatasetFieldType("subject", FieldType.TEXT, true));
         subjectType.setAllowControlledVocabulary(true);
         subjectType.setControlledVocabularyValues(Arrays.asList(
-                new ControlledVocabularyValue(1l, "mgmt", subjectType),
-                new ControlledVocabularyValue(2l, "law", subjectType),
-                new ControlledVocabularyValue(3l, "cs", subjectType)
+                new ControlledVocabularyValue(1L, "mgmt", subjectType),
+                new ControlledVocabularyValue(2L, "law", subjectType),
+                new ControlledVocabularyValue(3L, "cs", subjectType)
         ));
 
         DatasetFieldType pubIdType = datasetFieldTypeSvc.add(new DatasetFieldType("publicationIdType", FieldType.TEXT, false));
         pubIdType.setAllowControlledVocabulary(true);
         pubIdType.setControlledVocabularyValues(Arrays.asList(
-                new ControlledVocabularyValue(1l, "ark", pubIdType),
-                new ControlledVocabularyValue(2l, "doi", pubIdType),
-                new ControlledVocabularyValue(3l, "url", pubIdType)
+                new ControlledVocabularyValue(1L, "ark", pubIdType),
+                new ControlledVocabularyValue(2L, "doi", pubIdType),
+                new ControlledVocabularyValue(3L, "url", pubIdType)
         ));
 
         DatasetFieldType compoundSingleType = datasetFieldTypeSvc.add(new DatasetFieldType("coordinate", FieldType.TEXT, true));
