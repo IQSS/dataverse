@@ -757,8 +757,6 @@ public class IndexServiceBean {
             }
         }
 
-        docs.add(solrInputDocument);
-
         /*
           File Indexing
          */
@@ -767,6 +765,7 @@ public class IndexServiceBean {
         long maxSize = (maxFTIndexingSize == 0) ? maxFTIndexingSize : Long.MAX_VALUE;
 
         List<String> filesIndexed = new ArrayList<>();
+        Set<String> licensesIndexed = new HashSet<String>();
         if (datasetVersion != null) {
             List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
             boolean checkForDuplicateMetadata = false;
@@ -818,6 +817,10 @@ public class IndexServiceBean {
                     datafileSolrInputDocument.addField(SearchFields.CATEGORY_OF_DATAVERSE, dataset.getDataverseContext().getIndexableCategoryName());
                     datafileSolrInputDocument.addField(SearchFields.ACCESS,
                                                        fileMetadata.getTermsOfUse().getTermsOfUseType() == TermsOfUseType.RESTRICTED ? SearchConstants.RESTRICTED : SearchConstants.PUBLIC);
+                    if (fileMetadata.getTermsOfUse().getLicense() != null) {
+                        licensesIndexed.add(fileMetadata.getTermsOfUse().getLicense().getName());
+                        datafileSolrInputDocument.addField(SearchFields.LICENSE, fileMetadata.getTermsOfUse().getLicense().getName());
+                    }
 
                     /* Full-text indexing using Apache Tika */
                     if (doFullTextIndexing) {
@@ -1034,9 +1037,13 @@ public class IndexServiceBean {
                 }
             }
 
+            
             docs.addAll(filesToIndex);
         }
 
+        solrInputDocument.addField(SearchFields.LICENSE, licensesIndexed);
+        docs.add(solrInputDocument);
+        
         try {
             solrServer.add(docs);
             solrServer.commit();
