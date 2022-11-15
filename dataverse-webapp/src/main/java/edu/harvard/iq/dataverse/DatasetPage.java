@@ -35,6 +35,7 @@ import edu.harvard.iq.dataverse.export.ExporterType;
 import edu.harvard.iq.dataverse.guestbook.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.ingest.UningestInfoService;
 import edu.harvard.iq.dataverse.mail.confirmemail.ConfirmEmailServiceBean;
+import edu.harvard.iq.dataverse.notification.NotificationParameter;
 import edu.harvard.iq.dataverse.persistence.datafile.MapLayerMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseIcon;
@@ -148,6 +149,7 @@ public class DatasetPage implements Serializable {
 
     private String returnToAuthorReason;
     private String replyTo;
+    private boolean sendCopy = true;
 
     private String contributorMessageToCurator;
 
@@ -160,7 +162,6 @@ public class DatasetPage implements Serializable {
     private Date currentEmbargoDate;
 
     // -------------------- CONSTRUCTORS --------------------
-
 
     public DatasetPage() { }
 
@@ -235,17 +236,15 @@ public class DatasetPage implements Serializable {
             }
 
             thumbnailString = datasetThumbnail.getBase64image();
-            thumbnailStringIsCached = true;
-            return thumbnailString;
         } else {
             thumbnailString = thumbnailServiceWrapper.getDatasetCardImageAsBase64Url(dataset, workingVersion.getId(), !workingVersion.isDraft());
-            thumbnailStringIsCached = true;
-            return thumbnailString;
         }
+        thumbnailStringIsCached = true;
+        return thumbnailString;
     }
 
     public void setThumbnailString(String thumbnailString) {
-        //Dummy method
+        // Dummy method
     }
 
     private Boolean thisLatestReleasedVersion = null;
@@ -286,11 +285,8 @@ public class DatasetPage implements Serializable {
         } catch (Exception ex) {
             // whatever...
         }
-
         thisLatestReleasedVersion = workingVersion.equals(latestPublishedVersion);
-
         return thisLatestReleasedVersion;
-
     }
 
     public boolean showEditDropdownButton() {
@@ -334,8 +330,8 @@ public class DatasetPage implements Serializable {
 
         boolean isUserAllowedToLink = Stream.of(user)
               .filter(User::isAuthenticated)
-              .anyMatch(authUser -> !systemConfig.isUnconfirmedMailRestrictionModeEnabled() || (systemConfig.isUnconfirmedMailRestrictionModeEnabled() &&
-                      confirmEmailService.hasVerifiedEmail((AuthenticatedUser) authUser)));
+              .anyMatch(authUser -> !systemConfig.isUnconfirmedMailRestrictionModeEnabled()
+                      || confirmEmailService.hasVerifiedEmail((AuthenticatedUser) authUser));
 
         return !systemConfig.isReadonlyMode() && isUserAllowedToLink
                 && !workingVersion.isDeaccessioned() && dataset.isReleased();
@@ -453,6 +449,14 @@ public class DatasetPage implements Serializable {
         this.replyTo = replyTo;
     }
 
+    public boolean isSendCopy() {
+        return sendCopy;
+    }
+
+    public void setSendCopy(boolean sendCopy) {
+        this.sendCopy = sendCopy;
+    }
+
     /**
      * Create a hashmap consisting of { DataFile.id : MapLayerMetadata object}
      * <p>
@@ -460,19 +464,16 @@ public class DatasetPage implements Serializable {
      * use 1 query to get them
      */
     private void loadMapLayerMetadataLookup() {
-        if (this.dataset == null) {
-        }
-        if (this.dataset.getId() == null) {
+        if (dataset == null || dataset.getId() == null) {
             return;
         }
-        List<MapLayerMetadata> mapLayerMetadataList = mapLayerMetadataService.getMapLayerMetadataForDataset(this.dataset);
+        List<MapLayerMetadata> mapLayerMetadataList = mapLayerMetadataService.getMapLayerMetadataForDataset(dataset);
         if (mapLayerMetadataList == null) {
             return;
         }
-        for (MapLayerMetadata layer_metadata : mapLayerMetadataList) {
-            mapLayerMetadataLookup.put(layer_metadata.getDataFile().getId(), layer_metadata);
+        for (MapLayerMetadata layerMetadata : mapLayerMetadataList) {
+            mapLayerMetadataLookup.put(layerMetadata.getDataFile().getId(), layerMetadata);
         }
-
     }// A DataFile may have a related MapLayerMetadata object
 
 
@@ -509,8 +510,8 @@ public class DatasetPage implements Serializable {
 
             retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
             //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);
-            this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
-            logger.fine("retrieved version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
+            workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
+            logger.fine("retrieved version: id: " + workingVersion.getId() + ", state: " + workingVersion.getVersionState());
 
         } else if (dataset.getId() != null) {
             // Set Working Version and Dataset by Dataset Id and Version
@@ -521,8 +522,8 @@ public class DatasetPage implements Serializable {
             }
             //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), version);
             retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
-            this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
-            logger.info("retreived version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
+            workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
+            logger.info("retreived version: id: " + workingVersion.getId() + ", state: " + workingVersion.getVersionState());
 
         } else if (versionId != null) {
             // TODO: 4.2.1 - this method is broken as of now!
@@ -536,13 +537,13 @@ public class DatasetPage implements Serializable {
         }
 
 
-        //this.dataset = this.workingVersion.getDataset();
+        //dataset = workingVersion.getDataset();
 
         // end: Set the workingVersion and Dataset
         // ---------------------------------------
         // Is the DatasetVersion or Dataset null?
         //
-        if (workingVersion == null || this.dataset == null) {
+        if (workingVersion == null || dataset == null) {
             return permissionsWrapper.notFound();
         }
 
@@ -569,7 +570,7 @@ public class DatasetPage implements Serializable {
         }
 
         // Check permisisons
-        if (!(workingVersion.isReleased() || workingVersion.isDeaccessioned()) && !this.canViewUnpublishedDataset()) {
+        if (!(workingVersion.isReleased() || workingVersion.isDeaccessioned()) && !canViewUnpublishedDataset()) {
             return permissionsWrapper.notAuthorized();
         }
 
@@ -592,8 +593,8 @@ public class DatasetPage implements Serializable {
                 readOnly = false;
             }
 
-            datasetNextMajorVersion = this.dataset.getNextMajorVersionString();
-            datasetNextMinorVersion = this.dataset.getNextMinorVersionString();
+            datasetNextMajorVersion = dataset.getNextMajorVersionString();
+            datasetNextMinorVersion = dataset.getNextMinorVersionString();
             returnToAuthorReason = StringUtils.EMPTY;
             contributorMessageToCurator = StringUtils.EMPTY;
             fileTermDiffsWithLatestReleased = Lists.newArrayList();
@@ -605,7 +606,7 @@ public class DatasetPage implements Serializable {
             //SEK - lazymodel may be needed for datascroller in future release
             // lazyModel = new LazyFileMetadataDataModel(workingVersion.getId(), datafileService );
             // populate MapLayerMetadata
-            this.loadMapLayerMetadataLookup();  // A DataFile may have a related MapLayerMetadata object
+            loadMapLayerMetadataLookup();  // A DataFile may have a related MapLayerMetadata object
         }
         try {
             privateUrl = commandEngine.submit(new GetPrivateUrlCommand(dvRequestService.getDataverseRequest(), dataset));
@@ -615,7 +616,7 @@ public class DatasetPage implements Serializable {
 
         if (session.getUser() instanceof AuthenticatedUser) {
             AuthenticatedUser replyToUser = (AuthenticatedUser) session.getUser();
-            this.replyTo = replyToUser.getEmail();
+            replyTo = replyToUser.getEmail();
         }
 
         return null;
@@ -658,7 +659,11 @@ public class DatasetPage implements Serializable {
     }
 
     public String sendBackToContributor() {
-        Try.of(() -> commandEngine.submit(new ReturnDatasetToAuthorCommand(dvRequestService.getDataverseRequest(), dataset, returnToAuthorReason, replyTo)))
+        Map<String, String> params = new HashMap<>();
+        params.put(NotificationParameter.MESSAGE.key(), returnToAuthorReason);
+        params.put(NotificationParameter.REPLY_TO.key(), replyTo);
+        params.put(NotificationParameter.SEND_COPY.key(), String.valueOf(sendCopy));
+        Try.of(() -> commandEngine.submit(new ReturnDatasetToAuthorCommand(dvRequestService.getDataverseRequest(), dataset, params)))
                 .onSuccess(ds -> JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.reject.success")))
                 .onFailure(throwable -> logger.log(Level.SEVERE, "Sending back to Contributor failed:", throwable))
                 .onFailure(throwable -> JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.reject.failure", throwable.getMessage())));

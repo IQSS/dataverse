@@ -75,6 +75,7 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.ExporterType;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
+import edu.harvard.iq.dataverse.notification.NotificationParameter;
 import edu.harvard.iq.dataverse.notification.UserNotificationService;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.ControlledVocabularyValue;
@@ -144,6 +145,7 @@ import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -1573,8 +1575,11 @@ public class Datasets extends AbstractApiBean {
                              "You must enter a reason for returning a dataset to the author(s).");
             }
             AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
+            Map<String, String> params = new HashMap<>();
+            params.put(NotificationParameter.MESSAGE.key(), reasonForReturn);
+            params.put(NotificationParameter.REPLY_TO.key(), authenticatedUser.getEmail());
             Dataset updatedDataset = execCommand(new ReturnDatasetToAuthorCommand(createDataverseRequest(
-                    authenticatedUser), dataset, reasonForReturn, authenticatedUser.getEmail()));
+                    authenticatedUser), dataset, params));
 
             JsonObjectBuilder result = Json.createObjectBuilder();
             result.add("inReview", false);

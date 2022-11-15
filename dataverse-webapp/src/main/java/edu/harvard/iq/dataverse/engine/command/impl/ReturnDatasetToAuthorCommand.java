@@ -22,13 +22,11 @@ import java.util.Map;
 @RequiredPermissions(Permission.PublishDataset)
 public class ReturnDatasetToAuthorCommand extends AbstractDatasetCommand<Dataset> {
 
-    private final String comment;
-    private final String replyTo;
+    private final Map<String, String> notificationParams;
 
-    public ReturnDatasetToAuthorCommand(DataverseRequest aRequest, Dataset anAffectedDvObject, String comment, String replyTo) {
+    public ReturnDatasetToAuthorCommand(DataverseRequest aRequest, Dataset anAffectedDvObject, Map<String, String> notificationParams) {
         super(aRequest, anAffectedDvObject);
-        this.comment = comment;
-        this.replyTo = replyTo;
+        this.notificationParams = notificationParams;
     }
 
     @Override
@@ -43,6 +41,7 @@ public class ReturnDatasetToAuthorCommand extends AbstractDatasetCommand<Dataset
         dataset.getEditVersion().setLastUpdateTime(getTimestamp());
         dataset.setModificationTime(getTimestamp());
 
+        String comment = notificationParams.get(NotificationParameter.MESSAGE.key());
         WorkflowComment workflowComment = new WorkflowComment(dataset.getEditVersion(), WorkflowComment.Type.RETURN_TO_AUTHOR, comment, (AuthenticatedUser) this.getUser());
         ctxt.datasets().addWorkflowComment(workflowComment);
 
@@ -74,10 +73,8 @@ public class ReturnDatasetToAuthorCommand extends AbstractDatasetCommand<Dataset
         List<AuthenticatedUser> authors = ctxt.permissions().getUsersWithPermissionOn(Permission.EditDataset, savedDataset);
         authors.removeAll(reviewers);
 
-        Map<String, String> parameters = new HashMap<>();
+        Map<String, String> parameters = new HashMap<>(notificationParams);
         parameters.put(NotificationParameter.REQUESTOR_ID.key(), String.valueOf(authenticatedUser.getId()));
-        parameters.put(NotificationParameter.MESSAGE.key(), comment);
-        parameters.put(NotificationParameter.REPLY_TO.key(), replyTo);
         authors.forEach(a -> ctxt.notifications()
                 .sendNotificationWithEmail(a, getTimestamp(), NotificationType.RETURNEDDS,
                     savedDataset.getLatestVersion().getId(), NotificationObjectType.DATASET_VERSION, parameters));

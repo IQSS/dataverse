@@ -5,7 +5,8 @@ public enum NotificationParameter {
     REJECTED_BY("rejectedBy"),
     REQUESTOR_ID("requestorId"),
     MESSAGE("message"),
-    REPLY_TO("replyTo");
+    REPLY_TO("replyTo"),
+    SEND_COPY("sendCopy");
 
     NotificationParameter(String key) {
         this.key = key;

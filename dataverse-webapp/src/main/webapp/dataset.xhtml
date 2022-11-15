@@ -1323,33 +1323,33 @@
 
                 <p:dialog header="#{bundle['dataset.rejectBtn']}" widgetVar="sendBackToContributor" modal="true">
                     <p:fragment id="returnReasonFragment">
-                    <div class="row">
-                        <div class="form-group">
-                            <label for="returnReasonTextArea" class="col-sm-4 control-label">#{bundle['dataset.reject.messageBox.label']}
-                                <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
-                            </label>
-                            <div class="col-sm-8">
-                                <p:inputTextarea id="returnReasonTextArea"
-                                                 rows="3"
-                                                 value="#{DatasetPage.returnToAuthorReason}"
-                                                 maxlength="5000"
-                                                 cols="60"
-                                                 counter="display"
-                                                 counterTemplate="#{bundle['dataset.reject.messageBox.counter']}"
-                                                 autoResize="false"
-                                                 required="#{param['DO_RETURN_VALIDATION']}"
-                                                 requiredMessage="#{bundle['dataset.reject.enterReason']}"
-                                                 styleClass="form-control">
-                                </p:inputTextarea>
-                                <h:message for="returnReasonTextArea" styleClass="bg-danger text-danger"/>
-                                <p>
-                                    <h:outputText id="display"/>
-                                </p>
+                        <div class="row">
+                            <div class="form-group">
+                                <label for="returnReasonTextArea" class="col-sm-4 control-label">#{bundle['dataset.reject.messageBox.label']}
+                                    <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                                </label>
+                                <div class="col-sm-8">
+                                    <p:inputTextarea id="returnReasonTextArea"
+                                                     rows="3"
+                                                     value="#{DatasetPage.returnToAuthorReason}"
+                                                     maxlength="5000"
+                                                     cols="60"
+                                                     counter="display"
+                                                     counterTemplate="#{bundle['dataset.reject.messageBox.counter']}"
+                                                     autoResize="false"
+                                                     required="#{param['DO_RETURN_VALIDATION']}"
+                                                     requiredMessage="#{bundle['dataset.reject.enterReason']}"
+                                                     styleClass="form-control">
+                                    </p:inputTextarea>
+                                    <h:message for="returnReasonTextArea" styleClass="bg-danger text-danger"/>
+                                    <p>
+                                        <h:outputText id="display"/>
+                                    </p>
+                                </div>
+                                <p:watermark for="returnReasonTextArea" value="#{bundle['dataset.rejectWatermark']}"
+                                             id="returnReasonwatermark"/>
                             </div>
-                            <p:watermark for="returnReasonTextArea" value="#{bundle['dataset.rejectWatermark']}"
-                                         id="returnReasonwatermark"/>
                         </div>
-                    </div>
                         <div class="row">
                             <div class="form-group">
                                 <label for="replyTo" class="col-sm-4 control-label">
@@ -1372,6 +1372,13 @@
                                     <br/>
                                     <h:message for="replyTo" styleClass="bg-danger text-danger"/>
                                 </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-4"></div>
+                            <div class="col-sm-8">
+                                <p:selectBooleanCheckbox value="#{DatasetPage.sendCopy}"
+                                                         itemLabel="#{bundle['dataset.reject.reply.to.sendCopy']}"/>
                             </div>
                         </div>
                     </p:fragment>

@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.notification.NotificationParameter;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.MocksFactory;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
@@ -29,7 +30,9 @@ import org.junit.Test;
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Future;
 
 import static org.junit.Assert.assertEquals;
@@ -94,9 +97,7 @@ public class ReturnDatasetToAuthorCommandTest {
                     }
 
                     @Override
-                    public void removeDatasetLocks(Dataset dataset, DatasetLock.Reason aReason) {
-
-                    }
+                    public void removeDatasetLocks(Dataset dataset, DatasetLock.Reason aReason) { }
                 };
             }
 
@@ -114,7 +115,6 @@ public class ReturnDatasetToAuthorCommandTest {
                         // no-op
                         return assignment;
                     }
-
                 };
             }
 
@@ -128,84 +128,41 @@ public class ReturnDatasetToAuthorCommandTest {
                     }
                 };
             }
-
-        }
-        );
+        });
     }
 
+    // -------------------- TESTS --------------------
 
-    /*
-            if (theDataset == null) {
-            throw new IllegalCommandException("Can't return to author. Dataset is null.", this);
-        }
-
-        if (!theDataset.getLatestVersion().isInReview()) {
-            throw new IllegalCommandException("Latest version of dataset " + theDataset.getIdentifier() + " is not In Review. Only such versions my be returned to author.", this);
-        }
-
-        if (theDataset.getLatestVersion().getReturnReason() == null || theDataset.getLatestVersion().getReturnReason().isEmpty()){
-            throw new IllegalCommandException("You must enter a reason for returning a dataset to its author.", this);
-        }
-     */
     @Test(expected = IllegalArgumentException.class)
     public void testDatasetNull()  {
-        new ReturnDatasetToAuthorCommand(dataverseRequest, null, "", TEST_MAIL);
+        new ReturnDatasetToAuthorCommand(dataverseRequest, null, createParams("", TEST_MAIL));
     }
 
     @Test
     public void testReleasedDataset() {
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
-//        dataset.getLatestVersion().setInReview(true);
         String expected = "This dataset cannot be return to the author(s) because the latest version is not In Review. The author(s) needs to click Submit for Review first.";
         String actual = null;
-        Dataset updatedDataset = null;
         try {
-            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, "", TEST_MAIL));
+            testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, createParams("", TEST_MAIL)));
         } catch (CommandException ex) {
             actual = ex.getMessage();
         }
         assertEquals(expected, actual);
-
     }
 
     @Test
     public void testNotInReviewDataset() {
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);
-//        dataset.getLatestVersion().setInReview(false);
         String expected = "This dataset cannot be return to the author(s) because the latest version is not In Review. The author(s) needs to click Submit for Review first.";
         String actual = null;
-        Dataset updatedDataset = null;
         try {
-            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, "", TEST_MAIL));
+            testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, createParams("", TEST_MAIL)));
         } catch (CommandException ex) {
             actual = ex.getMessage();
         }
         assertEquals(expected, actual);
     }
-
-    /*
-    FIXME - Empty Comments won't be allowed in future
-    @Test
-    public void testEmptyComments(){
-
-        dataset.setIdentifier("DUMMY");
-        dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);
-        dataset.getLatestVersion().setInReview(true);
-        dataset.getLatestVersion().setReturnReason(null);
-        String expected = "You must enter a reason for returning a dataset to the author(s).";
-        String actual = null;
-        Dataset updatedDataset = null;
-        try {
-
-             updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset));
-        } catch (CommandException ex) {
-            actual = ex.getMessage();
-        }
-        assertEquals(expected, actual);
-
-
-    }
-     */
 
     @Test
     public void testAllGood() {
@@ -214,11 +171,20 @@ public class ReturnDatasetToAuthorCommandTest {
         try {
             testEngine.submit(new AddLockCommand(dataverseRequest, dataset,
                                                  new DatasetLock(DatasetLock.Reason.InReview, dataverseRequest.getAuthenticatedUser())));
-            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, "Update Your Files, Dummy", TEST_MAIL));
+            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset,
+                    createParams("Update Your Files, Dummy", TEST_MAIL)));
         } catch (CommandException ex) {
             System.out.println("Error updating dataset: " + ex.getMessage());
         }
         assertNotNull(updatedDataset);
     }
 
+    // -------------------- PRIVATE --------------------
+
+    private Map<String, String> createParams(String message, String replyTo) {
+        Map<String, String> params = new HashMap<>();
+        params.put(NotificationParameter.MESSAGE.key(), message);
+        params.put(NotificationParameter.REPLY_TO.key(), replyTo);
+        return params;
+    }
 }

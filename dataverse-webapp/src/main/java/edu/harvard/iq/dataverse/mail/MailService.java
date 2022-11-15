@@ -93,7 +93,12 @@ public class MailService implements java.io.Serializable {
         String footerMessage = getFooterMailMessage(notification.getNotificationType(),
                 notification.getNotificationReceiver().getNotificationsLanguage());
         String replyTo = notification.getParameter(NotificationParameter.REPLY_TO.key());
-        return sendMail(userEmail, replyTo, new EmailContent(messageAndSubject._2(), messageAndSubject._1(), footerMessage));
+        EmailContent emailContent = new EmailContent(messageAndSubject._2(), messageAndSubject._1(), footerMessage);
+        boolean sent = sendMail(userEmail, replyTo, emailContent);
+        if (shouldSendCopy(notification)) {
+            sendMail(replyTo, null, emailContent);
+        }
+        return sent;
     }
 
     public CompletableFuture<Boolean> sendMailAsync(String recipientsEmails, String replyTo, EmailContent emailContent) {
@@ -161,6 +166,10 @@ public class MailService implements java.io.Serializable {
         return Try.of(() -> new InternetAddress(systemEmail))
                   .getOrElseThrow(t -> new IllegalArgumentException(
                           "Email will not be sent due to invalid email: " + systemEmail));
+    }
+
+    private boolean shouldSendCopy(EmailNotificationDto notification) {
+        return Boolean.parseBoolean(notification.getParameter(NotificationParameter.SEND_COPY.key()));
     }
 
     // -------------------- PRIVATE --------------------
