@@ -1,1 +1,1 @@
-ALTER TABLE externaltool ADD COLUMN IF NOT EXISTS allowedapicalls VARCHAR;
+ALTER TABLE externaltool ADD COLUMN IF NOT EXISTS allowedapicalls TEXT;
