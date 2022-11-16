@@ -903,6 +903,7 @@ public class JsonParser {
         
         harvestingClient.setName(obj.getString("nickName",null));
         harvestingClient.setHarvestType(obj.getString("type",null));
+        harvestingClient.setHarvestStyle(obj.getString("style", "default"));
         harvestingClient.setHarvestingUrl(obj.getString("harvestUrl",null));
         harvestingClient.setArchiveUrl(obj.getString("archiveUrl",null));
         harvestingClient.setArchiveDescription(obj.getString("archiveDescription"));

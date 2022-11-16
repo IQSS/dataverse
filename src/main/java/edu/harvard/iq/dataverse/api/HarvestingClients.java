@@ -32,7 +32,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
-@Stateless
+// huh, why was this api @Stateless??
+//@Stateless
 @Path("harvest/clients")
 public class HarvestingClients extends AbstractApiBean {
 
@@ -162,10 +163,10 @@ public class HarvestingClients extends AbstractApiBean {
                 ownerDataverse.setHarvestingClientConfigs(new ArrayList<>());
             }
             ownerDataverse.getHarvestingClientConfigs().add(harvestingClient);
-            
+                        
             DataverseRequest req = createDataverseRequest(findUserOrDie());
-            HarvestingClient managedHarvestingClient = execCommand( new CreateHarvestingClientCommand(req, harvestingClient));
-            return created( "/harvest/clients/" + nickName, harvestingConfigAsJson(managedHarvestingClient));
+            harvestingClient = execCommand(new CreateHarvestingClientCommand(req, harvestingClient));
+            return created( "/harvest/clients/" + nickName, harvestingConfigAsJson(harvestingClient));
                     
         } catch (JsonParseException ex) {
             return error( Response.Status.BAD_REQUEST, "Error parsing harvesting client: " + ex.getMessage() );
@@ -296,6 +297,7 @@ public class HarvestingClients extends AbstractApiBean {
         return jsonObjectBuilder().add("nickName", harvestingConfig.getName()).
                 add("dataverseAlias", harvestingConfig.getDataverse().getAlias()).
                 add("type", harvestingConfig.getHarvestType()).
+                add("style", harvestingConfig.getHarvestStyle()).
                 add("harvestUrl", harvestingConfig.getHarvestingUrl()).
                 add("archiveUrl", harvestingConfig.getArchiveUrl()).
                 add("archiveDescription",harvestingConfig.getArchiveDescription()).
