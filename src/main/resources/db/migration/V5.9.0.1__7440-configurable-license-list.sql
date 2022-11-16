@@ -1,3 +1,4 @@
+ALTER TABLE license DROP COLUMN sortorder;
 ALTER TABLE termsofuseandaccess ADD COLUMN IF NOT EXISTS license_id BIGINT;
 
 DO $$
