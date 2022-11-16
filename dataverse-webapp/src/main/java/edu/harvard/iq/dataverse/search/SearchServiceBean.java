@@ -8,6 +8,8 @@ import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.common.FriendlyFileTypeUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.license.License;
+import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseRepository;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseFacet;
@@ -111,6 +113,9 @@ public class SearchServiceBean {
     private SolrClient solrServer;
     @Inject
     private SolrQuerySanitizer querySanitizer;
+    
+    @Inject
+    private LicenseRepository licenseRepository;
 
     // -------------------- LOGIC --------------------
 
@@ -239,6 +244,8 @@ public class SearchServiceBean {
                 }
             };
         }
+
+        solrQuery.addFacetField(SearchFields.LICENSE);
 
         solrQuery.addFacetField(SearchFields.FILE_TYPE);
         // @todo: hide the extra line this shows in the GUI... at least it's
@@ -624,6 +631,12 @@ public class SearchServiceBean {
 
         if(formattedFacetCategoryName.equals(SearchFields.METADATA_SOURCE) && formattedFacetLabelName.equals("harvested")) {
             return BundleUtil.getStringFromBundle(formattedFacetLabelName);
+        }
+
+        if(formattedFacetCategoryName.equals(SearchFields.LICENSE)) {
+            return licenseRepository.findLicenseByName(facetLabelName)
+                .map(l -> l.getLocalizedName(BundleUtil.getCurrentLocale()))
+                .orElse(facetLabelName);
         }
 
         return facetLabelName;

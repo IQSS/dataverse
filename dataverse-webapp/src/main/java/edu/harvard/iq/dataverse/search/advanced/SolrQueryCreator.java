@@ -1,10 +1,16 @@
 package edu.harvard.iq.dataverse.search.advanced;
 
-import org.apache.commons.lang.StringUtils;
-
 import javax.ejb.Stateless;
+import javax.inject.Inject;
+
 import java.util.Arrays;
 import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+
+import edu.harvard.iq.dataverse.persistence.datafile.license.License;
+import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseRepository;
+import edu.harvard.iq.dataverse.search.SearchFields;
 
 
 /**
@@ -13,6 +19,9 @@ import java.util.List;
 @Stateless
 public class SolrQueryCreator {
 
+    @Inject
+    LicenseRepository licenseRepository;
+    
     // -------------------- LOGIC --------------------
 
     /**
@@ -45,6 +54,8 @@ public class SolrQueryCreator {
             return constructQueryForTextField((TextSearchField) searchField);
         } else if (searchField.getSearchFieldType().equals(SearchFieldType.NUMBER)) {
             return constructQueryForNumberField((NumberSearchField) searchField);
+        } else if (searchField.getSearchFieldType().equals(SearchFieldType.CHECKBOX) && searchField.getName().equals(SearchFields.LICENSE)) {
+            return constructQueryForLicenseCheckboxField((CheckboxSearchField) searchField);
         } else if (searchField.getSearchFieldType().equals(SearchFieldType.CHECKBOX)) {
             return constructQueryForCheckboxField((CheckboxSearchField) searchField);
         } else if (searchField.getSearchFieldType().equals(SearchFieldType.SELECT_ONE_VALUE)) {
@@ -86,6 +97,28 @@ public class SolrQueryCreator {
                         .append("\"")
                         .append(value)
                         .append("\"")
+                );
+
+        return checkboxQueryBuilder.toString();
+    }
+
+    private String constructQueryForLicenseCheckboxField(CheckboxSearchField checkboxSearchField) {
+        StringBuilder checkboxQueryBuilder = new StringBuilder();
+
+        checkboxSearchField.getCheckedFieldValues()
+                .forEach(value -> {
+                        String licenseId = value.split(":")[1];
+                        License license = licenseRepository.getById(Long.parseLong(licenseId));
+                        if (license != null) {
+                            checkboxQueryBuilder
+                            .append(checkboxQueryBuilder.length() == 0 ? StringUtils.EMPTY : " AND ")
+                            .append(checkboxSearchField.getName())
+                            .append(":")
+                            .append("\"")
+                            .append(license.getName())
+                            .append("\"");
+                        }
+                }
                 );
 
         return checkboxQueryBuilder.toString();
@@ -145,4 +178,5 @@ public class SolrQueryCreator {
     private boolean isOneNumberPresent(NumberSearchField numberField) {
         return numberField.getMinimum() != null || numberField.getMaximum() != null;
     }
+    
 }

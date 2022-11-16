@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.WidgetWrapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.license.TermsOfUseSelectItemsFactory;
 import edu.harvard.iq.dataverse.persistence.dataset.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
@@ -23,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.omnifaces.cdi.ViewScoped;
 
 import javax.ejb.EJB;
+import javax.faces.model.SelectItem;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.IOException;
@@ -54,6 +56,9 @@ public class AdvancedSearchPage implements java.io.Serializable {
 
     @Inject
     private SolrQueryCreator solrQueryCreator;
+    
+    @Inject
+    private TermsOfUseSelectItemsFactory termsOfUseSelectItemsFactory;
 
     private Dataverse dataverse;
     private String dataverseIdentifier;
@@ -255,6 +260,14 @@ public class AdvancedSearchPage implements java.io.Serializable {
                                                   BundleUtil.getStringFromBundle("advanced.search.files.variableLabel"),
                                                   BundleUtil.getStringFromBundle("advanced.search.files.variableLabel.tip")));
 
+        CheckboxSearchField licenseSearchField = new CheckboxSearchField(SearchFields.LICENSE,
+                BundleUtil.getStringFromBundle("advanced.search.files.license"),
+                BundleUtil.getStringFromBundle("advanced.search.files.license.tip"));
+
+        for (SelectItem selectItem:termsOfUseSelectItemsFactory.buildLicenseSelectItems()) {
+            licenseSearchField.getCheckboxLabelAndValue().add(Tuple.of(selectItem.getLabel(), selectItem.getValue().toString()));
+        }
+        filesSearchFields.add(licenseSearchField);
         return filesSearchFields;
     }
 

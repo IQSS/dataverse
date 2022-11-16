@@ -242,7 +242,21 @@
                                     </label>
                                     <div class="col-sm-6">
                                         <p:inputText id="fileFieldName" styleClass="form-control"
-                                                     value="#{fileSearchFields.fieldValue}"/>
+                                                     value="#{fileSearchFields.fieldValue}"
+                                                     rendered="#{fileSearchFields.searchFieldType == fieldTypeEnums.TEXT}"/>
+                                        <p:selectCheckboxMenu value="#{fileSearchFields.checkedFieldValues}"
+                                                              rendered="#{fileSearchFields.searchFieldType == fieldTypeEnums.CHECKBOX}"
+                                                              style="width: 100%" panelStyleClass="without-select-all"
+                                                              multiple="true" label="#{bundle.select}"
+                                                              updateLabel="true"
+                                                              filter="true" filterMatchMode="contains"
+                                        >
+                                            <f:selectItems value="#{fileSearchFields.checkboxLabelAndValue}"
+                                                           var="cvs"
+                                                           itemLabel="#{cvs._1()}"
+                                                           itemValue="#{cvs._2()}"/>
+                                        </p:selectCheckboxMenu>
+                                        
                                     </div>
                                 </div>
                             </ui:repeat>
