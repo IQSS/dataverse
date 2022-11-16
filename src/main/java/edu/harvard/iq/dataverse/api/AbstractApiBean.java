@@ -46,6 +46,7 @@ import edu.harvard.iq.dataverse.metrics.MetricsServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.locality.StorageSiteServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -440,7 +441,7 @@ public abstract class AbstractApiBean {
         // ToDo - add null checks/ verify that calling methods catch things.
         String user = httpRequest.getParameter("user");
         AuthenticatedUser targetUser = authSvc.getAuthenticatedUser(user);
-        String key = System.getProperty(SystemConfig.API_SIGNING_SECRET, "")
+        String key = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("")
                 + authSvc.findApiTokenByUser(targetUser).getTokenString();
         String signedUrl = httpRequest.getRequestURL().toString() + "?" + httpRequest.getQueryString();
         String method = httpRequest.getMethod();

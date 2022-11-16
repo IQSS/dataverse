@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.validation.EMailValidator;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.GlobalId;
@@ -2277,7 +2278,7 @@ public class Admin extends AbstractApiBean {
             if (key == null) {
                 return error(Response.Status.CONFLICT, "Do not have a valid user with apiToken");
             }
-            key = System.getProperty(SystemConfig.API_SIGNING_SECRET, "") + key;
+            key = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + key;
         }
         
         String baseUrl = urlInfo.getString("url");

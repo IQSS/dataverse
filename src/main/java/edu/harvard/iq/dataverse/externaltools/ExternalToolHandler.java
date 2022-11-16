@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 
@@ -117,7 +118,7 @@ public class ExternalToolHandler extends URLTokenUtil {
                 }
                 if (apiToken != null) {
                     callback = UrlSignerUtil.signUrl(callback, 5, apiToken.getAuthenticatedUser().getUserIdentifier(), HttpMethod.GET,
-                            System.getProperty(SystemConfig.API_SIGNING_SECRET, "") + apiToken.getTokenString());
+                        JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + apiToken.getTokenString());
                 }
                 paramsString= "?callback=" + Base64.getEncoder().encodeToString(StringUtils.getBytesUtf8(callback));
                 if (getLocaleCode() != null) {
@@ -189,7 +190,7 @@ public class ExternalToolHandler extends URLTokenUtil {
             ApiToken apiToken = getApiToken();
             if (apiToken != null) {
                 url = UrlSignerUtil.signUrl(apiPath, timeout, apiToken.getAuthenticatedUser().getUserIdentifier(), httpmethod,
-                        System.getProperty(SystemConfig.API_SIGNING_SECRET, "") + getApiToken().getTokenString());
+                    JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + getApiToken().getTokenString());
             }
             logger.fine("Signed URL: " + url);
             apisBuilder.add(Json.createObjectBuilder().add(NAME, name).add(HTTP_METHOD, httpmethod)
