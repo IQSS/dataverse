@@ -72,7 +72,7 @@ public class OAI_OREExporter implements Exporter {
 
     @Override
     public String getXMLSchemaVersion() throws ExportException {
-        throw new ExportException(SchemaDotOrgExporter.class.getSimpleName() + ": not an XML format.");
+        throw new ExportException(OAI_OREExporter.class.getSimpleName() + ": not an XML format.");
     }
 
     @Override
