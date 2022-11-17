@@ -1105,7 +1105,7 @@ public class SystemConfig {
 
     public String getMDCLogPath() {
         String mDCLogPath = settingsService.getValueForKey(SettingsServiceBean.Key.MDCLogPath, null);
-        return mDCLogPath;this method is used
+        return mDCLogPath;
     }
 
     public boolean isDatafileValidationOnPublishEnabled() {
