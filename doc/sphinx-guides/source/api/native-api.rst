@@ -3256,7 +3256,6 @@ To create a new harvesting client you must supply a JSON file that describes the
 
 - nickName: Alpha-numeric may also contain -, _, or %, but no spaces. Must also be unique in the installation. Must match the nickName in the Path
 - dataverseAlias: The alias of an existing collection where harvested datasets will be deposited.
-- dataverseAlias: The alias of an existing collection where harvested datasets will be deposited.
 - harvestUrl: The URL of the remote OAI archive
 - archiveUrl: The URL of the remote archive that will be used in the redirect links pointing back to the archival locations of the harvested records. It may or may not be on the same server as the harvestUrl above. If this OAI archive is another Dataverse installation, it will be the same URL as harvestUrl minus the "/oai". For example: https://demo.dataverse.org/ vs. https://demo.dataverse.org/oai.
 - metadataFormat: A supported metadata format. For example, "oai_dc" or "ddi".
