@@ -3320,7 +3320,7 @@ The fully expanded example above (without the environment variables) looks like 
 
 Only users with superuser permissions may create or configure harvesting clients.
 
-Create a Harvesting Client
+Modify a Harvesting Client
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Similar to the API above, using the same JSON format, but run on an existing client and using the PUT method instead of POST. 
