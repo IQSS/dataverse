@@ -3200,6 +3200,105 @@ The fully expanded example above (without the environment variables) looks like 
 
 Only users with superuser permissions may delete harvesting sets.
 
+Managing Harvesting Clients
+---------------------------
+
+The following API can be used to create and manage "Harvesting Clients". A Harvesting Client is a configuration entry that allows your Dataverse installation to harvest and index metadata from a specific remote location, either regularly, on a configured schedule, or on a one-off basis. For more information, see the :doc:`/admin/harvestclients` section of the Admin Guide.
+
+List All Congigured Harvesting Clients
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Shows all the Harvesting Clients configured::
+
+  GET http://$SERVER/api/harvest/clients/
+
+Show a specific Harvesting Client
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Shows a Harvesting Client with a defined nickname::
+
+  GET http://$SERVER/api/harvest/clients/$nickname
+
+.. code-block:: bash
+
+  curl "http://localhost:8080/api/harvest/clients/myclient"
+
+  {
+    "status":"OK",
+    {
+      "data": {
+        "lastDatasetsFailed": "22",
+        "lastDatasetsDeleted": "0",
+        "metadataFormat": "oai_dc",
+        "archiveDescription": "This Dataset is harvested from our partners. Clicking the link will take you directly to the archival source of the data.",
+        "archiveUrl": "https://dataverse.foo.edu",
+        "harvestUrl": "https://dataverse.foo.edu/oai",
+        "style": "dataverse",
+        "type": "oai",
+        "dataverseAlias": "fooData",
+        "nickName": "myClient",
+        "set": "fooSet",
+        "schedule": "none",
+        "status": "inActive",
+        "lastHarvest": "Thu Oct 13 14:48:57 EDT 2022",
+        "lastResult": "SUCCESS",
+        "lastSuccessful": "Thu Oct 13 14:48:57 EDT 2022",
+        "lastNonEmpty": "Thu Oct 13 14:48:57 EDT 2022",
+        "lastDatasetsHarvested": "137"
+      }
+    }
+
+
+Create a Harvesting Client
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To create a new harvesting client you must supply a JSON file that describes the configuration, similarly to the output of the GET API above. The following fields are mandatory:
+
+- nickName: Alpha-numeric may also contain -, _, or %, but no spaces. Must also be unique in the installation. Must match the nickName in the Path
+- dataverseAlias: The alias of an existing collection where harvested datasets will be deposited.
+- dataverseAlias: The alias of an existing collection where harvested datasets will be deposited.
+- harvestUrl: The URL of the remote OAI archive
+- archiveUrl: The URL of the remote archive that will be used in the redirect links pointing back to the archival locations of the harvested records. It may or may not be on the same server as the harvestUrl above. If this OAI archive is another Dataverse installation, it will be the same URL as harvestUrl minus the "/oai". For example: https://dataverse.harvard.edu/ vs. https://dataverse.harvard.edu/oai.
+- metadataFormat: A supported metadata format. For example, "oai_dc" or "ddi".
+
+The following optional fields are supported:
+
+- archiveDescription: What the name suggests. If not supplied, will default to "This Dataset is harvested from our partners. Clicking the link will take you directly to the archival source of the data."
+- set: The OAI set on the remote server. If not supplied, will default to none, i.e., "harvest everything".
+- schedule: Harvesting schedule. Defaults to "none".
+- style: Defaults to "default" - a generic OAI archive. (Make sure to use "dataverse" when configuring harvesting from another Dataverse installation).
+
+An example JSON file would look like this::
+
+  {
+    "nickName": "zenodo",
+    "dataverseAlias": "zenodoHarvested",
+    "type": "oai",
+    "harvestUrl": "https://zenodo.org/oai2d",
+    "archiveUrl": "https://zenodo.org",
+    "archiveDescription": "Moissonné depuis la collection LMOPS de l'entrepôt Zenodo. En cliquant sur ce jeu de données, vous serez redirigé vers Zenodo.",
+    "metadataFormat": "oai_dc",
+    "set": "user-lmops"
+  }
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=http://localhost:8080
+
+  curl -H X-Dataverse-key:$API_TOKEN -X POST "$SERVER_URL/api/harvest/clients/zenodo" --upload-file client.json
+
+The fully expanded example above (without the environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "http://localhost:8080/api/harvest/clients/zenodo" --upload-file "client.json"
+
+Only users with superuser permissions may create or configure harvesting clients.
+
+
 PIDs
 ----
 
