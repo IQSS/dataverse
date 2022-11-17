@@ -3258,7 +3258,7 @@ To create a new harvesting client you must supply a JSON file that describes the
 - dataverseAlias: The alias of an existing collection where harvested datasets will be deposited.
 - dataverseAlias: The alias of an existing collection where harvested datasets will be deposited.
 - harvestUrl: The URL of the remote OAI archive
-- archiveUrl: The URL of the remote archive that will be used in the redirect links pointing back to the archival locations of the harvested records. It may or may not be on the same server as the harvestUrl above. If this OAI archive is another Dataverse installation, it will be the same URL as harvestUrl minus the "/oai". For example: https://dataverse.harvard.edu/ vs. https://dataverse.harvard.edu/oai.
+- archiveUrl: The URL of the remote archive that will be used in the redirect links pointing back to the archival locations of the harvested records. It may or may not be on the same server as the harvestUrl above. If this OAI archive is another Dataverse installation, it will be the same URL as harvestUrl minus the "/oai". For example: https://demo.dataverse.org/ vs. https://demo.dataverse.org/oai.
 - metadataFormat: A supported metadata format. For example, "oai_dc" or "ddi".
 
 The following optional fields are supported:
@@ -3296,8 +3296,34 @@ The fully expanded example above (without the environment variables) looks like 
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "http://localhost:8080/api/harvest/clients/zenodo" --upload-file "client.json"
 
+  {
+    "status": "OK",
+    "data": {
+      "metadataFormat": "oai_dc",
+      "archiveDescription": "Moissonné depuis la collection LMOPS de l'entrepôt Zenodo. En cliquant sur ce jeu de données, vous serez redirigé vers Zenodo.",
+      "archiveUrl": "https://zenodo.org",
+      "harvestUrl": "https://zenodo.org/oai2d",
+      "style": "default",
+      "type": "oai",
+      "dataverseAlias": "zenodoHarvested",
+      "nickName": "zenodo",
+      "set": "user-lmops",
+      "schedule": "none",
+      "status": "inActive",
+      "lastHarvest": "N/A",
+      "lastSuccessful": "N/A",
+      "lastNonEmpty": "N/A",
+      "lastDatasetsHarvested": "N/A",
+      "lastDatasetsDeleted": "N/A"
+    }
+  }
+
 Only users with superuser permissions may create or configure harvesting clients.
 
+Create a Harvesting Client
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Similar to the API above, using the same JSON format, but run on an existing client and using the PUT method instead of POST. 
 
 PIDs
 ----
