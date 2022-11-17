@@ -580,8 +580,7 @@ Optionally, you may provide static credentials for each S3 storage using MicroPr
 - ``dataverse.files.<id>.access-key`` for this storage's "access key ID"
 - ``dataverse.files.<id>.secret-key`` for this storage's "secret access key"
 
-You may provide the values for these via any of the
-`supported config sources <https://docs.payara.fish/community/docs/documentation/microprofile/config/README.html>`_.
+You may provide the values for these via any `supported MicroProfile Config API source`_.
 
 **WARNING:**
 
@@ -1669,6 +1668,36 @@ This setting is useful in cases such as running your Dataverse installation behi
 	"HTTP_FORWARDED",
 	"HTTP_VIA",
 	"REMOTE_ADDR"
+
+
+.. _dataverse.api.signature-secret:
+
+dataverse.api.signature-secret
+++++++++++++++++++++++++++++++
+
+Context: Dataverse has the ability to create "Signed URLs" for it's API calls. Using a signed URL makes it obsolete to
+provide API tokens to tools, which carries the risk of leaking extremely sensitive information on exposure. Signed URLs
+can be limited to certain allowed actions, which is much more secure. See :ref:`api-exttools-auth` and
+:ref:`api-native-signed-url` for more details. The key to sign a URL is created from the secret API token of the
+creating user plus a shared secret provided by an administrator.
+
+This setting will default to an empty string, but you should provide it for extra security.
+
+Here is an example how to set your shared secret with the secure method "password alias":
+
+.. code-block:: shell
+
+  echo "AS_ADMIN_ALIASPASSWORD=change-me-super-secret" > /tmp/password.txt
+  asadmin create-password-alias --passwordfile /tmp/password.txt dataverse.api.signature-secret
+  rm /tmp/password.txt
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
+``DATAVERSE_API_SIGNATURE_SECRET``.
+
+**WARNING:** For security, do not use the sources "environment variable" or "system property" (JVM option) in a
+production context! Rely on password alias, secrets directory or cloud based sources instead!
+
+
 
 .. _:ApplicationServerSettings:
 
@@ -3067,3 +3096,7 @@ The interval in seconds between Dataverse calls to Globus to check on upload pro
 +++++++++++++++++++++++++
 
 A true/false option to add a Globus transfer option to the file download menu which is not yet fully supported in the dataverse-globus app. See :ref:`globus-support` for details.
+
+
+
+.. _supported MicroProfile Config API source: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Overview.html
