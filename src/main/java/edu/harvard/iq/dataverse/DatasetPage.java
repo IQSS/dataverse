@@ -5525,6 +5525,13 @@ public class DatasetPage implements java.io.Serializable {
 
     }
 
+    /**
+     * JSON-LD is provided via the normal ExporterService. In favour for the more generic implementation this method is
+     * deprecated.
+     * @see  #getExporters()
+     * @return The Dateset encoded as JSON-LD
+     */
+    @Deprecated
     public String getJsonLd() {
         if (isThisLatestReleasedVersion()) {
             ExportService instance = ExportService.getInstance();
@@ -5534,7 +5541,7 @@ public class DatasetPage implements java.io.Serializable {
                 return jsonLd;
             } else {
                 logger.fine("No cached schema.org JSON-LD available. Going to the database.");
-                String jsonLdProduced = workingVersion.getJsonLd();
+                String jsonLdProduced = instance.getExportAsString(workingVersion.getDataset(), SchemaDotOrgExporter.NAME);
                 return  jsonLdProduced != null ? jsonLdProduced : "";
             }
         }

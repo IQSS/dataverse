@@ -20,6 +20,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import org.junit.jupiter.api.BeforeAll;
@@ -37,6 +39,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * For docs see {@link SchemaDotOrgExporter}.
@@ -116,17 +119,7 @@ public class SchemaDotOrgExporterTest {
         dataFile.setOwner(dataset);
         version.setFileMetadatas(fileMetadatas);
 
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        if(json1 == null) logger.fine("Json null");
-        if(version == null) logger.fine("ver null");
-        if(byteArrayOutputStream == null) logger.fine("bytarr null");
-        if(schemaDotOrgExporter == null) logger.fine("sdoe" + " null");
-        try {
-        schemaDotOrgExporter.exportDataset(version, json1, byteArrayOutputStream);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        String jsonLd = byteArrayOutputStream.toString();
+        String jsonLd = generateeExportAsString(version);
         String prettyJson = JsonUtil.prettyPrint(jsonLd);
         logger.fine("schema.org JSON-LD: " + prettyJson);
         JsonReader jsonReader2 = Json.createReader(new StringReader(jsonLd));
@@ -191,6 +184,20 @@ public class SchemaDotOrgExporterTest {
         try (PrintWriter printWriter = new PrintWriter("/tmp/dvjsonld.json")) {
             printWriter.println(prettyJson);
         }
+    }
+
+    private static String generateeExportAsString( DatasetVersion version) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        if(version == null) logger.fine("ver null");
+        if(byteArrayOutputStream == null) logger.fine("bytarr null");
+        if(schemaDotOrgExporter == null) logger.fine("sdoe" + " null");
+        try {
+        schemaDotOrgExporter.exportDataset(version, null, byteArrayOutputStream);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        String jsonLd = byteArrayOutputStream.toString();
+        return jsonLd;
     }
 
     /**
@@ -446,4 +453,135 @@ public class SchemaDotOrgExporterTest {
         geographicCoverageType.setChildDatasetFieldTypes(geographicCoverageChildTypes);
     }
 
+    /**
+     * See also SchemaDotOrgExporterTest.java for more extensive tests.
+     */
+    @Test
+    public void testGetJsonLd() throws ParseException {
+        //given
+        Dataset dataset = new Dataset();
+        License license = new License("CC0 1.0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0"), URI.create("/resources/images/cc0.png"), true);
+        license.setDefault(true);
+        dataset.setProtocol("doi");
+        dataset.setAuthority("10.5072/FK2");
+        dataset.setIdentifier("LK0D1H");
+        DatasetVersion datasetVersion = new DatasetVersion();
+        datasetVersion.setDataset(dataset);
+        datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
+        assertEquals("", datasetVersion.getPublicationDateAsString());
+
+
+
+        datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
+        datasetVersion.setVersionNumber(1L);
+        SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
+        Date publicationDate = dateFmt.parse("19551105");
+        datasetVersion.setReleaseTime(publicationDate);
+        dataset.setPublicationDate(new Timestamp(publicationDate.getTime()));
+        Dataverse dataverse = new Dataverse();
+        dataverse.setName("LibraScholar");
+        dataset.setOwner(dataverse);
+        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+        terms.setLicense(license);
+        datasetVersion.setTermsOfUseAndAccess(terms);
+
+
+
+        //when
+        String jsonLd = generateeExportAsString(datasetVersion);
+        String prettyJson = JsonUtil.prettyPrint(jsonLd);
+        logger.fine("schema.org JSON-LD: " + prettyJson);
+        JsonReader jsonReader2 = Json.createReader(new StringReader(jsonLd));
+        JsonObject obj = jsonReader2.readObject();
+
+
+
+        //then
+        assertEquals("http://schema.org", obj.getString("@context"));
+        assertEquals("Dataset", obj.getString("@type"));
+        assertEquals("https://doi.org/10.5072/FK2/LK0D1H", obj.getString("@id"));
+        assertEquals("https://doi.org/10.5072/FK2/LK0D1H", obj.getString("identifier"));
+        assertEquals(null, obj.getString("schemaVersion", null));
+        assertEquals("http://creativecommons.org/publicdomain/zero/1.0", obj.getString("license"));
+        assertEquals("1955-11-05", obj.getString("dateModified"));
+        assertEquals("1955-11-05", obj.getString("datePublished"));
+        assertEquals("1", obj.getString("version"));
+        // TODO: if it ever becomes easier to mock a dataset title, test it.
+        assertEquals("", obj.getString("name"));
+        // TODO: If it ever becomes easier to mock authors, test them.
+        JsonArray emptyArray = Json.createArrayBuilder().build();
+        assertEquals(emptyArray, obj.getJsonArray("creator"));
+        assertEquals(emptyArray, obj.getJsonArray("author"));
+        // TODO: If it ever becomes easier to mock subjects, test them.
+        assertEquals(emptyArray, obj.getJsonArray("keywords"));
+        assertEquals("Organization", obj.getJsonObject("publisher").getString("@type"));
+        assertEquals("LibraScholar", obj.getJsonObject("publisher").getString("name"));
+        assertEquals("Organization", obj.getJsonObject("provider").getString("@type"));
+        assertEquals("LibraScholar", obj.getJsonObject("provider").getString("name"));
+        assertEquals("LibraScholar", obj.getJsonObject("includedInDataCatalog").getString("name"));
+    }
+
+    @Test
+    public void testGetJsonLdNonCC0License() throws ParseException {
+        //given
+        Dataset dataset = new Dataset();
+        dataset.setProtocol("doi");
+        dataset.setAuthority("10.5072/FK2");
+        dataset.setIdentifier("LK0D1H");
+        DatasetVersion datasetVersion = new DatasetVersion();
+        datasetVersion.setDataset(dataset);
+        datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
+        assertEquals("", datasetVersion.getPublicationDateAsString());
+        // Only published datasets return any JSON.
+        // @TODO: Add this test!
+        //assertEquals("", datasetVersion.getJsonLd());
+        datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
+        datasetVersion.setVersionNumber(1L);
+        datasetVersion.setMinorVersionNumber(0L);
+        SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
+        Date publicationDate = dateFmt.parse("19551105");
+        datasetVersion.setReleaseTime(publicationDate);
+        dataset.setPublicationDate(new Timestamp(publicationDate.getTime()));
+        Dataverse dataverse = new Dataverse();
+        dataverse.setName("LibraScholar");
+        dataset.setOwner(dataverse);
+
+        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+        terms.setLicense(null);
+        terms.setTermsOfUse("Call me maybe");
+        datasetVersion.setTermsOfUseAndAccess(terms);
+
+
+
+        //when
+        String jsonLd = generateeExportAsString(datasetVersion);
+        String prettyJson = JsonUtil.prettyPrint(jsonLd);
+        logger.fine("schema.org JSON-LD: " + prettyJson);
+        JsonReader jsonReader2 = Json.createReader(new StringReader(jsonLd));
+        JsonObject obj = jsonReader2.readObject();
+
+        //then
+        assertEquals("http://schema.org", obj.getString("@context"));
+        assertEquals("Dataset", obj.getString("@type"));
+        assertEquals("https://doi.org/10.5072/FK2/LK0D1H", obj.getString("@id"));
+        assertEquals("https://doi.org/10.5072/FK2/LK0D1H", obj.getString("identifier"));
+        assertEquals(null, obj.getString("schemaVersion", null));
+        assertTrue(obj.getString("license").contains("/api/datasets/:persistentId/versions/1.0/customlicense?persistentId=doi:10.5072/FK2/LK0D1H"));
+        assertEquals("1955-11-05", obj.getString("dateModified"));
+        assertEquals("1955-11-05", obj.getString("datePublished"));
+        assertEquals("1", obj.getString("version"));
+        // TODO: if it ever becomes easier to mock a dataset title, test it.
+        assertEquals("", obj.getString("name"));
+        // TODO: If it ever becomes easier to mock authors, test them.
+        JsonArray emptyArray = Json.createArrayBuilder().build();
+        assertEquals(emptyArray, obj.getJsonArray("creator"));
+        assertEquals(emptyArray, obj.getJsonArray("author"));
+        // TODO: If it ever becomes easier to mock subjects, test them.
+        assertEquals(emptyArray, obj.getJsonArray("keywords"));
+        assertEquals("Organization", obj.getJsonObject("publisher").getString("@type"));
+        assertEquals("LibraScholar", obj.getJsonObject("publisher").getString("name"));
+        assertEquals("Organization", obj.getJsonObject("provider").getString("@type"));
+        assertEquals("LibraScholar", obj.getJsonObject("provider").getString("name"));
+        assertEquals("LibraScholar", obj.getJsonObject("includedInDataCatalog").getString("name"));
+    }
 }
