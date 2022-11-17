@@ -1105,7 +1105,7 @@ public class SystemConfig {
 
     public String getMDCLogPath() {
         String mDCLogPath = settingsService.getValueForKey(SettingsServiceBean.Key.MDCLogPath, null);
-        return mDCLogPath;
+        return mDCLogPath;this method is used
     }
 
     public boolean isDatafileValidationOnPublishEnabled() {
@@ -1115,7 +1115,7 @@ public class SystemConfig {
 
     public boolean directUploadEnabled(DvObjectContainer container) {
         // this method is used in UI only, therfore "dataverse.files." + driverId + ".allow-out-of-band-upload" is not used here
-    	return Boolean.parseBoolean(System.getProperty("dataverse.files." + container.getEffectiveStorageDriverId() + ".upload-redirect"));
+        return Boolean.parseBoolean(System.getProperty("dataverse.files." + container.getEffectiveStorageDriverId() + ".upload-redirect"));
     }
 
     public String getDataCiteRestApiUrlString() {
