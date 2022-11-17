@@ -44,6 +44,7 @@ import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.SolrInputField;
 import org.apache.tika.io.IOUtils;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
@@ -72,6 +73,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
@@ -586,7 +588,7 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.DATAVERSE_NAME, dataset.getDataverseContext().getDisplayName());
 
         Date datasetSortByDate;
-        Date majorVersionReleaseDate = dataset.getMostRecentMajorVersionReleaseDate();
+        Date majorVersionReleaseDate = getMostRecentMajorVersionReleaseDate(dataset);
         if (majorVersionReleaseDate != null) {
             String msg = "major release date found: " + majorVersionReleaseDate.toString();
             logger.fine(msg);
@@ -598,21 +600,16 @@ public class IndexServiceBean {
                 solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, SearchPublicationStatus.DEACCESSIONED.getSolrValue());
             }
             Date createDate = dataset.getCreateDate();
-            if (createDate != null) {
-                String msg = "can't find major release date, using create date: " + createDate;
-                logger.fine(msg);
-                datasetSortByDate = createDate;
-            } else {
-                String msg = "can't find major release date or create date, using \"now\"";
-                logger.info(msg);
-                datasetSortByDate = new Date();
-            }
+            logger.fine("can't find major release date " +
+                    (createDate != null ? "using create date: " + createDate : "or create date, using \"now\""));
+            datasetSortByDate = createDate != null ? createDate : new Date();
         }
         solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, datasetSortByDate);
         solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT, convertToFriendlyDate(datasetSortByDate));
 
         if (state.equals(IndexableDataset.DatasetState.PUBLISHED)) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, SearchPublicationStatus.PUBLISHED.getSolrValue());
+            SolrInputField field = solrInputDocument.getField(SearchFields.PUBLICATION_STATUS);
         } else if (state.equals(IndexableDataset.DatasetState.WORKING_COPY)) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, SearchPublicationStatus.DRAFT.getSolrValue());
         }
@@ -1059,6 +1056,18 @@ public class IndexServiceBean {
         // return "indexed dataset " + dataset.getId() + " as " + solrDocId +
         // "\nindexFilesResults for " + solrDocId + ":" + fileInfo.toString();
         return "indexed dataset " + dsId + " as " + datasetSolrDocId + ". filesIndexed: " + filesIndexed;
+    }
+
+    private Date getMostRecentMajorVersionReleaseDate(Dataset dataset) {
+        if (dataset.isHarvested()) {
+            return dataset.getVersions().get(0).getReleaseTime();
+        }
+        for (DatasetVersion version : dataset.getVersions()) {
+            if (version.getReleaseTime() != null && version.getMinorVersionNumber().equals(0L)) {
+                return version.getReleaseTime();
+            }
+        }
+        return null;
     }
 
     /**
