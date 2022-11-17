@@ -2348,6 +2348,7 @@ The fully expanded example above (without environment variables) looks like this
 Note: The ``id`` returned in the json response is the id of the file metadata version.
 
 
+.. _add-file-metadata-api:
 
 Adding File Metadata
 ~~~~~~~~~~~~~~~~~~~~
