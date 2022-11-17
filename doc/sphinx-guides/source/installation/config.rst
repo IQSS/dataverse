@@ -250,9 +250,9 @@ A Dataverse installation can alternately store files in a Swift or S3-compatible
 A Dataverse installation may also be configured to reference some files (e.g. large and/or sensitive data) stored in a web-accessible trusted remote store.
 
 A Dataverse installation can be configured to allow out of band upload by setting the ``dataverse.files.\<id\>.upload-out-of-band`` JVM option to ``true``.
-This option allows adding files with the :ref:`add-file-api` call. It also allows registering the metadata of a file with the :ref:`add-file-metadata-api` call for a file uploaded directly to the storage.
-Notice that using S3-storage with ``dataverse.files.\<id\>.upload-redirect`` JVM option enabled supersedes the ``upload-out-of-band`` option and will enable direct upload even with ``upload-out-of-band`` option not set (or set to false).
-When neither of the two option is enabled, adding files with API will not be possible and will result with the "Dataset store configuration does not allow provided storageIdentifier" error.
+This option allows API users to add files with the :ref:`add-file-api` call. It also allows API users to register the metadata of a file with the :ref:`add-file-metadata-api` call for a file that was uploaded directly to the storage.
+Note that if a Dataverse installation uses S3-storage while the ``dataverse.files.\<id\>.upload-redirect`` JVM option is enabled, the ``upload-out-of-band`` setting is overruled. This results in direct upload being enabled even with the ``upload-out-of-band`` option not set (or set to false).
+When the ``upload-out-of-band`` option is not set to ``true`` and it isn't being overruled by the previously mentioned combination, adding files using the API will not be possible and will return the "Dataset store configuration does not allow provided storageIdentifier" error.
 
 The following sections describe how to set up various types of stores and how to configure for multiple stores.
 
