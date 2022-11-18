@@ -40,6 +40,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -281,6 +282,13 @@ public class MailMessageCreator {
         Locale notificationsEmailLanguage = notificationDto.getNotificationReceiver().getNotificationsLanguage();
         String greetingsText = BundleUtil.getStringFromBundleWithLocale("notification.email.greeting", notificationsEmailLanguage);
 
+        Function<String, String> addMessageIfNotEmpty = (String key) -> {
+            String message = notificationDto.getParameter(NotificationParameter.MESSAGE.key());
+            return StringUtils.isNotBlank(message)
+                    ? BundleUtil.getStringFromBundleWithLocale(key, notificationsEmailLanguage, message)
+                    : StringUtils.EMPTY;
+        };
+
         switch (notificationDto.getNotificationType()) {
             case CREATEDS:
                 String datasetCreatedMessage = BundleUtil.getStringFromBundleWithLocale("notification.email.createDataset",
@@ -319,9 +327,7 @@ public class MailMessageCreator {
                                 version.getDataset().getOwner().getDisplayName(),
                                 getDataverseLink(version.getDataset().getOwner()),
                                 requestorName, requestorEmail) +
-                        addUserCustomMessageForSubmit(notificationDto,
-                                BundleUtil.getStringFromBundleWithLocale("dataset.reject.messageBox.label",
-                                        notificationsEmailLanguage));
+                        addMessageIfNotEmpty.apply("notification.email.submitted.additional.message");
             case RETURNEDDS:
                 return greetingsText
                         + BundleUtil.getStringFromBundleWithLocale("notification.email.wasReturnedByReviewer",
@@ -330,9 +336,7 @@ public class MailMessageCreator {
                                 getDatasetDraftLink(version.getDataset()),
                                 version.getDataset().getOwner().getDisplayName(),
                                 getDataverseLink(version.getDataset().getOwner()))
-                        + addUserCustomMessageForReturn(notificationDto,
-                                BundleUtil.getStringFromBundleWithLocale("notification.email.additional.message",
-                                        notificationsEmailLanguage))
+                        + addMessageIfNotEmpty.apply("notification.email.returned.additional.message")
                         + BundleUtil.getStringFromBundleWithLocale("notification.email.returned.replyTo",
                             notificationsEmailLanguage, notificationDto.getParameter(NotificationParameter.REPLY_TO.key()));
             case FILESYSTEMIMPORT:
@@ -349,20 +353,6 @@ public class MailMessageCreator {
                                                                                   version.getDataset().getGlobalIdString(),
                                                                                   version.getDataset().getDisplayName());
 
-        }
-        return StringUtils.EMPTY;
-    }
-
-    private String addUserCustomMessageForSubmit(EmailNotificationDto notificationDto, String messagePrefix) {
-        if(StringUtils.isNotEmpty(notificationDto.getParameter(NotificationParameter.MESSAGE.key()))) {
-            return String.format("\n\n%s\n\n%s", messagePrefix, notificationDto.getParameter(NotificationParameter.MESSAGE.key()));
-        }
-        return StringUtils.EMPTY;
-    }
-
-    private String addUserCustomMessageForReturn(EmailNotificationDto notificationDto, String messagePrefix) {
-        if(StringUtils.isNotEmpty(notificationDto.getParameter(NotificationParameter.MESSAGE.key()))) {
-            return String.format("\n\n%s\n\n=====\n\n%s\n\n=====", messagePrefix, notificationDto.getParameter(NotificationParameter.MESSAGE.key()));
         }
         return StringUtils.EMPTY;
     }

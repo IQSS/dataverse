@@ -293,11 +293,13 @@ public class MailMessageCreatorTest {
     }
 
     private String getSubmitForReviewMessage() {
-        return "Hello, \n\n"
-                + "TheTitle (view at http://localhost:8080/dataset.xhtml?persistentId=&version=DRAFT) was submitted for review to be published in "
-                + "rootDataverseName (view at http://localhost:8080/dataverse/nicedataverse). "
-                + "Don't forget to publish it or send it back to the contributor, Notifcation Requester (Notifcation.Requester@someU.edu)!\n\n"
-                + "Additional information\n\nContributors message for curator";
+        return "Hello, \n\n" +
+                "TheTitle (view at http://localhost:8080/dataset.xhtml?persistentId=&version=DRAFT) was submitted for review to be published in rootDataverseName (view at http://localhost:8080/dataverse/nicedataverse). " +
+                "Don't forget to publish it or send it back to the submitter, Notifcation Requester (Notifcation.Requester@someU.edu)!\n\n" +
+                "Additional information from the dataset submitter:\n\n" +
+                "=====\n\n" +
+                "Contributors message for curator\n\n" +
+                "=====";
     }
 
     private String getGrantFileAccessInfoMessage() {
