@@ -42,6 +42,9 @@ public enum JvmSettings {
     VERSION(PREFIX, "version"),
     BUILD(PREFIX, "build"),
     
+    // EXPORT SETTINGS
+    SCOPE_EXPORTERS(PREFIX, "exporters"),
+    EXPORTERS_DIRECTORY(SCOPE_EXPORTERS, "directory")
     ;
     
     private static final String SCOPE_SEPARATOR = ".";

@@ -11,6 +11,7 @@ import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import java.io.BufferedReader;
@@ -68,11 +69,11 @@ public class ExportService {
     
     private ExportService() {
         List<URL> jarUrls = new ArrayList<URL>();
-        Path exporterDir = Paths.get("/tmp/exporters");
+        Path exporterDir = Paths.get(JvmSettings.EXPORTERS_DIRECTORY.lookup());
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(exporterDir)) {
             for (Path path : stream) {
                 if (!Files.isDirectory(path)) {
-                    logger.info("Adding  " + path.toUri().toURL());
+                    logger.fine("Adding  " + path.toUri().toURL());
                     jarUrls.add(new URL("jar:" + path.toUri().toURL()+ "!/"));
                 }
             }
@@ -80,9 +81,15 @@ public class ExportService {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+        /*This code does ~ what ServiceLoader does - reading names out of the 
+            META-INF/services/edu.harvard.iq.dataverse.export.spi.Exporter files in Jars in the exporters dir
+            and then retrieving the specified classes, with success indicated by the ability to call the class and get is display name.
+            The one useful difference is that, since we can see the origin of each listing, we could potentially ignore one in the war (allowing overriding),
+            or we could implement a different way to list classes, e.g. microprofile entries, etc.
+            */
             
         URLClassLoader cl = URLClassLoader.newInstance(jarUrls.toArray(new URL[0]), this.getClass().getClassLoader());
-        logger.info("find url " + cl.findResource("edu.harvard.iq.dataverse.export.spi.Exporter"));
+/*        logger.info("find url " + cl.findResource("edu.harvard.iq.dataverse.export.spi.Exporter"));
         try {
             logger.info("name " + Exporter.class.getName());
 
@@ -150,9 +157,10 @@ public class ExportService {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+        */
         loader = ServiceLoader.load(Exporter.class, cl);
         loader.forEach(exp -> {
-            logger.info("SL: " + exp.getDisplayName());
+            logger.fine("SL: " + exp.getDisplayName());
         });
     }
 
