@@ -4410,6 +4410,8 @@ public class DatasetPage implements java.io.Serializable {
             try {
                 exporter = ExportService.getInstance().getExporter(formatName);
             } catch (ExportException ex) {
+                logger.warning("Failed to get : " + formatName);
+                logger.warning(ex.getLocalizedMessage());
                 exporter = null;
             }
             if (exporter != null && exporter.isAvailableToUsers()) {

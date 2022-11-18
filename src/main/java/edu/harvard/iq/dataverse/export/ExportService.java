@@ -20,27 +20,38 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.net.JarURLConnection;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.commons.collections.functors.WhileClosure;
 import org.apache.commons.io.IOUtils;
 
 /**
@@ -52,8 +63,97 @@ public class ExportService {
     private static ExportService service;
     private ServiceLoader<Exporter> loader;
 
+    private static final Logger logger = Logger.getLogger(ExportService.class.getCanonicalName());
+
+    
     private ExportService() {
-        loader = ServiceLoader.load(Exporter.class);
+        List<URL> jarUrls = new ArrayList<URL>();
+        Path exporterDir = Paths.get("/tmp/exporters");
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(exporterDir)) {
+            for (Path path : stream) {
+                if (!Files.isDirectory(path)) {
+                    logger.info("Adding  " + path.toUri().toURL());
+                    jarUrls.add(new URL("jar:" + path.toUri().toURL()+ "!/"));
+                }
+            }
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+            
+        URLClassLoader cl = URLClassLoader.newInstance(jarUrls.toArray(new URL[0]), this.getClass().getClassLoader());
+        logger.info("find url " + cl.findResource("edu.harvard.iq.dataverse.export.spi.Exporter"));
+        try {
+            logger.info("name " + Exporter.class.getName());
+
+            logger.info("url " + cl.getResource("META-INF/services/edu.harvard.iq.dataverse.export.spi.Exporter"));
+            Enumeration<URL> enumer = cl.getResources("META-INF");
+
+            while (enumer.hasMoreElements()) {
+                URL u = enumer.nextElement();
+                if (u.toExternalForm().startsWith("jar:")) {
+                    if (!u.toExternalForm().contains("/modules") && !u.toExternalForm().contains("glassfish/lib")
+                            && !u.toExternalForm().contains("domain1")) {
+                        logger.info(u.toExternalForm());
+                        JarURLConnection urlcon = (JarURLConnection) (u.openConnection());
+                        try (JarFile jar = urlcon.getJarFile();) {
+                            Enumeration<JarEntry> entries = jar.entries();
+                            while (entries.hasMoreElements()) {
+                                String entry = entries.nextElement().getName();
+                                logger.info(u.toExternalForm() + ": " + entry);
+                            }
+                        }
+                    }
+                }
+            }
+            enumer = cl.getResources("META-INF/services/edu.harvard.iq.dataverse.export.spi.Exporter");
+
+            while (enumer.hasMoreElements()) {
+                URL u = enumer.nextElement();
+                logger.info("Checking " + u.toExternalForm());
+                BufferedReader r = new BufferedReader(
+                        new InputStreamReader(u.openConnection().getInputStream(), "utf-8"));
+                r.lines().forEach(s -> {
+                    logger.info("Found: " + s);
+                    try {
+                        Class<Exporter> clazz = (Class<Exporter>) cl.loadClass(s);
+                        logger.info("Name from exporter: " + clazz.getDeclaredConstructor().newInstance().getDisplayName());
+                    } catch (ClassNotFoundException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (ClassCastException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (SecurityException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (InstantiationException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (IllegalAccessException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (IllegalArgumentException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (InvocationTargetException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (NoSuchMethodException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                });
+
+            }
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        loader = ServiceLoader.load(Exporter.class, cl);
+        loader.forEach(exp -> {
+            logger.info("SL: " + exp.getDisplayName());
+        });
     }
 
     public static synchronized ExportService getInstance() {
