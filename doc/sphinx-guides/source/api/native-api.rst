@@ -3287,13 +3287,13 @@ An example JSON file would look like this::
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=http://localhost:8080
 
-  curl -H X-Dataverse-key:$API_TOKEN -X POST "$SERVER_URL/api/harvest/clients/zenodo" --upload-file client.json
+  curl -H X-Dataverse-key:$API_TOKEN -X POST -H "Content-Type: application/json" "$SERVER_URL/api/harvest/clients/zenodo" --upload-file client.json
 
 The fully expanded example above (without the environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "http://localhost:8080/api/harvest/clients/zenodo" --upload-file "client.json"
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST -H "Content-Type: application/json" "http://localhost:8080/api/harvest/clients/zenodo" --upload-file "client.json"
 
   {
     "status": "OK",
@@ -3323,6 +3323,18 @@ Modify a Harvesting Client
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Similar to the API above, using the same JSON format, but run on an existing client and using the PUT method instead of POST. 
+
+Delete a Harvesting Client
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Self-explanatory:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "http://localhost:8080/api/harvest/clients/$nickName"
+
+Only users with superuser permissions may delete harvesting clients.
+
 
 PIDs
 ----
