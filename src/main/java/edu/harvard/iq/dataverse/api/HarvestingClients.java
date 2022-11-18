@@ -39,8 +39,6 @@ import javax.ws.rs.core.Response;
 public class HarvestingClients extends AbstractApiBean {
 
     
-    //@EJB
-    //DataverseServiceBean dataverseService;
     @EJB
     HarvesterServiceBean harvesterService;
     @EJB
@@ -124,7 +122,7 @@ public class HarvestingClients extends AbstractApiBean {
             // exception, that already has a proper HTTP response in it. 
             
             retrievedHarvestingClient = execCommand(new GetHarvestingClientCommand(createDataverseRequest(findUserOrDie()), harvestingClient));
-            logger.info("retrieved Harvesting Client " + retrievedHarvestingClient.getName() + " with the GetHarvestingClient command.");
+            logger.fine("retrieved Harvesting Client " + retrievedHarvestingClient.getName() + " with the GetHarvestingClient command.");
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         } catch (Exception ex) {
