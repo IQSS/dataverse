@@ -905,7 +905,7 @@ public class JsonParser {
         harvestingClient.setHarvestStyle(obj.getString("style", "default"));
         harvestingClient.setHarvestingUrl(obj.getString("harvestUrl",null));
         harvestingClient.setArchiveUrl(obj.getString("archiveUrl",null));
-        harvestingClient.setArchiveDescription(obj.getString("archiveDescription", BundleUtil.getStringFromBundle("harvestclients.viewEditDialog.archiveDescription.default.generic")));
+        harvestingClient.setArchiveDescription(obj.getString("archiveDescription", null));
         harvestingClient.setMetadataPrefix(obj.getString("metadataFormat",null));
         harvestingClient.setHarvestingSet(obj.getString("set",null));
 

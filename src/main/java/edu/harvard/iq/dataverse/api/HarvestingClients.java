@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetHarvestingClientCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateHarvestingClientCommand;
 import edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import javax.json.JsonObjectBuilder;
@@ -22,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
-import javax.ejb.Stateless;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -35,8 +35,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
-// huh, why was this api @Stateless??
-//@Stateless
 @Path("harvest/clients")
 public class HarvestingClients extends AbstractApiBean {
 
@@ -194,6 +192,11 @@ public class HarvestingClients extends AbstractApiBean {
             
             // The nickname supplied as part of the Rest path takes precedence: 
             harvestingClient.setName(nickName);
+            
+            // Populate the description field, if none is supplied: 
+            if (harvestingClient.getArchiveDescription() == null) {
+                harvestingClient.setArchiveDescription(BundleUtil.getStringFromBundle("harvestclients.viewEditDialog.archiveDescription.default.generic"));
+            }
             
             if (StringUtil.isEmpty(harvestingClient.getArchiveUrl())
                     || StringUtil.isEmpty(harvestingClient.getHarvestingUrl())
