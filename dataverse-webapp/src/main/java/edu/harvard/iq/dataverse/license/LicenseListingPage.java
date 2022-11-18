@@ -42,25 +42,12 @@ import java.util.Set;
 @Named("LicenseListingPage")
 public class LicenseListingPage implements Serializable {
 
-    @Inject
     private DataverseSession session;
-
-    @Inject
     private SettingsWrapper settingsWrapper;
-
-    @Inject
     private PermissionsWrapper permissionsWrapper;
-
-    @Inject
     private LicenseRepository licenseRepository;
-
-    @Inject
     private LicenseMapper licenseMapper;
-
-    @Inject
     private SystemConfig systemConfig;
-
-    @Inject
     private LicenseLimits licenseLimits;
 
     private List<LicenseDto> licenses = new ArrayList<>();
@@ -68,6 +55,24 @@ public class LicenseListingPage implements Serializable {
     private LicenseDto freshLicense;
     private LicenseDto licenseForPreview;
     private LicenseDto licenseForEdit;
+
+    // -------------------- CONSTRUCTORS --------------------
+
+    public LicenseListingPage() { }
+
+    @Inject
+    public LicenseListingPage(DataverseSession session, SettingsWrapper settingsWrapper,
+                              PermissionsWrapper permissionsWrapper, LicenseRepository licenseRepository,
+                              LicenseMapper licenseMapper, SystemConfig systemConfig,
+                              LicenseLimits licenseLimits) {
+        this.session = session;
+        this.settingsWrapper = settingsWrapper;
+        this.permissionsWrapper = permissionsWrapper;
+        this.licenseRepository = licenseRepository;
+        this.licenseMapper = licenseMapper;
+        this.systemConfig = systemConfig;
+        this.licenseLimits = licenseLimits;
+    }
 
     // -------------------- GETTERS --------------------
 
@@ -108,8 +113,6 @@ public class LicenseListingPage implements Serializable {
 
     /**
      * Handles image upload for new license.
-     *
-     * @param event
      */
     public void uploadImageForNewLicenseEvent(FileUploadEvent event) {
         UploadedFile uploadedImage = event.getFile();
@@ -122,8 +125,6 @@ public class LicenseListingPage implements Serializable {
 
     /**
      * Handles image upload for license that already exists and wants to be edited.
-     *
-     * @param event
      */
     public void editLicenseImageEvent(FileUploadEvent event) {
         UploadedFile uploadedImage = event.getFile();
@@ -136,8 +137,6 @@ public class LicenseListingPage implements Serializable {
 
     /**
      * Validates and sets active license status
-     *
-     * @param licenseDto
      */
     public void saveLicenseActiveStatus(LicenseDto licenseDto) {
 
@@ -228,8 +227,11 @@ public class LicenseListingPage implements Serializable {
     private LicenseDto prepareFreshLicense() {
         LicenseDto licenseDto = new LicenseDto();
 
-        settingsWrapper.getConfiguredLocales().keySet().forEach(localeKey ->
-                                                                        licenseDto.getLocalizedNames().add(new LocaleTextDto(Locale.forLanguageTag(localeKey), StringUtils.EMPTY)));
+        settingsWrapper.getConfiguredLocales()
+                .keySet()
+                .forEach(localeKey ->
+                        licenseDto.getLocalizedNames()
+                                .add(new LocaleTextDto(Locale.forLanguageTag(localeKey), StringUtils.EMPTY)));
 
         licenseDto.setIcon(new LicenseIconDto());
         licenseDto.setUrl(StringUtils.EMPTY);

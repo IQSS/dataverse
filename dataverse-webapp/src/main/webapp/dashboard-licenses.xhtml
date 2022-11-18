@@ -34,8 +34,8 @@
                                     <p:commandLink action="#{LicenseListingPage.redirectToLicenseReorderPage()}" styleClass="btn btn-default btn-access">
                                         <span class="glyphicon glyphicon-sort"/> #{bundle['dashboard.license.reorderButton']}
                                     </p:commandLink>
-                                    
-                                    <p:commandButton onclick="primeFacesShowModal('newLicense', this);" 
+
+                                    <p:commandButton onclick="primeFacesShowModal('newLicense', this);"
                                         styleClass="btn"
                                         icon="glyphicon glyphicon-plus"
                                         value="#{bundle['dashboard.license.newLicense.add']}" />
@@ -161,8 +161,7 @@
                                 <p class="help-block">#{bundle['dashboard.license.fileType.tip']}</p>
                                 <p:fileUpload id="licenseEditFileUpload" label="#{bundle.selectFile}"
                                               listener="#{LicenseListingPage.editLicenseImageEvent}"
-                                              update="licenseEditFileUpload-errors, licensePreview"
-                                              process="licensePreview"
+                                              update="licenseEditFileUpload-errors,previewLicense"
                                               mode="advanced" skinSimple="true" auto="true"
                                               allowTypes="/(\.|\/)(jpg|jpeg|png)$/"
                                               invalidFileMessage="#{bundle['dashboard.license.fileType.invalidExtension']}"
@@ -176,20 +175,21 @@
                         </div>
 
                         <!--license badge preview-->
-                        <div class="form-group">
-                            <p:outputLabel for="licensePreview" styleClass="col-sm-3 control-label" indicateRequired="false"
-                                           value="" />
-                            <div class="col-sm-9">
-                                <p:graphicImage id="licensePreview" value="#{LicenseListingPage.getLicenseIconForDisplay(LicenseListingPage.licenseForEdit.icon)}" stream="false"
-                                                rendered="#{not empty LicenseListingPage.licenseForEdit.icon}" width="81"
-                                                height="31"/>
-                                <p:commandButton update="licensePreview"
-                                                 value="#{bundle['dashboard.license.badge.removeButton']}"
-                                                 action="#{LicenseListingPage.removeLicenseIcon(LicenseListingPage.licenseForEdit.icon)}"
-                                                 rendered="#{not empty LicenseListingPage.licenseForEdit.icon}" />
+                        <p:fragment id="previewLicense">
+                            <div class="form-group">
+                                <p:outputLabel for="licensePreview" styleClass="col-sm-3 control-label" indicateRequired="false"
+                                               value="" />
+                                <div class="col-sm-9">
+                                    <p:graphicImage id="licensePreview" value="#{LicenseListingPage.getLicenseIconForDisplay(LicenseListingPage.licenseForEdit.icon)}" stream="false"
+                                                    rendered="#{not empty LicenseListingPage.licenseForEdit.icon.contentType}" width="81"
+                                                    height="31"/>
+                                    <p:commandButton update="previewLicense"
+                                                     value="#{bundle['dashboard.license.badge.removeButton']}"
+                                                     action="#{LicenseListingPage.removeLicenseIcon(LicenseListingPage.licenseForEdit.icon)}"
+                                                     rendered="#{not empty LicenseListingPage.licenseForEdit.icon.contentType}" />
+                                </div>
                             </div>
-                        </div>
-
+                        </p:fragment>
                         <!--localized names-->
                         <ui:repeat value="#{LicenseListingPage.licenseForEdit.localizedNames}" var="localLicense">
                             <div class="form-group">
@@ -295,7 +295,7 @@
                             </div>
                         </div>
 
-                        <!--licese badge-->
+                        <!--license badge-->
                         <div class="form-group">
                             <p:outputLabel for="licenseNewFileUpload" styleClass="col-sm-3 control-label" indicateRequired="false"
                                            value="#{bundle['dashboard.license.newLicense.badgeLabel']}"/>
@@ -303,34 +303,33 @@
                                 <p class="help-block">#{bundle['dashboard.license.fileType.tip']}</p>
                                 <p:fileUpload id="licenseNewFileUpload" label="#{bundle.selectFile}"
                                               listener="#{LicenseListingPage.uploadImageForNewLicenseEvent}"
-                                              update="licenseNewFileUpload-errors, newLicensePreview"
-                                              process="newLicensePreview"
+                                              update="licenseNewFileUpload-errors,previewNew"
                                               mode="advanced" skinSimple="true" auto="true"
                                               allowTypes="/(\.|\/)(jpg|jpeg|png)$/"
                                               invalidFileMessage="#{bundle['dashboard.license.fileType.invalidExtension']}"
                                               sizeLimit="#{LicenseListingPage.getLicenseIconFileSizeLimit()}"
                                               invalidSizeMessage="#{bundle['dashboard.license.fileType.sizeError']}" />
-
                                 <p:message id="licenseNewFileUpload-errors" for="licenseNewFileUpload" display="text"
                                            styleClass="bg-danger text-danger" />
                             </div>
-
                         </div>
 
                         <!--license badge preview-->
-                        <div class="form-group">
-                            <p:outputLabel for="newLicensePreview" styleClass="col-sm-3 control-label" indicateRequired="false"
-                                           value="" />
-                            <div class="col-sm-9">
-                                <p:graphicImage id="newLicensePreview" value="#{LicenseListingPage.getLicenseIconForDisplay(LicenseListingPage.freshLicense.icon)}" stream="false"
-                                                rendered="#{not empty LicenseListingPage.freshLicense.icon}" width="81"
-                                                height="31"/>
-                                <p:commandButton update="newLicensePreview"
-                                                 value="#{bundle['dashboard.license.badge.removeButton']}"
-                                                 action="#{LicenseListingPage.removeLicenseIcon(LicenseListingPage.freshLicense.icon)}"
-                                                 rendered="#{not empty LicenseListingPage.freshLicense.icon}" />
+                        <p:fragment id="previewNew">
+                            <div class="form-group">
+                                <p:outputLabel for="newLicensePreview" styleClass="col-sm-3 control-label" indicateRequired="false"
+                                               value="" />
+                                <div class="col-sm-9">
+                                    <p:graphicImage id="newLicensePreview" value="#{LicenseListingPage.getLicenseIconForDisplay(LicenseListingPage.freshLicense.icon)}" stream="false"
+                                                    rendered="#{not empty LicenseListingPage.freshLicense.icon.contentType}" width="81"
+                                                    height="31"/>
+                                    <p:commandButton update="previewNew"
+                                                     value="#{bundle['dashboard.license.badge.removeButton']}"
+                                                     action="#{LicenseListingPage.removeLicenseIcon(LicenseListingPage.freshLicense.icon)}"
+                                                     rendered="#{not empty LicenseListingPage.freshLicense.icon.contentType}" />
+                                </div>
                             </div>
-                        </div>
+                        </p:fragment>
 
                         <!--localized names-->
                         <ui:repeat value="#{LicenseListingPage.freshLicense.localizedNames}" var="localLicense">
