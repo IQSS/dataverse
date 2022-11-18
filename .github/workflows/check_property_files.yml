@@ -1,0 +1,34 @@
+name: "Properties Check"
+on:
+    pull_request:
+        #paths:
+        #    - "**/*.properties"
+jobs:
+    duplicate_keys:
+        name: Duplicate Keys
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+            - name: Run duplicates detection script
+              shell: bash
+              run: |
+                  FAIL=0
+                  
+                  for PF in $(find . -wholename '*/src/*.properties'); do
+                      FILTER=$(grep -a -v -E "^(#.*|\s*$)" "$PF" | cut -d"=" -f1 | sort | uniq -c | tr -s " " | { grep -vs "^ 1 " || true; })
+                      if [ -n "$FILTER" ]; then
+                          FAIL=1
+                          
+                          echo "::group::$PF"
+                          for KEY in $(echo "$FILTER" | cut -d" " -f3); do
+                              for LINE in $(grep -n -E -e "^$KEY=" "$PF" | cut -d":" -f1); do
+                                  echo "::error file=$PF,line=$LINE::Found duplicate for key '$KEY' in line $LINE"
+                              done
+                          done
+                          echo "::endgroup::"
+                      fi
+                  done
+                  
+                  if [ "$FAIL" -eq 1 ]; then
+                      exit 1
+                  fi
