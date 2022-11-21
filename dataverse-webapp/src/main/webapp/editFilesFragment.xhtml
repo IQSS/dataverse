@@ -337,7 +337,20 @@
                             </div>
                         </div>
                     </div>
-
+                    <p:fragment id="duplicates-info">
+                        <div jsf:rendered="#{EditDatafilesPage.hasDuplicates}">
+                            <p:panel styleClass="bg-warning alert alert-warning">
+                                <p class="text-block">
+                                    <span class="glyphicon glyphicon-warning-sign"/>&#160;
+                                    <h:outputText value="#{bundle['file.duplicates.info']}" escape="false"/>&#160;
+                                    <p:commandButton styleClass="end" value="#{bundle['file.duplicates.dialog.button']}"
+                                                     action="#{EditDatafilesPage.initDuplicatesDialog()}"
+                                                     update="duplicatesDialog"
+                                                     oncomplete="primeFacesShowModal('duplicatesDialogWidget', this)"/>
+                                </p>
+                            </p:panel>
+                        </div>
+                    </p:fragment>
                     <p:message for="fileUpload" id="uploadMessage" display="text"/>
 
                     <p:commandButton id="updateEditDataFilesButtonsForUpload"
@@ -353,6 +366,8 @@
                                      oncomplete="javascript:uploadWidgetDropMsg();" style="display:none"/>
                     <p:commandButton id="dropBoxUploadFinished" action="#{EditDatafilesPage.uploadFinished()}"
                                      update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:dropBoxUploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable"
+                                     style="display:none"/>
+                    <p:commandButton id="updateDatatable" action="#{EditDatafilesPage.duplicatesDeletionFinished()}"
                                      style="display:none"/>
                     <p:commandButton id="allDeletesFinished" action="#{EditDatafilesPage.deleteFilesCompleted()}"
                                      update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:uploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable"
@@ -652,6 +667,77 @@
     <!-- TODO: a message panel informing the unauthorized, or unauthenticated user that they don't have permission - should it be here? L.A. 4.2 -->
 
     <!-- Popups -->
+
+    <p:dialog id="duplicatesDialog" header="#{bundle['file.duplicates.dialog.header']}"
+              widgetVar="duplicatesDialogWidget" modal="true">
+        <div class="container">
+            <div class="form-group row">
+                <h:outputText value="#{bundle['file.duplicates.dialog.info']}"/>
+            </div>
+            <div class="form-group row">
+                <p:dataTable id="duplicatesTable" var="group" value="#{EditDatafilesPage.duplicatesList}"
+                             rowIndexVar="rowNumber">
+                    <p:column width="25">
+                        <ul class="list-unstyled">
+                            <li>#{rowNumber + 1}.</li>
+                        </ul>
+                    </p:column>
+                    <p:column headerText="#{bundle['file.duplicates.dialog.column.existing']}"
+                        rendered="#{EditDatafilesPage.hasDuplicatesWithWorkingVersion()}">
+                        <ul class="list-unstyled">
+                            <ui:repeat var="existing" value="#{group.existingDuplicatesLabels}">
+                                    <li><h:outputText value="#{existing}"/></li>
+                            </ui:repeat>
+                            <li jsf:rendered="#{empty group.existingDuplicatesLabels}">
+                                #{bundle['file.duplicates.dialog.column.noFile']}
+                            </li>
+                        </ul>
+                    </p:column>
+                    <p:column headerText="#{bundle['file.duplicates.dialog.column.new']}">
+                        <ul class="list-unstyled">
+                            <ui:repeat var="duplicate" value="#{group.duplicates}">
+                                    <li>
+                                        <p:selectBooleanCheckbox value="#{duplicate.selected}"
+                                                                 itemLabel="#{duplicate.label}">
+                                            <p:ajax update="datasetForm:deleteDuplicatesButton"/>
+                                        </p:selectBooleanCheckbox>
+                                    </li>
+                            </ui:repeat>
+                        </ul>
+                </p:column>
+                </p:dataTable>
+            </div>
+            <div class="button-block row">
+                <p:commandButton id="deleteDuplicatesButton" value="#{bundle['file.duplicates.dialog.delete.button']}"
+                                     disabled="#{!EditDatafilesPage.hasDuplicatesSelected()}"
+                                     onclick="primeFacesShowModal('deleteDuplicatesWidget', this)"/>
+                <p:commandButton value="#{bundle.cancel}" onclick="PF('duplicatesDialogWidget').hide();"
+                                 oncomplete="window.scrollTo(0, 0);deleteDuplicatesFinished();"
+                                 update=":#{p:resolveClientId('datasetForm:filesTable', view)},:messagePanel,
+                             :#{p:resolveClientId('datasetForm:fileUpload', view)}
+                                 filesCounts,:messagePanel,uploadMessage,duplicates-info"/>
+            </div>
+        </div>
+    </p:dialog>
+
+    <p:dialog id="deleteDuplicates" widgetVar="deleteDuplicatesWidget"
+              header="#{bundle['file.duplicates.dialog.confirm.header']}"
+              styleClass="smallPopUp" modal="true">
+        <div class="row">
+            <p class="text-danger">
+                <span class="glyphicon glyphicon-exclamation-sign"/>
+                #{bundle['file.duplicates.dialog.confirm.text']}
+            </p>
+        </div>
+        <div class="button-block row">
+            <p:commandButton value="#{bundle.continue}"
+                             action="#{EditDatafilesPage.deleteSelectedDuplicates()}"
+                             onclick="PF('deleteDuplicatesWidget').hide()"
+                             update="duplicatesTable,deleteDuplicatesButton"/>
+            <p:commandButton value="#{bundle.close}" onclick="PF('deleteDuplicatesWidget').hide()"/>
+        </div>
+    </p:dialog>
+
     <p:dialog id="selectFilesForDeleteFragment" styleClass="smallPopUp"
               header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForDeleteFragment"
               modal="true">
@@ -681,7 +767,8 @@
         <div class="button-block">
             <p:commandButton value="#{bundle.continue}" onclick="PF('deleteFileConfirmation').hide()"
                              oncomplete="window.scrollTo(0, 0);deleteFinished();"
-                             update=":#{p:resolveClientId('datasetForm:filesTable', view)},:messagePanel,:#{p:resolveClientId('datasetForm:fileUpload', view)},uploadMessage"
+                             update=":#{p:resolveClientId('datasetForm:filesTable', view)},:messagePanel,
+                             :#{p:resolveClientId('datasetForm:fileUpload', view)},uploadMessage,duplicates-info"
                              action="#{EditDatafilesPage.deleteFiles()}"/>
             <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteFileConfirmation').hide()" type="button"/>
         </div>
@@ -1000,6 +1087,12 @@
             data-app-key="#{EditDatafilesPage.dropBoxKey}"/>
     <script type="text/javascript">
         function deleteFinished() {
+            $('button[id$="updateEditDataFilesButtonsForDelete"]').trigger('click');
+            $('button[id$="allDeletesFinished"]').trigger('click');
+        }
+
+        function deleteDuplicatesFinished() {
+            $('button[id$="updateDatatable"]').trigger('click');
             $('button[id$="updateEditDataFilesButtonsForDelete"]').trigger('click');
             $('button[id$="allDeletesFinished"]').trigger('click');
         }
