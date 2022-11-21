@@ -4015,7 +4015,7 @@ View the details of the standard license with the database ID specified in ``$ID
   curl $SERVER_URL/api/licenses/$ID
 
 
-Superusers can add a new license by posting a JSON file adapted from this example :download:`add-license.json <../_static/api/add-license.json>`. The ``name`` and ``uri`` of the new license must be unique. If you are interested in adding a Creative Commons license, you are encouarged to use the JSON files under :ref:`adding-creative-commons-licenses`:
+Superusers can add a new license by posting a JSON file adapted from this example :download:`add-license.json <../_static/api/add-license.json>`. The ``name`` and ``uri`` of the new license must be unique. Sort order field is mandatory. If you are interested in adding a Creative Commons license, you are encouarged to use the JSON files under :ref:`adding-creative-commons-licenses`:
 
 .. code-block:: bash
 
@@ -4040,6 +4040,13 @@ Superusers can delete a license, provided it is not in use, by the license ``$ID
 .. code-block:: bash
 
   curl -X DELETE -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/licenses/$ID
+
+Superusers can change the sorting order of a license specified by the license ``$ID``:
+
+.. code-block:: bash
+
+  export SORT_ORDER=100
+  curl -X PUT -H 'Content-Type: application/json' -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/licenses/$ID/:sortOrder/$SORT_ORDER
   
 List Dataset Templates
 ~~~~~~~~~~~~~~~~~~~~~~
