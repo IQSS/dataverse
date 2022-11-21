@@ -374,7 +374,7 @@ public class FilePage implements java.io.Serializable {
         file.setProvEntityName(dataFileFromPopup.getProvEntityName()); //passing this value into the file being saved here is pretty hacky.
         Command cmd;
         
-        for (FileMetadata fmw : editDataset.getEditVersion().getFileMetadatas()) {
+        for (FileMetadata fmw : editDataset.getOrCreateEditVersion().getFileMetadatas()) {
             if (fmw.getDataFile().equals(this.fileMetadata.getDataFile())) {
                 cmd = new PersistProvFreeFormCommand(dvRequestService.getDataverseRequest(), file, freeformTextInput);
                 commandEngine.submit(cmd);
@@ -390,15 +390,15 @@ public class FilePage implements java.io.Serializable {
         String fileNames = null;
         editDataset = this.file.getOwner();
         if (restricted) { // get values from access popup
-            editDataset.getEditVersion().getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
-            editDataset.getEditVersion().getTermsOfUseAndAccess().setFileAccessRequest(fileAccessRequest);   
+            editDataset.getOrCreateEditVersion().getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
+            editDataset.getOrCreateEditVersion().getTermsOfUseAndAccess().setFileAccessRequest(fileAccessRequest);   
         }
         //using this method to update the terms for datasets that are out of compliance 
         // with Terms of Access requirement - may get her with a file that is already restricted
         // we'll allow it 
         try {
             Command cmd;
-            for (FileMetadata fmw : editDataset.getEditVersion().getFileMetadatas()) {
+            for (FileMetadata fmw : editDataset.getOrCreateEditVersion().getFileMetadatas()) {
                 if (fmw.getDataFile().equals(this.fileMetadata.getDataFile())) {
                     fileNames += fmw.getLabel();
                     cmd = new RestrictFileCommand(fmw.getDataFile(), dvRequestService.getDataverseRequest(), restricted);
@@ -433,7 +433,7 @@ public class FilePage implements java.io.Serializable {
 
         FileMetadata markedForDelete = null;
 
-        for (FileMetadata fmd : editDataset.getEditVersion().getFileMetadatas()) {
+        for (FileMetadata fmd : editDataset.getOrCreateEditVersion().getFileMetadatas()) {
 
             if (fmd.getDataFile().getId().equals(fileId)) {
                 markedForDelete = fmd;
@@ -444,17 +444,17 @@ public class FilePage implements java.io.Serializable {
             // the file already exists as part of this dataset
             // so all we remove is the file from the fileMetadatas (for display)
             // and let the delete be handled in the command (by adding it to the filesToBeDeleted list
-            editDataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
+            editDataset.getOrCreateEditVersion().getFileMetadatas().remove(markedForDelete);
             filesToBeDeleted.add(markedForDelete);
 
         } else {
             List<FileMetadata> filesToKeep = new ArrayList<>();
-            for (FileMetadata fmo : editDataset.getEditVersion().getFileMetadatas()) {
+            for (FileMetadata fmo : editDataset.getOrCreateEditVersion().getFileMetadatas()) {
                 if (!fmo.getDataFile().getId().equals(this.getFile().getId())) {
                     filesToKeep.add(fmo);
                 }
             }
-            editDataset.getEditVersion().setFileMetadatas(filesToKeep);
+            editDataset.getOrCreateEditVersion().setFileMetadatas(filesToKeep);
         }
 
         fileDeleteInProgress = true;
@@ -621,7 +621,7 @@ public class FilePage implements java.io.Serializable {
 
     public String save() {
         // Validate
-        Set<ConstraintViolation> constraintViolations = editDataset.getEditVersion().validate();
+        Set<ConstraintViolation> constraintViolations = editDataset.getOrCreateEditVersion().validate();
         if (!constraintViolations.isEmpty()) {
              //JsfHelper.addFlashMessage(JH.localize("dataset.message.validationError"));
              fileDeleteInProgress = false;
@@ -638,7 +638,7 @@ public class FilePage implements java.io.Serializable {
 
         if (!filesToBeDeleted.isEmpty()) { 
             // We want to delete the file (there's always only one file with this page)
-            editDataset.getEditVersion().getFileMetadatas().remove(filesToBeDeleted.get(0));
+            editDataset.getOrCreateEditVersion().getFileMetadatas().remove(filesToBeDeleted.get(0));
             deleteFileId = filesToBeDeleted.get(0).getDataFile().getId();
             deleteStorageLocation = datafileService.getPhysicalFileToDelete(filesToBeDeleted.get(0).getDataFile());
         }

@@ -128,7 +128,7 @@ public class FileUtilTest {
         @Test
         public void testIsDownloadPopupRequiredDraft() {
             Dataset dataset = new Dataset();
-            DatasetVersion dsv1 = dataset.getEditVersion();
+            DatasetVersion dsv1 = dataset.getOrCreateEditVersion();
             assertEquals(DatasetVersion.VersionState.DRAFT, dsv1.getVersionState());
             assertEquals(false, FileUtil.isDownloadPopupRequired(dsv1));
         }
