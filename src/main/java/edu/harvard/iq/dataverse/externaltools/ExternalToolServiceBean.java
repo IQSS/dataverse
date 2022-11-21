@@ -3,8 +3,9 @@ package edu.harvard.iq.dataverse.externaltools;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
-import edu.harvard.iq.dataverse.externaltools.ExternalTool.ReservedWord;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.Type;
+import edu.harvard.iq.dataverse.util.URLTokenUtil;
+import edu.harvard.iq.dataverse.util.URLTokenUtil.ReservedWord;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.Scope;
 
 import java.io.StringReader;

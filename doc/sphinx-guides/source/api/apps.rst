@@ -28,9 +28,9 @@ https://github.com/scholarsportal/Dataverse-Data-Curation-Tool
 File Previewers
 ~~~~~~~~~~~~~~~
 
-File Previewers are tools that display the content of files - including audio, html, Hypothes.is annotations, images, PDF, text, video - allowing them to be viewed without downloading.
+File Previewers are tools that display the content of files - including audio, html, Hypothes.is annotations, images, PDF, text, video, GeoJSON - allowing them to be viewed without downloading.
 
-https://github.com/GlobalDataverseCommunityConsortium/dataverse-previewers
+https://github.com/gdcc/dataverse-previewers
 
 Python
 ------
@@ -102,9 +102,9 @@ Please note that there is a Java library for Dataverse Software APIs listed in t
 DVUploader
 ~~~~~~~~~~
 
-The open-source DVUploader tool is a stand-alone command-line Java application that uses the Dataverse Software API to upload files to a specified Dataset. Files can be specified by name, or the DVUploader can upload all files in a directory or recursively from a directory tree. The DVUploader can also verify that uploaded files match their local sources by comparing the local and remote fixity checksums. Source code, release 1.0.0- jar file, and documentation are available on GitHub. DVUploader's creation was supported by the Texas Digital Library.
+The open-source DVUploader tool is a stand-alone command-line Java application that uses the Dataverse Software API to upload files to a specified Dataset. Files can be specified by name, or the DVUploader can upload all files in a directory or recursively from a directory tree. The DVUploader can also verify that uploaded files match their local sources by comparing the local and remote fixity checksums. Source code, the latest release - jar file, and documentation are available on GitHub. DVUploader's creation was supported by the Texas Digital Library.
 
-https://github.com/IQSS/dataverse-uploader
+https://github.com/GlobalDataverseCommunityConsortium/dataverse-uploader
 
 Dataverse for Android
 ~~~~~~~~~~~~~~~~~~~~~

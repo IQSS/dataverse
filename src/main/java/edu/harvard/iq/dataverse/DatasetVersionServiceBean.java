@@ -1187,4 +1187,32 @@ w
         return null;
     }
     
+    /**
+     * Merges the passed datasetversion to the persistence context.
+     * @param ver the DatasetVersion whose new state we want to persist.
+     * @return The managed entity representing {@code ver}.
+     */
+    public DatasetVersion merge( DatasetVersion ver ) {
+        return em.merge(ver);
+    }
+    
+    /**
+     * Execute a query to return DatasetVersion
+     * 
+     * @param queryString
+     * @return 
+     */
+    public List<DatasetVersion> getUnarchivedDatasetVersions(){
+        
+        try {
+            List<DatasetVersion> dsl = em.createNamedQuery("DatasetVersion.findUnarchivedReleasedVersion", DatasetVersion.class).getResultList();
+            return dsl;
+        } catch (javax.persistence.NoResultException e) {
+            logger.log(Level.FINE, "No unarchived DatasetVersions found: {0}");
+            return null;
+        } catch (EJBException e) {
+            logger.log(Level.WARNING, "EJBException exception: {0}", e.getMessage());
+            return null;
+        }
+    } // end getUnarchivedDatasetVersions
 } // end class

@@ -15,7 +15,7 @@ public class BagItFileHandlerPostProcessor {
 
     private static final Logger logger = Logger.getLogger(BagItFileHandlerPostProcessor.class.getCanonicalName());
 
-    public static final List<String> FILES_TO_IGNORE = Arrays.asList("__", "._", ".DS_Store", "._.DS_Store");
+    public static final List<String> FILES_TO_IGNORE = Arrays.asList("__", "._", ".DS_Store");
 
     public List<DataFile> process(List<DataFile> items) {
         if(items == null) {
@@ -26,7 +26,11 @@ public class BagItFileHandlerPostProcessor {
 
         for(DataFile item: items) {
             String fileName = item.getCurrentName();
-            if(FILES_TO_IGNORE.contains(fileName)) {
+            if(fileName == null || fileName.isEmpty()) {
+                continue;
+            }
+
+            if(FILES_TO_IGNORE.stream().anyMatch(prefix -> fileName.startsWith(prefix))) {
                 logger.fine(String.format("action=BagItFileHandlerPostProcessor result=ignore-entry file=%s", fileName));
                 continue;
             }

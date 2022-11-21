@@ -496,6 +496,7 @@ public class DataverseUserPage implements java.io.Serializable {
                 case GRANTFILEACCESS:
                 case REJECTFILEACCESS:
                 case DATASETCREATED:
+                case DATASETMENTIONED:
                     userNotification.setTheObject(datasetService.find(userNotification.getObjectId()));
                     break;
 
@@ -520,6 +521,13 @@ public class DataverseUserPage implements java.io.Serializable {
 
                 case FILESYSTEMIMPORT:
                     userNotification.setTheObject(datasetVersionService.find(userNotification.getObjectId()));
+                    break;
+
+                case GLOBUSUPLOADCOMPLETED:
+                case GLOBUSUPLOADCOMPLETEDWITHERRORS:
+                case GLOBUSDOWNLOADCOMPLETED:
+                case GLOBUSDOWNLOADCOMPLETEDWITHERRORS:
+                    userNotification.setTheObject(datasetService.find(userNotification.getObjectId()));
                     break;
 
                 case CHECKSUMIMPORT:

@@ -426,6 +426,14 @@ public class SettingsServiceBean {
          */
         ShibAttributeCharacterSetConversionEnabled,
         /**
+         *Return the last or first value of an array of affiliation names
+         */
+        ShibAffiliationOrder,
+         /**
+         *Split the affiliation array on given string, default ";"
+         */
+        ShibAffiliationSeparator,
+        /**
          * Validate physical files for all the datafiles in the dataset when publishing
          */
         FileValidationOnPublishEnabled,
@@ -449,6 +457,31 @@ public class SettingsServiceBean {
          * when the Distributor field (citation metadatablock) is set (true)
          */
         ExportInstallationAsDistributorOnlyWhenNotSet,
+
+        /**
+         * Basic Globus Token for Globus Application
+         */
+        GlobusBasicToken,
+        /**
+         * GlobusEndpoint is Globus endpoint for Globus application
+         */
+        GlobusEndpoint,
+        /** 
+         * Comma separated list of Globus enabled stores
+         */
+        GlobusStores,
+        /** Globus App URL
+         * 
+         */
+        GlobusAppUrl,
+        /** Globus Polling Interval how long in seconds Dataverse waits between checks on Globus upload status checks
+         * 
+         */
+        GlobusPollingInterval,
+        /**Enable single-file download/transfers for Globus
+         *
+         */
+        GlobusSingleFileTransfer,
         /**
          * Optional external executables to run on the metadata for dataverses 
          * and datasets being published; as an extra validation step, to 
@@ -522,7 +555,19 @@ public class SettingsServiceBean {
          * would also work) of never muted notifications that cannot be turned off by the users. AlwaysMuted setting overrides
          * Nevermuted setting warning is logged.
          */
-        NeverMuted
+        NeverMuted,
+        /**
+         * LDN Inbox Allowed Hosts - a comma separated list of IP addresses allowed to submit messages to the inbox
+         */
+        LDNMessageHosts,
+        /*
+         * Allow a custom JavaScript to control values of specific fields.
+         */
+        ControlledVocabularyCustomJavaScript,
+        /**
+         * A compound setting for disabling signup for remote Auth providers:
+         */
+        AllowRemoteAuthSignUp
         ;
 
         @Override
@@ -627,7 +672,39 @@ public class SettingsServiceBean {
     	   }
 
        }
+       
+    /**
+     * Same, but with Booleans 
+     * (returns null if not set; up to the calling method to decide what that should
+     * default to in each specific case)
+     * Example:
+     * :AllowRemoteAuthSignUp	{"default":"true","google":"false"}
+     */
     
+    public Boolean getValueForCompoundKeyAsBoolean(Key key, String param) {
+
+        String val = this.getValueForKey(key);
+
+        if (val == null) {
+            return null;
+        }
+
+        try (StringReader rdr = new StringReader(val)) {
+            JsonObject settings = Json.createReader(rdr).readObject();
+            if (settings.containsKey(param)) {
+                return Boolean.parseBoolean(settings.getString(param));
+            } else if (settings.containsKey("default")) {
+                return Boolean.parseBoolean(settings.getString("default"));
+            } else {
+                return null;
+            }
+
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Incorrect setting.  Could not convert \"{0}\" from setting {1} to boolean: {2}", new Object[]{val, key.toString(), e.getMessage()});
+            return null;
+        }
+
+    }
     /**
      * Return the value stored, or the default value, in case no setting by that
      * name exists. The main difference between this method and the other {@code get()}s

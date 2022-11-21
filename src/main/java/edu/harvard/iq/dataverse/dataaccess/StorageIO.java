@@ -30,16 +30,17 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.nio.channels.Channel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-
-
-//import org.apache.commons.httpclient.Header;
-//import org.apache.commons.httpclient.methods.GetMethod;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -66,7 +67,7 @@ public abstract class StorageIO<T extends DvObject> {
             this.req = new DataAccessRequest();
         }
         if (this.driverId == null) {
-            this.driverId = "file";
+            this.driverId = DataAccess.FILE;
         }
     }
 
@@ -78,7 +79,10 @@ public abstract class StorageIO<T extends DvObject> {
 
     protected boolean isReadAccess = false;
     protected boolean isWriteAccess = false;
-
+    //A  public store is one in which files may be accessible outside Dataverse and therefore accessible without regard to Dataverse's access controls related to restriction and embargoes.
+    //Currently, this is just used to warn users at upload time rather than disable restriction/embargo. 
+    static protected Map<String, Boolean> driverPublicAccessMap = new HashMap<String, Boolean>();
+    
     public boolean canRead() {
         return isReadAccess;
     }
@@ -183,7 +187,7 @@ public abstract class StorageIO<T extends DvObject> {
     public abstract void deleteAllAuxObjects() throws IOException;
 
     private DataAccessRequest req;
-    private InputStream in;
+    private InputStream in = null;
     private OutputStream out; 
     protected Channel channel;
     protected DvObject dvObject;
@@ -222,6 +226,8 @@ public abstract class StorageIO<T extends DvObject> {
     private String swiftFileName;
 
     private String remoteUrl;
+    protected String remoteStoreName = null;
+    protected URL remoteStoreUrl = null;
     
     // For HTTP-based downloads:
     /*private GetMethod method = null;
@@ -330,6 +336,14 @@ public abstract class StorageIO<T extends DvObject> {
         return swiftContainerName;
     }
 
+    public String getRemoteStoreName() {
+        return remoteStoreName;
+    }
+
+    public URL getRemoteStoreUrl() {
+        return remoteStoreUrl;
+    }
+    
     /*public GetMethod getHTTPMethod() {
         return method;
     }
@@ -564,4 +578,48 @@ public abstract class StorageIO<T extends DvObject> {
 		    return true;
 		}
 	}
+
+    public boolean downloadRedirectEnabled() {
+        return false;
+    }
+
+    public boolean downloadRedirectEnabled(String auxObjectTag) {
+        return false;
+    }
+    
+    public String generateTemporaryDownloadUrl(String auxiliaryTag, String auxiliaryType, String auxiliaryFileName) throws IOException {
+        throw new UnsupportedDataAccessOperationException("Direct download not implemented for this storage type");
+    }
+    
+
+    public static boolean isPublicStore(String driverId) {
+        //Read once and cache
+        if(!driverPublicAccessMap.containsKey(driverId)) {
+            driverPublicAccessMap.put(driverId, Boolean.parseBoolean(System.getProperty("dataverse.files." + driverId + ".public")));
+        }
+        return driverPublicAccessMap.get(driverId);
+    }
+    
+    public static String getDriverPrefix(String driverId) {
+        return driverId+ DataAccess.SEPARATOR;
+    }
+    
+    public static boolean isDirectUploadEnabled(String driverId) {
+        return Boolean.parseBoolean(System.getProperty("dataverse.files." + driverId + ".upload-redirect"));
+    }
+    
+    //Check that storageIdentifier is consistent with store's config
+    //False will prevent direct uploads
+    protected static boolean isValidIdentifier(String driverId, String storageId) {
+        return false;
+    }
+    
+    //Utility to verify the standard UUID pattern for stored files.
+    protected static boolean usesStandardNamePattern(String identifier) {
+
+        Pattern r = Pattern.compile("^[a-f,0-9]{11}-[a-f,0-9]{12}$");
+        Matcher m = r.matcher(identifier);
+        return m.find();
+    }
+
 }
