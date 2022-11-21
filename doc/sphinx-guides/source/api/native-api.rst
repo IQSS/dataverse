@@ -4113,7 +4113,8 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -X DELETE https://demo.dataverse.org/api/admin/template/24
-  
+
+.. _api-native-signed-url:
   
 Request Signed URL
 ~~~~~~~~~~~~~~~~~~
@@ -4140,3 +4141,5 @@ A curl example using allowing access to a dataset's metadata
 
   curl -H 'X-Dataverse-key:$API_KEY' -d $JSON $SERVER_URL/api/admin/requestSignedUrl
 
+Please see :ref:`dataverse.api.signature-secret` for the configuration option to add a shared secret, enabling extra
+security.

@@ -143,6 +143,8 @@ Reserved Words
     ``{localeCode}``             optional    The code for the language ("en" for English, "fr" for French, etc.) that user has selected from the language toggle in a Dataverse installation. See also :ref:`i18n`.
     ===========================  ==========  ===========
 
+.. _api-exttools-auth:
+
 Authorization Options
 +++++++++++++++++++++
 
