@@ -1259,6 +1259,13 @@ public class SearchIT {
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", CoreMatchers.equalTo("Must contain a single comma to separate latitude and longitude."));
 
+        Response pointLatLongTooLarge = UtilIT.search("*", null, "&geo_point=999,999&geo_radius=5");
+        pointLatLongTooLarge.prettyPrint();
+        pointLatLongTooLarge.then().assertThat()
+                // "Search Syntax Error: Error from server at http://localhost:8983/solr/collection1:
+                // Can't parse point '999.0,999.0' because: Bad X value 999.0 is not in boundary Rect(minX=-180.0,maxX=180.0,minY=-90.0,maxY=90.0)"
+                .statusCode(BAD_REQUEST.getStatusCode());
+
         Response junkRadius = UtilIT.search("*", null, "&geo_point=40,60&geo_radius=junk");
         junkRadius.prettyPrint();
         junkRadius.then().assertThat()

@@ -111,6 +111,8 @@ public class SearchUtilTest {
         assertThrows(NumberFormatException.class, () -> {
             SearchUtil.getGeoRadius("somejunk,morejunk");
         }, "Must be numbers.");
+        // invalid but let it go, it's handled by Solr, which throws an informative exception
+        assertEquals("999.0,-999.0", SearchUtil.getGeoPoint("999,-999"));
     }
 
     @Test
