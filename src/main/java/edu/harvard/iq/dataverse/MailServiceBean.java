@@ -202,7 +202,9 @@ public class MailServiceBean implements java.io.Serializable {
             msg.setSentDate(new Date());
             msg.setRecipients(Message.RecipientType.TO,
                     InternetAddress.parse(to, false));
-            msg.setRecipients(Message.RecipientType.CC, InternetAddress.parse(cc, false));
+            if (cc != null) {
+                msg.setRecipients(Message.RecipientType.CC, InternetAddress.parse(cc, false));
+            }
             msg.setSubject(subject, charset);
             msg.setText(messageText, charset);
 
