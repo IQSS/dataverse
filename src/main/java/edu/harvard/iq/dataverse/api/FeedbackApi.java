@@ -31,11 +31,12 @@ public class FeedbackApi extends AbstractApiBean {
      * specified Collection/Dataset/DataFile, optionally ccing the support email
      * address, or to the support email address when there is no target object.
      * 
-     * !!!!! This should not be moved outside the /admin path unless/until some form of
-     * captcha or other spam-prevention mechanism is added. As is, it allows an
+     * !!!!! This should not be moved outside the /admin path unless/until some form
+     * of captcha or other spam-prevention mechanism is added. As is, it allows an
      * unauthenticated user (with access to the /admin api path) to send email from
-     * anyone to any contacts in Dataverse.!!!!
-     **/ 
+     * anyone to any contacts in Dataverse. (It also does not do much to validate
+     * user input (e.g. to strip potentially malicious html, etc.)!!!!
+     **/
     @POST
     public Response submitFeedback(JsonObject jsonObject) throws AddressException {
         JsonNumber jsonNumber = jsonObject.getJsonNumber("id");
