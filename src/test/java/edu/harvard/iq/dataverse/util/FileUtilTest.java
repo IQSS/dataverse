@@ -377,8 +377,9 @@ public class FileUtilTest {
     @Test
     public void testNetcdfFile() throws IOException {
         // We got madis-raob.nc from https://www.unidata.ucar.edu/software/netcdf/examples/files.html
+        // and named it "madis-raob" with no file extension for this test.
         String path = "src/test/resources/netcdf/";
-        String pathAndFile = path + "madis-raob.nc";
+        String pathAndFile = path + "madis-raob";
         File file = new File(pathAndFile);
         String contentType = FileUtil.determineFileType(file, pathAndFile);
         assertEquals("application/netcdf", contentType);

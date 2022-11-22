@@ -687,7 +687,7 @@ public class FileUtil implements java.io.Serializable  {
                 return null;
             }
             switch (type) {
-                case "NETCDF":
+                case "NetCDF":
                     return "application/netcdf";
                 case "NetCDF-4":
                     return "application/netcdf";
@@ -697,6 +697,17 @@ public class FileUtil implements java.io.Serializable  {
                     break;
             }
         } catch (IOException ex) {
+            /**
+             * When an HDF4 file is passed, it won't be detected. Instead, we've
+             * seen exceptions like this:
+             *
+             * ucar.nc2.internal.iosp.hdf4.H4header makeDimension WARNING:
+             * **dimension length=0 for TagVGroup= *refno=124 tag= VG (1965)
+             * Vgroup length=28 class= Dim0.0 name= ixx using data 123
+             *
+             * java.lang.IllegalArgumentException: Dimension length =0 must be >
+             * 0
+             */
             return null;
         }
         return null;
