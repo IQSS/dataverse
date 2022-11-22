@@ -568,9 +568,15 @@ public class SettingsServiceBean {
          * A compound setting for disabling signup for remote Auth providers:
          */
         AllowRemoteAuthSignUp,
+        /**
+         * Optional email address to use with the support form/ feedback api emails. Default is to use the SystemEmail account.
+         * 
+         */
+        
+        SupportEmail,
         /*
-         * Whether the repository support team should be cc'd on requests created in the
-         * contact form. Default is false.
+         * Whether the repository support team should be CC'd on requests created in the
+         * contact form, when email is sent TO the listed Dataverse, Dataset, or DataFile contacts. Default is false.
          */
         CCSupportOnContactEmails
         ;
