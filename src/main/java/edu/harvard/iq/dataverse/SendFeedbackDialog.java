@@ -62,7 +62,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
      * Either the dataverse or the dataset that the message is pertaining to. If
      * there is no recipient, this is a general feedback message.
      */
-    private DvObject recipient;
+    private DvObject feedbackTarget;
 
     /**
      * :SystemEmail (the main support address for an installation).
@@ -92,13 +92,14 @@ public class SendFeedbackDialog implements java.io.Serializable {
         return userEmail;
     }
 
+    @SuppressWarnings("deprecation")
     public void initUserInput(ActionEvent ae) {
         userEmail = "";
         userMessage = "";
         messageSubject = "";
         Random random = new Random();
-        op1 = new Long(random.nextInt(10));
-        op2 = new Long(random.nextInt(10));
+        op1 = Long.valueOf(random.nextInt(10));
+        op2 = Long.valueOf(random.nextInt(10));
         userSum = null;
         String systemEmail = settingsService.getValueForKey(SettingsServiceBean.Key.SystemEmail);
         systemAddress = MailUtil.parseSystemAddress(systemEmail);
@@ -129,19 +130,27 @@ public class SendFeedbackDialog implements java.io.Serializable {
     }
 
     public String getMessageTo() {
-        if (recipient == null) {
+        if (feedbackTarget == null) {
             return BrandingUtil.getSupportTeamName(systemAddress);
-        } else if (recipient.isInstanceofDataverse()) {
-            return ((Dataverse) recipient).getDisplayName() + " " + BundleUtil.getStringFromBundle("contact.contact");
+        } else if (feedbackTarget.isInstanceofDataverse()) {
+            return ((Dataverse) feedbackTarget).getDisplayName() + " " + BundleUtil.getStringFromBundle("contact.contact");
         } else {
             return BundleUtil.getStringFromBundle("dataset") + " " + BundleUtil.getStringFromBundle("contact.contact");
         }
     }
+    
+    public String getMessageCC() {
+        if (ccSupport()) {
+            return BrandingUtil.getSupportTeamName(systemAddress);
+        }
+        return null;
+    }
+
 
     public String getFormHeader() {
-        if (recipient == null) {
+        if (feedbackTarget == null) {
             return BrandingUtil.getContactHeader(systemAddress);
-        } else if (recipient.isInstanceofDataverse()) {
+        } else if (feedbackTarget.isInstanceofDataverse()) {
             return BundleUtil.getStringFromBundle("contact.dataverse.header");
         } else {
             return BundleUtil.getStringFromBundle("contact.dataset.header");
@@ -173,11 +182,11 @@ public class SendFeedbackDialog implements java.io.Serializable {
     }
 
     public DvObject getRecipient() {
-        return recipient;
+        return feedbackTarget;
     }
 
     public void setRecipient(DvObject recipient) {
-        this.recipient = recipient;
+        this.feedbackTarget = recipient;
     }
 
     public void validateUserSum(FacesContext context, UIComponent component, Object value) throws ValidatorException {
@@ -200,16 +209,20 @@ public class SendFeedbackDialog implements java.io.Serializable {
     public String sendMessage() {
         String installationBrandName = BrandingUtil.getInstallationBrandName();
         String supportTeamName = BrandingUtil.getSupportTeamName(systemAddress);
-        List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(recipient, dataverseSession, messageSubject, userMessage, systemAddress, userEmail, systemConfig.getDataverseSiteUrl(), installationBrandName, supportTeamName);
-        if (feedbacks.isEmpty()) {
+
+        Feedback feedback = FeedbackUtil.gatherFeedback(feedbackTarget, dataverseSession, messageSubject, userMessage, systemAddress, userEmail, systemConfig.getDataverseSiteUrl(), installationBrandName, supportTeamName, ccSupport());
+        if (feedback==null) {
             logger.warning("No feedback has been sent!");
             return null;
         }
-        for (Feedback feedback : feedbacks) {
             logger.fine("sending feedback: " + feedback);
-            mailService.sendMail(feedback.getFromEmail(), feedback.getToEmail(), feedback.getSubject(), feedback.getBody());
-        }
+            mailService.sendMail(feedback.getFromEmail(), feedback.getToEmail(), feedback.getCcEmail(), feedback.getSubject(), feedback.getBody(), null);
         return null;
+    }
+    
+    private boolean ccSupport() {
+        //Setting is enabled and this isn't already a direct message to support (no feedbackObject
+        return feedbackTarget!=null &&settingsService.isTrueForKey(SettingsServiceBean.Key.CCSupportOnContactEmails, false);
     }
 
 }

@@ -567,7 +567,12 @@ public class SettingsServiceBean {
         /**
          * A compound setting for disabling signup for remote Auth providers:
          */
-        AllowRemoteAuthSignUp
+        AllowRemoteAuthSignUp,
+        /*
+         * Whether the repository support team should be cc'd on requests created in the
+         * contact form. Default is false.
+         */
+        CCSupportOnContactEmails
         ;
 
         @Override

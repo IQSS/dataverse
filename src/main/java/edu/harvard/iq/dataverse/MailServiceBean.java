@@ -81,7 +81,7 @@ public class MailServiceBean implements java.io.Serializable {
     public MailServiceBean() {
     }
 
-    public void sendMail(String host, String reply, String to, String subject, String messageText) {
+/*    public void sendMail(String host, String reply, String to, String subject, String messageText) {
         Properties props = System.getProperties();
         props.put("mail.smtp.host", host);
         Session session = Session.getDefaultInstance(props, null);
@@ -111,7 +111,7 @@ public class MailServiceBean implements java.io.Serializable {
             me.printStackTrace(System.out);
         }
     }
-
+*/
     @Resource(name = "mail/notifyMailSession")
     private Session session;
 
@@ -177,11 +177,11 @@ public class MailServiceBean implements java.io.Serializable {
     }
 
     //@Resource(name="mail/notifyMailSession")
-    public void sendMail(String from, String to, String subject, String messageText) {
-        sendMail(from, to, subject, messageText, new HashMap<>());
+/*    public void sendMail(String from, String to, String cc, String subject, String messageText) {
+        sendMail(from, to, cc, subject, messageText, new HashMap<>());
     }
-
-    public void sendMail(String reply, String to, String subject, String messageText, Map<Object, Object> extraHeaders) {
+*/
+    public void sendMail(String reply, String to, String cc, String subject, String messageText, Map<Object, Object> extraHeaders) {
         try {
             MimeMessage msg = new MimeMessage(session);
             // Always send from system address to avoid email being blocked
@@ -202,6 +202,7 @@ public class MailServiceBean implements java.io.Serializable {
             msg.setSentDate(new Date());
             msg.setRecipients(Message.RecipientType.TO,
                     InternetAddress.parse(to, false));
+            msg.setRecipients(Message.RecipientType.CC, InternetAddress.parse(cc, false));
             msg.setSubject(subject, charset);
             msg.setText(messageText, charset);
 

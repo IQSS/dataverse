@@ -60,7 +60,7 @@
                   "typeName": "datasetContactName",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "LastContact2, FirstContact2"
+                  "value": "Simpson, Homer"
                 },
                 "datasetContactAffiliation": {
                   "typeName": "datasetContactAffiliation",
