@@ -373,4 +373,40 @@ public class FileUtilTest {
             assertFalse(FileUtil.isThumbnailSupported(filewBogusContentType));
         }
     }
+
+    @Test
+    public void testNetcdfFile() throws IOException {
+        // We got madis-raob.nc from https://www.unidata.ucar.edu/software/netcdf/examples/files.html
+        // and named it "madis-raob" with no file extension for this test.
+        String path = "src/test/resources/netcdf/";
+        String pathAndFile = path + "madis-raob";
+        File file = new File(pathAndFile);
+        String contentType = FileUtil.determineFileType(file, pathAndFile);
+        assertEquals("application/netcdf", contentType);
+    }
+
+    @Test
+    public void testHdf5File() throws IOException {
+        // We got vlen_string_dset.h5 from https://github.com/h5py/h5py/blob/3.7.0/h5py/tests/data_files/vlen_string_dset.h5
+        // and named in "vlen_string_dset" with no file extension for this test.
+        String path = "src/test/resources/hdf/hdf5/";
+        String pathAndFile = path + "vlen_string_dset";
+        File file = new File(pathAndFile);
+        String contentType = FileUtil.determineFileType(file, pathAndFile);
+        assertEquals("application/x-hdf5", contentType);
+    }
+
+    @Test
+    public void testHdf4File() throws IOException {
+        // We got test.hdf from https://people.sc.fsu.edu/~jburkardt/data/hdf/hdf.html
+        // and named in "hdf4test" with no file extension for this test.
+        // HDF4 is the old format, the previous generation before HDF5.
+        // We can't detect it based on its content.
+        String path = "src/test/resources/hdf/hdf4/";
+        String pathAndFile = path + "hdf4test";
+        File file = new File(pathAndFile);
+        String contentType = FileUtil.determineFileType(file, pathAndFile);
+        assertEquals("application/octet-stream", contentType);
+    }
+
 }
