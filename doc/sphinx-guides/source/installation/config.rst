@@ -715,11 +715,11 @@ Before being moved there,
 
 - JSF Web UI uploads are stored at :ref:`${dataverse.files.uploads} <dataverse.files.uploads>`, defaulting to
   ``/usr/local/payara5/glassfish/domains/domain1/uploads`` folder in a standard installation. This place is
-  configurable and might be set to a separate disk volume, swiped regularly for leftovers.
+  configurable and might be set to a separate disk volume where stale uploads are purged periodically.
 - API uploads are stored at the system's temporary files location indicated by the Java system property
   ``java.io.tmpdir``, defaulting to ``/tmp`` on Linux. If this location is backed by a `tmpfs <https://www.kernel.org/doc/html/latest/filesystems/tmpfs.html>`_
   on your machine, large file uploads via API will cause RAM and/or swap usage bursts. You might want to point this to
-  a different location, restrict maximum size of it and monitor for leftovers.
+  a different location, restrict maximum size of it, and monitor for stale uploads.
 
 
 .. _Branding Your Installation:
