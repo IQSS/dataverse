@@ -653,9 +653,12 @@ public class Files extends AbstractApiBean {
     @GET
     @Path("{id}/metadata/{fmid}/toolparams/{tid}")
     public Response getExternalToolFMParams(@PathParam("tid") long externalToolId,
-            @PathParam("id") long fileId, @PathParam("fmid") long fmid, @QueryParam(value = "locale") String locale) {
+            @PathParam("id") String fileId, @PathParam("fmid") long fmid, @QueryParam(value = "locale") String locale) {
         try {
             ExternalTool externalTool = externalToolService.findById(externalToolId);
+            if (!externalTool.getScope().equals(ExternalTool.Scope.FILE)) {
+                return error(BAD_REQUEST, "External tool does not have file scope.");
+            }
             ApiToken apiToken = null;
             User u = findUserOrDie();
             if (u instanceof AuthenticatedUser) {

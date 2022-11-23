@@ -2711,7 +2711,7 @@ Get External Tool Parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This API call is intended as a callback that can be used by :doc:`/installation/external-tools` to retrieve signed Urls  necessary for their interaction with Dataverse.
-It can be called directly as well.
+It can be called directly as well. (Note that the required FILEMETADATA_ID is the "id" returned in the JSON response from the /api/files/$FILE_ID/metadata call.)
 
 The response is a JSON object described in the :doc:`/api/external-tools` section of the API guide.
 

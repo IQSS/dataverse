@@ -3600,6 +3600,9 @@ public class Datasets extends AbstractApiBean {
             }
             
             ExternalTool externalTool = externalToolService.findById(externalToolId);
+            if (!externalTool.getScope().equals(ExternalTool.Scope.DATASET)) {
+                return error(BAD_REQUEST, "External tool does not have dataset scope.");
+            }
             ApiToken apiToken = null;
             User u = findUserOrDie();
             if (u instanceof AuthenticatedUser) {
