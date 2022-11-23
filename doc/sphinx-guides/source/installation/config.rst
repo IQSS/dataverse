@@ -3090,3 +3090,20 @@ The interval in seconds between Dataverse calls to Globus to check on upload pro
 +++++++++++++++++++++++++
 
 A true/false option to add a Globus transfer option to the file download menu which is not yet fully supported in the dataverse-globus app. See :ref:`globus-support` for details.
+
+:SupportEmail
++++++++++++++
+
+This provides an email address distinct from the :ref:`systemEmail` that will be used as the email address that emails from the Contact Forms and Feedback API are sent from.
+This allows configuration of a no-reply email address for :ref:`systemEmail` why allow replies to the SupportEmail address. If not set, the :ref:`systemEmail` is used for the feedback API/contact form email.
+
+``curl -X PUT -d 'LibraScholar Support Team <support@librascholar.edu>' http://localhost:8080/api/admin/settings/:SupportEmail``
+
+Note that only the email address is required, which you can supply without the ``<`` and ``>`` signs, but if you include the text, it's the way to customize the name of your support team, which appears in the "from" address in emails as well as in help text in the UI. If you don't include the text, the installation name (see :ref:`Branding Your Installation`) will appear in the "from" address.
+
+
+:CCSupportOnContactEmails
++++++++++++++++++++++++++
+
+If this setting is true, the contact forms and feedback API will cc the system (:SupportEmail if set, :SystemEmail if not) when sending email to the collection, dataset, or datafile contacts.
+A CC line is added to the contact form when this setting is true so that users are aware that the cc will occur.

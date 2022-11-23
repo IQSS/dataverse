@@ -4078,5 +4078,26 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -X DELETE https://demo.dataverse.org/api/admin/template/24
   
-  
+Send Feedback To Contact(s)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This API call allows sending an email to the contacts for a collection, dataset, or datafile or to the support email address when no object is specified.
+The call is protected by the normal /admin API protections (limited to localhost or requiring a separate key), but does not otherwise limit the sending of emails.
+Administrators should be sure only trusted applications have access to avoid the potential for spam.
+
+The call is a POST with a JSON object as input with four keys:
+- "targetId" - the id of the collection, dataset, or datafile. Persistent ids and collection aliases are not supported. (Optional)
+- "subject" - the email subject line
+- "body" - the email body to send
+- "fromEmail" - the email to list in the from field. 
+
+A curl example using an ``ID``
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export JSON='{"targetId":24, "subject":"Data Question", "body":"Please help me understand your data. Thank you!", "fromEmail":"dataverseSupport@mailinator.com"}'
+
+  curl -X POST -H 'Content-Type:application/json' -d "$JSON" targetId$SERVER_URL/api/admin/feedback
+
   

@@ -39,7 +39,7 @@ public class FeedbackApi extends AbstractApiBean {
      **/
     @POST
     public Response submitFeedback(JsonObject jsonObject) throws AddressException {
-        JsonNumber jsonNumber = jsonObject.getJsonNumber("id");
+        JsonNumber jsonNumber = jsonObject.getJsonNumber("targetId");
         DvObject feedbackTarget = null;
         if (jsonNumber != null) {
             feedbackTarget =  dvObjSvc.findDvObject(jsonNumber.longValue());
