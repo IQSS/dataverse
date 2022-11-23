@@ -21,6 +21,20 @@ Clients are managed on the "Harvesting Clients" page accessible via the :doc:`da
 
 The process of creating a new, or editing an existing client, is largely self-explanatory. It is split into logical steps, in a way that allows the user to go back and correct the entries made earlier. The process is interactive and guidance text is provided. For example, the user is required to enter the URL of the remote OAI server. When they click *Next*, the application will try to establish a connection to the server in order to verify that it is working, and to obtain the information about the sets of metadata records and the metadata formats it supports. The choices offered to the user on the next page will be based on this extra information. If the application fails to establish a connection to the remote archive at the address specified, or if an invalid response is received, the user is given an opportunity to check and correct the URL they entered.
 
+How to Stop a Harvesting Run in Progress
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Some harvesting jobs, especially the initial full harvest of a very large set - such as the default set of public datasets at IQSS - can take many hours. In case it is necessary to terminate such a long-running job, the following mechanism is provided (note that it is only available to a sysadmin with shell access to the application server): Create an empty file in the domain logs directory with the following name: ``stopharvest_<name>.<pid>``, where ``<name>`` is the nickname of the harvesting client and ``<pid>`` is the process id of the Application Server (Payara). This flag file needs to be owned by the same user that's running Payara, so that the application can remove it after stopping the job in progress.
+
+For example:: 
+
+.. code-block:: bash
+
+  sudo touch /usr/local/payara5/glassfish/domains/domain1/logs/stopharvest_bigarchive.70916
+  sudo chown dataverse /usr/local/payara5/glassfish/domains/domain1/logs/stopharvest_bigarchive.70916
+
+
+		
 What if a Run Fails?
 ~~~~~~~~~~~~~~~~~~~~
 

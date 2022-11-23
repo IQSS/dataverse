@@ -167,43 +167,12 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void setHarvestSuccess(Long hcId, Date currentTime, int harvestedCount, int failedCount, int deletedCount) {
-        HarvestingClient harvestingClient = em.find(HarvestingClient.class, hcId);
-        if (harvestingClient == null) {
-            return;
-        }
-        em.refresh(harvestingClient);
-        
-        ClientHarvestRun currentRun = harvestingClient.getLastRun();
-        
-        if (currentRun != null && currentRun.isInProgress()) {
-            // TODO: what if there's no current run in progress? should we just
-            // give up quietly, or should we make a noise of some kind? -- L.A. 4.4      
-            
-            currentRun.setSuccess();
-            currentRun.setFinishTime(currentTime);
-            currentRun.setHarvestedDatasetCount(new Long(harvestedCount));
-            currentRun.setFailedDatasetCount(new Long(failedCount));
-            currentRun.setDeletedDatasetCount(new Long(deletedCount));
-        }
+        recordHarvestJobStatus(hcId, currentTime, harvestedCount, failedCount, deletedCount, ClientHarvestRun.RunResultType.INTERRUPTED);
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void setHarvestFailure(Long hcId, Date currentTime) {
-        HarvestingClient harvestingClient = em.find(HarvestingClient.class, hcId);
-        if (harvestingClient == null) {
-            return;
-        }
-        em.refresh(harvestingClient);
-        
-        ClientHarvestRun currentRun = harvestingClient.getLastRun();
-        
-        if (currentRun != null && currentRun.isInProgress()) {
-            // TODO: what if there's no current run in progress? should we just
-            // give up quietly, or should we make a noise of some kind? -- L.A. 4.4      
-            
-            currentRun.setFailed();
-            currentRun.setFinishTime(currentTime);
-        }
+    public void setHarvestFailure(Long hcId, Date currentTime, int harvestedCount, int failedCount, int deletedCount) {
+        recordHarvestJobStatus(hcId, currentTime, harvestedCount, failedCount, deletedCount, ClientHarvestRun.RunResultType.FAILURE);
     } 
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
@@ -227,6 +196,17 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
             currentRun.setHarvestedDatasetCount(Long.valueOf(harvestedCount));
             currentRun.setFailedDatasetCount(Long.valueOf(failedCount));
             currentRun.setDeletedDatasetCount(Long.valueOf(deletedCount));
+        }
+    }
+    
+    public Long getNumberOfHarvestedDatasetsByAllClients() {
+        try {
+            return (Long) em.createNativeQuery("SELECT count(d.id) FROM dataset d "
+                    + " WHERE d.harvestingclient_id IS NOT NULL").getSingleResult();
+
+        } catch (Exception ex) {
+            logger.info("Warning: exception looking up the total number of harvested datasets: " + ex.getMessage());
+            return 0L;
         }
     }
     
