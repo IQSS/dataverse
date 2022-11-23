@@ -26,13 +26,14 @@ How to Stop a Harvesting Run in Progress
 
 Some harvesting jobs, especially the initial full harvest of a very large set - such as the default set of public datasets at IQSS - can take many hours. In case it is necessary to terminate such a long-running job, the following mechanism is provided (note that it is only available to a sysadmin with shell access to the application server): Create an empty file in the domain logs directory with the following name: ``stopharvest_<name>.<pid>``, where ``<name>`` is the nickname of the harvesting client and ``<pid>`` is the process id of the Application Server (Payara). This flag file needs to be owned by the same user that's running Payara, so that the application can remove it after stopping the job in progress.
 
-For example:: 
+For example:
 
 .. code-block:: bash
 
   sudo touch /usr/local/payara5/glassfish/domains/domain1/logs/stopharvest_bigarchive.70916
   sudo chown dataverse /usr/local/payara5/glassfish/domains/domain1/logs/stopharvest_bigarchive.70916
 
+It is recommended to stop any running harvesting jobs if you need to restart the application server, otherwise the ongoing harvest will be killed, but may be left marked as if it's still in progress in the database.  
 
 		
 What if a Run Fails?
