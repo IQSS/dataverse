@@ -33,7 +33,7 @@ For example:
   sudo touch /usr/local/payara5/glassfish/domains/domain1/logs/stopharvest_bigarchive.70916
   sudo chown dataverse /usr/local/payara5/glassfish/domains/domain1/logs/stopharvest_bigarchive.70916
 
-It is recommended to stop any running harvesting jobs if you need to restart the application server, otherwise the ongoing harvest will be killed, but may be left marked as if it's still in progress in the database.  
+We recommend that stop stop any running harvesting jobs using this mechanism if you need to restart the application server, otherwise the ongoing harvest will be killed, but may be left marked as if it's still in progress in the database.  
 
 		
 What if a Run Fails?
