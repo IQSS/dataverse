@@ -3205,7 +3205,7 @@ Managing Harvesting Clients
 
 The following API can be used to create and manage "Harvesting Clients". A Harvesting Client is a configuration entry that allows your Dataverse installation to harvest and index metadata from a specific remote location, either regularly, on a configured schedule, or on a one-off basis. For more information, see the :doc:`/admin/harvestclients` section of the Admin Guide.
 
-List All Congigured Harvesting Clients
+List All Configured Harvesting Clients
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Shows all the Harvesting Clients configured::
