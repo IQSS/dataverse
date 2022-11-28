@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.DataFileComparator;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
@@ -259,14 +260,17 @@ public class DatasetVersion implements Serializable {
             }
             setFileMetadatas(newFMDs);
         }
-        Collections.sort(fileMetadatas, FileMetadata.compareByCategoryAndLabel);
+        
+        DataFileComparator dfc = new DataFileComparator();
+        Collections.sort(fileMetadatas, dfc.compareBy(true, null!=FileMetadata.getCategorySortOrder(), "name", true));
         return fileMetadatas;
     }
     
     public List<FileMetadata> getFileMetadatasSortedByLabelAndFolder() {
         ArrayList<FileMetadata> fileMetadatasCopy = new ArrayList<>();
         fileMetadatasCopy.addAll(fileMetadatas);
-        Collections.sort(fileMetadatasCopy, FileMetadata.compareByLabelAndFolder);
+        DataFileComparator dfc = new DataFileComparator();
+        Collections.sort(fileMetadatasCopy, dfc.compareBy(true, null!=FileMetadata.getCategorySortOrder(), "name", true));
         return fileMetadatasCopy;
     }
     
