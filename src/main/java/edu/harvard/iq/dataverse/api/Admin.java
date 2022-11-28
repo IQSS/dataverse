@@ -2250,9 +2250,13 @@ public class Admin extends AbstractApiBean {
     @POST
     @Consumes("application/json")
     @Path("/requestSignedUrl")
-    public Response getSignedUrl(JsonObject urlInfo) throws WrappedResponse {
-        AuthenticatedUser superuser = findAuthenticatedUserOrDie();
-        
+    public Response getSignedUrl(JsonObject urlInfo) {
+        AuthenticatedUser superuser = null;
+        try {
+            superuser = findAuthenticatedUserOrDie();
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
         if (superuser == null || !superuser.isSuperuser()) {
             return error(Response.Status.FORBIDDEN, "Requesting signed URLs is restricted to superusers.");
         }
