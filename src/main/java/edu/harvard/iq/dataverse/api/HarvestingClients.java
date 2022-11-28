@@ -148,7 +148,7 @@ public class HarvestingClients extends AbstractApiBean {
     @Path("{nickName}")
     public Response createHarvestingClient(String jsonBody, @PathParam("nickName") String nickName, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
         // Note that we don't check the user's authorization within the API 
-        // method. Insetead, we will end up reporting a "not authorized" 
+        // method. Instead, we will end up reporting a "not authorized" 
         // exception thrown by the Command, if this user has no permission 
         // to perform the action. 
  
