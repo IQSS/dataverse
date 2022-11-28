@@ -4137,9 +4137,9 @@ A curl example using allowing access to a dataset's metadata
 
   export SERVER_URL=https://demo.dataverse.org
   export API_KEY=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  export JSON={"url":"https://demo.dataverse.org/api/v1/datasets/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB","timeOut":5,"user":"alberteinstein"}
+  export JSON='{"url":"https://demo.dataverse.org/api/v1/datasets/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB","timeOut":5,"user":"alberteinstein"}'
 
-  curl -H 'X-Dataverse-key:$API_KEY' -H 'Content-Type:application/json' -d $JSON $SERVER_URL/api/admin/requestSignedUrl
+  curl -H 'X-Dataverse-key:$API_KEY' -H 'Content-Type:application/json' -d "$JSON" $SERVER_URL/api/admin/requestSignedUrl
 
 Please see :ref:`dataverse.api.signature-secret` for the configuration option to add a shared secret, enabling extra
 security.
