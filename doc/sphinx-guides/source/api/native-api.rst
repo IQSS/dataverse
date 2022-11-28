@@ -3278,7 +3278,6 @@ An example JSON file would look like this::
   {
     "nickName": "zenodo",
     "dataverseAlias": "zenodoHarvested",
-    "type": "oai",
     "harvestUrl": "https://zenodo.org/oai2d",
     "archiveUrl": "https://zenodo.org",
     "archiveDescription": "Moissonné depuis la collection LMOPS de l'entrepôt Zenodo. En cliquant sur ce jeu de données, vous serez redirigé vers Zenodo.",
