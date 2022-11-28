@@ -3252,9 +3252,14 @@ Shows a Harvesting Client with a defined nickname::
 Create a Harvesting Client
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To create a new harvesting client you must supply a JSON file that describes the configuration, similarly to the output of the GET API above. The following fields are mandatory:
+To create a new harvesting client::
 
-- nickName: Alpha-numeric may also contain -, _, or %, but no spaces. Must also be unique in the installation. Must match the nickName in the Path
+  POST http://$SERVER/api/harvest/clients/$nickname
+
+``nickName`` is the name identifying the new client. It should be alpha-numeric and may also contain -, _, or %, but no spaces. Must also be unique in the installation.
+  
+You must supply a JSON file that describes the configuration, similarly to the output of the GET API above. The following fields are mandatory:
+
 - dataverseAlias: The alias of an existing collection where harvested datasets will be deposited
 - harvestUrl: The URL of the remote OAI archive
 - archiveUrl: The URL of the remote archive that will be used in the redirect links pointing back to the archival locations of the harvested records. It may or may not be on the same server as the harvestUrl above. If this OAI archive is another Dataverse installation, it will be the same URL as harvestUrl minus the "/oai". For example: https://demo.dataverse.org/ vs. https://demo.dataverse.org/oai
@@ -3266,6 +3271,8 @@ The following optional fields are supported:
 - set: The OAI set on the remote server. If not supplied, will default to none, i.e., "harvest everything".
 - style: Defaults to "default" - a generic OAI archive. (Make sure to use "dataverse" when configuring harvesting from another Dataverse installation).
 
+Generally, the API will accept the output of the GET version of the API for an existing client as valid input, but some fields will be ignored. For example, as of writing this there is no way to configure a harvesting schedule via this API. 
+  
 An example JSON file would look like this::
 
   {
