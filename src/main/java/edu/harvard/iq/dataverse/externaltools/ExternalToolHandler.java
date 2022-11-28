@@ -171,32 +171,34 @@ public class ExternalToolHandler extends URLTokenUtil {
     public JsonObjectBuilder createPostBody(JsonObject params) {
         JsonObjectBuilder bodyBuilder = Json.createObjectBuilder();
         bodyBuilder.add("queryParameters", params);
-
-        JsonArray apiArray = JsonUtil.getJsonArray(externalTool.getAllowedApiCalls());
-        JsonArrayBuilder apisBuilder = Json.createArrayBuilder();
-        
-        apiArray.getValuesAs(JsonObject.class).forEach(((apiObj) -> {
-            logger.fine(JsonUtil.prettyPrint(apiObj));
-            String name = apiObj.getJsonString(NAME).getString();
-            String httpmethod = apiObj.getJsonString(HTTP_METHOD).getString();
-            int timeout = apiObj.getInt(TIMEOUT);
-            String urlTemplate = apiObj.getJsonString(URL_TEMPLATE).getString();
-            logger.fine("URL Template: " + urlTemplate);
-            urlTemplate = SystemConfig.getDataverseSiteUrlStatic() + urlTemplate;
-            String apiPath = replaceTokensWithValues(urlTemplate);
-            logger.fine("URL WithTokens: " + apiPath);
-            String url = apiPath;
-            // Sign if apiToken exists, otherwise send unsigned URL (i.e. for guest users)
-            ApiToken apiToken = getApiToken();
-            if (apiToken != null) {
-                url = UrlSignerUtil.signUrl(apiPath, timeout, apiToken.getAuthenticatedUser().getUserIdentifier(), httpmethod,
-                    JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + getApiToken().getTokenString());
-            }
-            logger.fine("Signed URL: " + url);
-            apisBuilder.add(Json.createObjectBuilder().add(NAME, name).add(HTTP_METHOD, httpmethod)
-                    .add(SIGNED_URL, url).add(TIMEOUT, timeout));
-        }));
-        bodyBuilder.add("signedUrls", apisBuilder);
+        String apiCallStr = externalTool.getAllowedApiCalls();
+        if (apiCallStr != null && !apiCallStr.isBlank()) {
+            JsonArray apiArray = JsonUtil.getJsonArray(externalTool.getAllowedApiCalls());
+            JsonArrayBuilder apisBuilder = Json.createArrayBuilder();
+            apiArray.getValuesAs(JsonObject.class).forEach(((apiObj) -> {
+                logger.fine(JsonUtil.prettyPrint(apiObj));
+                String name = apiObj.getJsonString(NAME).getString();
+                String httpmethod = apiObj.getJsonString(HTTP_METHOD).getString();
+                int timeout = apiObj.getInt(TIMEOUT);
+                String urlTemplate = apiObj.getJsonString(URL_TEMPLATE).getString();
+                logger.fine("URL Template: " + urlTemplate);
+                urlTemplate = SystemConfig.getDataverseSiteUrlStatic() + urlTemplate;
+                String apiPath = replaceTokensWithValues(urlTemplate);
+                logger.fine("URL WithTokens: " + apiPath);
+                String url = apiPath;
+                // Sign if apiToken exists, otherwise send unsigned URL (i.e. for guest users)
+                ApiToken apiToken = getApiToken();
+                if (apiToken != null) {
+                    url = UrlSignerUtil.signUrl(apiPath, timeout, apiToken.getAuthenticatedUser().getUserIdentifier(),
+                            httpmethod, JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("")
+                                    + getApiToken().getTokenString());
+                }
+                logger.fine("Signed URL: " + url);
+                apisBuilder.add(Json.createObjectBuilder().add(NAME, name).add(HTTP_METHOD, httpmethod)
+                        .add(SIGNED_URL, url).add(TIMEOUT, timeout));
+            }));
+            bodyBuilder.add("signedUrls", apisBuilder);
+        }
         return bodyBuilder;
     }
 

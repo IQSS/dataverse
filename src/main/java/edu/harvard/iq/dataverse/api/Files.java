@@ -656,7 +656,10 @@ public class Files extends AbstractApiBean {
             @PathParam("id") String fileId, @PathParam("fmid") long fmid, @QueryParam(value = "locale") String locale) {
         try {
             ExternalTool externalTool = externalToolService.findById(externalToolId);
-            if (!externalTool.getScope().equals(ExternalTool.Scope.FILE)) {
+            if(externalTool == null) {
+                return error(BAD_REQUEST, "External tool not found.");
+            }
+            if (!ExternalTool.Scope.FILE.equals(externalTool.getScope())) {
                 return error(BAD_REQUEST, "External tool does not have file scope.");
             }
             ApiToken apiToken = null;
