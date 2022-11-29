@@ -3212,7 +3212,7 @@ Shows all the Harvesting Clients configured::
 
   GET http://$SERVER/api/harvest/clients/
 
-Show a specific Harvesting Client
+Show a Specific Harvesting Client
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Shows a Harvesting Client with a defined nickname::
