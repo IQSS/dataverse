@@ -263,8 +263,8 @@
                     
 
                 
-                <div class="qdr-sort col-xs-5 text-right #{DatasetPage.indexedVersion ? '' : 'col-xs-offset-7'}">
-                    <div class="qdr-group-by col-xs-7 text-left text-muted small" style="font-weight:normal;">
+                <div class="file-sort col-xs-5 text-right #{DatasetPage.indexedVersion ? '' : 'col-xs-offset-7'}">
+                    <div class="file-group-by col-xs-7 text-left text-muted small" style="font-weight:normal;">
                                     <p:selectBooleanCheckbox id="fps" value="#{DatasetPage.folderPresort}" itemLabel="#{bundle['file.results.presort.folder']}" title="#{bundle['file.results.presort.folder.desc']}">
                         <p:ajax update="filesTable, messagePanel" process="fps, tps" listener="#{DatasetPage.sort()}"/>
                     </p:selectBooleanCheckbox>
