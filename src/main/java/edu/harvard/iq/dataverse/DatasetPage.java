@@ -48,6 +48,7 @@ import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.DataFileComparator;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -501,6 +502,8 @@ public class DatasetPage implements java.io.Serializable {
 
     private String fileSortField;
     private String fileSortOrder;
+    private boolean tagPresort = true;
+    private boolean folderPresort = true;
 
     public List<Entry<String,String>> getCartList() {
         if (session.getUser() instanceof AuthenticatedUser) {
@@ -669,64 +672,43 @@ public class DatasetPage implements java.io.Serializable {
             // We run the search even if no search term and/or facets are
             // specified - to generate the facet labels list:
             searchResultsIdSet = getFileIdsInVersionFromSolr(workingVersion.getId(), this.fileLabelSearchTerm);
-            // But, if no search terms were specified, we can immediately return the full
+            // But, if no search terms were specified, we return the full
             // list of the files in the version:
             if (StringUtil.isEmpty(fileLabelSearchTerm)
                     && StringUtil.isEmpty(fileTypeFacet)
                     && StringUtil.isEmpty(fileAccessFacet)
                     && StringUtil.isEmpty(fileTagsFacet)) {
-                if ((StringUtil.isEmpty(fileSortField) || fileSortField.equals("name")) && StringUtil.isEmpty(fileSortOrder)) {
-                    return workingVersion.getFileMetadatasSorted();
-                } else {
-                    searchResultsIdSet = null;
-                }
+                // Since the search results should include the full set of fmds if all the
+                // terms/facets are empty, setting them to null should just be
+                // an optimization for the loop below
+                searchResultsIdSet = null;
             }
-
         } else {
             // No, this is not an indexed version.
             // If the search term was specified, we'll run a search in the db;
             // if not - return the full list of files in the version.
             // (no facets without solr!)
-            if (StringUtil.isEmpty(this.fileLabelSearchTerm)) {
-                if ((StringUtil.isEmpty(fileSortField) || fileSortField.equals("name")) && StringUtil.isEmpty(fileSortOrder)) {
-                    return workingVersion.getFileMetadatasSorted();
-                }
-            } else {
+            if (!StringUtil.isEmpty(this.fileLabelSearchTerm)) {
                 searchResultsIdSet = getFileIdsInVersionFromDb(workingVersion.getId(), this.fileLabelSearchTerm);
             }
         }
 
         List<FileMetadata> retList = new ArrayList<>();
 
-        for (FileMetadata fileMetadata : workingVersion.getFileMetadatasSorted()) {
+        for (FileMetadata fileMetadata : workingVersion.getFileMetadatas()) {
             if (searchResultsIdSet == null || searchResultsIdSet.contains(fileMetadata.getDataFile().getId())) {
                 retList.add(fileMetadata);
             }
         }
-
-        if ((StringUtil.isEmpty(fileSortOrder) && !("name".equals(fileSortField)))
-                || ("desc".equals(fileSortOrder) || !("name".equals(fileSortField)))) {
-            sortFileMetadatas(retList);
-
-        }
-
+        sortFileMetadatas(retList);
         return retList;
     }
 
     private void sortFileMetadatas(List<FileMetadata> fileList) {
-        if ("name".equals(fileSortField) && "desc".equals(fileSortOrder)) {
-            Collections.sort(fileList, compareByLabelZtoA);
-        } else if ("date".equals(fileSortField)) {
-            if ("desc".equals(fileSortOrder)) {
-                Collections.sort(fileList, compareByOldest);
-            } else {
-                Collections.sort(fileList, compareByNewest);
-            }
-        } else if ("type".equals(fileSortField)) {
-            Collections.sort(fileList, compareByType);
-        } else if ("size".equals(fileSortField)) {
-            Collections.sort(fileList, compareBySize);
-        }
+        
+        DataFileComparator dfc = new DataFileComparator();
+        Comparator<FileMetadata> comp = dfc.compareBy(folderPresort, tagPresort, fileSortField, !"desc".equals(fileSortOrder));
+        Collections.sort(fileList, comp);
     }
 
     private Boolean isIndexedVersion = null;
@@ -1857,11 +1839,11 @@ public class DatasetPage implements java.io.Serializable {
         String nonNullDefaultIfKeyNotFound = "";
         protocol = settingsWrapper.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         authority = settingsWrapper.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-        String sortOrder = settingsWrapper.getValueForKey(SettingsServiceBean.Key.CategorySortOrder, null);
+        String sortOrder = getSortOrder();
         if(sortOrder != null) {
             FileMetadata.setCategorySortOrder(sortOrder);
         }
-        if (this.getId() != null || versionId != null || persistentId != null) { // view mode for a dataset
+        if (dataset.getId() != null || versionId != null || persistentId != null) { // view mode for a dataset     
 
             DatasetVersionServiceBean.RetrieveDatasetVersionResponse retrieveDatasetVersionResponse = null;
 
@@ -1987,6 +1969,11 @@ public class DatasetPage implements java.io.Serializable {
                     AuthenticatedUser au = session.getUser() instanceof AuthenticatedUser ? (AuthenticatedUser) session.getUser() : null;
                     datafileService.findFileMetadataOptimizedExperimental(dataset, workingVersion, au);
                 }
+                // As of v5.x (PF8?), having the variables initially set to true in their
+                // declarations doesn't result in them being true when a page is first viewed -
+                // need to set them here.
+                this.setFolderPresort(true);
+                this.setTagPresort(true);
                 // This will default to all the files in the version, if the search term
                 // parameter hasn't been specified yet:
                 fileMetadatasSearch = selectFileMetadatasForDisplay();
@@ -2241,6 +2228,10 @@ public class DatasetPage implements java.io.Serializable {
         
         displayPublishMessage();
 
+    }
+
+    public String getSortOrder() {
+        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.CategorySortOrder, null);
     }
 
     private Boolean fileTreeViewRequired = null;
@@ -2800,6 +2791,12 @@ public class DatasetPage implements java.io.Serializable {
 
     public void refresh(ActionEvent e) {
         refresh();
+    }
+
+
+    public void sort() {
+        sortFileMetadatas(fileMetadatasSearch);
+        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("file.results.presort.change.success"));
     }
 
     public String refresh() {
@@ -5672,52 +5669,22 @@ public class DatasetPage implements java.io.Serializable {
         return someVersionArchived;
     }
 
-    private static Date getFileDateToCompare(FileMetadata fileMetadata) {
-        DataFile datafile = fileMetadata.getDataFile();
-
-        if (datafile.isReleased()) {
-            return datafile.getPublicationDate();
+    public boolean isTagPresort() {
+       return this.tagPresort;
         }
 
-        return datafile.getCreateDate();
+    public void setTagPresort(boolean tagPresort) {
+        this.tagPresort = tagPresort && (null != getSortOrder());
     }
 
-    private static final Comparator<FileMetadata> compareByLabelZtoA = new Comparator<FileMetadata>() {
-        @Override
-        public int compare(FileMetadata o1, FileMetadata o2) {
-            return o2.getLabel().toUpperCase().compareTo(o1.getLabel().toUpperCase());
+    public boolean isFolderPresort() {
+        return this.folderPresort;
         }
-    };
 
-    private static final Comparator<FileMetadata> compareByNewest = new Comparator<FileMetadata>() {
-        @Override
-        public int compare(FileMetadata o1, FileMetadata o2) {
-            return getFileDateToCompare(o2).compareTo(getFileDateToCompare(o1));
+     public void setFolderPresort(boolean folderPresort) {
+         this.folderPresort = folderPresort;
         }
-    };
 
-    private static final Comparator<FileMetadata> compareByOldest = new Comparator<FileMetadata>() {
-        @Override
-        public int compare(FileMetadata o1, FileMetadata o2) {
-            return getFileDateToCompare(o1).compareTo(getFileDateToCompare(o2));
-        }
-    };
-
-    private static final Comparator<FileMetadata> compareBySize = new Comparator<FileMetadata>() {
-        @Override
-        public int compare(FileMetadata o1, FileMetadata o2) {
-            return (new Long(o1.getDataFile().getFilesize())).compareTo(new Long(o2.getDataFile().getFilesize()));
-        }
-    };
-
-    private static final Comparator<FileMetadata> compareByType = new Comparator<FileMetadata>() {
-        @Override
-        public int compare(FileMetadata o1, FileMetadata o2) {
-            String type1 = StringUtil.isEmpty(o1.getDataFile().getFriendlyType()) ? "" : o1.getDataFile().getContentType();
-            String type2 = StringUtil.isEmpty(o2.getDataFile().getFriendlyType()) ? "" : o2.getDataFile().getContentType();
-            return type1.compareTo(type2);
-        }
-    };
 
     public void explore(ExternalTool externalTool) {
         ApiToken apiToken = null;
