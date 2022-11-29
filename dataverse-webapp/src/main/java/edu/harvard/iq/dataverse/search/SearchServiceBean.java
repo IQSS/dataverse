@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
+import edu.harvard.iq.dataverse.search.index.IndexedTermOfUse;
 import edu.harvard.iq.dataverse.search.query.PermissionFilterQueryBuilder;
 import edu.harvard.iq.dataverse.search.query.SearchForTypes;
 import edu.harvard.iq.dataverse.search.query.SearchObjectType;
@@ -636,7 +637,10 @@ public class SearchServiceBean {
         if(formattedFacetCategoryName.equals(SearchFields.LICENSE)) {
             return licenseRepository.findLicenseByName(facetLabelName)
                 .map(l -> l.getLocalizedName(BundleUtil.getCurrentLocale()))
-                .orElse(facetLabelName);
+                .orElseGet(() -> {
+                    String label = BundleUtil.getStringFromBundle(IndexedTermOfUse.getLabelFromName(facetLabelName));
+                    return StringUtils.isBlank(label)?facetLabelName:label;
+                });
         }
 
         return facetLabelName;

@@ -227,7 +227,7 @@
 
     <field name="dsPersistentId" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="filePersistentId" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="license" type="string" stored="true" indexed="true" multiValued="true"/>
+    <field name="license" type="string" stored="true" indexed="true" multiValued="false"/>
     
     <!-- Dynamic Dataverse fields from http://localhost:8080/api/admin/index/solr/schema -->
 
