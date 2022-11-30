@@ -1813,6 +1813,9 @@ public class Admin extends AbstractApiBean {
             Dataset ds = findDatasetOrDie(dsid);
 
             DatasetVersion dv = datasetversionService.findByFriendlyVersionNumber(ds.getId(), versionNumber);
+            if(dv==null) {
+                return error(Status.BAD_REQUEST, "Requested version not found.");
+            }
             if (dv.getArchivalCopyLocation() == null) {
                 String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
                 // Note - the user is being sent via the createDataverseRequest(au) call to the
@@ -1858,7 +1861,7 @@ public class Admin extends AbstractApiBean {
                 return error(Status.BAD_REQUEST, "Version was already submitted for archiving.");
             }
         } catch (WrappedResponse e1) {
-            return error(Status.UNAUTHORIZED, "api key required");
+            return e1.getResponse();
         }
     }
 
@@ -1949,7 +1952,7 @@ public class Admin extends AbstractApiBean {
                 return error(Status.BAD_REQUEST, "No unarchived published dataset versions found");
             }
         } catch (WrappedResponse e1) {
-            return error(Status.UNAUTHORIZED, "api key required");
+            return e1.getResponse();
         }
     }
     
