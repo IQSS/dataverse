@@ -3020,7 +3020,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         }
         assertEquals(OK.getStatusCode(), status);
 
-        if (!UtilIT.sleepForReindex(datasetPersistentId, apiToken, 3000)) {
+        if (!UtilIT.sleepForReindex(datasetPersistentId, apiToken, 3)) {
             logger.info("Still indexing after 3 seconds");
         }
 
