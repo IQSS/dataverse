@@ -1200,7 +1200,7 @@ public class AddReplaceFileHelper{
         }
 
         // Load the working version of the Dataset
-        workingVersion = dataset.getEditVersion();
+        workingVersion = dataset.getOrCreateEditVersion();
         clone =   workingVersion.cloneDatasetVersion();
         try {
             CreateDataFileResult result = FileUtil.createDataFiles(workingVersion,
@@ -1805,7 +1805,7 @@ public class AddReplaceFileHelper{
         newlyAddedFileMetadatas = new ArrayList<>();
         
         // Loop of uglinesss...but expect 1 to 4 files in final file list
-        List<FileMetadata> latestFileMetadatas = dataset.getEditVersion().getFileMetadatas();
+        List<FileMetadata> latestFileMetadatas = dataset.getOrCreateEditVersion().getFileMetadatas();
         
         
         for (DataFile newlyAddedFile : finalFileList){
