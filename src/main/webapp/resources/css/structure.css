@@ -1135,3 +1135,18 @@ span.label-default { background-color: #757575 }
 .ui-inplace .ui-inputfield {
     width:60%
 }
+/*File sorting*/
+#datasetForm .file-sort {
+	max-width: 255px;
+	float: right;
+	padding-right:21px;
+}
+
+#datasetForm .file-sort .btn-group {
+	padding-top: 4px;
+}
+
+#datasetForm .file-group-by {
+	min-width: 130px;
+	padding: 0px;
+}
