@@ -3090,3 +3090,10 @@ The interval in seconds between Dataverse calls to Globus to check on upload pro
 +++++++++++++++++++++++++
 
 A true/false option to add a Globus transfer option to the file download menu which is not yet fully supported in the dataverse-globus app. See :ref:`globus-support` for details.
+
+:CategorySortOrder
+++++++++++++++++++
+
+A comma separated list of Category/Tag names defining the order in which files with those tags should be displayed. 
+The setting can include custom tag names along with the pre-defined Documentation, Data, and Code tags.
+The default is no setting and the Group-By-Tag functionality in the user interface.
