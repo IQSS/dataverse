@@ -504,6 +504,14 @@ public class DatasetPage implements java.io.Serializable {
     private String fileSortOrder;
     private boolean tagPresort = true;
     private boolean folderPresort = true;
+    // Due to what may be a bug in PrimeFaces, the call to select a new page of
+    // files appears to reset the two presort booleans to false. The following
+    // values are a flag and duplicate booleans to remember what the new values were
+    // so that they can be set only in real checkbox changes. Further comments where
+    // these are used.
+    boolean isPageFlip = false;
+    private boolean newTagPresort = true;
+    private boolean newFolderPresort = true;
 
     public List<Entry<String,String>> getCartList() {
         if (session.getUser() instanceof AuthenticatedUser) {
@@ -2795,6 +2803,18 @@ public class DatasetPage implements java.io.Serializable {
 
 
     public void sort() {
+        // This is called as the presort checkboxes' listener when the user is actually
+        // clicking in the checkbox. It does appear to happen after the setTagPresort
+        // and setFolderPresort calls.
+        // So -we know this isn't a pageflip and at this point can update to use the new
+        // values.
+        isPageFlip = false;
+        if (!newTagPresort == tagPresort) {
+            tagPresort = newTagPresort;
+        }
+        if (!newFolderPresort == folderPresort) {
+            folderPresort = newFolderPresort;
+        }
         sortFileMetadatas(fileMetadatasSearch);
         JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("file.results.presort.change.success"));
     }
@@ -5553,6 +5573,10 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void fileListingPaginatorListener(PageEvent event) {
+        // Changing to a new page of files - set this so we can ignore changes to the
+        // presort checkboxes. (This gets called before the set calls for the presorts
+        // get called.)
+        isPageFlip=true;
         setFilePaginatorPage(event.getPage());
     }
 
@@ -5673,16 +5697,28 @@ public class DatasetPage implements java.io.Serializable {
        return this.tagPresort;
         }
 
-    public void setTagPresort(boolean tagPresort) {
-        this.tagPresort = tagPresort && (null != getSortOrder());
-    }
+        public void setTagPresort(boolean tagPresort) {
+            // Record the new value
+            newTagPresort = tagPresort && (null != getSortOrder());
+            // If this is not a page flip, it should be a real change to the presort
+            // boolean that we should use.
+            if (!isPageFlip) {
+                this.tagPresort = tagPresort && (null != getSortOrder());
+            }
+        }
 
     public boolean isFolderPresort() {
         return this.folderPresort;
         }
 
-     public void setFolderPresort(boolean folderPresort) {
-         this.folderPresort = folderPresort;
+        public void setFolderPresort(boolean folderPresort) {
+            //Record the new value
+            newFolderPresort = folderPresort;
+            // If this is not a page flip, it should be a real change to the presort
+            // boolean that we should use.
+            if (!isPageFlip) {
+                this.folderPresort = folderPresort;
+            }
         }
 
 
