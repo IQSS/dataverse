@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
 import com.jayway.restassured.path.xml.XmlPath;
@@ -2432,25 +2433,60 @@ public class UtilIT {
     static boolean sleepForReindex(String idOrPersistentId, String apiToken, int durationInSeconds) {
         int i = 0;
         Response timestampResponse;
-        int sleepStep=200;
-        int repeats = durationInSeconds*1000/sleepStep;
+        int sleepStep = 500;
+        int repeats = durationInSeconds * (1000 / sleepStep);
+        boolean stale=true;
         do {
             timestampResponse = UtilIT.getDatasetTimestamps(idOrPersistentId, apiToken);
+            System.out.println(timestampResponse.body().asString());
+            String hasStaleIndex = timestampResponse.body().jsonPath().getString("data.hasStaleIndex");
+            System.out.println(hasStaleIndex);
+            stale = Boolean.parseBoolean(hasStaleIndex);
             
             try {
                 Thread.sleep(sleepStep);
                 i++;
-                if (i > repeats) {
-                    break; 
-                }
             } catch (InterruptedException ex) {
                 Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
+                i = repeats + 1;
             }
-        } while (timestampResponse.body().jsonPath().getBoolean("data.hasStaleIndex"));
-
+        } while ((i <= repeats) && stale);
+        System.out.println("Waited " + (i * (sleepStep / 1000.0)) + " seconds");
         return i <= repeats;
 
     }
+    static boolean sleepForReexport(String idOrPersistentId, String apiToken, int durationInSeconds) {
+        int i = 0;
+        Response timestampResponse;
+        int sleepStep = 500;
+        int repeats = durationInSeconds * (1000 / sleepStep);
+        boolean staleExport=true;
+        do {
+            timestampResponse = UtilIT.getDatasetTimestamps(idOrPersistentId, apiToken);
+            //logger.fine(timestampResponse.body().asString());
+            String updateTimeString = timestampResponse.body().jsonPath().getString("data.lastUpdateTime");
+            String exportTimeString = timestampResponse.body().jsonPath().getString("data.lastMetadataExportTime");
+            if (updateTimeString != null && exportTimeString != null) {
+                LocalDateTime updateTime = LocalDateTime.parse(updateTimeString);
+                LocalDateTime exportTime = LocalDateTime.parse(exportTimeString);
+                if (exportTime.isAfter(updateTime)) {
+                    staleExport = false;
+                }
+            }
+            try {
+                Thread.sleep(sleepStep);
+                i++;
+            } catch (InterruptedException ex) {
+                Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
+                i = repeats + 1;
+            }
+        } while ((i <= repeats) && staleExport);
+        System.out.println("Waited " + (i * (sleepStep / 1000.0)) + " seconds for export");
+        return i <= repeats;
+
+    }
+    
+    
     
     
     //Helper function that returns true if a given search returns a non-zero response within a fixed time limit
