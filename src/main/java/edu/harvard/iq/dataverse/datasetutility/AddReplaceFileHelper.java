@@ -615,7 +615,7 @@ public class AddReplaceFileHelper{
         if (!this.step_050_checkForConstraintViolations()){
             return false;            
         }
-        
+
         msgt("step_055_loadOptionalFileParams");
         if (!this.step_055_loadOptionalFileParams(optionalFileParams)){
             return false;            
@@ -1200,7 +1200,7 @@ public class AddReplaceFileHelper{
         }
 
         // Load the working version of the Dataset
-        workingVersion = dataset.getEditVersion();
+        workingVersion = dataset.getOrCreateEditVersion();
         clone =   workingVersion.cloneDatasetVersion();
         try {
             CreateDataFileResult result = FileUtil.createDataFiles(workingVersion,
@@ -1515,8 +1515,16 @@ public class AddReplaceFileHelper{
         // violations found: gather all error messages
         // -----------------------------------------------------------   
         List<String> errMsgs = new ArrayList<>();
-        for (ConstraintViolation violation : constraintViolations){
-            this.addError(violation.getMessage());
+        for (ConstraintViolation violation : constraintViolations) {
+            /*
+            for 8859 return conflict response status if the validation fails
+            due to terms of use/access out of compliance
+            */
+            if (workingVersion.getTermsOfUseAndAccess().getValidationMessage() != null) {
+                addError(Response.Status.CONFLICT,workingVersion.getTermsOfUseAndAccess().getValidationMessage());
+            } else {
+                this.addError(violation.getMessage());
+            }
         }
         
         return this.hasError();
@@ -1797,7 +1805,7 @@ public class AddReplaceFileHelper{
         newlyAddedFileMetadatas = new ArrayList<>();
         
         // Loop of uglinesss...but expect 1 to 4 files in final file list
-        List<FileMetadata> latestFileMetadatas = dataset.getEditVersion().getFileMetadatas();
+        List<FileMetadata> latestFileMetadatas = dataset.getOrCreateEditVersion().getFileMetadatas();
         
         
         for (DataFile newlyAddedFile : finalFileList){

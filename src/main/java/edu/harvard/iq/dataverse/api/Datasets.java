@@ -57,10 +57,11 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetTargetURLComman
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
-
-import edu.harvard.iq.dataverse.S3PackageImporter;
+import edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -142,7 +143,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.Status;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -601,7 +601,7 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/versions/{versionId}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response updateDraftVersion( String jsonBody, @PathParam("id") String id,  @PathParam("versionId") String versionId ){
-        
+      
         if ( ! ":draft".equals(versionId) ) {
             return error( Response.Status.BAD_REQUEST, "Only the :draft version can be updated");
         }
@@ -629,14 +629,22 @@ public class Datasets extends AbstractApiBean {
             boolean updateDraft = ds.getLatestVersion().isDraft();
             
             DatasetVersion managedVersion;
-            if ( updateDraft ) {
-                final DatasetVersion editVersion = ds.getEditVersion();
+            if (updateDraft) {
+                final DatasetVersion editVersion = ds.getOrCreateEditVersion();
                 editVersion.setDatasetFields(incomingVersion.getDatasetFields());
-                editVersion.setTermsOfUseAndAccess( incomingVersion.getTermsOfUseAndAccess() );
+                editVersion.setTermsOfUseAndAccess(incomingVersion.getTermsOfUseAndAccess());
                 editVersion.getTermsOfUseAndAccess().setDatasetVersion(editVersion);
+                boolean hasValidTerms = TermsOfUseAndAccessValidator.isTOUAValid(editVersion.getTermsOfUseAndAccess(), null);
+                if (!hasValidTerms) {
+                    return error(Status.CONFLICT, BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
+                }
                 Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
-                managedVersion = managedDataset.getEditVersion();
+                managedVersion = managedDataset.getOrCreateEditVersion();
             } else {
+                boolean hasValidTerms = TermsOfUseAndAccessValidator.isTOUAValid(incomingVersion.getTermsOfUseAndAccess(), null);
+                if (!hasValidTerms) {
+                    return error(Status.CONFLICT, BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
+                }
                 managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, incomingVersion));
             }
 //            DatasetVersion managedVersion = execCommand( updateDraft
@@ -690,14 +698,18 @@ public class Datasets extends AbstractApiBean {
         try {
             Dataset ds = findDatasetOrDie(id);
             DataverseRequest req = createDataverseRequest(findUserOrDie());
-            DatasetVersion dsv = ds.getEditVersion();
+            DatasetVersion dsv = ds.getOrCreateEditVersion();
             boolean updateDraft = ds.getLatestVersion().isDraft();
             dsv = JSONLDUtil.updateDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, datasetFieldSvc, !replaceTerms, false, licenseSvc);
             dsv.getTermsOfUseAndAccess().setDatasetVersion(dsv);
+            boolean hasValidTerms = TermsOfUseAndAccessValidator.isTOUAValid(dsv.getTermsOfUseAndAccess(), null);
+            if (!hasValidTerms) {
+                return error(Status.CONFLICT, BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
+            }
             DatasetVersion managedVersion;
             if (updateDraft) {
                 Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
-                managedVersion = managedDataset.getEditVersion();
+                managedVersion = managedDataset.getOrCreateEditVersion();
             } else {
                 managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
             }
@@ -719,14 +731,14 @@ public class Datasets extends AbstractApiBean {
         try {
             Dataset ds = findDatasetOrDie(id);
             DataverseRequest req = createDataverseRequest(findUserOrDie());
-            DatasetVersion dsv = ds.getEditVersion();
+            DatasetVersion dsv = ds.getOrCreateEditVersion();
             boolean updateDraft = ds.getLatestVersion().isDraft();
             dsv = JSONLDUtil.deleteDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, licenseSvc);
             dsv.getTermsOfUseAndAccess().setDatasetVersion(dsv);
             DatasetVersion managedVersion;
             if (updateDraft) {
                 Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
-                managedVersion = managedDataset.getEditVersion();
+                managedVersion = managedDataset.getOrCreateEditVersion();
             } else {
                 managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
             }
@@ -757,7 +769,7 @@ public class Datasets extends AbstractApiBean {
 
             Dataset ds = findDatasetOrDie(id);
             JsonObject json = Json.createReader(rdr).readObject();
-            DatasetVersion dsv = ds.getEditVersion();
+            DatasetVersion dsv = ds.getOrCreateEditVersion();
             dsv.getTermsOfUseAndAccess().setDatasetVersion(dsv);
             List<DatasetField> fields = new LinkedList<>();
             DatasetField singleField = null;
@@ -870,7 +882,7 @@ public class Datasets extends AbstractApiBean {
 
             boolean updateDraft = ds.getLatestVersion().isDraft();
             DatasetVersion managedVersion = updateDraft
-                    ? execCommand(new UpdateDatasetVersionCommand(ds, req)).getEditVersion()
+                    ? execCommand(new UpdateDatasetVersionCommand(ds, req)).getOrCreateEditVersion()
                     : execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
             return ok(json(managedVersion));
 
@@ -920,7 +932,7 @@ public class Datasets extends AbstractApiBean {
            
             Dataset ds = findDatasetOrDie(id);
             JsonObject json = Json.createReader(rdr).readObject();
-            DatasetVersion dsv = ds.getEditVersion();
+            DatasetVersion dsv = ds.getOrCreateEditVersion();
             dsv.getTermsOfUseAndAccess().setDatasetVersion(dsv);
             List<DatasetField> fields = new LinkedList<>();
             DatasetField singleField = null;
@@ -1025,7 +1037,7 @@ public class Datasets extends AbstractApiBean {
             DatasetVersion managedVersion;
 
             if (updateDraft) {
-                managedVersion = execCommand(new UpdateDatasetVersionCommand(ds, req)).getEditVersion();
+                managedVersion = execCommand(new UpdateDatasetVersionCommand(ds, req)).getOrCreateEditVersion();
             } else {
                 managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
             }
@@ -1102,6 +1114,12 @@ public class Datasets extends AbstractApiBean {
             }
 
             Dataset ds = findDatasetOrDie(id);
+            
+            boolean hasValidTerms = TermsOfUseAndAccessValidator.isTOUAValid(ds.getLatestVersion().getTermsOfUseAndAccess(), null);
+            if (!hasValidTerms) {
+                return error(Status.CONFLICT, BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
+            }
+            
             if (mustBeIndexed) {
                 logger.fine("IT: " + ds.getIndexTime());
                 logger.fine("MT: " + ds.getModificationTime());
@@ -1323,6 +1341,12 @@ public class Datasets extends AbstractApiBean {
             dataset = findDatasetOrDie(id);
         } catch (WrappedResponse ex) {
             return ex.getResponse();
+        }
+        
+        boolean hasValidTerms = TermsOfUseAndAccessValidator.isTOUAValid(dataset.getLatestVersion().getTermsOfUseAndAccess(), null);
+        
+        if (!hasValidTerms){
+            return error(Status.CONFLICT, BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
         }
 
         // client is superadmin or (client has EditDataset permission on these files and files are unreleased)
@@ -2442,7 +2466,11 @@ public class Datasets extends AbstractApiBean {
                 optionalFileParams);
 
 
-        if (addFileHelper.hasError()) {
+        if (addFileHelper.hasError()){
+            //conflict response status added for 8859
+            if (Response.Status.CONFLICT.equals(addFileHelper.getHttpErrorCode())){
+                return conflict(addFileHelper.getErrorMessagesAsString("\n"));
+            }
             return error(addFileHelper.getHttpErrorCode(), addFileHelper.getErrorMessagesAsString("\n"));
         } else {
             String successMsg = BundleUtil.getStringFromBundle("file.addreplace.success.add");
@@ -3552,5 +3580,43 @@ public class Datasets extends AbstractApiBean {
             }
         }
         return false;
+    }
+    
+    // This method provides a callback for an external tool to retrieve it's
+    // parameters/api URLs. If the request is authenticated, e.g. by it being
+    // signed, the api URLs will be signed. If a guest request is made, the URLs
+    // will be plain/unsigned.
+    // This supports the cases where a tool is accessing a restricted resource (e.g.
+    // for a draft dataset), or public case.
+    @GET
+    @Path("{id}/versions/{version}/toolparams/{tid}")
+    public Response getExternalToolDVParams(@PathParam("tid") long externalToolId,
+            @PathParam("id") String datasetId, @PathParam("version") String version, @QueryParam(value = "locale") String locale) {
+        try {
+            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            DatasetVersion target = getDatasetVersionOrDie(req, version, findDatasetOrDie(datasetId), null, null);
+            if (target == null) {
+                return error(BAD_REQUEST, "DatasetVersion not found.");
+            }
+            
+            ExternalTool externalTool = externalToolService.findById(externalToolId);
+            if(externalTool==null) {
+                return error(BAD_REQUEST, "External tool not found.");
+            }
+            if (!ExternalTool.Scope.DATASET.equals(externalTool.getScope())) {
+                return error(BAD_REQUEST, "External tool does not have dataset scope.");
+            }
+            ApiToken apiToken = null;
+            User u = findUserOrDie();
+            if (u instanceof AuthenticatedUser) {
+                apiToken = authSvc.findApiTokenByUser((AuthenticatedUser) u);
+            }
+            
+
+            ExternalToolHandler eth = new ExternalToolHandler(externalTool, target.getDataset(), apiToken, locale);
+            return ok(eth.createPostBody(eth.getParams(JsonUtil.getJsonObject(externalTool.getToolParameters()))));
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
     }
 }

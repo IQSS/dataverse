@@ -526,7 +526,7 @@ To create a dataset, you must supply a JSON file that contains at least the foll
 - Description Text
 - Subject
 
-As a starting point, you can download :download:`dataset-finch1.json <../../../../scripts/search/tests/data/dataset-finch1.json>` and modify it to meet your needs. (:download:`dataset-create-new-all-default-fields.json <../../../../scripts/api/data/dataset-finch1_fr.json>` is a variant of this file that includes setting the metadata language (see :ref:`:MetadataLanguages`) to French (fr). In addition to this minimal example, you can download :download:`dataset-create-new-all-default-fields.json <../../../../scripts/api/data/dataset-create-new-all-default-fields.json>` which populates all of the metadata fields that ship with a Dataverse installation.)
+As a starting point, you can download :download:`dataset-finch1.json <../../../../scripts/search/tests/data/dataset-finch1.json>` and modify it to meet your needs. (:download:`dataset-finch1_fr.json <../../../../scripts/api/data/dataset-finch1_fr.json>` is a variant of this file that includes setting the metadata language (see :ref:`:MetadataLanguages`) to French (fr). In addition to this minimal example, you can download :download:`dataset-create-new-all-default-fields.json <../../../../scripts/api/data/dataset-create-new-all-default-fields.json>` which populates all of the metadata fields that ship with a Dataverse installation.)
 
 The curl command below assumes you have kept the name "dataset-finch1.json" and that this file is in your current working directory.
 
@@ -840,7 +840,9 @@ The fully expanded example above (without environment variables) looks like this
 Export Metadata of a Dataset in Various Formats
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| Export the metadata of the current published version of a dataset in various formats see Note below:
+|CORS| Export the metadata of the current published version of a dataset in various formats.
+
+See also :ref:`batch-exports-through-the-api` and the note below:
 
 .. code-block:: bash
 
@@ -2027,6 +2029,24 @@ Archiving is an optional feature that may be configured for a Dataverse installa
 
   curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE "$SERVER_URL/api/datasets/:persistentId/$VERSION/archivalStatus?persistentId=$PERSISTENT_IDENTIFIER"
   
+Get External Tool Parameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This API call is intended as a callback that can be used by :doc:`/installation/external-tools` to retrieve signed Urls  necessary for their interaction with Dataverse.
+It can be called directly as well.
+
+The response is a JSON object described in the :doc:`/api/external-tools` section of the API guide.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/7U7YBV
+  export VERSION=1.0
+  export TOOL_ID=1
+  
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/toolparams/$TOOL_ID?persistentId=$PERSISTENT_IDENTIFIER"
 
 Files
 -----
@@ -2612,7 +2632,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/files/:persistentId/prov-freeform?persistentId=doi:10.5072/FK2/AAA000" -H "Content-type:application/json" --upload-file provenance.json
 
-See a sample JSON file :download:`file-provenance.json <../_static/api/file-provenance.json>` from http://openprovenance.org (c.f. Huynh, Trung Dong and Moreau, Luc (2014) ProvStore: a public provenance repository. At 5th International Provenance and Annotation Workshop (IPAW'14), Cologne, Germany, 09-13 Jun 2014. pp. 275-277).
+See a sample JSON file :download:`file-provenance.json <../_static/api/file-provenance.json>` from https://openprovenance.org (c.f. Huynh, Trung Dong and Moreau, Luc (2014) ProvStore: a public provenance repository. At 5th International Provenance and Annotation Workshop (IPAW'14), Cologne, Germany, 09-13 Jun 2014. pp. 275-277).
 
 Delete Provenance JSON for an uploaded file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -2686,6 +2706,24 @@ with limit parameter:
 Note the optional "limit" parameter. Without it, the API will attempt to populate the sizes for all the saved originals that don't have them in the database yet. Otherwise it will do so for the first N such datafiles. 
 
 By default, the admin API calls are blocked and can only be called from localhost. See more details in :ref:`:BlockedApiEndpoints <:BlockedApiEndpoints>` and :ref:`:BlockedApiPolicy <:BlockedApiPolicy>` settings in :doc:`/installation/config`.
+
+Get External Tool Parameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This API call is intended as a callback that can be used by :doc:`/installation/external-tools` to retrieve signed Urls  necessary for their interaction with Dataverse.
+It can be called directly as well. (Note that the required FILEMETADATA_ID is the "id" returned in the JSON response from the /api/files/$FILE_ID/metadata call.)
+
+The response is a JSON object described in the :doc:`/api/external-tools` section of the API guide.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export FILE_ID=3
+  export FILEMETADATA_ID=1
+  export TOOL_ID=1
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -H "Accept:application/json" "$SERVER_URL/api/files/$FILE_ID/metadata/$FILEMETADATA_ID/toolparams/$TOOL_ID
 
 Users Token Management
 ----------------------
@@ -4013,7 +4051,7 @@ View the details of the standard license with the database ID specified in ``$ID
   curl $SERVER_URL/api/licenses/$ID
 
 
-Superusers can add a new license by posting a JSON file adapted from this example :download:`add-license.json <../_static/api/add-license.json>`. The ``name`` and ``uri`` of the new license must be unique. If you are interested in adding a Creative Commons license, you are encouarged to use the JSON files under :ref:`adding-creative-commons-licenses`:
+Superusers can add a new license by posting a JSON file adapted from this example :download:`add-license.json <../_static/api/add-license.json>`. The ``name`` and ``uri`` of the new license must be unique. Sort order field is mandatory. If you are interested in adding a Creative Commons license, you are encouarged to use the JSON files under :ref:`adding-creative-commons-licenses`:
 
 .. code-block:: bash
 
@@ -4038,6 +4076,13 @@ Superusers can delete a license, provided it is not in use, by the license ``$ID
 .. code-block:: bash
 
   curl -X DELETE -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/licenses/$ID
+
+Superusers can change the sorting order of a license specified by the license ``$ID``:
+
+.. code-block:: bash
+
+  export SORT_ORDER=100
+  curl -X PUT -H 'Content-Type: application/json' -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/licenses/$ID/:sortOrder/$SORT_ORDER
   
 List Dataset Templates
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -4068,6 +4113,33 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -X DELETE https://demo.dataverse.org/api/admin/template/24
+
+.. _api-native-signed-url:
   
-  
-  
+Request Signed URL
+~~~~~~~~~~~~~~~~~~
+
+Dataverse has the ability to create signed URLs for it's API calls.
+A signature, which is valid only for the specific API call and only for a specified duration, allows the call to proceed with the authentication of the specified user.
+It is intended as an alternative to the use of an API key (which is valid for a long time period and can be used with any API call).
+Signed URLs were developed to support External Tools but may be useful in other scenarios where Dataverse or a third-party tool needs to delegate limited access to another user or tool. 
+This API call allows a Dataverse superUser to generate a signed URL for such scenarios.
+The JSON input parameter required is an object with the following keys:
+
+- ``url`` - the exact URL to sign, including api version number and all query parameters
+- ``timeOut`` - how long in minutes the signature should be valid for, default is 10 minutes
+- ``httpMethod`` - which HTTP method is required, default is GET
+- ``user`` - the user identifier for the account associated with this signature, the default is the superuser making the call. The API call will succeed/fail based on whether the specified user has the required permissions. 
+
+A curl example using allowing access to a dataset's metadata
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export API_KEY=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export JSON='{"url":"https://demo.dataverse.org/api/v1/datasets/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB","timeOut":5,"user":"alberteinstein"}'
+
+  curl -H "X-Dataverse-key:$API_KEY" -H 'Content-Type:application/json' -d "$JSON" $SERVER_URL/api/admin/requestSignedUrl
+
+Please see :ref:`dataverse.api.signature-secret` for the configuration option to add a shared secret, enabling extra
+security.

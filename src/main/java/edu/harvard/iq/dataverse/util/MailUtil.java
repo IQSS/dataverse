@@ -32,6 +32,12 @@ public class MailUtil {
 
     public static String getSubjectTextBasedOnNotification(UserNotification userNotification, Object objectOfNotification) {
         List<String> rootDvNameAsList = Arrays.asList(BrandingUtil.getInstallationBrandName());
+        String datasetDisplayName = "";
+
+        if (objectOfNotification != null && (objectOfNotification instanceof Dataset)  ) {
+            datasetDisplayName = ((Dataset)objectOfNotification).getDisplayName();
+        }
+
         switch (userNotification.getType()) {
             case ASSIGNROLE:
                 return BundleUtil.getStringFromBundle("notification.email.assign.role.subject", rootDvNameAsList);
@@ -46,23 +52,23 @@ public class MailUtil {
             case REJECTFILEACCESS:
                 return BundleUtil.getStringFromBundle("notification.email.rejected.file.access.subject", rootDvNameAsList);
             case DATASETCREATED:
-                return BundleUtil.getStringFromBundle("notification.email.dataset.created.subject", Arrays.asList(rootDvNameAsList.get(0), ((Dataset)objectOfNotification).getDisplayName()));
+                return BundleUtil.getStringFromBundle("notification.email.dataset.created.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
             case CREATEDS:
-                return BundleUtil.getStringFromBundle("notification.email.create.dataset.subject", rootDvNameAsList);
+                return BundleUtil.getStringFromBundle("notification.email.create.dataset.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
             case SUBMITTEDDS:
-                return BundleUtil.getStringFromBundle("notification.email.submit.dataset.subject", rootDvNameAsList);
+                return BundleUtil.getStringFromBundle("notification.email.submit.dataset.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
             case PUBLISHEDDS:
-                return BundleUtil.getStringFromBundle("notification.email.publish.dataset.subject", rootDvNameAsList);
+                return BundleUtil.getStringFromBundle("notification.email.publish.dataset.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
             case PUBLISHFAILED_PIDREG:
-                return BundleUtil.getStringFromBundle("notification.email.publishFailure.dataset.subject", rootDvNameAsList);
+                return BundleUtil.getStringFromBundle("notification.email.publishFailure.dataset.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
             case RETURNEDDS:
-                return BundleUtil.getStringFromBundle("notification.email.returned.dataset.subject", rootDvNameAsList);
+                return BundleUtil.getStringFromBundle("notification.email.returned.dataset.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
             case WORKFLOW_SUCCESS:
-                return BundleUtil.getStringFromBundle("notification.email.workflow.success.subject", rootDvNameAsList);
+                return BundleUtil.getStringFromBundle("notification.email.workflow.success.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
             case WORKFLOW_FAILURE:
-                return BundleUtil.getStringFromBundle("notification.email.workflow.failure.subject", rootDvNameAsList);
+                return BundleUtil.getStringFromBundle("notification.email.workflow.failure.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
             case STATUSUPDATED:
-                return BundleUtil.getStringFromBundle("notification.email.status.change.subject", rootDvNameAsList);
+                return BundleUtil.getStringFromBundle("notification.email.status.change.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
             case CREATEACC:
                 return BundleUtil.getStringFromBundle("notification.email.create.account.subject", rootDvNameAsList);
             case CHECKSUMFAIL:
@@ -115,9 +121,9 @@ public class MailUtil {
             case APIGENERATED:
                 return BundleUtil.getStringFromBundle("notification.email.apiTokenGenerated.subject",  rootDvNameAsList);
             case INGESTCOMPLETED:
-                return BundleUtil.getStringFromBundle("notification.email.ingestCompleted.subject", rootDvNameAsList);
+                return BundleUtil.getStringFromBundle("notification.email.ingestCompleted.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
             case INGESTCOMPLETEDWITHERRORS:
-                return BundleUtil.getStringFromBundle("notification.email.ingestCompletedWithErrors.subject", rootDvNameAsList);
+                return BundleUtil.getStringFromBundle("notification.email.ingestCompletedWithErrors.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
             case DATASETMENTIONED:
                 return BundleUtil.getStringFromBundle("notification.email.datasetWasMentioned.subject", rootDvNameAsList);
         }
