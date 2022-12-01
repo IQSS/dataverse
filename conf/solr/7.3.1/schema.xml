@@ -151,6 +151,7 @@
     <field name="dvAlias" type="text_en" stored="true" indexed="true" multiValued="false"/>
     <field name="dvAffiliation" type="text_en" stored="true" indexed="true" multiValued="false"/>
     <field name="dvDescription" type="text_en" stored="true" indexed="true" multiValued="false"/>
+    <field name="dvExtraDescription" type="text_en" stored="true" indexed="true" multiValued="false"/>
 
     <field name="dvCategory" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="categoryOfDataverse" type="string" stored="true" indexed="true" multiValued="false"/>
@@ -249,6 +250,7 @@
 
 
     <copyField source="description" dest="_text_" maxChars="3000"/>
+    <copyField source="dvExtraDescription" dest="_text_" maxChars="3000"/>
 
     <!-- Added for Dataverse 4.0 Beta: make variable names and labels searchable in basic search https://redmine.hmdc.harvard.edu/issues/3945 -->
     <copyField source="variableName" dest="_text_" maxChars="3000"/>

@@ -113,6 +113,9 @@ public class Dataverse extends DvObjectContainer {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
+    @Column(name = "additional_description", columnDefinition = "TEXT")
+    private String additionalDescription;
+
     @Enumerated(EnumType.STRING)
     @NotNull(message = "{dataverse.category}")
     @Column(nullable = false)
@@ -685,6 +688,14 @@ public class Dataverse extends DvObjectContainer {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getAdditionalDescription() {
+        return additionalDescription;
+    }
+
+    public void setAdditionalDescription(String additionalDescription) {
+        this.additionalDescription = additionalDescription;
     }
 
     public String getAffiliation() {

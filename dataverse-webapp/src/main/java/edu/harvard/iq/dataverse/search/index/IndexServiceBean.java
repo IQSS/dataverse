@@ -179,6 +179,7 @@ public class IndexServiceBean {
 
         solrInputDocument.addField(SearchFields.DESCRIPTION, StringUtil.html2text(dataverse.getDescription()));
         solrInputDocument.addField(SearchFields.DATAVERSE_DESCRIPTION, StringUtil.html2text(dataverse.getDescription()));
+        solrInputDocument.addField(SearchFields.DATAVERSE_EXTRA_DESCRIPTION, dataverse.getAdditionalDescription());
 
         if (StringUtils.isNotEmpty(dataverse.getAffiliation())) {
             solrInputDocument.addField(SearchFields.AFFILIATION, dataverse.getAffiliation());
