@@ -2029,6 +2029,24 @@ Archiving is an optional feature that may be configured for a Dataverse installa
 
   curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE "$SERVER_URL/api/datasets/:persistentId/$VERSION/archivalStatus?persistentId=$PERSISTENT_IDENTIFIER"
   
+Get External Tool Parameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This API call is intended as a callback that can be used by :doc:`/installation/external-tools` to retrieve signed Urls  necessary for their interaction with Dataverse.
+It can be called directly as well.
+
+The response is a JSON object described in the :doc:`/api/external-tools` section of the API guide.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/7U7YBV
+  export VERSION=1.0
+  export TOOL_ID=1
+  
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/toolparams/$TOOL_ID?persistentId=$PERSISTENT_IDENTIFIER"
 
 Files
 -----
@@ -2688,6 +2706,24 @@ with limit parameter:
 Note the optional "limit" parameter. Without it, the API will attempt to populate the sizes for all the saved originals that don't have them in the database yet. Otherwise it will do so for the first N such datafiles. 
 
 By default, the admin API calls are blocked and can only be called from localhost. See more details in :ref:`:BlockedApiEndpoints <:BlockedApiEndpoints>` and :ref:`:BlockedApiPolicy <:BlockedApiPolicy>` settings in :doc:`/installation/config`.
+
+Get External Tool Parameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This API call is intended as a callback that can be used by :doc:`/installation/external-tools` to retrieve signed Urls  necessary for their interaction with Dataverse.
+It can be called directly as well. (Note that the required FILEMETADATA_ID is the "id" returned in the JSON response from the /api/files/$FILE_ID/metadata call.)
+
+The response is a JSON object described in the :doc:`/api/external-tools` section of the API guide.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export FILE_ID=3
+  export FILEMETADATA_ID=1
+  export TOOL_ID=1
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -H "Accept:application/json" "$SERVER_URL/api/files/$FILE_ID/metadata/$FILEMETADATA_ID/toolparams/$TOOL_ID
 
 Users Token Management
 ----------------------
@@ -4218,6 +4254,33 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -X DELETE https://demo.dataverse.org/api/admin/template/24
+
+.. _api-native-signed-url:
   
-  
-  
+Request Signed URL
+~~~~~~~~~~~~~~~~~~
+
+Dataverse has the ability to create signed URLs for it's API calls.
+A signature, which is valid only for the specific API call and only for a specified duration, allows the call to proceed with the authentication of the specified user.
+It is intended as an alternative to the use of an API key (which is valid for a long time period and can be used with any API call).
+Signed URLs were developed to support External Tools but may be useful in other scenarios where Dataverse or a third-party tool needs to delegate limited access to another user or tool. 
+This API call allows a Dataverse superUser to generate a signed URL for such scenarios.
+The JSON input parameter required is an object with the following keys:
+
+- ``url`` - the exact URL to sign, including api version number and all query parameters
+- ``timeOut`` - how long in minutes the signature should be valid for, default is 10 minutes
+- ``httpMethod`` - which HTTP method is required, default is GET
+- ``user`` - the user identifier for the account associated with this signature, the default is the superuser making the call. The API call will succeed/fail based on whether the specified user has the required permissions. 
+
+A curl example using allowing access to a dataset's metadata
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export API_KEY=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export JSON='{"url":"https://demo.dataverse.org/api/v1/datasets/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB","timeOut":5,"user":"alberteinstein"}'
+
+  curl -H "X-Dataverse-key:$API_KEY" -H 'Content-Type:application/json' -d "$JSON" $SERVER_URL/api/admin/requestSignedUrl
+
+Please see :ref:`dataverse.api.signature-secret` for the configuration option to add a shared secret, enabling extra
+security.
