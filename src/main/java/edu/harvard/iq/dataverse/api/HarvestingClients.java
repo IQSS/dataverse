@@ -147,10 +147,16 @@ public class HarvestingClients extends AbstractApiBean {
     @POST
     @Path("{nickName}")
     public Response createHarvestingClient(String jsonBody, @PathParam("nickName") String nickName, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
-        // Note that we don't check the user's authorization within the API 
-        // method. Instead, we will end up reporting a "not authorized" 
-        // exception thrown by the Command, if this user has no permission 
-        // to perform the action. 
+        // Per the discussion during the QA of PR #9174, we decided to make 
+        // the create/edit APIs superuser-only (the delete API was already so)
+        try {
+            User u = findUserOrDie();
+            if ((!(u instanceof AuthenticatedUser) || !u.isSuperuser())) {
+                throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "Only superusers can create harvesting clients."));
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
  
         try ( StringReader rdr = new StringReader(jsonBody) ) {
             JsonObject json = Json.createReader(rdr).readObject();
@@ -225,6 +231,15 @@ public class HarvestingClients extends AbstractApiBean {
     @PUT
     @Path("{nickName}")
     public Response modifyHarvestingClient(String jsonBody, @PathParam("nickName") String nickName, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
+        try {
+            User u = findUserOrDie();
+            if ((!(u instanceof AuthenticatedUser) || !u.isSuperuser())) {
+                throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "Only superusers can modify harvesting clients."));
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        
         HarvestingClient harvestingClient = null; 
         try {
             harvestingClient = harvestingClientService.findByNickname(nickName);
@@ -293,8 +308,7 @@ public class HarvestingClients extends AbstractApiBean {
         // Deleting a client can take a while (if there's a large amnount of 
         // harvested content associated with it). So instead of calling the command
         // directly, we will be calling an async. service bean method. 
-        // Without the command engine taking care of authorization, we'll need
-        // to check if the user has the right to do this explicitly:
+
         
         try {
             User u = findUserOrDie();
