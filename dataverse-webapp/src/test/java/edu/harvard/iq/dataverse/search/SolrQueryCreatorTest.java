@@ -168,7 +168,7 @@ class SolrQueryCreatorTest {
         //when
         String result = solrQueryCreator.constructQuery(Lists.newArrayList((searchBlock)));
         //then
-        Assert.assertEquals("license:\"License 1\" AND license:\"License 2\"", result);
+        Assert.assertEquals("(license:\"License 1\" OR license:\"License 2\") AND dvObjectType:\"files\"", result);
     }
 
     

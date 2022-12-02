@@ -11,6 +11,7 @@ import org.apache.commons.lang.StringUtils;
 import edu.harvard.iq.dataverse.persistence.datafile.license.License;
 import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseRepository;
 import edu.harvard.iq.dataverse.search.SearchFields;
+import edu.harvard.iq.dataverse.search.query.SearchObjectType;
 
 
 /**
@@ -111,7 +112,7 @@ public class SolrQueryCreator {
                         License license = licenseRepository.getById(Long.parseLong(licenseId));
                         if (license != null) {
                             checkboxQueryBuilder
-                            .append(checkboxQueryBuilder.length() == 0 ? StringUtils.EMPTY : " AND ")
+                            .append(checkboxQueryBuilder.length() == 0 ? StringUtils.EMPTY : " OR ")
                             .append(checkboxSearchField.getName())
                             .append(":")
                             .append("\"")
@@ -120,6 +121,19 @@ public class SolrQueryCreator {
                         }
                 }
                 );
+        if (checkboxQueryBuilder.length() > 0) {
+            if (checkboxQueryBuilder.indexOf(" OR ") != -1) {
+                checkboxQueryBuilder.insert(0, "(")
+                                    .append(")");
+            }
+            
+            checkboxQueryBuilder.append(" AND ")
+                                .append(SearchFields.TYPE)
+                                .append(":")
+                                .append("\"")
+                                .append(SearchObjectType.FILES.getSolrValue())
+                                .append("\"");
+        }
 
         return checkboxQueryBuilder.toString();
     }
