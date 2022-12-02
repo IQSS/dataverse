@@ -555,9 +555,11 @@ public class JsonPrinter {
         if (fld.isControlledVocabulary()) {
             // If the field has a controlled vocabulary,
             // add all values to the resulting JSON
-            fieldsBld.add(
-                    "controlledVocabularyValues",
-                    fld.getControlledVocabularyValues().toArray().toString());
+            JsonArrayBuilder jab = Json.createArrayBuilder();
+            for (ControlledVocabularyValue cvv : fld.getControlledVocabularyValues()) {
+                jab.add(cvv.getStrValue());
+            }
+            fieldsBld.add("controlledVocabularyValues", jab);
         }
         if (!fld.getChildDatasetFieldTypes().isEmpty()) {
             JsonObjectBuilder subFieldsBld = jsonObjectBuilder();
