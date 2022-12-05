@@ -699,6 +699,26 @@ Once you have configured a trusted remote store, you can point your users to the
     
     ===========================================  ==================  ==========================================================================  ===================
 
+.. _temporary-file-storage:
+
+Temporary Upload File Storage
++++++++++++++++++++++++++++++
+
+When uploading files via the API or Web UI, you need to be aware that multiple steps are involved to enable
+features like ingest processing, transfer to a permanent storage, checking for duplicates, unzipping etc.
+
+All of these processes are triggered after finishing transfers over the wire and moving the data into a temporary
+(configurable) location on disk at :ref:`${dataverse.files.directory} <dataverse.files.directory>`\ ``/temp``.
+
+Before being moved there,
+
+- JSF Web UI uploads are stored at :ref:`${dataverse.files.uploads} <dataverse.files.uploads>`, defaulting to
+  ``/usr/local/payara5/glassfish/domains/domain1/uploads`` folder in a standard installation. This place is
+  configurable and might be set to a separate disk volume where stale uploads are purged periodically.
+- API uploads are stored at the system's temporary files location indicated by the Java system property
+  ``java.io.tmpdir``, defaulting to ``/tmp`` on Linux. If this location is backed by a `tmpfs <https://www.kernel.org/doc/html/latest/filesystems/tmpfs.html>`_
+  on your machine, large file uploads via API will cause RAM and/or swap usage bursts. You might want to point this to
+  a different location, restrict maximum size of it, and monitor for stale uploads.
 
 
 .. _Branding Your Installation:
@@ -1434,10 +1454,26 @@ Note that it's also possible to use the ``dataverse.fqdn`` as a variable, if you
 
 We are absolutely aware that it's confusing to have both ``dataverse.fqdn`` and ``dataverse.siteUrl``. https://github.com/IQSS/dataverse/issues/6636 is about resolving this confusion.
 
+.. _dataverse.files.directory:
+
 dataverse.files.directory
 +++++++++++++++++++++++++
 
 This is how you configure the path Dataverse uses for temporary files. (File store specific dataverse.files.\<id\>.directory options set the permanent data storage locations.)
+
+.. _dataverse.files.uploads:
+
+dataverse.files.uploads
++++++++++++++++++++++++
+
+Configure a folder to store the incoming file stream during uploads (before transfering to `${dataverse.files.directory}/temp`).
+Please also see :ref:`temporary-file-storage` for more details.
+You can use an absolute path or a relative, which is relative to the application server domain directory.
+
+Defaults to ``./uploads``, which resolves to ``/usr/local/payara5/glassfish/domains/domain1/uploads`` in a default
+installation.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FILES_UPLOADS``.
 
 dataverse.auth.password-reset-timeout-in-minutes
 ++++++++++++++++++++++++++++++++++++++++++++++++
