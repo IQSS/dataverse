@@ -103,7 +103,7 @@ public class OAIServlet extends HttpServlet {
      xml produced by  https://demo.dataverse.org/oai?verb=ListMetadataFormats will validate
     */
     private static final String DATAVERSE_EXTENDED_METADATA_FORMAT = "dataverse_json";
-    private static final String DATAVERSE_EXTENDED_METADATA_NAMESPACE = "https://dataverse.org/schema/core#";
+    private static final String DATAVERSE_EXTENDED_METADATA_NAMESPACE = "https://dataverse.org/schema/core";
     private static final String DATAVERSE_EXTENDED_METADATA_SCHEMA = "https://dataverse.org/schema/core.xsd";     
     
     private Context xoaiContext;
