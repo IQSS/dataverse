@@ -10,8 +10,6 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2Aut
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorUtil;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
 import org.passay.CharacterRule;
 
 import javax.ejb.EJB;
@@ -46,7 +44,6 @@ import java.util.regex.Pattern;
 public class SystemConfig {
 
     private static final Logger logger = Logger.getLogger(SystemConfig.class.getCanonicalName());
-    private static final Config config = ConfigProvider.getConfig();
 
     @EJB
     SettingsServiceBean settingsService;
@@ -133,7 +130,6 @@ public class SystemConfig {
         //       It will default to read from microprofile-config.properties source,
         //       which contains in the source a Maven property reference to ${project.version}.
         //       When packaging the app to deploy it, Maven will replace this, rendering it a static entry.
-        // NOTE: MicroProfile Config will cache the entry for us in internal maps.
         String appVersion = JvmSettings.VERSION.lookup();
             
         if (withBuildNumber) {
