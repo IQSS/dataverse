@@ -831,10 +831,6 @@ public class IndexServiceBean {
                         }
                     }
 
-                    if (fileMetadata.getTermsOfUse().getLicense() != null) {
-                        datafileSolrInputDocument.addField(SearchFields.LICENSE, fileMetadata.getTermsOfUse().getLicense().getName());
-                    }
-
                     /* Full-text indexing using Apache Tika */
                     if (doFullTextIndexing) {
                         if (!dataset.isHarvested() && fileMetadata.getTermsOfUse().getTermsOfUseType() != TermsOfUseType.RESTRICTED
