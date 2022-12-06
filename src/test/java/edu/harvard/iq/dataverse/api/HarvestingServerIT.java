@@ -10,7 +10,12 @@ import org.junit.Test;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.path.json.JsonPath;
+import com.jayway.restassured.path.xml.XmlPath;
+import com.jayway.restassured.path.xml.element.Node;
 import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import javax.json.Json;
 import javax.json.JsonArray;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
@@ -24,11 +29,18 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * extremely minimal API tests for creating OAI sets.
+ * Tests for the Harvesting Server functionality
+ * Note that these test BOTH the proprietary Dataverse rest APIs for creating 
+ * and managing sets, AND the OAI-PMH functionality itself.
  */
 public class HarvestingServerIT {
 
     private static final Logger logger = Logger.getLogger(HarvestingServerIT.class.getCanonicalName());
+
+    private static String normalUserAPIKey;
+    private static String adminUserAPIKey;
+    private static String singleSetDatasetIdentifier;
+    private static String singleSetDatasetPersistentId;
 
     @BeforeClass
     public static void setUpClass() {
@@ -36,6 +48,13 @@ public class HarvestingServerIT {
 	// enable harvesting server
 	//  Gave some thought to storing the original response, and resetting afterwards - but that appears to be more complexity than it's worth
 	Response enableHarvestingServerResponse = UtilIT.setSetting(SettingsServiceBean.Key.OAIServerEnabled,"true");
+        
+        // Create users:
+        setupUsers();
+        
+        // Create and publish some datasets: 
+        setupDatasets();
+        
     }
 
     @AfterClass
@@ -44,13 +63,47 @@ public class HarvestingServerIT {
 	Response enableHarvestingServerResponse = UtilIT.setSetting(SettingsServiceBean.Key.OAIServerEnabled,"false");
     }
 
-    private void setupUsers() {
+    private static void setupUsers() {
         Response cu0 = UtilIT.createRandomUser();
         normalUserAPIKey = UtilIT.getApiTokenFromResponse(cu0);
         Response cu1 = UtilIT.createRandomUser();
         String un1 = UtilIT.getUsernameFromResponse(cu1);
         Response u1a = UtilIT.makeSuperUser(un1);
         adminUserAPIKey = UtilIT.getApiTokenFromResponse(cu1);
+    }
+    
+    private static void setupDatasets() {
+        // create dataverse:
+        Response createDataverseResponse = UtilIT.createRandomDataverse(adminUserAPIKey);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        // publish dataverse:
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, adminUserAPIKey);
+        assertEquals(OK.getStatusCode(), publishDataverse.getStatusCode());
+
+        // create dataset: 
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, adminUserAPIKey);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+        // retrieve the global id: 
+        singleSetDatasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+
+        // publish dataset:
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(singleSetDatasetPersistentId, "major", adminUserAPIKey);
+        assertEquals(200, publishDataset.getStatusCode());
+
+        singleSetDatasetIdentifier = singleSetDatasetPersistentId.substring(singleSetDatasetPersistentId.lastIndexOf('/') + 1);
+
+        logger.info("identifier: " + singleSetDatasetIdentifier);
+        
+        // Publish command is executed asynchronously, i.e. it may 
+        // still be running after we received the OK from the publish API. 
+        // The oaiExport step also requires the metadata exports to be done and this
+        // takes longer than just publish/reindex.
+        // So wait for all of this to finish.
+        UtilIT.sleepForReexport(singleSetDatasetPersistentId, adminUserAPIKey, 10);
     }
 
     private String jsonForTestSpec(String name, String def) {
@@ -63,20 +116,84 @@ public class HarvestingServerIT {
         return r;
     }
 
-    private String normalUserAPIKey;
-    private String adminUserAPIKey;
+    private XmlPath validateOaiVerbResponse(Response oaiResponse, String verb) {
+        // confirm that the response is in fact XML:
+        XmlPath responseXmlPath = oaiResponse.getBody().xmlPath();
+        assertNotNull(responseXmlPath);
+        
+        String dateString = responseXmlPath.getString("OAI-PMH.responseDate");
+        assertNotNull(dateString); // TODO: validate that it's well-formatted!
+        logger.info("date string from the OAI output:"+dateString);
+        assertEquals("http://localhost:8080/oai", responseXmlPath.getString("OAI-PMH.request"));
+        assertEquals(verb, responseXmlPath.getString("OAI-PMH.request.@verb"));
+        return responseXmlPath;
+    }
+    
+    @Test 
+    public void testOaiIdentify() {
+        // Run Identify:
+        Response identifyResponse = UtilIT.getOaiIdentify();
+        assertEquals(OK.getStatusCode(), identifyResponse.getStatusCode());
+        //logger.info("Identify response: "+identifyResponse.prettyPrint());
 
+        // Validate the response: 
+        
+        XmlPath responseXmlPath = validateOaiVerbResponse(identifyResponse, "Identify");
+        assertEquals("http://localhost:8080/oai", responseXmlPath.getString("OAI-PMH.Identify.baseURL"));
+        // Confirm that the server is reporting the correct parameters that 
+        // our server implementation should be using:
+        assertEquals("2.0", responseXmlPath.getString("OAI-PMH.Identify.protocolVersion"));
+        assertEquals("transient", responseXmlPath.getString("OAI-PMH.Identify.deletedRecord"));
+        assertEquals("YYYY-MM-DDThh:mm:ssZ", responseXmlPath.getString("OAI-PMH.Identify.granularity"));
+    }
+    
     @Test
-    public void testSetCreation() {
-        setupUsers();
+    public void testOaiListMetadataFormats() {
+        // Run ListMeatadataFormats:
+        Response listFormatsResponse = UtilIT.getOaiListMetadataFormats();
+        assertEquals(OK.getStatusCode(), listFormatsResponse.getStatusCode());
+        //logger.info("ListMetadataFormats response: "+listFormatsResponse.prettyPrint());
+
+        // Validate the response: 
+        
+        XmlPath responseXmlPath = validateOaiVerbResponse(listFormatsResponse, "ListMetadataFormats");
+        
+        // Check the payload of the response atgainst the list of metadata formats
+        // we are currently offering under OAI; will need to be explicitly 
+        // modified if/when we add more harvestable formats.
+        
+        List listFormats = responseXmlPath.getList("OAI-PMH.ListMetadataFormats.metadataFormat");
+
+        assertNotNull(listFormats);
+        assertEquals(5, listFormats.size());
+        
+        // The metadata formats are reported in an unpredictable ordder. We
+        // want to sort the prefix names for comparison purposes, and for that 
+        // they need to be saved in a modifiable list: 
+        List<String> metadataPrefixes = new ArrayList<>(); 
+        
+        for (int i = 0; i < listFormats.size(); i++) {
+            metadataPrefixes.add(responseXmlPath.getString("OAI-PMH.ListMetadataFormats.metadataFormat["+i+"].metadataPrefix"));
+        }
+        Collections.sort(metadataPrefixes);
+        
+        assertEquals("[Datacite, dataverse_json, oai_datacite, oai_dc, oai_ddi]", metadataPrefixes.toString());
+        
+
+    }
+    
+    
+    @Test
+    public void testSetCreateAPIandOAIlistIdentifiers() {
+        // Create the set with Dataverse /api/harvest/server API:
         String setName = UtilIT.getRandomString(6);
         String def = "*";
 
         // make sure the set does not exist
-        String u0 = String.format("/api/harvest/server/oaisets/%s", setName);
+        String setPath = String.format("/api/harvest/server/oaisets/%s", setName);
         String createPath ="/api/harvest/server/oaisets/add";
         Response r0 = given()
-                .get(u0);
+                .get(setPath);
         assertEquals(404, r0.getStatusCode());
 
         // try to create set as normal user, should fail
@@ -94,7 +211,7 @@ public class HarvestingServerIT {
         assertEquals(201, r2.getStatusCode());
         
         Response getSet = given()
-                .get(u0);
+                .get(setPath);
         
         logger.info("getSet.getStatusCode(): " + getSet.getStatusCode());
         logger.info("getSet printresponse:  " + getSet.prettyPrint());
@@ -118,17 +235,19 @@ public class HarvestingServerIT {
         Response r4 = UtilIT.exportOaiSet(setName);
         assertEquals(200, r4.getStatusCode());
         
-        // try to delete as normal user  should fail
+        
+        
+        // try to delete as normal user, should fail
         Response r5 = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, normalUserAPIKey)
-                .delete(u0);
+                .delete(setPath);
         logger.info("r5.getStatusCode(): " + r5.getStatusCode());
         assertEquals(400, r5.getStatusCode());
         
-        // try to delete as admin user  should work
+        // try to delete as admin user, should work
         Response r6 = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
-                .delete(u0);
+                .delete(setPath);
         logger.info("r6.getStatusCode(): " + r6.getStatusCode());
         assertEquals(200, r6.getStatusCode());
 
@@ -136,7 +255,7 @@ public class HarvestingServerIT {
     
     @Test
     public void testSetEdit() {
-        setupUsers();
+        //setupUsers();
         String setName = UtilIT.getRandomString(6);
         String def = "*";
 
@@ -195,46 +314,17 @@ public class HarvestingServerIT {
     // OAI set with that one dataset, and attempt to retrieve the OAI record
     // with GetRecord. 
     @Test
-    public void testOaiFunctionality() throws InterruptedException {
+    public void testSingleRecordOaiSet() throws InterruptedException {
 
-        setupUsers();
+        //setupUsers();
 
-        // create dataverse:
-        Response createDataverseResponse = UtilIT.createRandomDataverse(adminUserAPIKey);
-        createDataverseResponse.prettyPrint();
-        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
-
-        // publish dataverse:
-        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, adminUserAPIKey);
-        assertEquals(OK.getStatusCode(), publishDataverse.getStatusCode());
-
-        // create dataset: 
-        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, adminUserAPIKey);
-        createDatasetResponse.prettyPrint();
-        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
-
-        // retrieve the global id: 
-        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
-
-        // publish dataset:
-        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", adminUserAPIKey);
-        assertEquals(200, publishDataset.getStatusCode());
-
-        String identifier = datasetPersistentId.substring(datasetPersistentId.lastIndexOf('/') + 1);
-
-        logger.info("identifier: " + identifier);
-
-        // Let's try and create an OAI set with the dataset we have just 
-        // created and published:
-        // - however, publish command is executed asynchronously, i.e. it may 
-        // still be running after we received the OK from the publish API. 
-        // The oaiExport step also requires the metadata exports to be done and this
-        // takes longer than just publish/reindex.
-        // So wait for all of this to finish.
-        UtilIT.sleepForReexport(datasetPersistentId, adminUserAPIKey, 10);
         
-        String setName = identifier;
-        String setQuery = "dsPersistentId:" + identifier;
+
+        // Let's try and create an OAI set with the "single set dataset" that 
+        // was created as part of the initial setup:
+        
+        String setName = singleSetDatasetIdentifier;
+        String setQuery = "dsPersistentId:" + singleSetDatasetIdentifier;
         String apiPath = String.format("/api/harvest/server/oaisets/%s", setName);
         String createPath ="/api/harvest/server/oaisets/add";
         Response createSetResponse = given()
@@ -277,12 +367,18 @@ public class HarvestingServerIT {
                 // There should be 1 and only 1 record in the response:
                 assertEquals(1, ret.size());
                 // And the record should be the dataset we have just created:
-                assertEquals(datasetPersistentId, listIdentifiersResponse.getBody().xmlPath()
+                assertEquals(singleSetDatasetPersistentId, listIdentifiersResponse.getBody().xmlPath()
                         .getString("OAI-PMH.ListIdentifiers.header.identifier"));
                 break;
             }
             Thread.sleep(1000L);
-        } while (i<maxWait);
+        } while (i<maxWait); 
+        // OK, the code above that expects to have to wait for up to 10 seconds 
+        // for the set to export is most likely utterly unnecessary (the potentially
+        // expensive part of the operation - exporting the metadata of our dataset -
+        // already happened during its publishing (we made sure to wait there). 
+        // Exporting the set should not take any time - but I'll keep that code 
+        // in place since it's not going to hurt. - L.A. 
         System.out.println("Waited " + i + " seconds for OIA export.");
         //Fail if we didn't find the exported record before the timeout
         assertTrue(i < maxWait);
@@ -292,7 +388,7 @@ public class HarvestingServerIT {
 
         assertNotNull(listRecords);
         assertEquals(1, listRecords.size());
-        assertEquals(datasetPersistentId, listRecordsResponse.getBody().xmlPath().getString("OAI-PMH.ListRecords.record[0].header.identifier"));
+        assertEquals(singleSetDatasetPersistentId, listRecordsResponse.getBody().xmlPath().getString("OAI-PMH.ListRecords.record[0].header.identifier"));
 
         // assert that Datacite format does not contain the XML prolog
         Response listRecordsResponseDatacite = UtilIT.getOaiListRecords(setName, "Datacite");
@@ -301,11 +397,25 @@ public class HarvestingServerIT {
         assertFalse(body.contains("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
 
         // And now run GetRecord on the OAI record for the dataset:
-        Response getRecordResponse = UtilIT.getOaiRecord(datasetPersistentId, "oai_dc");
-
-        assertEquals(datasetPersistentId, getRecordResponse.getBody().xmlPath().getString("OAI-PMH.GetRecord.record.header.identifier"));
+        Response getRecordResponse = UtilIT.getOaiRecord(singleSetDatasetPersistentId, "oai_dc");
+        
+        System.out.println("GetRecord response in its entirety: "+getRecordResponse.getBody().prettyPrint());
+        System.out.println("one more time:");
+        getRecordResponse.prettyPrint();
+        
+        assertEquals(singleSetDatasetPersistentId, getRecordResponse.getBody().xmlPath().getString("OAI-PMH.GetRecord.record.header.identifier"));
 
         // TODO: 
         // check the actual metadata payload of the OAI record more carefully?
+    }
+    
+    // This test will attempt to create a set with multiple records (enough 
+    // to trigger a paged response with a continuation token) and test its
+    // performance. 
+    
+    
+    @Test
+    public void testMultiRecordOaiSet() throws InterruptedException {
+        
     }
 }
