@@ -44,6 +44,19 @@ public class RequestAccessCommand extends AbstractCommand<DataFile> {
         this.sendNotification = sendNotification;
     }
 
+        
+        public RequestAccessCommand(DataverseRequest dvRequest, DataFile file, GuestbookResponse gbr) {
+            this(dvRequest, file, gbr, false);
+        }
+
+        public RequestAccessCommand(DataverseRequest dvRequest, DataFile file, GuestbookResponse gbr, Boolean sendNotification) {
+            // for data file check permission on owning dataset
+            super(dvRequest, file);        
+            this.file = file;
+            this.requester = (AuthenticatedUser) dvRequest.getUser();
+            this.fileAccessRequest = new FileAccessRequest(file,requester,gbr);
+            this.sendNotification = sendNotification;
+        }
     @Override
     public DataFile execute(CommandContext ctxt) throws CommandException {
 
@@ -53,7 +66,8 @@ public class RequestAccessCommand extends AbstractCommand<DataFile> {
         
         //if user already has permission to download file or the file is public throw command exception
         logger.info("User: " + this.getRequest().getAuthenticatedUser().getName());
-        logger.info("File: " + file.getId());
+        logger.info("File: " + file.getId() + " : restricted?: " + file.isRestricted());
+        logger.info("permission?: " + ctxt.permissions().requestOn(this.getRequest(), file).has(Permission.DownloadFile));
         if (!file.isRestricted() || ctxt.permissions().requestOn(this.getRequest(), file).has(Permission.DownloadFile)) {
             throw new CommandException(BundleUtil.getStringFromBundle("file.requestAccess.notAllowed.alreadyHasDownloadPermisssion"), this);
         }
