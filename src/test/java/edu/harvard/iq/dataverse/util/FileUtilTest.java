@@ -138,7 +138,7 @@ public class FileUtilTest {
             DatasetVersion dsv1 = new DatasetVersion();
             dsv1.setVersionState(DatasetVersion.VersionState.RELEASED);
             TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
-            License license = new License("CC0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0"), URI.create("/resources/images/cc0.png"), true, 1l);
+            License license = new License("CC0 1.0", "Creative Commons CC0 1.0 Universal Public Domain Dedication.", URI.create("https://creativecommons.org/publicdomain/zero/1.0"), URI.create("https://licensebuttons.net/p/zero/1.0/88x31.png"), true,1L);
             license.setDefault(true);
             termsOfUseAndAccess.setLicense(license);
             dsv1.setTermsOfUseAndAccess(termsOfUseAndAccess);

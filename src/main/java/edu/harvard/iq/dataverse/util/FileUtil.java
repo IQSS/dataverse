@@ -28,6 +28,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Embargo;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
@@ -1639,6 +1640,71 @@ public class FileUtil implements java.io.Serializable  {
         return null;
     }
 
+    /**
+     * isGuestbookAndTermsPopupRequired
+     * meant to replace both isDownloadPopupRequired() and isRequestAccessDownloadPopupRequired() when the guestbook-terms-popup-fragment.xhtml
+     * replaced file-download-popup-fragment.xhtml and file-request-access-popup-fragment.xhtml
+     * @param datasetVersion
+     * @return boolean
+     */
+
+    public static boolean isGuestbookAndTermsPopupRequired(DatasetVersion datasetVersion) {
+        return isGuestbookPopupRequired(datasetVersion) || isTermsPopupRequired(datasetVersion);
+    }
+
+    public static boolean isGuestbookPopupRequired(DatasetVersion datasetVersion) {
+
+        if (datasetVersion == null) {
+            logger.fine("GuestbookPopup not required because datasetVersion is null.");
+            return false;
+        }
+        //0. if version is draft then Popup "not required"
+        if (!datasetVersion.isReleased()) {
+            logger.fine("GuestbookPopup not required because datasetVersion has not been released.");
+            return false;
+        }
+
+        // 3. Guest Book:
+        if (datasetVersion.getDataset() != null && datasetVersion.getDataset().getGuestbook() != null && datasetVersion.getDataset().getGuestbook().isEnabled() && datasetVersion.getDataset().getGuestbook().getDataverse() != null) {
+            logger.fine("GuestbookPopup required because an enabled guestbook exists.");
+            return true;
+        }
+
+        logger.fine("GuestbookPopup is not required.");
+        return false;
+    }
+
+    public static boolean isTermsPopupRequired(DatasetVersion datasetVersion) {
+
+        if (datasetVersion == null) {
+            logger.fine("TermsPopup not required because datasetVersion is null.");
+            return false;
+        }
+        //0. if version is draft then Popup "not required"
+        if (!datasetVersion.isReleased()) {
+            logger.fine("TermsPopup not required because datasetVersion has not been released.");
+            return false;
+        }
+        // 1. License and Terms of Use:
+        if (datasetVersion.getTermsOfUseAndAccess() != null) {
+            if (!License.CC0.equals(datasetVersion.getTermsOfUseAndAccess().getLicense())
+                    && !(datasetVersion.getTermsOfUseAndAccess().getTermsOfUse() == null
+                    || datasetVersion.getTermsOfUseAndAccess().getTermsOfUse().equals(""))) {
+                logger.fine("TermsPopup required because of license or terms of use.");
+                return true;
+            }
+
+            // 2. Terms of Access:
+            if (!(datasetVersion.getTermsOfUseAndAccess().getTermsOfAccess() == null) && !datasetVersion.getTermsOfUseAndAccess().getTermsOfAccess().equals("")) {
+                logger.fine("TermsPopup required because of terms of access.");
+                return true;
+            }
+        }
+
+        logger.fine("TermsPopup is not required.");
+        return false;
+    }
+    
     /**
      * Provide download URL if no Terms of Use, no guestbook, and not
      * restricted.

@@ -56,6 +56,8 @@ public class ManagePermissionsPage implements java.io.Serializable {
     @EJB
     DvObjectServiceBean dvObjectService;
     @EJB
+    FileAccessRequestServiceBean fileAccessRequestService;
+    @EJB
     DataverseRoleServiceBean roleService;
     @EJB
     RoleAssigneeServiceBean roleAssigneeService;
@@ -400,6 +402,51 @@ public class ManagePermissionsPage implements java.io.Serializable {
         return roleAssigneeService.filterRoleAssignees(query, dvObject, roleAssignSelectedRoleAssignees);
     }
 
+    public void grantAccess(ActionEvent evt) {
+        //QDRADA 
+        logger.info("grantAccess Called");
+        try {
+        throw new Exception("grantAccessCalled");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        /*
+        // Find the built in file downloader role (currently by alias)
+        DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER);
+        for (RoleAssignee roleAssignee : selectedRoleAssignees) {
+            boolean sendNotification = false;
+            for (DataFile file : selectedFiles) {
+                if (assignRole(roleAssignee, file, fileDownloaderRole)) {
+                    if (file.isReleased()) {
+                        sendNotification = true;
+                    }
+                    // remove request, if it exist
+                    for (AuthenticatedUser au : roleAssigneeService.getExplicitUsers(roleAssignee)) {
+                            if (file.getFileAccessRequesters().remove(au)) {
+                                List<FileAccessRequest> fileAccessRequests = fileAccessRequestService.findAllByAuthenticatedUserIdAndRequestState(au.getId(), FileAccessRequest.RequestState.CREATED);
+                                for(FileAccessRequest far : fileAccessRequests){
+                                    far.setStateGranted();
+                                    fileAccessRequestService.save(far);
+                                }
+                                file.setFileAccessRequests(fileAccessRequests); 
+                                datafileService.save(file);
+                            }       
+                    }
+                }
+
+            }
+
+            if (sendNotification) {
+                for (AuthenticatedUser au : roleAssigneeService.getExplicitUsers(roleAssignee)) {
+                    userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.GRANTFILEACCESS, dataset.getId());                
+                }
+             }
+        }
+
+        initMaps();
+        */
+    }
+    
     public List<DataverseRole> getAvailableRoles() {
         List<DataverseRole> roles = new LinkedList<>();
         if (dvObject != null && dvObject.getId() != null) {

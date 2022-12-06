@@ -5,7 +5,11 @@
  */
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import java.util.logging.Logger;
+
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.FileAccessRequest;
+import edu.harvard.iq.dataverse.GuestbookResponse;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
@@ -23,8 +27,11 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 @RequiredPermissions({})
 public class RequestAccessCommand extends AbstractCommand<DataFile> {
     
+    private static final Logger logger = Logger.getLogger(RequestAccessCommand.class.getName());
+    
     private final DataFile file;
     private final AuthenticatedUser requester;
+    private final FileAccessRequest fileAccessRequest;
     private final Boolean sendNotification;
 
 
@@ -33,6 +40,7 @@ public class RequestAccessCommand extends AbstractCommand<DataFile> {
         super(dvRequest, file);        
         this.file = file;        
         this.requester = (AuthenticatedUser) dvRequest.getUser();
+        this.fileAccessRequest = new FileAccessRequest(file,requester);
         this.sendNotification = false;
     }
     
@@ -41,8 +49,27 @@ public class RequestAccessCommand extends AbstractCommand<DataFile> {
         super(dvRequest, file);        
         this.file = file;        
         this.requester = (AuthenticatedUser) dvRequest.getUser();
+        this.fileAccessRequest = new FileAccessRequest(file,requester);
         this.sendNotification = sendNotification;
     }
+        
+        public RequestAccessCommand(DataverseRequest dvRequest, DataFile file, GuestbookResponse gbr) {
+            // for data file check permission on owning dataset
+            super(dvRequest, file);        
+            this.file = file;        
+            this.requester = (AuthenticatedUser) dvRequest.getUser();
+            this.fileAccessRequest = new FileAccessRequest(file,requester,gbr);
+            this.sendNotification = false;
+        }
+
+        public RequestAccessCommand(DataverseRequest dvRequest, DataFile file, GuestbookResponse gbr, Boolean sendNotification) {
+            // for data file check permission on owning dataset
+            super(dvRequest, file);        
+            this.file = file;
+            this.requester = (AuthenticatedUser) dvRequest.getUser();
+            this.fileAccessRequest = new FileAccessRequest(file,requester,gbr);
+            this.sendNotification = sendNotification;
+        }
 
         
         public RequestAccessCommand(DataverseRequest dvRequest, DataFile file, GuestbookResponse gbr) {
@@ -75,9 +102,13 @@ public class RequestAccessCommand extends AbstractCommand<DataFile> {
         if(FileUtil.isActivelyEmbargoed(file)) {
             throw new CommandException(BundleUtil.getStringFromBundle("file.requestAccess.notAllowed.embargoed"), this);
         }
+        file.getFileAccessRequests().add(fileAccessRequest);
         file.addFileAccessRequester(requester);
+        requester.getFileAccessRequests().add(fileAccessRequest);
         if (sendNotification) {
-            ctxt.fileDownload().sendRequestFileAccessNotification(this.file, requester);
+            //QDRADA
+            logger.info("ctxt.fileDownload().sendRequestFileAccessNotification(this.file, requester);"); 
+            //ctxt.fileDownload().sendRequestFileAccessNotification(this.file, requester);
         }
         return ctxt.files().save(file);
     }

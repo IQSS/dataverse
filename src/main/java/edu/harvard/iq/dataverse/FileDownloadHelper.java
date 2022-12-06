@@ -71,7 +71,7 @@ public class FileDownloadHelper implements java.io.Serializable {
     // file downloads and multiple (batch) downloads - sice both use the same
     // terms/etc. popup.
     public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse) {
-        PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
+        PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
         guestbookResponse.setDownloadtype("Download");
          // Note that this method is only ever called from the file-download-popup -
          // meaning we know for the fact that we DO want to save this
@@ -91,7 +91,7 @@ public class FileDownloadHelper implements java.io.Serializable {
 
      public void writeGuestbookAndOpenSubset(GuestbookResponse guestbookResponse) {
 
-             PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
+             PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
              PrimeFaces.current().executeScript("PF('downloadDataSubsetPopup').show()");
              guestbookResponse.setDownloadtype("Subset");
              fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
@@ -132,17 +132,23 @@ public class FileDownloadHelper implements java.io.Serializable {
 
          fileDownloadService.explore(guestbookResponse, fmd, externalTool);
          //requestContext.execute("PF('downloadPopup').hide()");
-         PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
+         PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
     }
      
     public void writeGuestbookAndLaunchPackagePopup(GuestbookResponse guestbookResponse) {
 
-            PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
+            PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
             PrimeFaces.current().executeScript("PF('downloadPackagePopup').show()");
             PrimeFaces.current().executeScript("handleResizeDialog('downloadPackagePopup')");
             fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
     }
 
+    public void writeGuestbookResponseAndRequestAccess(GuestbookResponse guestbookResponse) {
+            //requestContext.execute("PF('guestbookAndTermsPopup').hide()");
+            PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
+            fileDownloadService.writeGuestbookResponseAndRequestAccess(guestbookResponse);
+    }
+    
      /**
       * Writes a guestbook entry for either popup scenario: guestbook or terms.
       */
@@ -307,13 +313,13 @@ public class FileDownloadHelper implements java.io.Serializable {
              }
          }
          if (notificationFile != null && succeeded) {
-             fileDownloadService.sendRequestFileAccessNotification(notificationFile, (AuthenticatedUser) session.getUser());
+             fileDownloadService.sendRequestFileAccessNotification(notificationFile.getOwner(), notificationFile.getId(), (AuthenticatedUser) session.getUser());
          }
      }
     
      public void requestAccessIndirect() {
          //Called when there are multiple files and no popup
-         // or there's a popup with sigular or multiple files
+         // or there's a popup with singular or multiple files
          // The list of files for Request Access is set in the Dataset Page when
          // user clicks the request access button in the files fragment
          // (and has selected one or more files)
@@ -329,8 +335,16 @@ public class FileDownloadHelper implements java.io.Serializable {
 
              // create notification if necessary
              if (sendNotification) {
-                 fileDownloadService.sendRequestFileAccessNotification(file, user);
-             }           
+                 fileDownloadService.sendRequestFileAccessNotification(file.getOwner(), file.getId(), (AuthenticatedUser) session.getUser());
+             }
+             //ToDO QDRADA - where to write the response?
+             /*
+             //write the guestbookResponse if there is an enabled guestbook
+             GuestbookResponse gbr = this.getGuestbookResponse(); //can we be sure this is the correct guestbookResponse?? - can it get out of sync??
+             if( gbr != null && gbr.getGuestbook().isEnabled() ){
+                 fileDownloadService.writeGuestbookResponseRecordForRequestAccess(gbr); 
+             }
+             */
              JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("file.accessRequested.success"));
              return true;
          }
