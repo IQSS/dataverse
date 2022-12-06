@@ -58,8 +58,8 @@ public class CreateDatasetVersionCommandTest {
         dsvInitial.setId(MocksFactory.nextId());
         dsvInitial.setReleaseTime(dateFmt.parse("20010101"));
         dsvInitial.setVersionState(DatasetVersion.VersionState.RELEASED);
-        dsvInitial.setMinorVersionNumber(0l);
-        dsvInitial.setVersionNumber(1l);
+        dsvInitial.setMinorVersionNumber(0L);
+        dsvInitial.setVersionNumber(1L);
 
         // Create version to be added
         DatasetVersion dsvNew = new DatasetVersion();
@@ -105,15 +105,12 @@ public class CreateDatasetVersionCommandTest {
         CreateDatasetVersionCommand sut = new CreateDatasetVersionCommand(makeRequest(), sampleDataset, dsvNew);
 
         TestDataverseEngine testEngine = new TestDataverseEngine(new TestCommandContext() {
-
             @Override
             public DatasetDao datasets() {
                 return datasetDao;
             }
-
         });
 
         testEngine.submit(sut);
     }
-
 }

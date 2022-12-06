@@ -23,8 +23,8 @@ public class DeletePrivateUrlCommandTest {
 
     private TestDataverseEngine testEngine;
     Dataset dataset;
-    private final Long noPrivateUrlToDelete = 1l;
-    private final Long hasPrivateUrlToDelete = 2l;
+    private final Long noPrivateUrlToDelete = 1L;
+    private final Long hasPrivateUrlToDelete = 2L;
 
     @Before
     public void setUp() {
@@ -32,7 +32,6 @@ public class DeletePrivateUrlCommandTest {
             @Override
             public PrivateUrlServiceBean privateUrl() {
                 return new PrivateUrlServiceBean() {
-
                     @Override
                     public PrivateUrl getPrivateUrlFromDatasetId(long datasetId) {
                         if (datasetId == noPrivateUrlToDelete) {
@@ -48,7 +47,6 @@ public class DeletePrivateUrlCommandTest {
                             return null;
                         }
                     }
-
                 };
             }
 
@@ -56,7 +54,7 @@ public class DeletePrivateUrlCommandTest {
             public DataverseRoleServiceBean roles() {
                 return new DataverseRoleServiceBean() {
                     @Override
-                    public List<RoleAssignment> directRoleAssignments(RoleAssignee roas, DvObject dvo) {
+                    public List<RoleAssignment> directRoleAssignments(RoleAssignee assignee, DvObject dvObject) {
                         RoleAssignment roleAssignment = new RoleAssignment();
                         List<RoleAssignment> list = new ArrayList<>();
                         list.add(roleAssignment);
@@ -64,13 +62,11 @@ public class DeletePrivateUrlCommandTest {
                     }
 
                     @Override
-                    public void revoke(RoleAssignment ra) {
+                    public void revoke(RoleAssignment assignment) {
                         // no-op
                     }
-
                 };
             }
-
         });
     }
 
@@ -86,5 +82,4 @@ public class DeletePrivateUrlCommandTest {
         }
         assertEquals(expected, actual);
     }
-
 }

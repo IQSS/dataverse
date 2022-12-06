@@ -142,6 +142,7 @@
     <field name="definitionPointDvObjectId" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="discoverableBy" type="string" stored="true" indexed="true" multiValued="true"/>
     <field name="discoverableByPublicFrom" type="pdate" stored="true" indexed="true" multiValued="false"/>
+    <field name="addDatasetPerm" type="string" stored="true" indexed="true" multiValued="true"/>
 
     <field name="dvObjectType" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="metadataSource" type="string" stored="true" indexed="true" multiValued="false"/>

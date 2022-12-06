@@ -165,7 +165,6 @@ public class RoleAssigneeServiceBean {
         qstr += " FROM RoleAssignment r";
         qstr += identifierClause;
         qstr += ";";
-        msg("qstr: " + qstr);
 
         for (Object o : em.createNativeQuery(qstr).getResultList()) {
             retList.add(dataverseRoleService.find((Long) o));
@@ -202,7 +201,6 @@ public class RoleAssigneeServiceBean {
         qstr += identifierClause;
         qstr += getRoleIdListClause(roleIdList);
         qstr += ";";
-        msg("qstr: " + qstr);
         return em.createNativeQuery(qstr).getResultList();
 
     }
@@ -230,7 +228,6 @@ public class RoleAssigneeServiceBean {
         qstr += getRoleIdListClause(roleIdList);
         qstr += " and r.definitionpoint_id = " + defPointId;
         qstr += ";";
-        msg("qstr: " + qstr);
 
         return em.createNativeQuery(qstr).getResultList();
 
@@ -387,15 +384,4 @@ public class RoleAssigneeServiceBean {
                 .setParameter("assigneeIdentifier", identifier)
                 .executeUpdate();
     }
-
-    private void msg(String s) {
-        //System.out.println(s);
-    }
-
-    private void msgt(String s) {
-        msg("-------------------------------");
-        msg(s);
-        msg("-------------------------------");
-    }
-
 }

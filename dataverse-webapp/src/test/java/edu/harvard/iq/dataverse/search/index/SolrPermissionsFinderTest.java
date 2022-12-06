@@ -29,9 +29,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Set;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 /**
@@ -39,142 +37,154 @@ import static org.mockito.Mockito.when;
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class SearchPermissionsFinderTest {
+public class SolrPermissionsFinderTest {
 
     @InjectMocks
-    private SearchPermissionsFinder searchPermissionsFinder;
-    
+    private SolrPermissionsFinder searchPermissionsFinder;
+
     @Mock
     private RoleAssigneeServiceBean roleAssigneeService;
     @Mock
     private DataverseRoleServiceBean rolesSvc;
-    
 
     private DataverseRole roleWithViewUnpublishedDataverse;
     private DataverseRole roleWithViewUnpublishedDataset;
-    private DataverseRole roleWithoutViewUnpublished;
-    
+    private DataverseRole roleWithoutViewUnpublishedWithAddDataset;
+
     private AuthenticatedUser user1;
     private AuthenticatedUser user2;
     private ExplicitGroup group;
-    
-    
+
     @BeforeEach
-    public void beforeEach() {
+    void beforeEach() {
         roleWithViewUnpublishedDataverse = new DataverseRole();
         roleWithViewUnpublishedDataverse.addPermission(Permission.ViewUnpublishedDataverse);
-        
+
         roleWithViewUnpublishedDataset = new DataverseRole();
         roleWithViewUnpublishedDataset.addPermission(Permission.ViewUnpublishedDataset);
-        
-        roleWithoutViewUnpublished = new DataverseRole();
-        roleWithoutViewUnpublished.addPermission(Permission.AddDataset);
-        
+
+        roleWithoutViewUnpublishedWithAddDataset = new DataverseRole();
+        roleWithoutViewUnpublishedWithAddDataset.addPermission(Permission.AddDataset);
+
         user1 = MocksFactory.makeAuthenticatedUser("John", "Doe");
         user2 = MocksFactory.makeAuthenticatedUser("Jane", "Doe");
-        
+
         group = MocksFactory.makeExplicitGroup("group1");
         group.updateAlias();
     }
-    
+
     // -------------------- TESTS --------------------
-    
+
     @Test
-    public void findDataversePerms__released_dataverse() {
+    void findDataversePerms__released_dataverse() {
         // given
         Dataverse dataverse = new Dataverse();
         dataverse.setPublicationDate(Timestamp.from(Instant.now()));
-        
+        Set<RoleAssignment> dataverseRoleAssignments = Sets.newHashSet(
+                new RoleAssignment(roleWithoutViewUnpublishedWithAddDataset, user2, dataverse, null));
+
+        when(rolesSvc.rolesAssignments(dataverse)).thenReturn(dataverseRoleAssignments);
+        when(roleAssigneeService.getRoleAssignee(user2.getIdentifier())).thenReturn(user2);
+
         // when
-        SearchPermissions searchPermissions = searchPermissionsFinder.findDataversePerms(dataverse);
-        
+        SolrPermissions permissions = searchPermissionsFinder.findDataversePerms(dataverse);
+        SearchPermissions searchPermissions = permissions.getSearchPermissions();
+        SolrPermission addDatasetPermissions = permissions.getAddDatasetPermissions();
+
         // then
-        assertThat(searchPermissions.getPermissions(), empty());
-        assertEquals(SearchPermissions.ALWAYS_PUBLIC, searchPermissions.getPublicFrom());
+        assertThat(searchPermissions.getPermissions()).isEmpty();
+        assertThat(searchPermissions.getPublicFrom()).isEqualTo(SearchPermissions.ALWAYS_PUBLIC);
+        assertThat(addDatasetPermissions.getPermittedEntities())
+                .containsExactlyInAnyOrder("group_user" + user2.getId());
     }
-    
+
     @Test
-    public void findDataversePerms__not_released_dataverse() {
+    void findDataversePerms__not_released_dataverse() {
         // given
         Dataverse dataverse = new Dataverse();
         dataverse.setId(1L);
-        
         Set<RoleAssignment> dataverseRoleAssignments = Sets.newHashSet(
                 new RoleAssignment(roleWithViewUnpublishedDataverse, user1, dataverse, null),
                 new RoleAssignment(roleWithViewUnpublishedDataverse, group, dataverse, null),
-                new RoleAssignment(roleWithoutViewUnpublished, user2, dataverse, null));
-        
-        
+                new RoleAssignment(roleWithoutViewUnpublishedWithAddDataset, user2, dataverse, null));
+
         when(rolesSvc.rolesAssignments(dataverse)).thenReturn(dataverseRoleAssignments);
         when(roleAssigneeService.getRoleAssignee(user1.getIdentifier())).thenReturn(user1);
         when(roleAssigneeService.getRoleAssignee(group.getIdentifier())).thenReturn(group);
-        
-        
+        when(roleAssigneeService.getRoleAssignee(user2.getIdentifier())).thenReturn(user2);
+
         // when
-        SearchPermissions searchPermissions = searchPermissionsFinder.findDataversePerms(dataverse);
-        
+        SolrPermissions permissions = searchPermissionsFinder.findDataversePerms(dataverse);
+        SearchPermissions searchPermissions = permissions.getSearchPermissions();
+        SolrPermission addDatasetPermissions = permissions.getAddDatasetPermissions();
+
         // then
-        assertThat(searchPermissions.getPermissions(), containsInAnyOrder("group_user" + user1.getId(), "group_" + group.getAlias()));
-        assertEquals(SearchPermissions.NEVER_PUBLIC, searchPermissions.getPublicFrom());
+        assertThat(searchPermissions.getPermissions())
+                .containsExactlyInAnyOrder("group_user" + user1.getId(), "group_" + group.getAlias());
+        assertThat(searchPermissions.getPublicFrom()).isEqualTo(SearchPermissions.NEVER_PUBLIC);
+        assertThat(addDatasetPermissions.getPermittedEntities())
+                .containsExactlyInAnyOrder("group_user" + user2.getId());
     }
-    
+
     @Test
-    public void findDatasetVersionPerms__released_version() {
+    void findDatasetVersionPerms__released_version() {
         // given
         DatasetVersion version = new DatasetVersion();
         version.setVersionState(VersionState.RELEASED);
-        
+
         // when
-        SearchPermissions searchPermissions = searchPermissionsFinder.findDatasetVersionPerms(version);
-        
+        SolrPermissions permissions = searchPermissionsFinder.findDatasetVersionPerms(version);
+        SearchPermissions searchPermissions = permissions.getSearchPermissions();
+
         // then
-        assertThat(searchPermissions.getPermissions(), empty());
-        assertEquals(SearchPermissions.ALWAYS_PUBLIC, searchPermissions.getPublicFrom());
+        assertThat(searchPermissions.getPermissions()).isEmpty();
+        assertThat(searchPermissions.getPublicFrom()).isEqualTo(SearchPermissions.ALWAYS_PUBLIC);
     }
-    
+
     @Test
-    public void findDatasetVersionPerms__not_released_version() {
+    void findDatasetVersionPerms__not_released_version() {
         // given
         Dataset dataset = new Dataset();
         dataset.setId(1L);
         DatasetVersion version = new DatasetVersion();
         version.setDataset(dataset);
         version.setVersionState(VersionState.DRAFT);
-        
         Set<RoleAssignment> datasetRoleAssignments = Sets.newHashSet(
                 new RoleAssignment(roleWithViewUnpublishedDataset, user1, dataset, null),
                 new RoleAssignment(roleWithViewUnpublishedDataset, group, dataset, null),
-                new RoleAssignment(roleWithoutViewUnpublished, user2, dataset, null));
-        
-        
+                new RoleAssignment(roleWithoutViewUnpublishedWithAddDataset, user2, dataset, null));
+
         when(rolesSvc.rolesAssignments(dataset)).thenReturn(datasetRoleAssignments);
         when(roleAssigneeService.getRoleAssignee(user1.getIdentifier())).thenReturn(user1);
         when(roleAssigneeService.getRoleAssignee(group.getIdentifier())).thenReturn(group);
-        
+
         // when
-        SearchPermissions searchPermissions = searchPermissionsFinder.findDatasetVersionPerms(version);
-        
+        SolrPermissions permissions = searchPermissionsFinder.findDatasetVersionPerms(version);
+        SearchPermissions searchPermissions = permissions.getSearchPermissions();
+
         // then
-        assertThat(searchPermissions.getPermissions(), containsInAnyOrder("group_user" + user1.getId(), "group_" + group.getAlias()));
-        assertEquals(SearchPermissions.NEVER_PUBLIC, searchPermissions.getPublicFrom());
+        assertThat(searchPermissions.getPermissions())
+                .containsExactlyInAnyOrder("group_user" + user1.getId(), "group_" + group.getAlias());
+        assertThat(searchPermissions.getPublicFrom()).isEqualTo(SearchPermissions.NEVER_PUBLIC);
     }
-    
+
     @Test
-    public void findFileMetadataPermsFromDatasetVersion__released_dataset_version() {
+    void findFileMetadataPermsFromDatasetVersion__released_dataset_version() {
         // given
         DatasetVersion version = new DatasetVersion();
         version.setVersionState(VersionState.RELEASED);
-        
+
         // when
-        SearchPermissions searchPermissions = searchPermissionsFinder.findDatasetVersionPerms(version);
-        
+        SolrPermissions permissions = searchPermissionsFinder.findDatasetVersionPerms(version);
+        SearchPermissions searchPermissions = permissions.getSearchPermissions();
+
         // then
-        assertThat(searchPermissions.getPermissions(), empty());
-        assertEquals(SearchPermissions.ALWAYS_PUBLIC, searchPermissions.getPublicFrom());
+        assertThat(searchPermissions.getPermissions()).isEmpty();
+        assertThat(searchPermissions.getPublicFrom()).isEqualTo(SearchPermissions.ALWAYS_PUBLIC);
     }
-    
+
     @Test
-    public void findFileMetadataPermsFromDatasetVersion__released_dataset_version_with_embargo() {
+    void findFileMetadataPermsFromDatasetVersion__released_dataset_version_with_embargo() {
         // given
         Instant embargoInstant = Instant.now().plus(10, ChronoUnit.DAYS);
         Dataset dataset = new Dataset();
@@ -183,54 +193,54 @@ public class SearchPermissionsFinderTest {
         DatasetVersion version = new DatasetVersion();
         version.setDataset(dataset);
         version.setVersionState(VersionState.RELEASED);
-        
         Set<RoleAssignment> datasetRoleAssignments = Sets.newHashSet(
                 new RoleAssignment(roleWithViewUnpublishedDataset, user1, dataset, null),
                 new RoleAssignment(roleWithViewUnpublishedDataset, group, dataset, null),
-                new RoleAssignment(roleWithoutViewUnpublished, user2, dataset, null));
-        
-        
+                new RoleAssignment(roleWithoutViewUnpublishedWithAddDataset, user2, dataset, null));
+
         when(rolesSvc.rolesAssignments(dataset)).thenReturn(datasetRoleAssignments);
         when(roleAssigneeService.getRoleAssignee(user1.getIdentifier())).thenReturn(user1);
         when(roleAssigneeService.getRoleAssignee(group.getIdentifier())).thenReturn(group);
-        
+
         // when
-        SearchPermissions searchPermissions = searchPermissionsFinder.findFileMetadataPermsFromDatasetVersion(version);
-        
+        SolrPermissions permissions = searchPermissionsFinder.findFileMetadataPermsFromDatasetVersion(version);
+        SearchPermissions searchPermissions = permissions.getSearchPermissions();
+
         // then
-        assertThat(searchPermissions.getPermissions(), containsInAnyOrder("group_user" + user1.getId(), "group_" + group.getAlias()));
-        assertEquals(embargoInstant, searchPermissions.getPublicFrom());
+        assertThat(searchPermissions.getPermissions())
+                .containsExactlyInAnyOrder("group_user" + user1.getId(), "group_" + group.getAlias());
+        assertThat(searchPermissions.getPublicFrom()).isEqualTo(embargoInstant);
     }
-    
+
     @Test
-    public void findFileMetadataPermsFromDatasetVersion__not_released_dataset_version() {
+    void findFileMetadataPermsFromDatasetVersion__not_released_dataset_version() {
         // given
         Dataset dataset = new Dataset();
         dataset.setId(1L);
         DatasetVersion version = new DatasetVersion();
         version.setDataset(dataset);
         version.setVersionState(VersionState.DRAFT);
-        
         Set<RoleAssignment> datasetRoleAssignments = Sets.newHashSet(
                 new RoleAssignment(roleWithViewUnpublishedDataset, user1, dataset, null),
                 new RoleAssignment(roleWithViewUnpublishedDataset, group, dataset, null),
-                new RoleAssignment(roleWithoutViewUnpublished, user2, dataset, null));
-        
-        
+                new RoleAssignment(roleWithoutViewUnpublishedWithAddDataset, user2, dataset, null));
+
         when(rolesSvc.rolesAssignments(dataset)).thenReturn(datasetRoleAssignments);
         when(roleAssigneeService.getRoleAssignee(user1.getIdentifier())).thenReturn(user1);
         when(roleAssigneeService.getRoleAssignee(group.getIdentifier())).thenReturn(group);
-        
+
         // when
-        SearchPermissions searchPermissions = searchPermissionsFinder.findFileMetadataPermsFromDatasetVersion(version);
-        
+        SolrPermissions permissions = searchPermissionsFinder.findFileMetadataPermsFromDatasetVersion(version);
+        SearchPermissions searchPermissions = permissions.getSearchPermissions();
+
         // then
-        assertThat(searchPermissions.getPermissions(), containsInAnyOrder("group_user" + user1.getId(), "group_" + group.getAlias()));
-        assertEquals(SearchPermissions.NEVER_PUBLIC, searchPermissions.getPublicFrom());
+        assertThat(searchPermissions.getPermissions())
+                .containsExactlyInAnyOrder("group_user" + user1.getId(), "group_" + group.getAlias());
+        assertThat(searchPermissions.getPublicFrom()).isEqualTo(SearchPermissions.NEVER_PUBLIC);
     }
-    
+
     @Test
-    public void extractVersionsForPermissionIndexing__contains_draft_and_released() {
+    void extractVersionsForPermissionIndexing__contains_draft_and_released() {
         // given
         Dataset dataset = new Dataset();
         dataset.setId(1L);
@@ -238,76 +248,75 @@ public class SearchPermissionsFinderTest {
         DatasetVersion draftVersion = constructDatasetVersion(13L, VersionState.DRAFT, dataset);
         DatasetVersion lastReleasedVersion = constructDatasetVersion(12L, VersionState.RELEASED, dataset);
         constructDatasetVersion(11L, VersionState.RELEASED, dataset);
-        
+
         // when
         Set<DatasetVersion> versionsForIndexing = searchPermissionsFinder.extractVersionsForPermissionIndexing(dataset);
-        
+
         // then
-        assertThat(versionsForIndexing, containsInAnyOrder(draftVersion, lastReleasedVersion));
+        assertThat(versionsForIndexing)
+                .containsExactlyInAnyOrder(draftVersion, lastReleasedVersion);
     }
-    
+
     @Test
-    public void extractVersionsForPermissionIndexing__contains_deaccessioned_and_draft() {
+    void extractVersionsForPermissionIndexing__contains_deaccessioned_and_draft() {
         // given
         Dataset dataset = new Dataset();
         dataset.setId(1L);
         dataset.setVersions(Lists.newArrayList());
-        
         DatasetVersion draftVersion = constructDatasetVersion(12L, VersionState.DRAFT, dataset);
         constructDatasetVersion(11L, VersionState.DEACCESSIONED, dataset);
-        
+
         // when
         Set<DatasetVersion> versionsForIndexing = searchPermissionsFinder.extractVersionsForPermissionIndexing(dataset);
-        
+
         // then
-        assertThat(versionsForIndexing, containsInAnyOrder(draftVersion));
+        assertThat(versionsForIndexing)
+                .containsExactlyInAnyOrder(draftVersion);
     }
-    
+
     @Test
-    public void extractVersionsForPermissionIndexing__contains_deaccessioned() {
+    void extractVersionsForPermissionIndexing__contains_deaccessioned() {
         // given
         Dataset dataset = new Dataset();
         dataset.setId(1L);
         dataset.setVersions(Lists.newArrayList());
-        
         DatasetVersion deacessionedVersion = constructDatasetVersion(11L, VersionState.DEACCESSIONED, dataset);
-        
+
         // when
         Set<DatasetVersion> versionsForIndexing = searchPermissionsFinder.extractVersionsForPermissionIndexing(dataset);
-        
+
         // then
-        assertThat(versionsForIndexing, containsInAnyOrder(deacessionedVersion));
+        assertThat(versionsForIndexing)
+                .containsExactlyInAnyOrder(deacessionedVersion);
     }
-    
+
     @Test
-    public void extractVersionsForPermissionIndexing__contains_deaccessioned_and_released() {
+    void extractVersionsForPermissionIndexing__contains_deaccessioned_and_released() {
         // given
         Dataset dataset = new Dataset();
         dataset.setId(1L);
         dataset.setVersions(Lists.newArrayList());
-        
         constructDatasetVersion(13L, VersionState.DEACCESSIONED, dataset);
         DatasetVersion releasedVersion = constructDatasetVersion(12L, VersionState.RELEASED, dataset);
         constructDatasetVersion(11L, VersionState.DEACCESSIONED, dataset);
-        
+
         // when
         Set<DatasetVersion> versionsForIndexing = searchPermissionsFinder.extractVersionsForPermissionIndexing(dataset);
-        
+
         // then
-        assertThat(versionsForIndexing, containsInAnyOrder(releasedVersion));
+        assertThat(versionsForIndexing)
+                .containsExactlyInAnyOrder(releasedVersion);
     }
-    
+
     // -------------------- PRIVATE --------------------
-    
+
     private DatasetVersion constructDatasetVersion(Long datasetVersionId, VersionState state, Dataset dataset) {
         DatasetVersion version = new DatasetVersion();
         version.setId(datasetVersionId);
         version.setVersionState(state);
         version.setDataset(dataset);
-        
+
         dataset.getVersions().add(version);
         return version;
     }
-    
-    
 }

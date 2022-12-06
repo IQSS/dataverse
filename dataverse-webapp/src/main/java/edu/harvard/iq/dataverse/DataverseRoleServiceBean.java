@@ -32,27 +32,36 @@ import java.util.stream.Collectors;
 @Stateless
 public class DataverseRoleServiceBean implements java.io.Serializable {
 
-    @EJB
     private RoleAssigneeServiceBean roleAssigneeService;
-    @Inject
     private Event<PermissionReindexEvent> permissionReindexEvent;
-    @Inject
     private DataverseRoleRepository dataverseRoleRepository;
-    @Inject
     private RoleAssignmentRepository roleAssignmentRepository;
-    @Inject
     private DataverseRepository dataverseRepository;
 
-    public DataverseRole save(DataverseRole aRole) {
-        boolean shouldIndexPermissions = !aRole.isNew();
+    // -------------------- CONSTRUCTORS --------------------
 
-        aRole = dataverseRoleRepository.save(aRole);
+    public DataverseRoleServiceBean() { }
 
+    @Inject
+    public DataverseRoleServiceBean(RoleAssigneeServiceBean roleAssigneeService, Event<PermissionReindexEvent> permissionReindexEvent,
+                                    DataverseRoleRepository dataverseRoleRepository, RoleAssignmentRepository roleAssignmentRepository,
+                                    DataverseRepository dataverseRepository) {
+        this.roleAssigneeService = roleAssigneeService;
+        this.permissionReindexEvent = permissionReindexEvent;
+        this.dataverseRoleRepository = dataverseRoleRepository;
+        this.roleAssignmentRepository = roleAssignmentRepository;
+        this.dataverseRepository = dataverseRepository;
+    }
+
+    // -------------------- LOGIC --------------------
+
+    public DataverseRole save(DataverseRole role) {
+        boolean shouldIndexPermissions = !role.isNew();
+        role = dataverseRoleRepository.save(role);
         if (shouldIndexPermissions) {
-            permissionReindexEvent.fire(new PermissionReindexEvent(aRole.getOwner()));
+            permissionReindexEvent.fire(new PermissionReindexEvent(role.getOwner()));
         }
-
-        return aRole;
+        return role;
     }
 
     public RoleAssignment save(RoleAssignment assignment) {
@@ -61,7 +70,6 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 
     public RoleAssignment save(RoleAssignment assignment, boolean createIndex) {
         roleAssignmentRepository.save(assignment);
-
         if (createIndex) {
             permissionReindexEvent.fire(new PermissionReindexEvent(assignment.getDefinitionPoint()));
         }
@@ -95,13 +103,13 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 
     public DataverseRole findRoleByAliasAssignableInDataverse(String alias, Long dataverseId) {
         return dataverseRoleRepository.findByAlias(alias)
-                .filter(role -> role.getOwner() == null || role.getOwner().getId() == dataverseId)
+                .filter(r -> r.getOwner() == null || Objects.equals(r.getOwner().getId(), dataverseId))
                 .orElseThrow(() -> new EntityNotFoundException("No such role: " + alias + " that can be assigned in dataverse: " + dataverseId));
     }
 
-    public void revoke(RoleAssignment ra) {
-        roleAssignmentRepository.mergeAndDelete(ra);
-        permissionReindexEvent.fire(new PermissionReindexEvent(ra.getDefinitionPoint()));
+    public void revoke(RoleAssignment assignment) {
+        roleAssignmentRepository.mergeAndDelete(assignment);
+        permissionReindexEvent.fire(new PermissionReindexEvent(assignment.getDefinitionPoint()));
     }
 
     // "nuclear" remove-all roles for a user or group:
@@ -110,12 +118,10 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
     // once the role assignments are removed!
     public void revokeAll(RoleAssignee assignee) {
         List<DvObject> reindexSet = new ArrayList<>();
-
-        for (RoleAssignment ra : roleAssigneeService.getAssignmentsFor(assignee.getIdentifier())) {
-            roleAssignmentRepository.delete(ra);
-            reindexSet.add(ra.getDefinitionPoint());
+        for (RoleAssignment assignment : roleAssigneeService.getAssignmentsFor(assignee.getIdentifier())) {
+            roleAssignmentRepository.delete(assignment);
+            reindexSet.add(assignment.getDefinitionPoint());
         }
-
         permissionReindexEvent.fire(new PermissionReindexEvent(reindexSet));
     }
 
@@ -123,15 +129,13 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         return roleAssignmentRepository.findByRoleId(roleId);
     }
 
-    public Set<RoleAssignment> rolesAssignments(DvObject dv) {
+    public Set<RoleAssignment> rolesAssignments(DvObject dvObject) {
         LinkedList<Long> dvOwnerIds = new LinkedList<>();
-        dvOwnerIds.add(dv.getId());
-
-        while (!dv.isEffectivelyPermissionRoot()) {
-            dv = dv.getOwner();
-            dvOwnerIds.add(dv.getId());
+        dvOwnerIds.add(dvObject.getId());
+        while (!dvObject.isEffectivelyPermissionRoot()) {
+            dvObject = dvObject.getOwner();
+            dvOwnerIds.add(dvObject.getId());
         }
-
         return new HashSet<>(roleAssignmentRepository.findByDefinitionPointIds(dvOwnerIds));
     }
 
@@ -139,16 +143,16 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      * Retrieves the roles assignments for {@code user}, directly on {@code dv}.
      * No traversal on the containment hierarchy is done.
      *
-     * @param roas the user whose roles are given
-     * @param dvo  the object where the roles are defined.
+     * @param assignee the user whose roles are given
+     * @param dvObject  the object where the roles are defined.
      * @return Set of roles defined for the user in the given dataverse.
      * @see #roleAssignments(edu.harvard.iq.dataverse.DataverseUser,
      * edu.harvard.iq.dataverse.persistence.dataverse.Dataverse)
      */
-    public List<RoleAssignment> directRoleAssignments(RoleAssignee roas, DvObject dvo) {
-        List<RoleAssignment> unfiltered = roleAssignmentRepository.findByAssigneeIdentifier(roas.getIdentifier());
-        return unfiltered.stream()
-                .filter(roleAssignment -> Objects.equals(roleAssignment.getDefinitionPoint().getId(), dvo.getId()))
+    public List<RoleAssignment> directRoleAssignments(RoleAssignee assignee, DvObject dvObject) {
+        List<RoleAssignment> assignments = roleAssignmentRepository.findByAssigneeIdentifier(assignee.getIdentifier());
+        return assignments.stream()
+                .filter(a -> Objects.equals(a.getDefinitionPoint().getId(), dvObject.getId()))
                 .collect(Collectors.toList());
     }
 
@@ -157,33 +161,37 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      * No traversal on the containment hierarchy is done.
      *
      * @param roleAssignees the user whose roles are given
-     * @param dvos          the objects where the roles are defined.
+     * @param dvObjects the objects where the roles are defined.
      * @return Set of roles defined for the user in the given dataverse.
      * @see #roleAssignments(edu.harvard.iq.dataverse.DataverseUser,
      * edu.harvard.iq.dataverse.persistence.dataverse.Dataverse)
      */
-    public List<RoleAssignment> directRoleAssignmentsByAssigneesAndDvObjects(Set<? extends RoleAssignee> roleAssignees, Collection<DvObject> dvos) {
-        if (dvos.isEmpty()) {
+    public List<RoleAssignment> directRoleAssignmentsByAssigneesAndDvObjects(Set<? extends RoleAssignee> roleAssignees,
+                                                                             Collection<DvObject> dvObjects) {
+        if (dvObjects.isEmpty()) {
             return new ArrayList<>();
         }
-
-        List<String> raIds = roleAssignees.stream().map(roas -> roas.getIdentifier()).collect(Collectors.toList());
-        List<Long> dvoIds = dvos.stream().filter(dvo -> !(dvo.getId() == null)).map(dvo -> dvo.getId()).collect(Collectors.toList());
-
-        return roleAssignmentRepository.findByAssigneeIdentifiersAndDefinitionPointIds(raIds, dvoIds);
+        List<String> assigneesIds = roleAssignees.stream()
+                .map(RoleAssignee::getIdentifier)
+                .collect(Collectors.toList());
+        List<Long> objectsIds = dvObjects.stream()
+                .map(DvObject::getId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        return roleAssignmentRepository.findByAssigneeIdentifiersAndDefinitionPointIds(assigneesIds, objectsIds);
     }
 
     /**
      * Retrieves the roles assignments for {@code user}, directly on {@code dv}.
      * No traversal on the containment hierarchy is done.
      *
-     * @param dvo the object where the roles are defined.
+     * @param dvObject the object where the roles are defined.
      * @return Set of roles defined for the user in the given dataverse.
      * @see #roleAssignments(edu.harvard.iq.dataverse.DataverseUser,
      * edu.harvard.iq.dataverse.persistence.dataverse.Dataverse)
      */
-    public List<RoleAssignment> directRoleAssignments(DvObject dvo) {
-        return roleAssignmentRepository.findByDefinitionPointId(dvo.getId());
+    public List<RoleAssignment> directRoleAssignments(DvObject dvObject) {
+        return roleAssignmentRepository.findByDefinitionPointId(dvObject.getId());
     }
 
     /**
@@ -191,11 +199,11 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      * that defines them. Map entries are ordered by reversed hierarchy (root is
      * always last).
      *
-     * @param dvId The id of dataverse whose available roles we query
+     * @param dataverseId The id of dataverse whose available roles we query
      * @return map of available roles.
      */
-    public Set<DataverseRole> availableRoles(Long dvId) {
-        Dataverse dv = dataverseRepository.getById(dvId);
+    public Set<DataverseRole> availableRoles(Long dataverseId) {
+        Dataverse dv = dataverseRepository.getById(dataverseId);
         Set<DataverseRole> roles = dv.getRoles();
         roles.addAll(findBuiltinRoles());
 
@@ -203,7 +211,6 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
             dv = dv.getOwner();
             roles.addAll(dv.getRoles());
         }
-
         return roles;
     }
 }

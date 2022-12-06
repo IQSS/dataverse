@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.persistence.MocksFactory;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
@@ -30,9 +29,9 @@ public class CreateRoleCommandTest {
         public DataverseRoleServiceBean roles() {
             return new DataverseRoleServiceBean() {
                 @Override
-                public DataverseRole save(DataverseRole aRole) {
+                public DataverseRole save(DataverseRole role) {
                     saveCalled = true;
-                    return aRole;
+                    return role;
                 }
             };
         }
@@ -93,5 +92,4 @@ public class CreateRoleCommandTest {
         CreateRoleCommand sut = new CreateRoleCommand(dvr, new DataverseRequest(GuestUser.get(), IpAddress.valueOf("89.17.33.33")), dv);
         engine.submit(sut);
     }
-
 }

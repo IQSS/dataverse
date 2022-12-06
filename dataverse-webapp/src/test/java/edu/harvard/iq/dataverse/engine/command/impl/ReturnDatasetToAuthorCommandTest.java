@@ -122,7 +122,7 @@ public class ReturnDatasetToAuthorCommandTest {
             public PermissionServiceBean permissions() {
                 return new PermissionServiceBean() {
                     @Override
-                    public List<AuthenticatedUser> getUsersWithPermissionOn(Permission permission, DvObject dvo) {
+                    public List<AuthenticatedUser> getUsersWithPermissionOn(Permission permission, DvObject dvObject) {
                         // We only need permissions for notifications, which we are testing in InReviewWorkflowIT.
                         return Collections.emptyList();
                     }

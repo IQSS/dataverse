@@ -12,74 +12,78 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
-import io.vavr.control.Option;
+import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiPredicate;
 import java.util.logging.Logger;
 
 /**
- * Determine whether items should be searchable.
+ * Determine permissions for solr use
  */
 @Stateless
-public class SearchPermissionsFinder {
+public class SolrPermissionsFinder {
 
-    private static final Logger logger = Logger.getLogger(SearchPermissionsFinder.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(SolrPermissionsFinder.class.getCanonicalName());
 
     private RoleAssigneeServiceBean roleAssigneeService;
     private DataverseRoleServiceBean rolesSvc;
-    
+
     // -------------------- CONSTRUCTORS --------------------
-    
+
     @Deprecated
-    public SearchPermissionsFinder() {
+    public SolrPermissionsFinder() {
         // JEE requirement
     }
-    
+
     @Inject
-    public SearchPermissionsFinder(RoleAssigneeServiceBean roleAssigneeService, DataverseRoleServiceBean rolesSvc) {
+    public SolrPermissionsFinder(RoleAssigneeServiceBean roleAssigneeService, DataverseRoleServiceBean rolesSvc) {
         this.roleAssigneeService = roleAssigneeService;
         this.rolesSvc = rolesSvc;
     }
 
     // -------------------- LOGIC --------------------
-    
+
     /**
-     * Returns {@link SearchPermissions} on which Solr will JOIN
+     * Returns {@link SolrPermissions} on which Solr will JOIN
      * to enforce permissions.
      */
-    public SearchPermissions findDataversePerms(Dataverse dataverse) {
-        List<String> permStrings = new ArrayList<>();
-        if (hasBeenPublished(dataverse)) {
-            return new SearchPermissions(permStrings, SearchPermissions.ALWAYS_PUBLIC);
-        }
-        
-        permStrings.addAll(findDvObjectPerms(dataverse));
-        return new SearchPermissions(permStrings, SearchPermissions.NEVER_PUBLIC);
+    public SolrPermissions findDataversePerms(Dataverse dataverse) {
+        Map<SolrPermissionType, List<String>> perms = findDvObjectPerms(dataverse,
+                SolrPermissionType.SEARCH, SolrPermissionType.ADD_DATASET);
+        return new SolrPermissions(new SearchPermissions(perms.get(SolrPermissionType.SEARCH),
+                    hasBeenPublished(dataverse) ? SearchPermissions.ALWAYS_PUBLIC : SearchPermissions.NEVER_PUBLIC),
+                    new SolrPermission(Permission.AddDataset, perms.get(SolrPermissionType.ADD_DATASET)));
     }
 
-    public SearchPermissions findDatasetVersionPerms(DatasetVersion version) {
+    public SolrPermissions findDatasetVersionPerms(DatasetVersion version) {
         List<String> perms = new ArrayList<>();
         if (version.isReleased()) {
-            return new SearchPermissions(perms, SearchPermissions.ALWAYS_PUBLIC);
+            return new SolrPermissions(new SearchPermissions(perms, SearchPermissions.ALWAYS_PUBLIC),
+                    new SolrPermission(Permission.AddDataset, Collections.emptyList()));
         }
-        
-        perms.addAll(findDvObjectPerms(version.getDataset()));
-        return new SearchPermissions(perms, SearchPermissions.NEVER_PUBLIC);
+
+        perms.addAll(findDvObjectPerms(version.getDataset(), SolrPermissionType.SEARCH)
+                .get(SolrPermissionType.SEARCH));
+        return new SolrPermissions(new SearchPermissions(perms, SearchPermissions.NEVER_PUBLIC),
+                new SolrPermission(Permission.AddDataset, Collections.emptyList()));
     }
-    
+
     /**
-     * Returns {@link SearchPermissions} for fileMetadata inside
-     * the given dataset version.
+     * Returns {@link SolrPermissions} (currently only {@link SearchPermissions})
+     * for fileMetadata inside the given dataset version.
      * <p>
      * Note that {@link SearchPermissions} are specific to parent
      * dataset version only.
@@ -87,12 +91,12 @@ public class SearchPermissionsFinder {
      * This fact can be used to retrieve {@link SearchPermissions} for
      * every file metadata inside single dataset version only once.
      */
-    public SearchPermissions findFileMetadataPermsFromDatasetVersion(DatasetVersion version) {
+    public SolrPermissions findFileMetadataPermsFromDatasetVersion(DatasetVersion version) {
         Dataset dataset = version.getDataset();
         List<String> perms = new ArrayList<>();
-        
+
         Instant publicFrom = SearchPermissions.NEVER_PUBLIC;
-        
+
         if (version.isReleased() && !dataset.getEmbargoDate().isDefined()) {
             publicFrom = SearchPermissions.ALWAYS_PUBLIC;
         } else if (version.isReleased()) {
@@ -100,16 +104,17 @@ public class SearchPermissionsFinder {
                     .map(Date::toInstant)
                     .getOrElse(SearchPermissions.NEVER_PUBLIC);
         }
-        
-        
+
+
         if (publicFrom != SearchPermissions.ALWAYS_PUBLIC) {
-            perms.addAll(findDvObjectPerms(dataset));
+            perms.addAll(findDvObjectPerms(dataset, SolrPermissionType.SEARCH)
+                    .get(SolrPermissionType.SEARCH));
         }
-        
-        return new SearchPermissions(perms, publicFrom);
+
+        return new SolrPermissions(new SearchPermissions(perms, publicFrom),
+                new SolrPermission(Permission.AddDataset, Collections.emptyList()));
     }
-    
-    
+
     /**
      * Returns {@link DatasetVersion}s from the given {@link Dataset}
      * that needs permission objects indexing.
@@ -119,58 +124,65 @@ public class SearchPermissionsFinder {
      */
     public Set<DatasetVersion> extractVersionsForPermissionIndexing(Dataset dataset) {
         Set<DatasetVersion> versionsToIndex = new HashSet<>();
-        
+
         DatasetVersion releasedVersion = dataset.getReleasedVersion();
         DatasetVersion latestVersion = dataset.getLatestVersion();
-        
-        
+
+
         if (releasedVersion != null) {
             versionsToIndex.add(releasedVersion);
         }
-        
+
         if (latestVersion.getVersionState() == VersionState.DRAFT) {
             versionsToIndex.add(latestVersion);
         }
         if (latestVersion.getVersionState() == VersionState.DEACCESSIONED && releasedVersion == null) {
             versionsToIndex.add(latestVersion);
         }
-        
+
         return versionsToIndex;
     }
 
 
     // -------------------- PRIVATE --------------------
-    
-    private List<String> findDvObjectPerms(DvObject dvObject) {
-        List<String> permStrings = new ArrayList<>();
+
+    private Map<SolrPermissionType, List<String>> findDvObjectPerms(DvObject dvObject, SolrPermissionType... permissionTypes) {
+        if (permissionTypes.length < 1) {
+            return Collections.emptyMap();
+        }
         Map<String, RoleAssignee> roleAssigneeCache = new HashMap<>(100);
-        
         Set<RoleAssignment> roleAssignments = rolesSvc.rolesAssignments(dvObject);
+        Map<SolrPermissionType, List<String>> result = new EnumMap<>(SolrPermissionType.class);
+        for (SolrPermissionType permissionType : permissionTypes) {
+            result.put(permissionType, new ArrayList<>());
+        }
         for (RoleAssignment roleAssignment : roleAssignments) {
             logger.fine("role assignment on dvObject " + dvObject.getId() + ": " + roleAssignment.getAssigneeIdentifier());
-            if (roleAssignment.getRole().permissions().contains(getRequiredSearchPermission(dvObject))) {
-                
-                roleAssigneeCache.computeIfAbsent(roleAssignment.getAssigneeIdentifier(), identifier -> roleAssigneeService.getRoleAssignee(identifier));
-                RoleAssignee userOrGroup = roleAssigneeCache.get(roleAssignment.getAssigneeIdentifier());
-                
-                Option.of(getIndexableStringForUserOrGroup(userOrGroup))
-                    .peek(permStrings::add);
+            Set<Permission> currentPermissions = roleAssignment.getRole().permissions();
+            for (SolrPermissionType permissionType : permissionTypes) {
+                if (permissionType.condition().test(dvObject, currentPermissions)) {
+                    RoleAssignee userOrGroup = roleAssigneeCache.computeIfAbsent(roleAssignment.getAssigneeIdentifier(),
+                            id -> roleAssigneeService.getRoleAssignee(id));
+                    String indexableString = getIndexableStringForUserOrGroup(userOrGroup);
+                    if (StringUtils.isBlank(indexableString)) {
+                        continue;
+                    }
+                    result.get(permissionType)
+                            .add(indexableString);
+                }
             }
         }
-        return permStrings;
+        return result;
     }
-    
+
     private boolean hasBeenPublished(Dataverse dataverse) {
         return dataverse.isReleased();
     }
 
     private Permission getRequiredSearchPermission(DvObject dvObject) {
-        if (dvObject.isInstanceofDataverse()) {
-            return Permission.ViewUnpublishedDataverse;
-        } else {
-            return Permission.ViewUnpublishedDataset;
-        }
-
+        return dvObject.isInstanceofDataverse()
+                ? Permission.ViewUnpublishedDataverse
+                : Permission.ViewUnpublishedDataset;
     }
 
     /**
@@ -185,7 +197,8 @@ public class SearchPermissionsFinder {
         if (userOrGroup instanceof AuthenticatedUser) {
             logger.fine(userOrGroup.getIdentifier() + " must be a user: " + userOrGroup.getClass().getName());
             AuthenticatedUser au = (AuthenticatedUser) userOrGroup;
-            // Strong prefence to index based on system generated value (e.g. primary key) whenever possible: https://github.com/IQSS/dataverse/issues/1151
+            // Strong preference to index based on system generated value (e.g. primary key) whenever possible:
+            // https://github.com/IQSS/dataverse/issues/1151
             Long primaryKey = au.getId();
             return IndexServiceBean.getGroupPerUserPrefix() + primaryKey;
         } else if (userOrGroup instanceof Group) {
@@ -197,11 +210,25 @@ public class SearchPermissionsFinder {
                 return IndexServiceBean.getGroupPrefix() + groupAlias;
             } else {
                 logger.fine("Could not find group alias for " + group.getIdentifier());
-                return null;
             }
-        } else {
-            return null;
         }
+        return null;
     }
 
+    private enum SolrPermissionType {
+        SEARCH((dvo, p) -> p.contains(dvo.isInstanceofDataverse()
+                ? Permission.ViewUnpublishedDataverse
+                : Permission.ViewUnpublishedDataset)),
+        ADD_DATASET((dvo, p) -> dvo.isInstanceofDataverse() && p.contains(Permission.AddDataset));
+
+        private BiPredicate<DvObject, Collection<Permission>> condition;
+
+        SolrPermissionType(BiPredicate<DvObject, Collection<Permission>> condition) {
+            this.condition = condition;
+        }
+
+        public BiPredicate<DvObject, Collection<Permission>> condition() {
+            return condition;
+        }
+    }
 }

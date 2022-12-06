@@ -22,7 +22,7 @@ public class PermissionsSolrDocFactory {
 
     private static final Logger logger = Logger.getLogger(SolrIndexServiceBean.class.getCanonicalName());
 
-    private SearchPermissionsFinder searchPermissionsService;
+    private SolrPermissionsFinder solrPermissionsFinder;
     private DvObjectServiceBean dvObjectService;
 
     // -------------------- CONSTRUCTORS --------------------
@@ -33,9 +33,9 @@ public class PermissionsSolrDocFactory {
     }
 
     @Inject
-    public PermissionsSolrDocFactory(SearchPermissionsFinder searchPermissionsService,
-            DvObjectServiceBean dvObjectService) {
-        this.searchPermissionsService = searchPermissionsService;
+    public PermissionsSolrDocFactory(SolrPermissionsFinder solrPermissionsFinder,
+                                     DvObjectServiceBean dvObjectService) {
+        this.solrPermissionsFinder = solrPermissionsFinder;
         this.dvObjectService = dvObjectService;
     }
 
@@ -64,10 +64,10 @@ public class PermissionsSolrDocFactory {
     /**
      * Returns {@link PermissionsSolrDoc}s for dataset and datafiles attached to that dataset
      */
-    public List<PermissionsSolrDoc> determinePermissionsDocsForDatasetWithDataFiles(Dataset dvObject) {
+    public List<PermissionsSolrDoc> determinePermissionsDocsForDatasetWithDataFiles(Dataset dataset) {
         List<PermissionsSolrDoc> definitionPoints = new ArrayList<>();
-        definitionPoints.addAll(determinePermissionsDocsOnSelfOnly(dvObject));
-        definitionPoints.addAll(constructDatafileSolrDocsFromDataset((Dataset) dvObject));
+        definitionPoints.addAll(determinePermissionsDocsOnSelfOnly(dataset));
+        definitionPoints.addAll(constructDatafileSolrDocsFromDataset(dataset));
         return definitionPoints;
     }
 
@@ -98,17 +98,18 @@ public class PermissionsSolrDocFactory {
      * datasets and files return lists.
      */
     private PermissionsSolrDoc constructDataverseSolrDoc(Dataverse dataverse) {
-        SearchPermissions perms = searchPermissionsService.findDataversePerms(dataverse);
+        SolrPermissions permissions = solrPermissionsFinder.findDataversePerms(dataverse);
 
         Long noDatasetVersionForDataverses = null;
-        PermissionsSolrDoc dvDoc = new PermissionsSolrDoc(dataverse.getId(), IndexServiceBean.solrDocIdentifierDataverse + dataverse.getId(), noDatasetVersionForDataverses, dataverse.getName(), perms);
+        PermissionsSolrDoc dvDoc = new PermissionsSolrDoc(dataverse.getId(), IndexServiceBean.solrDocIdentifierDataverse + dataverse.getId(),
+                noDatasetVersionForDataverses, dataverse.getName(), permissions);
         return dvDoc;
     }
 
     private List<PermissionsSolrDoc> constructDatasetSolrDocs(Dataset dataset) {
         List<PermissionsSolrDoc> solrDocs = new ArrayList<>();
 
-        for (DatasetVersion version : searchPermissionsService.extractVersionsForPermissionIndexing(dataset)) {
+        for (DatasetVersion version : solrPermissionsFinder.extractVersionsForPermissionIndexing(dataset)) {
 
             PermissionsSolrDoc datasetSolrDoc = makeDatasetSolrDoc(version);
             solrDocs.add(datasetSolrDoc);
@@ -119,12 +120,13 @@ public class PermissionsSolrDocFactory {
     private List<PermissionsSolrDoc> constructDatafileSolrDocs(DataFile dataFile) {
         List<PermissionsSolrDoc> datafileSolrDocs = new ArrayList<>();
 
-        for (DatasetVersion datasetVersionFileIsAttachedTo : searchPermissionsService.extractVersionsForPermissionIndexing(dataFile.getOwner())) {
+        for (DatasetVersion datasetVersionFileIsAttachedTo : solrPermissionsFinder.extractVersionsForPermissionIndexing(dataFile.getOwner())) {
 
             String solrId = buildDatafilePermissionSolrId(dataFile.getId(), datasetVersionFileIsAttachedTo.getVersionState());
-            SearchPermissions perms = searchPermissionsService.findFileMetadataPermsFromDatasetVersion(datasetVersionFileIsAttachedTo);
+            SolrPermissions perms = solrPermissionsFinder.findFileMetadataPermsFromDatasetVersion(datasetVersionFileIsAttachedTo);
 
-            PermissionsSolrDoc dataFileSolrDoc = new PermissionsSolrDoc(dataFile.getId(), solrId, datasetVersionFileIsAttachedTo.getId(), dataFile.getDisplayName(), perms);
+            PermissionsSolrDoc dataFileSolrDoc = new PermissionsSolrDoc(dataFile.getId(), solrId,
+                    datasetVersionFileIsAttachedTo.getId(), dataFile.getDisplayName(), perms);
             datafileSolrDocs.add(dataFileSolrDoc);
         }
 
@@ -133,15 +135,16 @@ public class PermissionsSolrDocFactory {
 
     private List<PermissionsSolrDoc> constructDatafileSolrDocsFromDataset(Dataset dataset) {
         List<PermissionsSolrDoc> datafileSolrDocs = new ArrayList<>();
-        for (DatasetVersion datasetVersionFileIsAttachedTo : searchPermissionsService.extractVersionsForPermissionIndexing(dataset)) {
+        for (DatasetVersion datasetVersionFileIsAttachedTo : solrPermissionsFinder.extractVersionsForPermissionIndexing(dataset)) {
 
-            SearchPermissions perms = searchPermissionsService.findFileMetadataPermsFromDatasetVersion(datasetVersionFileIsAttachedTo);
+            SolrPermissions permissions = solrPermissionsFinder.findFileMetadataPermsFromDatasetVersion(datasetVersionFileIsAttachedTo);
 
             for (FileMetadata fileMetadata : datasetVersionFileIsAttachedTo.getFileMetadatas()) {
                 Long fileId = fileMetadata.getDataFile().getId();
                 String solrId = buildDatafilePermissionSolrId(fileId, datasetVersionFileIsAttachedTo.getVersionState());
 
-                PermissionsSolrDoc dataFileSolrDoc = new PermissionsSolrDoc(fileId, solrId, datasetVersionFileIsAttachedTo.getId(), fileMetadata.getLabel(), perms);
+                PermissionsSolrDoc dataFileSolrDoc = new PermissionsSolrDoc(fileId, solrId, datasetVersionFileIsAttachedTo.getId(),
+                        fileMetadata.getLabel(), permissions);
                 logger.fine("adding fileid " + fileId);
                 datafileSolrDocs.add(dataFileSolrDoc);
             }
@@ -153,9 +156,9 @@ public class PermissionsSolrDocFactory {
     private PermissionsSolrDoc makeDatasetSolrDoc(DatasetVersion version) {
         String solrId = buildDatasetPermissionSolrId(version);
         String name = version.getParsedTitle();
-        SearchPermissions perms = searchPermissionsService.findDatasetVersionPerms(version);
+        SolrPermissions permissions = solrPermissionsFinder.findDatasetVersionPerms(version);
 
-        return new PermissionsSolrDoc(version.getDataset().getId(), solrId, version.getId(), name, perms);
+        return new PermissionsSolrDoc(version.getDataset().getId(), solrId, version.getId(), name, permissions);
     }
 
     private String buildDatasetPermissionSolrId(DatasetVersion version) {

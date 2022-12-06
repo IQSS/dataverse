@@ -216,6 +216,7 @@ public class SearchFields {
     public static final String DEFINITION_POINT_DVOBJECT_ID = "definitionPointDvObjectId";
     public static final String DISCOVERABLE_BY = "discoverableBy";
     public static final String DISCOVERABLE_BY_PUBLIC_FROM = "discoverableByPublicFrom";
+    public static final String ADD_DATASET_PERM = "addDatasetPerm";
 
     /**
      * i.e. "Unpublished", "Draft" (multivalued)

@@ -109,8 +109,8 @@ public class CreateDataverseCommandTest {
         }
 
         @Override
-        public List<RoleAssignment> directRoleAssignments(DvObject dvo) {
-            // works since there's only one dataverse involved in the context 
+        public List<RoleAssignment> directRoleAssignments(DvObject dvObject) {
+            // works since there's only one dataverse involved in the context
             // of this unit test.
             return assignments;
         }
@@ -226,7 +226,7 @@ public class CreateDataverseCommandTest {
         assertEquals(dv, roleAssignment.getDefinitionPoint());
         assertEquals(roleAssignment.getAssigneeIdentifier(), request.getUser().getIdentifier());
 
-        // The following is a pretty wierd way to test that the create date defaults to 
+        // The following is a pretty weird way to test that the create date defaults to
         // now, but it works across date changes.
         assertTrue("When the supplied creation date is null, date shuld default to command execution time",
                    Math.abs(System.currentTimeMillis() - result.getCreateDate().toInstant().toEpochMilli()) < 1000);

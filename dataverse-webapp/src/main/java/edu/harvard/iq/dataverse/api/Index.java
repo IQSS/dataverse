@@ -602,11 +602,11 @@ public class Index extends AbstractApiBean {
             dataDoc.add(SearchFields.ID, solrDoc.getSolrId());
             dataDoc.add(SearchFields.NAME_SORT, solrDoc.getNameOrTitle());
             JsonArrayBuilder perms = Json.createArrayBuilder();
-            for (String perm : solrDoc.getPermissions().getPermissions()) {
+            for (String perm : solrDoc.getSearchPermissions().getPermissions()) {
                 perms.add(perm);
             }
             dataDoc.add(SearchFields.DISCOVERABLE_BY, perms);
-            dataDoc.add(SearchFields.DISCOVERABLE_BY_PUBLIC_FROM, solrDoc.getPermissions().getPublicFrom().toString());
+            dataDoc.add(SearchFields.DISCOVERABLE_BY_PUBLIC_FROM, solrDoc.getSearchPermissions().getPublicFrom().toString());
             permissionsData.add(dataDoc);
         }
         data.add("perms", permissionsData);

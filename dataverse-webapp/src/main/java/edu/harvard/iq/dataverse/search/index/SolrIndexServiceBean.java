@@ -186,7 +186,9 @@ public class SolrIndexServiceBean {
     // -------------------- PRIVATE --------------------
 
     private Set<Long> collectDvObjectIds(List<PermissionsSolrDoc> solrDocs) {
-        return solrDocs.stream().map(doc -> doc.getDvObjectId()).collect(Collectors.toSet());
+        return solrDocs.stream()
+                .map(PermissionsSolrDoc::getDvObjectId)
+                .collect(Collectors.toSet());
     }
 
     private void persistToSolr(Collection<PermissionsSolrDoc> permissionDocs) throws SolrServerException, IOException {

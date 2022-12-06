@@ -12,7 +12,7 @@ import java.sql.Timestamp;
 
 public class SearchUtil {
 
-    
+
     // -------------------- LOGIC --------------------
 
     public static SolrInputDocument createSolrDoc(PermissionsSolrDoc dvObjectSolrDoc) {
@@ -23,8 +23,9 @@ public class SearchUtil {
         solrInputDocument.addField(SearchFields.ID, dvObjectSolrDoc.getSolrId() + IndexServiceBean.discoverabilityPermissionSuffix);
         solrInputDocument.addField(SearchFields.DEFINITION_POINT, dvObjectSolrDoc.getSolrId());
         solrInputDocument.addField(SearchFields.DEFINITION_POINT_DVOBJECT_ID, dvObjectSolrDoc.getDvObjectId());
-        solrInputDocument.addField(SearchFields.DISCOVERABLE_BY, dvObjectSolrDoc.getPermissions().getPermissions());
-        solrInputDocument.addField(SearchFields.DISCOVERABLE_BY_PUBLIC_FROM, dvObjectSolrDoc.getPermissions().getPublicFrom().toString());
+        solrInputDocument.addField(SearchFields.DISCOVERABLE_BY, dvObjectSolrDoc.getSearchPermissions().getPermissions());
+        solrInputDocument.addField(SearchFields.DISCOVERABLE_BY_PUBLIC_FROM, dvObjectSolrDoc.getSearchPermissions().getPublicFrom().toString());
+        solrInputDocument.addField(SearchFields.ADD_DATASET_PERM, dvObjectSolrDoc.getAddDatasetPermissions().getPermittedEntities());
         return solrInputDocument;
     }
 
@@ -39,7 +40,7 @@ public class SearchUtil {
     }
 
     public static SortBy getSortBy(String sortField, String sortOrder) throws Exception {
-        
+
         String parsedSortField = parseSortField(sortField);
         SortOrder parsedSortOrder = parseSortOrder(sortOrder, parsedSortField);
 
@@ -58,9 +59,9 @@ public class SearchUtil {
     }
 
     // -------------------- PRIVATE --------------------
-    
+
     private static String parseSortField(String sortField) {
-        
+
         if (StringUtils.isBlank(sortField)) {
             return SearchFields.RELEVANCE;
         } else if (StringUtils.equals(sortField, "name")) {
@@ -72,9 +73,9 @@ public class SearchUtil {
         }
         return sortField;
     }
-    
+
     private static SortOrder parseSortOrder(String sortOrder, String parsedSortField) throws Exception {
-        
+
         if (StringUtils.isBlank(sortOrder)) {
             // default sorting per field if not specified
             if (StringUtils.equals(parsedSortField, SearchFields.RELEVANCE)) {
@@ -90,7 +91,7 @@ public class SearchUtil {
                 return SortOrder.asc;
             }
         }
-        
+
         return SortOrder.fromString(sortOrder)
             .orElseThrow(() -> new Exception("The 'order' parameter was '" + sortOrder + "' but expected one of " + SortOrder.allowedOrderStrings() + ". "
                     + "(The 'sort' parameter was/became '" + parsedSortField + "'.)"));
