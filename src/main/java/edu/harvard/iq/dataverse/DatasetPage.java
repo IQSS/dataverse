@@ -3190,10 +3190,10 @@ public class DatasetPage implements java.io.Serializable {
 
         
 //QDRADA handle new state from
-        /*if (isTermsPopupRequired() || isGuestbookPopupRequiredAtDownload()){
+        if (isTermsPopupRequired() || isGuestbookPopupRequiredAtDownload()){
             PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');");
         }
-        */
+        
         
         // If some of the files were restricted and we had to drop them off the
         // list, and NONE of the files are left on the downloadable list
@@ -5310,6 +5310,18 @@ public class DatasetPage implements java.io.Serializable {
         return FileUtil.isGuestbookAndTermsPopupRequired(workingVersion);
     }
 
+    public boolean isGuestbookPopupRequired(){
+        return FileUtil.isGuestbookPopupRequired(workingVersion);
+    }
+    
+    public boolean isTermsPopupRequired(){
+        return FileUtil.isTermsPopupRequired(workingVersion);
+    }
+    
+    public boolean isGuestbookPopupRequiredAtDownload(){
+        return isGuestbookPopupRequired() && !workingVersion.getDataset().isFileAccessRequest(); //only show guestbookAtDwonload if there is no possible request access
+    }
+    
     public String requestAccessMultipleFiles() {
 
         if (selectedFiles.isEmpty()) {
