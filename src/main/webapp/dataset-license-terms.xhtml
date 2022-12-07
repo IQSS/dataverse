@@ -236,7 +236,8 @@
                 </p:fragment>
             </div>
         </div>
-       <div class="panel panel-default" jsf:rendered="#{!empty editMode or empty editMode and ((!empty termsOfUseAndAccess.termsOfAccess and DatasetPage.restrictedFileCount > 0) 
+       <div class="panel panel-default" jsf:rendered="#{!empty editMode or empty editMode and (DatasetPage.restrictedFileCount > 0 
+                                                        or !empty termsOfUseAndAccess.termsOfAccess
                                                         or !empty termsOfUseAndAccess.dataAccessPlace 
                                         or !empty termsOfUseAndAccess.originalArchive or !empty termsOfUseAndAccess.availabilityStatus 
                                         or !empty termsOfUseAndAccess.contactForAccess or !empty termsOfUseAndAccess.sizeOfCollection 
