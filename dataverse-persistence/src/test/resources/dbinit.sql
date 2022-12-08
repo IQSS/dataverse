@@ -197,6 +197,23 @@ INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber
 INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber, minorversionnumber, unf, archivenote, versionnote, deaccessionlink, createtime, lastupdatetime, releasetime, archivetime, archivalcopylocation)
     VALUES (51, 1, 57, 'RELEASED', 2, 0, NULL, NULL, NULL, NULL, '2020-01-06 09:10:00', '2020-01-06 12:00:43', '2020-01-06 12:00:43', NULL, NULL);
 
+--- Dataset after embargo for reindex
+
+INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, authority, identifier, globalidcreatetime, identifierregistered, storageidentifier, releaseuser_id, publicationdate,
+                      creator_id, createdate, modificationtime, permissionmodificationtime, indextime)
+    VALUES (101, 'Dataset', 51, false, NULL, NULL, NULL, NULL, true, '', NULL, NULL,
+            2, '2019-08-22 08:22:33.069', '2019-09-27 12:00:43.188', '2019-08-22 08:22:33.069', '2019-12-01 08:22:33.069');
+INSERT INTO dataset (id, embargodate)
+    VALUES (101, '2020-01-01 00:00:00');
+
+--- Dataset after embargo already reindexed
+
+INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, authority, identifier, globalidcreatetime, identifierregistered, storageidentifier, releaseuser_id, publicationdate,
+                      creator_id, createdate, modificationtime, permissionmodificationtime, indextime)
+    VALUES (102, 'Dataset', 51, false, NULL, NULL, NULL, NULL, true, '', NULL, NULL,
+            2, '2019-08-22 08:22:33.069', '2019-09-27 12:00:43.188', '2019-08-22 08:22:33.069', '2020-02-01 00:00:00');
+INSERT INTO dataset (id, embargodate)
+    VALUES (102, '2020-01-01 00:00:00');
 
 -------------------- DATAFILES --------------------
 

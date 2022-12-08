@@ -130,4 +130,13 @@ public class DatasetServiceIT extends WebappArquillianDeployment {
         assertThat(first).isNotNull();
         assertThat(updatedTimeList).allMatch(first::equals);
     }
+    
+    @Test
+    public void shouldIndexAfterEmbargo( ) {
+        List<Dataset> forIndexAfterEmbargo = datasetDao.findNotIndexedAfterEmbargo();
+        assertThat(forIndexAfterEmbargo).isNotEmpty();
+        assertThat(forIndexAfterEmbargo.size()).isEqualTo(1);
+        Dataset foundDataset = forIndexAfterEmbargo.get(0);
+        assertThat(foundDataset.getId()).isEqualTo(101);
+    }
 }

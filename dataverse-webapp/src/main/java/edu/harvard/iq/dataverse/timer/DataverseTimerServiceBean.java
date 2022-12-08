@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.timer;
 
 import com.google.api.client.util.Preconditions;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.datafile.FileIntegrityChecker;
 import edu.harvard.iq.dataverse.datafile.pojo.FilesIntegrityReport;
@@ -10,8 +11,10 @@ import edu.harvard.iq.dataverse.harvest.client.HarvestTimerInfo;
 import edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClientDao;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -38,6 +41,7 @@ import java.net.UnknownHostException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -76,6 +80,12 @@ public class DataverseTimerServiceBean implements Serializable {
     @Inject
     DatasetCitationsCountUpdater datasetCitationsCountUpdater;
 
+    @Inject
+    DatasetDao datasetDao;
+    
+    @Inject
+    IndexServiceBean indexServiceBean;
+
     @PostConstruct
     public void init() {
         logger.info("PostConstruct timer check.");
@@ -96,9 +106,27 @@ public class DataverseTimerServiceBean implements Serializable {
 
             createIntegrityCheckTimer();
             createCitationCountUpdateTimer();
+            
+            createReindexAfterEmbargoTimer();
 
         } else {
             logger.info("Skipping timer server init (I am not the dedicated timer server)");
+        }
+    }
+
+    private void createReindexAfterEmbargoTimer() {
+        String cronExpression = settingsService.getValueForKey(Key.ReindexAfterEmbargoTimerExpression);
+
+        if (StringUtils.isNotBlank(cronExpression)) {
+            ScheduleExpression expression = cronToScheduleExpression(cronExpression);
+
+            TimerConfig timerConfig = new TimerConfig();
+            timerConfig.setPersistent(false);
+            timerConfig.setInfo(new AfterEmbargoReindexTimerInfo());
+            Timer timer = timerService.createCalendarTimer(expression, timerConfig);
+            logger.info("ReindexAfterEmbargoTimerExpression: timer created, initial expiration: " + timer.getNextTimeout());
+        } else {
+            logger.info("ReindexAfterEmbargoTimerExpression is empty. Skipping creation of timer.");
         }
     }
 
@@ -194,8 +222,17 @@ public class DataverseTimerServiceBean implements Serializable {
             logger.info(report.getSummaryInfo());
         } else if (timer.getInfo() instanceof CitationCountUpdateTimerInfo) {
             datasetCitationsCountUpdater.updateCitationCount();
+        } else if (timer.getInfo() instanceof AfterEmbargoReindexTimerInfo) {
+            reindexAfterEmbargo();
         }
 
+    }
+
+    private void reindexAfterEmbargo() {
+        List<Dataset> datasetsAfterEmbargo = datasetDao.findNotIndexedAfterEmbargo();
+        for (Dataset dataset:datasetsAfterEmbargo) {
+            indexServiceBean.indexDataset(dataset, true);
+        }
     }
 
     public void removeAllTimers() {

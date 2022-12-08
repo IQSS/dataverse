@@ -643,7 +643,16 @@ public class SettingsServiceBean {
          * Maximal size (in bytes) of files that can be uploaded in a single
          * batch. If set to 0 then there's no limit.
          */
-        SingleUploadBatchMaxSize
+        SingleUploadBatchMaxSize, 
+        
+        /**
+         * Cron expression that indicates how often
+         * checking of datasets after embargo for reindex should take place.
+         * If empty then check will be skipped.
+         * Default value: empty.
+         */
+        
+        ReindexAfterEmbargoTimerExpression
         ;
 
 
