@@ -9,24 +9,18 @@ import org.junit.AfterClass;
 import org.junit.Test;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import com.jayway.restassured.response.Response;
-import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.path.xml.XmlPath;
 import com.jayway.restassured.path.xml.element.Node;
-import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import javax.json.Json;
-import javax.json.JsonArray;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
-import org.junit.Ignore;
 import java.util.List;
-import static junit.framework.Assert.assertEquals;
+//import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests for the Harvesting Server functionality
@@ -184,142 +178,204 @@ public class HarvestingServerIT {
     
     
     @Test
-    public void testSetCreateAPIandOAIlistIdentifiers() {
-        // Create the set with Dataverse /api/harvest/server API:
+    public void testNativeSetAPI() {
         String setName = UtilIT.getRandomString(6);
         String def = "*";
-
-        // make sure the set does not exist
+        
+        // This test focuses on the Create/List/Edit functionality of the 
+        // Dataverse OAI Sets API (/api/harvest/server):
+ 
+        // API Test 1. Make sure the set does not exist yet
         String setPath = String.format("/api/harvest/server/oaisets/%s", setName);
         String createPath ="/api/harvest/server/oaisets/add";
-        Response r0 = given()
+        Response getSetResponse = given()
                 .get(setPath);
-        assertEquals(404, r0.getStatusCode());
+        assertEquals(404, getSetResponse.getStatusCode());
 
-        // try to create set as normal user, should fail
-        Response r1 = given()
+        // API Test 2. Try to create set as normal user, should fail
+        Response createSetResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, normalUserAPIKey)
                 .body(jsonForTestSpec(setName, def))
                 .post(createPath);
-        assertEquals(400, r1.getStatusCode());
+        assertEquals(400, createSetResponse.getStatusCode());
 
-        // try to create set as admin user, should succeed
-        Response r2 = given()
+        // API Test 3. Try to create set as admin user, should succeed
+        createSetResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
                 .body(jsonForTestSpec(setName, def))
                 .post(createPath);
-        assertEquals(201, r2.getStatusCode());
+        assertEquals(201, createSetResponse.getStatusCode());
         
-        Response getSet = given()
-                .get(setPath);
+        // API Test 4. Retrieve the set we've just created, validate the response
+        getSetResponse = given().get(setPath);
         
-        logger.info("getSet.getStatusCode(): " + getSet.getStatusCode());
-        logger.info("getSet printresponse:  " + getSet.prettyPrint());
-        assertEquals(200, getSet.getStatusCode());
+        System.out.println("getSetResponse.getStatusCode(): " + getSetResponse.getStatusCode());
+        System.out.println("getSetResponse, full:  " + getSetResponse.prettyPrint());
+        assertEquals(200, getSetResponse.getStatusCode());
         
+        getSetResponse.then().assertThat()
+                .body("status", equalTo(AbstractApiBean.STATUS_OK))
+                .body("data.definition", equalTo("*"))
+                .body("data.description", equalTo(""))
+                .body("data.name", equalTo(setName));
+        
+        
+        // API Test 5. Retrieve all sets, check that our new set is listed 
         Response responseAll = given()
                 .get("/api/harvest/server/oaisets");
         
-        logger.info("responseAll.getStatusCode(): " + responseAll.getStatusCode());
-        logger.info("responseAll printresponse:  " + responseAll.prettyPrint());
+        System.out.println("responseAll.getStatusCode(): " + responseAll.getStatusCode());
+        System.out.println("responseAll full:  " + responseAll.prettyPrint());
         assertEquals(200, responseAll.getStatusCode());
-
-        // try to create set with same name as admin user, should fail
-        Response r3 = given()
+        assertTrue(responseAll.body().jsonPath().getList("data.oaisets").size() > 0);
+        assertTrue(responseAll.body().jsonPath().getList("data.oaisets.name").toString().contains(setName));  // todo: simplify     
+        
+        // API Test 6. Try to create a set with the same name, should fail
+        createSetResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
                 .body(jsonForTestSpec(setName, def))
                 .post(createPath);
-        assertEquals(400, r3.getStatusCode());
+        assertEquals(400, createSetResponse.getStatusCode());
 
-        // try to export set as admin user, should succeed (under admin API, not checking that normal user will fail)
+        // API Test 7. Try to export set as admin user, should succeed. Set export
+        // is under /api/admin, no need to try to access it as a non-admin user
         Response r4 = UtilIT.exportOaiSet(setName);
         assertEquals(200, r4.getStatusCode());
-        
-        
-        
-        // try to delete as normal user, should fail
-        Response r5 = given()
+                
+        // API TEST 8. Try to delete the set as normal user, should fail
+        Response deleteResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, normalUserAPIKey)
                 .delete(setPath);
-        logger.info("r5.getStatusCode(): " + r5.getStatusCode());
-        assertEquals(400, r5.getStatusCode());
+        logger.info("deleteResponse.getStatusCode(): " + deleteResponse.getStatusCode());
+        assertEquals(400, deleteResponse.getStatusCode());
         
-        // try to delete as admin user, should work
-        Response r6 = given()
+        // API TEST 9. Delete as admin user, should work
+        deleteResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
                 .delete(setPath);
-        logger.info("r6.getStatusCode(): " + r6.getStatusCode());
-        assertEquals(200, r6.getStatusCode());
+        logger.info("deleteResponse.getStatusCode(): " + deleteResponse.getStatusCode());
+        assertEquals(200, deleteResponse.getStatusCode());
 
     }
     
     @Test
-    public void testSetEdit() {
-        //setupUsers();
+    public void testSetEditAPIandOAIlistSets() {
+        // This test focuses on testing the Edit functionality of the Dataverse
+        // OAI Set API and the ListSets method of the Dataverse OAI server.
+        
+        // Initial setup: crete a test set. 
+        // Since the Create and List (POST and GET) functionality of the API 
+        // is tested extensively in the previous test, we will not be paying 
+        // as much attention to these methods, aside from confirming the 
+        // expected HTTP result codes. 
+        
         String setName = UtilIT.getRandomString(6);
-        String def = "*";
+        String setDef = "*";
 
-        // make sure the set does not exist
-        String u0 = String.format("/api/harvest/server/oaisets/%s", setName);
+        // Make sure the set does not exist
+        String setPath = String.format("/api/harvest/server/oaisets/%s", setName);
         String createPath ="/api/harvest/server/oaisets/add";
-        Response r0 = given()
-                .get(u0);
-        assertEquals(404, r0.getStatusCode());
+        Response getSetResponse = given()
+                .get(setPath);
+        assertEquals(404, getSetResponse.getStatusCode());
 
 
-        // try to create set as admin user, should succeed
-        Response r1 = given()
+        // Create the set as admin user
+        Response createSetResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
-                .body(jsonForTestSpec(setName, def))
+                .body(jsonForTestSpec(setName, setDef))
                 .post(createPath);
-        assertEquals(201, r1.getStatusCode());
+        assertEquals(201, createSetResponse.getStatusCode());
 
+        // I. Test the Modify/Edit (POST method) functionality of the 
+        // Dataverse OAI Sets API
         
-        // try to edit as normal user  should fail
-        Response r2 = given()
+        String newDefinition = "title:New";
+        String newDescription = "updated";
+        
+        // API Test 1. Try to modify the set as normal user, should fail
+        Response editSetResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, normalUserAPIKey)
-                .body(jsonForEditSpec(setName, def,""))
-                .put(u0);
-        logger.info("r2.getStatusCode(): " + r2.getStatusCode());
-        assertEquals(400, r2.getStatusCode());
+                .body(jsonForEditSpec(setName, setDef, ""))
+                .put(setPath);
+        logger.info("non-admin user editSetResponse.getStatusCode(): " + editSetResponse.getStatusCode());
+        assertEquals(400, editSetResponse.getStatusCode());
         
-        // try to edit as with blanks should fail
-        Response r3 = given()
+        // API Test 2. Try to modify as admin, but with invalid (empty) values, 
+        // should fail
+        editSetResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
                 .body(jsonForEditSpec(setName, "",""))
-                .put(u0);
-        logger.info("r3.getStatusCode(): " + r3.getStatusCode());
-        assertEquals(400, r3.getStatusCode());
+                .put(setPath);
+        logger.info("invalid values editSetResponse.getStatusCode(): " + editSetResponse.getStatusCode());
+        assertEquals(400, editSetResponse.getStatusCode());
         
-        // try to edit as with something should pass
-        Response r4 = given()
+        // API Test 3. Try to modify as admin, with sensible values
+        editSetResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
-                .body(jsonForEditSpec(setName, "newDef","newDesc"))
-                .put(u0);
-        logger.info("r4 Status code: " + r4.getStatusCode());
-        logger.info("r4.prettyPrint(): " + r4.prettyPrint());
-        assertEquals(OK.getStatusCode(), r4.getStatusCode());
+                .body(jsonForEditSpec(setName, newDefinition, newDescription))
+                .put(setPath);
+        logger.info("admin user editSetResponse status code: " + editSetResponse.getStatusCode());
+        logger.info("admin user editSetResponse.prettyPrint(): " + editSetResponse.prettyPrint());
+        assertEquals(OK.getStatusCode(), editSetResponse.getStatusCode());
         
-        logger.info("u0: " + u0);
-        // now delete it...
-        Response r6 = given()
+        // API Test 4. List the set, confirm that the new values are shown
+        getSetResponse = given().get(setPath);
+        
+        System.out.println("getSetResponse.getStatusCode(): " + getSetResponse.getStatusCode());
+        System.out.println("getSetResponse, full:  " + getSetResponse.prettyPrint());
+        assertEquals(200, getSetResponse.getStatusCode());
+        
+        getSetResponse.then().assertThat()
+                .body("status", equalTo(AbstractApiBean.STATUS_OK))
+                .body("data.definition", equalTo(newDefinition))
+                .body("data.description", equalTo(newDescription))
+                .body("data.name", equalTo(setName));
+
+        // II. Test the ListSets functionality of the OAI server 
+        
+        Response listSetsResponse = UtilIT.getOaiListSets();
+        
+        // 1. Validate the service section of the OAI response: 
+        
+        XmlPath responseXmlPath = validateOaiVerbResponse(listSetsResponse, "ListSets");
+        
+        // 2. Validate the payload of the response, by confirming that the set 
+        // we created and modified, above, is being listed by the OAI server 
+        // and its xml record is properly formatted
+        
+        List<Node> listSets = responseXmlPath.getList("OAI-PMH.ListSets.set.list()"); // TODO - maybe try it with findAll()?
+        assertNotNull(listSets);
+        assertTrue(listSets.size() > 0);
+
+        Node foundSetNode = null; 
+        for (Node setNode : listSets) {
+            
+            if (setName.equals(setNode.get("setName").toString())) {
+                foundSetNode = setNode; 
+                break;
+            }
+        }
+        
+        assertNotNull("Newly-created set is not listed by the OAI server", foundSetNode);
+        assertEquals("Incorrect description in the ListSets entry", newDescription, foundSetNode.getPath("setDescription.metadata.element.field", String.class));
+
+        // ok, the xml record looks good! 
+
+        // Cleanup. Delete the set with the DELETE API
+        Response deleteSetResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
-                .delete(u0);
-        logger.info("r6.getStatusCode(): " + r6.getStatusCode());
-        assertEquals(200, r6.getStatusCode());
+                .delete(setPath);
+        assertEquals(200, deleteSetResponse.getStatusCode());
 
     }
 
-    // A more elaborate test - we'll create and publish a dataset, then create an
-    // OAI set with that one dataset, and attempt to retrieve the OAI record
-    // with GetRecord. 
+    // A more elaborate test - we will create and export an 
+    // OAI set with a single dataset, and attempt to retrieve 
+    // it and validate the OAI server responses of the corresponding 
+    // ListIdentifiers, ListRecords and GetRecord methods. 
     @Test
     public void testSingleRecordOaiSet() throws InterruptedException {
-
-        //setupUsers();
-
-        
-
         // Let's try and create an OAI set with the "single set dataset" that 
         // was created as part of the initial setup:
         
@@ -333,12 +389,18 @@ public class HarvestingServerIT {
                 .post(createPath);
         assertEquals(201, createSetResponse.getStatusCode());
 
-        // TODO: a) look up the set via native harvest/server api; 
-        //       b) look up the set via the OAI ListSets;
-        // export set: 
-        // (this is asynchronous - so we should probably wait a little)
+        // The GET method of the oai set API, as well as the OAI ListSets
+        // method are tested extensively in another method in this class, so 
+        // we'll skip checking those here. 
+        
+        // Let's export the set. This is asynchronous - so we will try to 
+        // wait a little - but in practice, everything potentially time-consuming
+        // must have been done when the dataset was exported, in the setup method. 
+        
         Response exportSetResponse = UtilIT.exportOaiSet(setName);
         assertEquals(200, exportSetResponse.getStatusCode());
+        Thread.sleep(1000L);
+        
         Response getSet = given()
                 .get(apiPath);
         
@@ -350,25 +412,38 @@ public class HarvestingServerIT {
         do {
             
 
-            // Run ListIdentifiers on this newly-created set:
+            // OAI Test 1. Run ListIdentifiers on this newly-created set:
             Response listIdentifiersResponse = UtilIT.getOaiListIdentifiers(setName, "oai_dc");
-            List ret = listIdentifiersResponse.getBody().xmlPath().getList("OAI-PMH.ListIdentifiers.header");
-
             assertEquals(OK.getStatusCode(), listIdentifiersResponse.getStatusCode());
+            
+            // Validate the service section of the OAI response: 
+            XmlPath responseXmlPath = validateOaiVerbResponse(listIdentifiersResponse, "ListIdentifiers");
+            
+            List ret = responseXmlPath.getList("OAI-PMH.ListIdentifiers.header");
             assertNotNull(ret);
-            logger.info("setName: " + setName);
+                        
             if (logger.isLoggable(Level.FINE)) {
                 logger.info("listIdentifiersResponse.prettyPrint:..... ");
                 listIdentifiersResponse.prettyPrint();
             }
-            if (ret.size() != 1) {
+            if (ret.isEmpty()) {
+                // OK, we'll sleep for another second - provided it's been less
+                // than 10 sec. total.
                 i++;
             } else {
-                // There should be 1 and only 1 record in the response:
+                // Validate the payload of the ListRecords response:
+                // a) There should be 1 and only 1 record in the response:
                 assertEquals(1, ret.size());
-                // And the record should be the dataset we have just created:
-                assertEquals(singleSetDatasetPersistentId, listIdentifiersResponse.getBody().xmlPath()
+                // b) The one record in it should be the dataset we have just created:
+                assertEquals(singleSetDatasetPersistentId, responseXmlPath
                         .getString("OAI-PMH.ListIdentifiers.header.identifier"));
+                assertEquals(setName, responseXmlPath
+                        .getString("OAI-PMH.ListIdentifiers.header.setSpec"));
+                assertNotNull(responseXmlPath.getString("OAI-PMH.ListIdentifiers.header.dateStamp"));
+                // TODO: validate the formatting of the date string in the record
+                // header, above!
+                
+                // ok, ListIdentifiers response looks valid.
                 break;
             }
             Thread.sleep(1000L);
@@ -379,34 +454,86 @@ public class HarvestingServerIT {
         // already happened during its publishing (we made sure to wait there). 
         // Exporting the set should not take any time - but I'll keep that code 
         // in place since it's not going to hurt. - L.A. 
+        
         System.out.println("Waited " + i + " seconds for OIA export.");
         //Fail if we didn't find the exported record before the timeout
         assertTrue(i < maxWait);
+        
+        
+        // OAI Test 2. Run ListRecords, request oai_dc:
         Response listRecordsResponse = UtilIT.getOaiListRecords(setName, "oai_dc");
         assertEquals(OK.getStatusCode(), listRecordsResponse.getStatusCode());
-        List listRecords = listRecordsResponse.getBody().xmlPath().getList("OAI-PMH.ListRecords.record");
+        
+        // Validate the service section of the OAI response: 
+        
+        XmlPath responseXmlPath = validateOaiVerbResponse(listRecordsResponse, "ListRecords");
+        
+        // Validate the payload of the response: 
+        // (the header portion must be identical to that of ListIdentifiers above, 
+        // plus the response must contain a metadata section with a valid oai_dc 
+        // record)
+        
+        List listRecords = responseXmlPath.getList("OAI-PMH.ListRecords.record");
 
+        // Same deal, there must be 1 record only in the set:
         assertNotNull(listRecords);
         assertEquals(1, listRecords.size());
-        assertEquals(singleSetDatasetPersistentId, listRecordsResponse.getBody().xmlPath().getString("OAI-PMH.ListRecords.record[0].header.identifier"));
-
-        // assert that Datacite format does not contain the XML prolog
+        // a) header section:
+        assertEquals(singleSetDatasetPersistentId, responseXmlPath.getString("OAI-PMH.ListRecords.record.header.identifier"));
+        assertEquals(setName, responseXmlPath
+                .getString("OAI-PMH.ListRecords.record.header.setSpec"));
+        assertNotNull(responseXmlPath.getString("OAI-PMH.ListRecords.record.header.dateStamp"));
+        // b) metadata section: 
+        // in the metadata section we are showing the resolver url form of the doi:
+        String persistentIdUrl = singleSetDatasetPersistentId.replace("doi:", "https://doi.org/");
+        assertEquals(persistentIdUrl, responseXmlPath.getString("OAI-PMH.ListRecords.record.metadata.dc.identifier"));
+        assertEquals("Darwin's Finches", responseXmlPath.getString("OAI-PMH.ListRecords.record.metadata.dc.title"));
+        assertEquals("Finch, Fiona", responseXmlPath.getString("OAI-PMH.ListRecords.record.metadata.dc.creator"));        
+        assertEquals("Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.", 
+                responseXmlPath.getString("OAI-PMH.ListRecords.record.metadata.dc.description"));
+        assertEquals("Medicine, Health and Life Sciences", 
+                responseXmlPath.getString("OAI-PMH.ListRecords.record.metadata.dc.subject"));
+        // ok, looks legit!
+        
+        // OAI Test 3.
+        // Assert that Datacite format does not contain the XML prolog
+        // (this is a reference to a resolved issue; generally, harvestable XML
+        // exports must NOT contain the "<?xml ..." headers - but there is now
+        // efficient code in the XOAI library that checks for, and strips it, 
+        // if necessary. - L.A.)
         Response listRecordsResponseDatacite = UtilIT.getOaiListRecords(setName, "Datacite");
         assertEquals(OK.getStatusCode(), listRecordsResponseDatacite.getStatusCode());
         String body = listRecordsResponseDatacite.getBody().asString();
         assertFalse(body.contains("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
 
-        // And now run GetRecord on the OAI record for the dataset:
+        // OAI Test 4. run and validate GetRecord response
+        
         Response getRecordResponse = UtilIT.getOaiRecord(singleSetDatasetPersistentId, "oai_dc");
-        
         System.out.println("GetRecord response in its entirety: "+getRecordResponse.getBody().prettyPrint());
-        System.out.println("one more time:");
-        getRecordResponse.prettyPrint();
+         
+        // Validate the service section of the OAI response: 
+        responseXmlPath = validateOaiVerbResponse(getRecordResponse, "GetRecord");
         
-        assertEquals(singleSetDatasetPersistentId, getRecordResponse.getBody().xmlPath().getString("OAI-PMH.GetRecord.record.header.identifier"));
+        // Validate the payload of the response:
+        
+        // Note that for a set with a single record the output of ListRecrods is
+        // essentially identical to that of GetRecord!
+        // (we'll test a multi-record set in a different method)
+        // a) header section:
+        assertEquals(singleSetDatasetPersistentId, responseXmlPath.getString("OAI-PMH.GetRecord.record.header.identifier"));
+        assertEquals(setName, responseXmlPath
+                .getString("OAI-PMH.GetRecord.record.header.setSpec"));
+        assertNotNull(responseXmlPath.getString("OAI-PMH.GetRecord.record.header.dateStamp"));
+        // b) metadata section: 
+        assertEquals(persistentIdUrl, responseXmlPath.getString("OAI-PMH.GetRecord.record.metadata.dc.identifier"));
+        assertEquals("Darwin's Finches", responseXmlPath.getString("OAI-PMH.GetRecord.record.metadata.dc.title"));
+        assertEquals("Finch, Fiona", responseXmlPath.getString("OAI-PMH.GetRecord.record.metadata.dc.creator"));        
+        assertEquals("Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.", 
+                responseXmlPath.getString("OAI-PMH.GetRecord.record.metadata.dc.description"));
+        assertEquals("Medicine, Health and Life Sciences", responseXmlPath.getString("OAI-PMH.GetRecord.record.metadata.dc.subject"));
+        
+        // ok, looks legit!
 
-        // TODO: 
-        // check the actual metadata payload of the OAI record more carefully?
     }
     
     // This test will attempt to create a set with multiple records (enough 

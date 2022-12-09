@@ -2630,6 +2630,11 @@ public class UtilIT {
         return given().get(oaiVerbPath);
     }
     
+    static Response getOaiListSets() {
+        String oaiVerbPath = "/oai?verb=ListSets";
+        return given().get(oaiVerbPath);
+    }
+    
     static Response getOaiRecord(String datasetPersistentId, String metadataFormat) {
         String apiPath = String.format("/oai?verb=GetRecord&identifier=%s&metadataPrefix=%s", datasetPersistentId, metadataFormat);
         return given().get(apiPath);
