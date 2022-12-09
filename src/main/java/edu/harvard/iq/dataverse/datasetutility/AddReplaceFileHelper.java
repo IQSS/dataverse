@@ -1932,6 +1932,7 @@ public class AddReplaceFileHelper{
             // start the ingest!
             ingestService.startIngestJobsForDataset(dataset, dvRequest.getAuthenticatedUser());
             msg("post ingest start");
+            ingestService.extractMetadata(dataset, dvRequest.getAuthenticatedUser());
         }
         return true;
     }
@@ -2145,6 +2146,7 @@ public class AddReplaceFileHelper{
                 }
                 //ingest job
                 ingestService.startIngestJobsForDataset(dataset, (AuthenticatedUser) authUser);
+                ingestService.extractMetadata(dataset, (AuthenticatedUser) authUser);
 
             }
         }

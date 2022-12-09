@@ -3733,6 +3733,7 @@ public class DatasetPage implements java.io.Serializable {
         // Call Ingest Service one more time, to
         // queue the data ingest jobs for asynchronous execution:
         ingestService.startIngestJobsForDataset(dataset, (AuthenticatedUser) session.getUser());
+        ingestService.extractMetadata(dataset, (AuthenticatedUser) session.getUser());
 
         //After dataset saved, then persist prov json data
         if(systemConfig.isProvCollectionEnabled()) {

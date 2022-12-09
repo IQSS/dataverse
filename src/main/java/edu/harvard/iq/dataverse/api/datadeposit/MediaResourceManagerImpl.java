@@ -373,6 +373,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             }
 
             ingestService.startIngestJobsForDataset(dataset, user);
+            ingestService.extractMetadata(dataset, user);
 
             ReceiptGenerator receiptGenerator = new ReceiptGenerator();
             String baseUrl = urlManager.getHostnamePlusBaseUrlPath(uri);
