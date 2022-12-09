@@ -550,6 +550,17 @@ public class JsonPrinter {
         fieldsBld.add("type", fld.getFieldType().toString());
         fieldsBld.add("watermark", fld.getWatermark());
         fieldsBld.add("description", fld.getDescription());
+        fieldsBld.add("multiple", fld.isAllowMultiples());
+        fieldsBld.add("isControlledVocabulary", fld.isControlledVocabulary());
+        if (fld.isControlledVocabulary()) {
+            // If the field has a controlled vocabulary,
+            // add all values to the resulting JSON
+            JsonArrayBuilder jab = Json.createArrayBuilder();
+            for (ControlledVocabularyValue cvv : fld.getControlledVocabularyValues()) {
+                jab.add(cvv.getStrValue());
+            }
+            fieldsBld.add("controlledVocabularyValues", jab);
+        }
         if (!fld.getChildDatasetFieldTypes().isEmpty()) {
             JsonObjectBuilder subFieldsBld = jsonObjectBuilder();
             for (DatasetFieldType subFld : fld.getChildDatasetFieldTypes()) {
