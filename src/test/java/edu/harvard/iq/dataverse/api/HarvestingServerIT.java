@@ -873,4 +873,12 @@ public class HarvestingServerIT {
         logger.info("deleteResponse.getStatusCode(): " + deleteResponse.getStatusCode());
         assertEquals("Failed to delete the control multi-record set", 200, deleteResponse.getStatusCode());
     }
+    
+    // TODO: 
+    // What else can we test? 
+    // Some ideas: 
+    // - Test handling of deleted dataset records
+    // - Test "from" and "until" time parameters
+    // - Test validating full verb response records against XML schema
+    //   (for each supported metadata format, possibly?)
 }
