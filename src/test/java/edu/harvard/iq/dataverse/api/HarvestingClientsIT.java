@@ -75,7 +75,9 @@ public class HarvestingClientsIT {
 
     @Test
     public void testCreateEditDeleteClient() {
-        //setupUsers();
+        // This method focuses on testing the native Dataverse harvesting client
+        // API. 
+        
         String nickName = UtilIT.getRandomString(6);
         
 
@@ -158,7 +160,7 @@ public class HarvestingClientsIT {
         // This test will create a client and attempt to perform an actual 
         // harvest and validate the resulting harvested content. 
         
-        // Setup: create the client via the API
+        // Setup: create the client via native API
         // since this API is tested somewhat extensively in the previous 
         // method, we don't need to pay too much attention to this method, aside 
         // from confirming the expected HTTP status code.
@@ -246,8 +248,11 @@ public class HarvestingClientsIT {
         // Fail if it hasn't completed in maxWait seconds
         assertTrue(i < maxWait);
         
-        // TODO: use the native Dataverses/Datasets apis to verify that the expected
-        // datasets have been harvested. 
+        // TODO(?) use the native Dataverses/Datasets apis to verify that the expected
+        // datasets have been harvested. This may or may not be necessary, seeing 
+        // how we have already confirmed the number of successfully harvested 
+        // datasets from the control set; somewhat hard to imagine a practical 
+        // situation where that would not be enough (?).  
         
         // Cleanup: delete the client 
         
