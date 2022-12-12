@@ -250,7 +250,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             // Make sure that the upload type is not rsync - handled above for dual mode
             // ------------------------------------- 
 
-            if (dataset.getEditVersion().isHasPackageFile()) {                
+            if (dataset.getOrCreateEditVersion().isHasPackageFile()) {                
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, BundleUtil.getStringFromBundle("file.api.alreadyHasPackageFile"));
             }
             
@@ -276,7 +276,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             }
 
             String uploadedZipFilename = deposit.getFilename();
-            DatasetVersion editVersion = dataset.getEditVersion();
+            DatasetVersion editVersion = dataset.getOrCreateEditVersion();
 
             if (deposit.getInputStream() == null) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Deposit input stream was null.");

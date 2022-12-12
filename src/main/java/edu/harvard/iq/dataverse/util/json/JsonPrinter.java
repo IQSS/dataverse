@@ -550,6 +550,17 @@ public class JsonPrinter {
         fieldsBld.add("type", fld.getFieldType().toString());
         fieldsBld.add("watermark", fld.getWatermark());
         fieldsBld.add("description", fld.getDescription());
+        fieldsBld.add("multiple", fld.isAllowMultiples());
+        fieldsBld.add("isControlledVocabulary", fld.isControlledVocabulary());
+        if (fld.isControlledVocabulary()) {
+            // If the field has a controlled vocabulary,
+            // add all values to the resulting JSON
+            JsonArrayBuilder jab = Json.createArrayBuilder();
+            for (ControlledVocabularyValue cvv : fld.getControlledVocabularyValues()) {
+                jab.add(cvv.getStrValue());
+            }
+            fieldsBld.add("controlledVocabularyValues", jab);
+        }
         if (!fld.getChildDatasetFieldTypes().isEmpty()) {
             JsonObjectBuilder subFieldsBld = jsonObjectBuilder();
             for (DatasetFieldType subFld : fld.getChildDatasetFieldTypes()) {
@@ -830,7 +841,8 @@ public class JsonPrinter {
             .add("uri", license.getUri().toString())
             .add("iconUrl", license.getIconUrl() == null ? null : license.getIconUrl().toString())
             .add("active", license.isActive())
-            .add("isDefault", license.isDefault());
+            .add("isDefault", license.isDefault())
+            .add("sortOrder", license.getSortOrder());
     }
 
     public static Collector<String, JsonArrayBuilder, JsonArrayBuilder> stringsToJsonArray() {

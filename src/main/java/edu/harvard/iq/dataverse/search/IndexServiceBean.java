@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
@@ -38,6 +39,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Timestamp;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -947,6 +949,70 @@ public class IndexServiceBean {
                             }
                         }
                     }
+                }
+                
+                //ToDo - define a geom/bbox type solr field and find those instead of just this one
+                if(dsfType.getName().equals(DatasetFieldConstant.geographicBoundingBox)) {
+                    String minWestLon=null;
+                    String maxEastLon=null;
+                    String maxNorthLat=null;
+                    String minSouthLat=null;
+                    for (DatasetFieldCompoundValue compoundValue : dsf.getDatasetFieldCompoundValues()) {
+                        String westLon=null;
+                        String eastLon=null;
+                        String northLat=null;
+                        String southLat=null;
+                        for(DatasetField childDsf: compoundValue.getChildDatasetFields()) {
+                            switch (childDsf.getDatasetFieldType().getName()) {
+                            case DatasetFieldConstant.westLongitude:
+                                westLon = childDsf.getRawValue();
+                                break;
+                            case DatasetFieldConstant.eastLongitude:
+                                eastLon = childDsf.getRawValue();
+                                break;
+                            case DatasetFieldConstant.northLatitude:
+                                northLat = childDsf.getRawValue();
+                                break;
+                            case DatasetFieldConstant.southLatitude:
+                                southLat = childDsf.getRawValue();
+                                break;
+                            }
+                        }
+                        if ((eastLon != null || westLon != null) && (northLat != null || southLat != null)) {
+                            // we have a point or a box, so proceed
+                            if (eastLon == null) {
+                                eastLon = westLon;
+                            } else if (westLon == null) {
+                                westLon = eastLon;
+                            }
+                            if (northLat == null) {
+                                northLat = southLat;
+                            } else if (southLat == null) {
+                                southLat = northLat;
+                            }
+                            //Find the overall bounding box that includes all bounding boxes
+                            if(minWestLon==null || Float.parseFloat(minWestLon) > Float.parseFloat(westLon)) {
+                                minWestLon=westLon;
+                            }
+                            if(maxEastLon==null || Float.parseFloat(maxEastLon) < Float.parseFloat(eastLon)) {
+                                maxEastLon=eastLon;
+                            }
+                            if(minSouthLat==null || Float.parseFloat(minSouthLat) > Float.parseFloat(southLat)) {
+                                minSouthLat=southLat;
+                            }
+                            if(maxNorthLat==null || Float.parseFloat(maxNorthLat) < Float.parseFloat(northLat)) {
+                                maxNorthLat=northLat;
+                            }
+                            //W, E, N, S
+                            solrInputDocument.addField(SearchFields.GEOLOCATION, "ENVELOPE(" + westLon + "," + eastLon + "," + northLat + "," + southLat + ")");
+                        }
+                    }
+                    //Only one bbox per dataset
+                    //W, E, N, S
+                    if ((minWestLon != null || maxEastLon != null) && (maxNorthLat != null || minSouthLat != null)) {
+                        solrInputDocument.addField(SearchFields.BOUNDING_BOX, "ENVELOPE(" + minWestLon + "," + maxEastLon + "," + maxNorthLat + "," + minSouthLat + ")");
+                    }
+
                 }
             }
 

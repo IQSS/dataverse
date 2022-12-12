@@ -7,22 +7,19 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
+import edu.harvard.iq.dataverse.util.testing.SystemProperty;
 
+import static org.junit.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 public class UrlTokenUtilTest {
 
     @Test
+    @SystemProperty(key = SystemConfig.SITE_URL, value = "https://librascholar.org")
     public void testGetToolUrlWithOptionalQueryParameters() {
-
         DataFile dataFile = new DataFile();
         dataFile.setId(42l);
         FileMetadata fmd = new FileMetadata();
