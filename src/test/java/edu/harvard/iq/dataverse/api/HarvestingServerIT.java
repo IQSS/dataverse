@@ -16,6 +16,8 @@ import java.util.Collections;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 //import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -35,6 +37,7 @@ public class HarvestingServerIT {
     private static String adminUserAPIKey;
     private static String singleSetDatasetIdentifier;
     private static String singleSetDatasetPersistentId;
+    private static List<String> extraDatasetsIdentifiers = new ArrayList<>();
 
     @BeforeClass
     public static void setUpClass() {
@@ -98,6 +101,28 @@ public class HarvestingServerIT {
         // takes longer than just publish/reindex.
         // So wait for all of this to finish.
         UtilIT.sleepForReexport(singleSetDatasetPersistentId, adminUserAPIKey, 10);
+        
+        // ... And let's create 4 more datasets for a multi-dataset experiment:
+        
+        for (int i = 0; i < 4; i++) {
+            // create dataset: 
+            createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, adminUserAPIKey);
+            createDatasetResponse.prettyPrint();
+            datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+            // retrieve the global id: 
+            String thisDatasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+
+            // publish dataset:
+            publishDataset = UtilIT.publishDatasetViaNativeApi(thisDatasetPersistentId, "major", adminUserAPIKey);
+            assertEquals(200, publishDataset.getStatusCode());
+
+            UtilIT.sleepForReexport(thisDatasetPersistentId, adminUserAPIKey, 10);
+            
+            extraDatasetsIdentifiers.add(thisDatasetPersistentId.substring(thisDatasetPersistentId.lastIndexOf('/') + 1));
+        }
+        
+        
     }
 
     private String jsonForTestSpec(String name, String def) {
@@ -423,16 +448,16 @@ public class HarvestingServerIT {
             assertNotNull(ret);
                         
             if (logger.isLoggable(Level.FINE)) {
-                logger.info("listIdentifiersResponse.prettyPrint:..... ");
-                listIdentifiersResponse.prettyPrint();
+                logger.info("listIdentifiersResponse.prettyPrint: " 
+                        + listIdentifiersResponse.prettyPrint());
             }
             if (ret.isEmpty()) {
                 // OK, we'll sleep for another second - provided it's been less
                 // than 10 sec. total.
                 i++;
             } else {
-                // Validate the payload of the ListRecords response:
-                // a) There should be 1 and only 1 record in the response:
+                // Validate the payload of the ListIdentifiers response:
+                // a) There should be 1 and only 1 item listed:
                 assertEquals(1, ret.size());
                 // b) The one record in it should be the dataset we have just created:
                 assertEquals(singleSetDatasetPersistentId, responseXmlPath
@@ -537,12 +562,315 @@ public class HarvestingServerIT {
     }
     
     // This test will attempt to create a set with multiple records (enough 
-    // to trigger a paged response with a continuation token) and test its
-    // performance. 
+    // to trigger a paged respons) and test the resumption token functionality). 
+    // Note that this test requires the OAI service to be configured with some
+    // non-default settings (the paging limits for ListIdentifiers and ListRecords
+    // must be set to something low, like 2). 
     
     
     @Test
     public void testMultiRecordOaiSet() throws InterruptedException {
+        // Setup: Let's create a control OAI set with the 5 datasets created 
+        // in the class init: 
+
+        String setName = UtilIT.getRandomString(6);
+        String setQuery = "(dsPersistentId:" + singleSetDatasetIdentifier;
+        for (String persistentId : extraDatasetsIdentifiers) {
+            setQuery = setQuery.concat(" OR dsPersistentId:" + persistentId);
+        }
+        setQuery = setQuery.concat(")");
+
+        String createPath = "/api/harvest/server/oaisets/add";
+
+        Response createSetResponse = given()
+                .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
+                .body(jsonForTestSpec(setName, setQuery))
+                .post(createPath);
+        assertEquals(201, createSetResponse.getStatusCode());
+
+        // Dataverse OAI Sets API is tested extensively in other methods here, 
+        // so no need to test in any more details than confirming the OK result
+        // above 
+        Response exportSetResponse = UtilIT.exportOaiSet(setName);
+        assertEquals(200, exportSetResponse.getStatusCode());
+        Thread.sleep(1000L);
+
+        // OAI Test 1. Run ListIdentifiers on the set we've just created:
+        Response listIdentifiersResponse = UtilIT.getOaiListIdentifiers(setName, "oai_dc");
+        assertEquals(OK.getStatusCode(), listIdentifiersResponse.getStatusCode());
+
+        // Validate the service section of the OAI response: 
+        XmlPath responseXmlPath = validateOaiVerbResponse(listIdentifiersResponse, "ListIdentifiers");
+
+        List<String> ret = responseXmlPath.getList("OAI-PMH.ListIdentifiers.header.identifier");
+        assertNotNull(ret);
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.info("listIdentifiersResponse.prettyPrint: "+listIdentifiersResponse.prettyPrint());
+        }
+
+        // Validate the payload of the ListIdentifiers response:
+        // 1a) There should be 2 items listed:
+        assertEquals("Wrong number of items on the first ListIdentifiers page",
+                2, ret.size());
         
+        // 1b) The response contains a resumptionToken for the next page of items:
+        String resumptionToken = responseXmlPath.getString("OAI-PMH.ListIdentifiers.resumptionToken");
+        assertNotNull("No resumption token in the ListIdentifiers response", resumptionToken);
+        
+        // 1c) The total number of items in the set (5) is listed correctly:
+        assertEquals(5, responseXmlPath.getInt("OAI-PMH.ListIdentifiers.resumptionToken.@completeListSize"));
+        
+        // 1d) ... and the offset (cursor) is at the right position (0): 
+        assertEquals(0, responseXmlPath.getInt("OAI-PMH.ListIdentifiers.resumptionToken.@cursor"));
+
+        // The formatting of individual item records in the ListIdentifiers response
+        // is tested extensively in the previous test method, so we are not 
+        // looking at them in such detail here; but we should record the 
+        // identifiers listed, so that we can confirm that all the set is 
+        // served as expected. 
+        
+        Set<String> persistentIdsInListIdentifiers = new HashSet<>();
+        
+        for (String persistentId : ret) {
+            persistentIdsInListIdentifiers.add(persistentId.substring(persistentId.lastIndexOf('/') + 1));
+        }
+
+        // ok, let's move on to the next ListIdentifiers page: 
+        // (we repeat the exact same checks as the above; minus the different
+        // expected offset)
+        
+        // OAI Test 2. Run ListIdentifiers with the resumptionToken obtained 
+        // in the previous step:
+        
+        listIdentifiersResponse = UtilIT.getOaiListIdentifiersWithResumptionToken(resumptionToken);
+        assertEquals(OK.getStatusCode(), listIdentifiersResponse.getStatusCode());
+
+        // Validate the service section of the OAI response: 
+        responseXmlPath = validateOaiVerbResponse(listIdentifiersResponse, "ListIdentifiers");
+
+        ret = responseXmlPath.getList("OAI-PMH.ListIdentifiers.header.identifier");
+        assertNotNull(ret);
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.info("listIdentifiersResponse.prettyPrint: "+listIdentifiersResponse.prettyPrint());
+        }
+        
+        // Validate the payload of the ListIdentifiers response:
+        // 2a) There should still be 2 items listed:
+        assertEquals("Wrong number of items on the second ListIdentifiers page",
+                2, ret.size());
+        
+        // 2b) The response should contain a resumptionToken for the next page of items:
+        resumptionToken = responseXmlPath.getString("OAI-PMH.ListIdentifiers.resumptionToken");
+        assertNotNull("No resumption token in the ListIdentifiers response", resumptionToken);
+        
+        // 2c) The total number of items in the set (5) is listed correctly:
+        assertEquals(5, responseXmlPath.getInt("OAI-PMH.ListIdentifiers.resumptionToken.@completeListSize"));
+        
+        // 2d) ... and the offset (cursor) is at the right position (2): 
+        assertEquals(2, responseXmlPath.getInt("OAI-PMH.ListIdentifiers.resumptionToken.@cursor"));
+        
+        // Record the identifiers listed on this results page:
+        
+        for (String persistentId : ret) {
+            persistentIdsInListIdentifiers.add(persistentId.substring(persistentId.lastIndexOf('/') + 1));
+        }
+        
+        // And now the next and the final ListIdentifiers page.
+        // This time around we should get an *empty* resumptionToken (indicating
+        // that there are no more results):
+        
+        // OAI Test 3. Run ListIdentifiers with the final resumptionToken
+        
+        listIdentifiersResponse = UtilIT.getOaiListIdentifiersWithResumptionToken(resumptionToken);
+        assertEquals(OK.getStatusCode(), listIdentifiersResponse.getStatusCode());
+
+        // Validate the service section of the OAI response: 
+        responseXmlPath = validateOaiVerbResponse(listIdentifiersResponse, "ListIdentifiers");
+
+        ret = responseXmlPath.getList("OAI-PMH.ListIdentifiers.header.identifier");
+        assertNotNull(ret);
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.info("listIdentifiersResponse.prettyPrint: "+listIdentifiersResponse.prettyPrint());
+        }
+        
+        // Validate the payload of the ListIdentifiers response:
+        // 3a) There should be only 1 item listed:
+        assertEquals("Wrong number of items on the final ListIdentifiers page", 
+                1, ret.size());
+        
+        // 3b) The response contains a resumptionToken for the next page of items:
+        resumptionToken = responseXmlPath.getString("OAI-PMH.ListIdentifiers.resumptionToken");
+        assertNotNull("No resumption token in the final ListIdentifiers response", resumptionToken);
+        assertTrue("Non-empty resumption token in the final ListIdentifiers response", "".equals(resumptionToken));
+        
+        // 3c) The total number of items in the set (5) is still listed correctly:
+        assertEquals(5, responseXmlPath.getInt("OAI-PMH.ListIdentifiers.resumptionToken.@completeListSize"));
+        
+        // 3d) ... and the offset (cursor) is at the right position (4): 
+        assertEquals(4, responseXmlPath.getInt("OAI-PMH.ListIdentifiers.resumptionToken.@cursor"));
+        
+        // Record the last identifier listed on this final page:
+        persistentIdsInListIdentifiers.add(ret.get(0).substring(ret.get(0).lastIndexOf('/') + 1));
+        
+        // Finally, let's confirm that the expected 5 datasets have been listed
+        // as part of this Set: 
+        
+        boolean allDatasetsListed = true; 
+        
+        allDatasetsListed = persistentIdsInListIdentifiers.contains(singleSetDatasetIdentifier);
+        for (String persistentId : extraDatasetsIdentifiers) {
+            allDatasetsListed = persistentIdsInListIdentifiers.contains(persistentId); 
+        }
+        
+        assertTrue("Control datasets not properly listed in the paged ListIdentifiers response", 
+                allDatasetsListed);
+        
+        // OK, it is safe to assume ListIdentifiers works as it should in page mode.
+        
+        // We will now repeat the exact same tests for ListRecords (again, no 
+        // need to pay close attention to the formatting of the individual records, 
+        // since that's tested in the previous test method, since our focus is
+        // testing the paging/resumptionToken functionality)
+        
+        // OAI Test 4. Run ListRecords on the set we've just created:
+        Response listRecordsResponse = UtilIT.getOaiListRecords(setName, "oai_dc");
+        assertEquals(OK.getStatusCode(), listRecordsResponse.getStatusCode());
+
+        // Validate the service section of the OAI response: 
+        responseXmlPath = validateOaiVerbResponse(listRecordsResponse, "ListRecords");
+
+        ret = responseXmlPath.getList("OAI-PMH.ListRecords.record.header.identifier");
+        assertNotNull(ret);
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.info("listRecordsResponse.prettyPrint: "+listRecordsResponse.prettyPrint());
+        }
+        
+        // Validate the payload of the ListRecords response:
+        // 4a) There should be 2 items listed:
+        assertEquals("Wrong number of items on the first ListRecords page",
+                2, ret.size());
+        
+        // 4b) The response contains a resumptionToken for the next page of items:
+        resumptionToken = responseXmlPath.getString("OAI-PMH.ListRecords.resumptionToken");
+        assertNotNull("No resumption token in the ListRecords response", resumptionToken);
+        
+        // 4c) The total number of items in the set (5) is listed correctly:
+        assertEquals(5, responseXmlPath.getInt("OAI-PMH.ListRecords.resumptionToken.@completeListSize"));
+        
+        // 4d) ... and the offset (cursor) is at the right position (0): 
+        assertEquals(0, responseXmlPath.getInt("OAI-PMH.ListRecords.resumptionToken.@cursor"));
+        
+        Set<String> persistentIdsInListRecords = new HashSet<>();
+        
+        for (String persistentId : ret) {
+            persistentIdsInListRecords.add(persistentId.substring(persistentId.lastIndexOf('/') + 1));
+        }
+
+        // ok, let's move on to the next ListRecords page: 
+        // (we repeat the exact same checks as the above; minus the different
+        // expected offset)
+        
+        // OAI Test 5. Run ListRecords with the resumptionToken obtained 
+        // in the previous step:
+        
+        listRecordsResponse = UtilIT.getOaiListRecordsWithResumptionToken(resumptionToken);
+        assertEquals(OK.getStatusCode(), listRecordsResponse.getStatusCode());
+
+        // Validate the service section of the OAI response: 
+        responseXmlPath = validateOaiVerbResponse(listRecordsResponse, "ListRecords");
+
+        ret = responseXmlPath.getList("OAI-PMH.ListRecords.record.header.identifier");
+        assertNotNull(ret);
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.info("listRecordsResponse.prettyPrint: "+listRecordsResponse.prettyPrint());
+        }
+        
+        // Validate the payload of the ListRecords response:
+        // 4a) There should still be 2 items listed:
+        assertEquals("Wrong number of items on the second ListRecords page",
+                2, ret.size());
+        
+        // 4b) The response should contain a resumptionToken for the next page of items:
+        resumptionToken = responseXmlPath.getString("OAI-PMH.ListRecords.resumptionToken");
+        assertNotNull("No resumption token in the ListRecords response", resumptionToken);
+        
+        // 4c) The total number of items in the set (5) is listed correctly:
+        assertEquals(5, responseXmlPath.getInt("OAI-PMH.ListRecords.resumptionToken.@completeListSize"));
+        
+        // 4d) ... and the offset (cursor) is at the right position (2): 
+        assertEquals(2, responseXmlPath.getInt("OAI-PMH.ListRecords.resumptionToken.@cursor"));
+        
+        // Record the identifiers listed on this results page:
+        
+        for (String persistentId : ret) {
+            persistentIdsInListRecords.add(persistentId.substring(persistentId.lastIndexOf('/') + 1));
+        }
+        
+        // And now the next and the final ListRecords page.
+        // This time around we should get an *empty* resumptionToken (indicating
+        // that there are no more results):
+        
+        // OAI Test 6. Run ListRecords with the final resumptionToken
+        
+        listRecordsResponse = UtilIT.getOaiListRecordsWithResumptionToken(resumptionToken);
+        assertEquals(OK.getStatusCode(), listRecordsResponse.getStatusCode());
+
+        // Validate the service section of the OAI response: 
+        responseXmlPath = validateOaiVerbResponse(listRecordsResponse, "ListRecords");
+
+        ret = responseXmlPath.getList("OAI-PMH.ListRecords.record.header.identifier");
+        assertNotNull(ret);
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.info("listRecordsResponse.prettyPrint: "+listRecordsResponse.prettyPrint());
+        }
+        
+        // Validate the payload of the ListRecords response:
+        // 6a) There should be only 1 item listed:
+        assertEquals("Wrong number of items on the final ListRecords page", 
+                1, ret.size());
+        
+        // 6b) The response contains a resumptionToken for the next page of items:
+        resumptionToken = responseXmlPath.getString("OAI-PMH.ListRecords.resumptionToken");
+        assertNotNull("No resumption token in the final ListRecords response", resumptionToken);
+        assertTrue("Non-empty resumption token in the final ListRecords response", "".equals(resumptionToken));
+        
+        // 6c) The total number of items in the set (5) is still listed correctly:
+        assertEquals(5, responseXmlPath.getInt("OAI-PMH.ListRecords.resumptionToken.@completeListSize"));
+        
+        // 6d) ... and the offset (cursor) is at the right position (4): 
+        assertEquals(4, responseXmlPath.getInt("OAI-PMH.ListRecords.resumptionToken.@cursor"));
+        
+        // Record the last identifier listed on this final page:
+        persistentIdsInListRecords.add(ret.get(0).substring(ret.get(0).lastIndexOf('/') + 1));
+        
+        // Finally, let's confirm that the expected 5 datasets have been listed
+        // as part of this Set: 
+        
+        allDatasetsListed = true; 
+        
+        allDatasetsListed = persistentIdsInListRecords.contains(singleSetDatasetIdentifier);
+        for (String persistentId : extraDatasetsIdentifiers) {
+            allDatasetsListed = persistentIdsInListRecords.contains(persistentId); 
+        }
+        
+        assertTrue("Control datasets not properly listed in the paged ListRecords response", 
+                allDatasetsListed);
+        
+        // OK, it is safe to assume ListRecords works as it should in page mode
+        // as well. 
+        
+        // And finally, let's delete the set
+        String setPath = String.format("/api/harvest/server/oaisets/%s", setName);
+        Response deleteResponse = given()
+                .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
+                .delete(setPath);
+        logger.info("deleteResponse.getStatusCode(): " + deleteResponse.getStatusCode());
+        assertEquals("Failed to delete the control multi-record set", 200, deleteResponse.getStatusCode());
     }
 }
