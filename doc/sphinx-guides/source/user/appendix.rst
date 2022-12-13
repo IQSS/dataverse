@@ -38,6 +38,9 @@ Unlike supported metadata, experimental metadata is not enabled by default in a 
 
 - `Computational Workflow Metadata <https://docs.google.com/spreadsheets/d/13HP-jI_cwLDHBetn9UKTREPJ_F4iHdAvhjmlvmYdSSw/edit#gid=447508596>`__ (`see .tsv version <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/computationalworkflow.tsv>`__): adapted from `Bioschemas Computational Workflow Profile, version 1.0 <https://bioschemas.org/profiles/ComputationalWorkflow/1.0-RELEASE>`__ and `Codemeta <https://codemeta.github.io/terms/>`__.
 
+Please note: these custom metadata schemas are not included in the Solr schema for indexation by default, you will need
+to add them as necessary for your custom metadata blocks. See "Update the Solr Schema" in :doc:`../admin/metadatacustomization`.
+
 See Also
 ~~~~~~~~
 
