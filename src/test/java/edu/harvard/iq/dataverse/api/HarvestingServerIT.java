@@ -565,7 +565,11 @@ public class HarvestingServerIT {
     // to trigger a paged respons) and test the resumption token functionality). 
     // Note that this test requires the OAI service to be configured with some
     // non-default settings (the paging limits for ListIdentifiers and ListRecords
-    // must be set to something low, like 2). 
+    // must be set to 2, in order to be able to trigger this paging behavior without
+    // having to create and export too many datasets).
+    // So you will need to do this:
+    //    asadmin create-jvm-options "-Ddataverse.oai.server.maxidentifiers=2"
+    //    asadmin create-jvm-options "-Ddataverse.oai.server.maxrecords=2"
     
     
     @Test
@@ -616,7 +620,7 @@ public class HarvestingServerIT {
         
         // 1b) The response contains a resumptionToken for the next page of items:
         String resumptionToken = responseXmlPath.getString("OAI-PMH.ListIdentifiers.resumptionToken");
-        assertNotNull("No resumption token in the ListIdentifiers response", resumptionToken);
+        assertNotNull("No resumption token in the ListIdentifiers response (has the jvm option dataverse.oai.server.maxidentifiers been configured?)", resumptionToken);
         
         // 1c) The total number of items in the set (5) is listed correctly:
         assertEquals(5, responseXmlPath.getInt("OAI-PMH.ListIdentifiers.resumptionToken.@completeListSize"));
@@ -722,7 +726,7 @@ public class HarvestingServerIT {
         
         allDatasetsListed = persistentIdsInListIdentifiers.contains(singleSetDatasetIdentifier);
         for (String persistentId : extraDatasetsIdentifiers) {
-            allDatasetsListed = persistentIdsInListIdentifiers.contains(persistentId); 
+            allDatasetsListed = allDatasetsListed && persistentIdsInListIdentifiers.contains(persistentId); 
         }
         
         assertTrue("Control datasets not properly listed in the paged ListIdentifiers response", 
@@ -756,7 +760,7 @@ public class HarvestingServerIT {
         
         // 4b) The response contains a resumptionToken for the next page of items:
         resumptionToken = responseXmlPath.getString("OAI-PMH.ListRecords.resumptionToken");
-        assertNotNull("No resumption token in the ListRecords response", resumptionToken);
+        assertNotNull("No resumption token in the ListRecords response (has the jvm option dataverse.oai.server.maxrecords been configured?)", resumptionToken);
         
         // 4c) The total number of items in the set (5) is listed correctly:
         assertEquals(5, responseXmlPath.getInt("OAI-PMH.ListRecords.resumptionToken.@completeListSize"));
@@ -856,7 +860,7 @@ public class HarvestingServerIT {
         
         allDatasetsListed = persistentIdsInListRecords.contains(singleSetDatasetIdentifier);
         for (String persistentId : extraDatasetsIdentifiers) {
-            allDatasetsListed = persistentIdsInListRecords.contains(persistentId); 
+            allDatasetsListed = allDatasetsListed && persistentIdsInListRecords.contains(persistentId); 
         }
         
         assertTrue("Control datasets not properly listed in the paged ListRecords response", 
@@ -879,6 +883,6 @@ public class HarvestingServerIT {
     // Some ideas: 
     // - Test handling of deleted dataset records
     // - Test "from" and "until" time parameters
-    // - Test validating full verb response records against XML schema
+    // - Validate full verb response records against XML schema
     //   (for each supported metadata format, possibly?)
 }
