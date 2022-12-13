@@ -2062,6 +2062,24 @@ Archiving is an optional feature that may be configured for a Dataverse installa
 
   curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE "$SERVER_URL/api/datasets/:persistentId/$VERSION/archivalStatus?persistentId=$PERSISTENT_IDENTIFIER"
   
+Get External Tool Parameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This API call is intended as a callback that can be used by :doc:`/installation/external-tools` to retrieve signed Urls  necessary for their interaction with Dataverse.
+It can be called directly as well.
+
+The response is a JSON object described in the :doc:`/api/external-tools` section of the API guide.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/7U7YBV
+  export VERSION=1.0
+  export TOOL_ID=1
+  
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/toolparams/$TOOL_ID?persistentId=$PERSISTENT_IDENTIFIER"
 
 Files
 -----
@@ -2722,6 +2740,24 @@ Note the optional "limit" parameter. Without it, the API will attempt to populat
 
 By default, the admin API calls are blocked and can only be called from localhost. See more details in :ref:`:BlockedApiEndpoints <:BlockedApiEndpoints>` and :ref:`:BlockedApiPolicy <:BlockedApiPolicy>` settings in :doc:`/installation/config`.
 
+Get External Tool Parameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This API call is intended as a callback that can be used by :doc:`/installation/external-tools` to retrieve signed Urls  necessary for their interaction with Dataverse.
+It can be called directly as well. (Note that the required FILEMETADATA_ID is the "id" returned in the JSON response from the /api/files/$FILE_ID/metadata call.)
+
+The response is a JSON object described in the :doc:`/api/external-tools` section of the API guide.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export FILE_ID=3
+  export FILEMETADATA_ID=1
+  export TOOL_ID=1
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -H "Accept:application/json" "$SERVER_URL/api/files/$FILE_ID/metadata/$FILEMETADATA_ID/toolparams/$TOOL_ID
+
 Users Token Management
 ----------------------
 
@@ -3004,22 +3040,47 @@ The fully expanded example above (without environment variables) looks like this
 
   curl https://demo.dataverse.org/api/info/apiTermsOfUse
 
+.. _metadata-blocks-api:
+
 Metadata Blocks
 ---------------
+
+See also :ref:`exploring-metadata-blocks`.
 
 Show Info About All Metadata Blocks
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| Lists brief info about all metadata blocks registered in the system::
+|CORS| Lists brief info about all metadata blocks registered in the system.
 
-  GET http://$SERVER/api/metadatablocks
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl $SERVER_URL/api/metadatablocks
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/metadatablocks
 
 Show Info About Single Metadata Block
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| Return data about the block whose ``identifier`` is passed. ``identifier`` can either be the block's id, or its name::
+|CORS| Return data about the block whose ``identifier`` is passed, including allowed controlled vocabulary values. ``identifier`` can either be the block's database id, or its name (i.e. "citation").
 
-  GET http://$SERVER/api/metadatablocks/$identifier
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export IDENTIFIER=citation
+
+  curl $SERVER_URL/api/metadatablocks/$IDENTIFIER
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/metadatablocks/citation
 
 .. _Notifications:
 
@@ -3232,6 +3293,147 @@ The fully expanded example above (without the environment variables) looks like 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/harvest/server/oaisets/ffAuthor"
 
 Only users with superuser permissions may delete harvesting sets.
+
+Managing Harvesting Clients
+---------------------------
+
+The following API can be used to create and manage "Harvesting Clients". A Harvesting Client is a configuration entry that allows your Dataverse installation to harvest and index metadata from a specific remote location, either regularly, on a configured schedule, or on a one-off basis. For more information, see the :doc:`/admin/harvestclients` section of the Admin Guide.
+
+List All Configured Harvesting Clients
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Shows all the Harvesting Clients configured::
+
+  GET http://$SERVER/api/harvest/clients/
+
+Show a Specific Harvesting Client
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Shows a Harvesting Client with a defined nickname::
+
+  GET http://$SERVER/api/harvest/clients/$nickname
+
+.. code-block:: bash
+
+  curl "http://localhost:8080/api/harvest/clients/myclient"
+
+  {
+    "status":"OK",
+    {
+      "data": {
+        "lastDatasetsFailed": "22",
+        "lastDatasetsDeleted": "0",
+        "metadataFormat": "oai_dc",
+        "archiveDescription": "This Dataset is harvested from our partners. Clicking the link will take you directly to the archival source of the data.",
+        "archiveUrl": "https://dataverse.foo.edu",
+        "harvestUrl": "https://dataverse.foo.edu/oai",
+        "style": "dataverse",
+        "type": "oai",
+        "dataverseAlias": "fooData",
+        "nickName": "myClient",
+        "set": "fooSet",
+        "schedule": "none",
+        "status": "inActive",
+        "lastHarvest": "Thu Oct 13 14:48:57 EDT 2022",
+        "lastResult": "SUCCESS",
+        "lastSuccessful": "Thu Oct 13 14:48:57 EDT 2022",
+        "lastNonEmpty": "Thu Oct 13 14:48:57 EDT 2022",
+        "lastDatasetsHarvested": "137"
+      }
+    }
+
+
+Create a Harvesting Client
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To create a new harvesting client::
+
+  POST http://$SERVER/api/harvest/clients/$nickname
+
+``nickName`` is the name identifying the new client. It should be alpha-numeric and may also contain -, _, or %, but no spaces. Must also be unique in the installation.
+  
+You must supply a JSON file that describes the configuration, similarly to the output of the GET API above. The following fields are mandatory:
+
+- dataverseAlias: The alias of an existing collection where harvested datasets will be deposited
+- harvestUrl: The URL of the remote OAI archive
+- archiveUrl: The URL of the remote archive that will be used in the redirect links pointing back to the archival locations of the harvested records. It may or may not be on the same server as the harvestUrl above. If this OAI archive is another Dataverse installation, it will be the same URL as harvestUrl minus the "/oai". For example: https://demo.dataverse.org/ vs. https://demo.dataverse.org/oai
+- metadataFormat: A supported metadata format. As of writing this the supported formats are "oai_dc", "oai_ddi" and "dataverse_json". 
+
+The following optional fields are supported:
+
+- archiveDescription: What the name suggests. If not supplied, will default to "This Dataset is harvested from our partners. Clicking the link will take you directly to the archival source of the data."
+- set: The OAI set on the remote server. If not supplied, will default to none, i.e., "harvest everything".
+- style: Defaults to "default" - a generic OAI archive. (Make sure to use "dataverse" when configuring harvesting from another Dataverse installation).
+
+Generally, the API will accept the output of the GET version of the API for an existing client as valid input, but some fields will be ignored. For example, as of writing this there is no way to configure a harvesting schedule via this API. 
+  
+An example JSON file would look like this::
+
+  {
+    "nickName": "zenodo",
+    "dataverseAlias": "zenodoHarvested",
+    "harvestUrl": "https://zenodo.org/oai2d",
+    "archiveUrl": "https://zenodo.org",
+    "archiveDescription": "Moissonné depuis la collection LMOPS de l'entrepôt Zenodo. En cliquant sur ce jeu de données, vous serez redirigé vers Zenodo.",
+    "metadataFormat": "oai_dc",
+    "set": "user-lmops"
+  }
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=http://localhost:8080
+
+  curl -H X-Dataverse-key:$API_TOKEN -X POST -H "Content-Type: application/json" "$SERVER_URL/api/harvest/clients/zenodo" --upload-file client.json
+
+The fully expanded example above (without the environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST -H "Content-Type: application/json" "http://localhost:8080/api/harvest/clients/zenodo" --upload-file "client.json"
+
+  {
+    "status": "OK",
+    "data": {
+      "metadataFormat": "oai_dc",
+      "archiveDescription": "Moissonné depuis la collection LMOPS de l'entrepôt Zenodo. En cliquant sur ce jeu de données, vous serez redirigé vers Zenodo.",
+      "archiveUrl": "https://zenodo.org",
+      "harvestUrl": "https://zenodo.org/oai2d",
+      "style": "default",
+      "type": "oai",
+      "dataverseAlias": "zenodoHarvested",
+      "nickName": "zenodo",
+      "set": "user-lmops",
+      "schedule": "none",
+      "status": "inActive",
+      "lastHarvest": "N/A",
+      "lastSuccessful": "N/A",
+      "lastNonEmpty": "N/A",
+      "lastDatasetsHarvested": "N/A",
+      "lastDatasetsDeleted": "N/A"
+    }
+  }
+
+Only users with superuser permissions may create or configure harvesting clients.
+
+Modify a Harvesting Client
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Similar to the API above, using the same JSON format, but run on an existing client and using the PUT method instead of POST. 
+
+Delete a Harvesting Client
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Self-explanatory:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "http://localhost:8080/api/harvest/clients/$nickName"
+
+Only users with superuser permissions may delete harvesting clients.
+
 
 PIDs
 ----
@@ -4048,7 +4250,7 @@ View the details of the standard license with the database ID specified in ``$ID
   curl $SERVER_URL/api/licenses/$ID
 
 
-Superusers can add a new license by posting a JSON file adapted from this example :download:`add-license.json <../_static/api/add-license.json>`. The ``name`` and ``uri`` of the new license must be unique. If you are interested in adding a Creative Commons license, you are encouarged to use the JSON files under :ref:`adding-creative-commons-licenses`:
+Superusers can add a new license by posting a JSON file adapted from this example :download:`add-license.json <../_static/api/add-license.json>`. The ``name`` and ``uri`` of the new license must be unique. Sort order field is mandatory. If you are interested in adding a Creative Commons license, you are encouarged to use the JSON files under :ref:`adding-creative-commons-licenses`:
 
 .. code-block:: bash
 
@@ -4073,6 +4275,13 @@ Superusers can delete a license, provided it is not in use, by the license ``$ID
 .. code-block:: bash
 
   curl -X DELETE -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/licenses/$ID
+
+Superusers can change the sorting order of a license specified by the license ``$ID``:
+
+.. code-block:: bash
+
+  export SORT_ORDER=100
+  curl -X PUT -H 'Content-Type: application/json' -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/licenses/$ID/:sortOrder/$SORT_ORDER
   
 List Dataset Templates
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -4103,6 +4312,33 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -X DELETE https://demo.dataverse.org/api/admin/template/24
+
+.. _api-native-signed-url:
   
-  
-  
+Request Signed URL
+~~~~~~~~~~~~~~~~~~
+
+Dataverse has the ability to create signed URLs for it's API calls.
+A signature, which is valid only for the specific API call and only for a specified duration, allows the call to proceed with the authentication of the specified user.
+It is intended as an alternative to the use of an API key (which is valid for a long time period and can be used with any API call).
+Signed URLs were developed to support External Tools but may be useful in other scenarios where Dataverse or a third-party tool needs to delegate limited access to another user or tool. 
+This API call allows a Dataverse superUser to generate a signed URL for such scenarios.
+The JSON input parameter required is an object with the following keys:
+
+- ``url`` - the exact URL to sign, including api version number and all query parameters
+- ``timeOut`` - how long in minutes the signature should be valid for, default is 10 minutes
+- ``httpMethod`` - which HTTP method is required, default is GET
+- ``user`` - the user identifier for the account associated with this signature, the default is the superuser making the call. The API call will succeed/fail based on whether the specified user has the required permissions. 
+
+A curl example using allowing access to a dataset's metadata
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export API_KEY=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export JSON='{"url":"https://demo.dataverse.org/api/v1/datasets/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB","timeOut":5,"user":"alberteinstein"}'
+
+  curl -H "X-Dataverse-key:$API_KEY" -H 'Content-Type:application/json' -d "$JSON" $SERVER_URL/api/admin/requestSignedUrl
+
+Please see :ref:`dataverse.api.signature-secret` for the configuration option to add a shared secret, enabling extra
+security.
