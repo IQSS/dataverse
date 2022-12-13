@@ -372,7 +372,7 @@ public class HarvesterServiceBean {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(remoteApiUrl))
                 .GET()
-                .header("User-Agent", "DataverseHarvester/6.0")
+                .header("User-Agent", "Dataverse Harvesting Client v5")
                 .build();
         
         HttpResponse<InputStream> response;

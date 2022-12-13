@@ -4,6 +4,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import com.jayway.restassured.RestAssured;
 import static com.jayway.restassured.RestAssured.given;
+import com.jayway.restassured.path.json.JsonPath;
 import org.junit.Test;
 import com.jayway.restassured.response.Response;
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -28,14 +29,14 @@ public class HarvestingClientsIT {
 
     private static final Logger logger = Logger.getLogger(HarvestingClientsIT.class.getCanonicalName());
 
-    private static final String harvestClientsApi = "/api/harvest/clients/";
-    private static final String rootCollection = "root";
-    private static final String harvestUrl = "https://demo.dataverse.org/oai";
-    private static final String archiveUrl = "https://demo.dataverse.org";
-    private static final String harvestMetadataFormat = "oai_dc";
-    private static final String archiveDescription = "RestAssured harvesting client test";
-    private static final String controlOaiSet = "controlTestSet";
-    private static final int datasetsInControlSet = 7;
+    private static final String HARVEST_CLIENTS_API = "/api/harvest/clients/";
+    private static final String ROOT_COLLECTION = "root";
+    private static final String HARVEST_URL = "https://demo.dataverse.org/oai";
+    private static final String ARCHIVE_URL = "https://demo.dataverse.org";
+    private static final String HARVEST_METADATA_FORMAT = "oai_dc";
+    private static final String ARCHIVE_DESCRIPTION = "RestAssured harvesting client test";
+    private static final String CONTROL_OAI_SET = "controlTestSet";
+    private static final int DATASETS_IN_CONTROL_SET = 7;
     private static String normalUserAPIKey;
     private static String adminUserAPIKey;
     private static String harvestCollectionAlias; 
@@ -81,13 +82,13 @@ public class HarvestingClientsIT {
         String nickName = UtilIT.getRandomString(6);
         
 
-        String clientApiPath = String.format(harvestClientsApi+"%s", nickName);
+        String clientApiPath = String.format(HARVEST_CLIENTS_API+"%s", nickName);
         String clientJson = String.format("{\"dataverseAlias\":\"%s\","
                 + "\"type\":\"oai\","
                 + "\"harvestUrl\":\"%s\","
                 + "\"archiveUrl\":\"%s\","
                 + "\"metadataFormat\":\"%s\"}", 
-                rootCollection, harvestUrl, archiveUrl, harvestMetadataFormat);
+                ROOT_COLLECTION, HARVEST_URL, ARCHIVE_URL, HARVEST_METADATA_FORMAT);
 
         
         // Try to create a client as normal user, should fail:
@@ -109,7 +110,7 @@ public class HarvestingClientsIT {
         
         // Try to update the client we have just created:
         
-        String updateJson = String.format("{\"archiveDescription\":\"%s\"}", archiveDescription);
+        String updateJson = String.format("{\"archiveDescription\":\"%s\"}", ARCHIVE_DESCRIPTION);
         
         Response rUpdate = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
@@ -132,11 +133,11 @@ public class HarvestingClientsIT {
                 .body("status", equalTo(AbstractApiBean.STATUS_OK))
                 .body("data.type", equalTo("oai"))
                 .body("data.nickName", equalTo(nickName))
-                .body("data.archiveDescription", equalTo(archiveDescription))
-                .body("data.dataverseAlias", equalTo(rootCollection))
-                .body("data.harvestUrl", equalTo(harvestUrl))
-                .body("data.archiveUrl", equalTo(archiveUrl))
-                .body("data.metadataFormat", equalTo(harvestMetadataFormat));        
+                .body("data.archiveDescription", equalTo(ARCHIVE_DESCRIPTION))
+                .body("data.dataverseAlias", equalTo(ROOT_COLLECTION))
+                .body("data.harvestUrl", equalTo(HARVEST_URL))
+                .body("data.archiveUrl", equalTo(ARCHIVE_URL))
+                .body("data.metadataFormat", equalTo(HARVEST_METADATA_FORMAT));        
         
         // Try to delete the client as normal user  should fail: 
         
@@ -167,14 +168,14 @@ public class HarvestingClientsIT {
         
         String nickName = UtilIT.getRandomString(6);
 
-        String clientApiPath = String.format(harvestClientsApi+"%s", nickName);
+        String clientApiPath = String.format(HARVEST_CLIENTS_API+"%s", nickName);
         String clientJson = String.format("{\"dataverseAlias\":\"%s\","
                 + "\"type\":\"oai\","
                 + "\"harvestUrl\":\"%s\","
                 + "\"archiveUrl\":\"%s\","
                 + "\"set\":\"%s\","
                 + "\"metadataFormat\":\"%s\"}", 
-                harvestCollectionAlias, harvestUrl, archiveUrl, controlOaiSet, harvestMetadataFormat);
+                harvestCollectionAlias, HARVEST_URL, ARCHIVE_URL, CONTROL_OAI_SET, HARVEST_METADATA_FORMAT);
                 
         Response createResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
@@ -185,7 +186,7 @@ public class HarvestingClientsIT {
         // API TEST 1. Run the harvest using the configuration (client) we have 
         // just created
         
-        String runHarvestApiPath = String.format(harvestClientsApi+"%s/run", nickName);
+        String runHarvestApiPath = String.format(HARVEST_CLIENTS_API+"%s/run", nickName);
         
         // TODO? - verify that a non-admin user cannot perform this operation (401)
         
@@ -207,35 +208,36 @@ public class HarvestingClientsIT {
                 .get(clientApiPath);
         
             assertEquals(OK.getStatusCode(), getClientResponse.getStatusCode());
-            assertEquals(AbstractApiBean.STATUS_OK, getClientResponse.body().jsonPath().getString("status")); 
+            JsonPath responseJsonPath = getClientResponse.body().jsonPath();
+            assertNotNull("Invalid JSON in GET client response", responseJsonPath);
+            assertEquals(AbstractApiBean.STATUS_OK, responseJsonPath.getString("status")); 
             
-            if (logger.isLoggable(Level.FINE)) {
-                logger.info("listIdentifiersResponse.prettyPrint: " 
-                        + getClientResponse.prettyPrint());
-            }
-            
-            String clientStatus = getClientResponse.body().jsonPath().getString("data.status");
+            String clientStatus = responseJsonPath.getString("data.status");
             assertNotNull(clientStatus);
             
-            if ("inProgress".equals(clientStatus)) {
+            if ("inProgress".equals(clientStatus) || "IN PROGRESS".equals(responseJsonPath.getString("data.lastResult"))) {
                 // we'll sleep for another second
                 i++;
             } else {
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.info("getClientResponse.prettyPrint: " 
+                            + getClientResponse.prettyPrint());
+                }
                 // Check the values in the response:
                 // a) Confirm that the harvest has completed: 
                 assertEquals("Unexpected client status: "+clientStatus, "inActive", clientStatus);
                 
                 // b) Confirm that it has actually succeeded:
-                assertEquals("Last harvest not reported a success", "SUCCESS", getClientResponse.body().jsonPath().getString("data.lastResult"));
-                String harvestTimeStamp = getClientResponse.body().jsonPath().getString("data.lastHarvest");
+                assertEquals("Last harvest not reported a success", "SUCCESS", responseJsonPath.getString("data.lastResult"));
+                String harvestTimeStamp = responseJsonPath.getString("data.lastHarvest");
                 assertNotNull(harvestTimeStamp); 
                 
                 // c) Confirm that the other timestamps match: 
-                assertEquals(harvestTimeStamp, getClientResponse.body().jsonPath().getString("data.lastSuccessful"));
-                assertEquals(harvestTimeStamp, getClientResponse.body().jsonPath().getString("data.lastNonEmpty"));
+                assertEquals(harvestTimeStamp, responseJsonPath.getString("data.lastSuccessful"));
+                assertEquals(harvestTimeStamp, responseJsonPath.getString("data.lastNonEmpty"));
                 
                 // d) Confirm that the correct number of datasets have been harvested:
-                assertEquals(datasetsInControlSet, getClientResponse.body().jsonPath().getInt("data.lastDatasetsHarvested"));
+                assertEquals(DATASETS_IN_CONTROL_SET, responseJsonPath.getInt("data.lastDatasetsHarvested"));
                 
                 // ok, it looks like the harvest has completed successfully.
                 break;

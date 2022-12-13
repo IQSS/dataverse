@@ -18,7 +18,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
-//import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -141,9 +140,12 @@ public class HarvestingServerIT {
         assertNotNull(responseXmlPath);
         
         String dateString = responseXmlPath.getString("OAI-PMH.responseDate");
-        assertNotNull(dateString); // TODO: validate that it's well-formatted!
-        logger.info("date string from the OAI output:"+dateString);
-        assertEquals("http://localhost:8080/oai", responseXmlPath.getString("OAI-PMH.request"));
+        assertNotNull(dateString); 
+        // TODO: validate the formatting of the date string in the record
+        // header, above. (could be slightly tricky - since this formatting
+        // is likely locale-specific)
+        logger.fine("date string from the OAI output:"+dateString);
+        //assertEquals("http://localhost:8080/oai", responseXmlPath.getString("OAI-PMH.request"));
         assertEquals(verb, responseXmlPath.getString("OAI-PMH.request.@verb"));
         return responseXmlPath;
     }
@@ -153,12 +155,11 @@ public class HarvestingServerIT {
         // Run Identify:
         Response identifyResponse = UtilIT.getOaiIdentify();
         assertEquals(OK.getStatusCode(), identifyResponse.getStatusCode());
-        //logger.info("Identify response: "+identifyResponse.prettyPrint());
 
         // Validate the response: 
         
         XmlPath responseXmlPath = validateOaiVerbResponse(identifyResponse, "Identify");
-        assertEquals("http://localhost:8080/oai", responseXmlPath.getString("OAI-PMH.Identify.baseURL"));
+        //assertEquals("http://localhost:8080/oai", responseXmlPath.getString("OAI-PMH.Identify.baseURL"));
         // Confirm that the server is reporting the correct parameters that 
         // our server implementation should be using:
         assertEquals("2.0", responseXmlPath.getString("OAI-PMH.Identify.protocolVersion"));
@@ -171,7 +172,6 @@ public class HarvestingServerIT {
         // Run ListMeatadataFormats:
         Response listFormatsResponse = UtilIT.getOaiListMetadataFormats();
         assertEquals(OK.getStatusCode(), listFormatsResponse.getStatusCode());
-        //logger.info("ListMetadataFormats response: "+listFormatsResponse.prettyPrint());
 
         // Validate the response: 
         
@@ -253,7 +253,7 @@ public class HarvestingServerIT {
         System.out.println("responseAll full:  " + responseAll.prettyPrint());
         assertEquals(200, responseAll.getStatusCode());
         assertTrue(responseAll.body().jsonPath().getList("data.oaisets").size() > 0);
-        assertTrue(responseAll.body().jsonPath().getList("data.oaisets.name").toString().contains(setName));  // todo: simplify     
+        assertTrue(responseAll.body().jsonPath().getList("data.oaisets.name", String.class).contains(setName));
         
         // API Test 6. Try to create a set with the same name, should fail
         createSetResponse = given()
@@ -369,22 +369,14 @@ public class HarvestingServerIT {
         // we created and modified, above, is being listed by the OAI server 
         // and its xml record is properly formatted
         
-        List<Node> listSets = responseXmlPath.getList("OAI-PMH.ListSets.set.list()"); // TODO - maybe try it with findAll()?
-        assertNotNull(listSets);
-        assertTrue(listSets.size() > 0);
-
-        Node foundSetNode = null; 
-        for (Node setNode : listSets) {
-            
-            if (setName.equals(setNode.get("setName").toString())) {
-                foundSetNode = setNode; 
-                break;
-            }
-        }
+        List<Node> listSets = responseXmlPath.getList("OAI-PMH.ListSets.set.list().findAll{it.setName=='"+setName+"'}", Node.class);
         
-        assertNotNull("Newly-created set is not listed by the OAI server", foundSetNode);
-        assertEquals("Incorrect description in the ListSets entry", newDescription, foundSetNode.getPath("setDescription.metadata.element.field", String.class));
-
+        // 2a. Confirm that our set is listed:
+        assertNotNull("Unexpected response from ListSets", listSets);
+        assertTrue("Newly-created set isn't properly listed by the OAI server", listSets.size() == 1);
+        // 2b. Confirm that the set entry contains the updated description: 
+        assertEquals("Incorrect description in the ListSets entry", newDescription, listSets.get(0).getPath("setDescription.metadata.element.field", String.class));
+        
         // ok, the xml record looks good! 
 
         // Cleanup. Delete the set with the DELETE API
@@ -416,26 +408,30 @@ public class HarvestingServerIT {
 
         // The GET method of the oai set API, as well as the OAI ListSets
         // method are tested extensively in another method in this class, so 
-        // we'll skip checking those here. 
+        // we'll skip looking too closely into those here. 
         
-        // Let's export the set. This is asynchronous - so we will try to 
-        // wait a little - but in practice, everything potentially time-consuming
-        // must have been done when the dataset was exported, in the setup method. 
+        // A quick test that the new set is listed under native API
+        Response getSet = given()
+                .get(apiPath);
+        assertEquals(200, getSet.getStatusCode());
+        
+        // Export the set. 
         
         Response exportSetResponse = UtilIT.exportOaiSet(setName);
         assertEquals(200, exportSetResponse.getStatusCode());
-        Thread.sleep(1000L);
+                
+        // Strictly speaking, exporting an OAI set is an asynchronous operation. 
+        // So the code below was written to expect to have to wait for up to 10 
+        // additional seconds for it to complete. In retrospect, this is 
+        // most likely unnecessary (because the only potentially expensive part 
+        // of the process is the metadata export, and in this case that must have
+        // already happened - when the dataset was published (that operation
+        // now has its own wait mechanism). But I'll keep this extra code in 
+        // place since it's not going to hurt. - L.A. 
         
-        Response getSet = given()
-                .get(apiPath);
-        
-        logger.info("getSet.getStatusCode(): " + getSet.getStatusCode());
-        logger.fine("getSet printresponse:  " + getSet.prettyPrint());
-        assertEquals(200, getSet.getStatusCode());
         int i = 0;
         int maxWait=10;
         do {
-            
 
             // OAI Test 1. Run ListIdentifiers on this newly-created set:
             Response listIdentifiersResponse = UtilIT.getOaiListIdentifiers(setName, "oai_dc");
@@ -445,17 +441,14 @@ public class HarvestingServerIT {
             XmlPath responseXmlPath = validateOaiVerbResponse(listIdentifiersResponse, "ListIdentifiers");
             
             List ret = responseXmlPath.getList("OAI-PMH.ListIdentifiers.header");
-            assertNotNull(ret);
                         
-            if (logger.isLoggable(Level.FINE)) {
-                logger.info("listIdentifiersResponse.prettyPrint: " 
-                        + listIdentifiersResponse.prettyPrint());
-            }
-            if (ret.isEmpty()) {
-                // OK, we'll sleep for another second - provided it's been less
-                // than 10 sec. total.
+            if (ret == null || ret.isEmpty()) {
+                // OK, we'll sleep for another second
                 i++;
             } else {
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.info("listIdentifiersResponse.prettyPrint: " + listIdentifiersResponse.prettyPrint());
+                }
                 // Validate the payload of the ListIdentifiers response:
                 // a) There should be 1 and only 1 item listed:
                 assertEquals(1, ret.size());
@@ -465,20 +458,13 @@ public class HarvestingServerIT {
                 assertEquals(setName, responseXmlPath
                         .getString("OAI-PMH.ListIdentifiers.header.setSpec"));
                 assertNotNull(responseXmlPath.getString("OAI-PMH.ListIdentifiers.header.dateStamp"));
-                // TODO: validate the formatting of the date string in the record
-                // header, above!
+                // TODO: validate the formatting of the date string here as well.
                 
                 // ok, ListIdentifiers response looks valid.
                 break;
             }
             Thread.sleep(1000L);
         } while (i<maxWait); 
-        // OK, the code above that expects to have to wait for up to 10 seconds 
-        // for the set to export is most likely utterly unnecessary (the potentially
-        // expensive part of the operation - exporting the metadata of our dataset -
-        // already happened during its publishing (we made sure to wait there). 
-        // Exporting the set should not take any time - but I'll keep that code 
-        // in place since it's not going to hurt. - L.A. 
         
         System.out.println("Waited " + i + " seconds for OIA export.");
         //Fail if we didn't find the exported record before the timeout
