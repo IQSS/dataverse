@@ -405,31 +405,9 @@
     <field name="universe" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="weighting" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="westLongitude" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="codeVersion" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="developmentStatus" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="codeRepository" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="applicationCategory" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="applicationSubCategory" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="programmingLanguage" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="runtimePlatform" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="operatingSystem" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="targetProduct" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="buildInstructions" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="softwareRequirements" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="softwareRequirementsInfoUrl" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="softwareSuggestions" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="softwareSuggestionsInfoUrl" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="memoryRequirements" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="processorRequirements" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="storageRequirements" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="permissions" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="softwareHelp" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="readme" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="releaseNotes" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="contIntegration" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="issueTracker" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <!-- SCHEMA-FIELDS::END -->
     
+
     <copyField source="description" dest="_text_" maxChars="3000"/>
 
     <!-- Added for Dataverse 4.0 Beta: make variable names and labels searchable in basic search https://redmine.hmdc.harvard.edu/issues/3945 -->
@@ -667,30 +645,6 @@
     <copyField source="universe" dest="_text_" maxChars="3000"/>
     <copyField source="weighting" dest="_text_" maxChars="3000"/>
     <copyField source="westLongitude" dest="_text_" maxChars="3000"/>
-    <copyField source="codeVersion" dest="_text_" maxChars="3000"/>
-    <copyField source="developmentStatus" dest="_text_" maxChars="3000"/>
-    <copyField source="codeRepository" dest="_text_" maxChars="3000"/>
-    <copyField source="applicationCategory" dest="_text_" maxChars="3000"/>
-    <copyField source="applicationSubCategory" dest="_text_" maxChars="3000"/>
-    <copyField source="programmingLanguage" dest="_text_" maxChars="3000"/>
-    <copyField source="runtimePlatform" dest="_text_" maxChars="3000"/>
-    <copyField source="operatingSystem" dest="_text_" maxChars="3000"/>
-    <copyField source="targetProduct" dest="_text_" maxChars="3000"/>
-    <copyField source="buildInstructions" dest="_text_" maxChars="3000"/>
-    <copyField source="softwareRequirements" dest="_text_" maxChars="3000"/>
-    <copyField source="softwareRequirementsInfoUrl" dest="_text_" maxChars="3000"/>
-    <copyField source="softwareSuggestions" dest="_text_" maxChars="3000"/>
-    <copyField source="softwareSuggestionsInfoUrl" dest="_text_" maxChars="3000"/>
-    <copyField source="memoryRequirements" dest="_text_" maxChars="3000"/>
-    <copyField source="processorRequirements" dest="_text_" maxChars="3000"/>
-    <copyField source="storageRequirements" dest="_text_" maxChars="3000"/>
-    <copyField source="permissions" dest="_text_" maxChars="3000"/>
-    <copyField source="softwareHelp" dest="_text_" maxChars="3000"/>
-    <copyField source="readme" dest="_text_" maxChars="3000"/>
-    <copyField source="releaseNotes" dest="_text_" maxChars="3000"/>
-    <copyField source="contIntegration" dest="_text_" maxChars="3000"/>
-    <copyField source="issueTracker" dest="_text_" maxChars="3000"/>
-    
     <!-- SCHEMA-COPY-FIELDS::END -->
     
     <!-- This can be enabled, in case the client does not know what fields may be searched. It isn't enabled by default
