@@ -326,6 +326,12 @@ public class DataverseDao implements java.io.Serializable {
         return countQuery.getSingleResult();
     }
 
+    public Long countDataversesWithParent(Long parentId) {
+        return (Long) em.createNativeQuery("SELECT count(1) FROM dvobject WHERE dtype='Dataverse' AND owner_id = ?1")
+                .setParameter(1, parentId)
+                .getSingleResult();
+    }
+
     public List<Object[]> getParentAliasesForIds(List<Long> ids) {
         return em.createQuery("SELECT o.id, dv.alias FROM Dataverse dv, DvObject o " +
                 "WHERE dv.id = o.owner.id AND o.id IN :ids", Object[].class)

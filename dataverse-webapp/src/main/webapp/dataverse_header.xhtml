@@ -67,6 +67,12 @@
             <div class="collapse navbar-collapse" id="topNavBar">
                 <nav class="pull-right">
                     <ul class="nav navbar-nav">
+                        <li jsf:rendered="#{dataverseSession.user.authenticated}">
+                            <p:commandLink oncomplete="primeFacesShowModal('createDatasetDialog', this)">
+                                <h:outputText value="#{bundle['add.dataset.button']}"/>
+                            </p:commandLink>
+                        </li>
+
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown"
                                     aria-haspopup="true" aria-controls="navbarsearch-modal" aria-expanded="false">
@@ -438,4 +444,27 @@
             </div>
         </p:fragment>
     </div>
+    <p:dialog id="createDataset" header="#{bundle['add.dataset.dialog.header']}" widgetVar="createDatasetDialog" modal="true">
+        <div class="container">
+            <div class="row">
+                <h:form id="tree-dialog">
+                    <label class="col-md-4">
+                        #{bundle['add.dataset.dialog.tree.label']}
+                    </label>
+                    <div class="col-md-8">
+                        <p:outputPanel styleClass="scrollable-panel">
+                            <p:tree value="#{CreateDatasetDialog.rootNode}" var="node" styleClass="no-border"
+                                    dynamic="true" selectionMode="single" selection="#{CreateDatasetDialog.selectedNode}"
+                                    animate="true">
+                                <p:ajax event="expand" listener="#{CreateDatasetDialog.onNodeExpand}" />
+                                <p:treeNode>
+                                    <h:outputText value="#{node.name}"/>
+                                </p:treeNode>
+                            </p:tree>
+                        </p:outputPanel>
+                    </div>
+                </h:form>
+            </div>
+        </div>
+    </p:dialog>
 </ui:composition>

@@ -18,24 +18,28 @@ import java.util.List;
 public class UserDataFieldFiller {
 
     private DatasetFieldServiceBean fieldService;
-    
+
     private Clock clock = Clock.systemDefaultZone();
-    
+
+    // -------------------- CONSTRUCTORS --------------------
+
+    public UserDataFieldFiller() { }
+
     @Inject
     public UserDataFieldFiller(DatasetFieldServiceBean fieldService) {
         this.fieldService = fieldService;
     }
 
     // -------------------- LOGIC --------------------
-    
+
     public void fillUserDataInDatasetFields(List<DatasetField> datasetFields, AuthenticatedUser user) {
-        
+
         String userFullName = user.getLastName() + ", " + user.getFirstName();
         String userAffiliation = user.getAffiliation();
         String userEmail = user.getEmail();
         String userOrcidId = user.getOrcidId();
         String todayDate = LocalDate.now(clock).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        
+
         for (DatasetField dsf : datasetFields) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.depositor) && dsf.isEmpty()) {
                 dsf.setFieldValue(userFullName);
@@ -57,7 +61,7 @@ public class UserDataFieldFiller {
                         }
                     }
             }
-            
+
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author) && dsf.isEmpty()) {
                     for (DatasetField subField : dsf.getDatasetFieldsChildren()) {
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorName)) {
@@ -79,11 +83,11 @@ public class UserDataFieldFiller {
                     }
             }
         }
-        
+
     }
 
     // -------------------- SETTERS --------------------
-    
+
     public void setClock(Clock clock) {
         this.clock = clock;
     }

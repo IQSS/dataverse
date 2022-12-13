@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.search.query;
 
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.persistence.group.Group;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.search.SearchFields;
@@ -13,6 +14,7 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -20,16 +22,16 @@ import java.util.stream.Collectors;
 public class PermissionFilterQueryBuilder {
 
     private static final Logger logger = Logger.getLogger(SearchServiceBean.class.getCanonicalName());
-    
+
     private GroupServiceBean groupService;
 
     // -------------------- CONSTRUCTORS --------------------
-    
+
     @Deprecated
     public PermissionFilterQueryBuilder() {
         // JEE requirement
     }
-    
+
     @Inject
     public PermissionFilterQueryBuilder(GroupServiceBean groupService) {
         this.groupService = groupService;
@@ -38,47 +40,58 @@ public class PermissionFilterQueryBuilder {
     // -------------------- LOGIC --------------------
 
     public String buildPermissionFilterQuery(DataverseRequest dataverseRequest) {
+        return buildPermissionFilterQuery(dataverseRequest, this::buildJoinQuery);
+    }
 
+    public String buildPermissionFilterQueryForAddDataset(DataverseRequest dataverseRequest) {
+        return buildPermissionFilterQuery(dataverseRequest, this::buildJoinQueryForAddDataset);
+    }
+
+    // -------------------- PRIVATE --------------------
+
+    private String buildPermissionFilterQuery(DataverseRequest dataverseRequest, Function<List<String>, String> queryBuilder) {
         User user = dataverseRequest.getUser();
         if (user == null) {
             throw new NullPointerException("user cannot be null");
         }
- 
+
         if (user.isSuperuser()) {
             return StringUtils.EMPTY;
         }
-        
+
         List<String> allUserGroups = new ArrayList<>();
-        
+
         if (user.isAuthenticated()) {
             AuthenticatedUser au = (AuthenticatedUser) user;
             allUserGroups.add(IndexServiceBean.getGroupPerUserPrefix() + au.getId());
         }
-        
+
         List<String> userGroupStrings = collectUserGroups(dataverseRequest);
         logger.fine(userGroupStrings.toString());
         allUserGroups.addAll(userGroupStrings);
-        
-        String permissionFilterQuery = buildJoinQuery(allUserGroups);
-        
+
+        String permissionFilterQuery = queryBuilder.apply(allUserGroups);
+
         logger.fine(permissionFilterQuery);
 
         return permissionFilterQuery;
-
     }
-    
-    // -------------------- PRIVATE --------------------
-    
+
     private String buildJoinQuery(List<String> discoverableByGroups) {
         String discoverableByQueryPart = SearchFields.DISCOVERABLE_BY + ":(" + StringUtils.join(discoverableByGroups, " OR ") + ")";
         String discoverableByPublicQueryPart = SearchFields.DISCOVERABLE_BY_PUBLIC_FROM + ":[* TO NOW/DAY]";
-        
+
         String experimentalJoin = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}"
                 + discoverableByQueryPart + " OR "
                 + discoverableByPublicQueryPart;
         return experimentalJoin;
     }
-    
+
+    private String buildJoinQueryForAddDataset(List<String> groups) {
+        return "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" +
+                SearchFields.ADD_DATASET_PERM + ":(" + String.join(" OR ", groups) + ")";
+    }
+
     private List<String> collectUserGroups(DataverseRequest dataverseRequest) {
         /**
          * From a search perspective, we don't care about if the group was
@@ -91,10 +104,10 @@ public class PermissionFilterQueryBuilder {
          */
         return groupService.collectAncestors(groupService.groupsFor(dataverseRequest))
                 .stream()
-                .map(group -> group.getAlias())
-                .filter(alias -> StringUtils.isNotEmpty(alias))
+                .map(Group::getAlias)
+                .filter(StringUtils::isNotEmpty)
                 .map(alias -> IndexServiceBean.getGroupPrefix() + alias)
                 .collect(Collectors.toList());
     }
-    
+
 }

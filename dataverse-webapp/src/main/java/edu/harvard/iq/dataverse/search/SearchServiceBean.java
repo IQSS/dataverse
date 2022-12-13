@@ -8,7 +8,6 @@ import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.common.FriendlyFileTypeUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
-import edu.harvard.iq.dataverse.persistence.datafile.license.License;
 import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseRepository;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
@@ -76,9 +75,8 @@ public class SearchServiceBean {
     private static final String FACETBUNDLE_MASK_DVCATEGORY_VALUE = "dataverse.type.selectTab.%s";
 
     public enum SortOrder {
-
-        asc, desc;
-
+        asc,
+        desc;
 
         public static Optional<SortOrder> fromString(String sortOrderString) {
             return Try.of(() -> SortOrder.valueOf(sortOrderString))
@@ -93,30 +91,34 @@ public class SearchServiceBean {
         }
     }
 
-    /*
-      We're trying to make the SearchServiceBean lean, mean, and fast, with as
-      few injections of EJBs as possible.
-     */
-    /**
-     * @todo Can we do without the DatasetFieldServiceBean?
-     */
-    @EJB
     private DvObjectServiceBean dvObjectService;
-    @EJB
     private DatasetFieldServiceBean datasetFieldService;
-    @Inject
     private SettingsServiceBean settingsService;
-    @EJB
     private SystemConfig systemConfig;
-    @EJB
     private PermissionFilterQueryBuilder permissionQueryBuilder;
-    @Inject
     private SolrClient solrServer;
-    @Inject
     private SolrQuerySanitizer querySanitizer;
-    
-    @Inject
     private LicenseRepository licenseRepository;
+
+    // -------------------- CONSTRUCTORS --------------------
+
+    public SearchServiceBean() { }
+
+    @Inject
+    public SearchServiceBean(DvObjectServiceBean dvObjectService, DatasetFieldServiceBean datasetFieldService,
+                             SettingsServiceBean settingsService, SystemConfig systemConfig,
+                             PermissionFilterQueryBuilder permissionQueryBuilder, SolrClient solrServer,
+                             SolrQuerySanitizer querySanitizer, LicenseRepository licenseRepository) {
+        this.dvObjectService = dvObjectService;
+        this.datasetFieldService = datasetFieldService;
+        this.settingsService = settingsService;
+        this.systemConfig = systemConfig;
+        this.permissionQueryBuilder = permissionQueryBuilder;
+        this.solrServer = solrServer;
+        this.querySanitizer = querySanitizer;
+        this.licenseRepository = licenseRepository;
+    }
+
 
     // -------------------- LOGIC --------------------
 

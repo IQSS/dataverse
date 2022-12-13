@@ -2600,6 +2600,17 @@ html, body {
 	flex-shrink: 0;
 }
 
+/* Add dataset dialog */
+.no-border {
+    border: none;
+}
+
+.scrollable-panel {
+    width: 100%;
+    height: 300px;
+    overflow: auto;
+    display: block;
+}
 
 /* Main page */
 

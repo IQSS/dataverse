@@ -36,7 +36,6 @@ import io.vavr.control.Try;
 import org.apache.commons.lang3.StringUtils;
 import org.omnifaces.cdi.ViewScoped;
 
-import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.inject.Inject;
@@ -58,28 +57,16 @@ public class CreateDatasetPage implements Serializable {
 
     private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
 
-    @Inject
-    ImporterRegistry importerRegistry;
-
-    @EJB
+    private ImporterRegistry importerRegistry;
     private DataverseDao dataverseDao;
-    @Inject
     private PermissionsWrapper permissionsWrapper;
-    @Inject
     private SettingsServiceBean settingsService;
-    @Inject
     private DatasetFieldsInitializer datasetFieldsInitializer;
-    @Inject
     private DataverseSession session;
-    @EJB
     private TermsOfUseFormMapper termsOfUseFormMapper;
-    @EJB
     private UserDataFieldFiller userDataFieldFiller;
-    @EJB
-    private DatasetService DatasetService;
-    @EJB
+    private DatasetService datasetService;
     private InputFieldRendererManager inputFieldRendererManager;
-    @Inject
     private DatasetFieldValidationService fieldValidationService;
 
     private Dataset dataset;
@@ -99,29 +86,28 @@ public class CreateDatasetPage implements Serializable {
     private MetadataImporter selectedImporter;
     private ImporterForm importerForm;
 
-    public String init() {
+    // -------------------- CONSTRUCTORS --------------------
 
-        Dataverse ownerDataverse = dataverseDao.find(ownerId);
+    public CreateDatasetPage() { }
 
-        if (ownerDataverse == null) {
-            return permissionsWrapper.notFound();
-        }
-        if (!permissionsWrapper.canIssueCreateDatasetCommand(ownerDataverse)) {
-            return permissionsWrapper.notAuthorized();
-        }
-
-        dataverseTemplates = fetchApplicableTemplates(ownerDataverse);
-        selectedTemplate = ownerDataverse.getDefaultTemplate();
-
-        dataset = new Dataset();
-        dataset.setOwner(ownerDataverse);
-
-        this.importers = ImportersForView.createInitialized(dataset, importerRegistry.getImporters(), session.getLocale());
-
-        workingVersion = dataset.getLatestVersion();
-        resetDatasetFields();
-
-        return StringUtils.EMPTY;
+    @Inject
+    public CreateDatasetPage(ImporterRegistry importerRegistry, DataverseDao dataverseDao,
+                             PermissionsWrapper permissionsWrapper, SettingsServiceBean settingsService,
+                             DatasetFieldsInitializer datasetFieldsInitializer, DataverseSession session,
+                             TermsOfUseFormMapper termsOfUseFormMapper, UserDataFieldFiller userDataFieldFiller,
+                             DatasetService datasetService, InputFieldRendererManager inputFieldRendererManager,
+                             DatasetFieldValidationService fieldValidationService) {
+        this.importerRegistry = importerRegistry;
+        this.dataverseDao = dataverseDao;
+        this.permissionsWrapper = permissionsWrapper;
+        this.settingsService = settingsService;
+        this.datasetFieldsInitializer = datasetFieldsInitializer;
+        this.session = session;
+        this.termsOfUseFormMapper = termsOfUseFormMapper;
+        this.userDataFieldFiller = userDataFieldFiller;
+        this.datasetService = datasetService;
+        this.inputFieldRendererManager = inputFieldRendererManager;
+        this.fieldValidationService = fieldValidationService;
     }
 
     // -------------------- GETTERS --------------------
@@ -176,6 +162,31 @@ public class CreateDatasetPage implements Serializable {
 
     // -------------------- LOGIC --------------------
 
+    public String init() {
+
+        Dataverse ownerDataverse = dataverseDao.find(ownerId);
+
+        if (ownerDataverse == null) {
+            return permissionsWrapper.notFound();
+        }
+        if (!permissionsWrapper.canIssueCreateDatasetCommand(ownerDataverse)) {
+            return permissionsWrapper.notAuthorized();
+        }
+
+        dataverseTemplates = fetchApplicableTemplates(ownerDataverse);
+        selectedTemplate = ownerDataverse.getDefaultTemplate();
+
+        dataset = new Dataset();
+        dataset.setOwner(ownerDataverse);
+
+        this.importers = ImportersForView.createInitialized(dataset, importerRegistry.getImporters(), session.getLocale());
+
+        workingVersion = dataset.getLatestVersion();
+        resetDatasetFields();
+
+        return StringUtils.EMPTY;
+    }
+
     public void updateSelectedTemplate(AjaxBehaviorEvent event) {
         resetDatasetFields();
     }
@@ -193,7 +204,7 @@ public class CreateDatasetPage implements Serializable {
 
         mapTermsOfUseInFiles(newFiles);
 
-        Try<Dataset> createDatasetOperation = Try.of(() -> DatasetService.createDataset(dataset, selectedTemplate))
+        Try<Dataset> createDatasetOperation = Try.of(() -> datasetService.createDataset(dataset, selectedTemplate))
                 .onFailure(NotAuthenticatedException.class,
                     ex -> handleErrorMessage(BundleUtil.getStringFromBundle("dataset.create.authenticatedUsersOnly"), ex))
                 .onFailure(EJBException.class,
@@ -206,7 +217,7 @@ public class CreateDatasetPage implements Serializable {
         }
 
 
-        Try.of(() -> DatasetService.addFilesToDataset(dataset.getId(), newFiles))
+        Try.of(() -> datasetService.addFilesToDataset(dataset.getId(), newFiles))
             .onFailure(ex -> handleErrorMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess.failedToSaveFiles"), ex))
             .onSuccess(addFilesResult -> handleSuccessOrPartialSuccessMessages(newFiles.size(), addFilesResult))
             .onSuccess(addFilesResult -> dataset = addFilesResult.getDataset());
@@ -225,8 +236,7 @@ public class CreateDatasetPage implements Serializable {
     // -------------------- PRIVATE --------------------
 
     private List<Template> fetchApplicableTemplates(Dataverse dataverse) {
-        List<Template> templates = new ArrayList<>();
-        templates.addAll(dataverse.getTemplates());
+        List<Template> templates = new ArrayList<>(dataverse.getTemplates());
         if (!dataverse.isTemplateRoot()) {
             templates.addAll(dataverse.getParentTemplates());
         }
