@@ -269,6 +269,11 @@ public class SearchFields {
     public static final String EMBARGO_END_DATE = "embargoEndDate";
 
     
+    // SpatialRecursivePrefixTreeFieldType: https://solr.apache.org/guide/8_11/spatial-search.html#rpt
+    public static final String GEOLOCATION = "geolocation";
+    // BBoxField (bounding box): https://solr.apache.org/guide/8_11/spatial-search.html#bboxfield
+    public static final String BOUNDING_BOX = "boundingBox";
+
     public static final String DATASET_VALID = "datasetValid";
 
 }

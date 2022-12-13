@@ -93,10 +93,22 @@ public class LicenseServiceBean {
                     new IllegalArgumentException("License already " + (state ? "active" : "inactive")), null);
         }
     }
+
+    public int setSortOrder(Long id, Long sortOrder) throws WrappedResponse {
+        License candidate = getById(id);
+        if (candidate == null)
+            return 0;
+        
+        return em.createNamedQuery("License.setSortOrder").setParameter("id", id).setParameter("sortOrder", sortOrder)
+                .executeUpdate();
+    }
     
     public License save(License license) throws WrappedResponse {
         if (license.getId() != null) {
             throw new WrappedResponse(new IllegalArgumentException("There shouldn't be an ID in the request body"), null);
+        }
+        if (license.getSortOrder() == null) {
+            throw new WrappedResponse(new IllegalArgumentException("There should be a sort order value in the request body"), null);
         }
         try {
             em.persist(license);
