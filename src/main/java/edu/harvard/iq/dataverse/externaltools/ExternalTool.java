@@ -20,7 +20,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
-import javax.persistence.Transient;
 
 /**
  * A specification or definition for how an external tool is intended to
@@ -29,8 +28,6 @@ import javax.persistence.Transient;
  */
 @Entity
 public class ExternalTool implements Serializable {
-
-    private static final Logger logger = Logger.getLogger(ExternalToolServiceBean.class.getCanonicalName());
 
     public static final String DISPLAY_NAME = "displayName";
     public static final String DESCRIPTION = "description";
@@ -41,6 +38,7 @@ public class ExternalTool implements Serializable {
     public static final String TOOL_PARAMETERS = "toolParameters";
     public static final String CONTENT_TYPE = "contentType";
     public static final String TOOL_NAME = "toolName";
+    public static final String ALLOWED_API_CALLS = "allowedApiCalls";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -98,6 +96,14 @@ public class ExternalTool implements Serializable {
     private String contentType;
 
     /**
+     * Set of API calls the tool would like to be able to use (e,.g. for retrieving
+     * data through the Dataverse REST API). Used to build signedUrls for POST
+     * headers, as in DP Creator
+     */
+    @Column(nullable = true, columnDefinition = "TEXT")
+    private String allowedApiCalls;
+
+    /**
      * This default constructor is only here to prevent this error at
      * deployment:
      *
@@ -112,6 +118,10 @@ public class ExternalTool implements Serializable {
     }
 
     public ExternalTool(String displayName, String toolName, String description, List<ExternalToolType> externalToolTypes, Scope scope, String toolUrl, String toolParameters, String contentType) {
+       this(displayName, toolName, description, externalToolTypes, scope, toolUrl, toolParameters, contentType, null);
+    }
+
+    public ExternalTool(String displayName, String toolName, String description, List<ExternalToolType> externalToolTypes, Scope scope, String toolUrl, String toolParameters, String contentType, String allowedApiCalls) {
         this.displayName = displayName;
         this.toolName = toolName;
         this.description = description;
@@ -120,6 +130,7 @@ public class ExternalTool implements Serializable {
         this.toolUrl = toolUrl;
         this.toolParameters = toolParameters;
         this.contentType = contentType;
+        this.allowedApiCalls = allowedApiCalls;
     }
 
     public enum Type {
@@ -273,6 +284,9 @@ public class ExternalTool implements Serializable {
         if (getContentType() != null) {
             jab.add(CONTENT_TYPE, getContentType());
         }
+        if (getAllowedApiCalls()!= null) {
+            jab.add(ALLOWED_API_CALLS,getAllowedApiCalls());
+        }
         return jab;
     }
 
@@ -296,6 +310,20 @@ public class ExternalTool implements Serializable {
             displayName = this.getDisplayName();
         }
         return displayName;
+    }
+
+    /**
+     * @return the allowedApiCalls
+     */
+    public String getAllowedApiCalls() {
+        return allowedApiCalls;
+    }
+
+    /**
+     * @param allowedApiCalls the allowedApiCalls to set
+     */
+    public void setAllowedApiCalls(String allowedApiCalls) {
+        this.allowedApiCalls = allowedApiCalls;
     }
 
 

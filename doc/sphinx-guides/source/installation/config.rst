@@ -580,8 +580,7 @@ Optionally, you may provide static credentials for each S3 storage using MicroPr
 - ``dataverse.files.<id>.access-key`` for this storage's "access key ID"
 - ``dataverse.files.<id>.secret-key`` for this storage's "secret access key"
 
-You may provide the values for these via any of the
-`supported config sources <https://docs.payara.fish/community/docs/documentation/microprofile/config/README.html>`_.
+You may provide the values for these via any `supported MicroProfile Config API source`_.
 
 **WARNING:**
 
@@ -700,6 +699,26 @@ Once you have configured a trusted remote store, you can point your users to the
     
     ===========================================  ==================  ==========================================================================  ===================
 
+.. _temporary-file-storage:
+
+Temporary Upload File Storage
++++++++++++++++++++++++++++++
+
+When uploading files via the API or Web UI, you need to be aware that multiple steps are involved to enable
+features like ingest processing, transfer to a permanent storage, checking for duplicates, unzipping etc.
+
+All of these processes are triggered after finishing transfers over the wire and moving the data into a temporary
+(configurable) location on disk at :ref:`${dataverse.files.directory} <dataverse.files.directory>`\ ``/temp``.
+
+Before being moved there,
+
+- JSF Web UI uploads are stored at :ref:`${dataverse.files.uploads} <dataverse.files.uploads>`, defaulting to
+  ``/usr/local/payara5/glassfish/domains/domain1/uploads`` folder in a standard installation. This place is
+  configurable and might be set to a separate disk volume where stale uploads are purged periodically.
+- API uploads are stored at the system's temporary files location indicated by the Java system property
+  ``java.io.tmpdir``, defaulting to ``/tmp`` on Linux. If this location is backed by a `tmpfs <https://www.kernel.org/doc/html/latest/filesystems/tmpfs.html>`_
+  on your machine, large file uploads via API will cause RAM and/or swap usage bursts. You might want to point this to
+  a different location, restrict maximum size of it, and monitor for stale uploads.
 
 
 .. _Branding Your Installation:
@@ -1043,6 +1062,14 @@ On a new Dataverse installation, users may select from the following licenses or
 - Custom Dataset Terms
 
 (Note that existing Dataverse installations which are upgraded from 5.9 or previous will only offer CC0 1.0, added automatically during the upgrade to version 5.10.)
+
+If the Dataverse Installation supports multiple languages, the license name/description translations should be added to the ``License`` properties files. (See :ref:`i18n` for more on properties files and internationalization in general.)
+To create the key, the license name has to be converted to lowercase, replace space with underscore.
+
+Example::
+
+  license.cc0_1.0.description=Creative Commons CC0 1.0 Universal Public Domain Dedication.
+  license.cc0_1.0.name=CC0 1.0
 
 You have a lot of control over which licenses and terms are available. You can remove licenses and add new ones. You can decide which license is the default. You can remove "Custom Dataset Terms" as a option. You can remove all licenses and make "Custom Dataset Terms" the only option.
 
@@ -1435,10 +1462,26 @@ Note that it's also possible to use the ``dataverse.fqdn`` as a variable, if you
 
 We are absolutely aware that it's confusing to have both ``dataverse.fqdn`` and ``dataverse.siteUrl``. https://github.com/IQSS/dataverse/issues/6636 is about resolving this confusion.
 
+.. _dataverse.files.directory:
+
 dataverse.files.directory
 +++++++++++++++++++++++++
 
 This is how you configure the path Dataverse uses for temporary files. (File store specific dataverse.files.\<id\>.directory options set the permanent data storage locations.)
+
+.. _dataverse.files.uploads:
+
+dataverse.files.uploads
++++++++++++++++++++++++
+
+Configure a folder to store the incoming file stream during uploads (before transfering to `${dataverse.files.directory}/temp`).
+Please also see :ref:`temporary-file-storage` for more details.
+You can use an absolute path or a relative, which is relative to the application server domain directory.
+
+Defaults to ``./uploads``, which resolves to ``/usr/local/payara5/glassfish/domains/domain1/uploads`` in a default
+installation.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FILES_UPLOADS``.
 
 dataverse.auth.password-reset-timeout-in-minutes
 ++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1692,6 +1735,39 @@ This setting is useful in cases such as running your Dataverse installation behi
 	"HTTP_FORWARDED",
 	"HTTP_VIA",
 	"REMOTE_ADDR"
+
+
+.. _dataverse.api.signature-secret:
+
+dataverse.api.signature-secret
+++++++++++++++++++++++++++++++
+
+Context: Dataverse has the ability to create "Signed URLs" for it's API calls. Using a signed URLs is more secure than
+providing API tokens, which are long-lived and give the holder all of the permissions of the user. In contrast, signed URLs
+are time limited and only allow the action of the API call in the URL. See :ref:`api-exttools-auth` and
+:ref:`api-native-signed-url` for more details. 
+
+The key used to sign a URL is created from the API token of the creating user plus a signature-secret provided by an administrator.
+**Using a signature-secret is highly recommended.** This setting defaults to an empty string. Using a non-empty 
+signature-secret makes it impossible for someone who knows an API token from forging signed URLs and provides extra security by 
+making the overall signing key longer.
+
+Since the signature-secret is sensitive, you should treat it like a password. Here is an example how to set your shared secret 
+with the secure method "password alias":
+
+.. code-block:: shell
+
+  echo "AS_ADMIN_ALIASPASSWORD=change-me-super-secret" > /tmp/password.txt
+  asadmin create-password-alias --passwordfile /tmp/password.txt dataverse.api.signature-secret
+  rm /tmp/password.txt
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
+``DATAVERSE_API_SIGNATURE_SECRET``.
+
+**WARNING:** For security, do not use the sources "environment variable" or "system property" (JVM option) in a
+production context! Rely on password alias, secrets directory or cloud based sources instead!
+
+
 
 .. _:ApplicationServerSettings:
 
@@ -3090,3 +3166,7 @@ The interval in seconds between Dataverse calls to Globus to check on upload pro
 +++++++++++++++++++++++++
 
 A true/false option to add a Globus transfer option to the file download menu which is not yet fully supported in the dataverse-globus app. See :ref:`globus-support` for details.
+
+
+
+.. _supported MicroProfile Config API source: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Overview.html
