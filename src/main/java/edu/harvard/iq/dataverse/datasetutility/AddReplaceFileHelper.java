@@ -1188,7 +1188,7 @@ public class AddReplaceFileHelper{
         }
 
         // Load the working version of the Dataset
-        workingVersion = dataset.getEditVersion();
+        workingVersion = dataset.getOrCreateEditVersion();
         if(!multifile) {
             //Don't repeatedly update the clone (losing changes) in multifile case
             clone = workingVersion.cloneDatasetVersion();
@@ -1801,7 +1801,7 @@ public class AddReplaceFileHelper{
         newlyAddedFileMetadatas = new ArrayList<>();
         
         // Loop of uglinesss...but expect 1 to 4 files in final file list
-        List<FileMetadata> latestFileMetadatas = dataset.getEditVersion().getFileMetadatas();
+        List<FileMetadata> latestFileMetadatas = dataset.getOrCreateEditVersion().getFileMetadatas();
         
         
         for (DataFile newlyAddedFile : finalFileList){
@@ -2042,7 +2042,7 @@ public class AddReplaceFileHelper{
 
             if (filesJson != null) {
                 totalNumberofFiles = filesJson.getValuesAs(JsonObject.class).size();
-                workingVersion = dataset.getEditVersion();
+                workingVersion = dataset.getCreateOrEditVersion();
                 clone = workingVersion.cloneDatasetVersion();
                 for (JsonObject fileJson : filesJson.getValuesAs(JsonObject.class)) {
 
