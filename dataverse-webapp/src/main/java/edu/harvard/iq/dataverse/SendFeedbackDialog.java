@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.mail.MailService;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.MailUtil;
@@ -24,6 +25,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.mail.internet.InternetAddress;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 import java.util.logging.Logger;
 
@@ -208,25 +210,31 @@ public class SendFeedbackDialog implements java.io.Serializable {
 
     private void sendCopy(String rootDataverseName, Feedback feedback) {
         String mail = isLoggedIn() ? loggedInUserEmail() : userEmail;
+        Locale locale = isLoggedIn() ? loggedInUserLanguage() : BundleUtil.getCurrentLocale();
+        
         String header;
         String siteUrl = systemConfig.getDataverseSiteUrl();
         if (recipient != null && recipient.isInstanceofDataverse()) {
             Dataverse dataverse = (Dataverse) recipient;
-            header = BundleUtil.getStringFromBundle("contact.copy.message.header.dataverse",
+            header = BundleUtil.getStringFromBundleWithLocale("contact.copy.message.header.dataverse", locale,
                     rootDataverseName, dataverse.getName(),
                     siteUrl + "/dataverse/" + dataverse.getAlias());
         } else if (recipient != null && recipient.isInstanceofDataset()) {
             Dataset dataset = (Dataset) recipient;
-            header = BundleUtil.getStringFromBundle("contact.copy.message.header.dataset",
+            header = BundleUtil.getStringFromBundleWithLocale("contact.copy.message.header.dataset", locale,
                     rootDataverseName, dataset.getDisplayName(),
                     siteUrl + "/dataset.xhtml?persistentId=" + dataset.getGlobalId().asString());
         } else {
-            header = BundleUtil.getStringFromBundle("contact.copy.message.header.general", rootDataverseName);
+            header = BundleUtil.getStringFromBundleWithLocale("contact.copy.message.header.general", locale, rootDataverseName);
         }
-        String content = header + BundleUtil.getStringFromBundle("contact.copy.message.template", userMessage)
-                + mailService.getFooterMailMessage(null, dataverseSession.getLocale());
+        String content = header + BundleUtil.getStringFromBundleWithLocale("contact.copy.message.template", locale, userMessage)
+                + mailService.getFooterMailMessage(null, locale);
         mailService.sendMailAsync(null, mail,
-                BundleUtil.getStringFromBundle("contact.copy.message.subject", feedback.getSubject()), content);
+                BundleUtil.getStringFromBundleWithLocale("contact.copy.message.subject", locale, feedback.getSubject()), content);
+    }
+
+    private Locale loggedInUserLanguage() {
+        return ((AuthenticatedUser)dataverseSession.getUser()).getNotificationsLanguage();
     }
 
     // -------------------- SETTERS --------------------
