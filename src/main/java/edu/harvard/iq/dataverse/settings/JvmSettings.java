@@ -64,6 +64,10 @@ public enum JvmSettings {
     SCOPE_API(PREFIX, "api"),
     API_SIGNING_SECRET(SCOPE_API, "signing-secret"),
     
+    // FEATURE FLAGS SETTINGS
+    SCOPE_FLAGS(PREFIX, "feature"),
+    FEATURE_FLAG(SCOPE_FLAGS), // this is a placeholder, to be filled in by FeatureFlag entries
+    
     ;
     
     private static final String SCOPE_SEPARATOR = ".";
