@@ -62,7 +62,7 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
         this.clientSecret = aClientSecret; // nedded for state creation
         this.clientAuth = new ClientSecretBasic(new ClientID(aClientId), new Secret(aClientSecret));
         this.issuer = new Issuer(issuerEndpointURL);
-        getMetadata();
+        setupMetadata();
     }
     
     /**
@@ -74,7 +74,9 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
      * @return false
      */
     @Override
-    public boolean isDisplayIdentifier() { return false; }
+    public boolean isDisplayIdentifier() {
+        return false;
+    }
     
     /**
      * Setup metadata from OIDC provider during creation of the provider representation
@@ -82,9 +84,9 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
      * @throws IOException when sth. goes wrong with the retrieval
      * @throws ParseException when the metadata is not parsable
      */
-    void getMetadata() throws AuthorizationSetupException {
+    void setupMetadata() throws AuthorizationSetupException {
         try {
-            this.idpMetadata = getMetadata(this.issuer);
+            this.idpMetadata = fetchMetadata(this.issuer);
         } catch (IOException ex) {
             logger.severe("OIDC provider metadata at \"+issuerEndpointURL+\" not retrievable: "+ex.getMessage());
             throw new AuthorizationSetupException("OIDC provider metadata at "+this.issuer.getValue()+" not retrievable.");
@@ -106,7 +108,7 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
      * @throws IOException when sth. goes wrong with the retrieval
      * @throws ParseException when the metadata is not parsable
      */
-    OIDCProviderMetadata getMetadata(Issuer issuer) throws IOException, ParseException {
+    OIDCProviderMetadata fetchMetadata(Issuer issuer) throws IOException, ParseException {
         // Will resolve the OpenID provider metadata automatically
         OIDCProviderConfigurationRequest request = new OIDCProviderConfigurationRequest(issuer);
     
@@ -117,6 +119,18 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
         // Parse OpenID provider metadata
         return OIDCProviderMetadata.parse(httpResponse.getContentAsJSONObject());
     }
+    
+    
+    /**
+     * Retrieve the user info endpoint of this provider, used by the OIDC API access feature to use access tokens.
+     * Returned URI is immutable and will not harm the provider setup.
+     *
+     * @return The {@link URI} of the UserInfo endpoint.
+     */
+    public URI getUserInfoEndpointURI() {
+        return this.idpMetadata.getUserInfoEndpointURI();
+    }
+    
     
     /**
      * TODO: remove when refactoring package and {@link AbstractOAuth2AuthenticationProvider}
