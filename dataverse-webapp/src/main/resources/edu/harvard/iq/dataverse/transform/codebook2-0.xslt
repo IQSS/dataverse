@@ -771,7 +771,7 @@
             </td>
             <td>
                 <p>
-                    <xsl:apply-templates />
+                    <xsl:value-of select="." disable-output-escaping="yes"/>
                 </p>
             </td>
         </tr>
