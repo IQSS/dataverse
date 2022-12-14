@@ -3007,22 +3007,47 @@ The fully expanded example above (without environment variables) looks like this
 
   curl https://demo.dataverse.org/api/info/apiTermsOfUse
 
+.. _metadata-blocks-api:
+
 Metadata Blocks
 ---------------
+
+See also :ref:`exploring-metadata-blocks`.
 
 Show Info About All Metadata Blocks
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| Lists brief info about all metadata blocks registered in the system::
+|CORS| Lists brief info about all metadata blocks registered in the system.
 
-  GET http://$SERVER/api/metadatablocks
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl $SERVER_URL/api/metadatablocks
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/metadatablocks
 
 Show Info About Single Metadata Block
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| Return data about the block whose ``identifier`` is passed. ``identifier`` can either be the block's id, or its name::
+|CORS| Return data about the block whose ``identifier`` is passed, including allowed controlled vocabulary values. ``identifier`` can either be the block's database id, or its name (i.e. "citation").
 
-  GET http://$SERVER/api/metadatablocks/$identifier
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export IDENTIFIER=citation
+
+  curl $SERVER_URL/api/metadatablocks/$IDENTIFIER
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/metadatablocks/citation
 
 .. _Notifications:
 
