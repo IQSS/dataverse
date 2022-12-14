@@ -56,6 +56,7 @@ import edu.harvard.iq.dataverse.metrics.MetricsServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.locality.StorageSiteServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
+import edu.harvard.iq.dataverse.settings.FeatureGates;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -443,8 +444,8 @@ public abstract class AbstractApiBean {
             if (authUser != null) {
                 return authUser;
             }
-        // TODO: Add feature flag barrier here!
-        } else if (getOidcBearerToken(httpRequest).isPresent()) {
+        
+        } else if (FeatureGates.API_OIDC_ACCESS.enabled() && getOidcBearerToken(httpRequest).isPresent()) {
             UserInfo userInfo = verifyOidcBearerToken(getOidcBearerToken(httpRequest).get());
             
             // TODO: Only usable for OIDC users for now, just look it up via the subject.
