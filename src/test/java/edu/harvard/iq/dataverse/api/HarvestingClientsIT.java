@@ -219,10 +219,8 @@ public class HarvestingClientsIT {
                 // we'll sleep for another second
                 i++;
             } else {
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.info("getClientResponse.prettyPrint: " 
-                            + getClientResponse.prettyPrint());
-                }
+                logger.info("getClientResponse.prettyPrint: " 
+                        + getClientResponse.prettyPrint());
                 // Check the values in the response:
                 // a) Confirm that the harvest has completed: 
                 assertEquals("Unexpected client status: "+clientStatus, "inActive", clientStatus);

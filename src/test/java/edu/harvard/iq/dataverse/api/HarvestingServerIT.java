@@ -429,6 +429,7 @@ public class HarvestingServerIT {
         // now has its own wait mechanism). But I'll keep this extra code in 
         // place since it's not going to hurt. - L.A. 
         
+        Thread.sleep(1000L); // initial sleep interval
         int i = 0;
         int maxWait=10;
         do {
