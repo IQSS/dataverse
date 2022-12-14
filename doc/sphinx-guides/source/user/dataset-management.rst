@@ -93,6 +93,11 @@ Dropbox Upload
 
 Some Dataverse installations support the ability to upload files directly from Dropbox. To do so, click the "Upload from Dropbox" button, log in to Dropbox in the pop-up window, and select the files you'd like to transfer over.
 
+Folder Upload
+-------------
+
+Some Dataverse installations support the ability to upload some/all files from a local folder and subfolders. To do this, click the "Upload from Folder" button, select the folder you wish to upload, select/unselect specific files, and click 'Start Uploads'. More detailed instructions are available in the `DVWebloader wiki <https://github.com/gdcc/dvwebloader/wiki#use>`_.
+
 .. _rsync_upload:
 
 rsync + SSH Upload
@@ -268,7 +273,7 @@ After you :ref:`upload your files <dataset-file-upload>`, you can apply a "Workf
 |cw-image4|
 
 How to Describe Your Computational Workflow
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The Dataverse installation you are using may have enabled Computational Workflow metadata fields for your use. If so, when :ref:`editing your dataset metadata <adding-new-dataset>`, you will see the fields described below.
 
@@ -517,8 +522,8 @@ A **Provenance Description** allows you to add more provenance information in ad
 You can return to attach provenance to your data file later on by clicking the "Add + Edit Metadata" button on the file page, and then clicking the "Edit -> Provenance" button.
 
 ..	COMMENTED OUT UNTIL PROV TAB IS ADDED: 
-..	You can also attach provenance to your data file later on by clicking the "Add Provenance" button on the file page, under the Provenance tab: 
-..
+..	You can also attach provenance to your data file later on by clicking the "Add Provenance" button on the file page, under the Provenance tab:
+................................................................................................................................................
 ..	**(Insert screenshot of Provenance Tab's "Add Provenance button" here, once that functionality is developed)**
 
 .. COMMENTED OUT UNTIL PROV GRAPH IS ADDED: 
