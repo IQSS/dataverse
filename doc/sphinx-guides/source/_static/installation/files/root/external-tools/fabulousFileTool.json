@@ -1,6 +1,6 @@
 {
   "displayName": "Fabulous File Tool",
-  "description": "Fabulous Fun for Files!",
+  "description": "A non-existent tool that is fabulous fun for files!",
   "toolName": "fabulous",
   "scope": "file",
   "types": [
@@ -9,13 +9,25 @@
   ],
   "toolUrl": "https://fabulousfiletool.com",
   "contentType": "text/tab-separated-values",
+  "httpMethod":"GET",
   "toolParameters": {
     "queryParameters": [
       {
         "fileid": "{fileId}"
       },
       {
-        "key": "{apiToken}"
+        "datasetPid": "{datasetPid}"
+      },
+      {
+        "locale":"{localeCode}"
+      }
+    ],
+    "allowedApiCalls": [
+      {
+        "name":"retrieveDataFile",
+        "httpMethod":"GET",
+        "urlTemplate":"/api/v1/access/datafile/{fileId}",
+        "timeOut":270
       }
     ]
   }
