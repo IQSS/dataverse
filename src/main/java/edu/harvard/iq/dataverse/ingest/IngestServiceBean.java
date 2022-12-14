@@ -241,6 +241,45 @@ public class IngestServiceBean {
 						savedSuccess = true;
 						logger.fine("Success: permanently saved file " + dataFile.getFileMetadata().getLabel());
 
+                                            // TODO: reformat this file to remove the many tabs added in cc08330
+                                            InputStream inputStream = null;
+                                            if (tempLocationPath != null) {
+                                                try ( NetcdfFile netcdfFile = NetcdfFiles.open(tempLocationPath.toString())) {
+                                                    if (netcdfFile != null) {
+                                                        // For now, empty string. What should we pass as a URL to toNcml()? The filename (including the path) most commonly at https://docs.unidata.ucar.edu/netcdf-java/current/userguide/ncml_cookbook.html
+                                                        // With an empty string the XML will show 'location="file:"'.
+                                                        String ncml = netcdfFile.toNcml("");
+                                                        inputStream = new ByteArrayInputStream(ncml.getBytes(StandardCharsets.UTF_8));
+                                                    } else {
+                                                        logger.info("NetcdfFiles.open() could open file id " + dataFile.getId() + " (null returned).");
+                                                    }
+                                                } catch (IOException ex) {
+                                                    logger.info("NetcdfFiles.open() could open file id " + dataFile.getId() + ". Exception caught: " + ex);
+                                                }
+                                            } else {
+                                                logger.info("tempLocationPath is null for file id " + dataFile.getId() + ". Can't extract NcML.");
+                                            }
+                                            if (inputStream != null) {
+                                                // If you change NcML, you must also change the previewer.
+                                                String formatTag = "NcML";
+                                                // 0.1 is arbitrary. It's our first attempt to put out NcML so we're giving it a low number.
+                                                // If you bump the number here, be sure the bump the number in the previewer as well.
+                                                // We could use 2.2 here since that's the current version of NcML.
+                                                String formatVersion = "0.1";
+                                                String origin = "netcdf-java";
+                                                boolean isPublic = true;
+                                                // See also file.auxfiles.types.NcML in Bundle.properties. Used to group aux files in UI.
+                                                String type = "NcML";
+                                                // XML because NcML doesn't have its own MIME/content type at https://www.iana.org/assignments/media-types/media-types.xhtml
+                                                MediaType mediaType = new MediaType("text", "xml");
+                                                try {
+                                                    AuxiliaryFile auxFile = auxiliaryFileService.processAuxiliaryFile(inputStream, dataFile, formatTag, formatVersion, origin, isPublic, type, mediaType, false);
+                                                    logger.fine ("Aux file extracted from NetCDF/HDF5 file saved to storage (but not to the database yet) from file id  " + dataFile.getId());
+                                                } catch (Exception ex) {
+                                                    logger.info("exception throw calling processAuxiliaryFile: " + ex);
+                                                }
+                                            }
+
 					} catch (IOException ioex) {
                     logger.warning("Failed to save the file, storage id " + dataFile.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
 					} finally {
@@ -302,6 +341,7 @@ public class IngestServiceBean {
 					// Any necessary post-processing:
 					// performPostProcessingTasks(dataFile);
 				} else {
+                                    System.out.println("driver is not tmp");
 					try {
 						StorageIO<DvObject> dataAccess = DataAccess.getStorageIO(dataFile);
 						//Populate metadata
@@ -573,58 +613,6 @@ public class IngestServiceBean {
         }
         
         return sb.toString();
-    }
-
-    // Note: There is another method called extractMetadata for FITS files.
-    public void extractMetadata(Dataset dataset, AuthenticatedUser user) {
-        for (DataFile dataFile : dataset.getFiles()) {
-            Path pathToLocalDataFile = null;
-            try {
-                pathToLocalDataFile = dataFile.getStorageIO().getFileSystemPath();
-            } catch (IOException ex) {
-                logger.info("Exception calling dataAccess.getFileSystemPath: " + ex);
-            }
-            InputStream inputStream = null;
-            if (pathToLocalDataFile != null) {
-                try ( NetcdfFile netcdfFile = NetcdfFiles.open(pathToLocalDataFile.toString())) {
-                    if (netcdfFile != null) {
-                        // TODO: What should we pass as a URL to toNcml()?
-                        String ncml = netcdfFile.toNcml("FIXME_URL");
-                        inputStream = new ByteArrayInputStream(ncml.getBytes(StandardCharsets.UTF_8));
-                    } else {
-                        logger.info("NetcdfFiles.open() could open file id " + dataFile.getId() + " (null returned).");
-                    }
-                } catch (IOException ex) {
-                    logger.info("NetcdfFiles.open() could open file id " + dataFile.getId() + ". Exception caught: " + ex);
-                }
-            } else {
-                logger.info("pathToLocalDataFile is null! Are you on S3? Metadata extraction from NetCDF/HDF5 is not yet available.");
-                // As a tabular file, we'll probably need to download the NetCDF/HDF5 files from S3 and then try to extra the metadata,
-                // unless we can get some sort of S3 interface working:
-                // https://docs.unidata.ucar.edu/netcdf-java/current/userguide/dataset_urls.html#object-stores
-                // If we need to download the file and extract only some of the bytes (hopefully the first bytes) here's the spec for NetCDF:
-                // https://docs.unidata.ucar.edu/netcdf-c/current/file_format_specifications.html
-            }
-            if (inputStream != null) {
-                // TODO: What should the tag be?
-                String formatTag = "ncml";
-                // TODO: What should the version be?
-                String formatVersion = "0.1";
-                // TODO: What should the origin be?
-                String origin = "myOrigin";
-                boolean isPublic = true;
-                // TODO: What should the type be?
-                String type = "myType";
-                // TODO: Does NcML have its own content type? (MIME type)
-                MediaType mediaType = new MediaType("text", "xml");
-                try {
-                    AuxiliaryFile auxFile = auxiliaryFileService.processAuxiliaryFile(inputStream, dataFile, formatTag, formatVersion, origin, isPublic, type, mediaType);
-                    logger.info("Aux file extracted from NetCDF/HDF5 file saved: " + auxFile);
-                } catch (Exception ex) {
-                    logger.info("exception throw calling processAuxiliaryFile: " + ex);
-                }
-            }
-        }
     }
 
     public void produceSummaryStatistics(DataFile dataFile, File generatedTabularFile) throws IOException {
@@ -1220,7 +1208,6 @@ public class IngestServiceBean {
      * extractMetadata: 
      * framework for extracting metadata from uploaded files. The results will 
      * be used to populate the metadata of the Dataset to which the file belongs. 
-     * Note that another method called extractMetadata creates aux files from data files.
     */
     public boolean extractMetadata(String tempFileLocation, DataFile dataFile, DatasetVersion editVersion) throws IOException {
         boolean ingestSuccessful = false;

@@ -45,7 +45,7 @@ public class NetcdfIT {
         uploadFile.then().assertThat().statusCode(OK.getStatusCode());
 
         long fileId = JsonPath.from(uploadFile.body().asString()).getLong("data.files[0].dataFile.id");
-        String tag = "ncml";
+        String tag = "NcML";
         String version = "0.1";
 
         Response downloadNcml = UtilIT.downloadAuxFile(fileId, tag, version, apiToken);
