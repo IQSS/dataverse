@@ -523,7 +523,7 @@ You can return to attach provenance to your data file later on by clicking the "
 
 ..	COMMENTED OUT UNTIL PROV TAB IS ADDED: 
 ..	You can also attach provenance to your data file later on by clicking the "Add Provenance" button on the file page, under the Provenance tab:
-................................................................................................................................................
+.. 
 ..	**(Insert screenshot of Provenance Tab's "Add Provenance button" here, once that functionality is developed)**
 
 .. COMMENTED OUT UNTIL PROV GRAPH IS ADDED: 
