@@ -32,10 +32,12 @@ import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
@@ -68,11 +70,13 @@ import java.io.StringReader;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.json.Json;
@@ -444,6 +448,8 @@ public abstract class AbstractApiBean {
             
             // TODO: Only usable for OIDC users for now, just look it up via the subject.
             //       This will need to be modified to provide mappings somehow for existing non-OIDC-users.
+            // TODO: If we keep the current login infrastructure alive, we should introduce a common static
+            //       method in OIDCAuthProvider to create the identifier in both places.
             AuthenticatedUser authUser = authSvc.getAuthenticatedUser(userInfo.getSubject().getValue());
             
             // TODO: this is code dup par excellence. Needs refactoring. Maybe fine for Proof-of-Concept.
@@ -499,7 +505,6 @@ public abstract class AbstractApiBean {
      * TODO: This is a proof of concept, providing value for IQSS#9229 and first steps for our SPA move. It ...
      *       - will need more tweaks (see inline comments),
      *       - should be extended to support JWT access tokens to avoid the extra detour to the OIDC provider,
-     *       - will need a feature flag activation either here or in calling code,
      *       - needs to be moved to a distinct place when we head for authentication filters in future iterations.
      * </p>
      *
@@ -509,30 +514,50 @@ public abstract class AbstractApiBean {
     UserInfo verifyOidcBearerToken(String token) throws WrappedResponse {
         try {
             BearerAccessToken accessToken = BearerAccessToken.parse(token);
+            
+            // Get list of all authentication providers using Open ID Connect
+            List<OIDCAuthProvider> providers = authSvc.getAuthenticationProviderIdsOfType(OIDCAuthProvider.class).stream()
+                .map(providerId -> (OIDCAuthProvider) authSvc.getAuthenticationProvider(providerId))
+                .collect(Collectors.toUnmodifiableList());
+            
+            // Iterate over all OIDC providers if multiple.
+            for (OIDCAuthProvider provider : providers) {
     
-            // Retrieve data of the user accessing the API from the provider.
-            // No need to introspect the token here, the userInfoRequest also validates the token, as the provider
-            // is the source of truth.
-            // TODO: retrieve the userinfo endpoint from the OIDC provider already present via AuthenticationServiceBean
-            HTTPResponse response = new UserInfoRequest(URI.create("http://localhost:8090/realms/master/protocol/openid-connect/userinfo"), accessToken)
-                .toHTTPRequest()
-                .send();
-
-            UserInfoResponse infoResponse = UserInfoResponse.parse(response);
+                // Retrieve data of the user accessing the API from the provider.
+                // No need to introspect the token here, the userInfoRequest also validates the token, as the provider
+                // is the source of truth.
+                try {
+                    HTTPResponse response = new UserInfoRequest(provider.getUserInfoEndpointURI(), accessToken)
+                        .toHTTPRequest()
+                        .send();
     
-            // If error, throw 401 error exception
-            if (! infoResponse.indicatesSuccess() ) {
-                ErrorObject error = infoResponse.toErrorResponse().getErrorObject();
-                // TODO: make the response more explaining?
-                throw new WrappedResponse(error(Status.UNAUTHORIZED, "Could not retrieve user info from provider"));
+                    UserInfoResponse infoResponse = UserInfoResponse.parse(response);
+    
+                    // If error, throw 401 error exception
+                    if (! infoResponse.indicatesSuccess() ) {
+                        ErrorObject error = infoResponse.toErrorResponse().getErrorObject();
+                        logger.log(Level.FINE,
+                            "UserInfo could not be retrieved by access token from provider {0}: {1}",
+                            new String[]{provider.getId(), error.getDescription()});
+                    // Success, simply return the user info
+                    } else {
+                        return infoResponse.toSuccessResponse().getUserInfo();
+                    }
+                } catch (ParseException | IOException e) {
+                    logger.log(Level.WARNING,
+                        "Could not retrieve user info for provider " + provider.getId() + ", skipping", e);
+                }
             }
-    
-            // Success --> return info
-            return infoResponse.toSuccessResponse().getUserInfo();
-        } catch (ParseException | IOException e) {
-            // TODO: make the response more explaining
-            throw new WrappedResponse(error(Status.UNAUTHORIZED, "Could not retrieve user info from provider"));
+        } catch (ParseException e) {
+            logger.log(Level.FINE, "Could not parse bearer access token", e);
+            throw new WrappedResponse(error(Status.UNAUTHORIZED, "Could not parse bearer access token"));
         }
+        
+        // No UserInfo returned means we have an invalid access token. (It could also mean we have no OIDC
+        // provider, but this would also mean this is an invalid request, as there will be no user available...)
+        // TODO: Should this include more details about the request?
+        logger.log(Level.FINE, "Unauthorized bearer access token detected");
+        throw new WrappedResponse(error(Status.UNAUTHORIZED, "Unauthorized bearer access token"));
     }
     
     protected Dataverse findDataverseOrDie( String dvIdtf ) throws WrappedResponse {
