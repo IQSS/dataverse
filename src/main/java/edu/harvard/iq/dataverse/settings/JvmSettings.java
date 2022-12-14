@@ -46,6 +46,10 @@ public enum JvmSettings {
     SCOPE_API(PREFIX, "api"),
     API_SIGNING_SECRET(SCOPE_API, "signing-secret"),
     
+    // FEATURE GATES SETTINGS
+    SCOPE_GATES(PREFIX, "feature"),
+    GATE_API_OIDC_ACCESS(SCOPE_GATES, "api-oidc-access"),
+    
     ;
     
     private static final String SCOPE_SEPARATOR = ".";
