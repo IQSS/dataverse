@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.settings;
 
 /**
- * <p>This enum holds so-called "feature gates" aka "feature flags". It can be used throughout the application
+ * <p>This enum holds so-called "feature flags" aka "feature gates", etc. It can be used throughout the application
  * to avoid activating or using experimental functionality or feature previews that are opt-in.</p>
  *
  * <p>The current implementation reuses {@link JvmSettings} to interpret any
@@ -9,26 +9,26 @@ package edu.harvard.iq.dataverse.settings;
  * (true == case-insensitive one of "true", "1", "YES", "Y", "ON") and hook into the usual settings system
  * (any MicroProfile Config Source available).</p>
  *
- * If you add any new gates, please add a setting in JvmSettings, think of a default status, add some Javadocs
- * about the gated feature and add a "@since" tag to make it easier to identify when a gate has been introduced.
+ * If you add any new flags, please add a setting in JvmSettings, think of a default status, add some Javadocs
+ * about the flagged feature and add a "@since" tag to make it easier to identify when a flag has been introduced.
  *
  */
-public enum FeatureGates {
+public enum FeatureFlags {
     
     /**
      * Enabling will unblock access to the API with an OIDC access token in addition to other available methods.
-     * @apiNote Open gate by setting "dataverse.feature.api-oidc-access"
+     * @apiNote Raise flag by setting "dataverse.feature.api-oidc-access"
      * @since Dataverse 5.13
-     * @see JvmSettings#GATE_API_OIDC_ACCESS
+     * @see JvmSettings#FLAG_API_OIDC_ACCESS
      */
-    API_OIDC_ACCESS(JvmSettings.GATE_API_OIDC_ACCESS, false),
+    API_OIDC_ACCESS(JvmSettings.FLAG_API_OIDC_ACCESS, false),
     
     ;
     
     final JvmSettings setting;
     final boolean defaultStatus;
     
-    FeatureGates(JvmSettings setting, boolean defaultStatus) {
+    FeatureFlags(JvmSettings setting, boolean defaultStatus) {
         this.setting = setting;
         this.defaultStatus = defaultStatus;
     }

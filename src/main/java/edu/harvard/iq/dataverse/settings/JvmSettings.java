@@ -46,9 +46,9 @@ public enum JvmSettings {
     SCOPE_API(PREFIX, "api"),
     API_SIGNING_SECRET(SCOPE_API, "signing-secret"),
     
-    // FEATURE GATES SETTINGS
-    SCOPE_GATES(PREFIX, "feature"),
-    GATE_API_OIDC_ACCESS(SCOPE_GATES, "api-oidc-access"),
+    // FEATURE FLAGS SETTINGS
+    SCOPE_FLAGS(PREFIX, "feature"),
+    FLAG_API_OIDC_ACCESS(SCOPE_FLAGS, "api-oidc-access"),
     
     ;
     
