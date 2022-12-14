@@ -1769,6 +1769,34 @@ production context! Rely on password alias, secrets directory or cloud based sou
 
 
 
+.. _feature-flags:
+
+Feature Flags
+-------------
+
+Certain features might be deactivated because they are experimental and/or opt-in. If you want to enable these, please
+find all known feature flags below. Any of these flags can be activated using a boolean value
+(case-insensitive, one of "true", "1", "YES", "Y", "ON") for the setting.
+
+.. list-table::
+    :widths: 35 50 15
+    :header-rows: 1
+    :align: left
+
+    * - Flag Name
+      - Description
+      - Default status
+    * - ``dataverse.feature.api-oidc-access``
+      - When using an :doc:`OIDC authentication provider <oidc>`, also enable using access tokens from it for API
+        authentication. Useful to integrate services or SPAs with the API when using cross-service logins.
+        Not usable for users from other authentication providers!
+      - Disabled
+
+**Note:** Can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
+``DATAVERSE_FEATURE_API_OIDC_ACCESS``.
+
+
+
 .. _:ApplicationServerSettings:
 
 Application Server Settings

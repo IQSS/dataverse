@@ -87,3 +87,9 @@ configuration option. For details, see :doc:`config`.
    In contrast to our :doc:`oauth2`, you can use multiple providers by creating distinct configurations enabled by
    the same technology and without modifying the Dataverse Software code base (standards for the win!).
 
+Limitations
+-----------
+
+Before Dataverse release 5.13, there was no option to use an Open ID Connect authentication provider with
+the "Authentication Code Flow" to access the API. As of this version, there is builtin experimental support for this.
+Please see the corresponding :ref:`feature flag <feature-flags>` to enable it.
