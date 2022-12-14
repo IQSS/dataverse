@@ -135,6 +135,7 @@ public class HarvestingServerIT {
     }
 
     private XmlPath validateOaiVerbResponse(Response oaiResponse, String verb) {
+        logger.info(verb+" response: "+oaiResponse.prettyPrint());
         // confirm that the response is in fact XML:
         XmlPath responseXmlPath = oaiResponse.getBody().xmlPath();
         assertNotNull(responseXmlPath);

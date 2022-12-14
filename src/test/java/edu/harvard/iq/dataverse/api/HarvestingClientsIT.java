@@ -203,6 +203,11 @@ public class HarvestingClientsIT {
         int i = 0;
         int maxWait=20; // a very conservative interval; this harvest has no business taking this long
         do {
+            // Give it an initial 1 sec. delay, to make sure the client state 
+            // has been updated in the database, which can take some appreciable 
+            // amount of time on a heavily-loaded server running a full suite of
+            // tests:
+            Thread.sleep(1000L);
             // keep checking the status of the client with the GET api:
             Response getClientResponse = given()
                 .get(clientApiPath);
@@ -226,7 +231,7 @@ public class HarvestingClientsIT {
                 assertEquals("Unexpected client status: "+clientStatus, "inActive", clientStatus);
                 
                 // b) Confirm that it has actually succeeded:
-                assertEquals("Last harvest not reported a success", "SUCCESS", responseJsonPath.getString("data.lastResult"));
+                assertEquals("Last harvest not reported a success (took "+i+" seconds)", "SUCCESS", responseJsonPath.getString("data.lastResult"));
                 String harvestTimeStamp = responseJsonPath.getString("data.lastHarvest");
                 assertNotNull(harvestTimeStamp); 
                 
@@ -240,7 +245,6 @@ public class HarvestingClientsIT {
                 // ok, it looks like the harvest has completed successfully.
                 break;
             }
-            Thread.sleep(1000L);
         } while (i<maxWait); 
         
         System.out.println("Waited " + i + " seconds for the harvest to complete.");
