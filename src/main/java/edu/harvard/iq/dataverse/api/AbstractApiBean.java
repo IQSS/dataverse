@@ -1,5 +1,12 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.nimbusds.oauth2.sdk.ErrorObject;
+import com.nimbusds.oauth2.sdk.ParseException;
+import com.nimbusds.oauth2.sdk.http.HTTPResponse;
+import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
+import com.nimbusds.openid.connect.sdk.UserInfoRequest;
+import com.nimbusds.openid.connect.sdk.UserInfoResponse;
+import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
@@ -25,10 +32,13 @@ import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
@@ -54,11 +64,16 @@ import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
+
+import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -78,6 +93,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -92,6 +108,7 @@ public abstract class AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(AbstractApiBean.class.getName());
     private static final String DATAVERSE_KEY_HEADER_NAME = "X-Dataverse-key";
+    private static final String OIDC_AUTH_SCHEME = "Bearer";
     private static final String PERSISTENT_ID_KEY=":persistentId";
     private static final String ALIAS_KEY=":alias";
     public static final String STATUS_ERROR = "ERROR";
@@ -426,6 +443,19 @@ public abstract class AbstractApiBean {
             if (authUser != null) {
                 return authUser;
             }
+        // TODO: Add feature flag barrier here!
+        } else if (getOidcBearerToken(httpRequest).isPresent()) {
+            UserInfo userInfo = verifyOidcBearerToken(getOidcBearerToken(httpRequest).get());
+            
+            // TODO: Only usable for OIDC users for now, just look it up via the subject.
+            //       This will need to be modified to provide mappings somehow for existing non-OIDC-users.
+            AuthenticatedUser authUser = authSvc.getAuthenticatedUser(userInfo.getSubject().getValue());
+            
+            // TODO: this is code dup par excellence. Needs refactoring. Maybe fine for Proof-of-Concept.
+            if (authUser != null) {
+                authUser = userSvc.updateLastApiUseTime(authUser);
+                return authUser;
+            }
         }
         //Just send info about the apiKey - workflow users will learn about invocationId elsewhere
         throw new WrappedResponse(badApiKey(null));
@@ -451,7 +481,65 @@ public abstract class AbstractApiBean {
         }
         return authUser;
     }
+    
+    /**
+     * Retrieve the raw, encoded token value from the Authorization Bearer HTTP header as defined in RFC 6750
+     * @param request The HTTP request coming in
+     * @return An {@link Optional} either empty if not present or the raw token from the header
+     */
+    Optional<String> getOidcBearerToken(HttpServletRequest request) {
+        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        
+        if (authHeader != null && authHeader.toLowerCase().startsWith(OIDC_AUTH_SCHEME.toLowerCase() + " ")) {
+            return Optional.of(authHeader.substring(OIDC_AUTH_SCHEME.length()+1));
+        } else {
+            return Optional.empty();
+        }
+    }
+    
+    
+    /**
+     * <p>Verify an OIDC access token by dealing the access token for a UserInfo object from the provider</p>
+     * <p>
+     * TODO: This is a proof of concept, providing value for IQSS#9229 and first steps for our SPA move. It ...
+     *       - will need more tweaks (see inline comments),
+     *       - should be extended to support JWT access tokens to avoid the extra detour to the OIDC provider,
+     *       - will need a feature flag activation either here or in calling code,
+     *       - needs to be moved to a distinct place when we head for authentication filters in future iterations.
+     * </p>
+     *
+     * @param token The string containing the encoded JWT
+     * @return
+     */
+    UserInfo verifyOidcBearerToken(String token) throws WrappedResponse {
+        try {
+            BearerAccessToken accessToken = BearerAccessToken.parse(token);
+    
+            // Retrieve data of the user accessing the API from the provider.
+            // No need to introspect the token here, the userInfoRequest also validates the token, as the provider
+            // is the source of truth.
+            // TODO: retrieve the userinfo endpoint from the OIDC provider already present via AuthenticationServiceBean
+            HTTPResponse response = new UserInfoRequest(URI.create("http://localhost:8090/realms/master/protocol/openid-connect/userinfo"), accessToken)
+                .toHTTPRequest()
+                .send();
 
+            UserInfoResponse infoResponse = UserInfoResponse.parse(response);
+    
+            // If error, throw 401 error exception
+            if (! infoResponse.indicatesSuccess() ) {
+                ErrorObject error = infoResponse.toErrorResponse().getErrorObject();
+                // TODO: make the response more explaining?
+                throw new WrappedResponse(error(Status.UNAUTHORIZED, "Could not retrieve user info from provider"));
+            }
+    
+            // Success --> return info
+            return infoResponse.toSuccessResponse().getUserInfo();
+        } catch (ParseException | IOException e) {
+            // TODO: make the response more explaining
+            throw new WrappedResponse(error(Status.UNAUTHORIZED, "Could not retrieve user info from provider"));
+        }
+    }
+    
     protected Dataverse findDataverseOrDie( String dvIdtf ) throws WrappedResponse {
         Dataverse dv = findDataverse(dvIdtf);
         if ( dv == null ) {
