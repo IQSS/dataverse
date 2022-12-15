@@ -5,14 +5,12 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Embargo;
 import edu.harvard.iq.dataverse.FileMetadata;
 
-import static edu.harvard.iq.dataverse.GlobalIdServiceBean.logger;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import java.io.BufferedReader;
 import java.io.File;
@@ -21,8 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.channels.Channel;
@@ -37,22 +33,20 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.core.MediaType;
 
-import org.apache.commons.collections.functors.WhileClosure;
 import org.apache.commons.io.IOUtils;
 
 /**
@@ -63,6 +57,7 @@ public class ExportService {
 
     private static ExportService service;
     private ServiceLoader<Exporter> loader;
+    private Map<String, Exporter> exporterMap = new HashMap<String, Exporter>();
 
     private static final Logger logger = Logger.getLogger(ExportService.class.getCanonicalName());
 
@@ -159,8 +154,14 @@ public class ExportService {
         }
         */
         loader = ServiceLoader.load(Exporter.class, cl);
+        // Fill exporterMap with displayName as the key
+        // Exporters loaded from the external jar files will take precedence if they use the same name as an internal one
         loader.forEach(exp -> {
-            logger.fine("SL: " + exp.getDisplayName());
+            String formatName = exp.getProviderName();
+            if(!exporterMap.containsKey(formatName) || exp.getClass().getClassLoader().equals(cl)) {
+                exporterMap.put(formatName, exp);
+            }
+            logger.fine("SL: " + exp.getProviderName() + " from " + exp.getClass().getCanonicalName());
         });
     }
 
@@ -173,14 +174,13 @@ public class ExportService {
 
     public List< String[]> getExportersLabels() {
         List<String[]> retList = new ArrayList<>();
-        Iterator<Exporter> exporters = ExportService.getInstance().loader.iterator();
-        while (exporters.hasNext()) {
-            Exporter e = exporters.next();
+        
+        exporterMap.values().forEach(exp -> {
             String[] temp = new String[2];
-            temp[0] = e.getDisplayName();
-            temp[1] = e.getProviderName();
+            temp[0] = exp.getDisplayName();
+            temp[1] = exp.getProviderName();
             retList.add(temp);
-        }
+        });
         return retList;
     }
 
@@ -313,13 +313,9 @@ public class ExportService {
             final JsonObjectBuilder datasetAsJsonBuilder = JsonPrinter.jsonAsDatasetDto(releasedVersion);
             JsonObject datasetAsJson = datasetAsJsonBuilder.build();
 
-            Iterator<Exporter> exporters = loader.iterator();
-            while (exporters.hasNext()) {
-                Exporter e = exporters.next();
+            for (Exporter e : exporterMap.values()) {
                 String formatName = e.getProviderName();
-
                 cacheExport(releasedVersion, formatName, datasetAsJson, e);
-
             }
             // Finally, if we have been able to successfully export in all available 
             // formats, we'll increment the "last exported" time stamp: 
@@ -336,11 +332,9 @@ public class ExportService {
 
     public void clearAllCachedFormats(Dataset dataset) throws IOException {
         try {
-            Iterator<Exporter> exporters = loader.iterator();
-            while (exporters.hasNext()) {
-                Exporter e = exporters.next();
-                String formatName = e.getProviderName();
 
+            for (Exporter e : exporterMap.values()) {
+                String formatName = e.getProviderName();
                 clearCachedExport(dataset, formatName);
             }
 
@@ -356,42 +350,30 @@ public class ExportService {
     // in a file in the dataset directory. 
     public void exportFormat(Dataset dataset, String formatName) throws ExportException {
         try {
-            Iterator<Exporter> exporters = loader.iterator();
-            while (exporters.hasNext()) {
-                Exporter e = exporters.next();
-                if (e.getProviderName().equals(formatName)) {
-                    DatasetVersion releasedVersion = dataset.getReleasedVersion();
-                    if (releasedVersion == null) {
-                        throw new IllegalStateException("No Released Version");
-                    }
-                    final JsonObjectBuilder datasetAsJsonBuilder = JsonPrinter.jsonAsDatasetDto(releasedVersion);
-                    cacheExport(releasedVersion, formatName, datasetAsJsonBuilder.build(), e);
+
+            Exporter e = exporterMap.get(formatName);
+            if (e != null) {
+                DatasetVersion releasedVersion = dataset.getReleasedVersion();
+                if (releasedVersion == null) {
+                    throw new IllegalStateException("No Released Version");
                 }
+                final JsonObjectBuilder datasetAsJsonBuilder = JsonPrinter.jsonAsDatasetDto(releasedVersion);
+                cacheExport(releasedVersion, formatName, datasetAsJsonBuilder.build(), e);
+                // As with exportAll, we should update the lastexporttime for the dataset
+                dataset.setLastExportTime(new Timestamp(new Date().getTime()));
+            } else {
+                throw new ExportException("Exporter not found");
             }
-        } catch (ServiceConfigurationError serviceError) {
-            throw new ExportException("Service configuration error during export. " + serviceError.getMessage());
         } catch (IllegalStateException e) {
             throw new ExportException("No published version found during export. " + dataset.getGlobalId().toString());
         }
-        
-        //As with exportAll, we should update the lastexporttime for the dataset
-        dataset.setLastExportTime(new Timestamp(new Date().getTime()));
+
     }
-    
 
     public Exporter getExporter(String formatName) throws ExportException {
-        try {
-            Iterator<Exporter> exporters = loader.iterator();
-            while (exporters.hasNext()) {
-                Exporter e = exporters.next();
-                if (e.getProviderName().equals(formatName)) {
-                    return e;
-                }
-            }
-        } catch (ServiceConfigurationError serviceError) {
-            throw new ExportException("Service configuration error during export. " + serviceError.getMessage());
-        } catch (Exception ex) {
-            throw new ExportException("Could not find Exporter \"" + formatName + "\", unknown exception");
+        Exporter e = exporterMap.get(formatName);
+        if (e != null) {
+            return e;
         }
         throw new ExportException("No such Exporter: " + formatName);
     }
@@ -507,33 +489,19 @@ public class ExportService {
 //        return null;
 //    }
     public Boolean isXMLFormat(String provider) {
-        try {
-            Iterator<Exporter> exporters = loader.iterator();
-            while (exporters.hasNext()) {
-                Exporter e = exporters.next();
-                if (e.getProviderName().equals(provider)) {
-                    return e.isXMLFormat();
-                }
-            }
-        } catch (ServiceConfigurationError serviceError) {
-            serviceError.printStackTrace();
+        Exporter e = exporterMap.get(provider);
+        if (e != null) {
+            return e.isXMLFormat();
         }
         return null;
     }
 
-	public String getMediaType(String provider) {
-		 try {
-	            Iterator<Exporter> exporters = loader.iterator();
-	            while (exporters.hasNext()) {
-	                Exporter e = exporters.next();
-	                if (e.getProviderName().equals(provider)) {
-	                    return e.getMediaType();
-	                }
-	            }
-	        } catch (ServiceConfigurationError serviceError) {
-	            serviceError.printStackTrace();
-	        }
-	        return MediaType.TEXT_PLAIN;
-	}
+    public String getMediaType(String provider) {
+        Exporter e = exporterMap.get(provider);
+        if (e != null) {
+            return e.getMediaType();
+        }
+        return MediaType.TEXT_PLAIN;
+    }
 
 }
