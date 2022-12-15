@@ -456,6 +456,8 @@ public abstract class AbstractApiBean {
             if (authUser != null) {
                 authUser = userSvc.updateLastApiUseTime(authUser);
                 return authUser;
+            } else {
+                throw new WrappedResponse(badOidcUser(userInfo.getSubject().getValue()));
             }
         }
         //Just send info about the apiKey - workflow users will learn about invocationId elsewhere
@@ -973,6 +975,10 @@ public abstract class AbstractApiBean {
     protected Response badWFKey( String wfId ) {
         String message = (wfId != null ) ? "Bad workflow invocationId " : "Please provide an invocationId query parameter (?invocationId=XXX) or via the HTTP header " + DATAVERSE_WORKFLOW_INVOCATION_HEADER_NAME;
         return error(Status.UNAUTHORIZED, message );
+    }
+
+    protected Response badOidcUser(String oicdUserId ) {
+        return error(Status.UNAUTHORIZED, "OIDC user with identifier " + oicdUserId + " is unknown");
     }
     
     protected Response permissionError( PermissionException pe ) {
