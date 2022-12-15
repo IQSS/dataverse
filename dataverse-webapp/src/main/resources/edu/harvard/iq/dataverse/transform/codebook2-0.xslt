@@ -197,21 +197,21 @@
                                     <xsl:element name="a">
                                         <xsl:attribute name="href">
                                             <xsl:value-of
-                                                    select="$filename"/>?part=1</xsl:attribute>Part 1: Document Description</xsl:element>
+                                                    select="$filename"/>#1.0</xsl:attribute>Part 1: Document Description</xsl:element>
                                     <br/>
                                 </xsl:if>
                                 <xsl:if test="stdyDscr">
                                     <xsl:element name="a">
                                         <xsl:attribute name="href">
                                             <xsl:value-of
-                                                    select="$filename"/>?part=2</xsl:attribute>Part 2: Study Description</xsl:element>
+                                                    select="$filename"/>#2.0</xsl:attribute>Part 2: Study Description</xsl:element>
                                     <br/>
                                 </xsl:if>
                                 <xsl:if test="fileDscr">
                                     <xsl:element name="a">
                                         <xsl:attribute name="href">
                                             <xsl:value-of
-                                                    select="$filename"/>?part=3</xsl:attribute>Part 3: Data
+                                                    select="$filename"/>#3.0</xsl:attribute>Part 3: Data
                                         Files Description</xsl:element>
                                     <br/>
                                 </xsl:if>
@@ -219,21 +219,21 @@
                                     <xsl:element name="a">
                                         <xsl:attribute name="href">
                                             <xsl:value-of
-                                                    select="$filename"/>?part=4</xsl:attribute>Part 4: Variable Description</xsl:element>
+                                                    select="$filename"/>#4.0</xsl:attribute>Part 4: Variable Description</xsl:element>
                                     <br/>
                                 </xsl:if>
                                 <xsl:if test="otherMat">
                                     <xsl:element name="a">
                                         <xsl:attribute name="href">
                                             <xsl:value-of
-                                                    select="$filename"/>?part=5</xsl:attribute>Part 5: Other
+                                                    select="$filename"/>#5.0</xsl:attribute>Part 5: Other
                                         Study-Related Materials</xsl:element>
                                     <br/>
                                 </xsl:if>
                                 <xsl:element name="a">
                                     <xsl:attribute name="href">
                                         <xsl:value-of
-                                                select="$filename"/>?part=0</xsl:attribute>Entire Codebook</xsl:element>
+                                                select="$filename"/></xsl:attribute>Entire Codebook</xsl:element>
                             </p>
                         </td>
                     </tr>
@@ -1751,7 +1751,7 @@
         <tr class="h1">
             <th colspan="2">
                 <p><xsl:if test="@ID"><a name="{@ID}" /></xsl:if>
-                    <a name="a4.0">Variable Description</a>
+                    <a name="4.0">Variable Description</a>
                 </p>
             </th>
         </tr>
