@@ -492,7 +492,7 @@ public abstract class AbstractApiBean {
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         
         if (authHeader != null && authHeader.toLowerCase().startsWith(OIDC_AUTH_SCHEME.toLowerCase() + " ")) {
-            return Optional.of(authHeader.substring(OIDC_AUTH_SCHEME.length()+1));
+            return Optional.of(authHeader);
         } else {
             return Optional.empty();
         }
