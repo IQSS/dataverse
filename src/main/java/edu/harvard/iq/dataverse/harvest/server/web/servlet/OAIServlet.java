@@ -96,9 +96,15 @@ public class OAIServlet extends HttpServlet {
     // be calling ListIdentifiers, and then making direct calls to the export 
     // API of the remote Dataverse, to obtain the records in native json. This 
     // is how we should have implemented this in the first place, really. 
+    /*
+    SEK
+     per #3621 we are adding urls to the namespace and schema
+     These will not resolve presently. the change is so that the
+     xml produced by  https://demo.dataverse.org/oai?verb=ListMetadataFormats will validate
+    */
     private static final String DATAVERSE_EXTENDED_METADATA_FORMAT = "dataverse_json";
-    private static final String DATAVERSE_EXTENDED_METADATA_NAMESPACE = "Custom Dataverse metadata in JSON format (Dataverse4 to Dataverse4 harvesting only)";
-    private static final String DATAVERSE_EXTENDED_METADATA_SCHEMA = "JSON schema pending";     
+    private static final String DATAVERSE_EXTENDED_METADATA_NAMESPACE = "https://dataverse.org/schema/core";
+    private static final String DATAVERSE_EXTENDED_METADATA_SCHEMA = "https://dataverse.org/schema/core.xsd";     
     
     private Context xoaiContext;
     private SetRepository setRepository;
