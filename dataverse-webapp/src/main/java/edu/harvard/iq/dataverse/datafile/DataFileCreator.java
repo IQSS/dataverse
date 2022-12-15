@@ -107,7 +107,7 @@ public class DataFileCreator {
 
 
         IngestError errorKey = null;
-        long zipFileUnpackFilesLimit = settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.ZipUploadFilesLimit);
+        Long zipFileUnpackFilesLimit = settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.ZipUploadFilesLimit);
 
         if (finalType.equals("application/fits-gzipped")) {
             // if this is a gzipped FITS file, we'll uncompress it, and ingest it as
@@ -164,8 +164,8 @@ public class DataFileCreator {
 
         if (errorKey != null) {
 
-            if (errorKey.equals(IngestError.UNZIP_FILE_LIMIT_FAIL) && fileSizeLimit != null) {
-                datafile.setIngestReport(createIngestFailureReport(datafile, errorKey, fileSizeLimit.toString()));
+            if (errorKey.equals(IngestError.UNZIP_FILE_LIMIT_FAIL) && zipFileUnpackFilesLimit != null) {
+                datafile.setIngestReport(createIngestFailureReport(datafile, errorKey, zipFileUnpackFilesLimit.toString()));
             } else {
                 datafile.setIngestReport(createIngestFailureReport(datafile, errorKey));
             }
