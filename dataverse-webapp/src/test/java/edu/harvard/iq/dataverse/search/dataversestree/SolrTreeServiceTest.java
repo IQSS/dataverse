@@ -8,10 +8,6 @@ import edu.harvard.iq.dataverse.search.query.PermissionFilterQueryBuilder;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrDocumentList;
-import org.apache.solr.common.util.NamedList;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,6 +22,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static edu.harvard.iq.dataverse.search.MockSolrResponseUtil.createSolrResponse;
+import static edu.harvard.iq.dataverse.search.MockSolrResponseUtil.document;
+import static edu.harvard.iq.dataverse.search.MockSolrResponseUtil.field;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.Mockito.when;
@@ -46,7 +45,7 @@ class SolrTreeServiceTest {
     private PermissionServiceBean permissionService;
 
     @Mock
-    private PermissionServiceBean.StaticPermissionQuery permissionQuery;
+    private PermissionServiceBean.RequestPermissionQuery permissionQuery;
 
     // -------------------- TESTS --------------------
 
@@ -57,7 +56,7 @@ class SolrTreeServiceTest {
                 document(field("entityId", 321L), field("path", "/1/323/22")),
                 document(field("entityId", 322L), field("path", "/1/323")),
                 document(field("entityId", 323L), field("path", "/1"))));
-        when(permissionService.userOn(Mockito.any(), Mockito.any())).thenReturn(permissionQuery);
+        when(permissionService.requestOn(Mockito.any(), Mockito.any())).thenReturn(permissionQuery);
         when(dataverseDao.findRootDataverse()).thenReturn(MocksFactory.makeDataverse());
         DataverseRequest request = new DataverseRequest(MocksFactory.makeAuthenticatedUser("First", "Last"),
                 (HttpServletRequest) null);
@@ -105,26 +104,6 @@ class SolrTreeServiceTest {
     }
 
     // -------------------- PRIVATE --------------------
-
-    private QueryResponse createSolrResponse(SolrDocument... documents) {
-        QueryResponse response = new QueryResponse();
-        NamedList<Object> entries = new NamedList<>();
-        SolrDocumentList solrDocuments = new SolrDocumentList();
-        solrDocuments.addAll(Arrays.asList(documents));
-        entries.add("response", solrDocuments);
-        response.setResponse(entries);
-        return response;
-    }
-
-    @SafeVarargs
-    private static SolrDocument document(Tuple2<String, Object>... fields) {
-        return new SolrDocument(Arrays.stream(fields)
-                .collect(Collectors.toMap(Tuple2::_1, Tuple2::_2)));
-    }
-
-    private static Tuple2<String, Object> field(String name, Object value) {
-        return Tuple.of(name, value);
-    }
 
     private static Tuple2<Long, NodePermission> viewable(Long id) {
         return Tuple.of(id, NodePermission.VIEW);

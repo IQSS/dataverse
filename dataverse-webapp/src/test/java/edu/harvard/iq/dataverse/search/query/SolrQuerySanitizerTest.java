@@ -64,7 +64,7 @@ public class SolrQuerySanitizerTest {
     @MethodSource("provideRorQueryThatShouldChange")
     public void sanitizeRorQuery(String input, String expected) {
         // when & then
-        assertEquals(expected, querySanitizer.sanitizeRorQuery(input));
+        assertEquals(expected, querySanitizer.removeSolrSpecialChars(input));
     }
 
     @Test

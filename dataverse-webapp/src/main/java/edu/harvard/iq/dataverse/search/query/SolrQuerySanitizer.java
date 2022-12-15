@@ -43,17 +43,12 @@ public class SolrQuerySanitizer {
         return query;
     }
 
-    public String sanitizeRorQuery(String query) {
+    public String removeSolrSpecialChars(String query) {
         StringBuilder transformedQuery = new StringBuilder();
 
-        for (int i=0; i<query.length(); ++i) {
+        for (int i=0; i < query.length(); ++i) {
             char currentChar = query.charAt(i);
-
-            if (SOLR_SPECIAL_CHARACTERS.contains(currentChar)) {
-                transformedQuery.append(' ');
-            } else {
-                transformedQuery.append(currentChar);
-            }
+            transformedQuery.append(SOLR_SPECIAL_CHARACTERS.contains(currentChar) ? ' ' : currentChar);
         }
 
         return transformedQuery.toString();

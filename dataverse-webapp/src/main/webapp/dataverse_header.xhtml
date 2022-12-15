@@ -446,8 +446,37 @@
     </div>
     <p:dialog id="createDataset" header="#{bundle['add.dataset.dialog.header']}" widgetVar="createDatasetDialog" modal="true">
         <div class="container">
-            <div class="row">
-                <h:form id="tree-dialog">
+            <h:form id="tree-dialog">
+                <div class="row">
+                    <label class="col-md-4">
+                        #{bundle['add.dataset.dialog.tree.label']}
+                    </label>
+                    <div class="col-md-8">
+                        <p:autoComplete id="selectDataverse"
+                                        multiple="false" scrollHeight="180"
+                                        forceSelection="true"
+                                        minQueryLength="3" queryDelay="1000" size="36"
+                                        emptyMessage="#{bundle['dashboard.datamove.dataset.menu.invalidMsg']}"
+                                        completeMethod="#{CreateDatasetDialog.fetchLookupData}"
+                                        var="selected" styleClass="DropdownPopup"
+                                        panelStyleClass="DropdownPopupPanel">
+                            <p:column>
+                                <h:outputText value="#{selected.identifier}" escape="false"/>
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{selected.name}" escape="false"/>
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{not empty selected.upperParentName
+                                ? ''.concat(selected.upperParentName).concat('/').concat(selected.parentName) : selected.parentName}"
+                                              escape="false"/>
+                            </p:column>
+                            <p:ajax process="@this" event="itemSelect"/>
+                            <p:ajax process="@this" event="itemUnselect"/>
+                        </p:autoComplete>
+                    </div>
+                </div>
+                <div class="row">
                     <label class="col-md-4">
                         #{bundle['add.dataset.dialog.tree.label']}
                     </label>
@@ -455,7 +484,7 @@
                         <p:outputPanel styleClass="scrollable-panel">
                             <p:tree value="#{CreateDatasetDialog.rootNode}" var="node" styleClass="no-border"
                                     dynamic="true" selectionMode="single" selection="#{CreateDatasetDialog.selectedNode}"
-                                    animate="true">
+                                    animate="true" style="width:100%">
                                 <p:ajax event="expand" listener="#{CreateDatasetDialog.onNodeExpand}" />
                                 <p:treeNode>
                                     <h:outputText value="#{node.name}"/>
@@ -463,8 +492,8 @@
                             </p:tree>
                         </p:outputPanel>
                     </div>
-                </h:form>
-            </div>
+                </div>
+            </h:form>
         </div>
     </p:dialog>
 </ui:composition>

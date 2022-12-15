@@ -44,7 +44,7 @@ class RorSolrDataFinderTest {
 
         //when
         Mockito.when(solrClient.query(Mockito.any())).thenReturn(queryResponse);
-        Mockito.when(solrQuerySanitizer.sanitizeRorQuery(searchPhrase)).thenReturn(searchPhrase);
+        Mockito.when(solrQuerySanitizer.removeSolrSpecialChars(searchPhrase)).thenReturn(searchPhrase);
         solrDataFinder.findRorData(searchPhrase, 15);
 
         //then
@@ -62,7 +62,7 @@ class RorSolrDataFinderTest {
 
         //when
         Mockito.when(solrClient.query(Mockito.any())).thenReturn(queryResponse);
-        Mockito.when(solrQuerySanitizer.sanitizeRorQuery(searchPhrase)).thenReturn(searchPhrase);
+        Mockito.when(solrQuerySanitizer.removeSolrSpecialChars(searchPhrase)).thenReturn(searchPhrase);
         solrDataFinder.findRorData(searchPhrase, 15);
 
         //then

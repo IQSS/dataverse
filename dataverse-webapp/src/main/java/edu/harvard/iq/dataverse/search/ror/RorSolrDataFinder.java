@@ -27,7 +27,7 @@ public class RorSolrDataFinder {
 
     public List<RorDto> findRorData(String searchPhrase, int maxResultsCount) {
         StringBuilder queryBuilder = new StringBuilder();
-        String cleanQuery = solrQuerySanitizer.sanitizeRorQuery(searchPhrase);
+        String cleanQuery = solrQuerySanitizer.removeSolrSpecialChars(searchPhrase);
 
         String[] slicedPhrases = StringUtils.split(cleanQuery);
 

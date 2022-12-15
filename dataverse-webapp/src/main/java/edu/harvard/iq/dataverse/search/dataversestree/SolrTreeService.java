@@ -62,7 +62,7 @@ public class SolrTreeService {
             logger.warn("Error during permissions fetching: ", ex);
             return new NodesInfo(Collections.emptyMap(), Collections.emptySet(), null);
         }
-        return createNodeInfo(dataverseRequest, queryResponse);
+        return createNodesInfo(dataverseRequest, queryResponse);
     }
 
     public List<NodeData> fetchNodes(Long nodeId, NodesInfo nodesInfo) {
@@ -92,7 +92,7 @@ public class SolrTreeService {
         return solrClient.query(query);
     }
 
-    private NodesInfo createNodeInfo(DataverseRequest dataverseRequest, QueryResponse queryResponse) {
+    private NodesInfo createNodesInfo(DataverseRequest dataverseRequest, QueryResponse queryResponse) {
         Set<Long> allowedToSelect = new HashSet<>();
         Set<Long> allowedToView = new HashSet<>();
         for (SolrDocument solrDocument : queryResponse.getResults()) {
@@ -113,7 +113,7 @@ public class SolrTreeService {
             result.put(id, NodePermission.VIEW);
         }
         Dataverse root = dataverseDao.findRootDataverse();
-        if (permissionService.userOn(dataverseRequest.getUser(), root)
+        if (permissionService.requestOn(dataverseRequest, root)
                 .has(Permission.AddDataset)) {
             result.put(root.getId(), NodePermission.SELECT);
         }

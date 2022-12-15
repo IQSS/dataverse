@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.search.dataverselookup.DataverseLookupService;
+import edu.harvard.iq.dataverse.search.dataverselookup.LookupData;
 import edu.harvard.iq.dataverse.search.dataversestree.NodeData;
 import edu.harvard.iq.dataverse.search.dataversestree.NodesInfo;
 import edu.harvard.iq.dataverse.search.dataversestree.SolrTreeService;
@@ -15,24 +17,32 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Currently this bean is only scaffolding for subsequent tasks.
+ */
 @ViewScoped
 @Named("CreateDatasetDialog")
 public class CreateDatasetDialog implements Serializable {
     private SolrTreeService solrTreeService;
     private DataverseRequestServiceBean dataverseRequestService;
+    private DataverseLookupService dataverseLookupService;
 
     private NodesInfo nodesInfo = new NodesInfo(Collections.emptyMap(), Collections.emptySet(), null);
     private TreeNode rootNode = new DefaultTreeNode(new NodeData(null, "TreeRoot", true, false));
     private TreeNode selectedNode;
+
+    private DataverseLookupService.LookupPermissions lookupPermissions;
 
     // -------------------- CONSTRUCTORS --------------------
 
     public CreateDatasetDialog() { }
 
     @Inject
-    public CreateDatasetDialog(SolrTreeService solrTreeService, DataverseRequestServiceBean dataverseRequestService) {
+    public CreateDatasetDialog(SolrTreeService solrTreeService, DataverseRequestServiceBean dataverseRequestService,
+                               DataverseLookupService dataverseLookupService) {
         this.solrTreeService = solrTreeService;
         this.dataverseRequestService = dataverseRequestService;
+        this.dataverseLookupService = dataverseLookupService;
     }
 
     // -------------------- GETTERS --------------------
@@ -49,6 +59,8 @@ public class CreateDatasetDialog implements Serializable {
 
     @PostConstruct
     public void init() {
+        // TODO: Run code below only when the dialog window is shown
+        lookupPermissions = dataverseLookupService.createLookupPermissions(dataverseRequestService.getDataverseRequest());
         nodesInfo = solrTreeService.fetchNodesInfo(dataverseRequestService.getDataverseRequest());
         TreeNode firstNode = new DefaultTreeNode(new NodeData(nodesInfo.getRootNodeId(), "Root", true,
                 nodesInfo.isSelectable(nodesInfo.getRootNodeId())), rootNode);
@@ -60,6 +72,10 @@ public class CreateDatasetDialog implements Serializable {
         TreeNode selectedNode = event.getTreeNode();
         selectedNode.getChildren().clear(); // clear placeholders
         fetchChildNodes(selectedNode);
+    }
+
+    public List<LookupData> fetchLookupData(String query) {
+        return dataverseLookupService.fetchLookupData(query, lookupPermissions);
     }
 
     // -------------------- PRIVATE --------------------
