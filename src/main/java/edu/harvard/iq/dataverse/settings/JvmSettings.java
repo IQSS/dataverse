@@ -42,6 +42,10 @@ public enum JvmSettings {
     VERSION(PREFIX, "version"),
     BUILD(PREFIX, "build"),
     
+    // API SETTINGS
+    SCOPE_API(PREFIX, "api"),
+    API_SIGNING_SECRET(SCOPE_API, "signing-secret"),
+    
     // EXPORT SETTINGS
     SCOPE_EXPORTERS(PREFIX, "exporters"),
     EXPORTERS_DIRECTORY(SCOPE_EXPORTERS, "directory")
