@@ -70,7 +70,7 @@ public class SchemaDotOrgExporterTest {
     public void testExportDataset() throws Exception {
         File datasetVersionJson = new File("src/test/resources/json/dataset-finch2.json");
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
-        License license = new License("CC0 1.0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0/"), URI.create("/resources/images/cc0.png"), true);
+        License license = new License("CC0 1.0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0/"), URI.create("/resources/images/cc0.png"), true, 1l);
         license.setDefault(true);
 
         JsonReader jsonReader1 = Json.createReader(new StringReader(datasetVersionAsJson));
@@ -408,9 +408,10 @@ public class SchemaDotOrgExporterTest {
             new ControlledVocabularyValue(1l, "ark", publicationIdTypes),
             new ControlledVocabularyValue(2l, "arXiv", publicationIdTypes),
             new ControlledVocabularyValue(3l, "bibcode", publicationIdTypes),
-            new ControlledVocabularyValue(4l, "doi", publicationIdTypes),
-            new ControlledVocabularyValue(5l, "ean13", publicationIdTypes),
-            new ControlledVocabularyValue(6l, "handle", publicationIdTypes)
+            new ControlledVocabularyValue(4l, "cstr", publicationIdTypes),
+            new ControlledVocabularyValue(5l, "doi", publicationIdTypes),
+            new ControlledVocabularyValue(6l, "ean13", publicationIdTypes),
+            new ControlledVocabularyValue(7l, "handle", publicationIdTypes)
             // Etc. There are more.
         ));
         publicationChildTypes.add(datasetFieldTypeSvc.add(publicationIdTypes));

@@ -15,13 +15,13 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class UrlTokenUtilTest {
+class UrlTokenUtilTest {
 
     @Test
-    @JvmSetting(key = JvmSettings.SITE_URL, value = "https://foobar")
-    public void testGetToolUrlWithOptionalQueryParameters() {
+    @JvmSetting(key = JvmSettings.SITE_URL, value = "https://librascholar.org")
+    void testGetToolUrlWithOptionalQueryParameters() {
         // given
-        String siteUrl = "https://foobar";
+        String siteUrl = "https://librascholar.org";
         
         DataFile dataFile = new DataFile();
         dataFile.setId(42L);

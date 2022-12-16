@@ -129,7 +129,7 @@
  
     <properties>
         <!-- This is a special Maven property name, do not change! -->
-        <revision>5.12</revision>
+        <revision>5.12.1</revision>
     
         <target.java.version>11</target.java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -163,7 +163,7 @@
         <apache.httpcomponents.core.version>4.4.14</apache.httpcomponents.core.version>
         
         <!-- NEW gdcc XOAI library implementation -->
-        <gdcc.xoai.version>5.0.0-RC1</gdcc.xoai.version>
+        <gdcc.xoai.version>5.0.0-RC2</gdcc.xoai.version>
     
         <!-- Testing dependencies -->
         <testcontainers.version>1.15.0</testcontainers.version>
@@ -298,6 +298,11 @@
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
+        </repository>
+        <repository>
+            <id>unidata-all</id>
+            <name>Unidata All</name>
+            <url>https://artifacts.unidata.ucar.edu/repository/unidata-all/</url>
         </repository>
         <repository>
             <id>dvn.private</id>

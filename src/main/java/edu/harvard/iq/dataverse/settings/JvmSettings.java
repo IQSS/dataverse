@@ -44,6 +44,10 @@ public enum JvmSettings {
     FQDN(PREFIX, "fqdn"),
     SITE_URL(PREFIX, "siteUrl"),
     
+    // API SETTINGS
+    SCOPE_API(PREFIX, "api"),
+    API_SIGNING_SECRET(SCOPE_API, "signing-secret"),
+    
     ;
     
     private static final String SCOPE_SEPARATOR = ".";
