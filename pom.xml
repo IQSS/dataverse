@@ -25,6 +25,7 @@
         <jacoco.version>0.8.7</jacoco.version>
         <poi.version>5.2.1</poi.version>
         <tika.version>2.4.1</tika.version>
+        <netcdf.version>5.5.3</netcdf.version>
     </properties>
     
     <!-- Versions of dependencies used both directly and transitive are managed here.
@@ -493,7 +494,12 @@
           <artifactId>java-json-canonicalization</artifactId>
           <version>1.1</version>
         </dependency>
-        
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>cdm-core</artifactId>
+            <version>${netcdf.version}</version>
+        </dependency>
+
         <!-- TESTING DEPENDENCIES -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
