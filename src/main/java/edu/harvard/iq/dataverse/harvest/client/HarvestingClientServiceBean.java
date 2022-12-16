@@ -167,28 +167,20 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void setHarvestSuccess(Long hcId, Date currentTime, int harvestedCount, int failedCount, int deletedCount) {
-        HarvestingClient harvestingClient = em.find(HarvestingClient.class, hcId);
-        if (harvestingClient == null) {
-            return;
-        }
-        em.refresh(harvestingClient);
-        
-        ClientHarvestRun currentRun = harvestingClient.getLastRun();
-        
-        if (currentRun != null && currentRun.isInProgress()) {
-            // TODO: what if there's no current run in progress? should we just
-            // give up quietly, or should we make a noise of some kind? -- L.A. 4.4      
-            
-            currentRun.setSuccess();
-            currentRun.setFinishTime(currentTime);
-            currentRun.setHarvestedDatasetCount(new Long(harvestedCount));
-            currentRun.setFailedDatasetCount(new Long(failedCount));
-            currentRun.setDeletedDatasetCount(new Long(deletedCount));
-        }
+        recordHarvestJobStatus(hcId, currentTime, harvestedCount, failedCount, deletedCount, ClientHarvestRun.RunResultType.SUCCESS);
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void setHarvestFailure(Long hcId, Date currentTime) {
+    public void setHarvestFailure(Long hcId, Date currentTime, int harvestedCount, int failedCount, int deletedCount) {
+        recordHarvestJobStatus(hcId, currentTime, harvestedCount, failedCount, deletedCount, ClientHarvestRun.RunResultType.FAILURE);
+    } 
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void setPartiallyCompleted(Long hcId, Date finishTime, int harvestedCount, int failedCount, int deletedCount) {
+        recordHarvestJobStatus(hcId, finishTime, harvestedCount, failedCount, deletedCount, ClientHarvestRun.RunResultType.INTERRUPTED);
+    }
+    
+    public void recordHarvestJobStatus(Long hcId, Date finishTime, int harvestedCount, int failedCount, int deletedCount, ClientHarvestRun.RunResultType result) {
         HarvestingClient harvestingClient = em.find(HarvestingClient.class, hcId);
         if (harvestingClient == null) {
             return;
@@ -198,28 +190,40 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
         ClientHarvestRun currentRun = harvestingClient.getLastRun();
         
         if (currentRun != null && currentRun.isInProgress()) {
-            // TODO: what if there's no current run in progress? should we just
-            // give up quietly, or should we make a noise of some kind? -- L.A. 4.4      
             
-            currentRun.setFailed();
-            currentRun.setFinishTime(currentTime);
+            currentRun.setResult(result);
+            currentRun.setFinishTime(finishTime);
+            currentRun.setHarvestedDatasetCount(Long.valueOf(harvestedCount));
+            currentRun.setFailedDatasetCount(Long.valueOf(failedCount));
+            currentRun.setDeletedDatasetCount(Long.valueOf(deletedCount));
         }
-    }  
+    }
+    
+    public Long getNumberOfHarvestedDatasetsByAllClients() {
+        try {
+            return (Long) em.createNativeQuery("SELECT count(d.id) FROM dataset d "
+                    + " WHERE d.harvestingclient_id IS NOT NULL").getSingleResult();
+
+        } catch (Exception ex) {
+            logger.info("Warning: exception looking up the total number of harvested datasets: " + ex.getMessage());
+            return 0L;
+        }
+    }
     
     public Long getNumberOfHarvestedDatasetByClients(List<HarvestingClient> clients) {
-        String dvs = null; 
+        String clientIds = null; 
         for (HarvestingClient client: clients) {
-            if (dvs == null) {
-                dvs = client.getDataverse().getId().toString();
+            if (clientIds == null) {
+                clientIds = client.getId().toString();
             } else {
-                dvs = dvs.concat(","+client.getDataverse().getId().toString());
+                clientIds = clientIds.concat(","+client.getId().toString());
             }
         }
         
         try {
-            return (Long) em.createNativeQuery("SELECT count(d.id) FROM dataset d, "
-                    + " dvobject o WHERE d.id = o.id AND o.owner_id in (" 
-                    + dvs + ")").getSingleResult();
+            return (Long) em.createNativeQuery("SELECT count(d.id) FROM dataset d "
+                    + " WHERE d.harvestingclient_id in (" 
+                    + clientIds + ")").getSingleResult();
 
         } catch (Exception ex) {
             logger.info("Warning: exception trying to count harvested datasets by clients: " + ex.getMessage());
