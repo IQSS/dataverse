@@ -13,18 +13,6 @@ on:
 env:
     SHELLSPEC_VERSION: 0.28.1
 jobs:
-    shellcheck:
-        name: Shellcheck
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v2
-            - name: shellcheck
-              uses: reviewdog/action-shellcheck@v1
-              with:
-                  github_token: ${{ secrets.github_token }}
-                  reporter: github-pr-review # Change reporter.
-                  fail_on_error: true
-                  exclude: "./tests/shell/*"
     shellspec-ubuntu:
         name: "Ubuntu"
         runs-on: ubuntu-latest
