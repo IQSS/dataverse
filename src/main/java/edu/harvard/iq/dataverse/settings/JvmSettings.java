@@ -50,6 +50,10 @@ public enum JvmSettings {
     RSERVE_PASSWORD(SCOPE_RSERVE, "password"),
     RSERVE_TEMPDIR(SCOPE_RSERVE, "tempdir"),
     
+    // API SETTINGS
+    SCOPE_API(PREFIX, "api"),
+    API_SIGNING_SECRET(SCOPE_API, "signing-secret"),
+    
     ;
     
     private static final String SCOPE_SEPARATOR = ".";

@@ -130,7 +130,7 @@ public class FastGetRecord {
         int responseCode = 0;
 
         con = (HttpURLConnection) url.openConnection();
-        con.setRequestProperty("User-Agent", "DataverseHarvester/3.0");
+        con.setRequestProperty("User-Agent", "Dataverse Harvesting Client v5");
         con.setRequestProperty("Accept-Encoding",
                                    "compress, gzip, identify");
         try {
