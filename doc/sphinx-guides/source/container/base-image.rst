@@ -23,7 +23,7 @@ Supported Image Tags
 ++++++++++++++++++++
 
 This image is sourced from the main upstream code `repository of the Dataverse software <https://github.com/IQSS/dataverse>`_.
-Development and maintenance of the `image's code <https://github.com/IQSS/dataverse/tree/develop/modules/container-base>`
+Development and maintenance of the `image's code <https://github.com/IQSS/dataverse/tree/develop/modules/container-base>`_
 happens there (again, by the community). Community-supported image tags are based on the two most important
 upstream branches:
 
@@ -49,7 +49,7 @@ The base image provides:
 
 This image is created as a "multi-arch image", see :ref:`below <base-multiarch>`.
 
-It inherits being built on an Ubuntu environment from the upstream
+It inherits (is built on) an Ubuntu environment from the upstream
 `base image of Eclipse Temurin <https://hub.docker.com/_/eclipse-temurin>`_.
 You are free to change the JRE/JDK image to your liking (see below).
 
@@ -75,7 +75,7 @@ Some additional notes, using Maven parameters to change the build and use ...:
   | *Note:* default is ``develop``
 - | ... a different image name and tag: add ``-Dbase.image=name:tag``.
   | *Note:* default is ``gdcc/base:${base.image.tag}``
-- ... a different image registry than *Docker Hub*: add ``-Ddocker.registry=registry.example.org`` (see also
+- ... a different image registry than Docker Hub: add ``-Ddocker.registry=registry.example.org`` (see also
   `DMP docs on registries <https://dmp.fabric8.io/#registry>`__)
 - ... a different Payara version: add ``-Dpayara.version=V.YYYY.R``.
 - | ... a different Temurin JRE version ``A``: add ``-Dtarget.java.version=A`` (i.e. ``11``, ``17``, ...).
