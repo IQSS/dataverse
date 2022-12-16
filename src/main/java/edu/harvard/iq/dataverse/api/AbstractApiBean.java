@@ -380,7 +380,7 @@ public abstract class AbstractApiBean {
     protected User findUserOrDie() throws WrappedResponse {
         final String requestApiKey = getRequestApiKey();
         final String requestWFKey = getRequestWorkflowInvocationID();
-        if (requestApiKey == null && requestWFKey == null && getRequestParameter(UrlSignerUtil.SIGNED_URL_TOKEN)==null) {
+        if (requestApiKey == null && requestWFKey == null && getRequestParameter(UrlSignerUtil.SIGNED_URL_TOKEN)==null && !(FeatureFlags.API_OIDC_ACCESS.enabled() && getOidcBearerToken(httpRequest).isPresent())) {
             return GuestUser.get();
         }
         PrivateUrlUser privateUrlUser = privateUrlSvc.getPrivateUrlUserFromToken(requestApiKey);
@@ -456,6 +456,8 @@ public abstract class AbstractApiBean {
             if (authUser != null) {
                 authUser = userSvc.updateLastApiUseTime(authUser);
                 return authUser;
+            } else {
+                throw new WrappedResponse(badOidcUser(userInfo.getSubject().getValue()));
             }
         }
         //Just send info about the apiKey - workflow users will learn about invocationId elsewhere
@@ -492,7 +494,7 @@ public abstract class AbstractApiBean {
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         
         if (authHeader != null && authHeader.toLowerCase().startsWith(OIDC_AUTH_SCHEME.toLowerCase() + " ")) {
-            return Optional.of(authHeader.substring(OIDC_AUTH_SCHEME.length()+1));
+            return Optional.of(authHeader);
         } else {
             return Optional.empty();
         }
@@ -973,6 +975,10 @@ public abstract class AbstractApiBean {
     protected Response badWFKey( String wfId ) {
         String message = (wfId != null ) ? "Bad workflow invocationId " : "Please provide an invocationId query parameter (?invocationId=XXX) or via the HTTP header " + DATAVERSE_WORKFLOW_INVOCATION_HEADER_NAME;
         return error(Status.UNAUTHORIZED, message );
+    }
+
+    protected Response badOidcUser(String oicdUserId ) {
+        return error(Status.UNAUTHORIZED, "OIDC user with identifier " + oicdUserId + " is unknown");
     }
     
     protected Response permissionError( PermissionException pe ) {
