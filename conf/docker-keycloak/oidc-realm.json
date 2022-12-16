@@ -375,8 +375,8 @@
       "email": "test@test.com",
       "credentials": [
         {
-          "type": "keycloakuserpassword",
-          "value": "test"
+          "type": "password",
+          "value": "keycloakuserpassword"
         }
       ]
     }
