@@ -50,6 +50,10 @@ public enum JvmSettings {
     SOLR_CORE(SCOPE_SOLR, "core"),
     SOLR_PATH(SCOPE_SOLR, "path"),
     
+    // API SETTINGS
+    SCOPE_API(PREFIX, "api"),
+    API_SIGNING_SECRET(SCOPE_API, "signing-secret"),
+    
     ;
     
     private static final String SCOPE_SEPARATOR = ".";
