@@ -179,7 +179,7 @@ public class SettingsServiceBean {
          * @deprecated New installations should not use this database setting, but use {@link JvmSettings#SOLR_HOST}
          *             and {@link JvmSettings#SOLR_PORT}.
          */
-        @Deprecated(forRemoval = true, since = "2022-07-01")
+        @Deprecated(forRemoval = true, since = "2022-12-23")
         SolrHostColonPort,
         /** Enable full-text indexing in solr up to max file size */
         SolrFullTextIndexing, //true or false (default)

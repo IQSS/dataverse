@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
 
 @ExtendWith(MockitoExtension.class)
@@ -56,13 +57,41 @@ class SystemConfigTest {
     void testGetSolrHostColonPortDefault() {
         // given
         String hostPort = "localhost:8983";
-        
+    
         // when
         doReturn(null).when(settingsService).getValueForKey(SettingsServiceBean.Key.SolrHostColonPort);
         String result = systemConfig.getSolrHostColonPort();
-        
+    
         // then
         assertEquals(hostPort, result);
+    }
+    
+    @Test
+    void testGetVersion() {
+        // given
+        String version = "100.100";
+        System.setProperty(JvmSettings.VERSION.getScopedKey(), version);
+        
+        // when
+        String result = systemConfig.getVersion(false);
+        
+        // then
+        assertEquals(version, result);
+    }
+    
+    @Test
+    @JvmSetting(key = JvmSettings.VERSION, value = "100.100")
+    @JvmSetting(key = JvmSettings.BUILD, value = "FOOBAR")
+    void testGetVersionWithBuild() {
+        // when
+        String result = systemConfig.getVersion(true);
+    
+        // then
+        assertTrue(result.startsWith("100.100"), "'" + result + "' not starting with 100.100");
+        assertTrue(result.contains("build"));
+        
+        // Cannot test this here - there might be the bundle file present which is not under test control
+        //assertTrue(result.endsWith("FOOBAR"), "'" + result + "' not ending with FOOBAR");
     }
     
     @Test
