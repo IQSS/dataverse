@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.search.dataverselookup;
 
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.common.MarkupChecker;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
@@ -127,6 +128,28 @@ public class DataverseLookupService {
         Dataverse rootDataverse = dataverseDao.findRootDataverse();
         boolean rootPermitted = permissionService.requestOn(dataverseRequest, rootDataverse).has(Permission.AddDataset);
         return new LookupPermissions(permissionFilterQuery, rootPermitted);
+    }
+
+    public LookupData findDataverseByName(String itemName) {
+        itemName = MarkupChecker.stripAllTags(itemName);
+        if ("Root".equalsIgnoreCase(itemName)) {
+            return rootData;
+        }
+        String query = String.format("%s:\"%s\" AND %s:%s", SearchFields.NAME, itemName,
+                SearchFields.TYPE, SearchObjectType.DATAVERSES.getSolrValue());
+        SolrQuery solrQuery = new SolrQuery(query)
+                .setRows(1)
+                .setFields(SearchFields.ENTITY_ID, SearchFields.IDENTIFIER, SearchFields.NAME, SearchFields.PARENT_NAME);
+        QueryResponse response = querySolr(solrQuery);
+        if (response == null || response.getResults().size() < 1) {
+            return null;
+        }
+        SolrDocument result = response.getResults().get(0);
+        Long id = (Long) result.getFieldValue(SearchFields.ENTITY_ID);
+        String identifier = (String) result.getFieldValue(SearchFields.IDENTIFIER);
+        String name = (String) result.getFieldValue(SearchFields.NAME);
+        String parentName = (String) result.getFieldValue(SearchFields.PARENT_NAME);
+        return new LookupData(id, identifier, name, parentName, StringUtils.EMPTY);
     }
 
     // -------------------- PRIVATE --------------------

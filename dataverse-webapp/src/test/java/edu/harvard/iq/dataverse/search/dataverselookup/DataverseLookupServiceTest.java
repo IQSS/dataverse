@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse.search.dataverselookup;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.persistence.MocksFactory;
+import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.query.PermissionFilterQueryBuilder;
 import edu.harvard.iq.dataverse.search.query.SolrQuerySanitizer;
@@ -22,6 +24,7 @@ import static edu.harvard.iq.dataverse.search.MockSolrResponseUtil.field;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -89,6 +92,42 @@ class DataverseLookupServiceTest {
         // then
         assertThat(lookupPermissions.getPermissionFilterQuery()).isEqualTo("PERMISSION_QUERY");
         assertThat(lookupPermissions.isRootPermitted()).isTrue();
+    }
+
+    @Test
+    void findDataverseByName__rootDataverse() {
+        // given
+        Dataverse root = new Dataverse();
+        root.setId(1L);
+        when(dataverseDao.findRootDataverse()).thenReturn(root);
+        service.init();
+
+        // when
+        LookupData result = service.findDataverseByName("Root");
+
+        // then
+        assertThat(result).extracting(LookupData::getId, LookupData::getIdentifier, LookupData::getName)
+                .containsExactly(1L, "<b>root</b>", "<b>Root</b>");
+        verifyZeroInteractions(solrClient);
+    }
+
+    @Test
+    void findDataverseByName__nonRootDataverse_stripTagsFromName() throws Exception {
+        // given
+        when(solrClient.query(any())).thenReturn(
+                createSolrResponse(document(
+                        field(SearchFields.ENTITY_ID, 11L),
+                        field(SearchFields.IDENTIFIER, "testDv"),
+                        field(SearchFields.NAME, "Test dataverse"),
+                        field(SearchFields.PARENT_NAME, "Root"))));
+
+        // when
+        LookupData found = service.findDataverseByName("<b>Test</b> dataverse");
+
+        // then
+        assertThat(found)
+                .extracting(LookupData::getId, LookupData::getIdentifier, LookupData::getName, LookupData::getParentName)
+                .containsExactly(11L, "testDv", "Test dataverse", "Root");
     }
 
     // -------------------- PRIVATE --------------------

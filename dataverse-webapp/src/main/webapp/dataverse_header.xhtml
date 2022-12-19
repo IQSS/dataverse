@@ -12,6 +12,7 @@
     <!--@elvariable id="dataverse" type="edu.harvard.iq.dataverse.persistence.dataverse.Dataverse"-->
 
     <o:resourceInclude path="/CustomizationFilesServlet?customFileType=header" rendered="#{!widgetWrapper.widgetView}"/>
+    <o:importConstants type="edu.harvard.iq.dataverse.CreateDatasetDialog.Mode"/>
 
     <!-- Navbar Panel -->
     <div id="navbarFixed" class="navbar navbar-default navbar-fixed-top" jsf:rendered="#{!widgetWrapper.widgetView}">
@@ -66,13 +67,18 @@
             </div>
             <div class="collapse navbar-collapse" id="topNavBar">
                 <nav class="pull-right">
+                    <!-- This button had to be placed into a separate UL, as there were issues with the even positioning of all the buttons otherwise-->
                     <ul class="nav navbar-nav">
-                        <li jsf:rendered="#{dataverseSession.user.authenticated}">
-                            <p:commandLink oncomplete="primeFacesShowModal('createDatasetDialog', this)">
-                                <h:outputText value="#{bundle['add.dataset.button']}"/>
-                            </p:commandLink>
-                        </li>
-
+                            <li jsf:rendered="#{dataverseSession.user.authenticated}">
+                                <h:form styleClass="navbar-form navbar-left navbar-form-link">
+                                    <p:commandLink action="#{CreateDatasetDialog.init()}" update="create-dataset-dialog"
+                                                   oncomplete="primeFacesShowModal('createDatasetDialog', this)">
+                                        <h:outputText value="#{bundle['add.dataset.button']}"/>
+                                    </p:commandLink>
+                                </h:form>
+                            </li>
+                    </ul>
+                    <ul class="nav navbar-nav">
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown"
                                     aria-haspopup="true" aria-controls="navbarsearch-modal" aria-expanded="false">
@@ -444,54 +450,78 @@
             </div>
         </p:fragment>
     </div>
+
     <p:dialog id="createDataset" header="#{bundle['add.dataset.dialog.header']}" widgetVar="createDatasetDialog" modal="true">
-        <div class="container">
-            <h:form id="tree-dialog">
-                <div class="row">
-                    <label class="col-md-4">
-                        #{bundle['add.dataset.dialog.tree.label']}
-                    </label>
+        <div class="form-horizontal">
+            <h:form id="create-dataset-dialog">
+                <p>#{bundle['add.dataset.dialog.info']}</p>
+                <p:selectOneRadio id="modeSelection" value="#{CreateDatasetDialog.selectedMode}" layout="custom">
+                    <f:selectItem itemLabel="LOOKUP" itemValue="#{Mode.LOOKUP}"/>
+                    <f:selectItem itemLabel="TREE" itemValue="#{Mode.TREE}"/>
+                    <p:ajax update="selectDataverse,selectDvTree"/>
+                </p:selectOneRadio>
+                <div class="form-group">
+                    <p:radioButton id="lookup-radio" for="modeSelection" itemIndex="0"/>
+                    <p:outputLabel for="lookup-radio" styleClass="adjust-left" value="#{bundle['add.dataset.dialog.select.lookup']}" />
+                </div>
+                <div class="form-group">
                     <div class="col-md-8">
                         <p:autoComplete id="selectDataverse"
                                         multiple="false" scrollHeight="180"
-                                        forceSelection="true"
-                                        minQueryLength="3" queryDelay="1000" size="36"
-                                        emptyMessage="#{bundle['dashboard.datamove.dataset.menu.invalidMsg']}"
-                                        completeMethod="#{CreateDatasetDialog.fetchLookupData}"
+                                        value="#{CreateDatasetDialog.lookupSelection}"
                                         var="selected" styleClass="DropdownPopup"
-                                        panelStyleClass="DropdownPopupPanel">
-                            <p:column>
+                                        itemValue="#{selected}" itemLabel="#{CreateDatasetDialog.stripHtml(selected.name)}"
+                                        forceSelection="true"
+                                        placeholder="#{bundle['add.dataset.dialog.lookup.placeholder']}"
+                                        minQueryLength="3" queryDelay="1000" size="50"
+                                        completeMethod="#{CreateDatasetDialog.fetchLookupData}"
+                                        panelStyleClass="DropdownPopupPanel"
+                                        required="#{CreateDatasetDialog.selectedMode eq Mode.LOOKUP}"
+                                        requiredMessage="#{bundle['add.dataset.dialog.lookup.required']}"
+                                        disabled="#{CreateDatasetDialog.selectedMode ne Mode.LOOKUP}"
+                                        converter="dataverseLookupConverter">
+                            <p:column headerText="#{bundle['add.dataset.dialog.lookup.id']}">
                                 <h:outputText value="#{selected.identifier}" escape="false"/>
                             </p:column>
-                            <p:column>
+                            <p:column headerText="#{bundle['add.dataset.dialog.lookup.name']}">
                                 <h:outputText value="#{selected.name}" escape="false"/>
                             </p:column>
-                            <p:column>
+                            <p:column headerText="#{bundle['add.dataset.dialog.lookup.parents']}">
                                 <h:outputText value="#{not empty selected.upperParentName
-                                ? ''.concat(selected.upperParentName).concat('/').concat(selected.parentName) : selected.parentName}"
+                                    ? ''.concat(selected.upperParentName).concat('/').concat(selected.parentName) : selected.parentName}"
                                               escape="false"/>
                             </p:column>
-                            <p:ajax process="@this" event="itemSelect"/>
-                            <p:ajax process="@this" event="itemUnselect"/>
                         </p:autoComplete>
+                        <p:message id="lookupMsg" for="selectDataverse" styleClass="bg-danger text-danger" display="text"/>
                     </div>
                 </div>
-                <div class="row">
-                    <label class="col-md-4">
-                        #{bundle['add.dataset.dialog.tree.label']}
-                    </label>
-                    <div class="col-md-8">
-                        <p:outputPanel styleClass="scrollable-panel">
-                            <p:tree value="#{CreateDatasetDialog.rootNode}" var="node" styleClass="no-border"
-                                    dynamic="true" selectionMode="single" selection="#{CreateDatasetDialog.selectedNode}"
-                                    animate="true" style="width:100%">
-                                <p:ajax event="expand" listener="#{CreateDatasetDialog.onNodeExpand}" />
-                                <p:treeNode>
-                                    <h:outputText value="#{node.name}"/>
-                                </p:treeNode>
-                            </p:tree>
-                        </p:outputPanel>
-                    </div>
+                <div class="form-group">
+                    <p:radioButton id="tree-radio" for="modeSelection" itemIndex="1"/>
+                    <p:outputLabel for="tree-radio" styleClass="adjust-left" value=" #{bundle['add.dataset.dialog.select.tree']}" />
+                </div>
+                <div class="form-group">
+                    <p:tree id="selectDvTree" value="#{CreateDatasetDialog.rootNode}" var="node"
+                            styleClass="no-border full-width"
+                            dynamic="true" animate="true"
+                            selectionMode="single" selection="#{CreateDatasetDialog.selectedNode}"
+                            required="#{CreateDatasetDialog.selectedMode eq Mode.TREE}"
+                            requiredMessage="#{bundle['add.dataset.dialog.tree.required']}"
+                            disabled="#{CreateDatasetDialog.selectedMode ne Mode.TREE}">
+                        <p:ajax event="expand" listener="#{CreateDatasetDialog.onNodeExpand}" />
+                        <p:treeNode>
+                            <h:outputText value="#{node.name}"/>
+                        </p:treeNode>
+                    </p:tree>
+                    <p:message id="treeMsg" for="selectDvTree" styleClass="bg-danger text-danger" display="text"/>
+                </div>
+                <div class="row button-block">
+                    <p:commandButton value="#{bundle['add.dataset.dialog.button.create']}"
+                                     action="#{CreateDatasetDialog.createDataset()}" update="@form"
+                                     styleClass="btn btn-default btn-access"
+                                     oncomplete="if (args &amp;&amp; !args.validationFailed) PF('createDatasetDialog').hide();"/>
+                    <button type="button" onclick="PF('createDatasetDialog').hide()" class="btn btn-default" value="#{bundle.cancel}">
+                        #{bundle.cancel}
+                    </button>
                 </div>
             </h:form>
         </div>
