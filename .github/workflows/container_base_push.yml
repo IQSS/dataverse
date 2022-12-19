@@ -21,7 +21,6 @@ on:
 
 env:
     IMAGE_TAG: unstable
-    REGISTRY: docker.io
 
 jobs:
     build:
@@ -83,4 +82,4 @@ jobs:
               run: echo "IMAGE_TAG=stable"
             - if: ${{ github.event_name != 'pull_request' }}
               name: Deploy multi-arch base container image to Docker Hub
-              run: mvn -f modules/container-base -Pct deploy -Dbase.image.tag=${{ env.IMAGE_TAG }} -Ddocker.registry=${{ env.REGISTRY }}
+              run: mvn -f modules/container-base -Pct deploy -Dbase.image.tag=${{ env.IMAGE_TAG }}
