@@ -5,8 +5,8 @@ services:
   keycloak:
     image: 'jboss/keycloak:16.1.1'
     environment:
-      - KEYCLOAK_USER=keycloakadmin
-      - KEYCLOAK_PASSWORD=keycloakadminpassword
+      - KEYCLOAK_USER=kcadmin
+      - KEYCLOAK_PASSWORD=kcpassword
       - KEYCLOAK_IMPORT=/tmp/oidc-realm.json
       - KEYCLOAK_LOGLEVEL=DEBUG
     ports:

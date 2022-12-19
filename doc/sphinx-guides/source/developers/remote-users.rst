@@ -51,8 +51,8 @@ You should see the new provider, called “OIDC-Keycloak“, under “Other opti
 
 You should be able to log into Keycloak with the following credentials:
 
-- username: keycloakuser
-- password: keycloakuserpassword
+- username: kcuser
+- password: kcpassword
 
 In case you want to stop and remove the Keycloak container, just run the other available bash script:
 

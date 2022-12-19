@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 DOCKER_IMAGE="jboss/keycloak:16.1.1"
-KEYCLOAK_USER="keycloakadmin"
-KEYCLOAK_PASSWORD="keycloakadminpassword"
+KEYCLOAK_USER="kcadmin"
+KEYCLOAK_PASSWORD="kcpassword"
 KEYCLOAK_PORT=8090
 
 if [ ! "$(docker ps -q -f name=^/keycloak$)" ]; then

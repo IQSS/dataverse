@@ -366,7 +366,7 @@
   "webAuthnPolicyPasswordlessAcceptableAaguids": [],
   "users": [
     {
-      "username": "keycloakuser",
+      "username": "kcuser",
       "enabled": true,
       "totp": false,
       "emailVerified": true,
@@ -376,7 +376,7 @@
       "credentials": [
         {
           "type": "password",
-          "value": "keycloakuserpassword"
+          "value": "kcpassword"
         }
       ]
     }
