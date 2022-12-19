@@ -1586,13 +1586,13 @@ variable ``DATAVERSE_RSERVE_PASSWORD``.
 dataverse.rserve.tempdir
 ++++++++++++++++++++++++
 
-Temporary directory used by Rserve (defaults to /tmp/Rserv). Note that this
+Temporary directory used by Rserve (defaults to ``/tmp/Rserv``). Note that this
 location is local to the host on which Rserv is running (specified in
 ``dataverse.rserve.host`` above). When talking to Rserve, Dataverse needs to
 know this location in order to generate absolute path names of the files on the
 other end.
 
-Defaults to ``/tmp``.
+Defaults to ``/tmp/Rserv``.
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment
 variable ``DATAVERSE_RSERVE_TEMPDIR``.
