@@ -53,6 +53,12 @@
     -->
     <!-- TODO: Housekeeping is utterly needed. -->
     <dependencies>
+    
+        <dependency>
+            <groupId>io.gdcc</groupId>
+            <artifactId>extension-api</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
 
         <!-- This dependency ensures the lib is on the classpath. That way, anything coming from
              SLF4J should flow through our usual ways of using java.util.logging.
