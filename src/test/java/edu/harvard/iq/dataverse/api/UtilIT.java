@@ -2625,18 +2625,49 @@ public class UtilIT {
         return given().put(apiPath);
     }
     
+    static Response getOaiIdentify() {
+        String oaiVerbPath = "/oai?verb=Identify";
+        return given().get(oaiVerbPath);
+    }
+    
+    static Response getOaiListMetadataFormats() {
+        String oaiVerbPath = "/oai?verb=ListMetadataFormats";
+        return given().get(oaiVerbPath);
+    }
+    
+    static Response getOaiListSets() {
+        String oaiVerbPath = "/oai?verb=ListSets";
+        return given().get(oaiVerbPath);
+    }
+    
     static Response getOaiRecord(String datasetPersistentId, String metadataFormat) {
         String apiPath = String.format("/oai?verb=GetRecord&identifier=%s&metadataPrefix=%s", datasetPersistentId, metadataFormat);
         return given().get(apiPath);
     }
     
     static Response getOaiListIdentifiers(String setName, String metadataFormat) {
-        String apiPath = String.format("/oai?verb=ListIdentifiers&set=%s&metadataPrefix=%s", setName, metadataFormat);
+        
+        String apiPath;
+        if (StringUtil.nonEmpty(setName)) {
+            apiPath = String.format("/oai?verb=ListIdentifiers&set=%s&metadataPrefix=%s", setName, metadataFormat);
+        } else {
+            apiPath = String.format("/oai?verb=ListIdentifiers&metadataPrefix=%s", metadataFormat);
+        }
+        return given().get(apiPath);
+    }
+    
+    static Response getOaiListIdentifiersWithResumptionToken(String resumptionToken) {
+        String apiPath = String.format("/oai?verb=ListIdentifiers&resumptionToken=%s", resumptionToken);
         return given().get(apiPath);
     }
 
     static Response getOaiListRecords(String setName, String metadataFormat) {
         String apiPath = String.format("/oai?verb=ListRecords&set=%s&metadataPrefix=%s", setName, metadataFormat);
+        return given().get(apiPath);
+    }
+    
+    static Response getOaiListRecordsWithResumptionToken(String resumptionToken) {
+        String apiPath = String.format("/oai?verb=ListRecords&resumptionToken=%s", resumptionToken);
         return given().get(apiPath);
     }
 
