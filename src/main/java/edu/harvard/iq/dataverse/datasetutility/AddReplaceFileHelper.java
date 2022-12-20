@@ -2042,7 +2042,7 @@ public class AddReplaceFileHelper{
 
             if (filesJson != null) {
                 totalNumberofFiles = filesJson.getValuesAs(JsonObject.class).size();
-                workingVersion = dataset.getCreateOrEditVersion();
+                workingVersion = dataset.getOrCreateEditVersion();
                 clone = workingVersion.cloneDatasetVersion();
                 for (JsonObject fileJson : filesJson.getValuesAs(JsonObject.class)) {
 
@@ -2194,7 +2194,7 @@ public class AddReplaceFileHelper{
 
             if (filesJson != null) {
                 totalNumberofFiles = filesJson.getValuesAs(JsonObject.class).size();
-                workingVersion = dataset.getEditVersion();
+                workingVersion = dataset.getOrCreateEditVersion();
                 clone = workingVersion.cloneDatasetVersion();
                 for (JsonObject fileJson : filesJson.getValuesAs(JsonObject.class)) {
                     boolean forceReplace = false;
