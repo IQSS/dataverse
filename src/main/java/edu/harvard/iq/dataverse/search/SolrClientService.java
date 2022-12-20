@@ -7,17 +7,16 @@ package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import java.io.IOException;
-import java.util.logging.Logger;
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.inject.Named;
-import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
+import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  *
@@ -33,7 +32,6 @@ import org.eclipse.microprofile.config.ConfigProvider;
 @Singleton
 public class SolrClientService {
     private static final Logger logger = Logger.getLogger(SolrClientService.class.getCanonicalName());
-    private static final Config config = ConfigProvider.getConfig();
     
     @EJB
     SystemConfig systemConfig;
