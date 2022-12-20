@@ -2,9 +2,10 @@
 package edu.harvard.iq.dataverse.export;
 
 import com.google.auto.service.AutoService;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import io.gdcc.dataverse.extension.exceptions.ExportException;
+import io.gdcc.dataverse.extension.spi.Exporter;
+
 import java.io.OutputStream;
 import javax.json.JsonObject;
 import javax.ws.rs.core.MediaType;
@@ -28,7 +29,7 @@ public class JSONExporter implements Exporter {
     }
 
     @Override
-    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException {
+    public void exportDataset(JsonObject json, OutputStream outputStream) throws ExportException {
         try{
             outputStream.write(json.toString().getBytes("UTF8"));
             outputStream.flush();

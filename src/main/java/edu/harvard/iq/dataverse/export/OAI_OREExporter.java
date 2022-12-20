@@ -1,18 +1,15 @@
 package edu.harvard.iq.dataverse.export;
 
 import com.google.auto.service.AutoService;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.export.spi.Exporter;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
-import java.io.OutputStream;
-import java.util.ResourceBundle;
-import java.util.logging.Logger;
+import io.gdcc.dataverse.extension.exceptions.ExportException;
+import io.gdcc.dataverse.extension.spi.Exporter;
 
 import javax.json.JsonObject;
 import javax.ws.rs.core.MediaType;
+import java.io.OutputStream;
+import java.util.logging.Logger;
 
 @AutoService(Exporter.class)
 public class OAI_OREExporter implements Exporter {
@@ -22,7 +19,7 @@ public class OAI_OREExporter implements Exporter {
     public static final String NAME = "OAI_ORE";
 
     @Override
-    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream)
+    public void exportDataset(JsonObject json, OutputStream outputStream)
             throws ExportException {
         try {
             new OREMap(version).writeOREMap(outputStream);

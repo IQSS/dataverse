@@ -2,15 +2,16 @@
 package edu.harvard.iq.dataverse.export;
 
 import com.google.auto.service.AutoService;
-import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
-import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import java.io.OutputStream;
+import io.gdcc.dataverse.extension.exceptions.ExportException;
+import io.gdcc.dataverse.extension.spi.Exporter;
+
 import javax.json.JsonObject;
+import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-import javax.xml.stream.XMLOutputFactory;
+import java.io.OutputStream;
 
 /**
  * This exporter is for the "full" DDI, that includes the file-level,
@@ -39,7 +40,7 @@ public class DDIExporter implements Exporter {
     }
 
     @Override
-    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException {
+    public void exportDataset(JsonObject json, OutputStream outputStream) throws ExportException {
         try {
         XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
         xmlw.writeStartDocument();

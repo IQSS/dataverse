@@ -2,10 +2,11 @@
 package edu.harvard.iq.dataverse.export;
 
 import com.google.auto.service.AutoService;
-import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
-import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import io.gdcc.dataverse.extension.exceptions.ExportException;
+import io.gdcc.dataverse.extension.spi.Exporter;
+
 import java.io.OutputStream;
 import javax.json.JsonObject;
 import javax.xml.stream.XMLStreamException;
@@ -32,7 +33,7 @@ public class OAI_DDIExporter implements Exporter {
     }
 
     @Override
-    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException {
+    public void exportDataset(JsonObject json, OutputStream outputStream) throws ExportException {
         try {
             DdiExportUtil.datasetJson2ddi(json, outputStream);
         } catch (XMLStreamException xse) {

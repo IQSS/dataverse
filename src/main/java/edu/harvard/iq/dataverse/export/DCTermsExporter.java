@@ -2,13 +2,14 @@
 package edu.harvard.iq.dataverse.export;
 
 import com.google.auto.service.AutoService;
-import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.dublincore.DublinCoreExportUtil;
-import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import java.io.OutputStream;
+import io.gdcc.dataverse.extension.exceptions.ExportException;
+import io.gdcc.dataverse.extension.spi.Exporter;
+
 import javax.json.JsonObject;
 import javax.xml.stream.XMLStreamException;
+import java.io.OutputStream;
 
 /**
  *
@@ -30,7 +31,7 @@ public class DCTermsExporter implements Exporter {
     }
 
     @Override
-    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException {
+    public void exportDataset(JsonObject json, OutputStream outputStream) throws ExportException {
         try {
             DublinCoreExportUtil.datasetJson2dublincore(json, outputStream, DublinCoreExportUtil.DC_FLAVOR_DCTERMS);
         } catch (XMLStreamException xse) {

@@ -9,8 +9,9 @@ import com.google.auto.service.AutoService;
 
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.openaire.OpenAireExportUtil;
-import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import io.gdcc.dataverse.extension.exceptions.ExportException;
+import io.gdcc.dataverse.extension.spi.Exporter;
 
 @AutoService(Exporter.class)
 public class OpenAireExporter implements Exporter {
@@ -29,7 +30,7 @@ public class OpenAireExporter implements Exporter {
     }
 
     @Override
-    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream)
+    public void exportDataset(JsonObject json, OutputStream outputStream)
             throws ExportException {
         try {
             OpenAireExportUtil.datasetJson2openaire(json, outputStream);
