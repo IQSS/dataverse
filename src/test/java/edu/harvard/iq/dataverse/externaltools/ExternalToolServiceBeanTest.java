@@ -19,7 +19,10 @@ import org.junit.Test;
 
 public class ExternalToolServiceBeanTest {
 
+    private final ExternalToolServiceBean externalToolService;
+
     public ExternalToolServiceBeanTest() {
+        this.externalToolService = new ExternalToolServiceBean();
     }
 
     @Test
@@ -49,7 +52,7 @@ public class ExternalToolServiceBeanTest {
         ExternalToolHandler externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd, null);
         List<ExternalTool> externalTools = new ArrayList<>();
         externalTools.add(externalTool);
-        List<ExternalTool> availableExternalTools = ExternalToolServiceBean.findExternalToolsByFile(externalTools, dataFile);
+        List<ExternalTool> availableExternalTools = externalToolService.findExternalToolsByFile(externalTools, dataFile);
         assertEquals(availableExternalTools.size(), 1);
     }
 
@@ -544,4 +547,67 @@ public class ExternalToolServiceBeanTest {
 
         return ExternalToolServiceBean.parseAddExternalToolManifest(tool);
     }
+
+    @Test
+    public void testParseAddFileToolRequireAuxFile() {
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("displayName", "AwesomeTool");
+        job.add("toolName", "explorer");
+        job.add("description", "This tool is awesome.");
+        job.add("types", Json.createArrayBuilder().add("explore"));
+        job.add("scope", "file");
+        job.add("hasPreviewMode", "false");
+        job.add("toolUrl", "http://awesometool.com");
+        job.add("toolParameters", Json.createObjectBuilder()
+                .add("queryParameters", Json.createArrayBuilder()
+                        .add(Json.createObjectBuilder()
+                                .add("filePid", "{filePid}")
+                                .build())
+                        .add(Json.createObjectBuilder()
+                                .add("key", "{apiToken}")
+                                .build())
+                        .add(Json.createObjectBuilder()
+                                .add("fileMetadataId", "{fileMetadataId}")
+                                .build())
+                        .add(Json.createObjectBuilder()
+                                .add("dvLocale", "{localeCode}")
+                                .build())
+                        .build())
+                .build());
+        job.add("requirements", Json.createObjectBuilder()
+                .add("auxFilesExist", Json.createArrayBuilder()
+                        .add(Json.createObjectBuilder()
+                                .add("formatTag", "NcML")
+                                .add("formatVersion", "0.1")
+                        )
+                )
+        );
+        job.add(ExternalTool.CONTENT_TYPE, DataFileServiceBean.MIME_TYPE_TSV_ALT);
+        String tool = job.build().toString();
+        ExternalTool externalTool = ExternalToolServiceBean.parseAddExternalToolManifest(tool);
+        assertEquals("AwesomeTool", externalTool.getDisplayName());
+        assertEquals("explorer", externalTool.getToolName());
+        assertEquals("{\"auxFilesExist\":[{\"formatTag\":\"NcML\",\"formatVersion\":\"0.1\"}]}", externalTool.getRequirements());
+        /*
+        DataFile dataFile = new DataFile();
+        dataFile.setId(42l);
+        dataFile.setGlobalId(new GlobalId("doi:10.5072/FK2/RMQT6J/G9F1A1"));
+        FileMetadata fmd = new FileMetadata();
+        fmd.setId(2L);
+        DatasetVersion dv = new DatasetVersion();
+        Dataset ds = new Dataset();
+        dv.setDataset(ds);
+        fmd.setDatasetVersion(dv);
+        List<FileMetadata> fmdl = new ArrayList<FileMetadata>();
+        fmdl.add(fmd);
+        dataFile.setFileMetadatas(fmdl);
+        ApiToken apiToken = new ApiToken();
+        apiToken.setTokenString("7196b5ce-f200-4286-8809-03ffdbc255d7");
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd, "fr");
+        String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
+        System.out.println("result: " + toolUrl);
+        assertEquals("http://awesometool.com?filePid=doi:10.5072/FK2/RMQT6J/G9F1A1&key=7196b5ce-f200-4286-8809-03ffdbc255d7&fileMetadataId=2&dvLocale=fr", toolUrl);
+*/
+    }
+
 }
