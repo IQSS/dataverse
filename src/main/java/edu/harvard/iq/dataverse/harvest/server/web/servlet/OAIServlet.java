@@ -123,7 +123,7 @@ public class OAIServlet extends HttpServlet {
         }
         
         setRepository = new DataverseXoaiSetRepository(setService);
-        itemRepository = new DataverseXoaiItemRepository(recordService, datasetService, systemConfig.getDataverseSiteUrl());
+        itemRepository = new DataverseXoaiItemRepository(recordService, datasetService, SystemConfig.getDataverseSiteUrlStatic());
 
         repositoryConfiguration = createRepositoryConfiguration(); 
                                 
