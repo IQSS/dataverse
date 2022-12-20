@@ -404,9 +404,7 @@
         <dependency>
             <groupId>com.google.auto.service</groupId>
             <artifactId>auto-service</artifactId>
-            <version>1.0-rc2</version>
-            <optional>true</optional>
-            <type>jar</type>
+            <version>1.0.1</version>
         </dependency>
         <!-- For API File Upload: 1 of 2 -->
         <dependency>
