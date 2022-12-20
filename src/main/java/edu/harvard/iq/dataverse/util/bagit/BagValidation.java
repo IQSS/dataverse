@@ -3,8 +3,11 @@ package edu.harvard.iq.dataverse.util.bagit;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  *
@@ -16,7 +19,7 @@ public class BagValidation {
     private final Map<Path, FileValidationResult> fileResults;
 
     public BagValidation(Optional<String> errorMessage) {
-        this.errorMessage = errorMessage;
+        this.errorMessage = errorMessage == null ? Optional.empty() : errorMessage;
         this.fileResults = new LinkedHashMap<>();
     }
 
@@ -32,6 +35,12 @@ public class BagValidation {
 
     public Map<Path, FileValidationResult> getFileResults() {
         return Collections.unmodifiableMap(fileResults);
+    }
+
+    public List<String> getAllErrors() {
+        Stream<String> mainError = getErrorMessage().stream();
+        Stream<String> fileErrors = getFileResults().values().stream().filter(result -> result.isError()).map(result -> result.getMessage());
+        return Stream.concat(mainError, fileErrors).collect(Collectors.toList());
     }
 
     public long errors() {
@@ -76,8 +85,9 @@ public class BagValidation {
             this.status = Status.SUCCESS;
         }
 
-        public void setError() {
+        public void setError(String message) {
             this.status = Status.ERROR;
+            this.message = message;
         }
 
         public boolean isPending() {
@@ -90,10 +100,6 @@ public class BagValidation {
 
         public boolean isError() {
             return status.equals(Status.ERROR);
-        }
-
-        public void setMessage(String message) {
-            this.message = message;
         }
 
         public String getMessage() {

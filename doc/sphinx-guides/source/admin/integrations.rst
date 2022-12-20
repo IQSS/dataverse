@@ -57,7 +57,7 @@ their research results and retain links to imported and exported data. Users
 can organize their data in "Datasets", which can be exported to a Dataverse installation via
 the command-line interface (CLI).
 
-Renku dataset documentation: https://renku-python.readthedocs.io/en/latest/reference/commands.html#module-renku.cli.dataset
+Renku documentation: https://renku-python.readthedocs.io
 
 Flagship deployment of the Renku platform: https://renkulab.io
 
@@ -69,6 +69,13 @@ Amnesia
 Amnesia is a flexible data anonymization tool that transforms relational and transactional databases to datasets where formal privacy guarantees hold. Amnesia transforms original data to provide k-anonymity and km-anonymity: the original data are transformed by generalizing (i.e., replacing one value with a more abstract one) or suppressing values to achieve the statistical properties required by the anonymization guarantees. Amnesia employs visualization tools and supportive mechanisms to allow non expert users to anonymize relational and object-relational data.
 
 For instructions on depositing or loading data from Dataverse installations to Amnesia, visit https://amnesia.openaire.eu/about-documentation.html
+
+SampleDB
+++++++++
+
+SampleDB is a web-based electronic lab notebook (ELN) with a focus on flexible metadata. SampleDB can export this flexible, process-specific metadata to a new Dataset in a Dataverse installation using the EngMeta Process Metadata block.
+
+For instructions on using the Dataverse export, you can visit https://scientific-it-systems.iffgit.fz-juelich.de/SampleDB/administrator_guide/dataverse_export.html
 
 
 Embedding Data on Websites

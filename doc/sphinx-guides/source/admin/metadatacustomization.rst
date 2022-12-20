@@ -386,12 +386,16 @@ Metadata Block Setup
 
 Now that you understand the TSV format used for metadata blocks, the next step is to attempt to make improvements to existing metadata blocks or create entirely new metadata blocks. For either task, you should have a Dataverse Software development environment set up for testing where you can drop the database frequently while you make edits to TSV files. Once you have tested your TSV files, you should consider making a pull request to contribute your improvement back to the community.
 
+.. _exploring-metadata-blocks:
+
 Exploring Metadata Blocks
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In addition to studying the TSV files themselves you might find the following highly experimental and subject-to-change API endpoints useful to understand the metadata blocks that have already been loaded into your Dataverse installation:
+In addition to studying the TSV files themselves you will probably find the :ref:`metadata-blocks-api` API helpful in getting a structured dump of metadata blocks in JSON format.
 
-You can get a dump of metadata fields (yes, the output is odd, please open a issue) like this:
+There are also a few older, highly experimental, and subject-to-change API endpoints under the "admin" API documented below but the public API above is preferred.
+
+You can get a dump of metadata fields like this:
 
 ``curl http://localhost:8080/api/admin/datasetfield``
 
@@ -565,14 +569,18 @@ In general, the external vocabulary support mechanism may be a better choice for
 The specifics of the user interface for entering/selecting a vocabulary term and how that term is then displayed are managed by third-party Javascripts. The initial Javascripts that have been created provide auto-completion, displaying a list of choices that match what the user has typed so far, but other interfaces, such as displaying a tree of options for a hierarchical vocabulary, are possible. 
 Similarly, existing scripts do relatively simple things for displaying a term - showing the term's name in the appropriate language and providing a link to an external URL with more information, but more sophisticated displays are possible.
 
-Scripts supporting use of vocabularies from services supporting the SKOMOS protocol (see https://skosmos.org) and retrieving ORCIDs (from https:/orcid.org) are available https://github.com/gdcc/dataverse-external-vocab-support. (Custom scripts can also be used and community members are encouraged to share new scripts through the dataverse-external-vocab-support repository.)
+Scripts supporting use of vocabularies from services supporting the SKOMOS protocol (see https://skosmos.org) and retrieving ORCIDs (from https://orcid.org) are available https://github.com/gdcc/dataverse-external-vocab-support. (Custom scripts can also be used and community members are encouraged to share new scripts through the dataverse-external-vocab-support repository.)
 
 Configuration involves specifying which fields are to be mapped, whether free-text entries are allowed, which vocabulary(ies) should be used, what languages those vocabulary(ies) are available in, and several service protocol and service instance specific parameters.
 These are all defined in the :ref:`:CVocConf <:CVocConf>` setting as a JSON array. Details about the required elements as well as example JSON arrays are available at https://github.com/gdcc/dataverse-external-vocab-support, along with an example metadata block that can be used for testing.
 The scripts required can be hosted locally or retrieved dynamically from https://gdcc.github.io/ (similar to how dataverse-previewers work).
 
+Please note that in addition to the :ref:`:CVocConf` described above, an alternative is the :ref:`:ControlledVocabularyCustomJavaScript` setting.
+
 Tips from the Dataverse Community
 ---------------------------------
+
+When creating new metadata blocks, please review the :doc:`/style/text` section of the Style Guide, which includes guidance about naming metadata fields and writing text for metadata tooltips and watermarks.
 
 If there are tips that you feel are omitted from this document, please open an issue at https://github.com/IQSS/dataverse/issues and consider making a pull request to make improvements. You can find this document at https://github.com/IQSS/dataverse/blob/develop/doc/sphinx-guides/source/admin/metadatacustomization.rst
 

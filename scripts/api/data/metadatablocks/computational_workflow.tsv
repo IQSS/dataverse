@@ -1,0 +1,21 @@
+#metadataBlock	name	dataverseAlias   displayName
+	computationalworkflow		Computational Workflow Metadata
+#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id	termURI
+	workflowType	Computational Workflow Type	The kind of Computational Workflow, which is designed to compose and execute a series of computational or data manipulation steps in a scientific application		text	0		TRUE	TRUE	TRUE	TRUE	TRUE	FALSE		computationalworkflow
+	workflowCodeRepository	External Code Repository URL	A link to the repository where the un-compiled, human readable code and related code is located (e.g. GitHub, GitLab, SVN)	https://...	url	1		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		computationalworkflow
+	workflowDocumentation	Documentation	A link (URL) to the documentation or text describing the Computational Workflow and its use		textbox	2		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		computationalworkflow
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder
+	workflowType	Common Workflow Language (CWL)	workflowtype_cwl	1
+	workflowType	Workflow Description Language (WDL)	workflowtype_wdl	2
+	workflowType	Nextflow	workflowtype_nextflow	3
+	workflowType	Snakemake	workflowtype_snakemake	4
+	workflowType	Ruffus	workflowtype_ruffus	5
+	workflowType	DAGMan	workflowtype_dagman	6
+	workflowType	Jupyter Notebook	workflowtype_jupyter	7
+	workflowType	R Notebook	workflowtype_rstudio	8
+	workflowType	MATLAB Script	workflowtype_matlab	9
+	workflowType	Bash Script	workflowtype_bash	10
+	workflowType	Makefile	workflowtype_makefile	11
+	workflowType	Other Python-based workflow	workflowtype_otherpython	12
+	workflowType	Other R-based workflow	workflowtype_otherrbased	13
+	workflowType	Other	workflowtype_other	100

@@ -1,1 +1,0 @@
-The "Verify Email" button has been changed to "Send Verification Email" and rather than sometimes showing a popup now always sends a fresh verification email (and invalidates previous verification emails).

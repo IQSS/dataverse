@@ -110,12 +110,16 @@ public class UserNotificationServiceBean {
     }
 
     public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId, String comment, AuthenticatedUser requestor, boolean isHtmlContent) {
+        sendNotification(dataverseUser, sendDate, type, objectId, comment, requestor, isHtmlContent, null);
+    }
+    public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId, String comment, AuthenticatedUser requestor, boolean isHtmlContent, String additionalInfo) {
         UserNotification userNotification = new UserNotification();
         userNotification.setUser(dataverseUser);
         userNotification.setSendDate(sendDate);
         userNotification.setType(type);
         userNotification.setObjectId(objectId);
         userNotification.setRequestor(requestor);
+        userNotification.setAdditionalInfo(additionalInfo);
 
         if (!isEmailMuted(userNotification) && mailService.sendNotificationEmail(userNotification, comment, requestor, isHtmlContent)) {
             logger.fine("email was sent");

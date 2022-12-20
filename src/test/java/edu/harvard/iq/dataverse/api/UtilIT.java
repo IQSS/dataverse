@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
 import com.jayway.restassured.path.xml.XmlPath;
@@ -407,6 +408,20 @@ public class UtilIT {
         return createDatasetResponse;
     }
 
+    static Response createDataset(String dataverseAlias, JsonObjectBuilder datasetJson, String apiToken) {
+        return createDataset(dataverseAlias, datasetJson.build().toString(), apiToken);
+    }
+
+    static Response createDataset(String dataverseAlias, String datasetJson, String apiToken) {
+        System.out.println("creating with " + datasetJson);
+        Response createDatasetResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(datasetJson)
+                .contentType("application/json")
+                .post("/api/dataverses/" + dataverseAlias + "/datasets");
+        return createDatasetResponse;
+    }
+
     static String getDatasetJson(String pathToJsonFile) {
         File datasetVersionJson = new File(pathToJsonFile);
         try {
@@ -544,6 +559,19 @@ public class UtilIT {
           .post("/api/admin/datasetfield/load");
     }
 
+    static Response setMetadataBlocks(String dataverseAlias, JsonArrayBuilder blocks, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .body(blocks.build().toString())
+                .post("/api/dataverses/" + dataverseAlias + "/metadatablocks");
+    }
+
+    static Response getMetadataBlock(String block) {
+        return given()
+                .get("/api/metadatablocks/" + block);
+    }
+
     static private String getDatasetXml(String title, String author, String description) {
         String nullLicense = null;
         String nullRights = null;
@@ -674,6 +702,16 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .multiPart("datasetId", datasetId)
                 .multiPart("file", new File(pathToFile), mimeType);
+        if (jsonAsString != null) {
+            requestSpecification.multiPart("jsonData", jsonAsString);
+        }
+        return requestSpecification.post("/api/datasets/" + datasetId + "/add");
+    }
+
+    static Response addRemoteFile(String datasetId, String jsonAsString, String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .multiPart("datasetId", datasetId);
         if (jsonAsString != null) {
             requestSpecification.multiPart("jsonData", jsonAsString);
         }
@@ -1194,11 +1232,19 @@ public class UtilIT {
     }
 
     static Response publishDatasetViaNativeApi(String idOrPersistentId, String majorOrMinor, String apiToken) {
+        return publishDatasetViaNativeApi(idOrPersistentId, majorOrMinor, apiToken, false);
+    }
+    
+    static Response publishDatasetViaNativeApi(String idOrPersistentId, String majorOrMinor, String apiToken, boolean mustBeIndexed) {
+
         String idInPath = idOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentId)) {
+        if (!NumberUtils.isCreatable(idOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "&persistentId=" + idOrPersistentId;
+        }
+        if(mustBeIndexed) {
+            optionalQueryParam = optionalQueryParam+"&assureIsIndexed=true";
         }
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
@@ -1812,7 +1858,18 @@ public class UtilIT {
                 //                .get("/api/datasets/:persistentId/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
                 .get("/api/datasets/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
     }
-    
+
+    static Response reexportDatasetAllFormats(String idOrPersistentId) {
+        String idInPath = idOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isDigits(idOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + idOrPersistentId;
+        }
+        return given()
+                .get("/api/admin/metadata/" + idInPath + "/reExportDataset" + optionalQueryParam);
+    }
+
     static Response exportDataverse(String identifier, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -1861,12 +1918,28 @@ public class UtilIT {
         return response;
     }
 
+    /**
+     * @param settingKey Include the colon like :BagItLocalPath
+     */
+    static Response deleteSetting(String settingKey) {
+        Response response = given().when().delete("/api/admin/settings/" + settingKey);
+        return response;
+    }
+
     static Response getSetting(SettingsServiceBean.Key settingKey) {
         Response response = given().when().get("/api/admin/settings/" + settingKey);
         return response;
     }
 
     static Response setSetting(SettingsServiceBean.Key settingKey, String value) {
+        Response response = given().body(value).when().put("/api/admin/settings/" + settingKey);
+        return response;
+    }
+
+    /**
+     * @param settingKey Include the colon like :BagItLocalPath
+     */
+    public static Response setSetting(String settingKey, String value) {
         Response response = given().body(value).when().put("/api/admin/settings/" + settingKey);
         return response;
     }
@@ -2384,6 +2457,65 @@ public class UtilIT {
 
     }
     
+    static boolean sleepForReindex(String idOrPersistentId, String apiToken, int durationInSeconds) {
+        int i = 0;
+        Response timestampResponse;
+        int sleepStep = 500;
+        int repeats = durationInSeconds * (1000 / sleepStep);
+        boolean stale=true;
+        do {
+            timestampResponse = UtilIT.getDatasetTimestamps(idOrPersistentId, apiToken);
+            System.out.println(timestampResponse.body().asString());
+            String hasStaleIndex = timestampResponse.body().jsonPath().getString("data.hasStaleIndex");
+            System.out.println(hasStaleIndex);
+            stale = Boolean.parseBoolean(hasStaleIndex);
+            
+            try {
+                Thread.sleep(sleepStep);
+                i++;
+            } catch (InterruptedException ex) {
+                Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
+                i = repeats + 1;
+            }
+        } while ((i <= repeats) && stale);
+        System.out.println("Waited " + (i * (sleepStep / 1000.0)) + " seconds");
+        return i <= repeats;
+
+    }
+    static boolean sleepForReexport(String idOrPersistentId, String apiToken, int durationInSeconds) {
+        int i = 0;
+        Response timestampResponse;
+        int sleepStep = 500;
+        int repeats = durationInSeconds * (1000 / sleepStep);
+        boolean staleExport=true;
+        do {
+            timestampResponse = UtilIT.getDatasetTimestamps(idOrPersistentId, apiToken);
+            //logger.fine(timestampResponse.body().asString());
+            String updateTimeString = timestampResponse.body().jsonPath().getString("data.lastUpdateTime");
+            String exportTimeString = timestampResponse.body().jsonPath().getString("data.lastMetadataExportTime");
+            if (updateTimeString != null && exportTimeString != null) {
+                LocalDateTime updateTime = LocalDateTime.parse(updateTimeString);
+                LocalDateTime exportTime = LocalDateTime.parse(exportTimeString);
+                if (exportTime.isAfter(updateTime)) {
+                    staleExport = false;
+                }
+            }
+            try {
+                Thread.sleep(sleepStep);
+                i++;
+            } catch (InterruptedException ex) {
+                Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
+                i = repeats + 1;
+            }
+        } while ((i <= repeats) && staleExport);
+        System.out.println("Waited " + (i * (sleepStep / 1000.0)) + " seconds for export");
+        return i <= repeats;
+
+    }
+    
+    
+    
+    
     //Helper function that returns true if a given search returns a non-zero response within a fixed time limit
     // a given duration returns false if still zero results after given duration
     static Boolean sleepForSearch(String searchPart, String apiToken,  String subTree, int duration) {
@@ -2474,9 +2606,38 @@ public class UtilIT {
         return response;       
     }
     
+    static Response getDatasetTimestamps(String idOrPersistentId, String apiToken) {
+        String idInPath = idOrPersistentId; // Assume it's a number.
+        String queryParams = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isCreatable(idOrPersistentId)) {
+            idInPath = ":persistentId";
+            queryParams = "?persistentId=" + idOrPersistentId;
+        }
+        
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .get("api/datasets/" + idInPath + "/timestamps" + queryParams);
+        return response;
+    }
+    
     static Response exportOaiSet(String setName) {
         String apiPath = String.format("/api/admin/metadata/exportOAI/%s", setName);
         return given().put(apiPath);
+    }
+    
+    static Response getOaiIdentify() {
+        String oaiVerbPath = "/oai?verb=Identify";
+        return given().get(oaiVerbPath);
+    }
+    
+    static Response getOaiListMetadataFormats() {
+        String oaiVerbPath = "/oai?verb=ListMetadataFormats";
+        return given().get(oaiVerbPath);
+    }
+    
+    static Response getOaiListSets() {
+        String oaiVerbPath = "/oai?verb=ListSets";
+        return given().get(oaiVerbPath);
     }
     
     static Response getOaiRecord(String datasetPersistentId, String metadataFormat) {
@@ -2485,12 +2646,28 @@ public class UtilIT {
     }
     
     static Response getOaiListIdentifiers(String setName, String metadataFormat) {
-        String apiPath = String.format("/oai?verb=ListIdentifiers&set=%s&metadataPrefix=%s", setName, metadataFormat);
+        
+        String apiPath;
+        if (StringUtil.nonEmpty(setName)) {
+            apiPath = String.format("/oai?verb=ListIdentifiers&set=%s&metadataPrefix=%s", setName, metadataFormat);
+        } else {
+            apiPath = String.format("/oai?verb=ListIdentifiers&metadataPrefix=%s", metadataFormat);
+        }
+        return given().get(apiPath);
+    }
+    
+    static Response getOaiListIdentifiersWithResumptionToken(String resumptionToken) {
+        String apiPath = String.format("/oai?verb=ListIdentifiers&resumptionToken=%s", resumptionToken);
         return given().get(apiPath);
     }
 
     static Response getOaiListRecords(String setName, String metadataFormat) {
         String apiPath = String.format("/oai?verb=ListRecords&set=%s&metadataPrefix=%s", setName, metadataFormat);
+        return given().get(apiPath);
+    }
+    
+    static Response getOaiListRecordsWithResumptionToken(String resumptionToken) {
+        String apiPath = String.format("/oai?verb=ListRecords&resumptionToken=%s", resumptionToken);
         return given().get(apiPath);
     }
 
@@ -2817,7 +2994,14 @@ public class UtilIT {
                 .put("/api/licenses/"+id.toString() + "/:active/" + state);
         return activateLicenseResponse;
     }
-
+    
+    static Response setLicenseSortOrderById(Long id, Long sortOrder, String apiToken) {
+        Response setSortOrderLicenseResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .urlEncodingEnabled(false)
+                .put("/api/licenses/"+id.toString() + "/:sortOrder/" + sortOrder);
+        return setSortOrderLicenseResponse;
+    }
 
     static Response updateDatasetJsonLDMetadata(Integer datasetId, String apiToken, String jsonLDBody, boolean replace) {
         Response response = given()
@@ -2864,6 +3048,39 @@ public class UtilIT {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .put("/api/datasets/" + datasetId + "/curationStatus?label=" + label);
+        return response;
+    }
+    
+    static Response getDatasetVersionArchivalStatus(Integer datasetId, String version, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId + "/" + version + "/archivalStatus");
+        return response;
+    }
+
+    static Response archiveDataset(String idOrPersistentIdOfDataset, String version, String apiToken) {
+        String idInPath = idOrPersistentIdOfDataset;
+        String optionalQueryParam = "";
+        if (!NumberUtils.isNumber(idOrPersistentIdOfDataset)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + idOrPersistentIdOfDataset;
+        }
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/admin/submitDatasetVersionToArchive/" + idInPath + "/" + version + optionalQueryParam);
+        return response;
+    }
+
+    static Response setDatasetVersionArchivalStatus(Integer datasetId, String version, String apiToken, String status, String message) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken).contentType("application/json; charset=utf-8").body("{\"status\":\"" + status + "\", \"message\":\"" + message + "\"}")
+                .put("/api/datasets/" + datasetId + "/" + version + "/archivalStatus");
+        return response;
+    }
+    static Response deleteDatasetVersionArchivalStatus(Integer datasetId, String version, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/datasets/" + datasetId + "/" + version + "/archivalStatus");
         return response;
     }
 

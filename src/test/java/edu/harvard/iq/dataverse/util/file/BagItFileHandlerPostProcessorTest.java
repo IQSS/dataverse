@@ -29,11 +29,43 @@ public class BagItFileHandlerPostProcessorTest {
     @Test
     public void should_ignore_mac_control_files() throws Exception {
         String bagEntry = UUID.randomUUID().toString();
-        String macFile01 = "__";
-        String macFile02 = "._";
         String macFile03 = ".DS_Store";
         String macFile04 = "._.DS_Store";
-        List<DataFile> dataFiles = createDataFiles(bagEntry, macFile01, macFile02, macFile03, macFile04);
+        List<DataFile> dataFiles = createDataFiles(bagEntry, macFile03, macFile04);
+
+        List<DataFile> result = target.process(dataFiles);
+        MatcherAssert.assertThat(result.size(), Matchers.is(1));
+        MatcherAssert.assertThat(result.get(0).getCurrentName(), Matchers.is(bagEntry));
+    }
+
+    @Test
+    public void should_ignore_empty_files() throws Exception {
+        String bagEntry = UUID.randomUUID().toString();
+        String fileToIgnore = "";
+        List<DataFile> dataFiles = createDataFiles(bagEntry, fileToIgnore);
+
+        List<DataFile> result = target.process(dataFiles);
+        MatcherAssert.assertThat(result.size(), Matchers.is(1));
+        MatcherAssert.assertThat(result.get(0).getCurrentName(), Matchers.is(bagEntry));
+    }
+
+    @Test
+    public void should_ignore_files_that_start_with_dot_underscore() throws Exception {
+        String bagEntry = UUID.randomUUID().toString();
+        String fileToIgnore = "._FileNameToIgnore";
+        List<DataFile> dataFiles = createDataFiles(bagEntry, fileToIgnore);
+
+        List<DataFile> result = target.process(dataFiles);
+        MatcherAssert.assertThat(result.size(), Matchers.is(1));
+        MatcherAssert.assertThat(result.get(0).getCurrentName(), Matchers.is(bagEntry));
+    }
+
+    @Test
+    public void should_ignore_files_that_start_with_double_underscore() throws Exception {
+        String bagEntry = UUID.randomUUID().toString();
+        String fileToIgnore = "__FileNameToIgnore";
+        String validFile = "validName";
+        List<DataFile> dataFiles = createDataFiles(bagEntry, fileToIgnore);
 
         List<DataFile> result = target.process(dataFiles);
         MatcherAssert.assertThat(result.size(), Matchers.is(1));

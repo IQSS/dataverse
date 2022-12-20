@@ -21,7 +21,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -58,25 +57,25 @@ public class BagItFileHandler {
         try {
             List<DataFile> packageDataFiles = processBagItPackage(systemConfig, datasetVersion, uploadedFilename, bagItPackageFile);
             if(packageDataFiles.isEmpty()) {
-                return CreateDataFileResult.error(FILE_TYPE, Collections.emptyList());
+                return CreateDataFileResult.error(uploadedFilename, FILE_TYPE, Collections.emptyList());
             }
 
             BagValidation bagValidation = validateBagItPackage(uploadedFilename, packageDataFiles);
             if(bagValidation.success()) {
                 List<DataFile> finalItems = postProcessor.process(packageDataFiles);
                 logger.info(String.format("action=handleBagItPackage result=success uploadedFilename=%s file=%s", uploadedFilename, bagItPackageFile.getName()));
-                return CreateDataFileResult.success(FILE_TYPE, finalItems);
+                return CreateDataFileResult.success(uploadedFilename, FILE_TYPE, finalItems);
             }
 
             // BagIt package has errors
             // Capture errors and return to caller
-            List<String> errors = bagValidation.getFileResults().values().stream().filter(result -> result.isError()).map(result -> result.getMessage()).collect(Collectors.toList());
+            List<String> errors = bagValidation.getAllErrors();
             logger.info(String.format("action=handleBagItPackage result=errors uploadedFilename=%s file=%s errors=%s", uploadedFilename, bagItPackageFile.getName(), errors.size()));
-            return CreateDataFileResult.error(FILE_TYPE, errors);
+            return CreateDataFileResult.error(uploadedFilename, FILE_TYPE, errors);
 
         } catch (BagItFileHandlerException e) {
             logger.severe(String.format("action=handleBagItPackage result=error uploadedFilename=%s file=%s message=%s", uploadedFilename, bagItPackageFile.getName(), e.getMessage()));
-            return CreateDataFileResult.error(FILE_TYPE, Arrays.asList(e.getMessage()));
+            return CreateDataFileResult.error(uploadedFilename, FILE_TYPE, Arrays.asList(e.getMessage()));
         } finally {
             fileUtil.deleteFile(bagItPackageFile.toPath());
         }
