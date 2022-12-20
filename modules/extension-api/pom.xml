@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd;">
+    <modelVersion>4.0.0</modelVersion>
+    
+    <parent>
+        <groupId>edu.harvard.iq</groupId>
+        <artifactId>dataverse-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../dataverse-parent</relativePath>
+    </parent>
+    
+    <groupId>io.gdcc</groupId>
+    <artifactId>extension-api</artifactId>
+    <!--
+            @qqmyers and @poikilotherm discussed the versioning. We found that we should make this independent of
+            the Dataverse release numbers as the APIs might change in their own time and ways. We want to use SemVer
+            because we will have breaking (major) changes, minor changes (additions, etc) or patch changes
+            (docstrings, etc).
+        -->
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <name>Extension API</name>
+    <description>
+        This package provides interfaces, data transfer objects, utilities and so on to create Dataverse extensions.
+        For more information on how to use, please read the developer guide of Dataverse at https://guides.dataverse.org.
+    </description>
+    
+    <developers>
+        <developer>
+            <id>poikilotherm</id>
+            <name>Oliver Bertuch</name>
+            <email>github@bertuch.eu</email>
+            <timezone>Europe/Berlin</timezone>
+            <roles>
+                <role>maintainer</role>
+            </roles>
+        </developer>
+    </developers>
+    
+    <properties>
+    </properties>
+    
+    <dependencies>
+        <dependency>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
+            <version>${jakartaee-api.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+    
+    <build>
+        <resources>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <release>${target.java.version}</release>
+                    <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
+                    <compilerArgument>${compilerArgument}</compilerArgument>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
