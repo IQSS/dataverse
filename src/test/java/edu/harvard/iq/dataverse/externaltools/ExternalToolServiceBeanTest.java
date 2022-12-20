@@ -588,26 +588,6 @@ public class ExternalToolServiceBeanTest {
         assertEquals("AwesomeTool", externalTool.getDisplayName());
         assertEquals("explorer", externalTool.getToolName());
         assertEquals("{\"auxFilesExist\":[{\"formatTag\":\"NcML\",\"formatVersion\":\"0.1\"}]}", externalTool.getRequirements());
-        /*
-        DataFile dataFile = new DataFile();
-        dataFile.setId(42l);
-        dataFile.setGlobalId(new GlobalId("doi:10.5072/FK2/RMQT6J/G9F1A1"));
-        FileMetadata fmd = new FileMetadata();
-        fmd.setId(2L);
-        DatasetVersion dv = new DatasetVersion();
-        Dataset ds = new Dataset();
-        dv.setDataset(ds);
-        fmd.setDatasetVersion(dv);
-        List<FileMetadata> fmdl = new ArrayList<FileMetadata>();
-        fmdl.add(fmd);
-        dataFile.setFileMetadatas(fmdl);
-        ApiToken apiToken = new ApiToken();
-        apiToken.setTokenString("7196b5ce-f200-4286-8809-03ffdbc255d7");
-        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd, "fr");
-        String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
-        System.out.println("result: " + toolUrl);
-        assertEquals("http://awesometool.com?filePid=doi:10.5072/FK2/RMQT6J/G9F1A1&key=7196b5ce-f200-4286-8809-03ffdbc255d7&fileMetadataId=2&dvLocale=fr", toolUrl);
-*/
     }
 
 }
