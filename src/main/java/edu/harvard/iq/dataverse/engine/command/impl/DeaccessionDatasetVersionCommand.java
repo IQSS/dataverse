@@ -15,15 +15,14 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
+
 import java.io.IOException;
 import java.util.logging.Logger;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import java.util.concurrent.Future;
+
+import io.gdcc.dataverse.extension.exceptions.ExportException;
 import org.apache.solr.client.solrj.SolrServerException;
 
 /**
