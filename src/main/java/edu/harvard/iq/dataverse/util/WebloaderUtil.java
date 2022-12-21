@@ -23,7 +23,7 @@ public class WebloaderUtil {
     private static final Logger logger = Logger.getLogger(WebloaderUtil.class.getCanonicalName());
 
     /**
-     * Create the URL required to launch https://github.com/gdcc/dvweloader
+     * Create the URL required to launch https://github.com/gdcc/dvwebloader
      */
     public static String getWebloaderUrl(Dataset d, ApiToken apiToken, String localeCode, String baseUrl) {
         // Use URLTokenUtil for params currently in common with external tools.
