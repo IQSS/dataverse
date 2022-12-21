@@ -44,6 +44,14 @@ public enum JvmSettings {
     FQDN(PREFIX, "fqdn"),
     SITE_URL(PREFIX, "siteUrl"),
     
+    // SOLR INDEX SETTINGS
+    SCOPE_SOLR(PREFIX, "solr"),
+    SOLR_HOST(SCOPE_SOLR, "host"),
+    SOLR_PORT(SCOPE_SOLR, "port"),
+    SOLR_PROT(SCOPE_SOLR, "protocol"),
+    SOLR_CORE(SCOPE_SOLR, "core"),
+    SOLR_PATH(SCOPE_SOLR, "path"),
+
     // RSERVE CONNECTION
     SCOPE_RSERVE(PREFIX, "rserve"),
     RSERVE_HOST(SCOPE_RSERVE, "host"),
