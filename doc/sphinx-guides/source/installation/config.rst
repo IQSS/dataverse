@@ -1587,7 +1587,7 @@ dataverse.rserve.port
 Port number for Rserve, used for tasks that require use of R (to ingest RData
 files and to save tabular data as RData frames).
 
-Defaults to ``6311``.
+Defaults to ``6311`` when not configured or no valid integer.
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment
 variable ``DATAVERSE_RSERVE_PORT``.

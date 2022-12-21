@@ -438,7 +438,14 @@ public class RDATAFileReader extends TabularDataFileReader {
     // ready to be overridden by a sysadmin. Every time a file would be read with this file reader,
     // a new reader will be created, reading from the cached config source settings with minimal overhead.
     this.RSERVE_HOST = JvmSettings.RSERVE_HOST.lookup();
-    this.RSERVE_PORT = JvmSettings.RSERVE_PORT.lookup(Integer.class);
+    int port;
+    try {
+      port = JvmSettings.RSERVE_PORT.lookup(Integer.class);
+    } catch (IllegalArgumentException e) {
+      LOG.log(Level.SEVERE, "Could not parse value for " + JvmSettings.RSERVE_PORT.getScopedKey() + ", defaulting to 6311", e);
+      port = 6311;
+    }
+    this.RSERVE_PORT = port;
     this.RSERVE_USER = JvmSettings.RSERVE_USER.lookup();
     this.RSERVE_PASSWORD = JvmSettings.RSERVE_PASSWORD.lookup();
 
