@@ -93,6 +93,8 @@ Dropbox Upload
 
 Some Dataverse installations support the ability to upload files directly from Dropbox. To do so, click the "Upload from Dropbox" button, log in to Dropbox in the pop-up window, and select the files you'd like to transfer over.
 
+.. _folder-upload:
+
 Folder Upload
 -------------
 
