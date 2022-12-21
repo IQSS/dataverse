@@ -44,6 +44,14 @@ public enum JvmSettings {
     FQDN(PREFIX, "fqdn"),
     SITE_URL(PREFIX, "siteUrl"),
     
+    // RSERVE CONNECTION
+    SCOPE_RSERVE(PREFIX, "rserve"),
+    RSERVE_HOST(SCOPE_RSERVE, "host"),
+    RSERVE_PORT(SCOPE_RSERVE, "port", "dataverse.ingest.rserve.port"),
+    RSERVE_USER(SCOPE_RSERVE, "user"),
+    RSERVE_PASSWORD(SCOPE_RSERVE, "password"),
+    RSERVE_TEMPDIR(SCOPE_RSERVE, "tempdir"),
+    
     // API SETTINGS
     SCOPE_API(PREFIX, "api"),
     API_SIGNING_SECRET(SCOPE_API, "signing-secret"),
