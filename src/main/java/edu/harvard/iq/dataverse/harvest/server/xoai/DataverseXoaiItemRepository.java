@@ -49,7 +49,7 @@ public class DataverseXoaiItemRepository implements ItemRepository {
     }
     
     @Override
-    public ItemIdentifier getItem(String identifier) throws IdDoesNotExistException {
+    public ItemIdentifier getItemIdentifier(String identifier) throws IdDoesNotExistException {
         // This method is called when ListMetadataFormats request specifies 
         // the identifier, requesting the formats available for this specific record.
         // In our case, under the current implementation, we need to simply look 
