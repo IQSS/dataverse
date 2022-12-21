@@ -41,6 +41,8 @@ public enum JvmSettings {
     // GENERAL SETTINGS
     VERSION(PREFIX, "version"),
     BUILD(PREFIX, "build"),
+    FQDN(PREFIX, "fqdn"),
+    SITE_URL(PREFIX, "siteUrl"),
     
     // SOLR INDEX SETTINGS
     SCOPE_SOLR(PREFIX, "solr"),
