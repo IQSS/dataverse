@@ -73,11 +73,29 @@ public final class PasswordEncryption implements java.io.Serializable {
             }
         }
     };
-    
+
+    private static final Algorithm BCRYPT_12 = new Algorithm() {
+
+        @Override
+        public String encrypt(String plainText) {
+            return BCrypt.hashpw(plainText, BCrypt.gensalt(12));
+        }
+
+        @Override
+        public boolean check(String plainText, String hashed) {
+            try {
+                return BCrypt.checkpw(plainText, hashed);
+            } catch (java.lang.IllegalArgumentException iae) {
+                // the password was probably not hashed using bcrypt.
+                return false;
+            }
+        }
+    };
+
     private static final Algorithm[] algorithms;
     
     static {
-        algorithms = new Algorithm[]{SHA, BCRYPT_10};
+        algorithms = new Algorithm[]{SHA, BCRYPT_10, BCRYPT_12};
     }
     
     /**
