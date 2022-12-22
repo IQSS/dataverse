@@ -1771,7 +1771,7 @@ public class Access extends AbstractApiBean {
             return true;
         }
         
-        //For permissions check decide if we havce a session user, or an API user
+        //For permissions check decide if we have a session user, or an API user
         User user = null;
         
         /** 
