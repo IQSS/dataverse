@@ -368,46 +368,71 @@
 
         <p:column class="col-file-action button-block text-right" style="width:40%;" ariaHeaderText="#{bundle['file.actionsBlock']}">
             <f:facet name="header">
-                <script type="text/javascript">
                 <script type="text/javascript" src="#{resource['js/zip.min.js']}"/>
-<script type="text/javascript">
+                <script type="text/javascript">
+                    function downloadFiles(url, filelist, metadataUrl) {
+                      let fileIds=[];
+                      for(let indexString of filelist.split(',')) {
+                        fileIds.push(parseInt(indexString));
+                      }
+                      getFileMetadata(fileIds, metadataUrl)
+                        .then(getZipFileBlob)
+                        .then(downloadFile);
+                    }
+                     
+                    async function getFileMetadata(fileIds, metadataUrl) {
+                      let md={};
+                      const response = await fetch(metadataUrl);
+                      if (response.status &lt; 400) {
+                        let dataArray = (await response.json()).data;
+                        for( let filejson of dataArray) {
+                          let id = parseInt(filejson.dataFile.id);
+                          if(fileIds.includes(id)) {
+                            md[id]=filejson;
+                          }
+                        }
+                      } else {
+                        throw response.status == 416 ? new Error(ERR_HTTP_RANGE) : new Error(ERR_HTTP_STATUS + (response.statusText || response.status));
+                      }
+                      return [fileIds, md];
+                    }
+                    
+                    async function getZipFileBlob([fileIds, mdMap]) {
+                      const FILEBASEURL= 'http://ec2-3-215-16-135.compute-1.amazonaws.com/api/access/datafile/';
+                      const FILEURLPARAMS='?format=original&amp;gbrecs=true';
+                      const zipWriter = new zip.ZipWriter(new zip.BlobWriter("application/zip"));
+                      const promises = [];
+                      for(let id of fileIds) {
+                        let label = mdMap[id].label;
+                        if('directoryLabel' in mdMap[id]) {
+                          label = mdMap[id].directoryLabel + '/' + label;
+                        }
+                        promises.push(zipWriter.add(label, new zip.HttpReader(FILEBASEURL + id + FILEURLPARAMS, {'preventHeadRequest':true})));
+                      }
+                      await Promise.all(promises);
+                      return zipWriter.close();
+                    }
+
+                    function downloadFile(blob) {
+                      const link = Object.assign(document.createElement("a"), {
+                        download: "dataverse_files.zip",
+                        href: URL.createObjectURL(blob),
+                        textContent: "Download zip file",
+                      });
+                      document.body.appendChild(link);
+                      link.click();
+                      link.remove();
+                    }
+                    
+<!-- Original method - use in case of any error?
                     function downloadFiles(url, filelist) {
-console.log("Please download file IDs: " + filelist);
-
-const FILEBASEURL= 'http://ec2-3-215-16-135.compute-1.amazonaws.com/api/access/datafile/';
-const FILEURLPARAMS='?format=original&amp;gbrecs=true';
-
-getZipFileBlob()
-  .then(downloadFile);
-
-async function getZipFileBlob() {
-  const zipWriter = new zip.ZipWriter(new zip.BlobWriter("application/zip"));
-  const promises = [];
-  for(let indexString of filelist.split(',')) {
-    promises.push(zipWriter.add(indexString + '.bin', new zip.HttpReader(FILEBASEURL + indexString + FILEURLPARAMS)));
-}
-  await Promise.all(promises);
-  return zipWriter.close();
-}
-
-function downloadFile(blob) {
-  const link = Object.assign(document.createElement("a"), {
-    download: "hello.zip",
-    href: URL.createObjectURL(blob),
-    textContent: "Download zip file",
-  });
-document.body.appendChild(link);
-link.click();
-link.remove();
-}
-
-<!--                    function downloadFiles(url, filelist) {
                         filelist = filelist + ','; //Prevents last file from being dropped on server
                         var form = $('<form></form>').attr('action', url).attr('method', 'post').attr('enctype', 'text/plain');
                         form.append($("<input></input>").attr('type', 'hidden').attr('name', 'fileIds').attr('value', filelist));
                         //Submit and then remove form
                         form.appendTo('body').submit().remove();
-                    } -->
+                    }
+-->
                 </script>
                 <!-- EDIT -->
                 <div style="margin-right:14px;" class="btn-group" jsf:rendered="#{DatasetPage.sessionUserAuthenticated
