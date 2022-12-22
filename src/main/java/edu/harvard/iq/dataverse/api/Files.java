@@ -453,6 +453,51 @@ public class Files extends AbstractApiBean {
     }
     
     @GET                             
+    @Path("{id}")
+    public Response getFileData(@PathParam("id") String fileIdOrPersistentId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, Boolean getDraft) throws WrappedResponse, Exception {
+        DataverseRequest req;
+            try {
+                req = createDataverseRequest(findUserOrDie());
+            } catch (Exception e) {
+                return error(BAD_REQUEST, "Error attempting to request information. Maybe a bad API token?");
+            }
+            final DataFile df;
+            try {
+                df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+            } catch (Exception e) {
+                return error(BAD_REQUEST, "Error attempting get the requested data file.");
+            }
+            FileMetadata fm;
+            
+            if(null != getDraft && getDraft) { 
+                try {
+                    fm = execCommand(new GetDraftFileMetadataIfAvailableCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+                } catch (WrappedResponse w) {
+                    return error(BAD_REQUEST, "An error occurred getting a draft version, you may not have permission to access unpublished data on this dataset." );
+                }
+                if(null == fm) {
+                    return error(BAD_REQUEST, "No draft availabile for this dataset");
+                }
+            } else {
+                fm = df.getLatestPublishedFileMetadata();
+                MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountLoggingServiceBean.MakeDataCountEntry(uriInfo, headers, dvRequestService, df);
+                mdcLogService.logEntry(entry);
+            }
+            
+            String jsonString = fm.asGsonObject(true).toString();
+            
+            return Response
+                .status(Response.Status.OK)
+                .entity(jsonString)
+                .type(MediaType.TEXT_PLAIN) //Our plain text string is already json
+                .build();
+            
+            /*
+            curl "http://localhost:8080/api/datasets/:persistentId/versions/2.0?persistentId=doi:10.5072/FK2/SDHST6"
+            */
+    }
+    
+    @GET                             
     @Path("{id}/metadata")
     public Response getFileMetadata(@PathParam("id") String fileIdOrPersistentId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, Boolean getDraft) throws WrappedResponse, Exception {
         //ToDo - versionId is not used - can't get metadata for earlier versions
