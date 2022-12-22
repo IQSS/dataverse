@@ -206,10 +206,11 @@ public class Access extends AbstractApiBean {
         
         if (gbrecs != true && df.isReleased()){
             // Write Guestbook record if not done previously and file is released
+            //This calls findUserOrDie which will retrieve the key param or api token header, or the workflow token header.
             User apiTokenUser = findAPITokenUser();
             gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, apiTokenUser);
             guestbookResponseService.save(gbr);
-            MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, df);                                        
+            MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, df);
             mdcLogService.logEntry(entry);
         }
         
@@ -1779,7 +1780,16 @@ public class Access extends AbstractApiBean {
          */
         
         User apiTokenUser = null;
-        //If we get a non-GuestUser from findUserOrDie, use it. Otherwise, check the session
+
+        /*
+         * The logic looks for an apitoken authenticated user and uses it if it exists.
+         * If not, and a session user exists, we use that. If the apitoken method
+         * indicates a GuestUser, we will use that if there's no session.
+         * 
+         * This is currently the only API call that supports sessions. If the rest of
+         * the API is opened up, the custom logic here wouldn't be needed.
+         */
+
         try {
             logger.fine("calling apiTokenUser = findUserOrDie()...");
             apiTokenUser = findUserOrDie();
@@ -1813,9 +1823,12 @@ public class Access extends AbstractApiBean {
             return false;
         }
 
-        // OK, let's revisit the case of non-restricted files, this time in
-        // an unpublished version:
-        // (if (published) was already addressed above)
+        /*
+         * Since published and not restricted/embargoed is handled above, the main split
+         * now is whether it is published or not. If it's published, the only case left
+         * is with restricted/embargoed. With unpublished, both the restricted/embargoed
+         * and not restricted/embargoed both get handled the same way.
+         */
 
         DataverseRequest dvr = null;
         if (apiTokenUser != null) {
@@ -1828,6 +1841,7 @@ public class Access extends AbstractApiBean {
             // If the file is not published, they can still download the file, if the user
             // has the permission to view unpublished versions:
 
+            // This line handles all three authenticated session user, token user, and guest cases.
             if (permissionService.requestOn(dvr, df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
                 // it's not unthinkable, that a GuestUser could be given
                 // the ViewUnpublished permission!
@@ -1837,7 +1851,7 @@ public class Access extends AbstractApiBean {
                 return true;
             }
         } else { // published and restricted and/or embargoed
-
+            // This line also handles all three authenticated session user, token user, and guest cases.
             if (permissionService.requestOn(dvr, df).has(Permission.DownloadFile)) {
                 return true;
             }
@@ -1859,6 +1873,11 @@ public class Access extends AbstractApiBean {
         try {
             logger.fine("calling apiTokenUser = findUserOrDie()...");
             apiTokenUser = findUserOrDie();
+            /*
+             * The idea here is to not let a guest user returned from findUserOrDie (which
+             * happens when there is no key/token, and which we want if there's no session)
+             * from overriding an authenticated session user.
+             */
             if(apiTokenUser instanceof GuestUser) {
                 if(session!=null && session.getUser()!=null) {
                 //The apiTokenUser, if set, will override the sessionUser in permissions calcs, so set it to null if we have a session user
