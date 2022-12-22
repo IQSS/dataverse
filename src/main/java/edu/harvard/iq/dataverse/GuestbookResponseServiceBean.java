@@ -640,6 +640,9 @@ public class GuestbookResponseServiceBean {
        
         GuestbookResponse guestbookResponse = new GuestbookResponse();
         
+        //Not otherwise set for multi-file downloads
+        guestbookResponse.setDatasetVersion(workingVersion);
+        
         if(workingVersion.isDraft()){           
             guestbookResponse.setWriteResponse(false);
         } 
