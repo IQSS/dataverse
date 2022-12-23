@@ -31,7 +31,7 @@ function IdPSelectUIParms() {
     this.preferredIdP = null;        // Array of entityIds to always show
     this.hiddenIdPs = null;          // Array of entityIds to delete
     this.ignoreKeywords = false;     // Do we ignore the <mdui:Keywords/> when looking for candidates
-    this.showListFirst = true;      // Do we start with a list of IdPs or just the dropdown
+    this.showListFirst = false;      // Do we start with a list of IdPs or just the dropdown
     this.samlIdPCookieTTL = 730;     // in days
     this.setFocusTextBox = true;     // Set to false to supress focus 
     this.testGUI = false;
