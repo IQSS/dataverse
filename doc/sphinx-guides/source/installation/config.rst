@@ -1435,32 +1435,63 @@ It's also possible to change these values by stopping Payara, editing ``payara5/
 dataverse.fqdn
 ++++++++++++++
 
-If the Dataverse installation has multiple DNS names, this option specifies the one to be used as the "official" hostname. For example, you may want to have ``dataverse.example.edu``, and not the less appealing ``server-123.example.edu`` to appear exclusively in all the registered global identifiers, etc.
+If the Dataverse installation has multiple DNS names, this option specifies the one to be used as the "official"
+hostname. For example, you may want to have ``dataverse.example.edu``, and not the less appealing
+``server-123.example.edu`` to appear exclusively in all the registered global identifiers, etc.
 
-The password reset feature requires ``dataverse.fqdn`` to be configured.
+- Email confirmation links
+- Password reset links
+- Generating a Private URL
+- PID minting
+- Exporting to Schema.org format (and showing JSON-LD in HTML's <meta/> tag)
+- Exporting to DDI format
+- Which Dataverse installation an "external tool" should return to
+- URLs embedded in SWORD API responses
+- ...
 
-Configuring ``dataverse.fqdn`` is not enough. Read on for the importance of also setting ``dataverse.siteUrl``.
+Usually it will follow the pattern ``https://<full-qualified-domain-name>/<some-place-to-go-to>``.
+*Only* the FQDN part of your Dataverse installation URL can be determined by setting ``dataverse.fqdn``.
+
+**Notes:**
+
+- The URL will default to using ``https://`` and no additional port information. If that does not suit your setup, you
+  can define an additional option, ``dataverse.siteUrl``, :ref:`explained below <dataverse.siteUrl>`, which always
+  takes precedence.
+- Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FQDN``.
+  Defaults to ``localhost`` when used with ``mp.config.profile=ct``
 
 .. _dataverse.siteUrl:
 
 dataverse.siteUrl
 +++++++++++++++++
 
-``dataverse.siteUrl`` is used to configure the URL for your Dataverse installation that you plan to advertise to your users. As explained in the :ref:`installation <importance-of-siteUrl>` docs, this setting is critical for the correct operation of your installation.
+``dataverse.siteUrl`` is used to configure the URL for your Dataverse installation that you plan to advertise to your
+users. As explained in the :ref:`installation <importance-of-siteUrl>` docs, this setting is critical for the correct
+operation of your installation. For example, your site URL could be https://dataverse.example.edu . That is, even though
+the server might also be available at uglier URLs such as https://server-123.example.edu, the site URL is the
+"official" URL.
 
-For example, your site URL could be https://dataverse.example.edu
+That said, some environments may require using a different URL pattern to access your installation. You might need to
+use HTTP without "S", a non-standard port and so on. This is especially useful in development or testing environments.
 
-That is, even though the server might also be available at uglier URLs such as https://server-123.example.edu the site URL is the "official" URL.
+You can provide any custom tailored site URL via ``dataverse.siteUrl``, which always takes precedence.
+Example: ``dataverse.siteUrl=http://localhost:8080``
 
-The ``dataverse.siteUrl`` JVM option can be configured by following the procedure under :ref:`jvm-options` or by editing ``domain.xml`` directly. You can specify the protocol, host, and port number. Your ``domain.xml`` file could look like this, for example:
+If you wish to change your site URL by changing the domain configuration, you should edit your ``domain.xml`` directly
+to avoid problems with colons in commands. Find a line similar to
+``<jvm-options>-Ddataverse.siteUrl=https://dataverse.example.edu</jvm-options>`` and change it. You can specify the
+protocol, host, and port number and should not include a trailing slash.
 
-``<jvm-options>-Ddataverse.siteUrl=https://dataverse.example.edu</jvm-options>``
+**Notes:**
 
-Note that it's also possible to use the ``dataverse.fqdn`` as a variable, if you wish. Here's an example of this as well as a custom port (which is usually not necessary):
+- This setting may be used in combination with variable replacement, referencing :ref:`dataverse.fqdn` with
+  ``./asadmin create-jvm-options "\-Ddataverse.siteUrl=http\://\${dataverse.fqdn}\:8080"``
+- Remember to restart Payara after editing ``domain.xml``.
+- Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SITEURL``.
+  Defaults to ``http://${dataverse.fqdn}:8080`` when used with ``mp.config.profile=ct``
+- We are absolutely aware that it's confusing to have both ``dataverse.fqdn`` and ``dataverse.siteUrl``.
+  https://github.com/IQSS/dataverse/issues/6636 is about resolving this confusion.
 
-``<jvm-options>-Ddataverse.siteUrl=https://${dataverse.fqdn}:444</jvm-options>``
-
-We are absolutely aware that it's confusing to have both ``dataverse.fqdn`` and ``dataverse.siteUrl``. https://github.com/IQSS/dataverse/issues/6636 is about resolving this confusion.
 
 .. _dataverse.files.directory:
 
@@ -1539,30 +1570,118 @@ Defaults to ``5432``, the default PostgreSQL port.
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_DB_PORT``.
 
+.. _dataverse.solr.host:
+
+dataverse.solr.host
++++++++++++++++++++
+
+The hostname of a Solr server to connect to. Remember to restart / redeploy Dataverse after changing the setting
+(as with :ref:`:SolrHostColonPort`).
+
+Defaults to ``localhost``.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SOLR_HOST``.
+Defaults to ``solr``, when used with ``mp.config.profile=ct`` (:ref:`see below <:ApplicationServerSettings>`).
+
+dataverse.solr.port
++++++++++++++++++++
+
+The Solr server port to connect to. Remember to restart / redeploy Dataverse after changing the setting
+(as with :ref:`:SolrHostColonPort`).
+
+Defaults to ``8983``, the default Solr port.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SOLR_PORT``.
+
+dataverse.solr.core
++++++++++++++++++++
+
+The name of the Solr core to use for this Dataverse installation. Might be used to switch to a different core quickly.
+Remember to restart / redeploy Dataverse after changing the setting (as with :ref:`:SolrHostColonPort`).
+
+Defaults to ``collection1``.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SOLR_CORE``.
+
+dataverse.solr.protocol
++++++++++++++++++++++++
+
+The Solr server URL protocol for the connection. Remember to restart / redeploy Dataverse after changing the setting
+(as with :ref:`:SolrHostColonPort`).
+
+Defaults to ``http``, but might be set to ``https`` for extra secure Solr installations.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SOLR_PROTOCOL``.
+
+dataverse.solr.path
++++++++++++++++++++
+
+The path part of the Solr endpoint URL (e.g. ``/solr/collection1`` of ``http://localhost:8389/solr/collection1``).
+Might be used to target a Solr API at non-default places. Remember to restart / redeploy Dataverse after changing the
+setting (as with :ref:`:SolrHostColonPort`).
+
+Defaults to ``/solr/${dataverse.solr.core}``, interpolating the core name when used. Make sure to include the variable
+when using it to configure your core name!
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SOLR_PATH``.
+
 dataverse.rserve.host
 +++++++++++++++++++++
 
-Host name for Rserve, used for tasks that require use of R (to ingest RData files and to save tabular data as RData frames).
+Host name for Rserve, used for tasks that require use of R (to ingest RData
+files and to save tabular data as RData frames).
+
+Defaults to ``localhost``.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment
+variable ``DATAVERSE_RSERVE_HOST``.
 
 dataverse.rserve.port
 +++++++++++++++++++++
 
-Port number for Rserve, used for tasks that require use of R (to ingest RData files and to save tabular data as RData frames).
+Port number for Rserve, used for tasks that require use of R (to ingest RData
+files and to save tabular data as RData frames).
+
+Defaults to ``6311`` when not configured or no valid integer.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment
+variable ``DATAVERSE_RSERVE_PORT``.
 
 dataverse.rserve.user
 +++++++++++++++++++++
 
-Username for Rserve, used for tasks that require use of R (to ingest RData files and to save tabular data as RData frames).
+Username for Rserve, used for tasks that require use of R (to ingest RData
+files and to save tabular data as RData frames).
+
+Defaults to ``rserve``.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment
+variable ``DATAVERSE_RSERVE_USER``.
 
 dataverse.rserve.password
 +++++++++++++++++++++++++
 
-Password for Rserve, used for tasks that require use of R (to ingest RData files and to save tabular data as RData frames).
+Password for Rserve, used for tasks that require use of R (to ingest RData
+files and to save tabular data as RData frames).
+
+Defaults to ``rserve``.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment
+variable ``DATAVERSE_RSERVE_PASSWORD``.
 
 dataverse.rserve.tempdir
 ++++++++++++++++++++++++
 
-Temporary directory used by Rserve (defaults to /tmp/Rserv). Note that this location is local to the host on which Rserv is running (specified in ``dataverse.rserve.host`` above). When talking to Rserve, Dataverse needs to know this location in order to generate absolute path names of the files on the other end. 
+Temporary directory used by Rserve (defaults to ``/tmp/Rserv``). Note that this
+location is local to the host on which Rserv is running (specified in
+``dataverse.rserve.host`` above). When talking to Rserve, Dataverse needs to
+know this location in order to generate absolute path names of the files on the
+other end.
+
+Defaults to ``/tmp/Rserv``.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment
+variable ``DATAVERSE_RSERVE_TEMPDIR``.
 
 .. _dataverse.dropbox.key:
 
@@ -1782,6 +1901,21 @@ To facilitate large file upload and download, the Dataverse Software installer b
 ``./asadmin set server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds=3600``
 
 and restart Payara to apply your change.
+
+mp.config.profile
++++++++++++++++++
+
+MicroProfile Config 2.0 defines the `concept of "profiles" <https://download.eclipse.org/microprofile/microprofile-config-2.0/microprofile-config-spec-2.0.html#configprofile>`_.
+They can be used to change configuration values by context. This is used in Dataverse to change some configuration
+defaults when used inside container context rather classic installations.
+
+As per the spec, you will need to set the configuration value ``mp.config.profile`` to ``ct`` as early as possible.
+This is best done with a system property:
+
+``./asadmin create-system-properties 'mp.config.profile=ct'``
+
+You might also create your own profiles and use these, please refer to the upstream documentation linked above.
+
 
 .. _database-settings:
 
@@ -2270,12 +2404,16 @@ Limit the number of files in a zip that your Dataverse installation will accept.
 
 ``curl -X PUT -d 2048 http://localhost:8080/api/admin/settings/:ZipUploadFilesLimit``
 
+.. _:SolrHostColonPort:
+
 :SolrHostColonPort
 ++++++++++++++++++
 
 By default your Dataverse installation will attempt to connect to Solr on port 8983 on localhost. Use this setting to change the hostname or port. You must restart Payara after making this change.
 
 ``curl -X PUT -d localhost:8983 http://localhost:8080/api/admin/settings/:SolrHostColonPort``
+
+**Note:** instead of using a database setting, you could alternatively use JVM settings like :ref:`dataverse.solr.host`.
 
 :SolrFullTextIndexing
 +++++++++++++++++++++
