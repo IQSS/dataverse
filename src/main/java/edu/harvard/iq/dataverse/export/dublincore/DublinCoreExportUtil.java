@@ -122,7 +122,12 @@ public class DublinCoreExportUtil {
         writeFullElementList(xmlw, dcFlavor+":"+"language", dto2PrimitiveList(version, DatasetFieldConstant.language));        
         
         writeRelPublElement(xmlw, version, dcFlavor);
-        writeFullElement(xmlw, dcFlavor+":"+"date", dto2Primitive(version, DatasetFieldConstant.productionDate));  
+        
+        String date = dto2Primitive(version, DatasetFieldConstant.productionDate);
+        if (date == null) {
+            date = datasetDto.getPublicationDate();
+        }
+        writeFullElement(xmlw, dcFlavor+":"+"date", date);
         
         writeFullElement(xmlw, dcFlavor+":"+"contributor", dto2Primitive(version, DatasetFieldConstant.depositor));  
         
@@ -172,7 +177,11 @@ public class DublinCoreExportUtil {
         
         writeFullElementList(xmlw, dcFlavor+":"+"language", dto2PrimitiveList(version, DatasetFieldConstant.language));        
         
-        writeFullElement(xmlw, dcFlavor+":"+"date", dto2Primitive(version, DatasetFieldConstant.productionDate));  
+        String date = dto2Primitive(version, DatasetFieldConstant.productionDate);
+        if (date == null) {
+            date = datasetDto.getPublicationDate();
+        }
+        writeFullElement(xmlw, dcFlavor+":"+"date", date);  
         
         writeFullElement(xmlw, dcFlavor+":"+"contributor", dto2Primitive(version, DatasetFieldConstant.depositor));  
         

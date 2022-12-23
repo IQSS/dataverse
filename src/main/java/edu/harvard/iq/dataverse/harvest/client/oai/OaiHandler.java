@@ -1,33 +1,27 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.harvest.client.oai;
 
-import com.lyncode.xoai.model.oaipmh.Description;
-import com.lyncode.xoai.model.oaipmh.Granularity;
-import com.lyncode.xoai.model.oaipmh.Header;
-import com.lyncode.xoai.model.oaipmh.MetadataFormat;
-import com.lyncode.xoai.model.oaipmh.Set;
-import com.lyncode.xoai.serviceprovider.ServiceProvider;
-import com.lyncode.xoai.serviceprovider.client.HttpOAIClient;
-import com.lyncode.xoai.serviceprovider.exceptions.BadArgumentException;
-import com.lyncode.xoai.serviceprovider.exceptions.InvalidOAIResponse;
-import com.lyncode.xoai.serviceprovider.exceptions.NoSetHierarchyException;
-import com.lyncode.xoai.serviceprovider.model.Context;
-import com.lyncode.xoai.serviceprovider.parameters.ListIdentifiersParameters;
+import io.gdcc.xoai.model.oaipmh.Granularity;
+import io.gdcc.xoai.model.oaipmh.results.record.Header;
+import io.gdcc.xoai.model.oaipmh.results.MetadataFormat;
+import io.gdcc.xoai.model.oaipmh.results.Set;
+import io.gdcc.xoai.serviceprovider.ServiceProvider;
+import io.gdcc.xoai.serviceprovider.client.JdkHttpOaiClient;
+import io.gdcc.xoai.serviceprovider.exceptions.BadArgumentException;
+import io.gdcc.xoai.serviceprovider.exceptions.InvalidOAIResponse;
+import io.gdcc.xoai.serviceprovider.exceptions.NoSetHierarchyException;
+import io.gdcc.xoai.serviceprovider.exceptions.IdDoesNotExistException;
+import io.gdcc.xoai.serviceprovider.model.Context;
+import io.gdcc.xoai.serviceprovider.parameters.ListIdentifiersParameters;
 import edu.harvard.iq.dataverse.harvest.client.FastGetRecord;
+import static edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean.DATAVERSE_PROPRIETARY_METADATA_API;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import java.io.IOException;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 import javax.xml.transform.TransformerException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -74,8 +68,9 @@ public class OaiHandler implements Serializable {
         this.harvestingClient = harvestingClient;
     }
     
-    private String baseOaiUrl; //= harvestingClient.getHarvestingUrl();
-    private String metadataPrefix; // = harvestingClient.getMetadataPrefix();
+    private String baseOaiUrl; 
+    private String dataverseApiUrl; // if the remote server is a Dataverse and we access its native metadata
+    private String metadataPrefix; 
     private String setName; 
     private Date   fromDate;
     private Boolean setListTruncated = false;
@@ -124,7 +119,7 @@ public class OaiHandler implements Serializable {
         return setListTruncated;
     }
     
-    private ServiceProvider getServiceProvider() throws OaiHandlerException {
+    public ServiceProvider getServiceProvider() throws OaiHandlerException {
         if (serviceProvider == null) {
             if (baseOaiUrl == null) {
                 throw new OaiHandlerException("Could not instantiate Service Provider, missing OAI server URL.");
@@ -133,8 +128,8 @@ public class OaiHandler implements Serializable {
 
             context.withBaseUrl(baseOaiUrl);
             context.withGranularity(Granularity.Second);
-            context.withOAIClient(new HttpOAIClient(baseOaiUrl));
-
+            // builds the client with the default parameters and the JDK http client:
+            context.withOAIClient(JdkHttpOaiClient.newBuilder().withBaseUrl(baseOaiUrl).build());
             serviceProvider = new ServiceProvider(context);
         }
         
@@ -199,6 +194,16 @@ public class OaiHandler implements Serializable {
         
         try {
             mfIter = sp.listMetadataFormats();
+        } catch (IdDoesNotExistException idnee) {
+            // TODO: 
+            // not sure why this exception is now thrown by List Metadata Formats (?)
+            // but looks like it was added in xoai 4.2. 
+            // It appears that the answer is, they added it because you can 
+            // call ListMetadataFormats on a specific identifier, optionally, 
+            // and therefore it is possible to get back that response. Of course 
+            // it will never be the case when calling it on an entire repository. 
+            // But it's ok. 
+            throw new OaiHandlerException("Id does not exist exception");
         } catch (InvalidOAIResponse ior) {
             throw new OaiHandlerException("No valid response received from the OAI server."); 
         }
@@ -261,7 +266,7 @@ public class OaiHandler implements Serializable {
         mip.withMetadataPrefix(metadataPrefix);
 
         if (this.fromDate != null) {
-            mip.withFrom(this.fromDate);
+            mip.withFrom(this.fromDate.toInstant());
         }
 
         if (!StringUtils.isEmpty(this.setName)) {
@@ -269,6 +274,18 @@ public class OaiHandler implements Serializable {
         }
         
         return mip;
+    }
+    
+    public String getProprietaryDataverseMetadataURL(String identifier) {
+
+        if (dataverseApiUrl == null) {
+            dataverseApiUrl = baseOaiUrl.replaceFirst("/oai", "");
+        }
+        
+        StringBuilder requestURL =  new StringBuilder(dataverseApiUrl);
+        requestURL.append(DATAVERSE_PROPRIETARY_METADATA_API).append(identifier);
+
+        return requestURL.toString();
     }
     
     public void runIdentify() {
