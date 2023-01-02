@@ -28,7 +28,7 @@
                 <div class="alert alert-info" role="alert">
                     <p class="text-block">
                         <span class="glyphicon glyphicon-info-sign"></span>
-                        #{bundle['uningest.page.info']}
+                        <h:outputText value="#{bundle['uningest.page.info']}" escape="false"/>
                     </p>
                 </div>
             </p:outputPanel>
@@ -54,9 +54,11 @@
                                 <h:outputText value="#{item.unf}" />
                             </p:column>
 
-                            <p:column style="text-align: center">
+                            <p:column headerText="#{bundle['uningest.table.actions']}" style="text-align: center">
                                 <p:commandButton value="#{bundle['uningest.table.uningest.button']}"
-                                                 onclick="primeFacesShowModal('uningestConfirm', this)"
+                                                 ajax="true"
+                                                 oncomplete="primeFacesShowModal('uningestConfirm', this)"
+                                                 update=":uningestConfirm"
                                                  action="#{UningestPage.setToUningest(item)}"/>
                             </p:column>
                         </p:dataTable>
@@ -68,21 +70,24 @@
                     </p:outputPanel>
                 </div>
 
-                <p:dialog styleClass="smallPopUp" header="#{bundle['uningest.dialog.title']}" widgetVar="uningestConfirm" modal="true">
-                    <p class="text-warning">
-                        <span class="glyphicon glyphicon-warning-sign"/>#{bundle['uningest.dialog.text']}
-                    </p>
-                    <div class="button-block">
-                        <p:commandButton value="#{bundle.continue}"
-                                         onclick="PF('uningestConfirm').hide()"
-                                         action="#{UningestPage.uningest()}"
-                                         update="uningestForm"/>
-                        <p:commandButton value="#{bundle.cancel}"
-                                         onclick="PF('uningestConfirm').hide();"
-                                         type="button"/>
-                    </div>
-                </p:dialog>
             </h:form>
+            <p:dialog id="uningestConfirm" styleClass="smallPopUp" header="#{bundle['uningest.dialog.title']}" widgetVar="uningestConfirm" modal="true">
+                <p class="text-warning">
+                    <span class="glyphicon glyphicon-warning-sign"/>
+                    <h:outputFormat value="#{bundle['uningest.dialog.text']}">
+                        <f:param value="#{UningestPage.toUningest.fileName}" />
+                    </h:outputFormat>
+                </p>
+                <div class="button-block">
+                    <p:commandButton value="#{bundle.continue}"
+                                     onclick="PF('uningestConfirm').hide()"
+                                     action="#{UningestPage.uningest()}"
+                                     update="uningestForm"/>
+                    <p:commandButton value="#{bundle.cancel}"
+                                     onclick="PF('uningestConfirm').hide();"
+                                     type="button"/>
+                </div>
+            </p:dialog>
         </ui:define>
     </ui:composition>
 </h:body>

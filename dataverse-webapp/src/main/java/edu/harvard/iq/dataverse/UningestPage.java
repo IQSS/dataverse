@@ -50,6 +50,10 @@ public class UningestPage implements Serializable {
     public List<UningestableItem> getUningestableFiles() {
         return uningestableFiles;
     }
+    
+    public UningestableItem getToUningest() {
+        return toUningest;
+    }
 
     // -------------------- CONSTRUCTORS --------------------
 
