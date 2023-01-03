@@ -110,7 +110,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to create a dataset in this dataverse.");
                     }
 
-                    DatasetVersion newDatasetVersion = dataset.getEditVersion();
+                    DatasetVersion newDatasetVersion = dataset.getOrCreateEditVersion();
 
                     String foreignFormat = SwordUtil.DCTERMS;
                     try {

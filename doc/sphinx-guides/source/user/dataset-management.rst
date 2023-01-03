@@ -193,8 +193,8 @@ Additional download options available for tabular data (found in the same drop-d
 - The original file uploaded by the user; 
 - Saved as R data (if the original file was not in R format); 
 - Variable Metadata (as a `DDI Codebook <http://www.ddialliance.org/Specification/DDI-Codebook/>`_ XML file);
-- Data File Citation (currently in either RIS, EndNote XML, or BibTeX format); 
-- All of the above, as a zipped bundle. 
+- Data File Citation (currently in either RIS, EndNote XML, or BibTeX format). 
+
 
 Differentially Private (DP) Metadata can also be accessed for restricted tabular files if the data depositor has created a DP Metadata Release. See :ref:`dp-release-create` for more information.
 

@@ -10,9 +10,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -36,9 +34,7 @@ import org.apache.solr.common.SolrInputDocument;
 public class SolrIndexServiceBean {
 
     private static final Logger logger = Logger.getLogger(SolrIndexServiceBean.class.getCanonicalName());
-
-    @EJB
-    SystemConfig systemConfig;
+    
     @EJB
     DvObjectServiceBean dvObjectService;
     @EJB

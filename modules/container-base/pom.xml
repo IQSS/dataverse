@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd;">
+    <modelVersion>4.0.0</modelVersion>
+    
+    <parent>
+        <groupId>edu.harvard.iq</groupId>
+        <artifactId>dataverse-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../dataverse-parent</relativePath>
+    </parent>
+    
+    <groupId>io.gdcc</groupId>
+    <artifactId>container-base</artifactId>
+    <packaging>${packaging.type}</packaging>
+    <name>Container Base Image</name>
+    <description>This module provides an application server base image to be decorated with the Dataverse app.</description>
+    
+    <developers>
+        <developer>
+            <id>poikilotherm</id>
+            <name>Oliver Bertuch</name>
+            <email>github@bertuch.eu</email>
+            <timezone>Europe/Berlin</timezone>
+            <roles>
+                <role>maintainer</role>
+            </roles>
+        </developer>
+    </developers>
+    
+    <properties>
+        <!-- By default, this module will produce a POM only. -->
+        <!-- This will be switched within the container profile! -->
+        <packaging.type>pom</packaging.type>
+    </properties>
+    
+    <profiles>
+        <profile>
+            <id>ct</id>
+            <properties>
+                <packaging.type>docker-build</packaging.type>
+                <base.image>gdcc/base:${base.image.tag}</base.image>
+                <base.image.tag>unstable</base.image.tag>
+                <java.image>eclipse-temurin:${target.java.version}-jre</java.image>
+                <base.image.uid>1000</base.image.uid>
+                <base.image.gid>1000</base.image.gid>
+            </properties>
+            
+            <build>
+                <plugins>
+                    <!-- Retrieve Payara Server as a dependency and cache it via Maven -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>unpack</id>
+                                <phase>initialize</phase>
+                                <goals>
+                                    <goal>unpack</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>fish.payara.distributions</groupId>
+                                            <artifactId>payara</artifactId>
+                                            <version>${payara.version}</version>
+                                            <type>zip</type>
+                                            <overWrite>false</overWrite>
+                                            <outputDirectory>${project.build.directory}</outputDirectory>
+                                            <fileMappers>
+                                                <org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+                                                    <pattern>^payara\d</pattern>
+                                                    <replacement>payara</replacement>
+                                                </org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+                                            </fileMappers>
+                                        </artifactItem>
+                                    </artifactItems>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+        
+                    <!-- Build image via Docker Maven Plugin -->
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <images>
+                                <image>
+                                    <alias>base</alias>
+                                    <name>${base.image}</name>
+                                    <build>
+                                        <buildx>
+                                            <platforms>
+                                                <platform>linux/arm64</platform>
+                                                <platform>linux/amd64</platform>
+                                            </platforms>
+                                            <dockerStateDir>${project.build.directory}/buildx-state</dockerStateDir>
+                                        </buildx>
+                                        <dockerFile>Dockerfile</dockerFile>
+                                        <args>
+                                            <JAVA_IMAGE>${java.image}</JAVA_IMAGE>
+                                            <UID>${base.image.uid}</UID>
+                                            <GID>${base.image.gid}</GID>
+                                        </args>
+                                        <filter>@</filter>
+                                        <assembly>
+                                            <descriptor>assembly.xml</descriptor>
+                                        </assembly>
+                                    </build>
+                                </image>
+                            </images>
+                        </configuration>
+                    </plugin>
+    
+                    <!--
+                      Flatten the generated POM before installing it, so modules depending on us are not
+                      trying to lookup the parent POM, which isn't of much use to them anyway.
+                    -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>flatten-maven-plugin</artifactId>
+                        <version>1.2.7</version>
+                        <configuration>
+                            <updatePomFile>true</updatePomFile>
+                            <flattenMode>oss</flattenMode>
+                            <pomElements>
+                                <distributionManagement>remove</distributionManagement>
+                                <repositories>remove</repositories>
+                            </pomElements>
+                        </configuration>
+                        <executions>
+                            <!-- enable flattening -->
+                            <execution>
+                                <id>flatten</id>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>flatten</goal>
+                                </goals>
+                            </execution>
+                            <!-- ensure proper cleanup -->
+                            <execution>
+                                <id>flatten.clean</id>
+                                <phase>clean</phase>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    
+                    <!--
+                      This is here as a workaround to install the generated POM,
+                      so we can pick this modules build up as a dependency in others.
+                      
+                      See also https://github.com/fabric8io/docker-maven-plugin/issues/1537
+                    -->
+                    <plugin>
+                        <artifactId>maven-install-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>default-install</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>install</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

@@ -1,0 +1,4 @@
+## Mechanism added for stopping a harvest in progress
+
+It is now possible for an admin to stop a long-running harvesting job. See [Harvesting Clients](https://guides.dataverse.org/en/latest/admin/harvestclients.html) guide for more information. 
+

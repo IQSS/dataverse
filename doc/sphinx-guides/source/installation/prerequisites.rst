@@ -291,8 +291,8 @@ If the installed location of the convert executable is different from ``/usr/bin
 R
 -
 
-The Dataverse Software uses `R <https://https://cran.r-project.org/>`_ to handle
-tabular data files. The instructions below describe a **minimal** R
+The Dataverse Software uses `R <https://cran.r-project.org>`_ to handle
+tabular data files. The instructions below describe a **minimal** R Project
 installation. It will allow you to ingest R (.RData) files as tabular
 data and to export tabular data as .RData files.  R can be considered an optional component, meaning
 that if you don't have R installed, you will still be able to run and

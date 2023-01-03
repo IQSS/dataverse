@@ -41,7 +41,7 @@ This command helps verify what host your domain is using to send mail. Even if i
 2. From the left-side panel, select **JavaMail Sessions**
 3. You should see one session named **mail/notifyMailSession** -- click on that.
 
-From this window you can modify certain fields of your Dataverse installation's notifyMailSession, which is the JavaMail session for outgoing system email (such as on user signup or data publication). Two of the most important fields we need are:
+From this window you can modify certain fields of your Dataverse installation's notifyMailSession, which is the JavaMail session for outgoing system email (such as on user sign up or data publication). Two of the most important fields we need are:
 
 - **Mail Host:** The DNS name of the default mail server (e.g. smtp.gmail.com)
 - **Default User:** The username provided to your Mail Host when you connect to it (e.g. johndoe@gmail.com)

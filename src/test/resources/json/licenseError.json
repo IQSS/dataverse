@@ -4,5 +4,6 @@
   "uri": "http://dataverse..org/licenses/test/ln6",
   "iconUrl": "http://dataverse.org/licenses/test/ln6/icon.png",
   "shortDescription": "A License that must have id 6.",
-  "active": true
+  "active": true,
+  "sortOrder": 1
 }

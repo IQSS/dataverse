@@ -58,6 +58,8 @@ From the root of the git repo, run the following command to set the build number
 
 This should update or place a file at ``src/main/java/BuildNumber.properties``.
 
+(See also :ref:`auto-custom-build-number` for other ways of changing the build number.)
+
 Then, from Netbeans, click "Run" and then "Clean and Build Project (dataverse)". After this completes successfully, click "Run" and then "Run Project (dataverse)"
 
 Confirm the Change Was Deployed
@@ -164,6 +166,8 @@ Git on Mac
 
 On a Mac, you won't have git installed unless you have "Command Line Developer Tools" installed but running ``git clone`` for the first time will prompt you to install them.
 
+.. _auto-custom-build-number:
+
 Automation of Custom Build Number on Webpage
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -172,6 +176,15 @@ to let Git automatically update ``src/main/java/BuildNumber.properties`` for you
 commit id in your test deployment webpages on the bottom right corner next to the version.
 
 When you prefer manual updates, there is another script, see above: :ref:`custom_build_num_script`.
+
+An alternative to that is using *MicroProfile Config* and set the option ``dataverse.build`` via a system property,
+environment variable (``DATAVERSE_BUILD``) or `one of the other config sources
+<https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Overview.html#config-sources>`__.
+
+You could even override the version itself with the option ``dataverse.version`` in the same way, which is usually
+picked up from a build time source.
+
+See also discussion of version numbers in :ref:`run-build-create-war`.
 
 Sample Data
 -----------

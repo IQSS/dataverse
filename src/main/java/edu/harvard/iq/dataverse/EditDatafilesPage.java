@@ -539,7 +539,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             return permissionsWrapper.notFound();
         }
 
-        workingVersion = dataset.getEditVersion();
+        workingVersion = dataset.getOrCreateEditVersion();
 
         //TODO: review if we we need this check; 
         // as getEditVersion should either return the exisiting draft or create a new one      
@@ -890,7 +890,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // ToDo - FileMetadataUtil.removeFileMetadataFromList should handle these two
                 // removes so they could be put after this if clause and the else clause could
                 // be removed.
-                dataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
+                dataset.getOrCreateEditVersion().getFileMetadatas().remove(markedForDelete);
                 fileMetadatas.remove(markedForDelete);
 
                 filesToBeDeleted.add(markedForDelete);
@@ -907,7 +907,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // 1. delete the filemetadata from the local display list: 
                 FileMetadataUtil.removeFileMetadataFromList(fileMetadatas, markedForDelete);
                 // 2. delete the filemetadata from the version: 
-                FileMetadataUtil.removeFileMetadataFromList(dataset.getEditVersion().getFileMetadatas(), markedForDelete);
+                FileMetadataUtil.removeFileMetadataFromList(dataset.getOrCreateEditVersion().getFileMetadatas(), markedForDelete);
             }
 
             if (markedForDelete.getDataFile().getId() == null) {
@@ -1201,7 +1201,7 @@ public class EditDatafilesPage implements java.io.Serializable {
              */
         }
 
-        workingVersion = dataset.getEditVersion();
+        workingVersion = dataset.getOrCreateEditVersion();
         logger.fine("working version id: " + workingVersion.getId());
 
         if (FileEditMode.EDIT == mode && Referrer.FILE == referrer) {

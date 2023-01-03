@@ -33,7 +33,7 @@ public class CreateDatasetVersionCommandTest {
         Dataset ds = makeDataset();
         
         // Populate the Initial version
-        DatasetVersion dsvInitial = ds.getEditVersion();
+        DatasetVersion dsvInitial = ds.getOrCreateEditVersion();
         dsvInitial.setCreateTime( dateFmt.parse("20001012") );
         dsvInitial.setLastUpdateTime( dsvInitial.getLastUpdateTime() );
         dsvInitial.setId( MocksFactory.nextId() );
@@ -62,7 +62,7 @@ public class CreateDatasetVersionCommandTest {
         assertEquals( dsvCreationDate, dsvNew.getLastUpdateTime() );
         assertEquals( dsvCreationDate.getTime(), ds.getModificationTime().getTime() );
         assertEquals( ds, dsvNew.getDataset() );
-        assertEquals( dsvNew, ds.getEditVersion() );
+        assertEquals( dsvNew, ds.getOrCreateEditVersion() );
         Map<DvObject, Set<Permission>> expected = new HashMap<>();
         expected.put(ds, Collections.singleton(Permission.AddDataset));
         assertEquals(expected, testEngine.getReqiredPermissionsForObjects() );

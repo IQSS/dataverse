@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import java.time.Instant;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -286,15 +287,15 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         return findOaiRecordsBySetName(setName, null, null);
     }    
     
-    public List<OAIRecord> findOaiRecordsBySetName(String setName, Date from, Date until) {
+    public List<OAIRecord> findOaiRecordsBySetName(String setName, Instant from, Instant until) {
         return findOaiRecordsBySetName(setName, from, until, false);
     }
     
-    public List<OAIRecord> findOaiRecordsNotInThisSet(String setName, Date from, Date until) {
+    public List<OAIRecord> findOaiRecordsNotInThisSet(String setName, Instant from, Instant until) {
         return findOaiRecordsBySetName(setName, from, until, true);
     }
     
-    public List<OAIRecord> findOaiRecordsBySetName(String setName, Date from, Date until, boolean excludeSet) {
+    public List<OAIRecord> findOaiRecordsBySetName(String setName, Instant from, Instant until, boolean excludeSet) {
                 
         if (setName == null) {
             setName = "";
@@ -314,35 +315,18 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         logger.fine("Query: "+queryString);
         
         TypedQuery<OAIRecord> query = em.createQuery(queryString, OAIRecord.class);
-        if (setName != null) { query.setParameter("setName",setName); }
-        if (from != null) { query.setParameter("from",from,TemporalType.TIMESTAMP); }
-        // In order to achieve inclusivity on the "until" matching, we need to do 
-        // the following (if the "until" parameter is supplied):
-        // 1) if the supplied "until" parameter has the time portion (and is not just
-        // a date), we'll increment it by one second. This is because the time stamps we 
-        // keep in the database also have fractional thousands of a second. 
-        // So, a record may be shown as "T17:35:45", but in the database it is 
-        // actually "17:35:45.356", so "<= 17:35:45" isn't going to work on this 
-        // time stamp! - So we want to try "<= 17:35:45" instead. 
-        // 2) if it's just a date, we'll increment it by a *full day*. Otherwise
-        // our database time stamp of 2016-10-23T17:35:45.123Z is NOT going to 
-        // match " <= 2016-10-23" - which is really going to be interpreted as 
-        // "2016-10-23T00:00:00.000". 
-        // -- L.A. 4.6
+        if (setName != null) { 
+            query.setParameter("setName",setName); 
+        }
+        // TODO: review and phase out the use of java.util.Date throughout this service.
+        
+        if (from != null) { 
+            query.setParameter("from",Date.from(from),TemporalType.TIMESTAMP); 
+        }
         
         if (until != null) { 
-            // 24 * 3600 * 1000 = number of milliseconds in a day. 
-            
-            if (until.getTime() % (24 * 3600 * 1000) == 0) {
-                // The supplied "until" parameter is a date, with no time
-                // portion. 
-                logger.fine("plain date. incrementing by one day");
-                until.setTime(until.getTime()+(24 * 3600 * 1000));
-            } else {
-                logger.fine("date and time. incrementing by one second");
-                until.setTime(until.getTime()+1000);
-            }
-            query.setParameter("until",until,TemporalType.TIMESTAMP); 
+            Date untilDate = Date.from(until);
+            query.setParameter("until",untilDate,TemporalType.TIMESTAMP); 
         }
                 
         try {

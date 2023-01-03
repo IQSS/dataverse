@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.validation.EMailValidator;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.GlobalId;
@@ -34,6 +35,7 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailException;
@@ -47,6 +49,7 @@ import edu.harvard.iq.dataverse.settings.Setting;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -90,6 +93,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeactivateUserCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteTemplateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
@@ -98,6 +102,7 @@ import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -1813,6 +1818,9 @@ public class Admin extends AbstractApiBean {
             Dataset ds = findDatasetOrDie(dsid);
 
             DatasetVersion dv = datasetversionService.findByFriendlyVersionNumber(ds.getId(), versionNumber);
+            if(dv==null) {
+                return error(Status.BAD_REQUEST, "Requested version not found.");
+            }
             if (dv.getArchivalCopyLocation() == null) {
                 String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
                 // Note - the user is being sent via the createDataverseRequest(au) call to the
@@ -1858,7 +1866,7 @@ public class Admin extends AbstractApiBean {
                 return error(Status.BAD_REQUEST, "Version was already submitted for archiving.");
             }
         } catch (WrappedResponse e1) {
-            return error(Status.UNAUTHORIZED, "api key required");
+            return e1.getResponse();
         }
     }
 
@@ -1949,7 +1957,7 @@ public class Admin extends AbstractApiBean {
                 return error(Status.BAD_REQUEST, "No unarchived published dataset versions found");
             }
         } catch (WrappedResponse e1) {
-            return error(Status.UNAUTHORIZED, "api key required");
+            return e1.getResponse();
         }
     }
     
@@ -2241,4 +2249,52 @@ public class Admin extends AbstractApiBean {
                 .collect(toJsonArray()));
 
     }
+    
+    @POST
+    @Consumes("application/json")
+    @Path("/requestSignedUrl")
+    public Response getSignedUrl(JsonObject urlInfo) {
+        AuthenticatedUser superuser = null;
+        try {
+            superuser = findAuthenticatedUserOrDie();
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        if (superuser == null || !superuser.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Requesting signed URLs is restricted to superusers.");
+        }
+        
+        String userId = urlInfo.getString("user");
+        String key=null;
+        if (userId != null) {
+            AuthenticatedUser user = authSvc.getAuthenticatedUser(userId);
+            // If a user param was sent, we sign the URL for them, otherwise on behalf of
+            // the superuser who made this api call
+            if (user != null) {
+                ApiToken apiToken = authSvc.findApiTokenByUser(user);
+                if (apiToken != null && !apiToken.isExpired() && !apiToken.isDisabled()) {
+                    key = apiToken.getTokenString();
+                }
+            } else {
+                userId = superuser.getUserIdentifier();
+                // We ~know this exists - the superuser just used it and it was unexpired/not
+                // disabled. (ToDo - if we want this to work with workflow tokens (or as a
+                // signed URL), we should do more checking as for the user above))
+                key = authSvc.findApiTokenByUser(superuser).getTokenString();
+            }
+            if (key == null) {
+                return error(Response.Status.CONFLICT, "Do not have a valid user with apiToken");
+            }
+            key = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + key;
+        }
+        
+        String baseUrl = urlInfo.getString("url");
+        int timeout = urlInfo.getInt(ExternalToolHandler.TIMEOUT, 10);
+        String method = urlInfo.getString(ExternalToolHandler.HTTP_METHOD, "GET");
+        
+        String signedUrl = UrlSignerUtil.signUrl(baseUrl, timeout, userId, method, key); 
+        
+        return ok(Json.createObjectBuilder().add(ExternalToolHandler.SIGNED_URL, signedUrl));
+    }
+ 
 }

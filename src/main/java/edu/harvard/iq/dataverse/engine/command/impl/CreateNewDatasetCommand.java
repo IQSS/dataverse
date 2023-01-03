@@ -81,7 +81,7 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
     
     @Override
     protected DatasetVersion getVersionToPersist( Dataset theDataset ) {
-        return theDataset.getEditVersion();
+        return theDataset.getOrCreateEditVersion();
     }
 
     @Override

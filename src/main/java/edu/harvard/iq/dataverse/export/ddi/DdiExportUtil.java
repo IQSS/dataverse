@@ -32,18 +32,15 @@ import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_TYPE_UNF
 import edu.harvard.iq.dataverse.export.DDIExporter;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
-import static edu.harvard.iq.dataverse.util.SystemConfig.FQDN;
-import static edu.harvard.iq.dataverse.util.SystemConfig.SITE_URL;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -1292,7 +1289,7 @@ public class DdiExportUtil {
     // harvesting *all* files are encoded as otherMats; even tabular ones.
     private static void createOtherMats(XMLStreamWriter xmlw, List<FileDTO> fileDtos) throws XMLStreamException {
         // The preferred URL for this dataverse, for cooking up the file access API links:
-        String dataverseUrl = getDataverseSiteUrl();
+        String dataverseUrl = SystemConfig.getDataverseSiteUrlStatic();
         
         for (FileDTO fileDTo : fileDtos) {
             // We'll continue using the scheme we've used before, in DVN2-3: non-tabular files are put into otherMat,
@@ -1339,7 +1336,7 @@ public class DdiExportUtil {
     
     private static void createOtherMatsFromFileMetadatas(XMLStreamWriter xmlw, List<FileMetadata> fileMetadatas) throws XMLStreamException {
         // The preferred URL for this dataverse, for cooking up the file access API links:
-        String dataverseUrl = getDataverseSiteUrl();
+        String dataverseUrl = SystemConfig.getDataverseSiteUrlStatic();
         
         for (FileMetadata fileMetadata : fileMetadatas) {
             // We'll continue using the scheme we've used before, in DVN2-3: non-tabular files are put into otherMat,
@@ -1553,33 +1550,6 @@ public class DdiExportUtil {
 
     private static void saveJsonToDisk(String datasetVersionAsJson) throws IOException {
         Files.write(Paths.get("/tmp/out.json"), datasetVersionAsJson.getBytes());
-    }
-    
-    /**
-     * The "official", designated URL of the site;
-     * can be defined as a complete URL; or derived from the 
-     * "official" hostname. If none of these options is set,
-     * defaults to the InetAddress.getLocalHOst() and https;
-     */
-    private static String getDataverseSiteUrl() {
-        String hostUrl = System.getProperty(SITE_URL);
-        if (hostUrl != null && !"".equals(hostUrl)) {
-            return hostUrl;
-        }
-        String hostName = System.getProperty(FQDN);
-        if (hostName == null) {
-            try {
-                hostName = InetAddress.getLocalHost().getCanonicalHostName();
-            } catch (UnknownHostException e) {
-                hostName = null;
-            }
-        }
-        
-        if (hostName != null) {
-            return "https://" + hostName;
-        }
-        
-        return "http://localhost:8080";
     }
     
     
@@ -1893,7 +1863,7 @@ public class DdiExportUtil {
     }
     
     private static void createFileDscr(XMLStreamWriter xmlw, DatasetVersion datasetVersion) throws XMLStreamException {
-        String dataverseUrl = getDataverseSiteUrl();
+        String dataverseUrl = SystemConfig.getDataverseSiteUrlStatic();
         for (FileMetadata fileMetadata : datasetVersion.getFileMetadatas()) {
             DataFile dataFile = fileMetadata.getDataFile();
 

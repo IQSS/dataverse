@@ -31,6 +31,7 @@ import java.security.NoSuchAlgorithmException;
 import javax.inject.Inject;
 
 // Rosuda Wrappers and Methods for R-calls to Rserve
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.RList;
@@ -88,10 +89,10 @@ public class RDATAFileReader extends TabularDataFileReader {
   static private String RSCRIPT_WRITE_DVN_TABLE = "";
   
   // RServe static variables
-  private static String RSERVE_HOST = System.getProperty("dataverse.rserve.host");
-  private static String RSERVE_USER = System.getProperty("dataverse.rserve.user");
-  private static String RSERVE_PASSWORD = System.getProperty("dataverse.rserve.password");
-  private static int RSERVE_PORT;
+  private final String RSERVE_HOST;
+  private final int RSERVE_PORT;
+  private final String RSERVE_USER;
+  private final String RSERVE_PASSWORD;
   
   // TODO: 
   // we're not using these time/data formats for anything, are we?
@@ -138,24 +139,6 @@ public class RDATAFileReader extends TabularDataFileReader {
    * This is primarily to construct the R-Script
    */
   static {
-    /*
-     * Set defaults fallbacks for class properties
-     */
-    if (RSERVE_HOST == null)
-      RSERVE_HOST = "localhost";
-
-    if (RSERVE_USER == null)
-      RSERVE_USER = "rserve";
-
-    if (RSERVE_PASSWORD == null)
-      RSERVE_PASSWORD = "rserve";
-
-    if (System.getProperty("dataverse.ingest.rserve.port") == null)
-      RSERVE_PORT = 6311;
-    else
-      RSERVE_PORT = Integer.parseInt(System.getProperty("dataverse.rserve.port"));
-
-    
     // Load R Scripts into memory, so that we can run them via R-serve
     RSCRIPT_WRITE_DVN_TABLE = readLocalResource("scripts/write.table.R");
     RSCRIPT_GET_DATASET = readLocalResource("scripts/get.dataset.R");
@@ -451,7 +434,20 @@ public class RDATAFileReader extends TabularDataFileReader {
 
     super(originator);
     
-    
+    // These settings have sane defaults in resources/META-INF/microprofile-config.properties,
+    // ready to be overridden by a sysadmin. Every time a file would be read with this file reader,
+    // a new reader will be created, reading from the cached config source settings with minimal overhead.
+    this.RSERVE_HOST = JvmSettings.RSERVE_HOST.lookup();
+    int port;
+    try {
+      port = JvmSettings.RSERVE_PORT.lookup(Integer.class);
+    } catch (IllegalArgumentException e) {
+      LOG.log(Level.SEVERE, "Could not parse value for " + JvmSettings.RSERVE_PORT.getScopedKey() + ", defaulting to 6311", e);
+      port = 6311;
+    }
+    this.RSERVE_PORT = port;
+    this.RSERVE_USER = JvmSettings.RSERVE_USER.lookup();
+    this.RSERVE_PASSWORD = JvmSettings.RSERVE_PASSWORD.lookup();
 
     LOG.fine("RDATAFileReader: INSIDE RDATAFileReader");
 

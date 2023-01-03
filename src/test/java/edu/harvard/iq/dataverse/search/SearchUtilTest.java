@@ -91,4 +91,44 @@ public class SearchUtilTest {
         assertEquals("*", SearchUtil.determineFinalQuery(""));
         assertEquals("foo", SearchUtil.determineFinalQuery("foo"));
     }
+
+    @Test
+    public void testGetGeoPoint() {
+        // valid
+        assertEquals("42.3,-71.1", SearchUtil.getGeoPoint("42.3,-71.1"));
+        // user doesn't want geospatial search
+        assertEquals(null, SearchUtil.getGeoPoint(null));
+        // invalid
+        assertThrows(IllegalArgumentException.class, () -> {
+            SearchUtil.getGeoRadius("42.3;-71.1");
+        }, "Must have a comma.");
+        assertThrows(IllegalArgumentException.class, () -> {
+            SearchUtil.getGeoRadius("-71.187346,42.33661,-71.043056,42.409599");
+        }, "Must have only one comma.");
+        assertThrows(IllegalArgumentException.class, () -> {
+            SearchUtil.getGeoRadius("junk");
+        }, "Must have a comma.");
+        assertThrows(NumberFormatException.class, () -> {
+            SearchUtil.getGeoRadius("somejunk,morejunk");
+        }, "Must be numbers.");
+        // invalid but let it go, it's handled by Solr, which throws an informative exception
+        assertEquals("999.0,-999.0", SearchUtil.getGeoPoint("999,-999"));
+    }
+
+    @Test
+    public void testGetGeoRadius() {
+        // valid
+        assertEquals("5", SearchUtil.getGeoRadius("5"));
+        assertEquals("1.5", SearchUtil.getGeoRadius("1.5"));
+        // user doesn't want geospatial search
+        assertEquals(null, SearchUtil.getGeoRadius(null));
+        assertEquals(null, SearchUtil.getGeoRadius(""));
+        // invalid
+        assertThrows(NumberFormatException.class, () -> {
+            SearchUtil.getGeoRadius("nonNumber");
+        }, "Must be a number.");
+        assertThrows(NumberFormatException.class, () -> {
+            SearchUtil.getGeoRadius("-1");
+        }, "Must be greater than zero.");
+    }
 }

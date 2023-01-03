@@ -39,6 +39,13 @@ enter search terms for Dataverse collections, dataset metadata (citation and dom
 metadata. If you are searching for tabular data files you can also search at the variable level for name and label. To find 
 out more about what each field searches, hover over the field name for a detailed description of the field.
 
+.. _geospatial-search:
+
+Geospatial Search
+-----------------
+
+Geospatial search is available from the :doc:`/api/search` (look for "geo" parameters). The metadata fields that are geospatially indexed are "West Longitude", "East Longitude", "North Latitude", and "South Latitude" from the "Geographic Bounding Box" field in the "Geospatial Metadata" block.
+
 Browsing a Dataverse Installation
 ---------------------------------
 

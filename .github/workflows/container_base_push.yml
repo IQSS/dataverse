@@ -1,0 +1,85 @@
+---
+name: Container Base Module
+
+on:
+    push:
+        branches:
+            - 'develop'
+            - 'master'
+        paths:
+            - 'modules/container-base/**'
+            - 'modules/dataverse-parent/pom.xml'
+            - '.github/workflows/container_base_push.yml'
+    pull_request:
+        branches:
+            - 'develop'
+            - 'master'
+        paths:
+            - 'modules/container-base/**'
+            - 'modules/dataverse-parent/pom.xml'
+            - '.github/workflows/container_base_push.yml'
+
+env:
+    IMAGE_TAG: unstable
+
+jobs:
+    build:
+        name: Build image
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            packages: read
+        strategy:
+            matrix:
+                jdk: [ '11' ]
+        # Only run in upstream repo - avoid unnecessary runs in forks
+        if: ${{ github.repository_owner == 'IQSS' }}
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v3
+
+            - name: Set up JDK ${{ matrix.jdk }}
+              uses: actions/setup-java@v3
+              with:
+                  java-version: ${{ matrix.jdk }}
+                  distribution: 'adopt'
+            - name: Cache Maven packages
+              uses: actions/cache@v3
+              with:
+                  path: ~/.m2
+                  key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+                  restore-keys: ${{ runner.os }}-m2
+
+            - name: Build base container image with local architecture
+              run: mvn -f modules/container-base -Pct package
+
+            # Run anything below only if this is not a pull request.
+            # Accessing, pushing tags etc. to DockerHub will only succeed in upstream because secrets.
+
+            - if: ${{ github.event_name == 'push' && github.ref_name == 'develop' }}
+              name: Push description to DockerHub
+              uses: peter-evans/dockerhub-description@v3
+              with:
+                  username: ${{ secrets.DOCKERHUB_USERNAME }}
+                  password: ${{ secrets.DOCKERHUB_TOKEN }}
+                  repository: gdcc/base
+                  short-description: "Dataverse Base Container image providing Payara application server and optimized configuration"
+                  readme-filepath: ./modules/container-base/README.md
+
+            - if: ${{ github.event_name != 'pull_request' }}
+              name: Log in to the Container registry
+              uses: docker/login-action@v2
+              with:
+                  registry: ${{ env.REGISTRY }}
+                  username: ${{ secrets.DOCKERHUB_USERNAME }}
+                  password: ${{ secrets.DOCKERHUB_TOKEN }}
+            - if: ${{ github.event_name != 'pull_request' }}
+              name: Set up QEMU for multi-arch builds
+              uses: docker/setup-qemu-action@v2
+            - name: Re-set image tag based on branch
+              if: ${{ github.ref_name == 'master' }}
+              run: echo "IMAGE_TAG=stable"
+            - if: ${{ github.event_name != 'pull_request' }}
+              name: Deploy multi-arch base container image to Docker Hub
+              run: mvn -f modules/container-base -Pct deploy -Dbase.image.tag=${{ env.IMAGE_TAG }}

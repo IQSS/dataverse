@@ -97,12 +97,8 @@ public class DashboardPage implements java.io.Serializable {
     }
     
     public long getNumberOfHarvestedDatasets() {
-        List<HarvestingClient> configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
-        if (configuredHarvestingClients == null || configuredHarvestingClients.isEmpty()) {
-            return 0L;
-        }
         
-        Long numOfDatasets = harvestingClientService.getNumberOfHarvestedDatasetByClients(configuredHarvestingClients);
+        Long numOfDatasets = harvestingClientService.getNumberOfHarvestedDatasetsByAllClients();
         
         if (numOfDatasets != null && numOfDatasets > 0L) {
             return numOfDatasets;
@@ -142,7 +138,7 @@ public class DashboardPage implements java.io.Serializable {
             infoLabel = configuredHarvestingClients.size() + " harvesting clients configured; ";
         }        
         
-        Long numOfDatasets = harvestingClientService.getNumberOfHarvestedDatasetByClients(configuredHarvestingClients);
+        Long numOfDatasets = harvestingClientService.getNumberOfHarvestedDatasetsByAllClients();
         
         if (numOfDatasets != null && numOfDatasets > 0L) {
             return infoLabel + numOfDatasets + " harvested datasets";

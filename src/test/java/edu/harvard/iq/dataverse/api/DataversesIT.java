@@ -33,6 +33,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import java.nio.file.Files;
 import com.jayway.restassured.path.json.JsonPath;
+import static javax.ws.rs.core.Response.Status.OK;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matchers;
 
 public class DataversesIT {
 
@@ -520,9 +523,34 @@ public class DataversesIT {
         logger.info( importDDIRelease.prettyPrint());
         assertEquals(201, importDDIRelease.getStatusCode());
 
+        Integer datasetIdInt = JsonPath.from(importDDI.body().asString()).getInt("data.id");
+
+        Response search1 = UtilIT.search("id:dataset_" + datasetIdInt + "_draft", apiToken); // santity check, can find it
+        search1.prettyPrint();
+        search1.then().assertThat()
+                .body("data.total_count", CoreMatchers.is(1))
+                .body("data.count_in_response", CoreMatchers.is(1))
+                .body("data.items[0].name", CoreMatchers.is("Replication Data for: Title"))
+                .statusCode(OK.getStatusCode());
+
+        Response search2 = UtilIT.search("id:dataset_" + datasetIdInt + "_draft", apiToken, "&geo_point=35,15&geo_radius=5"); // should find it
+        search2.prettyPrint();
+        search2.then().assertThat()
+                .body("data.total_count", CoreMatchers.is(1))
+                .body("data.count_in_response", CoreMatchers.is(1))
+                .body("data.items[0].name", CoreMatchers.is("Replication Data for: Title"))
+                .statusCode(OK.getStatusCode());
+
+        Response search3 = UtilIT.search("id:dataset_" + datasetIdInt + "_draft", apiToken, "&geo_point=0,0&geo_radius=5"); // should not find it
+        search3.prettyPrint();
+        search3.then().assertThat()
+                .body("data.total_count", CoreMatchers.is(0))
+                .body("data.count_in_response", CoreMatchers.is(0))
+                .body("data.items", Matchers.empty())
+                .statusCode(OK.getStatusCode());
+
         //cleanup
 
-        Integer datasetIdInt = JsonPath.from(importDDI.body().asString()).getInt("data.id");
         Response destroyDatasetResponse = UtilIT.destroyDataset(datasetIdInt, apiToken);
         assertEquals(200, destroyDatasetResponse.getStatusCode());
 

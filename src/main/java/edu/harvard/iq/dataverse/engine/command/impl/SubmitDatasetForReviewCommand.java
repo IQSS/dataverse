@@ -51,7 +51,7 @@ public class SubmitDatasetForReviewCommand extends AbstractDatasetCommand<Datase
 
     private Dataset save(CommandContext ctxt) throws CommandException {
 
-        getDataset().getEditVersion().setLastUpdateTime(getTimestamp());
+        getDataset().getOrCreateEditVersion().setLastUpdateTime(getTimestamp());
         getDataset().setModificationTime(getTimestamp());
 
         Dataset savedDataset = ctxt.em().merge(getDataset());

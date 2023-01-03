@@ -100,7 +100,7 @@ public class SearchServiceBean {
      * @throws SearchException
      */
     public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
-        return search(dataverseRequest, dataverses, query, filterQueries, sortField, sortOrder, paginationStart, onlyDatatRelatedToMe, numResultsPerPage, true);
+        return search(dataverseRequest, dataverses, query, filterQueries, sortField, sortOrder, paginationStart, onlyDatatRelatedToMe, numResultsPerPage, true, null, null);
     }
 
     /**
@@ -121,10 +121,24 @@ public class SearchServiceBean {
      * @param onlyDatatRelatedToMe
      * @param numResultsPerPage
      * @param retrieveEntities - look up dvobject entities with .find() (potentially expensive!)
+     * @param geoPoint e.g. "35,15"
+     * @param geoRadius e.g. "5"
      * @return
      * @throws SearchException
      */
-    public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage, boolean retrieveEntities) throws SearchException {
+    public SolrQueryResponse search(
+            DataverseRequest dataverseRequest,
+            List<Dataverse> dataverses,
+            String query,
+            List<String> filterQueries,
+            String sortField, String sortOrder,
+            int paginationStart,
+            boolean onlyDatatRelatedToMe,
+            int numResultsPerPage,
+            boolean retrieveEntities,
+            String geoPoint,
+            String geoRadius
+    ) throws SearchException {
 
         if (paginationStart < 0) {
             throw new IllegalArgumentException("paginationStart must be 0 or greater");
@@ -204,8 +218,12 @@ public class SearchServiceBean {
         for (String filterQuery : filterQueries) {
             solrQuery.addFilterQuery(filterQuery);
         }
-
-
+        if (geoPoint != null && !geoPoint.isBlank() && geoRadius != null && !geoRadius.isBlank()) {
+            solrQuery.setParam("pt", geoPoint);
+            solrQuery.setParam("d", geoRadius);
+            // See https://solr.apache.org/guide/8_11/spatial-search.html#bbox
+            solrQuery.addFilterQuery("{!bbox sfield=" + SearchFields.GEOLOCATION + "}");
+        }
 
         // -----------------------------------
         // Facets to Retrieve

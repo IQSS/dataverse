@@ -501,4 +501,47 @@ public class ExternalToolServiceBeanTest {
         assertNull(externalTool.getContentType());
     }
 
+    @Test
+    public void testParseAddDatasetToolAllowedApiCalls() {
+ 
+        ExternalTool externalTool = null;
+        try {
+            externalTool = getAllowedApiCallsTool();
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+        assertNotNull(externalTool);
+        assertNull(externalTool.getContentType());
+    }
+
+    protected static ExternalTool getAllowedApiCallsTool() {
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("displayName", "AwesomeTool");
+        job.add("toolName", "explorer");
+        job.add("description", "This tool is awesome.");
+        job.add("types", Json.createArrayBuilder().add("explore"));
+        job.add("scope", "dataset");
+        job.add("toolUrl", "http://awesometool.com");
+        job.add("hasPreviewMode", "true");
+
+        job.add("toolParameters", Json.createObjectBuilder()
+                .add("httpMethod", "GET")
+                .add("queryParameters",
+                        Json.createArrayBuilder()
+                    .add(Json.createObjectBuilder()
+                        .add("datasetId", "{datasetId}")
+                    )
+                )
+            ).add("allowedApiCalls", Json.createArrayBuilder()
+                .add(Json.createObjectBuilder()
+                .add("name", "getDataset")
+                .add("httpMethod", "GET")
+                .add("urlTemplate", "/api/v1/datasets/{datasetId}")
+                .add("timeOut", 10))
+            );
+        String tool = job.build().toString();
+        System.out.println("tool: " + tool);
+
+        return ExternalToolServiceBean.parseAddExternalToolManifest(tool);
+    }
 }

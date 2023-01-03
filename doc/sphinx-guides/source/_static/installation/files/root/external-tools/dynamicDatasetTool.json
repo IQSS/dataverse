@@ -12,8 +12,16 @@
         "PID": "{datasetPid}"
       },
       {
-        "apiToken": "{apiToken}"
+        "locale":"{localeCode}"
       }
-    ]
+    ],
+    "allowedApiCalls": [
+        {
+          "name":"retrieveDatasetJson",
+          "httpMethod":"GET",
+          "urlTemplate":"/api/v1/datasets/{datasetId}",
+          "timeOut":10
+        }
+      ]
   }
 }

@@ -5,6 +5,9 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.json.Json;
+import javax.json.JsonValue;
+
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.FileMetadata;
@@ -95,12 +98,17 @@ public class URLTokenUtil {
     public String getLocaleCode() {
         return localeCode;
     }
-
-    public String getQueryParam(String key, String value) {
+    
+    public JsonValue getParam(String value) {
         String tokenValue = null;
         tokenValue = getTokenValue(value);
-        if (tokenValue != null) {
-            return key + '=' + tokenValue;
+        if (tokenValue != null && !tokenValue.isBlank()) {
+            try{
+                int x =Integer.parseInt(tokenValue);
+                return Json.createValue(x);
+            } catch (NumberFormatException nfe){
+                return Json.createValue(tokenValue);
+            }
         } else {
             return null;
         }

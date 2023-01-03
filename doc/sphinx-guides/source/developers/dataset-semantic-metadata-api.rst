@@ -1,5 +1,8 @@
 Dataset Semantic Metadata API
 =============================
+.. contents:: |toctitle|
+	:local:
+
 
 The OAI_ORE metadata export format represents Dataset metadata using json-ld (see the :doc:`/admin/metadataexport` section). As part of an RDA-supported effort to allow import of Datasets exported as Bags with an included OAI_ORE metadata file, 
 an experimental API has been created that provides a json-ld alternative to the v1.0 API calls to get/set/delete Dataset metadata in the :doc:`/api/native-api`.
@@ -74,7 +77,7 @@ To delete metadata for a Dataset, send a json-ld representation of the fields to
 
     curl -X PUT -H X-Dataverse-key:$API_TOKEN -H 'Content-Type: application/ld+json' -d '{"https://dataverse.org/schema/core#restrictions":"No restrictions"}' "$SERVER_URL/api/datasets/:persistentId/metadata/delete?persistentId=$DATASET_PID"
 
-Note, this example uses the term URI directly rather than adding an '@context' element. You can use either form in any of these API calls. 
+Note, this example uses the term URI directly rather than adding an ``@context`` element. You can use either form in any of these API calls. 
 
 You should expect a 200 ("OK") response indicating whether a draft Dataset version was created or an existing draft was updated.
 

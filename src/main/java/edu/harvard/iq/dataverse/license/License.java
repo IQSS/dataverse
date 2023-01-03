@@ -23,9 +23,9 @@ import java.util.Objects;
  */
  @NamedQueries({
     @NamedQuery( name="License.findAll",
-            query="SELECT l FROM License l ORDER BY (case when l.isDefault then 0 else 1 end), l.id asc"),
+            query="SELECT l FROM License l ORDER BY (case when l.isDefault then 0 else 1 end), l.sortOrder, l.id asc"),
     @NamedQuery( name="License.findAllActive",
-            query="SELECT l FROM License l WHERE l.active='true' ORDER BY (case when l.isDefault then 0 else 1 end), l.id asc"),
+            query="SELECT l FROM License l WHERE l.active='true' ORDER BY (case when l.isDefault then 0 else 1 end), l.sortOrder, l.id asc"),
     @NamedQuery( name="License.findById",
             query = "SELECT l FROM License l WHERE l.id=:id"),
     @NamedQuery( name="License.findDefault",
@@ -42,6 +42,8 @@ import java.util.Objects;
                 query = "UPDATE License l SET l.isDefault='false'"),
     @NamedQuery( name="License.setActiveState",
     query = "UPDATE License l SET l.active=:state WHERE l.id=:id"),
+    @NamedQuery( name="License.setSortOrder",
+    query = "UPDATE License l SET l.sortOrder=:sortOrder WHERE l.id=:id"),
 
 })
 @Entity
@@ -73,6 +75,9 @@ public class License {
 
     @Column(nullable = false)
     private boolean isDefault;
+
+    @Column(nullable = false, columnDefinition = "BIGINT NOT NULL DEFAULT 0")
+    private Long sortOrder;
     
     @OneToMany(mappedBy="license")
     private List<TermsOfUseAndAccess> termsOfUseAndAccess;
@@ -80,7 +85,7 @@ public class License {
     public License() {
     }
 
-    public License(String name, String shortDescription, URI uri, URI iconUrl, boolean active) {
+    public License(String name, String shortDescription, URI uri, URI iconUrl, boolean active, Long sortOrder) {
         this.name = name;
         this.shortDescription = shortDescription;
         this.uri = uri.toASCIIString();
@@ -91,6 +96,7 @@ public class License {
         }
         this.active = active;
         isDefault = false;
+        this.sortOrder = sortOrder;
     }
 
     public Long getId() {
@@ -172,17 +178,26 @@ public class License {
         this.termsOfUseAndAccess = termsOfUseAndAccess;
     }
 
+    public Long getSortOrder() {
+        return sortOrder;
+    }
+
+    public void setSortOrder(Long sortOrder) {
+        this.sortOrder = sortOrder;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         License license = (License) o;
-        return active == license.active && id.equals(license.id) && name.equals(license.name) && shortDescription.equals(license.shortDescription) && uri.equals(license.uri) && Objects.equals(iconUrl, license.iconUrl);
+        return active == license.active && id.equals(license.id) && name.equals(license.name) && shortDescription.equals(license.shortDescription) && uri.equals(license.uri) && Objects.equals(iconUrl, license.iconUrl)
+        && Objects.equals(sortOrder, license.sortOrder);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, shortDescription, uri, iconUrl, active);
+        return Objects.hash(id, name, shortDescription, uri, iconUrl, active, sortOrder);
     }
 
     @Override
@@ -195,6 +210,7 @@ public class License {
                 ", iconUrl=" + iconUrl +
                 ", active=" + active +
                 ", isDefault=" + isDefault +
+                ", sortOrder=" + sortOrder +
                 '}';
     }
     
