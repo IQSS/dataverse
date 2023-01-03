@@ -80,15 +80,20 @@ echo "Set the default facets for Root"
 curl -s -X POST -H "Content-type:application/json" -d "[\"authorName\",\"subject\",\"keywordValue\",\"dateOfDeposit\"]" $SERVER/dataverses/:root/facets/?key=$adminKey
 echo
 
+echo "Set up licenses"
+# Note: CC0 has been added and set as the default license through
+# Flyway script V5.9.0.1__7440-configurable-license-list.sql
+curl -X POST -H 'Content-Type: application/json' -H "X-Dataverse-key:$adminKey" $SERVER/licenses --upload-file data/licenses/licenseCC-BY-4.0.json
+
 # OPTIONAL USERS AND DATAVERSES
 #./setup-optional.sh
 
 if [ $SECURESETUP = 1 ]
 then
     # Revoke the "burrito" super-key; 
-    # Block the sensitive API endpoints;
+    # Block sensitive API endpoints;
     curl -X DELETE $SERVER/admin/settings/BuiltinUsers.KEY
-    curl -X PUT -d admin,test $SERVER/admin/settings/:BlockedApiEndpoints
+    curl -X PUT -d 'admin,builtin-users' $SERVER/admin/settings/:BlockedApiEndpoints
     echo "Access to the /api/admin and /api/test is now disabled, except for connections from localhost."
 else 
     echo "IMPORTANT!!!"

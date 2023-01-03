@@ -1,0 +1,54 @@
+pipeline {
+  agent any
+
+  stages {
+
+    stage('Build') {
+      steps {
+	// clean plate
+        sh 'rm -rf target/'
+	// package warfile
+	sh 'mvn -DcompilerArgument=-Xlint:unchecked test -P all-unit-tests package'
+	// generate HTML SureFire report
+	sh 'mvn surefire-report:report'
+      }
+    }
+
+    stage('Test') {
+      steps {
+        script {
+          // if pull request isn't from IQSS, CHANGE_FORK only provides org/user
+          if (env.CHANGE_FORK) {
+            env.EC2_REPO = "https://github.com/" + env.CHANGE_FORK + "/dataverse"
+          } else {
+            env.EC2_REPO = env.GIT_URL
+          }
+        }
+	sh '/usr/bin/curl -O https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/develop/ec2/ec2-create-instance.sh'
+	sh '/bin/rm -f groupvars.yml'
+	sh '/usr/bin/curl -o groupvars.yml https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/develop/tests/group_vars/jenkins.yml'
+	sh '/usr/bin/bash ec2-create-instance.sh -b ${CHANGE_BRANCH} -r ${EC2_REPO} -t jenkins_delete_me -l target -g groupvars.yml -s t3a.large -d'
+      }
+    }
+
+    stage('Post') {
+      steps {
+	junit 'target/surefire-reports/*.xml'
+	step(
+	  [$class: 'JacocoPublisher', 
+	  execPattern: 'target/*.exec',
+	  classPattern: 'target/classes',
+	  sourcePattern: 'src/main/java',
+	  exclusionPattern: 'src/test*']
+	)
+        script {
+          if (fileExists('./ansible_complete')) {
+            sh '/bin/rm ./ansible_complete'
+          } else {
+            error('Ansible run terminated abnormally, failing build.')
+          }
+        }
+      }
+    }
+  }
+}

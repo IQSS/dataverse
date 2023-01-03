@@ -21,7 +21,7 @@ import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Given a user and a set of filters (dvobject type, roles, publication status):
@@ -47,6 +47,7 @@ public class MyDataFinder {
     private RoleAssigneeServiceBean roleAssigneeService;
     private DvObjectServiceBean dvObjectServiceBean;
     private GroupServiceBean groupService;
+    private String noMsgResultsFound;
     //private RoleAssigneeServiceBean roleService = new RoleAssigneeServiceBean();
     //private MyDataQueryHelperServiceBean myDataQueryHelperService;
     // --------------------
@@ -85,11 +86,12 @@ public class MyDataFinder {
     private List<Long> fileGrandparentFileIds = new ArrayList<>();  // dataverse has file permissions
 
 
-    public MyDataFinder(DataverseRolePermissionHelper rolePermissionHelper, RoleAssigneeServiceBean roleAssigneeService, DvObjectServiceBean dvObjectServiceBean, GroupServiceBean groupService) {
+    public MyDataFinder(DataverseRolePermissionHelper rolePermissionHelper, RoleAssigneeServiceBean roleAssigneeService, DvObjectServiceBean dvObjectServiceBean, GroupServiceBean groupService, String _noMsgResultsFound) {
         this.rolePermissionHelper = rolePermissionHelper;
         this.roleAssigneeService = roleAssigneeService;
         this.dvObjectServiceBean = dvObjectServiceBean;
         this.groupService = groupService;
+        this.noMsgResultsFound = _noMsgResultsFound;
         this.loadHarvestedDataverseIds();
     }
 
@@ -211,7 +213,7 @@ public class MyDataFinder {
         // -----------------------------------------------------------------
         String dvObjectFQ = this.getSolrDvObjectFilterQuery();
         if (dvObjectFQ ==null){
-            this.addErrorMessage(DataRetrieverAPI.MSG_NO_RESULTS_FOUND);
+            this.addErrorMessage(noMsgResultsFound);
             return null;
         }
         filterQueries.add(dvObjectFQ);
@@ -278,7 +280,7 @@ public class MyDataFinder {
 
 
         if ((distinctEntityIds.isEmpty()) && (distinctParentIds.isEmpty())) {
-            this.addErrorMessage(DataRetrieverAPI.MSG_NO_RESULTS_FOUND);
+            this.addErrorMessage(noMsgResultsFound);
             return null;
         }
 

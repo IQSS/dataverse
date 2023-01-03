@@ -52,6 +52,9 @@ public class DataverseTheme implements Serializable {
     private Alignment logoAlignment;
     private String logoBackgroundColor;
     private String logo;
+    private Alignment logoFooterAlignment;
+    private String logoFooterBackgroundColor;
+    private String logoFooter;
     private String tagline;
     private String linkUrl;
     private String linkColor;
@@ -60,8 +63,9 @@ public class DataverseTheme implements Serializable {
    public enum ImageFormat {
 
         SQUARE, RECTANGLE
-    }  
-      public ImageFormat getLogoFormat() {
+    }
+
+    public ImageFormat getLogoFormat() {
         return logoFormat;
     }
 
@@ -91,6 +95,30 @@ public class DataverseTheme implements Serializable {
 
     public void setLogo(String logo) {
         this.logo = logo;
+    }
+
+    public Alignment getLogoFooterAlignment() {
+        return logoFooterAlignment;
+    }
+
+    public void setLogoFooterAlignment(Alignment logoFooterAlignment) {
+        this.logoFooterAlignment = logoFooterAlignment;
+    }
+
+    public String getLogoFooterBackgroundColor() {
+        return logoFooterBackgroundColor;
+    }
+
+    public void setLogoFooterBackgroundColor(String logoFooterBackgroundColor) {
+        this.logoFooterBackgroundColor = logoFooterBackgroundColor;
+    }
+
+    public String getLogoFooter() {
+        return logoFooter;
+    }
+
+    public void setLogoFooter(String logoFooter) {
+        this.logoFooter = logoFooter;
     }
 
     public String getTagline() {

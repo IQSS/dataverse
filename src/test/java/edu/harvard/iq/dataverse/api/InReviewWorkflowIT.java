@@ -57,9 +57,7 @@ public class InReviewWorkflowIT {
         // Whoops, the curator forgot to give the author permission to create a dataset.
         Response noPermToCreateDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, authorApiToken);
         noPermToCreateDataset.prettyPrint();
-        noPermToCreateDataset.then().assertThat()
-                .body("message", equalTo("User @" + authorUsername + " is not permitted to perform requested action."))
-                .statusCode(UNAUTHORIZED.getStatusCode());
+        noPermToCreateDataset.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
 
         Response grantAuthorAddDataset = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR.toString(), "@" + authorUsername, curatorApiToken);
         grantAuthorAddDataset.prettyPrint();
@@ -338,10 +336,11 @@ public class InReviewWorkflowIT {
                 // TODO: Test this issue from the UI as well: https://github.com/IQSS/dataverse/issues/2526
                 .body("data.notifications[0].type", equalTo("SUBMITTEDDS"))
                 //.body("data.notifications[0].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
-                .body("data.notifications[1].type", equalTo("SUBMITTEDDS"))
+                .body("data.notifications[1].type", equalTo("INGESTCOMPLETED"))
+                .body("data.notifications[2].type", equalTo("SUBMITTEDDS"))
                 // Yes, it's a little weird that the first "SUBMITTEDDS" notification now shows the return reason when it showed nothing before. For now we are simply always showing all the reasons for return. They start to stack up. That way you can see the history.
                 //.body("data.notifications[1].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
-                .body("data.notifications[2].type", equalTo("CREATEACC"))
+                .body("data.notifications[3].type", equalTo("CREATEACC"))
                 //.body("data.notifications[2].reasonsForReturn", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
@@ -393,11 +392,12 @@ public class InReviewWorkflowIT {
                 .body("data.notifications[1].type", equalTo("SUBMITTEDDS"))
                 //  .body("data.notifications[1].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
                 //   .body("data.notifications[1].reasonsForReturn[1].message", equalTo("A README is required."))
-                .body("data.notifications[2].type", equalTo("SUBMITTEDDS"))
+                .body("data.notifications[2].type", equalTo("INGESTCOMPLETED"))
+                .body("data.notifications[3].type", equalTo("SUBMITTEDDS"))
                 // Yes, it's a little weird that the first "SUBMITTEDDS" notification now shows the return reason when it showed nothing before. We're showing the history.
                 //   .body("data.notifications[2].reasonsForReturn[0].message", equalTo("You forgot to upload any files."))
                 //   .body("data.notifications[2].reasonsForReturn[1].message", equalTo("A README is required."))
-                .body("data.notifications[3].type", equalTo("CREATEACC"))
+                .body("data.notifications[4].type", equalTo("CREATEACC"))
                 //   .body("data.notifications[3].reasonsForReturn", equalTo(null))
                 .statusCode(OK.getStatusCode());
 

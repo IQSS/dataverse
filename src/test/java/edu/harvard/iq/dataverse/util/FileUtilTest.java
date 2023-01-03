@@ -4,13 +4,24 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.Embargo;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.Guestbook;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.api.UtilIT;
+import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.util.FileUtil.FileCitationExtension;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.net.URI;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.logging.Level;
@@ -19,6 +30,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -116,7 +128,7 @@ public class FileUtilTest {
         @Test
         public void testIsDownloadPopupRequiredDraft() {
             Dataset dataset = new Dataset();
-            DatasetVersion dsv1 = dataset.getEditVersion();
+            DatasetVersion dsv1 = dataset.getOrCreateEditVersion();
             assertEquals(DatasetVersion.VersionState.DRAFT, dsv1.getVersionState());
             assertEquals(false, FileUtil.isDownloadPopupRequired(dsv1));
         }
@@ -126,7 +138,9 @@ public class FileUtilTest {
             DatasetVersion dsv1 = new DatasetVersion();
             dsv1.setVersionState(DatasetVersion.VersionState.RELEASED);
             TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
-            termsOfUseAndAccess.setLicense(TermsOfUseAndAccess.License.CC0);
+            License license = new License("CC0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0"), URI.create("/resources/images/cc0.png"), true, 1l);
+            license.setDefault(true);
+            termsOfUseAndAccess.setLicense(license);
             dsv1.setTermsOfUseAndAccess(termsOfUseAndAccess);
             assertEquals(false, FileUtil.isDownloadPopupRequired(dsv1));
         }
@@ -141,7 +155,9 @@ public class FileUtilTest {
              * the popup when the are Terms of Use. This feels like a bug since the
              * Terms of Use should probably be shown.
              */
-            termsOfUseAndAccess.setLicense(TermsOfUseAndAccess.License.CC0);
+            License license = new License("CC0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0"), URI.create("/resources/images/cc0.png"), true, 2l);
+            license.setDefault(true);
+            termsOfUseAndAccess.setLicense(license);
             termsOfUseAndAccess.setTermsOfUse("be excellent to each other");
             dsv1.setTermsOfUseAndAccess(termsOfUseAndAccess);
             assertEquals(false, FileUtil.isDownloadPopupRequired(dsv1));
@@ -152,7 +168,7 @@ public class FileUtilTest {
             DatasetVersion dsv1 = new DatasetVersion();
             dsv1.setVersionState(DatasetVersion.VersionState.RELEASED);
             TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
-            termsOfUseAndAccess.setLicense(TermsOfUseAndAccess.License.NONE);
+            termsOfUseAndAccess.setLicense(null);
             termsOfUseAndAccess.setTermsOfUse("be excellent to each other");
             dsv1.setTermsOfUseAndAccess(termsOfUseAndAccess);
             assertEquals(true, FileUtil.isDownloadPopupRequired(dsv1));
@@ -188,9 +204,11 @@ public class FileUtilTest {
 
             FileMetadata restrictedFileMetadata = new FileMetadata();
             restrictedFileMetadata.setRestricted(true);
+            restrictedFileMetadata.setDataFile(new DataFile());
             assertEquals(false, FileUtil.isPubliclyDownloadable(restrictedFileMetadata));
 
             FileMetadata nonRestrictedFileMetadata = new FileMetadata();
+            nonRestrictedFileMetadata.setDataFile(new DataFile());
             DatasetVersion dsv = new DatasetVersion();
             dsv.setVersionState(DatasetVersion.VersionState.RELEASED);
             nonRestrictedFileMetadata.setDatasetVersion(dsv);
@@ -204,6 +222,7 @@ public class FileUtilTest {
         public void testIsPubliclyDownloadable2() {
 
             FileMetadata nonRestrictedFileMetadata = new FileMetadata();
+            nonRestrictedFileMetadata.setDataFile(new DataFile());
             DatasetVersion dsv = new DatasetVersion();
             TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
             termsOfUseAndAccess.setTermsOfUse("be excellent to each other");
@@ -214,6 +233,24 @@ public class FileUtilTest {
             dsv.setDataset(dataset);
             nonRestrictedFileMetadata.setRestricted(false);
             assertEquals(false, FileUtil.isPubliclyDownloadable(nonRestrictedFileMetadata));
+        }
+
+        @Test
+        public void testIsPubliclyDownloadable3() {
+
+            FileMetadata embargoedFileMetadata = new FileMetadata();
+            DataFile df = new DataFile();
+            Embargo e = new Embargo();
+            e.setDateAvailable(LocalDate.now().plusDays(4) );
+            df.setEmbargo(e);
+            embargoedFileMetadata.setDataFile(df);
+            DatasetVersion dsv = new DatasetVersion();
+            dsv.setVersionState(DatasetVersion.VersionState.RELEASED);
+            embargoedFileMetadata.setDatasetVersion(dsv);
+            Dataset dataset = new Dataset();
+            dsv.setDataset(dataset);
+            embargoedFileMetadata.setRestricted(false);
+            assertEquals(false, FileUtil.isPubliclyDownloadable(embargoedFileMetadata));
         }
 
         @Test
@@ -266,7 +303,7 @@ public class FileUtilTest {
         }*/
 
         @Test
-        public void testDetermineFileType() {
+        public void testDetermineFileTypeByExtension() {
             File file = new File("src/main/webapp/resources/images/cc0.png");
             if (file.exists()) {
                 try {
@@ -277,6 +314,44 @@ public class FileUtilTest {
             } else {
                 fail("File does not exist: " + file.toPath().toString());
             }
+        }
+        
+        @Test
+        public void testDetermineFileTypeFromName() {
+            //Verify that name of the local file isn't used in determining the type (as we often use *.tmp when the real name has a different extension)
+            try {
+                File file = File.createTempFile("empty", "png");
+                assertEquals("text/plain", FileUtil.determineFileType(file, "something.txt"));
+            } catch (IOException ex) {
+                Logger.getLogger(FileUtilTest.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+        }
+
+        @Test
+        public void testDetermineFileTypeByName() {
+            File file = new File("src/test/resources/fileutil/Makefile");
+            if (file.exists()) {
+                try {
+                    assertEquals("text/x-makefile", FileUtil.determineFileType(file, "Makefile"));
+                } catch (IOException ex) {
+                    Logger.getLogger(FileUtilTest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } else {
+                fail("File does not exist: " + file.toPath().toString());
+            }
+        }
+        
+        @Test
+        public void testDetermineFileTypeFromNameLocalFile() {
+            //Verify that name of the local file isn't used in determining the type (as we often use *.tmp when the real name has a different extension)
+            try {
+                File file = File.createTempFile("empty", "png");
+                assertEquals("text/plain", FileUtil.determineFileType(file, "something.txt"));
+            } catch (IOException ex) {
+                Logger.getLogger(FileUtilTest.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
         }
 
         // isThumbnailSuppported() has been moved from DataFileService to FileUtil:
@@ -298,4 +373,40 @@ public class FileUtilTest {
             assertFalse(FileUtil.isThumbnailSupported(filewBogusContentType));
         }
     }
+
+    @Test
+    public void testNetcdfFile() throws IOException {
+        // We got madis-raob.nc from https://www.unidata.ucar.edu/software/netcdf/examples/files.html
+        // and named it "madis-raob" with no file extension for this test.
+        String path = "src/test/resources/netcdf/";
+        String pathAndFile = path + "madis-raob";
+        File file = new File(pathAndFile);
+        String contentType = FileUtil.determineFileType(file, pathAndFile);
+        assertEquals("application/netcdf", contentType);
+    }
+
+    @Test
+    public void testHdf5File() throws IOException {
+        // We got vlen_string_dset.h5 from https://github.com/h5py/h5py/blob/3.7.0/h5py/tests/data_files/vlen_string_dset.h5
+        // and named in "vlen_string_dset" with no file extension for this test.
+        String path = "src/test/resources/hdf/hdf5/";
+        String pathAndFile = path + "vlen_string_dset";
+        File file = new File(pathAndFile);
+        String contentType = FileUtil.determineFileType(file, pathAndFile);
+        assertEquals("application/x-hdf5", contentType);
+    }
+
+    @Test
+    public void testHdf4File() throws IOException {
+        // We got test.hdf from https://people.sc.fsu.edu/~jburkardt/data/hdf/hdf.html
+        // and named in "hdf4test" with no file extension for this test.
+        // HDF4 is the old format, the previous generation before HDF5.
+        // We can't detect it based on its content.
+        String path = "src/test/resources/hdf/hdf4/";
+        String pathAndFile = path + "hdf4test";
+        File file = new File(pathAndFile);
+        String contentType = FileUtil.determineFileType(file, pathAndFile);
+        assertEquals("application/octet-stream", contentType);
+    }
+
 }

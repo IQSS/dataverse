@@ -16,9 +16,8 @@ Installation Guide
    installation-main
    config
    upgrading
-   r-rapache-tworavens
-   geoconnect
    shibboleth
    oauth2
+   oidc
    external-tools
    advanced

@@ -4,9 +4,13 @@ import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
 import java.util.Arrays;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
@@ -40,6 +44,15 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
 		    // no-op; assert that the needed strings are not null in tests
 	    }
 	    return txt;
+    }
+    
+    @ParameterizedTest
+    @CsvSource({"https://pub.orcid.org/v2.1/{ORCID}/person,/authenticate", "https://api.orcid.org/v2.0/{ORCID}/person,/read-limited"})
+    public void testPublicApiScope(String endpoint, String scope) {
+        // when
+        OrcidOAuth2AP provider = new OrcidOAuth2AP("clientId", "clientSecret", endpoint);
+        // then
+        assertEquals(scope, provider.getSpacedScope());
     }
 
     @Test
@@ -82,14 +95,14 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
         assertEquals("0000-0001-2345-6789", sut.extractOrcidNumber(response));
     }
     
-    @Test( expected=OAuth2Exception.class )
+    @Test
     public void testExtractOrcidBad() throws OAuth2Exception {
         // sample response from https://members.orcid.org/api/tutorial/read-orcid-records
         String response = "{\"access_token\":\"f5af9f51-07e6-4332-8f1a-c0c11c1e3728\",\"token_type\":\"bearer\",\n" +
                             "\"refresh_token\":\"f725f747-3a65-49f6-a231-3e8944ce464d\",\"expires_in\":631138518,\n" +
                             "\"scope\":\"/read-limited\",\"name\":\"Sofia Garcia\"}";
         OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
-        sut.extractOrcidNumber(response);
+        assertThrows(OAuth2Exception.class, () -> sut.extractOrcidNumber(response));
     }
     
     @Test

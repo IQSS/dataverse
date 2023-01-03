@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.search;
 import javax.inject.Named;
 
 @Named
-public class FacetLabel {
+public class FacetLabel implements Comparable<FacetLabel>{
 
     private String name;
     private Long count;
@@ -44,6 +44,14 @@ public class FacetLabel {
 
     public void setFilterQuery(String filterQuery) {
         this.filterQuery = filterQuery;
+    }
+
+    @Override
+    public int compareTo(FacetLabel otherFacetLabel) {
+        // This is used to 'chronologically' order entries in the Publication Year facet
+        // display. That should work for 4 digit years (until 10K AD), but this could be
+        // changed to do a real numberical comparison instead.
+        return name.compareTo(otherFacetLabel.getName());
     }
 
 }

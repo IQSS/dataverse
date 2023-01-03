@@ -6,20 +6,24 @@
 package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
+import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.DataFile;
+import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.IOException;
 import java.util.zip.ZipInputStream;
-import static javax.ws.rs.core.Response.Status.OK;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import java.util.zip.ZipEntry;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.HashMap;
+import static javax.ws.rs.core.Response.Status.OK;
 import org.hamcrest.collection.IsMapContaining;
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -99,6 +103,10 @@ public class AccessIT {
         Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
         createDatasetResponse.prettyPrint();
         datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        Response allowAccessRequests = UtilIT.allowAccessRequests(datasetId.toString(), true, apiToken);
+        allowAccessRequests.prettyPrint();
+        allowAccessRequests.then().assertThat().statusCode(200);
         
         basicFileName = "004.txt";
         String basicPathToFile = "scripts/search/data/replace_test/" + basicFileName;
@@ -115,6 +123,9 @@ public class AccessIT {
         tabFile2Name = "stata13-auto.dta";
         tabFile2NameConvert = tabFile2Name.substring(0, tabFile2Name.indexOf(".dta")) + ".tab";
         String tab2PathToFile = "scripts/search/data/tabular/" + tabFile2Name;
+
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + tabFile2Name, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
         Response tab2AddResponse = UtilIT.uploadFileViaNative(datasetId.toString(), tab2PathToFile, apiToken);
         tabFile2Id = JsonPath.from(tab2AddResponse.body().asString()).getInt("data.files[0].dataFile.id");
         
@@ -147,6 +158,7 @@ public class AccessIT {
         String tab4PathToFile = "scripts/search/data/tabular/" + tabFile4NameUnpublished;
         Response tab4AddResponse = UtilIT.uploadFileViaNative(datasetId.toString(), tab4PathToFile, apiToken);
         tabFile4IdUnpublished = JsonPath.from(tab4AddResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + tabFile2Name, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
                         
     }
     
@@ -163,6 +175,24 @@ public class AccessIT {
     }
     
 
+    @Test
+    public void testSaveAuxiliaryFileWithVersion() throws IOException {
+        System.out.println("Add aux file with update");
+        String mimeType = null;
+        String pathToFile = "scripts/search/data/tabular/1char";
+        String formatTag = "dpJSON";
+        String formatVersion = "v1";
+
+        Response uploadResponse = UtilIT.uploadAuxFile(tabFile3IdRestricted.longValue(), pathToFile, formatTag, formatVersion, mimeType, true, null, apiToken);
+        uploadResponse.prettyPrint();
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        System.out.println("Downloading Aux file that was just added");
+        Response downloadResponse = UtilIT.downloadAuxFile(tabFile3IdRestricted.longValue(), formatTag, formatVersion, apiToken);
+        downloadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String dataStr = downloadResponse.prettyPrint();
+        assertEquals(dataStr, "a\n");
+    }
     
     //This test does a lot of testing of non-original downloads as well
     @Test
@@ -172,17 +202,22 @@ public class AccessIT {
         Response anonDownloadConverted = UtilIT.downloadFile(tabFile1Id);
         // ... and download the same tabular data file, but without the variable name header added:
         Response anonDownloadTabularNoHeader = UtilIT.downloadTabularFileNoVarHeader(tabFile1Id);
+        // ... and download the same tabular file, this time requesting the "format=tab" explicitly:
+        Response anonDownloadTabularWithFormatName = UtilIT.downloadTabularFile(tabFile1Id);
         assertEquals(OK.getStatusCode(), anonDownloadOriginal.getStatusCode());
         assertEquals(OK.getStatusCode(), anonDownloadConverted.getStatusCode());
         assertEquals(OK.getStatusCode(), anonDownloadTabularNoHeader.getStatusCode());
+        assertEquals(OK.getStatusCode(), anonDownloadTabularWithFormatName.getStatusCode());
         int origSizeAnon = anonDownloadOriginal.getBody().asByteArray().length;
         int convertSizeAnon = anonDownloadConverted.getBody().asByteArray().length;
         int tabularSizeNoVarHeader = anonDownloadTabularNoHeader.getBody().asByteArray().length;
+        int tabularSizeWithFormatName = anonDownloadTabularWithFormatName.getBody().asByteArray().length;
         System.out.println("origSize: "+origSizeAnon + " | convertSize: " + convertSizeAnon + " | convertNoHeaderSize: " + tabularSizeNoVarHeader);
 
-        assertEquals(origSizeAnon, tabFile1SizeOriginal);
-        assertEquals(convertSizeAnon, tabFile1SizeConvertedWithVarHeader);        
-        assertEquals(tabularSizeNoVarHeader, tabFile1SizeConverted);
+        assertEquals(tabFile1SizeOriginal, origSizeAnon);
+        assertEquals(tabFile1SizeConvertedWithVarHeader, convertSizeAnon);        
+        assertEquals(tabFile1SizeConverted, tabularSizeNoVarHeader);
+        assertEquals(tabFile1SizeConvertedWithVarHeader, tabularSizeWithFormatName);
         
         //Not logged in restricted
         Response anonDownloadOriginalRestricted = UtilIT.downloadFileOriginal(tabFile3IdRestricted);
@@ -485,7 +520,7 @@ public class AccessIT {
 
         listAccessRequestResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiTokenRando);
         listAccessRequestResponse.prettyPrint();
-        assertEquals(400, listAccessRequestResponse.getStatusCode());
+        assertEquals(403, listAccessRequestResponse.getStatusCode());
 
         Response rejectFileAccessResponse = UtilIT.rejectFileAccessRequest(tabFile3IdRestrictedNew.toString(), "@" + apiIdentifierRando, apiToken);
         assertEquals(200, rejectFileAccessResponse.getStatusCode());

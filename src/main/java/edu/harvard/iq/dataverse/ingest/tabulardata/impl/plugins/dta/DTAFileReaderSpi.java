@@ -131,6 +131,7 @@ public class DTAFileReaderSpi extends TabularDataFileReaderSpi{
 
     @Override
     public boolean canDecodeInput(BufferedInputStream stream) throws IOException {
+    	//who closes this stream?
         if (stream ==null){
             throw new IllegalArgumentException("stream == null!");
         }
@@ -185,21 +186,21 @@ public class DTAFileReaderSpi extends TabularDataFileReaderSpi{
             throw new IIOException("cannot read the input file");
         }
 
-        // set-up a FileChannel instance for a given file object
-        FileChannel srcChannel = new FileInputStream(file).getChannel();
-
-        // create a read-only MappedByteBuffer
-        MappedByteBuffer buff = srcChannel.map(FileChannel.MapMode.READ_ONLY, 0, DTA_HEADER_SIZE);
-
-        //printHexDump(buff, "hex dump of the byte-buffer");
-
-        buff.rewind();
-
-        dbgLog.fine("applying the dta test\n");
-
         byte[] hdr4 = new byte[4];
-        buff.get(hdr4, 0, 4);
+        // set-up a FileChannel instance for a given file object
+		try (FileChannel srcChannel = new FileInputStream(file).getChannel();) {
 
+			// create a read-only MappedByteBuffer
+			MappedByteBuffer buff = srcChannel.map(FileChannel.MapMode.READ_ONLY, 0, DTA_HEADER_SIZE);
+
+			// printHexDump(buff, "hex dump of the byte-buffer");
+
+			buff.rewind();
+
+			dbgLog.fine("applying the dta test\n");
+
+			buff.get(hdr4, 0, 4);
+		}
        dbgLog.fine("hex dump: 1st 4bytes =>" +
                 new String(Hex.encodeHex(hdr4)) + "<-");
 

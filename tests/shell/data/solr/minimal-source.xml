@@ -1,0 +1,2 @@
+<field name="test" type="text_en" multiValued="false" stored="true" indexed="true"/>
+<copyField source="test" dest="_text_"/>

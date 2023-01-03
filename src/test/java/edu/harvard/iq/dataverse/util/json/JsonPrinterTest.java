@@ -1,28 +1,16 @@
 package edu.harvard.iq.dataverse.util.json;
 
-import edu.harvard.iq.dataverse.ControlledVocabularyValue;
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileCategory;
-import edu.harvard.iq.dataverse.DataFileTag;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
-import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseContact;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.MetadataBlock;
-import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.UserNotification.Type;
+
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,12 +18,16 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonString;
 import org.junit.Test;
 import org.junit.Before;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class JsonPrinterTest {
 
@@ -44,6 +36,7 @@ public class JsonPrinterTest {
     @Before
     public void setUp() {
         datasetFieldTypeSvc = new MockDatasetFieldSvc();
+        datasetFieldTypeSvc.setMetadataBlock("citation");
 
         DatasetFieldType titleType = datasetFieldTypeSvc.add(new DatasetFieldType("title", FieldType.TEXTBOX, false));
         DatasetFieldType authorType = datasetFieldTypeSvc.add(new DatasetFieldType("author", FieldType.TEXT, true));
@@ -154,6 +147,13 @@ public class JsonPrinterTest {
         tag.setTypeByLabel("Survey");
         dataFileTags.add(tag);
         dataFile.setTags(dataFileTags);
+        DataTable dt = new DataTable();
+        dataFile.setDataTable(dt);
+        dataFile.getDataTable().setOriginalFileName("50by1000.dta");
+        Embargo emb = new Embargo();
+        emb.setDateAvailable(LocalDate.parse("2021-12-03"));
+        emb.setReason("Some reason");
+        dataFile.setEmbargo(emb);
         fmd.setDatasetVersion(dsVersion);
         fmd.setDataFile(dataFile);
         List<DataFileCategory> fileCategories = new ArrayList<>();
@@ -171,7 +171,10 @@ public class JsonPrinterTest {
         assertEquals("", jsonObject.getJsonObject("dataFile").getString("filename"));
         assertEquals(-1, jsonObject.getJsonObject("dataFile").getInt("filesize"));
         assertEquals(-1, jsonObject.getJsonObject("dataFile").getInt("rootDataFileId"));
+        assertEquals("50by1000.dta", jsonObject.getJsonObject("dataFile").getString("originalFileName"));
         assertEquals("Survey", jsonObject.getJsonObject("dataFile").getJsonArray("tabularTags").getString(0));
+        assertEquals("2021-12-03", jsonObject.getJsonObject("dataFile").getJsonObject("embargo").getString("dateAvailable"));
+        assertEquals("Some reason", jsonObject.getJsonObject("dataFile").getJsonObject("embargo").getString("reason"));
     }
 
     @Test
@@ -196,7 +199,8 @@ public class JsonPrinterTest {
         fields.add(datasetContactField);
 
         SettingsServiceBean nullServiceBean = null;
-        JsonPrinter.setSettingsService(nullServiceBean);
+        DatasetFieldServiceBean nullDFServiceBean = null;
+        JsonPrinter.injectSettingsService(nullServiceBean, nullDFServiceBean);
         
         JsonObject jsonObject = JsonPrinter.json(block, fields).build();
         assertNotNull(jsonObject);
@@ -236,8 +240,9 @@ public class JsonPrinterTest {
         vals.add(val);
         datasetContactField.setDatasetFieldCompoundValues(vals);
         fields.add(datasetContactField);
-
-        JsonPrinter.setSettingsService(new MockSettingsSvc());
+        
+        DatasetFieldServiceBean nullDFServiceBean = null;
+        JsonPrinter.injectSettingsService(new MockSettingsSvc(), nullDFServiceBean);
 
         JsonObject jsonObject = JsonPrinter.json(block, fields).build();
         assertNotNull(jsonObject);
@@ -303,6 +308,15 @@ public class JsonPrinterTest {
             }
         }
 
+    }
+
+    @Test
+    public void testEnum() throws JsonParseException {
+        JsonArrayBuilder arr = JsonPrinter.enumsToJson(Arrays.asList(Type.REVOKEROLE, Type.ASSIGNROLE));
+        Set<String> typesSet = new HashSet<>(arr.build().getValuesAs(JsonString::getString));
+        assertTrue(typesSet.size() == 2);
+        assertTrue(typesSet.contains("REVOKEROLE"));
+        assertTrue(typesSet.contains("ASSIGNROLE"));
     }
 
 }

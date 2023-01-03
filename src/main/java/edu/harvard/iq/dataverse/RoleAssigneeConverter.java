@@ -7,9 +7,8 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.enterprise.inject.spi.CDI;
 
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
@@ -23,8 +22,8 @@ import javax.faces.convert.FacesConverter;
 @FacesConverter("roleAssigneeConverter")
 public class RoleAssigneeConverter implements Converter {
     
-    @EJB
-    RoleAssigneeServiceBean roleAssigneeService;
+    //@EJB
+    RoleAssigneeServiceBean roleAssigneeService = CDI.current().select(RoleAssigneeServiceBean.class).get();
 
     public Object getAsObject(FacesContext facesContext, UIComponent component, String submittedValue) {
         RoleAssignee mdb = roleAssigneeService.getRoleAssignee(submittedValue);

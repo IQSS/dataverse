@@ -1,11 +1,11 @@
-#metadataBlock	name	dataverseAlias   displayName													
-	geospatial		Geospatial Metadata													
+#metadataBlock	name	dataverseAlias	displayName												
+	geospatial		Geospatial Metadata												
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
 	geographicCoverage	Geographic Coverage	Information on the geographic coverage of the data. Includes the total geographic scope of the data.		none	0		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
-	country	Country / Nation	The country or nation that the Dataset is about.		text	1		TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	geospatial
-	state	State / Province	The state or province that the Dataset is about. Use GeoNames for correct spelling and avoid abbreviations.		text	2		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	geospatial
-	city	City	The name of the city that the Dataset is about. Use GeoNames for correct spelling and avoid abbreviations.		text	3		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	geospatial
-	otherGeographicCoverage	Other	Other information on the geographic coverage of the data.		text	4		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicCoverage	geospatial
+	country	Country / Nation	The country or nation that the Dataset is about.		text	1	#VALUE, 	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	geospatial
+	state	State / Province	The state or province that the Dataset is about. Use GeoNames for correct spelling and avoid abbreviations.		text	2	#VALUE, 	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	geospatial
+	city	City	The name of the city that the Dataset is about. Use GeoNames for correct spelling and avoid abbreviations.		text	3	#VALUE, 	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	geospatial
+	otherGeographicCoverage	Other	Other information on the geographic coverage of the data.		text	4	#VALUE, 	FALSE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	geospatial
 	geographicUnit	Geographic Unit	Lowest level of geographic aggregation covered by the Dataset, e.g., village, county, region.		text	5		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		geospatial
 	geographicBoundingBox	Geographic Bounding Box	The fundamental geometric description for any Dataset that models geography is the geographic bounding box. It describes the minimum box, defined by west and east longitudes and north and south latitudes, which includes the largest geographic extent of the  Dataset's geographic coverage. This element is used in the first pass of a coordinate-based search. Inclusion of this element in the codebook is recommended, but is required if the bound polygon box is included. 		none	6		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		geospatial
 	westLongitude	West Longitude	Westernmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -180,0 <= West  Bounding Longitude Value <= 180,0.		text	7		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	geospatial

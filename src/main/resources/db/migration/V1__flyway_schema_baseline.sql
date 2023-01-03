@@ -1,0 +1,2 @@
+-- TODO: we still should add the real base line here, too. That would avoid conflicts between EclipseLink
+--       trying to create new tables on existing databases. See https://github.com/IQSS/dataverse/issues/5871

@@ -38,9 +38,8 @@ public class FeedbackApi extends AbstractApiBean {
         String userEmail = jsonObject.getString("fromEmail");
         String messageSubject = jsonObject.getString("subject");
         String baseUrl = systemConfig.getDataverseSiteUrl();
-        String rootDataverseName = dataverseSvc.findRootDataverse().getName();
-        String installationBrandName = BrandingUtil.getInstallationBrandName(rootDataverseName);
-        String supportTeamName = BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName);
+        String installationBrandName = BrandingUtil.getInstallationBrandName();
+        String supportTeamName = BrandingUtil.getSupportTeamName(systemAddress);
         JsonArrayBuilder jab = Json.createArrayBuilder();
         List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(recipient, dataverseSession, messageSubject, userMessage, systemAddress, userEmail, baseUrl, installationBrandName, supportTeamName);
         feedbacks.forEach((feedback) -> {

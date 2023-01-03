@@ -1,25 +1,30 @@
 #metadataBlock	name	dataverseAlias	displayName												
 	biomedical		Life Sciences Metadata												
-#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
+#datasetField	name	title	description	watermark	fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
 	studyDesignType	Design Type	Design types that are based on the overall experimental design.		text	0		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
-	studyFactorType	Factor Type	Factors used in the Dataset. 		text	1		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
-	studyAssayOrganism	Organism	The taxonomic name of the organism used in the Dataset or from which the  starting biological material derives.		text	2		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
-	studyAssayOtherOrganism	Other Organism	If Other was selected in Organism, list any other organisms that were used in this Dataset. Terms from the NCBI Taxonomy are recommended.		text	3		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		biomedical
-	studyAssayMeasurementType	Measurement Type	A term to qualify the endpoint, or what is being measured (e.g. gene expression profiling; protein identification). 		text	4		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
-	studyAssayOtherMeasurmentType	Other Measurement Type	If Other was selected in Measurement Type, list any other measurement types that were used. Terms from NCBO Bioportal are recommended.		text	5		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		biomedical
-	studyAssayTechnologyType	Technology Type	A term to identify the technology used to perform the measurement (e.g. DNA microarray; mass spectrometry).		text	6		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
-	studyAssayPlatform	Technology Platform	The manufacturer and name of the technology platform used in the assay (e.g. Bruker AVANCE).		text	7		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
-	studyAssayCellType	Cell Type	The name of the cell line from which the source or sample derives.		text	8		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
+	studyOtherDesignType	Other Design Type	If Other was selected in Design Type, list any other design types that were used in this Dataset.		text	1		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		biomedical
+	studyFactorType	Factor Type	Factors used in the Dataset.		text	2		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
+	studyOtherFactorType	Other Factor Type	If Other was selected in Factor Type, list any other factor types that were used in this Dataset.		text	3		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		biomedical
+	studyAssayOrganism	Organism	The taxonomic name of the organism used in the Dataset or from which the  starting biological material derives.		text	4		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
+	studyAssayOtherOrganism	Other Organism	If Other was selected in Organism, list any other organisms that were used in this Dataset. Terms from the NCBI Taxonomy are recommended.		text	5		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		biomedical
+	studyAssayMeasurementType	Measurement Type	A term to qualify the endpoint, or what is being measured (e.g. gene expression profiling; protein identification).		text	6		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
+	studyAssayOtherMeasurmentType	Other Measurement Type	If Other was selected in Measurement Type, list any other measurement types that were used. Terms from NCBO Bioportal are recommended.		text	7		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		biomedical
+	studyAssayTechnologyType	Technology Type	A term to identify the technology used to perform the measurement (e.g. DNA microarray; mass spectrometry).		text	8		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
+	studyAssayOtherTechnologyType	Other Technology Type	If Other was selected in Technology Type, list any other technology types that were used in this Dataset.		text	9		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		biomedical
+	studyAssayPlatform	Technology Platform	The manufacturer and name of the technology platform used in the assay (e.g. Bruker AVANCE).		text	10		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
+	studyAssayOtherPlatform	Other Technology Platform	If Other was selected in Technology Platform, list any other technology platforms that were used in this Dataset.		text	11		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		biomedical
+	studyAssayCellType	Cell Type	The name of the cell line from which the source or sample derives.		text	12		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
 #controlledVocabulary	DatasetField	Value	identifier	displayOrder											
 	studyDesignType	Case Control	EFO_0001427	0											
 	studyDesignType	Cross Sectional	EFO_0001428	1											
 	studyDesignType	Cohort Study	OCRE100078	2											
 	studyDesignType	Nested Case Control Design	NCI_C48202	3											
-	studyDesignType	Not Specified	OTHER_DESIGN	4											
+	studyDesignType	Not Specified	NOT_SPECIFIED	4											
 	studyDesignType	Parallel Group Design	OBI_0500006	5											
 	studyDesignType	Perturbation Design	OBI_0001033	6											
 	studyDesignType	Randomized Controlled Trial	MESH_D016449	7											
 	studyDesignType	Technological Design	TECH_DESIGN	8											
+	studyDesignType	Other	OTHER_DESIGN	9											
 	studyFactorType	Age	EFO_0000246	0											
 	studyFactorType	Biomarkers	BIOMARKERS	1											
 	studyFactorType	Cell Surface Markers	CELL_SURFACE_M	2											
@@ -31,16 +36,15 @@
 	studyFactorType	Genetic Characteristics	OBI_0001404	8											
 	studyFactorType	Immunoprecipitation Antibody	OBI_0000690	9											
 	studyFactorType	Organism	OBI_0100026	10											
-	studyFactorType	Other	OTHER_FACTOR	11											
-	studyFactorType	Passages	PASSAGES_FACTOR	12											
-	studyFactorType	Platform	OBI_0000050	13											
-	studyFactorType	Sex	EFO_0000695	14											
-	studyFactorType	Strain	EFO_0005135	15											
-	studyFactorType	Time Point	EFO_0000724	16											
-	studyFactorType	Tissue Type	BTO_0001384	17											
-	studyFactorType	Treatment Compound	EFO_0000369	18											
-	studyFactorType	Treatment Type	EFO_0000727	19											
-	studyAssayMeasurementType	cell counting	ERO_0001899	0											
+	studyFactorType	Passages	PASSAGES_FACTOR	11											
+	studyFactorType	Platform	OBI_0000050	12											
+	studyFactorType	Sex	EFO_0000695	13											
+	studyFactorType	Strain	EFO_0005135	14											
+	studyFactorType	Time Point	EFO_0000724	15											
+	studyFactorType	Tissue Type	BTO_0001384	16											
+	studyFactorType	Treatment Compound	EFO_0000369	17											
+	studyFactorType	Treatment Type	EFO_0000727	18											
+	studyFactorType	Other	OTHER_FACTOR	19											
 	studyAssayMeasurementType	cell sorting	CHMO_0001085	1											
 	studyAssayMeasurementType	clinical chemistry analysis	OBI_0000520	2											
 	studyAssayMeasurementType	copy number variation profiling	OBI_0000537	3											

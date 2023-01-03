@@ -26,6 +26,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 import java.util.logging.Logger;
+
+import org.apache.commons.io.IOUtils;
+
 import java.util.List; 
 import java.util.Map;
 import java.util.HashMap;
@@ -171,7 +174,9 @@ public class DataConverter {
         } else {
             try {
                 storageIO.open();
-                return downloadFromByteChannel(storageIO.getReadChannel(), storageIO.getSize());
+                try (ReadableByteChannel tabFileChannel = storageIO.getReadChannel()) {
+                  return downloadFromByteChannel(tabFileChannel, storageIO.getSize());
+                }
             } catch (IOException ex) {
                 logger.warning("caught IOException trying to store tabular file " + storageIO.getDataFile().getStorageIdentifier() + " as a temp file.");
             }
@@ -184,12 +189,13 @@ public class DataConverter {
             logger.fine("opening datafFileIO for the source tabular file...");
             
             File tabFile = File.createTempFile("tempTabFile", ".tmp");
-            FileChannel tempFileChannel = new FileOutputStream(tabFile).getChannel();
-            tempFileChannel.transferFrom(tabFileChannel, 0, size);
-            return tabFile;
+            try (FileChannel tempFileChannel = new FileOutputStream(tabFile).getChannel();) {
+              tempFileChannel.transferFrom(tabFileChannel, 0, size);
+              return tabFile;
+            }
         } catch (IOException ioex) {
             logger.warning("caught IOException trying to store tabular file as a temp file.");
-        }
+        } 
         return null;
     }
 
@@ -237,8 +243,10 @@ public class DataConverter {
                 try {
                     StorageIO<DataFile> storageIO = file.getStorageIO();
                     long size = storageIO.getAuxObjectSize("orig");
-                    File origFile = downloadFromByteChannel((ReadableByteChannel) storageIO.openAuxChannel("orig"), size);
-                    resultInfo = dfs.directConvert(origFile, origFormat);
+                    try (ReadableByteChannel origChannel = (ReadableByteChannel) storageIO.openAuxChannel("orig")) {
+                      File origFile = downloadFromByteChannel(origChannel, size);
+                      resultInfo = dfs.directConvert(origFile, origFormat);
+                    }
                 } catch (IOException ex) {
                     ex.printStackTrace();
                     return null;

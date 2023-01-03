@@ -1,0 +1,11 @@
+-- this query will identify datasets where a superuser has run the Curate command and the update included a change to the fileaccessrequest flag, resulting in the file access request updates not being reflected in the published version
+
+select da.id, dv.id, ta.id, da.fileaccessrequest, ta.fileaccessrequest, dv.releasetime 
+from datasetversion dv, termsofuseandaccess ta, dataset da 
+where dv.dataset_id=da.id 
+and dv.termsofuseandaccess_id=ta.id 
+and ta.fileaccessrequest != da.fileaccessrequest 
+and dv.versionstate='RELEASED' 
+and dv.releasetime in (select max(releasetime) 
+from datasetversion 
+where dataset_id=da.id);

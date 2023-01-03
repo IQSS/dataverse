@@ -190,7 +190,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
             // if mode = REPLACE, remove all filemetadata from the dataset version and start fresh
             if (mode.equalsIgnoreCase(ImportMode.REPLACE.name())) {
                 try {
-                    DatasetVersion workingVersion = dataset.getEditVersion();
+                    DatasetVersion workingVersion = dataset.getOrCreateEditVersion();
                     List<FileMetadata> fileMetadataList = workingVersion.getFileMetadatas();
                     jobLogger.log(Level.INFO, "Removing any existing file metadata since mode = REPLACE");
                     for (FileMetadata fmd : fileMetadataList) {
@@ -439,6 +439,16 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
                 + SEP + dataset.getIdentifier()
                 + SEP + uploadFolder
                 + SEP + manifest;
+        // TODO: 
+        // The above goes directly to the filesystem directory configured by the 
+        // old "dataverse.files.directory" JVM option (otherwise used for temp
+        // files only, after the Multistore implementation (#6488). 
+        // We probably want package files to be able to use specific stores instead.
+        // More importantly perhaps, the approach above does not take into account
+        // if the dataset may have an AlternativePersistentIdentifier, that may be 
+        // designated isStorageLocationDesignator() - i.e., if a different identifer
+        // needs to be used to name the storage directory, instead of the main/current
+        // persistent identifier above. 
         getJobLogger().log(Level.INFO, "Reading checksum manifest: " + manifestAbsolutePath);
         Scanner scanner = null;
         try {

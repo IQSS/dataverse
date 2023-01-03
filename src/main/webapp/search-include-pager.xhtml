@@ -25,6 +25,7 @@
                             <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                             <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                             <f:param name="page" value="1"/>
+                            <f:passThroughAttribute name="title" value="#{bundle['dataverse.results.paginator.first']}"/>
                         </h:outputLink>
                     </li>
                     <li class="#{SearchIncludeFragment.page == '1' ? 'disabled' : ''}">
@@ -38,6 +39,7 @@
                             <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                             <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                             <f:param name="page" value="#{Math:max(1,SearchIncludeFragment.page-1).intValue()}"/>
+                            <f:passThroughAttribute name="title" value="#{bundle['dataverse.results.paginator.previous']}"/>
                         </h:outputLink>
                     </li>
                     <c:forEach begin="#{Math:max(1,SearchIncludeFragment.page-Math:max(2,SearchIncludeFragment.page-SearchIncludeFragment.totalPages+4))}"
@@ -73,6 +75,7 @@
                             <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                             <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                             <f:param name="page" value="#{Math:min(SearchIncludeFragment.page+1,SearchIncludeFragment.totalPages).intValue()}"/>
+                            <f:passThroughAttribute name="title" value="#{bundle['dataverse.results.paginator.next']}"/>
                         </h:outputLink>
                     </li>
                     <li class="#{SearchIncludeFragment.page == SearchIncludeFragment.totalPages ? 'disabled' : ''}">
@@ -86,6 +89,7 @@
                             <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                             <f:param name="page" value="#{SearchIncludeFragment.totalPages}"/>
                             <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+                            <f:passThroughAttribute name="title" value="#{bundle['dataverse.results.paginator.last']}"/>
                         </h:outputLink>
                     </li>
                 </ul>

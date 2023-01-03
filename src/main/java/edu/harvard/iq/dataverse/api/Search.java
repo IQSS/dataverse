@@ -35,7 +35,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * User-facing documentation:
@@ -71,6 +71,9 @@ public class Search extends AbstractApiBean {
             @QueryParam("show_api_urls") boolean showApiUrls,
             @QueryParam("show_my_data") boolean showMyData,
             @QueryParam("query_entities") boolean queryEntities,
+            @QueryParam("metadata_fields") List<String> metadataFields,
+            @QueryParam("geo_point") String geoPointRequested,
+            @QueryParam("geo_radius") String geoRadiusRequested,
             @Context HttpServletResponse response
     ) {
 
@@ -86,11 +89,21 @@ public class Search extends AbstractApiBean {
             // sanity checking on user-supplied arguments
             SortBy sortBy;
             int numResultsPerPage;
+            String geoPoint;
+            String geoRadius;
             List<Dataverse> dataverseSubtrees = new ArrayList<>();
 
             try {
                 if (!types.isEmpty()) {
                     filterQueries.add(getFilterQueryFromTypes(types));
+                } else {
+                    /**
+                     * Added to prevent a NullPointerException for superusers
+                     * (who don't use our permission JOIN) when
+                     * SearchServiceBean tries to get SearchFields.TYPE. The GUI
+                     * always seems to add SearchFields.TYPE, even for superusers.
+                     */
+                    filterQueries.add(SearchFields.TYPE + ":(" + SearchConstants.DATAVERSES + " OR " + SearchConstants.DATASETS + " OR " + SearchConstants.FILES + ")");
                 }
                 sortBy = SearchUtil.getSortBy(sortField, sortOrder);
                 numResultsPerPage = getNumberOfResultsPerPage(numResultsPerPageRequested);
@@ -110,6 +123,17 @@ public class Search extends AbstractApiBean {
                     throw new IOException("Filter is empty, which should never happen, as this allows unfettered searching of our index");
                 }
                 
+                geoPoint = getGeoPoint(geoPointRequested);
+                geoRadius = getGeoRadius(geoRadiusRequested);
+
+                if (geoPoint != null && geoRadius == null) {
+                    return error(Response.Status.BAD_REQUEST, "If you supply geo_point you must also supply geo_radius.");
+                }
+
+                if (geoRadius != null && geoPoint == null) {
+                    return error(Response.Status.BAD_REQUEST, "If you supply geo_radius you must also supply geo_point.");
+                }
+
             } catch (Exception ex) {
                 return error(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
             }
@@ -128,7 +152,9 @@ public class Search extends AbstractApiBean {
                         paginationStart,
                         dataRelatedToMe,
                         numResultsPerPage,
-                        queryEntities
+                        true, //SEK get query entities always for search API additional Dataset Information 6300  12/6/2019
+                        geoPoint,
+                        geoRadius
                 );
             } catch (SearchException ex) {
                 Throwable cause = ex;
@@ -148,7 +174,7 @@ public class Search extends AbstractApiBean {
             JsonArrayBuilder itemsArrayBuilder = Json.createArrayBuilder();
             List<SolrSearchResult> solrSearchResults = solrQueryResponse.getSolrSearchResults();
             for (SolrSearchResult solrSearchResult : solrSearchResults) {
-                itemsArrayBuilder.add(solrSearchResult.toJsonObject(showRelevance, showEntityIds, showApiUrls));
+                itemsArrayBuilder.add(solrSearchResult.toJsonObject(showRelevance, showEntityIds, showApiUrls, metadataFields));
             }
 
             JsonObjectBuilder spelling_alternatives = Json.createObjectBuilder();
@@ -202,15 +228,6 @@ public class Search extends AbstractApiBean {
     }
 
     private User getUser() throws WrappedResponse {
-        /**
-         * @todo support searching as non-guest:
-         * https://github.com/IQSS/dataverse/issues/1299
-         *
-         * Note that superusers can't currently use the Search API because they
-         * see permission documents (all Solr documents, really) and we get a
-         * NPE when trying to determine the DvObject type if their query matches
-         * a permission document.
-         */
         User userToExecuteSearchAs = GuestUser.get();
         try {
             AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
@@ -222,16 +239,7 @@ public class Search extends AbstractApiBean {
                 throw ex;
             }
         }
-        if (nonPublicSearchAllowed()) {
-            return userToExecuteSearchAs;
-        } else {
-            return GuestUser.get();
-        }
-    }
-
-    public boolean nonPublicSearchAllowed() {
-        boolean safeDefaultIfKeyNotFound = false;
-        return settingsSvc.isTrueForKey(SettingsServiceBean.Key.SearchApiNonPublicAllowed, safeDefaultIfKeyNotFound);
+        return userToExecuteSearchAs;
     }
 
     public boolean tokenLessSearchAllowed() {
@@ -347,6 +355,14 @@ public class Search extends AbstractApiBean {
                 throw new Exception("Could not find dataverse with alias " + alias);
             }
         }
+    }
+
+    private String getGeoPoint(String geoPointRequested) {
+        return SearchUtil.getGeoPoint(geoPointRequested);
+    }
+
+    private String getGeoRadius(String geoRadiusRequested) {
+        return SearchUtil.getGeoRadius(geoRadiusRequested);
     }
 
 }

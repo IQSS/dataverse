@@ -1,8 +1,10 @@
 package edu.harvard.iq.dataverse.api;
 
+import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -11,6 +13,9 @@ import javax.ws.rs.PathParam;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteRoleCommand;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import java.util.Arrays;
+import java.util.List;
 import javax.ejb.Stateless;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.QueryParam;
@@ -26,7 +31,7 @@ public class Roles extends AbstractApiBean {
 	
 	@GET
 	@Path("{id}")
-	public Response viewRole( @PathParam("id") Long id) {
+	public Response viewRole( @PathParam("id") String id) {
         return response( ()-> {
             final User user = findUserOrDie(); 
             final DataverseRole role = findRoleOrDie(id);
@@ -35,14 +40,19 @@ public class Roles extends AbstractApiBean {
         });
 	}
 	
-	@DELETE
-	@Path("{id}")
-	public Response deleteRole( @PathParam("id") Long id ) {
-        return response( req -> {
-            execCommand( new DeleteRoleCommand(req, findRoleOrDie(id)) );
-            return ok("role " + id + " deleted.");
+    @DELETE
+    @Path("{id}")
+    public Response deleteRole(@PathParam("id") String id) {
+        return response(req -> {
+            DataverseRole role = findRoleOrDie(id);
+            List<String> args = Arrays.asList(role.getName());
+            if (role.getOwner() == null) {
+                throw new WrappedResponse(forbidden(BundleUtil.getStringFromBundle("find.dataverse.role.error.role.builtin.not.allowed", args)));
+            }
+            execCommand(new DeleteRoleCommand(req, role));
+            return ok("role " + role.getName() + " deleted.");
         });
-	}
+    }
 	
 	@POST
 	public Response createNewRole( RoleDTO roleDto,
@@ -52,11 +62,4 @@ public class Roles extends AbstractApiBean {
                                                         req,findDataverseOrDie(dvoIdtf))))));
 	}
     
-    private DataverseRole findRoleOrDie( long id ) throws WrappedResponse {
-        DataverseRole role = rolesSvc.find(id);
-		if ( role != null ) {
-            return role;
-        }
-		throw new WrappedResponse(notFound( "role with id " + id + " not found"));
-    }
 }

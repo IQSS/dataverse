@@ -4,7 +4,8 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:jsf="http://xmlns.jcp.org/jsf">
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:of="http://omnifaces.org/functions">
     <h:head>
     </h:head>
 
@@ -102,7 +103,7 @@
                                 </label>
                                 <div class="col-sm-4">
                                     <p class="form-control-static">
-                                        <h:graphicImage value="#{OAuth2FirstLoginPage.authProvider.logo}" height="16" width="16" rendered="#{OAuth2FirstLoginPage.authProvider.logo != null}"/>&#160;
+                                        <h:graphicImage value="#{OAuth2FirstLoginPage.authProvider.logo}" height="16" width="16" alt="#{of:format1(bundle['alt.logo'], OAuth2FirstLoginPage.authProvider.persistentIdName)}" rendered="#{OAuth2FirstLoginPage.authProvider.logo != null}"/>&#160;
                                         <h:outputLink value="#{OAuth2FirstLoginPage.authProvider.persistentIdUrlPrefix}#{OAuth2FirstLoginPage.newUser.idInService}" title="#{OAuth2FirstLoginPage.authProvider.persistentIdName}" target="_blank" rendered="#{OAuth2FirstLoginPage.authProvider.persistentIdUrlPrefix != null}">
                                             <h:outputText value="#{OAuth2FirstLoginPage.authProvider.persistentIdUrlPrefix}#{OAuth2FirstLoginPage.newUser.idInService}"/>
                                         </h:outputLink>

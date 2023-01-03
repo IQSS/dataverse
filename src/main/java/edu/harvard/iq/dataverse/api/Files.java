@@ -12,8 +12,9 @@ import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.TermsOfUseAndAccessValidator;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
@@ -22,7 +23,7 @@ import edu.harvard.iq.dataverse.datasetutility.NoFilesException;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteMapLayerMetadataCommand;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDraftFileMetadataIfAvailableCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RedetectFileTypeCommand;
@@ -31,16 +32,21 @@ import edu.harvard.iq.dataverse.engine.command.impl.UningestFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -48,6 +54,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonReader;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -144,6 +152,12 @@ public class Files extends AbstractApiBean {
         // update the dataset
         try {
             engineSvc.submit(new UpdateDatasetVersionCommand(dataFile.getOwner(), dataverseRequest));
+        } catch (IllegalCommandException ex) {
+            //special case where terms of use are out of compliance   
+            if (!TermsOfUseAndAccessValidator.isTOUAValid(dataFile.getOwner().getLatestVersion().getTermsOfUseAndAccess(), null)) {
+                return conflict(BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
+            }
+            return error(BAD_REQUEST, "Problem saving datafile " + dataFile.getDisplayName() + ": " + ex.getLocalizedMessage());
         } catch (CommandException ex) {
             return error(BAD_REQUEST, "Problem saving datafile " + dataFile.getDisplayName() + ": " + ex.getLocalizedMessage());
         }
@@ -209,17 +223,33 @@ public class Files extends AbstractApiBean {
                 } catch (DataFileTagException ex) {
                     return error(Response.Status.BAD_REQUEST, ex.getMessage());
                 }
-            } catch (ClassCastException ex) {
-                logger.info("Exception parsing string '" + jsonData + "': " + ex);
+            } catch (ClassCastException | com.google.gson.JsonParseException ex) {
+                return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("file.addreplace.error.parsing"));
             }
         }
 
         // (3) Get the file name and content type
-        if(null == contentDispositionHeader) {
-             return error(BAD_REQUEST, "You must upload a file.");
+        String newFilename = null;
+        String newFileContentType = null;
+        String newStorageIdentifier = null;
+        if (null == contentDispositionHeader) {
+            if (optionalFileParams.hasStorageIdentifier()) {
+                newStorageIdentifier = optionalFileParams.getStorageIdentifier();
+                // ToDo - check that storageIdentifier is valid
+                if (optionalFileParams.hasFileName()) {
+                    newFilename = optionalFileParams.getFileName();
+                    if (optionalFileParams.hasMimetype()) {
+                        newFileContentType = optionalFileParams.getMimeType();
+                    }
+                }
+            } else {
+                return error(BAD_REQUEST,
+                        "You must upload a file or provide a valid storageidentifier, filename, and mimetype.");
+            }
+        } else {
+            newFilename = contentDispositionHeader.getFileName();
+            newFileContentType = formDataBodyPart.getMediaType().toString();
         }
-        String newFilename = contentDispositionHeader.getFileName();
-        String newFileContentType = formDataBodyPart.getMediaType().toString();
         
         // (4) Create the AddReplaceFileHelper object
         msg("REPLACE!");
@@ -231,7 +261,8 @@ public class Files extends AbstractApiBean {
                                                 this.fileService,
                                                 this.permissionSvc,
                                                 this.commandEngine,
-                                                this.systemConfig);
+                                                this.systemConfig,
+                                                this.licenseSvc);
 
         // (5) Run "runReplaceFileByDatasetId"
         long fileToReplaceId = 0;
@@ -251,14 +282,16 @@ public class Files extends AbstractApiBean {
             addFileHelper.runForceReplaceFile(fileToReplaceId,
                                     newFilename,
                                     newFileContentType,
+                                    newStorageIdentifier,
                                     testFileInputStream,
                                     optionalFileParams);
         }else{
             addFileHelper.runReplaceFile(fileToReplaceId,
                                     newFilename,
                                     newFileContentType,
+                                    newStorageIdentifier,
                                     testFileInputStream,
-                                    optionalFileParams);            
+                                    optionalFileParams);
         }    
             
         msg("we're back.....");
@@ -354,12 +387,12 @@ public class Files extends AbstractApiBean {
                         return error(Response.Status.BAD_REQUEST, ex.getMessage());
                     }
                 } catch (ClassCastException | com.google.gson.JsonParseException ex) {
-                    return error(Response.Status.BAD_REQUEST, "Exception parsing provided json");
+                    return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("file.addreplace.error.parsing"));
                 }
             }
 
             try {
-                DatasetVersion editVersion = df.getOwner().getEditVersion();
+                DatasetVersion editVersion = df.getOwner().getOrCreateEditVersion();
 
                 //We get the new fileMetadata from the new version
                 //This is because after generating the draft with getEditVersion,
@@ -368,14 +401,33 @@ public class Files extends AbstractApiBean {
                 List<FileMetadata> fmdList = editVersion.getFileMetadatas();
                 for(FileMetadata testFmd : fmdList) {
                     DataFile daf = testFmd.getDataFile();
-                    if(daf.getChecksumType().equals(df.getChecksumType())
-                        && daf.getChecksumValue().equals(df.getChecksumValue())) {
-                        upFmd = testFmd;
+                    if(daf.equals(df)){
+                       upFmd = testFmd;
+                       break;
                     }
                 }
                 
                 if (upFmd == null){
                     return error(Response.Status.BAD_REQUEST, "An error has occurred attempting to update the requested DataFile. It is not part of the current version of the Dataset.");
+                }
+
+                JsonReader jsonReader = Json.createReader(new StringReader(jsonData));
+                javax.json.JsonObject jsonObject = jsonReader.readObject();
+                String incomingLabel = jsonObject.getString("label", null);
+                String incomingDirectoryLabel = jsonObject.getString("directoryLabel", null);
+                String existingLabel = df.getFileMetadata().getLabel();
+                String existingDirectoryLabel = df.getFileMetadata().getDirectoryLabel();
+                String pathPlusFilename = IngestUtil.getPathAndFileNameToCheck(incomingLabel, incomingDirectoryLabel, existingLabel, existingDirectoryLabel);
+                // We remove the current file from the list we'll check for duplicates.
+                // Instead, the current file is passed in as pathPlusFilename.
+                List<FileMetadata> fmdListMinusCurrentFile = new ArrayList<>();
+                for (FileMetadata fileMetadata : fmdList) {
+                    if (!fileMetadata.equals(df.getFileMetadata())) {
+                        fmdListMinusCurrentFile.add(fileMetadata);
+                    }
+                }
+                if (IngestUtil.conflictsWithExistingFilenames(pathPlusFilename, fmdListMinusCurrentFile)) {
+                    return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.metadata.update.duplicateFile", Arrays.asList(pathPlusFilename)));
                 }
 
                 optionalFileParams.addOptionalParams(upFmd);
@@ -384,7 +436,7 @@ public class Files extends AbstractApiBean {
 
             } catch (Exception e) {
                 logger.log(Level.WARNING, "Dataset publication finalization: exception while exporting:{0}", e);
-                return error(Response.Status.INTERNAL_SERVER_ERROR, "Error adding metadata to DataFile" + e);
+                return error(Response.Status.INTERNAL_SERVER_ERROR, "Error adding metadata to DataFile: " + e);
             }
 
         } catch (WrappedResponse wr) {
@@ -403,7 +455,8 @@ public class Files extends AbstractApiBean {
     @GET                             
     @Path("{id}/metadata")
     public Response getFileMetadata(@PathParam("id") String fileIdOrPersistentId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, Boolean getDraft) throws WrappedResponse, Exception {
-            DataverseRequest req;
+        //ToDo - versionId is not used - can't get metadata for earlier versions
+        DataverseRequest req;
             try {
                 req = createDataverseRequest(findUserOrDie());
             } catch (Exception e) {
@@ -445,31 +498,7 @@ public class Files extends AbstractApiBean {
     public Response getFileMetadataDraft(@PathParam("id") String fileIdOrPersistentId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, Boolean getDraft) throws WrappedResponse, Exception {
         return getFileMetadata(fileIdOrPersistentId, versionId, uriInfo, headers, response, true);
     }
-    
-    // TODO: Rather than only supporting looking up files by their database IDs, consider supporting persistent identifiers.
-    // TODO: Rename this start with "delete" rather than "get".
-    @DELETE
-    @Path("{id}/map")
-    public Response getMapLayerMetadatas(@PathParam("id") Long idSupplied) {
-        DataverseRequest dataverseRequest = null;
-        try {
-            dataverseRequest = createDataverseRequest(findUserOrDie());
-        } catch (WrappedResponse wr) {
-            return error(BAD_REQUEST, "Couldn't find user to execute command: " + wr.getLocalizedMessage());
-        }
-        DataFile dataFile = fileService.find(idSupplied);
-        try {
-            boolean deleted = engineSvc.submit(new DeleteMapLayerMetadataCommand(dataverseRequest, dataFile));
-            if (deleted) {
-                return ok("Map deleted from file id " + dataFile.getId());
-            } else {
-                return error(BAD_REQUEST, "Could not delete map from file id " + dataFile.getId());
-            }
-        } catch (CommandException ex) {
-            return error(BAD_REQUEST, "Problem trying to delete map from file id " + dataFile.getId() + ": " + ex.getLocalizedMessage());
-        }
-    }
-    
+
     @Path("{id}/uningest")
     @POST
     public Response uningestDatafile(@PathParam("id") String id) {
@@ -603,7 +632,7 @@ public class Files extends AbstractApiBean {
     private void exportDatasetMetadata(SettingsServiceBean settingsServiceBean, Dataset theDataset) {
 
         try {
-            ExportService instance = ExportService.getInstance(settingsServiceBean);
+            ExportService instance = ExportService.getInstance();
             instance.exportAllFormats(theDataset);
 
         } catch (ExportException ex) {
@@ -615,4 +644,40 @@ public class Files extends AbstractApiBean {
         }
     }
 
+    // This method provides a callback for an external tool to retrieve it's
+    // parameters/api URLs. If the request is authenticated, e.g. by it being
+    // signed, the api URLs will be signed. If a guest request is made, the URLs
+    // will be plain/unsigned.
+    // This supports the cases where a tool is accessing a restricted resource (e.g.
+    // preview of a draft file), or public case.
+    @GET
+    @Path("{id}/metadata/{fmid}/toolparams/{tid}")
+    public Response getExternalToolFMParams(@PathParam("tid") long externalToolId,
+            @PathParam("id") String fileId, @PathParam("fmid") long fmid, @QueryParam(value = "locale") String locale) {
+        try {
+            ExternalTool externalTool = externalToolService.findById(externalToolId);
+            if(externalTool == null) {
+                return error(BAD_REQUEST, "External tool not found.");
+            }
+            if (!ExternalTool.Scope.FILE.equals(externalTool.getScope())) {
+                return error(BAD_REQUEST, "External tool does not have file scope.");
+            }
+            ApiToken apiToken = null;
+            User u = findUserOrDie();
+            if (u instanceof AuthenticatedUser) {
+                apiToken = authSvc.findApiTokenByUser((AuthenticatedUser) u);
+            }
+            FileMetadata target = fileSvc.findFileMetadata(fmid);
+            if (target == null) {
+                return error(BAD_REQUEST, "FileMetadata not found.");
+            }
+
+            ExternalToolHandler eth = null;
+
+            eth = new ExternalToolHandler(externalTool, target.getDataFile(), apiToken, target, locale);
+            return ok(eth.createPostBody(eth.getParams(JsonUtil.getJsonObject(externalTool.getToolParameters()))));
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
 }

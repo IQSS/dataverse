@@ -1,0 +1,13 @@
+{
+  "dismissibleByUser": "false",
+  "messageTexts": [
+  {
+    "lang": "en",
+    "message": "Banner Message For Deletion"
+  },
+  {
+    "lang": "fr",
+    "message": "Banner Message For Deletion"
+  }
+  ]
+}

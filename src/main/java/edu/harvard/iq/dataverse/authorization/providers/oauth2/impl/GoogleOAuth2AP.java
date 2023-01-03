@@ -1,11 +1,12 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2.impl;
 
 import com.github.scribejava.apis.GoogleApi20;
-import com.github.scribejava.core.builder.api.BaseApi;
+import com.github.scribejava.core.builder.api.DefaultApi20;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.StringReader;
+import java.util.Arrays;
 import java.util.UUID;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -22,12 +23,12 @@ public class GoogleOAuth2AP extends AbstractOAuth2AuthenticationProvider {
         title = BundleUtil.getStringFromBundle("auth.providers.title.google");
         clientId = aClientId;
         clientSecret = aClientSecret;
-        scope =  "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email";
+        scope = Arrays.asList("https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email");
         baseUserEndpoint = "https://www.googleapis.com/oauth2/v2/userinfo";
     }
     
     @Override
-    public BaseApi getApiInstance() {
+    public DefaultApi20 getApiInstance() {
         return GoogleApi20.instance();
     }
 

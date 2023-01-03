@@ -3,7 +3,7 @@
     <persistence-unit name="VDCNet-ejbPU" transaction-type="JTA">
         <!-- provider>oracle.toplink.essentials.ejb.cmp3.EntityManagerFactoryProvider</provider-->
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
-        <jta-data-source>jdbc/VDCNetDS</jta-data-source>
+        <jta-data-source>java:app/jdbc/dataverse</jta-data-source>
         <properties>
             <!--property name="toplink.logging.level" value="FINE"/-->
 	    <!-- disabling weaving, as an experiment: - L.A. -->
@@ -20,15 +20,4 @@
             <!--<property name="eclipselink.logging.parameters" value="true"/>-->
         </properties>
     </persistence-unit>
-    <!-- the persistence unit below is no longer necessary; needs to be removed 
-	 from gnrs/TestNRS and from here: - L.A. 
-    <persistence-unit name="VDCNet-test" transaction-type="RESOURCE_LOCAL">
-        <provider>oracle.toplink.essentials.ejb.cmp3.EntityManagerFactoryProvider</provider>
-        <properties>
-            <property name="toplink.jdbc.url" value="jdbc:postgresql://localhost:5432/VDCNet-dev"/>
-            <property name="toplink.jdbc.user" value="vdcApp"/>
-            <property name="toplink.jdbc.driver" value="org.postgresql.jdbc3.Jdbc3PoolingDataSource"/>
-            <property name="toplink.jdbc.password" value="secret"/>
-        </properties>
-    </persistence-unit -->
 </persistence>

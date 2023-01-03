@@ -40,7 +40,7 @@ public class DatasetVersionDTO {
     String studyCompletion;
     boolean fileAccessRequest;
     String citation;
-    String license;
+    LicenseDTO license;
     boolean inReview;
     
     Map<String,MetadataBlockDTO> metadataBlocks;
@@ -305,12 +305,12 @@ public class DatasetVersionDTO {
     public void setArchiveTime(String archiveTime) {
         this.archiveTime = archiveTime;
     }
-    
-    public String getLicense() {
+
+    public LicenseDTO getLicense() {
         return license;
     }
 
-    public void setLicense(String license) {
+    public void setLicense(LicenseDTO license) {
         this.license = license;
     }
 

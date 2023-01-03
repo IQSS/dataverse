@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.provenance;
 
+import javax.enterprise.inject.spi.CDI;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
@@ -14,8 +15,8 @@ import javax.inject.Inject;
 @FacesConverter("provEntityFileDataConverter")
 public class ProvEntityFileDataConverter implements Converter{
 
-    @Inject
-    ProvPopupFragmentBean provBean;
+    //@Inject
+    ProvPopupFragmentBean provBean = CDI.current().select(ProvPopupFragmentBean.class).get();
     
     @Override
     public Object getAsObject(FacesContext context, UIComponent component, String value) {

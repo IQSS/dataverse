@@ -15,5 +15,4 @@ User Guide
    dataverse-management
    dataset-management
    tabulardataingest/index
-   data-exploration/index
    appendix

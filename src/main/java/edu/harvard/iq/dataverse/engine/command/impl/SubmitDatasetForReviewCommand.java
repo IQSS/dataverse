@@ -31,6 +31,8 @@ public class SubmitDatasetForReviewCommand extends AbstractDatasetCommand<Datase
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
 
+        validateOrDie(getDataset().getLatestVersion(), false);
+
         if (getDataset().getLatestVersion().isReleased()) {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.submit.failure.isReleased"), this);
         }
@@ -47,9 +49,9 @@ public class SubmitDatasetForReviewCommand extends AbstractDatasetCommand<Datase
         return updatedDataset;
     }
 
-    public Dataset save(CommandContext ctxt) throws CommandException {
+    private Dataset save(CommandContext ctxt) throws CommandException {
 
-        getDataset().getEditVersion().setLastUpdateTime(getTimestamp());
+        getDataset().getOrCreateEditVersion().setLastUpdateTime(getTimestamp());
         getDataset().setModificationTime(getTimestamp());
 
         Dataset savedDataset = ctxt.em().merge(getDataset());
@@ -61,7 +63,7 @@ public class SubmitDatasetForReviewCommand extends AbstractDatasetCommand<Datase
         
         List<AuthenticatedUser> authUsers = ctxt.permissions().getUsersWithPermissionOn(Permission.PublishDataset, savedDataset);
         for (AuthenticatedUser au : authUsers) {
-            ctxt.notifications().sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.SUBMITTEDDS, savedDataset.getLatestVersion().getId(), "", requestor);
+            ctxt.notifications().sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.SUBMITTEDDS, savedDataset.getLatestVersion().getId(), "", requestor, false);
         }
         
         //  TODO: What should we do with the indexing result? Print it to the log?

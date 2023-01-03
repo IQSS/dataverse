@@ -34,7 +34,7 @@ public class ConfirmEmailServiceBean {
     private static final Logger logger = Logger.getLogger(ConfirmEmailServiceBean.class.getCanonicalName());
 
     @EJB
-    AuthenticationServiceBean dataverseUserService;
+    AuthenticationServiceBean authenticationService;
 
     @EJB
     MailServiceBean mailService;
@@ -46,6 +46,27 @@ public class ConfirmEmailServiceBean {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+    
+    /**
+     * A simple interface to check if a user email has been verified or not.
+     * @param user
+     * @return true if verified, false otherwise
+     */
+    public boolean hasVerifiedEmail(AuthenticatedUser user) {
+        // Look up the user again in case the "verify email" link was clicked in another browser.
+        user = authenticationService.findByID(user.getId());
+        boolean hasTimestamp = user.getEmailConfirmed() != null;
+        boolean isVerifiedByAuthProvider = authenticationService.lookupProvider(user).isEmailVerified();
+        // Note: In practice, we are relying on hasTimestamp to know if an email
+        // has been confirmed/verified or not. We have switched the Shib code to automatically
+        // overwrite the "confirm email" timestamp on login. So hasTimeStamp will be enough.
+        // If we ever want to get away from using "confirmed email" timestamps for Shib users
+        // we can make use of the isVerifiedByAuthProvider boolean. Currently,
+        // isVerifiedByAuthProvider is set to false in the super class and nothing
+        // is overridden in the shib auth provider (or any auth provider) but we could override
+        // isVerifiedByAuthProvider in the Shib auth provider and have it return true.
+        return hasTimestamp || isVerifiedByAuthProvider;
+    }
 
     /**
      * Initiate the email confirmation process.
@@ -108,20 +129,19 @@ public class ConfirmEmailServiceBean {
 
         try {
             String toAddress = aUser.getEmail();
-            try {
-                Dataverse rootDataverse = dataverseService.findRootDataverse();
-                if (rootDataverse != null) {
-                    String rootDataverseName = rootDataverse.getName();
-                    // FIXME: consider refactoring this into MailServiceBean.sendNotificationEmail. CONFIRMEMAIL may be the only type where we don't want an in-app notification.
-                    UserNotification userNotification = new UserNotification();
-                    userNotification.setType(UserNotification.Type.CONFIRMEMAIL);
-                    String subject = MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName, null);
-                    logger.fine("sending email to " + toAddress + " with this subject: " + subject);
-                    mailService.sendSystemEmail(toAddress, subject, messageBody);
-                }
-            } catch (Exception e) {
-                logger.info("The root dataverse is not present. Don't send a notification to dataverseAdmin.");
+
+            // FIXME: consider refactoring this into MailServiceBean.sendNotificationEmail.
+            // CONFIRMEMAIL may be the only type where we don't want an in-app notification.
+            UserNotification userNotification = new UserNotification();
+            userNotification.setType(UserNotification.Type.CONFIRMEMAIL);
+            String subject = MailUtil.getSubjectTextBasedOnNotification(userNotification, null);
+            logger.fine("sending email to " + toAddress + " with this subject: " + subject);
+            if (ShibAuthenticationProvider.PROVIDER_ID.equals(aUser.getAuthenticatedUserLookup().getAuthenticationProviderId())) {
+                // Shib users have "emailconfirmed" timestamp set on login.
+                logger.info("Returning early to prevent an email confirmation link from being sent to Shib user " + aUser.getUserIdentifier() + ".");
+                return;
             }
+            mailService.sendSystemEmail(toAddress, subject, messageBody);
         } catch (Exception ex) {
             /**
              * @todo get more specific about the exception that's thrown when
@@ -134,51 +154,59 @@ public class ConfirmEmailServiceBean {
     }
 
     /**
-     * Process the email confirmation token, allowing the user to confirm the
-     * email address or report on a invalid token.
+     * Process the email confirmation token. If all looks good, set the
+     * timestamp and delete the token/confirmEmailData.
      *
      * @param tokenQueried
+     * @return ConfirmEmailExecResponse
+     * @throws Exception with details of the problem we can show the user.
      */
-    public ConfirmEmailExecResponse processToken(String tokenQueried) {
+    public ConfirmEmailExecResponse processToken(String tokenQueried) throws Exception {
         deleteAllExpiredTokens();
-        ConfirmEmailExecResponse tokenUnusable = new ConfirmEmailExecResponse(tokenQueried, null);
-        ConfirmEmailData confirmEmailData = findSingleConfirmEmailDataByToken(tokenQueried);
-        if (confirmEmailData != null) {
-            if (confirmEmailData.isExpired()) {
-                // shouldn't reach here since tokens are being expired above
-                return tokenUnusable;
-            } else {
-                ConfirmEmailExecResponse goodTokenCanProceed = new ConfirmEmailExecResponse(tokenQueried, confirmEmailData);
-                if (confirmEmailData == null) {
-                    logger.fine("Invalid token.");
-                    return null;
-                }
-                long nowInMilliseconds = new Date().getTime();
-                Timestamp emailConfirmed = new Timestamp(nowInMilliseconds);
-                AuthenticatedUser authenticatedUser = confirmEmailData.getAuthenticatedUser();
-                authenticatedUser.setEmailConfirmed(emailConfirmed);
-                em.remove(confirmEmailData);
-                return goodTokenCanProceed;
-            }
-        } else {
-            return tokenUnusable;
+        ConfirmEmailData confirmEmailData;
+        try {
+            confirmEmailData = findSingleConfirmEmailDataByToken(tokenQueried);
+        } catch (ConfirmEmailException ex) {
+            logger.info("processToken: could not find single ConfirmEmailData row using token " + tokenQueried);
+            throw new Exception(BundleUtil.getStringFromBundle("confirmEmail.details.failure.invalidToken"));
         }
+        if (confirmEmailData == null) {
+            // shouldn't reach here because "invalid token" exception should have already been thrown.
+            logger.info("processToken: ConfirmEmailData is null using token " + tokenQueried);
+            throw new Exception(BundleUtil.getStringFromBundle("confirmEmail.details.failure.lookupFailed"));
+        }
+        if (confirmEmailData.isExpired()) {
+            // shouldn't reach here since tokens are being expired above
+            logger.info("processToken: Token is expired: " + tokenQueried);
+            throw new Exception(BundleUtil.getStringFromBundle("confirmEmail.details.failure.tokenExpired"));
+        }
+        // No need for null check because confirmEmailData always has a user (a foreign key).
+        AuthenticatedUser authenticatedUser = confirmEmailData.getAuthenticatedUser();
+        if (authenticatedUser.isDeactivated()) {
+            logger.info("processToken: User is deactivated. Token was " + tokenQueried);
+            throw new Exception(BundleUtil.getStringFromBundle("confirmEmail.details.failure.userDeactivated"));
+        }
+        ConfirmEmailExecResponse response = new ConfirmEmailExecResponse(tokenQueried, confirmEmailData);
+        long nowInMilliseconds = new Date().getTime();
+        Timestamp emailConfirmed = new Timestamp(nowInMilliseconds);
+        authenticatedUser.setEmailConfirmed(emailConfirmed);
+        em.remove(confirmEmailData);
+        return response;
     }
 
     /**
      * @param token
      * @return Null or a single row of email confirmation data.
      */
-    private ConfirmEmailData findSingleConfirmEmailDataByToken(String token) {
-        ConfirmEmailData confirmEmailData = null;
+    private ConfirmEmailData findSingleConfirmEmailDataByToken(String token) throws ConfirmEmailException {
         TypedQuery<ConfirmEmailData> typedQuery = em.createNamedQuery("ConfirmEmailData.findByToken", ConfirmEmailData.class);
         typedQuery.setParameter("token", token);
         try {
-            confirmEmailData = typedQuery.getSingleResult();
+            return typedQuery.getSingleResult();
         } catch (NoResultException | NonUniqueResultException ex) {
-            logger.fine("When looking up " + token + " caught " + ex);
+            logger.info("findSingleConfirmEmailDataByToken: When looking up " + token + " caught an exception:" + ex);
+            throw new ConfirmEmailException("");
         }
-        return confirmEmailData;
     }
 
     public ConfirmEmailData findSingleConfirmEmailDataByUser(AuthenticatedUser user) {
@@ -192,6 +220,14 @@ public class ConfirmEmailServiceBean {
         }
         return confirmEmailData;
     }
+    
+    public boolean hasActiveVerificationToken(AuthenticatedUser au) {
+        if (findSingleConfirmEmailDataByUser(au) == null){
+            return false;
+        }
+        return !findSingleConfirmEmailDataByUser(au).isExpired();
+    }
+
 
     public List<ConfirmEmailData> findAllConfirmEmailData() {
         TypedQuery<ConfirmEmailData> typedQuery = em.createNamedQuery("ConfirmEmailData.findAll", ConfirmEmailData.class);

@@ -8,28 +8,37 @@
             <p:panel id="editRolePropertiesPanel" styleClass="panelLayoutBlock" widgetVar="roleProperties">
                 <p:focus context="rolesPermissionsDialog"/>
                 <div class="row form-horizontal">
+                <p:fragment id="roleInputTextFragment">    
                     <div class="col-sm-6 form-group">
                         <label class="control-label" for="roleName">
                             #{bundle['dataverse.permissions.roles.name']}
+                            <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/> 
                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                   data-toggle="tooltip" data-placement="auto right" data-container="body" data-original-title="#{bundle['dataverse.permissions.roles.name.title']}"></span>
                         </label>
                         <p:panelGrid columns="2" styleClass="noBorders" style="width:100%;">
-                            <p:inputText id="roleName" styleClass="form-control" value="#{managePermissionsPage.role.name}"/>
-                            <p:message for="roleName"/>
+                            <p:inputText id="roleName" styleClass="form-control" value="#{managePermissionsPage.role.name}"
+                                         required="#{param['ROLE_VALIDATION']}" requiredMessage="#{bundle['dataverse.permissions.roles.name.required']}"
+                                         />       
                         </p:panelGrid>
+                        <p:message for="roleName" display="text"/>
                     </div>
                     <div class="col-sm-6 form-group">
                         <label class="control-label" for="roleName">
                             #{bundle['dataverse.permissions.roles.id']}
+                            <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/> 
                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                  data-toggle="tooltip" data-placement="auto right" data-container="body" data-original-title="#{bundle['dataverse.permissions.roles.id.title']}"></span>
+                                  data-toggle="tooltip" data-placement="auto right" data-container="body" data-original-title="#{bundle['dataverse.permissions.roles.id.title']}"></span>      
                         </label>
+                        
                         <p:panelGrid columns="2" styleClass="noBorders" style="width:100%;">
-                            <p:inputText id="roleAlias" styleClass="form-control" value="#{managePermissionsPage.role.alias}"/>
-                            <p:message for="roleAlias"/>
+                            <p:inputText id="roleAlias" styleClass="form-control" value="#{managePermissionsPage.role.alias}"
+                                         required="#{param['ROLE_VALIDATION']}" requiredMessage="#{bundle['dataverse.permissions.roles.alias.required']}"/>
+                            
                         </p:panelGrid>
+                        <p:message for="roleAlias" display="text"/>    
                     </div>
+                </p:fragment>    
                 </div>
                 <div class="row form-horizontal">
                     <div class="col-sm-6 form-group">
@@ -65,9 +74,12 @@
             <div id="editRoleButtonPanel" class="button-block">
                 <p:commandButton styleClass="btn btn-default" 
                                value="#{bundle.saveChanges}" 
-                               oncomplete="PF('roleForm').hide()"
-                               update="roleDisplay availableRoles @([id$=Messages])"
-                               actionListener="#{managePermissionsPage.updateRole}"/>
+                               oncomplete="if (args &amp;&amp; !args.validationFailed) addRoleCommand();"  
+                               update="roleInputTextFragment @([id$=Messages])"
+                               >
+                <f:param name="ROLE_VALIDATION" value="true"/>
+                </p:commandButton>
+                <p:remoteCommand name="addRoleCommand" oncomplete="PF('roleForm').hide();" update="roleDisplay availableRoles @([id$=Messages])" actionListener="#{managePermissionsPage.updateRole}"/>
                 <button class="btn btn-link" onclick="PF('roleForm').hide()" type="button">
                     #{bundle.cancel}
                 </button>

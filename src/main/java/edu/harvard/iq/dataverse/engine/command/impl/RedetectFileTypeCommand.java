@@ -12,7 +12,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.util.EjbUtil;
-import edu.harvard.iq.dataverse.util.FileTypeDetection;
+import edu.harvard.iq.dataverse.util.FileUtil;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -53,16 +54,16 @@ public class RedetectFileTypeCommand extends AbstractCommand<DataFile> {
             } else {
                 // Need to create a temporary local file: 
 
-                ReadableByteChannel targetFileChannel = (ReadableByteChannel) storageIO.getReadChannel();
                 tempFile = File.createTempFile("tempFileTypeCheck", ".tmp");
-                FileChannel tempFileChannel = new FileOutputStream(tempFile).getChannel();
-                tempFileChannel.transferFrom(targetFileChannel, 0, storageIO.getSize());
-
+                try (ReadableByteChannel targetFileChannel = (ReadableByteChannel) storageIO.getReadChannel();
+                		FileChannel tempFileChannel = new FileOutputStream(tempFile).getChannel();) {
+                    tempFileChannel.transferFrom(targetFileChannel, 0, storageIO.getSize());
+                }
                 localFile = tempFile;
             }
 
             logger.fine("target file: " + localFile);
-            String newlyDetectedContentType = FileTypeDetection.determineFileType(localFile);
+            String newlyDetectedContentType = FileUtil.determineFileType(localFile, fileToRedetect.getDisplayName());
             fileToRedetect.setContentType(newlyDetectedContentType);
         } catch (IOException ex) {
             throw new CommandException("Exception while attempting to get the bytes of the file during file type redetection: " + ex.getLocalizedMessage(), this);
@@ -89,7 +90,7 @@ public class RedetectFileTypeCommand extends AbstractCommand<DataFile> {
                 logger.info("Exception while reindexing files during file type redetection: " + ex.getLocalizedMessage());
             }
             try {
-                ExportService instance = ExportService.getInstance(ctxt.settings());
+                ExportService instance = ExportService.getInstance();
                 instance.exportAllFormats(dataset);
             } catch (ExportException ex) {
                 // Just like with indexing, a failure to export is not a fatal condition.

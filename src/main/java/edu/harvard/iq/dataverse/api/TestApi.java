@@ -36,7 +36,7 @@ public class TestApi extends AbstractApiBean {
             List<ExternalTool> datasetTools = externalToolService.findDatasetToolsByType(type);
             for (ExternalTool tool : datasetTools) {
                 ApiToken apiToken = externalToolService.getApiToken(getRequestApiKey());
-                ExternalToolHandler externalToolHandler = new ExternalToolHandler(tool, dataset, apiToken);
+                ExternalToolHandler externalToolHandler = new ExternalToolHandler(tool, dataset, apiToken, null);
                 JsonObjectBuilder toolToJson = externalToolService.getToolAsJsonWithQueryParameters(externalToolHandler);
                 tools.add(toolToJson);
             }
@@ -61,7 +61,7 @@ public class TestApi extends AbstractApiBean {
             List<ExternalTool> datasetTools = externalToolService.findFileToolsByTypeAndContentType(type, dataFile.getContentType());
             for (ExternalTool tool : datasetTools) {
                 ApiToken apiToken = externalToolService.getApiToken(getRequestApiKey());
-                ExternalToolHandler externalToolHandler = new ExternalToolHandler(tool, dataFile, apiToken, dataFile.getFileMetadata());
+                ExternalToolHandler externalToolHandler = new ExternalToolHandler(tool, dataFile, apiToken, dataFile.getFileMetadata(), null);
                 JsonObjectBuilder toolToJson = externalToolService.getToolAsJsonWithQueryParameters(externalToolHandler);
                 tools.add(toolToJson);
             }

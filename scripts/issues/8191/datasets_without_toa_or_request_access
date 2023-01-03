@@ -1,0 +1,28 @@
+-- this query will identify datasets where at least one file does not have either terms of access or request access enabled, and will include owner information for those datasets
+
+select au.email, 
+concat(au.firstname, ' ', au.lastname),
+concat('$SERVERNAME/dataset.xhtml?persistentId=doi:' , dvo.authority , '/' ,  dvo.identifier)
+from roleassignment ra, dataverserole dvr,
+authenticateduser au, dvobject dvo
+where
+au.useridentifier = rtrim(substring(ra.assigneeidentifier, 2, 100))
+and dvo.id = ra.definitionpoint_id
+and
+ra.role_id = dvr.id and
+dvr.alias in (
+	'fullContributor',
+'dsContributor',
+'contributor',
+'admin',
+'curator'
+) and
+ra.definitionpoint_id in (
+	select dvo.id  from datasetversion v
+join termsofuseandaccess ua on ua.id = v.termsofuseandaccess_id
+join filemetadata fm on v.id = fm.datasetversion_id
+join datafile f on f.id = fm.datafile_id
+join dvobject dvo on v.dataset_id = dvo.id
+where ua.fileaccessrequest = false and ua.termsofaccess isnull
+and f.restricted = true
+)

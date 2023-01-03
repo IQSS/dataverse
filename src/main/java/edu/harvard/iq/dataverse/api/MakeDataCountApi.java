@@ -6,18 +6,24 @@ import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitations;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitationsServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetricsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -39,6 +45,8 @@ public class MakeDataCountApi extends AbstractApiBean {
     DatasetExternalCitationsServiceBean datasetExternalCitationsService;
     @EJB
     DatasetServiceBean datasetService;
+    @EJB
+    SystemConfig systemConfig;
 
     /**
      * TODO: For each dataset, send the following:
@@ -127,28 +135,47 @@ public class MakeDataCountApi extends AbstractApiBean {
     @POST
     @Path("{id}/updateCitationsForDataset")
     public Response updateCitationsForDataset(@PathParam("id") String id) throws MalformedURLException, IOException {
-        String msg = "updateCitationsForDataset called";
-        Dataset dataset = null;
         try {
-            // FIXME: Switch to findDatasetOrDie instead of blindly downloading citations for whatever DOI.
-            // FIXME: remove this parseBooleanOrDie which is only here to throw WrappedResponse.
-            parseBooleanOrDie("true");
-//            dataset = findDatasetOrDie(id);
-//            String authorityPlusIdentifier = dataset.getAuthority() + dataset.getIdentifier();
-            String persistentId = getRequestParameter(":persistentId".substring(1));
+            Dataset dataset = findDatasetOrDie(id);
+            String persistentId = dataset.getGlobalId().toString();
             // DataCite wants "doi=", not "doi:".
             String authorityPlusIdentifier = persistentId.replaceFirst("doi:", "");
-            // curl https://api.datacite.org/events?doi=10.7910/dvn/hqzoob&source=crossref
-            URL url = new URL("https://api.datacite.org/events?doi=" + authorityPlusIdentifier + "&source=crossref");
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            int status = connection.getResponseCode();
-            // TODO: Do something with non 200 status.
-            System.out.println("status: " + status);
-            JsonObject report = Json.createReader(connection.getInputStream()).readObject();
-            logger.fine("body of citation response: " + report.toString());
-            List<DatasetExternalCitations> datasetExternalCitations = datasetExternalCitationsService.parseCitations(report);
-
+            // Request max page size and then loop to handle multiple pages
+            URL url = new URL(systemConfig.getDataCiteRestApiUrlString() + "/events?doi=" + authorityPlusIdentifier + "&source=crossref&page[size]=1000");
+            logger.fine("Retrieving Citations from " + url.toString());
+            boolean nextPage = true;
+            JsonArrayBuilder dataBuilder = Json.createArrayBuilder();
+            do {
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                int status = connection.getResponseCode();
+                if (status != 200) {
+                    logger.warning("Failed to get citations from " + url.toString());
+                    return error(Status.fromStatusCode(status), "Failed to get citations from " + url.toString());
+                }
+                JsonObject report = Json.createReader(connection.getInputStream()).readObject();
+                JsonObject links = report.getJsonObject("links");
+                JsonArray data = report.getJsonArray("data");
+                Iterator<JsonValue> iter = data.iterator();
+                while (iter.hasNext()) {
+                    dataBuilder.add(iter.next());
+                }
+                if (links.containsKey("next")) {
+                    url = new URL(links.getString("next"));
+                } else {
+                    nextPage = false;
+                }
+                logger.fine("body of citation response: " + report.toString());
+            } while (nextPage == true);
+            JsonArray allData = dataBuilder.build();
+            List<DatasetExternalCitations> datasetExternalCitations = datasetExternalCitationsService.parseCitations(allData);
+            /*
+             * ToDo: If this is the only source of citations, we should remove all the existing ones for the dataset and repopuate them.
+             * As is, this call doesn't remove old citations if there are now none (legacy issue if we decide to stop counting certain types of citation
+             * as we've done for 'hasPart').
+             * If there are some, this call individually checks each one and if a matching item exists, it removes it and adds it back. Faster and better to delete all and
+             * add the new ones.
+             */
             if (!datasetExternalCitations.isEmpty()) {
                 for (DatasetExternalCitations dm : datasetExternalCitations) {
                     datasetExternalCitationsService.save(dm);

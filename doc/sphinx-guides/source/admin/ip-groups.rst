@@ -20,7 +20,7 @@ IP Groups must be expressed as ranges in IPv4 or IPv6 format. For illustrative p
 
 .. literalinclude:: ../_static/admin/ipGroupAll.json
 
-Let's say you download the example above and edit it to give it a range used by your library, giving it a filename of ``ipGroup1.json`` and putting it in the ``/tmp`` directory. Next, load it into Dataverse using the following curl command:
+Let's say you download the example above and edit it to give it a range used by your library, giving it a filename of ``ipGroup1.json`` and putting it in the ``/tmp`` directory. Next, load it into your Dataverse installation using the following curl command:
 
 ``curl -X POST -H 'Content-type: application/json' http://localhost:8080/api/admin/groups/ip --upload-file /tmp/ipGroup1.json``
 

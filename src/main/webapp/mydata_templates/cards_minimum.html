@@ -18,9 +18,13 @@
             <span class="icon-dataverse text-brand pull-right" title="Dataverse"></span>
             <a href="/dataverse/{{ card_info.identifier }}"><span style="padding:4px 0;">{{ card_info.name }}</span></a>
            {# <span class="text-muted">(<em>Affiliation</em>)</span>#}
- {% elif card_info.type == "dataset" %}
+  {% elif card_info.type == "dataset" %}
             <span class="icon-dataset text-info pull-right" title="Dataset"></span>
+        {% if card_info.is_draft_state %}
+            <a href="/dataset.xhtml?persistentId={{ card_info.global_id }}&version=DRAFT"><span style="padding:4px 0;">{{ card_info.name }}</span></a>
+        {% else %}
             <a href="/dataset.xhtml?persistentId={{ card_info.global_id }}"><span style="padding:4px 0;">{{ card_info.name }}</span></a>
+        {% endif %}
  {% elif card_info.type == "file" %}
             <span class="icon-file text-muted pull-right" title="File"></span>
             <a href="/file.xhtml?fileId={{ card_info.entity_id }}"><span style="padding:4px 0;">{{ card_info.name }}</span></a>
@@ -56,7 +60,11 @@
 
  {% elif card_info.type == "dataset" %}
             <div class="card-preview-icon-block text-center">
+                {% if card_info.is_draft_state %}
+                <a href="/dataset.xhtml?persistentId={{ card_info.global_id }}&version=DRAFT"><span class="icon-dataset text-info"></span></a>
+                {% else %}
                 <a href="/dataset.xhtml?persistentId={{ card_info.global_id }}"><span class="icon-dataset text-info"></span></a>
+                {% endif %}
             </div>
             <span class="text-muted">{{ card_info.date_to_display_on_card }}
                 - <a href="/dataverse/{{ card_info.parent_alias }}">{{ card_info.parentName }}</a>

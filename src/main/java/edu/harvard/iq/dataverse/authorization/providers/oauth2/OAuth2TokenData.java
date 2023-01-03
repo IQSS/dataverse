@@ -58,9 +58,6 @@ public class OAuth2TokenData implements Serializable {
     @Column(length = 64)
     private String refreshToken;
     
-    @Column(length = 64)
-    private String scope;
-    
     @Column(length = 32)
     private String tokenType;
     
@@ -78,7 +75,6 @@ public class OAuth2TokenData implements Serializable {
         OAuth2TokenData retVal = new OAuth2TokenData();
         retVal.setAccessToken(accessTokenResponse.getAccessToken());
         retVal.setRefreshToken( accessTokenResponse.getRefreshToken() );
-        retVal.setScope( accessTokenResponse.getScope() );
         retVal.setTokenType( accessTokenResponse.getTokenType() );
         if ( accessTokenResponse.getExpiresIn() != null ) {
             retVal.setExpiryDate( new Timestamp( System.currentTimeMillis() + accessTokenResponse.getExpiresIn()));
@@ -134,14 +130,6 @@ public class OAuth2TokenData implements Serializable {
 
     public void setRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
-    }
-
-    public String getScope() {
-        return scope;
-    }
-
-    public void setScope(String scope) {
-        this.scope = scope;
     }
 
     public String getTokenType() {

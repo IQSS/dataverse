@@ -7,6 +7,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -14,14 +15,11 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
-import org.apache.xerces.impl.dv.util.Base64;
 import org.jsoup.Jsoup;
 
 /**
@@ -130,7 +128,7 @@ public class StringUtil {
             final SecretKeySpec secretKeySpec = generateKeyFromString(password);
             aes.init(Cipher.ENCRYPT_MODE, secretKeySpec);
             byte[] encrypted = aes.doFinal(baseBytes);
-            String base64ed = Base64.encode(encrypted);
+            String base64ed = new String(Base64.getEncoder().encode(encrypted));
             return base64ed.replaceAll("\\+", ".")
                     .replaceAll("=", "-")
                     .replaceAll("/", "_");
@@ -147,7 +145,7 @@ public class StringUtil {
                     .replaceAll("-", "=")
                     .replaceAll("_", "/");
         
-        byte[] baseBytes = Base64.decode(base64);
+        byte[] baseBytes = Base64.getDecoder().decode(base64);
         try {
             Cipher aes = Cipher.getInstance("AES");
             aes.init( Cipher.DECRYPT_MODE, generateKeyFromString(password));
