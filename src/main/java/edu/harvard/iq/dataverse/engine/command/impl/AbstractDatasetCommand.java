@@ -114,6 +114,12 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
                 validationMessage  += constraintViolations.stream()
                     .filter(cv -> cv.getRootBean() instanceof TermsOfUseAndAccess)
                     .map(cv -> cv.toString());
+                
+                for (ConstraintViolation cv : constraintViolations){
+                    if (cv.getRootBean() instanceof TermsOfUseAndAccess){
+                        throw new IllegalCommandException(validationMessage,  this);
+                    }
+                }
 
                 throw new IllegalCommandException(validationMessage, this);
             }

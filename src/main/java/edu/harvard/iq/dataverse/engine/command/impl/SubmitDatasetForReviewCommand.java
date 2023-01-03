@@ -31,6 +31,8 @@ public class SubmitDatasetForReviewCommand extends AbstractDatasetCommand<Datase
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
 
+        validateOrDie(getDataset().getLatestVersion(), false);
+
         if (getDataset().getLatestVersion().isReleased()) {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.submit.failure.isReleased"), this);
         }
@@ -47,9 +49,9 @@ public class SubmitDatasetForReviewCommand extends AbstractDatasetCommand<Datase
         return updatedDataset;
     }
 
-    public Dataset save(CommandContext ctxt) throws CommandException {
+    private Dataset save(CommandContext ctxt) throws CommandException {
 
-        getDataset().getEditVersion().setLastUpdateTime(getTimestamp());
+        getDataset().getOrCreateEditVersion().setLastUpdateTime(getTimestamp());
         getDataset().setModificationTime(getTimestamp());
 
         Dataset savedDataset = ctxt.em().merge(getDataset());

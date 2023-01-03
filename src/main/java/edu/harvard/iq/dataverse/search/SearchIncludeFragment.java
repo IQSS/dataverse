@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -354,7 +355,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             DataverseRequest dataverseRequest = new DataverseRequest(session.getUser(), httpServletRequest);
             List<Dataverse> dataverses = new ArrayList<>();
             dataverses.add(dataverse);
-            solrQueryResponse = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false);
+            solrQueryResponse = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false, null, null);
             if (solrQueryResponse.hasError()){
                 logger.info(solrQueryResponse.getError());
                 setSolrErrorEncountered(true);
@@ -362,7 +363,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             // This 2nd search() is for populating the "type" ("dataverse", "dataset", "file") facets: -- L.A. 
             // (why exactly do we need it, again?)
             // To get the counts we display in the types facets particulary for unselected types - SEK 08/25/2021
-            solrQueryResponseAllTypes = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false);
+            solrQueryResponseAllTypes = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false, null, null);
             if (solrQueryResponse.hasError()){
                 logger.info(solrQueryResponse.getError());
                 setSolrErrorEncountered(true);
@@ -1150,9 +1151,20 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 friendlyNames.add(key);
             }
         }
+
         String noLeadingQuote = value.replaceAll("^\"", "");
         String noTrailingQuote = noLeadingQuote.replaceAll("\"$", "");
         String valueWithoutQuotes = noTrailingQuote;
+
+        if (key.equals(SearchFields.METADATA_TYPES) && getDataverse() != null && getDataverse().getMetadataBlockFacets() != null) {
+            Optional<String> friendlyName = getDataverse().getMetadataBlockFacets().stream().filter(block -> block.getMetadataBlock().getName().equals(valueWithoutQuotes)).findFirst().map(block -> block.getMetadataBlock().getLocaleDisplayFacet());
+            logger.fine(String.format("action=getFriendlyNamesFromFilterQuery key=%s value=%s friendlyName=%s", key, value, friendlyName));
+            if(friendlyName.isPresent()) {
+                friendlyNames.add(friendlyName.get());
+                return friendlyNames;
+            }
+        }
+
         friendlyNames.add(valueWithoutQuotes);
         return friendlyNames;
     }
