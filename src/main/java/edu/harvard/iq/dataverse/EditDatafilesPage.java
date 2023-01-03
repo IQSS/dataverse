@@ -539,7 +539,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             return permissionsWrapper.notFound();
         }
 
-        workingVersion = dataset.getEditVersion();
+        workingVersion = dataset.getOrCreateEditVersion();
 
         //TODO: review if we we need this check; 
         // as getEditVersion should either return the exisiting draft or create a new one      
@@ -650,8 +650,8 @@ public class EditDatafilesPage implements java.io.Serializable {
             setUpRsync();
         }
 
-        if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, false)){
-            JH.addMessage(FacesMessage.SEVERITY_WARN, getBundleString("dataset.message.publicInstall"));
+        if (isHasPublicStore()){
+            JH.addMessage(FacesMessage.SEVERITY_WARN, getBundleString("dataset.message.label.fileAccess"), getBundleString("dataset.message.publicInstall"));
         }
 
         return null;
@@ -890,7 +890,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // ToDo - FileMetadataUtil.removeFileMetadataFromList should handle these two
                 // removes so they could be put after this if clause and the else clause could
                 // be removed.
-                dataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
+                dataset.getOrCreateEditVersion().getFileMetadatas().remove(markedForDelete);
                 fileMetadatas.remove(markedForDelete);
 
                 filesToBeDeleted.add(markedForDelete);
@@ -907,7 +907,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // 1. delete the filemetadata from the local display list: 
                 FileMetadataUtil.removeFileMetadataFromList(fileMetadatas, markedForDelete);
                 // 2. delete the filemetadata from the version: 
-                FileMetadataUtil.removeFileMetadataFromList(dataset.getEditVersion().getFileMetadatas(), markedForDelete);
+                FileMetadataUtil.removeFileMetadataFromList(dataset.getOrCreateEditVersion().getFileMetadatas(), markedForDelete);
             }
 
             if (markedForDelete.getDataFile().getId() == null) {
@@ -1201,7 +1201,7 @@ public class EditDatafilesPage implements java.io.Serializable {
              */
         }
 
-        workingVersion = dataset.getEditVersion();
+        workingVersion = dataset.getOrCreateEditVersion();
         logger.fine("working version id: " + workingVersion.getId());
 
         if (FileEditMode.EDIT == mode && Referrer.FILE == referrer) {
@@ -1933,7 +1933,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
         fileReplacePageHelper.resetReplaceFileHelper();
         saveEnabled = false;
-        String storageIdentifier = DataAccess.getStorarageIdFromLocation(fullStorageLocation);
+        String storageIdentifier = DataAccess.getStorageIdFromLocation(fullStorageLocation);
         if (fileReplacePageHelper.handleNativeFileUpload(null, storageIdentifier, fileName, contentType, checkSumValue, checkSumType)) {
             saveEnabled = true;
 
@@ -2078,8 +2078,12 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (!checksumTypeString.isBlank()) {
             checksumType = ChecksumType.fromString(checksumTypeString);
         }
+
+        //Should only be one colon with curent design
         int lastColon = fullStorageIdentifier.lastIndexOf(':');
-        String storageLocation = fullStorageIdentifier.substring(0, lastColon) + "/" + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + fullStorageIdentifier.substring(lastColon + 1);
+        String storageLocation = fullStorageIdentifier.substring(0,lastColon) + "/" + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + fullStorageIdentifier.substring(lastColon+1);
+        storageLocation = DataAccess.expandStorageIdentifierIfNeeded(storageLocation);
+
         if (uploadInProgress.isFalse()) {
             uploadInProgress.setValue(true);
         }
@@ -3044,16 +3048,24 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     public boolean rsyncUploadSupported() {
-        // ToDo - rsync was written before multiple store support and currently is hardcoded to use the "s3" store. 
+        // ToDo - rsync was written before multiple store support and currently is hardcoded to use the DataAccess.S3 store. 
         // When those restrictions are lifted/rsync can be configured per store, the test in the 
         // Dataset Util method should be updated
-        if (settingsWrapper.isRsyncUpload() && !DatasetUtil.isAppropriateStorageDriver(dataset)) {
+        if (settingsWrapper.isRsyncUpload() && !DatasetUtil.isRsyncAppropriateStorageDriver(dataset)) {
             //dataset.file.upload.setUp.rsync.failed.detail
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.upload.setUp.rsync.failed"), BundleUtil.getStringFromBundle("dataset.file.upload.setUp.rsync.failed.detail"));
             FacesContext.getCurrentInstance().addMessage(null, message);
         }
 
-        return settingsWrapper.isRsyncUpload() && DatasetUtil.isAppropriateStorageDriver(dataset);
+        return settingsWrapper.isRsyncUpload() && DatasetUtil.isRsyncAppropriateStorageDriver(dataset);
+    }
+    
+    // Globus must be one of the upload methods listed in the :UploadMethods setting
+    // and the dataset's store must be in the list allowed by the GlobusStores
+    // setting
+    public boolean globusUploadSupported() {
+        return settingsWrapper.isGlobusUpload()
+                && settingsWrapper.isGlobusEnabledStorageDriver(dataset.getEffectiveStorageDriverId());
     }
 
     private void populateFileMetadatas() {
@@ -3088,5 +3100,10 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public void setFileAccessRequest(boolean fileAccessRequest) {
         this.fileAccessRequest = fileAccessRequest;
+    }
+    
+    //Determines whether this Dataset uses a public store and therefore doesn't support embargoed or restricted files
+    public boolean isHasPublicStore() {
+        return settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, StorageIO.isPublicStore(dataset.getEffectiveStorageDriverId()));
     }
 }

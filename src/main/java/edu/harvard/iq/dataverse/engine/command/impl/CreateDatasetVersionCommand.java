@@ -44,9 +44,7 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
                 throw new IllegalCommandException("Latest version is already a draft. Cannot add another draft", this);
             }
         }
-        
-        prepareDatasetAndVersion();
-        
+                
         List<FileMetadata> newVersionMetadatum = new ArrayList<>(latest.getFileMetadatas().size());
         for ( FileMetadata fmd : latest.getFileMetadatas() ) {
             FileMetadata fmdCopy = fmd.createCopy();
@@ -54,6 +52,12 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
             newVersionMetadatum.add( fmdCopy );
         }
         newVersion.setFileMetadatas(newVersionMetadatum);
+        
+        //moving prepare Dataset here
+        //because it includes validation and we need the validation
+        //to happen after file metdata is added to return a 
+        //good wrapped response if the TOA/Request Access not in compliance
+        prepareDatasetAndVersion();
         
         // TODO make async
         // ctxt.index().indexDataset(dataset);

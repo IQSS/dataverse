@@ -178,10 +178,12 @@
                         <ui:include src="metadataFragment.xhtml">
                             <ui:param name="managePage" value="true"/>
                             <ui:param name="metadataBlocks" value="#{TemplatePage.template.metadataBlocksForView.entrySet().toArray()}"/>
+                            <ui:param name="template" value="#{TemplatePage.template}"/>
                         </ui:include>
                         <ui:include src="dataset-license-terms.xhtml">
                             <ui:param name="managePage" value="true"/>
-                            <ui:param name="datasetPage" value="false"/> 
+                            <ui:param name="datasetPage" value="false"/>
+                            <ui:param name="publicStore" value="settingsWrapper.publicInstall"/>
                             <ui:param name="termsOfUseAndAccess" value="#{TemplatePage.template.termsOfUseAndAccess}" />
                         </ui:include>
                         <div class="button-block">
