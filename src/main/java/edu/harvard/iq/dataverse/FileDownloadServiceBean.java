@@ -489,7 +489,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             return false;
         }
         DataFile file = datafileService.find(fileId);
-        if (!file.getFileAccessRequesters().contains((AuthenticatedUser)session.getUser())) {
+        if (!file.containsFileAccessRequestFromUser(session.getUser())) {
             try {
                 commandEngine.submit(new RequestAccessCommand(dvRequestService.getDataverseRequest(), file));                        
                 return true;
