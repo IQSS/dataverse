@@ -1,0 +1,2 @@
+ALTER TABLE fileaccessrequests
+ADD COLUMN IF NOT EXISTS creation_time TIMESTAMP WITHOUT TIME ZONE DEFAULT now();
