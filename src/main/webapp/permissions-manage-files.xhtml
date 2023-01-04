@@ -94,16 +94,16 @@
                                                                            actionListener="#{manageFilePermissionsPage.grantAccessToAllRequests(access.key)}"
                                                                            update=":#{p:resolveClientId('rolesPermissionsForm:userGroups', view)}
                                                                            :#{p:resolveClientId('rolesPermissionsForm:restrictedFiles', view)}
-                                                                           :#{p:resolveClientId('rolesPermissionsForm:fileAccessRequests', view)}
-                                                                           :#{p:resolveClientId('rolesPermissionsForm:userGroupsRequests', view)}
-                                                                           :#{p:resolveClientId('rolesPermissionsForm:userGroupMessages', view)} @([id$=Messages])">
+                                                                           #{p:resolveClientId('rolesPermissionsForm:usersGroups', view)}
+                                                                           @([id$=Messages])">
                                                                 <span class="glyphicon glyphicon-ok"/> #{bundle['dataverse.permissionsFiles.assignDialog.grantBtn']}
                                                             </p:commandLink>
                                                             <p:commandLink styleClass="btn btn-default"
                                                                            actionListener="#{manageFilePermissionsPage.rejectAccessToAllRequests(access.key)}"
-                                                                           update=":#{p:resolveClientId('rolesPermissionsForm:userGroups', view)} :#{p:resolveClientId('rolesPermissionsForm:restrictedFiles', view)} :#{p:resolveClientId('rolesPermissionsForm:fileAccessRequests', view)}
-                                                                           :#{p:resolveClientId('rolesPermissionsForm:userGroupsRequests', view)}
-                                                                           :#{p:resolveClientId('rolesPermissionsForm:userGroupMessages', view)} @([id$=Messages])">
+                                                                           update=":#{p:resolveClientId('rolesPermissionsForm:userGroups', view)}
+                                                                           :#{p:resolveClientId('rolesPermissionsForm:restrictedFiles', view)}
+                                                                           #{p:resolveClientId('rolesPermissionsForm:usersGroups', view)}
+                                                                           @([id$=Messages])">
                                                                 <span class="glyphicon glyphicon-ban-circle"/> #{bundle['dataverse.permissionsFiles.assignDialog.rejectBtn']}
                                                             </p:commandLink>
                                                         </div>
