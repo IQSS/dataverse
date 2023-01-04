@@ -767,7 +767,13 @@ public class SystemConfig {
          * Upload through Globus of large files
          */
 
-        GLOBUS("globus")
+        GLOBUS("globus"), 
+        
+        /**
+         * Upload folders of files through dvwebloader app
+         */
+
+        WEBLOADER("dvwebloader");
         ;
 
 
@@ -903,6 +909,10 @@ public class SystemConfig {
 
     public boolean isGlobusUpload(){
         return getMethodAvailable(FileUploadMethods.GLOBUS.toString(), true);
+    }
+    
+    public boolean isWebloaderUpload(){
+        return getMethodAvailable(FileUploadMethods.WEBLOADER.toString(), true);
     }
 
     // Controls if HTTP upload is enabled for both GUI and API.
