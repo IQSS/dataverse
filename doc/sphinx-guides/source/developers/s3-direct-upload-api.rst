@@ -217,7 +217,6 @@ The JSON object returned as a response from this API call includes a "data" that
     "status": "OK",
     "data": {
       "Files": [
-,
         {
           "storageIdentifier": "s3://demo-dataverse-bucket:176e28068b0-1c3f80357c42",
           "errorMessage": "Bad Request:The file to replace does not belong to this dataset.",
