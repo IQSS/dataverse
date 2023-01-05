@@ -43,6 +43,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.InputStream;
@@ -55,6 +56,7 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
@@ -454,47 +456,53 @@ public class Files extends AbstractApiBean {
     
     @GET                             
     @Path("{id}")
-    public Response getFileData(@PathParam("id") String fileIdOrPersistentId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, Boolean getDraft) throws WrappedResponse, Exception {
+    public Response getFileData(@PathParam("id") String fileIdOrPersistentId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WrappedResponse, Exception {
         DataverseRequest req;
+        try {
+            req = createDataverseRequest(findUserOrDie());
+        } catch (Exception e) {
+            return error(BAD_REQUEST, "Error attempting to request information. Maybe a bad API token?");
+        }
+        final DataFile df;
+        try {
+            df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+        } catch (Exception e) {
+            return error(BAD_REQUEST, "Error attempting get the requested data file.");
+        }
+        FileMetadata fm;
+        //first get latest published
+        //if not available get draft if permissible
+        try {
+            
+            fm = df.getLatestPublishedFileMetadata();
+
+        } catch (UnsupportedOperationException e) {
             try {
-                req = createDataverseRequest(findUserOrDie());
-            } catch (Exception e) {
-                return error(BAD_REQUEST, "Error attempting to request information. Maybe a bad API token?");
+                fm = execCommand(new GetDraftFileMetadataIfAvailableCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+            } catch (WrappedResponse w) {
+                return error(BAD_REQUEST, "An error occurred getting a draft version, you may not have permission to access unpublished data on this dataset.");
             }
-            final DataFile df;
-            try {
-                df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
-            } catch (Exception e) {
-                return error(BAD_REQUEST, "Error attempting get the requested data file.");
+            if (null == fm) {
+                return error(BAD_REQUEST, "No draft availabile for this dataset");
             }
-            FileMetadata fm;
-            
-            if(null != getDraft && getDraft) { 
-                try {
-                    fm = execCommand(new GetDraftFileMetadataIfAvailableCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
-                } catch (WrappedResponse w) {
-                    return error(BAD_REQUEST, "An error occurred getting a draft version, you may not have permission to access unpublished data on this dataset." );
-                }
-                if(null == fm) {
-                    return error(BAD_REQUEST, "No draft availabile for this dataset");
-                }
-            } else {
-                fm = df.getLatestPublishedFileMetadata();
-                MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountLoggingServiceBean.MakeDataCountEntry(uriInfo, headers, dvRequestService, df);
-                mdcLogService.logEntry(entry);
-            }
-            
-            String jsonString = fm.asGsonObject(true).toString();
-            
-            return Response
+        }
+        
+        try {
+            MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountLoggingServiceBean.MakeDataCountEntry(uriInfo, headers, dvRequestService, df);
+            mdcLogService.logEntry(entry);
+
+        } catch (UnsupportedOperationException e) {
+            // Don't write mdc if on a draft
+        }
+        
+        JsonObjectBuilder job = JsonPrinter.json(fm);
+        javax.json.JsonObject jsonObject = job.build();
+        String jsonString = jsonObject.toString();
+        return Response
                 .status(Response.Status.OK)
                 .entity(jsonString)
-                .type(MediaType.TEXT_PLAIN) //Our plain text string is already json
-                .build();
-            
-            /*
-            curl "http://localhost:8080/api/datasets/:persistentId/versions/2.0?persistentId=doi:10.5072/FK2/SDHST6"
-            */
+                .type(MediaType.TEXT_PLAIN) 
+                .build();        
     }
     
     @GET                             

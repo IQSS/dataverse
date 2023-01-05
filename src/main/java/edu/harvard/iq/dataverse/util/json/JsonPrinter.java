@@ -460,7 +460,7 @@ public class JsonPrinter {
 
         return filesArr;
     }
-    
+
     public static JsonObjectBuilder json(DatasetDistributor dist) {
         return jsonObjectBuilder()
                 .add("displayOrder", dist.getDisplayOrder())
@@ -579,6 +579,7 @@ public class JsonPrinter {
                 // in a sense that there's no longer the category field in the 
                 // fileMetadata object; but there are now multiple, oneToMany file 
                 // categories - and we probably need to export them too!) -- L.A. 4.5
+                // DONE: catgegories by name 
                 .add("description", fmd.getDescription())
                 .add("label", fmd.getLabel()) // "label" is the filename
                 .add("restricted", fmd.isRestricted()) 

@@ -1385,6 +1385,35 @@ public class FilesIT {
     }
     
     @Test
+    public void testGetFileInfo(){
+        
+
+        Response createUser = UtilIT.createRandomUser();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        String dataverseAlias = createDataverseGetAlias(apiToken);
+        Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
+
+        msg("Add tabular file");
+        String pathToFile = "scripts/search/data/tabular/stata13-auto-withstrls.dta";
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+
+        String dataFileId = addResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
+        msgt("datafile id: " + dataFileId);
+
+        addResponse.prettyPrint();
+        
+        Response getFileDataResponse = UtilIT.getFileData(dataFileId, apiToken);
+        
+         msgt("after get file data response: " );
+        getFileDataResponse.prettyPrint();
+        
+                getFileDataResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+    }
+    
+    @Test
     public void testValidateDDI_issue6027() throws InterruptedException {
         msgt("testValidateDDI_issue6027");
         String apiToken = createUserGetToken();

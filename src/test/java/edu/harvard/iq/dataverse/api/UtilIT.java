@@ -997,6 +997,12 @@ public class UtilIT {
                 .urlEncodingEnabled(false)
                 .get("/api/access/datafile/" + idInPath + "/metadata" + optionalFormatInPath + optionalQueryParam);
     }
+    
+    static Response getFileData(String fileId, String apiToken) {       
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/files/" + fileId );
+    }
 
     static Response testIngest(String fileName, String fileType) {
         return given()
