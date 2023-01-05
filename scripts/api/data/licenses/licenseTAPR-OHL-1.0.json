@@ -1,0 +1,10 @@
+{
+  "rightsName": "TAPR OHL 1.0",
+  "rightsURI": "https://spdx.org/licenses/TAPR-OHL-1.0.html",
+  "rightsIdentifier": "TAPR-OHL-1.0",
+  "rightsIdentifierScheme": "SPDX",
+  "schemeURI": "https://spdx.org/licenses/",
+  "rightsShortDescription": "TAPR Open Hardware License v1.0.",
+  "rightsActive": "true",
+  "sortOrder": 30
+}

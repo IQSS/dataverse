@@ -1,0 +1,10 @@
+{
+  "rightsName": "GPL 3.0 or later",
+  "rightsURI": "https://www.gnu.org/licenses/gpl-3.0-standalone.html",
+  "rightsIdentifier": "GPL-3.0-or-later",
+  "rightsIdentifierScheme": "SPDX",
+  "schemeURI": "https://spdx.org/licenses/",
+  "rightsShortDescription": "GNU General Public License v3.0 or later.",
+  "rightsActive": "true",
+  "sortOrder": 13
+}

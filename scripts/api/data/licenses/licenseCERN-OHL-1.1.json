@@ -1,0 +1,10 @@
+{
+  "rightsName": "CERN OHL 1.1",
+  "rightsURI": "https://spdx.org/licenses/CERN-OHL-1.1.html",
+  "rightsIdentifier": "CERN-OHL-1.1",
+  "rightsIdentifierScheme": "SPDX",
+  "schemeURI": "https://spdx.org/licenses/",
+  "rightsShortDescription": "CERN Open Hardware Licence v1.1.",
+  "rightsActive": "true",
+  "sortOrder": 27
+}

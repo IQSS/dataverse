@@ -1,0 +1,10 @@
+{
+  "rightsName": "AGPL 3.0 or later",
+  "rightsURI": "https://www.gnu.org/licenses/agpl.txt",
+  "rightsIdentifier": "AGPL-3.0-or-later",
+  "rightsIdentifierScheme": "SPDX",
+  "schemeURI": "https://spdx.org/licenses/",
+  "rightsShortDescription": "GNU Affero General Public License v3.0 or later.",
+  "rightsActive": "true",
+  "sortOrder": 20
+}

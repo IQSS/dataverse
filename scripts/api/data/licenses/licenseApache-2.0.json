@@ -1,0 +1,10 @@
+{
+  "rightsName": "Apache 2.0",
+  "rightsURI": "https://www.apache.org/licenses/LICENSE-2.0",
+  "rightsIdentifier": "Apache-2.0",
+  "rightsIdentifierScheme": "SPDX",
+  "schemeURI": "https://spdx.org/licenses/",
+  "rightsShortDescription": "Apache License 2.0.",
+  "rightsActive": "true",
+  "sortOrder": 8
+}
