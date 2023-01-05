@@ -303,6 +303,8 @@ Astronomy (FITS)
 
 Metadata found in the header section of `Flexible Image Transport System (FITS) files <http://fits.gsfc.nasa.gov/fits_primer.html>`_ are automatically extracted by the Dataverse Software, aggregated and displayed in the Astronomy Domain-Specific Metadata of the Dataset that the file belongs to. This FITS file metadata, is therefore searchable and browsable (facets) at the Dataset-level.
 
+.. _netcdf-and-hdf5:
+
 NetCDF and HDF5
 ---------------
 
