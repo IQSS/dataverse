@@ -1,8 +1,11 @@
 {
-  "name": "CC BY-NC 4.0",
-  "uri": "http://creativecommons.org/licenses/by-nc/4.0",
-  "shortDescription": "Creative Commons Attribution-NonCommercial 4.0 International License.",
-  "iconUrl": "https://licensebuttons.net/l/by-nc/4.0/88x31.png",
-  "active": true,
-  "sortOrder": 4
+  "rightsName": "CC BY-NC 4.0",
+  "rightsURI": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "rightsIdentifier": "CC-BY-NC-4.0",
+  "rightsIdentifierScheme": "SPDX",
+  "schemeURI": "https://spdx.org/licenses/",
+  "rightsShortDescription": "Creative Commons Attribution Non Commercial 4.0 International.",
+  "rightsIconUrl": "https://licensebuttons.net/l/by-nc/4.0/88x31.png",
+  "rightsActive": "true",
+  "sortOrder": 3
 }
