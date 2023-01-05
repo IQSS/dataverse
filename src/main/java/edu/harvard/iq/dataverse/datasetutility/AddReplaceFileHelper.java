@@ -380,9 +380,9 @@ public class AddReplaceFileHelper{
     
 
     public boolean runForceReplaceFile(long fileToReplaceId, String newFilename, String newFileContentType,
-        String newStorageIdentifier, InputStream newFileInputStream, OptionalFileParams optionalFileParams) {
+        String newStorageIdentifier, InputStream newFileInputStream, Dataset ds, OptionalFileParams optionalFileParams) {
         return runForceReplaceFile(fileToReplaceId, newFilename, newFileContentType,
-                newStorageIdentifier, newFileInputStream, optionalFileParams, false);
+                newStorageIdentifier, newFileInputStream, ds, optionalFileParams, false);
     }
     /**
      * After the constructor, this method is called to replace a file
@@ -399,6 +399,7 @@ public class AddReplaceFileHelper{
                         String newFileContentType, 
                         String newStorageIdentifier,
                         InputStream newFileInputStream,
+                        Dataset ds,
                         OptionalFileParams optionalFileParams,
                         boolean multipleFiles){
         
@@ -419,16 +420,19 @@ public class AddReplaceFileHelper{
         if (!this.step_005_loadFileToReplaceById(oldFileId)){
             return false;
         }
-
-        
-        return this.runAddReplaceFile(fileToReplace.getOwner(), newFileName, newFileContentType, newStorageIdentifier, newFileInputStream, optionalFileParams);
+        if(ds.getId()!=fileToReplace.getOwner().getId()) {
+            this.addErrorSevere(getBundleErr("existing_file_to_replace_not_in_dataset"));
+            return false;
+        }
+        // ds may include changes not yet in the copy created when loading the file from the db, as in replaceFiles()
+        return this.runAddReplaceFile(ds, newFileName, newFileContentType, newStorageIdentifier, newFileInputStream, optionalFileParams);
     }
     
 
     public boolean runReplaceFile(long fileToReplaceId, String newFilename, String newFileContentType,
-            String newStorageIdentifier, InputStream newFileInputStream, OptionalFileParams optionalFileParams) {
+            String newStorageIdentifier, InputStream newFileInputStream, Dataset ds, OptionalFileParams optionalFileParams) {
         return runReplaceFile(fileToReplaceId, newFilename, newFileContentType,
-                newStorageIdentifier, newFileInputStream, optionalFileParams, false);
+                newStorageIdentifier, newFileInputStream, ds, optionalFileParams, false);
         
     }
     
@@ -437,6 +441,7 @@ public class AddReplaceFileHelper{
                             String newFileContentType, 
                             String newStorageIdentifier, 
                             InputStream newFileInputStream,
+                            Dataset ds,
                             OptionalFileParams optionalFileParams,
                             boolean multipleFiles){
     
@@ -457,7 +462,12 @@ public class AddReplaceFileHelper{
         if (!this.step_005_loadFileToReplaceById(oldFileId)){
             return false;
         }
-        return this.runAddReplaceFile(fileToReplace.getOwner(), newFileName, newFileContentType, newStorageIdentifier, newFileInputStream, optionalFileParams);
+        if(ds.getId()!=fileToReplace.getOwner().getId()) {
+            this.addErrorSevere(getBundleErr("existing_file_to_replace_not_in_dataset"));
+            return false;
+        }
+        // ds may include changes not yet in the copy created when loading the file from the db, as in replaceFiles()
+        return this.runAddReplaceFile(ds, newFileName, newFileContentType, newStorageIdentifier, newFileInputStream, optionalFileParams);
     }
     
     
@@ -1551,7 +1561,7 @@ public class AddReplaceFileHelper{
                 }
                 
             } catch (DataFileTagException ex) {
-                Logger.getLogger(AddReplaceFileHelper.class.getName()).log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, null, ex);
                 addError(ex.getMessage());
                 return false;
             } catch (CommandException ex) {
@@ -1771,7 +1781,7 @@ public class AddReplaceFileHelper{
 
             }
         }
-        // Call the update dataset command which will delete the replaced filemetadata and file in needed (if file is not released)
+        // Call the update dataset command which will delete the replaced filemetadata and file if needed (if file is not released)
         //
         return step_070_run_update_dataset_command();
         
@@ -2104,7 +2114,7 @@ public class AddReplaceFileHelper{
                         }
 
                     } catch (DataFileTagException ex) {
-                        Logger.getLogger(Files.class.getName()).log(Level.SEVERE, null, ex);
+                        logger.log(Level.SEVERE, null, ex);
                         JsonObjectBuilder fileoutput = Json.createObjectBuilder()
                                 .add("errorCode", Response.Status.BAD_REQUEST.getStatusCode())
                                 .add("message", ex.getMessage())
@@ -2113,7 +2123,7 @@ public class AddReplaceFileHelper{
 
                     }
                     catch (NoFilesException ex) {
-                        Logger.getLogger(Files.class.getName()).log(Level.SEVERE, null, ex);
+                        logger.log(Level.SEVERE, null, ex);
                         JsonObjectBuilder fileoutput = Json.createObjectBuilder()
                                 .add("errorCode", Response.Status.BAD_REQUEST.getStatusCode())
                                 .add("message", BundleUtil.getStringFromBundle("NoFileException!  Serious Error! See administrator!"))
@@ -2233,10 +2243,10 @@ public class AddReplaceFileHelper{
                             msgt("REPLACE!  = " + newFilename);
                             if (forceReplace) {
                                 runForceReplaceFile(fileToReplaceId, newFilename, newFileContentType,
-                                        newStorageIdentifier, null, optionalFileParams, true);
+                                        newStorageIdentifier, null, dataset, optionalFileParams, true);
                             } else {
                                 runReplaceFile(fileToReplaceId, newFilename, newFileContentType, newStorageIdentifier,
-                                        null, optionalFileParams, true);
+                                        null, dataset, optionalFileParams, true);
                             }
                             if (hasError()) {
                                 JsonObjectBuilder fileoutput = Json.createObjectBuilder()
@@ -2272,7 +2282,7 @@ public class AddReplaceFileHelper{
                         }
 
                     } catch (DataFileTagException ex) {
-                        Logger.getLogger(Files.class.getName()).log(Level.SEVERE, null, ex);
+                        logger.log(Level.SEVERE, null, ex);
                         JsonObjectBuilder fileoutput = Json.createObjectBuilder()
                                 .add("errorCode", Response.Status.BAD_REQUEST.getStatusCode())
                                 .add("message", ex.getMessage())
@@ -2281,14 +2291,13 @@ public class AddReplaceFileHelper{
 
                     }
                     catch (NoFilesException ex) {
-                        Logger.getLogger(Files.class.getName()).log(Level.SEVERE, null, ex);
+                        logger.log(Level.SEVERE, null, ex);
                         JsonObjectBuilder fileoutput = Json.createObjectBuilder()
                                 .add("errorCode", Response.Status.BAD_REQUEST.getStatusCode())
                                 .add("message", BundleUtil.getStringFromBundle("NoFileException!  Serious Error! See administrator!"))
                                 .add("fileDetails", fileJson);
                         jarr.add(fileoutput);
                     }
-
                 }// End of adding files
 
                 DatasetLock eipLock = dataset.getLockFor(DatasetLock.Reason.EditInProgress);

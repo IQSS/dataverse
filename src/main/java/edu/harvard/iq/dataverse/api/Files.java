@@ -267,31 +267,27 @@ public class Files extends AbstractApiBean {
         try {
             DataFile dataFile = findDataFileOrDie(fileIdOrPersistentId);
             fileToReplaceId = dataFile.getId();
-            
-            if (dataFile.isFilePackage()) {                           
-                return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.alreadyHasPackageFile"));
+
+            if (dataFile.isFilePackage()) {
+                return error(Response.Status.SERVICE_UNAVAILABLE,
+                        BundleUtil.getStringFromBundle("file.api.alreadyHasPackageFile"));
+            }
+
+            if (forceReplace) {
+                addFileHelper.runForceReplaceFile(fileToReplaceId, newFilename, newFileContentType,
+                        newStorageIdentifier, testFileInputStream, dataFile.getOwner(), optionalFileParams);
+            } else {
+                addFileHelper.runReplaceFile(fileToReplaceId, newFilename, newFileContentType, newStorageIdentifier,
+                        testFileInputStream, dataFile.getOwner(), optionalFileParams);
             }
         } catch (WrappedResponse ex) {
-            String error = BundleUtil.getStringFromBundle("file.addreplace.error.existing_file_to_replace_not_found_by_id", Arrays.asList(fileIdOrPersistentId));
-            // TODO: Some day, return ex.getResponse() instead. Also run FilesIT and updated expected status code and message.
+            String error = BundleUtil.getStringFromBundle(
+                    "file.addreplace.error.existing_file_to_replace_not_found_by_id",
+                    Arrays.asList(fileIdOrPersistentId));
+            // TODO: Some day, return ex.getResponse() instead. Also run FilesIT and updated
+            // expected status code and message.
             return error(BAD_REQUEST, error);
         }
-        if (forceReplace){
-            addFileHelper.runForceReplaceFile(fileToReplaceId,
-                                    newFilename,
-                                    newFileContentType,
-                                    newStorageIdentifier,
-                                    testFileInputStream,
-                                    optionalFileParams);
-        }else{
-            addFileHelper.runReplaceFile(fileToReplaceId,
-                                    newFilename,
-                                    newFileContentType,
-                                    newStorageIdentifier,
-                                    testFileInputStream,
-                                    optionalFileParams);
-        }    
-            
         msg("we're back.....");
         if (addFileHelper.hasError()){
             msg("yes, has error");          
