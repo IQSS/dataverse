@@ -37,7 +37,7 @@ If you are working on the OpenID Connect (OIDC) user authentication flow, you do
 
 You can find this configuration in ``conf/keycloak``. There are two options available in this directory to run a Keycloak container: bash script or docker-compose.
 
-To run the container via bash script, execute the following command (Positioned in ``conf/keycloak``):
+To run the container via bash script, execute the following command (positioned in ``conf/keycloak``):
 
 ``./run-keycloak.sh``
 
@@ -47,7 +47,7 @@ Now load the configuration defined in ``oidc-keycloak-auth-provider.json`` into 
 
 ``curl -X POST -H 'Content-type: application/json' --upload-file oidc-keycloak-auth-provider.json http://localhost:8080/api/admin/authenticationProviders``
 
-You should see the new provider, called “OIDC-Keycloak“, under “Other options” on the Log In page.
+You should see the new provider, called "OIDC-Keycloak", under "Other options" on the Log In page.
 
 You should be able to log into Keycloak with the following credentials:
 
