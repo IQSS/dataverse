@@ -1385,8 +1385,7 @@ public class FilesIT {
     }
     
     @Test
-    public void testGetFileInfo(){
-        
+    public void testGetFileInfo() {
 
         Response createUser = UtilIT.createRandomUser();
         String username = UtilIT.getUsernameFromResponse(createUser);
@@ -1394,6 +1393,9 @@ public class FilesIT {
         Response makeSuperUser = UtilIT.makeSuperUser(username);
         String dataverseAlias = createDataverseGetAlias(apiToken);
         Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
+
+        createUser = UtilIT.createRandomUser();
+        String apiTokenRegular = UtilIT.getApiTokenFromResponse(createUser);
 
         msg("Add tabular file");
         String pathToFile = "scripts/search/data/tabular/stata13-auto-withstrls.dta";
@@ -1403,14 +1405,44 @@ public class FilesIT {
         msgt("datafile id: " + dataFileId);
 
         addResponse.prettyPrint();
-        
+
         Response getFileDataResponse = UtilIT.getFileData(dataFileId, apiToken);
-        
-         msgt("after get file data response: " );
+
         getFileDataResponse.prettyPrint();
-        
-                getFileDataResponse.then().assertThat()
+        getFileDataResponse.then().assertThat()
+                .body("data.label", equalTo("stata13-auto-withstrls.dta"))
+                .body("data.dataFile.filename", equalTo("stata13-auto-withstrls.dta"))
                 .statusCode(OK.getStatusCode());
+
+        getFileDataResponse = UtilIT.getFileData(dataFileId, apiTokenRegular);
+        getFileDataResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        // -------------------------
+        // Publish dataverse and dataset
+        // -------------------------
+        msg("Publish dataverse and dataset");
+        Response publishDataversetResp = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        publishDataversetResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        //regular user should get to see file data
+        getFileDataResponse = UtilIT.getFileData(dataFileId, apiTokenRegular);
+        getFileDataResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        //cleanup
+        Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
+        assertEquals(200, destroyDatasetResponse.getStatusCode());
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        assertEquals(200, deleteUserResponse.getStatusCode());
     }
     
     @Test

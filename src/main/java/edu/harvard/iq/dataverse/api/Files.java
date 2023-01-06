@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccessValidator;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
+import static edu.harvard.iq.dataverse.api.AbstractApiBean.STATUS_OK;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -44,6 +45,7 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.InputStream;
@@ -495,11 +497,12 @@ public class Files extends AbstractApiBean {
         JsonObjectBuilder job = JsonPrinter.json(fm);
         javax.json.JsonObject jsonObject = job.build();
         String jsonString = jsonObject.toString();
-        return Response
-                .status(Response.Status.OK)
-                .entity(jsonString)
-                .type(MediaType.TEXT_PLAIN) 
-                .build();        
+
+        return Response.ok(Json.createObjectBuilder()
+                .add("status", STATUS_OK)
+                .add("data", json(fm)).build())
+                .type(MediaType.APPLICATION_JSON)
+                .build();
     }
     
     @GET                             
