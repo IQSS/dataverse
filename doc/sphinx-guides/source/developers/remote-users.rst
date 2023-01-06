@@ -35,6 +35,8 @@ OpenID Connect (OIDC)
 
 If you are working on the OpenID Connect (OIDC) user authentication flow, you do not need to connect to a remote provider (as explained in :doc:`/installation/oidc`) to test this feature. Instead, you can use the available configuration that allows you to run a test Keycloak OIDC identity management service locally through a Docker container.
 
+(Please note! The client secret (``ss6gE8mODCDfqesQaSG3gwUwZqZt547E``) is hard-coded in ``oidc-realm.json`` and ``oidc-keycloak-auth-provider.json``. Do not use this config in production! This is only for developers.)
+
 You can find this configuration in ``conf/keycloak``. There are two options available in this directory to run a Keycloak container: bash script or docker-compose.
 
 To run the container via bash script, execute the following command (positioned in ``conf/keycloak``):
