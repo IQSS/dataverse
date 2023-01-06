@@ -478,7 +478,7 @@ public class Files extends AbstractApiBean {
 
         } catch (UnsupportedOperationException e) {
             try {
-                fm = execCommand(new GetDraftFileMetadataIfAvailableCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+                fm = execCommand(new GetDraftFileMetadataIfAvailableCommand(req, df));
             } catch (WrappedResponse w) {
                 return error(BAD_REQUEST, "An error occurred getting a draft version, you may not have permission to access unpublished data on this dataset.");
             }
@@ -487,13 +487,10 @@ public class Files extends AbstractApiBean {
             }
         }
         
-        try {
+        if (fm.getDatasetVersion().isReleased()) {
             MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountLoggingServiceBean.MakeDataCountEntry(uriInfo, headers, dvRequestService, df);
             mdcLogService.logEntry(entry);
-
-        } catch (UnsupportedOperationException e) {
-            // Don't write mdc if on a draft
-        }
+        } 
         
         JsonObjectBuilder job = JsonPrinter.json(fm);
         javax.json.JsonObject jsonObject = job.build();
