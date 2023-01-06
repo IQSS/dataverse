@@ -101,6 +101,31 @@ Password complexity rules for "builtin" accounts can be adjusted with a variety 
 - :ref:`:PVGoodStrength`
 - :ref:`:PVCustomPasswordResetAlertMessage`
 
+.. _ongoing-security:
+
+Ongoing Security of Your Installation
++++++++++++++++++++++++++++++++++++++
+
+Like any application, you should keep up-to-date with patches to both the Dataverse software and the platform (usually Linux) it runs on. Dataverse releases are announced on the dataverse-community_ mailing list, the Dataverse blog_, and in chat.dataverse.org_.
+
+.. _dataverse-community: https://groups.google.com/g/dataverse-community
+.. _blog: https://dataverse.org/blog
+.. _chat.dataverse.org: https://chat.dataverse.org
+
+In addition to these public channels, you can subscribe to receive security notices via email from the Dataverse team. These notices are sent to the ``contact_email`` in the installation spreadsheet_ and you can open an issue in the dataverse-installations_ repo to add or change the contact email. Security notices are also sent to people and organizations that prefer to remain anonymous. To be added to this private list, please email support@dataverse.org.
+
+.. _spreadsheet: https://docs.google.com/spreadsheets/d/1bfsw7gnHlHerLXuk7YprUT68liHfcaMxs1rFciA-mEo/edit#gid=0
+.. _dataverse-installations: https://github.com/IQSS/dataverse-installations
+
+For additional details about security practices by the Dataverse team, see the :doc:`/developers/security` section of the Developer Guide.
+
+.. _reporting-security-issues:
+
+Reporting Security Issues
++++++++++++++++++++++++++
+
+If you have a security issue to report, please email it to security@dataverse.org.
+
 .. _network-ports:
 
 Network Ports
@@ -2951,6 +2976,7 @@ The URL for your Repository Storage Abstraction Layer (RSAL) installation. This 
 This setting controls which upload methods are available to users of your Dataverse installation. The following upload methods are available:
 
 - ``native/http``: Corresponds to "Upload with HTTP via your browser" and APIs that use HTTP (SWORD and native).
+- ``dvwebloader``: Corresponds to :ref:`folder-upload`. Note that ``dataverse.files.<id>.upload-redirect`` must be set to "true" on an S3 store for this method to show up in the UI. In addition, :ref:`:WebloaderUrl` must be set. CORS allowed on the S3 bucket. See :ref:`cors-s3-bucket`.
 - ``dcm/rsync+ssh``: Corresponds to "Upload with rsync+ssh via Data Capture Module (DCM)". A lot of setup is required, as explained in the :doc:`/developers/big-data-support` section of the Developer Guide.
 
 Out of the box only ``native/http`` is enabled and will work without further configuration. To add multiple upload method, separate them using a comma like this:
@@ -3452,6 +3478,11 @@ The interval in seconds between Dataverse calls to Globus to check on upload pro
 
 A true/false option to add a Globus transfer option to the file download menu which is not yet fully supported in the dataverse-globus app. See :ref:`globus-support` for details.
 
+.. _:WebloaderUrl:
 
+:WebloaderUrl
++++++++++++++
+
+The URL for main HTML file in https://github.com/gdcc/dvwebloader when that app is deployed. See also :ref:`:UploadMethods` for another required settings.
 
 .. _supported MicroProfile Config API source: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Overview.html
