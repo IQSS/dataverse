@@ -1521,9 +1521,6 @@ protocol, host, and port number and should not include a trailing slash.
 - We are absolutely aware that it's confusing to have both ``dataverse.fqdn`` and ``dataverse.siteUrl``.
   https://github.com/IQSS/dataverse/issues/6636 is about resolving this confusion.
 
-
-.. _dataverse.files.directory:
-
 .. _dataverse.files.directory:
 
 dataverse.files.directory
@@ -1537,7 +1534,7 @@ of purposes:
    is able to trigger imports for externally uploaded files from this area under certain conditions.
 2. ``<dataverse.files.directory>/temp`` after uploading, data is temporarily stored here for ingest and/or before
    shipping to the final storage destination.
-2. ``<dataverse.files.directory>/sword`` a place to store uploads via the :doc:`../api/sword` before transfer
+3. ``<dataverse.files.directory>/sword`` a place to store uploads via the :doc:`../api/sword` before transfer
    to final storage location and/or ingest.
 4. ``<dataverse.files.directory>/googlecloudkey.json`` used with :ref:`Google Cloud Configuration` for BagIt exports.
    This location is deprecated and might be refactored into a distinct setting in the future.
