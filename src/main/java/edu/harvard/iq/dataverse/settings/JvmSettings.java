@@ -64,6 +64,9 @@ public enum JvmSettings {
     SCOPE_API(PREFIX, "api"),
     API_SIGNING_SECRET(SCOPE_API, "signing-secret"),
     
+ // METADATA SETTINGS
+    SCOPE_METADATA(PREFIX, "metadata"),
+    METADATA_BLOCK_SYSTEM_METADATA_KEYS(SCOPE_METADATA, "block-system-metadata-keys"),
     ;
     
     private static final String SCOPE_SEPARATOR = ".";
