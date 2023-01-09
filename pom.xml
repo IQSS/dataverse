@@ -381,7 +381,7 @@
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>oauth2-oidc-sdk</artifactId>
-            <version>9.41.1</version>
+            <version>10.4</version>
         </dependency>
         <!-- New and Improved GDCC XOAI library! --> 
         <dependency>
