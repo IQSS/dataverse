@@ -632,24 +632,6 @@ public class JsonPrinter {
         }
 
         JsonObjectBuilder embargo = df.getEmbargo() != null ? JsonPrinter.json(df.getEmbargo()) : null;
-        
-        /*
-        Dataset
-        {"label":"file241.txt","restricted":false,"version":1,"datasetVersionId":751,
-        "dataFile":{"id":1618,"persistentId":"","pidURL":"","filename":"file241.txt",
-        "contentType":"text/plain","filesize":28,"description":"file description for file 241","storageIdentifier":"file://185354db7ae-85e105e89721",
-        "rootDataFileId":-1,
-        "checksum":{"type":"SHA-1","value":"585831cecbaf7e2de25e46799475edc6619cb73c"},
-        "creationDate":"2022-12-21"}},
-        
-        File
-        
-
-{"label":"file241.txt",
-        "description":"file description for file 241","restricted":false,
-        "categories":["Custom Tag for file 241","Data"],"id":892}%     
-        
-        */
 
         return jsonObjectBuilder()
                 .add("id", df.getId())
