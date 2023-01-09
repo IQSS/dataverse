@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
@@ -35,6 +36,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.validator.ValidatorException;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+import javax.json.Json;
 import javax.json.JsonObject;
 import javax.mail.internet.InternetAddress;
 
@@ -114,6 +116,8 @@ public class SettingsWrapper implements java.io.Serializable {
     private Boolean dataFilePIDSequentialDependent = null;
     
     private Boolean customLicenseAllowed = null;
+    
+    private JsonObject systemMetadataBlocks;
     
     private Set<Type> alwaysMuted = null;
 
@@ -699,5 +703,18 @@ public class SettingsWrapper implements java.io.Serializable {
             customLicenseAllowed = systemConfig.isAllowCustomTerms();
         }
         return customLicenseAllowed;
+    }
+
+    public JsonObject getSystemMetadataBlocks() {
+        if (systemMetadataBlocks == null) {
+            String smdbString = JvmSettings.METADATA_BLOCK_SYSTEM_METADATA_KEYS.lookup();
+            if (smdbString != null) {
+                systemMetadataBlocks = JsonUtil.getJsonObject(smdbString);
+            }
+            if (systemMetadataBlocks == null) {
+                systemMetadataBlocks = Json.createObjectBuilder().build();
+            }
+        }
+        return systemMetadataBlocks;
     }
 }
