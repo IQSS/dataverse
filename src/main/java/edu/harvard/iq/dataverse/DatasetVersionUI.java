@@ -23,6 +23,7 @@ import static java.util.stream.Collectors.toList;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+import javax.json.JsonObject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
@@ -35,6 +36,9 @@ public class DatasetVersionUI implements Serializable {
 
     @EJB
     DataverseServiceBean dataverseService;
+    @EJB
+    SettingsWrapper settingsWrapper;
+    
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;   
     
@@ -400,6 +404,9 @@ public class DatasetVersionUI implements Serializable {
         //TODO: A lot of clean up on the logic of this method
         metadataBlocksForView.clear();
         metadataBlocksForEdit.clear();
+        
+        JsonObject systemMDBlocks = settingsWrapper.getSystemMetadataBlocks();
+        
         Long dvIdForInputLevel = datasetVersion.getDataset().getOwner().getId();
         
         if (!dataverseService.find(dvIdForInputLevel).isMetadataBlockRoot()){
@@ -442,7 +449,7 @@ public class DatasetVersionUI implements Serializable {
             if (!datasetFieldsForView.isEmpty()) {
                 metadataBlocksForView.put(mdb, datasetFieldsForView);
             }
-            if (!datasetFieldsForEdit.isEmpty()) {
+            if (!datasetFieldsForEdit.isEmpty() && !systemMDBlocks.containsKey(mdb.getName())) {
                 metadataBlocksForEdit.put(mdb, datasetFieldsForEdit);
             }
         }
