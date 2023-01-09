@@ -48,6 +48,22 @@ public enum JvmSettings {
     SCOPE_FILES(PREFIX, "files"),
     FILES_DIRECTORY(SCOPE_FILES, "directory"),
     
+    // SOLR INDEX SETTINGS
+    SCOPE_SOLR(PREFIX, "solr"),
+    SOLR_HOST(SCOPE_SOLR, "host"),
+    SOLR_PORT(SCOPE_SOLR, "port"),
+    SOLR_PROT(SCOPE_SOLR, "protocol"),
+    SOLR_CORE(SCOPE_SOLR, "core"),
+    SOLR_PATH(SCOPE_SOLR, "path"),
+
+    // RSERVE CONNECTION
+    SCOPE_RSERVE(PREFIX, "rserve"),
+    RSERVE_HOST(SCOPE_RSERVE, "host"),
+    RSERVE_PORT(SCOPE_RSERVE, "port", "dataverse.ingest.rserve.port"),
+    RSERVE_USER(SCOPE_RSERVE, "user"),
+    RSERVE_PASSWORD(SCOPE_RSERVE, "password"),
+    RSERVE_TEMPDIR(SCOPE_RSERVE, "tempdir"),
+    
     // API SETTINGS
     SCOPE_API(PREFIX, "api"),
     API_SIGNING_SECRET(SCOPE_API, "signing-secret"),
