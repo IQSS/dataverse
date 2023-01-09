@@ -263,7 +263,9 @@ To support multiple stores, a Dataverse installation now requires an id, type, a
 
 Out of the box, a Dataverse installation is configured to use local file storage in the 'file' store by default. You can add additional stores and, as a superuser, configure specific Dataverse collections to use them (by editing the 'General Information' for the Dataverse collection as described in the :doc:`/admin/dataverses-datasets` section).
 
-Note that the "\-Ddataverse.files.directory", if defined, continues to control where temporary files are stored (in the /temp subdir of that directory), independent of the location of any 'file' store defined above.
+Note that the "\-Ddataverse.files.directory", if defined, continues to control where temporary files are stored
+(in the /temp subdir of that directory), independent of the location of any 'file' store defined above.
+(See also the option reference: :ref:`dataverse.files.directory`)
 
 If you wish to change which store is used by default, you'll need to delete the existing default storage driver and set a new one using jvm options.
 
@@ -1497,22 +1499,23 @@ protocol, host, and port number and should not include a trailing slash.
 
 .. _dataverse.files.directory:
 
+.. _dataverse.files.directory:
+
 dataverse.files.directory
 +++++++++++++++++++++++++
 
 Please provide an absolute path to a directory backed by some mounted file system. This directory is used for a number
 of purposes:
 
-1. ``<dataverse.files.directory>/temp`` after uploading, data is temporarily stored here for ingest and/or before
+1. ``<dataverse.files.directory>/<PID Authority>/<PID Identifier>`` is the subdirectory layout when using the target
+   directory as a :ref:`permanent file storage <storage-files-dir>`. The DCM feature for :doc:`../developers/big-data-support`
+   is able to trigger imports for externally uploaded files from this area under certain conditions.
+2. ``<dataverse.files.directory>/temp`` after uploading, data is temporarily stored here for ingest and/or before
    shipping to the final storage destination.
 2. ``<dataverse.files.directory>/sword`` a place to store uploads via the :doc:`../api/sword` before transfer
    to final storage location and/or ingest.
-3. ``<dataverse.files.directory>/<PID Authority>/<PID Identifier>`` data location for file system imports, see
-   :ref:`api-import-dataset`.
 4. ``<dataverse.files.directory>/googlecloudkey.json`` used with :ref:`Google Cloud Configuration` for BagIt exports.
-
-This directory might also be used for permanent storage of data, but this setting is independent from
-:ref:`storage-files-dir` configuration.
+   This location is deprecated and might be refactored into a distinct setting in the future.
 
 .. _dataverse.files.uploads:
 
@@ -3116,7 +3119,7 @@ For example:
 
 ``curl -X PUT -d "This content needs to go through an additional review by the Curation Team before it can be published." http://localhost:8080/api/admin/settings/:DatasetMetadataValidationFailureMsg``
 
-	
+
 :ExternalValidationAdminOverride
 ++++++++++++++++++++++++++++++++
 
