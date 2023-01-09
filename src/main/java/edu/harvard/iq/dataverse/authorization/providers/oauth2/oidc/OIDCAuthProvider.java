@@ -54,15 +54,15 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
     protected String title = "Open ID Connect";
     protected List<String> scope = Arrays.asList("openid", "email", "profile");
     
-    Issuer issuer;
-    ClientAuthentication clientAuth;
-    OIDCProviderMetadata idpMetadata;
+    final Issuer issuer;
+    final ClientAuthentication clientAuth;
+    final OIDCProviderMetadata idpMetadata;
     
     public OIDCAuthProvider(String aClientId, String aClientSecret, String issuerEndpointURL) throws AuthorizationSetupException {
         this.clientSecret = aClientSecret; // nedded for state creation
         this.clientAuth = new ClientSecretBasic(new ClientID(aClientId), new Secret(aClientSecret));
         this.issuer = new Issuer(issuerEndpointURL);
-        getMetadata();
+        this.idpMetadata = getMetadata();
     }
     
     /**
@@ -74,7 +74,9 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
      * @return false
      */
     @Override
-    public boolean isDisplayIdentifier() { return false; }
+    public boolean isDisplayIdentifier() {
+        return false;
+    }
     
     /**
      * Setup metadata from OIDC provider during creation of the provider representation
@@ -82,20 +84,20 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
      * @throws IOException when sth. goes wrong with the retrieval
      * @throws ParseException when the metadata is not parsable
      */
-    void getMetadata() throws AuthorizationSetupException {
+    OIDCProviderMetadata getMetadata() throws AuthorizationSetupException {
         try {
-            this.idpMetadata = getMetadata(this.issuer);
+            var metadata = getMetadata(this.issuer);
+            // Assert that the provider supports the code flow
+            if (metadata.getResponseTypes().stream().noneMatch(ResponseType::impliesCodeFlow)) {
+                throw new AuthorizationSetupException("OIDC provider at "+this.issuer.getValue()+" does not support code flow, disabling.");
+            }
+            return metadata;
         } catch (IOException ex) {
             logger.severe("OIDC provider metadata at \"+issuerEndpointURL+\" not retrievable: "+ex.getMessage());
             throw new AuthorizationSetupException("OIDC provider metadata at "+this.issuer.getValue()+" not retrievable.");
         } catch (ParseException ex) {
             logger.severe("OIDC provider metadata at \"+issuerEndpointURL+\" not parsable: "+ex.getMessage());
             throw new AuthorizationSetupException("OIDC provider metadata at "+this.issuer.getValue()+" not parsable.");
-        }
-    
-        // Assert that the provider supports the code flow
-        if (! this.idpMetadata.getResponseTypes().stream().filter(idp -> idp.impliesCodeFlow()).findAny().isPresent()) {
-            throw new AuthorizationSetupException("OIDC provider at "+this.issuer.getValue()+" does not support code flow, disabling.");
         }
     }
     
