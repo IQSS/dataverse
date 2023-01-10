@@ -305,7 +305,6 @@ public class IngestServiceBean {
 					// Any necessary post-processing:
 					// performPostProcessingTasks(dataFile);
 				} else {
-                                    System.out.println("driver is not tmp");
 					try {
 						StorageIO<DvObject> dataAccess = DataAccess.getStorageIO(dataFile);
 						//Populate metadata
