@@ -1666,7 +1666,7 @@ public class AddReplaceFileHelper{
             }
         }
 
-        if (isFileReplaceOperation() && !multifile) {
+        if (isFileReplaceOperation() && deleteFileId!=-1 && !multifile) {
             // Finalize the delete of the physical file
             // (File service will double-check that the datafile no
             // longer exists in the database, before proceeding to
