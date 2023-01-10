@@ -420,6 +420,8 @@ public class AddReplaceFileHelper{
         if (!this.step_005_loadFileToReplaceById(oldFileId)){
             return false;
         }
+        logger.info("DS id: " + ds.getId());
+        logger.info("Owner id: " + fileToReplace.getOwner().getId());
         if(ds.getId()!=fileToReplace.getOwner().getId()) {
             this.addErrorSevere(getBundleErr("existing_file_to_replace_not_in_dataset"));
             return false;
@@ -462,6 +464,8 @@ public class AddReplaceFileHelper{
         if (!this.step_005_loadFileToReplaceById(oldFileId)){
             return false;
         }
+        logger.info("DS id: " + ds.getId());
+        logger.info("Owner id: " + fileToReplace.getOwner().getId());
         if(ds.getId()!=fileToReplace.getOwner().getId()) {
             this.addErrorSevere(getBundleErr("existing_file_to_replace_not_in_dataset"));
             return false;
