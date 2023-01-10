@@ -64,6 +64,17 @@ public enum JvmSettings {
     SCOPE_API(PREFIX, "api"),
     API_SIGNING_SECRET(SCOPE_API, "signing-secret"),
     
+    // AUTH SETTINGS
+    SCOPE_AUTH(PREFIX, "auth"),
+    // AUTH: OIDC SETTINGS
+    SCOPE_OIDC(SCOPE_AUTH, "oidc"),
+    OIDC_ENABLED(SCOPE_OIDC, "enabled"),
+    OIDC_TITLE(SCOPE_OIDC, "title"),
+    OIDC_SUBTITLE(SCOPE_OIDC, "subtitle"),
+    OIDC_AUTH_SERVER_URL(SCOPE_OIDC, "auth-server-url"),
+    OIDC_CLIENT_ID(SCOPE_OIDC, "client-id"),
+    OIDC_CLIENT_SECRET(SCOPE_OIDC, "client-secret"),
+    
     ;
     
     private static final String SCOPE_SEPARATOR = ".";
