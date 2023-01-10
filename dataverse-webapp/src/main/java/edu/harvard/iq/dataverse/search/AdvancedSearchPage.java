@@ -56,7 +56,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
 
     @Inject
     private SolrQueryCreator solrQueryCreator;
-    
+
     @Inject
     private TermsOfUseSelectItemsFactory termsOfUseSelectItemsFactory;
 
@@ -101,10 +101,10 @@ public class AdvancedSearchPage implements java.io.Serializable {
         allSearchBlocks.add(dataversesSearchBlock);
 
         String query = solrQueryCreator.constructQuery(allSearchBlocks);
-        
-        String returnString = "/dataverse.xhtml?q=";
-        returnString += URLEncoder.encode(query, "UTF-8");
-        returnString += "&alias=" + dataverse.getAlias() + "&faces-redirect=true";
+
+        String returnString = "/dataverse.xhtml?q="
+                + URLEncoder.encode(query, "UTF-8")
+                + "&alias=" + dataverse.getAlias() + "&faces-redirect=true";
         returnString = widgetWrapper.wrapURL(returnString);
 
         logger.fine(returnString);

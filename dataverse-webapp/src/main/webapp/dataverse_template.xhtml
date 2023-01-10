@@ -41,7 +41,7 @@
 
         <link type="text/css" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700&amp;display=swap" />
         <link type="text/css" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,700&amp;display=swap" />
-
+        <link type="text/css" rel="stylesheet" href="#{resource['leaflet/leaflet.css']}" />
         <ui:fragment rendered="#{!empty settingsWrapper.getSettingValue(':StyleCustomizationFile')}">
             <style>
                 /* Custom CSS */
@@ -51,6 +51,11 @@
     </h:head>
     <h:body styleClass="#{widgetWrapper.widgetView ? 'widget-view' : ''}">
         <script src="#{resource['js/dv_accessibility.js']}?version=#{systemConfig.getVersionWithBuild()}"></script>
+        <script src="#{resource['leaflet/leaflet.js']}?version=#{systemConfig.getVersionWithBuild()}"></script>
+        <script src="#{resource['js/dvjs.js']}?version=#{systemConfig.getVersionWithBuild()}"></script>
+        <script>
+            window.DvJS = window.DvJS || initDvJS()
+        </script>
         <div id="body-wrapper">
             <f:loadBundle basename="Bundle" var="bundle"/>
         <a href="#content" class="sr-only impaired-navigation">#{bundle['body.skip']}</a>

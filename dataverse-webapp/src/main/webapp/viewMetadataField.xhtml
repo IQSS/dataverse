@@ -10,7 +10,7 @@
                 xmlns:jsf="http://xmlns.jcp.org/jsf">
 
     <!--@elvariable id="fieldsByType" type="edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldsByType"-->
-
+    <o:importConstants type="edu.harvard.iq.dataverse.persistence.dataset.FieldType"/>
     <div class="col-sm-9 form-control-static">
         <ui:fragment rendered="#{fieldsByType.datasetFieldType.name == 'datasetContact'}">
             <p class="help-block no-margin-top">
@@ -25,7 +25,11 @@
                         <h:outputText value="#{valuesLoop.first?'':'; '}#{ value }"
                                 escape="false"/>
                 </ui:repeat>
-
+                <c:set var="isGeospatial" value="#{datasetField.datasetFieldType.fieldType eq FieldType.GEOBOX}"/>
+                <c:set var="currentGsIndex" value="map_#{mdBlockName}_#{fieldIndex}_#{fieldsLoop.index}"/>
+                <script jsf:rendered="#{isGeospatial}">
+                        DvJS.Geo.MetadataView.prepare('#{currentGsIndex}');
+                </script>
                 <ui:repeat var="childField" value="#{datasetField.datasetFieldsChildren}" varStatus="childLoop">
                     <div jsf:rendered="#{childField.parentDisplayFormatIsNewLine}">
                             <ui:repeat value="#{childField.values}" var="value" varStatus="valuesLoop">
@@ -33,13 +37,16 @@
                                         escape="false"/>
                             </ui:repeat>
                     </div>
-                        <h:outputText value="#{childField.parentDisplayFormat} " rendered="#{!childLoop.first and !childField.parentDisplayFormatIsNewLine}" escape="false" />
-                        <ui:repeat value="#{childField.values}" var="value" varStatus="valuesLoop">
-                            <h:outputText value="#{valuesLoop.first?'':'; '}#{ value }" rendered="#{!childField.parentDisplayFormatIsNewLine}"
-                                        escape="false"/>
-                        </ui:repeat>
+                    <script jsf:rendered="#{isGeospatial}">
+                        DvJS.Geo.MetadataView.pushValue('#{currentGsIndex}', Number('#{childField.value}'));
+                    </script>
+                    <h:outputText value="#{childField.parentDisplayFormat} " rendered="#{!childLoop.first and !childField.parentDisplayFormatIsNewLine}" escape="false" />
+                    <ui:repeat value="#{childField.values}" var="value" varStatus="valuesLoop">
+                        <h:outputText value="#{valuesLoop.first?'':'; '}#{ value }" rendered="#{!childField.parentDisplayFormatIsNewLine}"
+                                    escape="false"/>
+                    </ui:repeat>
                 </ui:repeat>
-
+                <div id="#{currentGsIndex}" style="height:180px" jsf:rendered="#{isGeospatial}"></div>
             </div>
         </ui:repeat>
     </div>

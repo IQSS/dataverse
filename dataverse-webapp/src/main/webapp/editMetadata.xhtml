@@ -31,17 +31,17 @@
                                                             or fieldsByType.datasetFieldType.requiredInDataverse)
                                                      and fieldsByType.include)}"
                                         styleClass="form-group #{inputRenderersByFieldType.get(fieldsByType.datasetFieldType).isHidden() ? 'hidden-form-group' : ''}">
-                            
-                            <div role="#{((fieldsByType.datasetFieldType.compound or fieldsByType.datasetFieldType.allowMultiples) and !fieldsByType.datasetFieldType.controlledVocabulary) 
+
+                            <div role="#{((fieldsByType.datasetFieldType.compound or fieldsByType.datasetFieldType.allowMultiples) and !fieldsByType.datasetFieldType.controlledVocabulary)
                                                 ? 'group' : 'presentation'}"
-                                aria-label="#{((fieldsByType.datasetFieldType.compound or fieldsByType.datasetFieldType.allowMultiples) and !fieldsByType.datasetFieldType.controlledVocabulary) 
+                                aria-label="#{((fieldsByType.datasetFieldType.compound or fieldsByType.datasetFieldType.allowMultiples) and !fieldsByType.datasetFieldType.controlledVocabulary)
                                                 ? fieldsByType.datasetFieldType.localeTitle : ''}">
-                            
+
                                 <div class="col-sm-3 control-label section-title"
                                         jsf:rendered="#{not inputRenderersByFieldType.get(fieldsByType.datasetFieldType).isHidden()}">
                                     <h:outputText value="#{fieldsByType.datasetFieldType.localeTitle}" escape="false" />
                                     <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{fieldsByType.datasetFieldType.requiredInDataverse }" />
-                                    
+
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           jsf:rendered="#{not empty fieldsByType.datasetFieldType.localeDescription}"
                                           tabindex="0" role="button"
@@ -79,7 +79,7 @@
                                                     <div class="form-col-container
                                                             #{(inputRenderersByFieldType.get(subdsf.datasetFieldType).renderInTwoColumns()) ? 'col-sm-6' : 'col-sm-12'}
                                                             #{(inputRenderersByFieldType.get(subdsf.datasetFieldType).isHidden()) ? 'form-hidden-col-container' : ''}">
-                                                    
+
                                                         <ui:include src="datasetFieldForEditFragment.xhtml">
                                                             <ui:param name="inputRenderer" value="#{inputRenderersByFieldType.get(subdsf.datasetFieldType)}" />
                                                             <ui:param name="datasetField" value="#{subdsf}" />
@@ -88,11 +88,11 @@
                                                             <ui:param name="allBlockfields" value="#{metadataBlockVal.value}" />
                                                             <ui:param name="operation" value="#{operation}" />
                                                         </ui:include>
-                                                        
+
                                                     </div>
                                                 </ui:repeat>
                                             </div>
-                                    
+
                                             <!-- Add / Remove buttons -->
                                             <div class="col-xs-3 field-add-delete" jsf:rendered="#{fieldsByType.datasetFieldType.allowMultiples and !fieldsByType.datasetFieldType.controlledVocabulary}">
                                                 <p:commandLink title="#{bundle.add}"
