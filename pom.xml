@@ -598,25 +598,13 @@
     <build>
         <testResources>
             <testResource>
-                <directory>${project.basedir}/conf</directory>
+                <directory>${project.basedir}/src/test/resources</directory>
+            </testResource>
+            <testResource>
+                <directory>${project.basedir}/conf/keycloak</directory>
+                <targetPath>keycloak</targetPath>
             </testResource>
         </testResources>
-        <!--        <testResources>
-            <testResource>
-                <directory>${project.basedir}/src/main/resources</directory>
-            </testResource>
-        </testResources>-->
-        <!--        <testResources>
-            <testResource>
-              <directory>${project.basedir}/src/test/java</directory>
-              <excludes>
-                  <exclude>**/*.java</exclude>
-              </excludes>
-            </testResource>
-            <testResource>
-              <directory>${project.basedir}/src/test/resources</directory>
-            </testResource>
-          </testResources>-->
         <resources>
             <resource>
                 <directory>src/main/java</directory>
