@@ -42,7 +42,7 @@ class DatasetFieldValidationServiceTest {
 
     @BeforeEach
     void setUp() {
-        when(registry.get("standard_int")).thenReturn(intValidator);
+        when(registry.getOrThrow("standard_int")).thenReturn(intValidator);
         when(intValidator.isValid(Mockito.any(DatasetField.class), Mockito.anyMap(), Mockito.anyMap()))
                 .thenReturn(ValidationResult.ok());
         when(datasetField.getTopParentDatasetField()).thenReturn(datasetField);
@@ -63,7 +63,7 @@ class DatasetFieldValidationServiceTest {
         service.validateFieldsOfDatasetVersion(datasetVersion);
 
         // then
-        Mockito.verify(registry, only()).get(eq("standard_int"));
+        Mockito.verify(registry, only()).getOrThrow(eq("standard_int"));
         Mockito.verify(intValidator, only()).isValid(eq(datasetField), anyMap(), anyMap());
     }
 }

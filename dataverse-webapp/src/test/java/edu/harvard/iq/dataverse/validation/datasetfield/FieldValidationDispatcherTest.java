@@ -13,6 +13,9 @@ import edu.harvard.iq.dataverse.validation.datasetfield.validators.StandardInteg
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.Collections;
 import java.util.List;
@@ -23,12 +26,25 @@ import static org.assertj.core.api.Assertions.tuple;
 
 class FieldValidationDispatcherTest {
 
-    FieldValidatorRegistry registry = new FieldValidatorRegistry();
+    private FieldValidatorRegistry registry = new FieldValidatorRegistry();
 
-    DatasetField datasetField;
-    DatasetFieldType datasetFieldType;
+    private DatasetField datasetField;
+    private DatasetFieldType datasetFieldType;
 
-    FieldValidationDispatcher dispatcher = new FieldValidationDispatcher(registry);
+    private FieldValidationDispatcher dispatcher = new FieldValidationDispatcher(registry);
+
+    private static final FieldValidator FAILING_VALIDATOR = new FieldValidatorBase() {
+        @Override
+        public String getName() {
+            return "failing_validator";
+        }
+
+        @Override
+        public ValidationResult isValid(DatasetField field, Map<String, String> params, Map<String, List<DatasetField>> fieldIndex) {
+            return ValidationResult.invalid(field, "message");
+        }
+    };
+
 
     @BeforeEach
     void setUp() {
@@ -50,6 +66,8 @@ class FieldValidationDispatcherTest {
         datasetField.setDatasetFieldType(datasetFieldType);
         datasetField.setDatasetVersion(datasetVersion);
     }
+
+    // -------------------- TESTS --------------------
 
     @Test
     void executeValidations() {
@@ -83,7 +101,7 @@ class FieldValidationDispatcherTest {
     void executeValidations__chain() {
         // given
         datasetFieldType.setValidation("[{\"name\":\"standard_int\"}," +
-                "{\"name\":\"standard_input\",\"parameters\":[\"format:[0-9]\"]}]");
+                "{\"name\":\"standard_input\",\"parameters\":{\"format\":\"[0-9]\"}}]");
         datasetField.setValue("44");
         // when
         List<ValidationResult> results = dispatcher.init(Collections.singletonList(datasetField)).executeValidations();
@@ -122,23 +140,15 @@ class FieldValidationDispatcherTest {
         assertThat(results).isEmpty();
     }
 
-    @Test
-    @DisplayName("NA value should bypass any further validations")
-    void executeValidations__NAValue() {
+    @ParameterizedTest
+    @DisplayName("N/A or null value should bypass any further validations")
+    @ValueSource(strings = { DatasetField.NA_VALUE })
+    @NullSource
+    void executeValidations__NAValue(String value) {
         // given
-        datasetField.setFieldValue(DatasetField.NA_VALUE);
-        FieldValidator failingValidator = new FieldValidatorBase() {
-            @Override
-            public String getName() {
-                return "failing_validator";
-            }
+        datasetField.setFieldValue(value);
 
-            @Override
-            public ValidationResult isValid(DatasetField field, Map<String, String> params, Map<String, List<DatasetField>> fieldIndex) {
-                return ValidationResult.invalid(field, "message");
-            }
-        };
-        registry.register(failingValidator);
+        registry.register(FAILING_VALIDATOR);
         datasetFieldType.setValidation("[{\"name\":\"failing_validator\"}]");
 
         // when
@@ -146,6 +156,26 @@ class FieldValidationDispatcherTest {
 
         // then
         assertThat(results).isEmpty();
+    }
+
+    @ParameterizedTest
+    @DisplayName("When runOnEmpty parameter is present in descriptor, N/A or null value should not bypass validations")
+    @ValueSource(strings = { DatasetField.NA_VALUE })
+    @NullSource
+    void executeValidations__NAValue_runOnEmpty(String value) {
+        // given
+        datasetField.setFieldValue(value);
+
+        registry.register(FAILING_VALIDATOR);
+        datasetFieldType.setValidation("[{\"name\":\"failing_validator\", \"parameters\":{\"runOnEmpty\":\"true\"}}]");
+
+        // when
+        List<ValidationResult> results = dispatcher.init(Collections.singletonList(datasetField)).executeValidations();
+
+        // then
+        assertThat(results)
+                .extracting(ValidationResult::isOk, ValidationResult::getField)
+                .containsExactly(tuple(false, datasetField));
     }
 
     @Test

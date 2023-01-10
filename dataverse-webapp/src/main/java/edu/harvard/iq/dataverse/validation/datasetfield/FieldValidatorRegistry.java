@@ -32,7 +32,12 @@ public class FieldValidatorRegistry {
         return Collections.unmodifiableSet(registry.keySet());
     }
 
-    public FieldValidator get(String name) {
-        return registry.get(name);
+    public FieldValidator getOrThrow(String name) {
+        FieldValidator validator = registry.get(name);
+        if (validator == null) {
+            throw new RuntimeException(String.format("Cannot find validator [%s]. Registered validators: [%s]",
+                    name, String.join(", ", getRegisteredValidatorNames())));
+        }
+        return validator;
     }
 }

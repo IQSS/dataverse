@@ -30,7 +30,7 @@ public class DatasetFieldValidationService {
         datasetVersion.getFlatDatasetFields()
                 .forEach(f -> f.setValidationMessage(null));
         List<ValidationResult> validationResults = new FieldValidationDispatcher(registry)
-                .init(datasetVersion)
+                .init(datasetVersion.getFlatDatasetFields())
                 .executeValidations();
         validationResults.forEach(r -> {
                     DatasetField field = r.getField();

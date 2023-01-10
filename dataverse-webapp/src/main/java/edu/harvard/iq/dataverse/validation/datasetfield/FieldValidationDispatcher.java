@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseFieldTypeInputLevel;
 import org.apache.commons.lang3.StringUtils;
@@ -12,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 public class FieldValidationDispatcher {
     private ObjectMapper objectMapper = new ObjectMapper();
     private Map<String, List<DatasetField>> fieldIndex = Collections.emptyMap();
+    private Map<String, List<ValidationDescriptor>> descriptorsCache = new HashMap<>();
 
     private FieldValidatorRegistry registry;
 
@@ -30,10 +31,6 @@ public class FieldValidationDispatcher {
 
     // -------------------- LOGIC --------------------
 
-    public FieldValidationDispatcher init(DatasetVersion datasetVersion) {
-        return init(datasetVersion.getFlatDatasetFields());
-    }
-
     public FieldValidationDispatcher init(List<DatasetField> parentAndChildrenFields) {
         fieldIndex = parentAndChildrenFields.stream()
                 .collect(Collectors.groupingBy(f -> f.getDatasetFieldType().getName()));
@@ -44,7 +41,7 @@ public class FieldValidationDispatcher {
         return fieldIndex.values().stream()
                 .flatMap(Collection::stream)
                 .filter(this::isNotTemplateField)
-                .map(this::executeSingleValidation)
+                .map(this::validateField)
                 .filter(r -> !r.isOk())
                 .collect(Collectors.toList());
     }
@@ -55,22 +52,26 @@ public class FieldValidationDispatcher {
         return field.getTopParentDatasetField().getTemplate() == null;
     }
 
-    private ValidationResult executeSingleValidation(DatasetField field) {
+    private ValidationResult validateField(DatasetField field) {
         DatasetFieldType fieldType = field.getDatasetFieldType();
         if (StringUtils.isBlank(field.getValue()) && fieldType.isPrimitive() && isRequiredInDataverse(field)) {
             return ValidationResult.invalid(field,
                     BundleUtil.getStringFromBundle("isrequired", fieldType.getDisplayName()));
         }
-
-        if (StringUtils.isBlank(field.getValue()) || StringUtils.equals(field.getValue(), DatasetField.NA_VALUE)) {
-            return ValidationResult.ok();
+        boolean effectivelyEmptyValue = StringUtils.isBlank(field.getValue())
+                || DatasetField.NA_VALUE.equals(field.getValue());
+        for (ValidationDescriptor descriptor : retrieveDescriptors(field)) {
+            Map<String, String> parameters = descriptor.getParameters();
+            if (effectivelyEmptyValue && !parameters.containsKey(ValidationDescriptor.RUN_ON_EMPTY_PARAM)) {
+                continue;
+            }
+            FieldValidator validator = registry.getOrThrow(descriptor.getName());
+            ValidationResult result = validator.isValid(field, parameters, fieldIndex);
+            if (!result.isOk()) {
+                return result;
+            }
         }
-
-        String configJson = field.getDatasetFieldType().getValidation();
-        ValidationConfiguration configuration = readConfiguration(configJson);
-        return !configuration.shouldValidate()
-                ? ValidationResult.ok()
-                : executeConfiguredValidations(field, configuration);
+        return ValidationResult.ok();
     }
 
     private boolean isRequiredInDataverse(DatasetField field) {
@@ -79,7 +80,10 @@ public class FieldValidationDispatcher {
             return true;
         }
 
-        Dataverse dataverse = getDataverse(field).getMetadataBlockRootDataverse();
+        Dataverse dataverse = field.getTopParentDatasetField()
+                .getDatasetVersion()
+                .getDataset()
+                .getOwner().getMetadataBlockRootDataverse();
         return dataverse.getDataverseFieldTypeInputLevels().stream()
                 .filter(inputLevel -> inputLevel.getDatasetFieldType().equals(field.getDatasetFieldType()))
                 .map(DataverseFieldTypeInputLevel::isRequired)
@@ -87,35 +91,19 @@ public class FieldValidationDispatcher {
                 .orElse(false);
     }
 
-    private Dataverse getDataverse(DatasetField field) {
-        return field.getTopParentDatasetField()
-                .getDatasetVersion()
-                .getDataset()
-                .getOwner();
-    }
-
-    private ValidationConfiguration readConfiguration(String configurationJson) {
+    private List<ValidationDescriptor> retrieveDescriptors(DatasetField field) {
+        String configJson = field.getDatasetFieldType().getValidation();
+        List<ValidationDescriptor> existing = descriptorsCache.get(configJson);
+        if (existing != null) {
+            return existing;
+        }
         try {
-            configurationJson = String.format("{\"validations\":%s}", configurationJson.trim());
-            return objectMapper.readValue(configurationJson, ValidationConfiguration.class);
+            List<ValidationDescriptor> descriptors = objectMapper.readValue(configJson,
+                    objectMapper.getTypeFactory().constructCollectionType(List.class, ValidationDescriptor.class));
+            descriptorsCache.put(configJson, descriptors);
+            return descriptors;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private ValidationResult executeConfiguredValidations(DatasetField field, ValidationConfiguration configuration) {
-        for (ValidationConfiguration.ValidationDescriptor validation : configuration.getValidations()) {
-            String validatorName = validation.getName();
-            FieldValidator validator = registry.get(validatorName);
-            if (validator == null) {
-                throw new RuntimeException(String.format("Cannot find validator [%s]. Registered validators: [%s]",
-                        validatorName, String.join(", ", registry.getRegisteredValidatorNames())));
-            }
-            ValidationResult result = validator.isValid(field, validation.getParametersAsMap(), fieldIndex);
-            if (!result.isOk()) {
-                return result;
-            }
-        }
-        return ValidationResult.ok();
     }
 }

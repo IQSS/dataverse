@@ -16,6 +16,9 @@ import javax.persistence.UniqueConstraint;
 import java.io.Serializable;
 
 /**
+ * When dataverse is created/edited, the user can customize which fields are optional/required
+ * and that data is stored here.
+ *
  * @author skraffmiller
  */
 @NamedQueries({
