@@ -38,7 +38,12 @@ public class OIDCAuthenticationProviderFactory implements AuthenticationProvider
     public AuthenticationProvider buildProvider( AuthenticationProviderRow aRow ) throws AuthorizationSetupException {
         Map<String, String> factoryData = OAuth2AuthenticationProviderFactory.parseFactoryData(aRow.getFactoryData());
         
-        OIDCAuthProvider oidc = new OIDCAuthProvider(factoryData.get("clientId"), factoryData.get("clientSecret"), factoryData.get("issuer"));
+        OIDCAuthProvider oidc = new OIDCAuthProvider(
+            factoryData.get("clientId"),
+            factoryData.get("clientSecret"),
+            factoryData.get("issuer")
+        );
+        
         oidc.setId(aRow.getId());
         oidc.setTitle(aRow.getTitle());
         oidc.setSubTitle(aRow.getSubtitle());
