@@ -5,6 +5,11 @@ import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
 import org.junit.jupiter.api.extension.BeforeTestExecutionCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+import static edu.harvard.iq.dataverse.util.testing.JvmSetting.PLACEHOLDER;
+
 public class JvmSettingExtension implements BeforeTestExecutionCallback, AfterTestExecutionCallback {
     
     private ExtensionContext.Store getStore(ExtensionContext context) {
@@ -28,7 +33,25 @@ public class JvmSettingExtension implements BeforeTestExecutionCallback, AfterTe
                 }
                 
                 // set to new value
-                System.setProperty(settingName, setting.value());
+                if (setting.value().equals(PLACEHOLDER) && setting.method().equals(PLACEHOLDER)) {
+                    throw new IllegalArgumentException("You must either provide a value or a method reference " +
+                        "for key JvmSettings." + setting.key());
+                }
+                
+                // retrieve value from static test class method if no setting given
+                if (setting.value().equals(PLACEHOLDER)) {
+                    extensionContext.getTestClass().ifPresent(klass -> {
+                        try {
+                            Method valueMethod = klass.getDeclaredMethod(setting.method());
+                            valueMethod.setAccessible(true);
+                            System.setProperty(settingName, (String)valueMethod.invoke(null));
+                        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                } else {
+                    System.setProperty(settingName, setting.value());
+                }
             }
         });
     }
