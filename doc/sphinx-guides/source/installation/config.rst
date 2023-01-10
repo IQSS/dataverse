@@ -1529,15 +1529,18 @@ dataverse.files.directory
 Please provide an absolute path to a directory backed by some mounted file system. This directory is used for a number
 of purposes:
 
-1. ``<dataverse.files.directory>/<PID Authority>/<PID Identifier>`` is the subdirectory layout when using the target
-   directory as a :ref:`permanent file storage <storage-files-dir>`. The DCM feature for :doc:`../developers/big-data-support`
-   is able to trigger imports for externally uploaded files from this area under certain conditions.
-2. ``<dataverse.files.directory>/temp`` after uploading, data is temporarily stored here for ingest and/or before
+1. ``<dataverse.files.directory>/temp`` after uploading, data is temporarily stored here for ingest and/or before
    shipping to the final storage destination.
-3. ``<dataverse.files.directory>/sword`` a place to store uploads via the :doc:`../api/sword` before transfer
+2. ``<dataverse.files.directory>/sword`` a place to store uploads via the :doc:`../api/sword` before transfer
    to final storage location and/or ingest.
-4. ``<dataverse.files.directory>/googlecloudkey.json`` used with :ref:`Google Cloud Configuration` for BagIt exports.
+3. ``<dataverse.files.directory>/googlecloudkey.json`` used with :ref:`Google Cloud Configuration` for BagIt exports.
    This location is deprecated and might be refactored into a distinct setting in the future.
+4. The experimental DCM feature for :doc:`../developers/big-data-support` is able to trigger imports for externally
+   uploaded files in a directory tree at ``<dataverse.files.directory>/<PID Authority>/<PID Identifier>``
+   under certain conditions. This directory may also be used by file stores for :ref:`permanent file storage <storage-files-dir>`,
+   but this is controlled by other, store-specific settings.
+
+Defaults to ``/tmp/dataverse``. Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FILES_DIRECTORY``.
 
 .. _dataverse.files.uploads:
 
