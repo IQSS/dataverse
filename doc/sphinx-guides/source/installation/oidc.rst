@@ -16,7 +16,7 @@ Being a standard, you can easily enable the use of any OpenID connect compliant 
 Some prominent provider examples:
 
 - `Google <https://developers.google.com/identity/protocols/OpenIDConnect>`_
-- `Microsoft Azure AD <https://docs.microsoft.com/de-de/azure/active-directory/develop/v2-protocols-oidc>`_
+- `Microsoft Azure AD <https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-protocols-oidc>`_
 - `Yahoo <https://developer.yahoo.com/oauth2/guide/openid_connect>`_
 - ORCID `announced support <https://orcid.org/blog/2019/04/17/orcid-openid-connect-and-implicit-authentication>`_
 
@@ -59,7 +59,20 @@ Finding the issuer URL is best done by searching for terms like "discovery" in t
 The discovery document is always located at ``<issuer url>/.well-known/openid-configuration`` (standardized).
 To be sure, you can always lookup the ``issuer`` value inside the live JSON-based discovery document.
 
-Please create a my-oidc-provider.json file like this, replacing every ``<...>`` with your values:
+Note if you work with Keycloak, make sure the base URL is in the following format: ``https://host:port/realms/{realm}``
+where ``{realm}`` has to be replaced by the name of the Keycloak realm.
+
+After adding a provider, the Log In page will by default show the "builtin" provider, but you can adjust this via the
+``:DefaultAuthProvider`` configuration option. For details, see :doc:`config`.
+
+.. hint::
+   In contrast to our :doc:`oauth2`, you can use multiple providers by creating distinct configurations enabled by
+   the same technology and without modifying the Dataverse Software code base (standards for the win!).
+
+Provision via REST API
+^^^^^^^^^^^^^^^^^^^^^^
+
+Please create a ``my-oidc-provider.json`` file like this, replacing every ``<...>`` with your values:
 
 .. code-block:: json
 
@@ -80,10 +93,45 @@ The Dataverse installation will automatically try to load the provider and retri
 You should see the new provider under "Other options" on the Log In page, as described in the :doc:`/user/account`
 section of the User Guide.
 
-By default, the Log In page will show the "builtin" provider, but you can adjust this via the ``:DefaultAuthProvider``
-configuration option. For details, see :doc:`config`.
+Provision via MPCONFIG
+^^^^^^^^^^^^^^^^^^^^^^
 
-.. hint::
-   In contrast to our :doc:`oauth2`, you can use multiple providers by creating distinct configurations enabled by
-   the same technology and without modifying the Dataverse Software code base (standards for the win!).
+In case you only require a single OIDC provider, you can also provision an OIDC based provider using MicroProfile Config
+sources. Note that this provider will only be deployed at startup time and (currently) cannot be reconfigured without
+a restart.
+
+The following options are available:
+
+.. list-table::
+  :widths: 25 55 10 10
+  :header-rows: 1
+
+  * - Option
+    - Description
+    - Mandatory
+    - Default
+  * - ``dataverse.auth.oidc.enabled``
+    - Enable or disable provisioning the provider via MicroProfile.
+    - N
+    - ``false``
+  * - ``dataverse.auth.oidc.client-id``
+    - The client-id of the application to identify it at your provider.
+    - Y
+    - \-
+  * - ``dataverse.auth.oidc.client-secret``
+    - A confidential secret to authorize application requests to the provider as legit.
+    - N
+    - \-
+  * - ``dataverse.auth.oidc.auth-server-url``
+    - The base URL of the OpenID Connect (OIDC) server as explained above.
+    - Y
+    - \-
+  * - ``dataverse.auth.oidc.title``
+    - The UI visible name for this provider in login options.
+    - N
+    - ``OpenID Connect``
+  * - ``dataverse.auth.oidc.subtitle``
+    - A subtitle, currently not displayed by the UI.
+    - N
+    - ``OpenID Connect``
 
