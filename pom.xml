@@ -596,6 +596,11 @@
         </dependency>
     </dependencies>
     <build>
+        <testResources>
+            <testResource>
+                <directory>${project.basedir}/conf</directory>
+            </testResource>
+        </testResources>
         <!--        <testResources>
             <testResource>
                 <directory>${project.basedir}/src/main/resources</directory>
