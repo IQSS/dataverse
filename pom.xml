@@ -757,7 +757,7 @@
             <id>tc</id>
             <properties>
                 <skipUnitTests>true</skipUnitTests>
-                <postgresql.server.version>9.6</postgresql.server.version>
+                <postgresql.server.version>13.0</postgresql.server.version>
             </properties>
             <build>
                 <plugins>
