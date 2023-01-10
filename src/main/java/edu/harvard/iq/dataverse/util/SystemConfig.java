@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -55,23 +56,7 @@ public class SystemConfig {
     AuthenticationServiceBean authenticationService;
     
    public static final String DATAVERSE_PATH = "/dataverse/";
-
-    /**
-     * A JVM option for the advertised fully qualified domain name (hostname) of
-     * the Dataverse installation, such as "dataverse.example.com", which may
-     * differ from the hostname that the server knows itself as.
-     *
-     * The equivalent in DVN 3.x was "dvn.inetAddress".
-     */
-    public static final String FQDN = "dataverse.fqdn";
-    
-    /**
-     * A JVM option for specifying the "official" URL of the site.
-     * Unlike the FQDN option above, this would be a complete URL, 
-     * with the protocol, port number etc. 
-     */
-    public static final String SITE_URL = "dataverse.siteUrl";
-
+   
     /**
      * A JVM option for where files are stored on the file system.
      */
@@ -88,12 +73,6 @@ public class SystemConfig {
      * token is valid ({@link #getMinutesUntilPasswordResetTokenExpires}).
      */
     private static final String PASSWORD_RESET_TIMEOUT_IN_MINUTES = "dataverse.auth.password-reset-timeout-in-minutes";
-
-    /**
-     * A common place to find the String for a sane Solr hostname:port
-     * combination.
-     */
-    private String saneDefaultForSolrHostColonPort = "localhost:8983";
 
     /**
      * The default number of datafiles that we allow to be created through 
@@ -157,15 +136,28 @@ public class SystemConfig {
         
         return appVersion;
     }
-
+    
+    /**
+     * Retrieve the Solr endpoint in "host:port" form, to be used with a Solr client.
+     *
+     * This will retrieve the setting from either the database ({@link SettingsServiceBean.Key#SolrHostColonPort}) or
+     * via Microprofile Config API (properties {@link JvmSettings#SOLR_HOST} and {@link JvmSettings#SOLR_PORT}).
+     *
+     * A database setting always takes precedence. If not given via other config sources, a default from
+     * <code>resources/META-INF/microprofile-config.properties</code> is used. (It's possible to use profiles.)
+     *
+     * @return Solr endpoint as string "hostname:port"
+     */
     public String getSolrHostColonPort() {
-        String SolrHost;
-        if ( System.getenv("SOLR_SERVICE_HOST") != null && System.getenv("SOLR_SERVICE_HOST") != ""){
-            SolrHost = System.getenv("SOLR_SERVICE_HOST");
-        }
-        else SolrHost = saneDefaultForSolrHostColonPort;
-        String solrHostColonPort = settingsService.getValueForKey(SettingsServiceBean.Key.SolrHostColonPort, SolrHost);
-        return solrHostColonPort;
+        // Get from MPCONFIG. Might be configured by a sysadmin or simply return the default shipped with
+        // resources/META-INF/microprofile-config.properties.
+        // NOTE: containers should use system property mp.config.profile=ct to use sane container usage default
+        String host = JvmSettings.SOLR_HOST.lookup();
+        String port = JvmSettings.SOLR_PORT.lookup();
+        
+        // DB setting takes precedence over all. If not present, will return default from above.
+        return Optional.ofNullable(settingsService.getValueForKey(SettingsServiceBean.Key.SolrHostColonPort))
+            .orElse(host + ":" + port);
     }
 
     public boolean isProvCollectionEnabled() {
@@ -243,32 +235,58 @@ public class SystemConfig {
     }
     
     /**
-     * The "official", designated URL of the site;
-     * can be defined as a complete URL; or derived from the 
-     * "official" hostname. If none of these options is set,
-     * defaults to the InetAddress.getLocalHOst() and https;
-     * These are legacy JVM options. Will be eventualy replaced
-     * by the Settings Service configuration.
+     * Lookup (or construct) the designated URL of this instance from configuration.
+     *
+     * Can be defined as a complete URL via <code>dataverse.siteUrl</code>; or derived from the hostname
+     * <code>dataverse.fqdn</code> and HTTPS. If none of these options is set, defaults to the
+     * {@link InetAddress#getLocalHost} and HTTPS.
+     *
+     * NOTE: This method does not provide any validation.
+     * TODO: The behaviour of this method is subject to a later change, see
+     *       https://github.com/IQSS/dataverse/issues/6636
+     *
+     * @return The designated URL of this instance as per configuration.
      */
     public String getDataverseSiteUrl() {
         return getDataverseSiteUrlStatic();
     }
     
+    /**
+     * Lookup (or construct) the designated URL of this instance from configuration.
+     *
+     * Can be defined as a complete URL via <code>dataverse.siteUrl</code>; or derived from the hostname
+     * <code>dataverse.fqdn</code> and HTTPS. If none of these options is set, defaults to the
+     * {@link InetAddress#getLocalHost} and HTTPS.
+     *
+     * NOTE: This method does not provide any validation.
+     * TODO: The behaviour of this method is subject to a later change, see
+     *       https://github.com/IQSS/dataverse/issues/6636
+     *
+     * @return The designated URL of this instance as per configuration.
+     */
     public static String getDataverseSiteUrlStatic() {
-        String hostUrl = System.getProperty(SITE_URL);
-        if (hostUrl != null && !"".equals(hostUrl)) {
-            return hostUrl;
+        // If dataverse.siteUrl has been configured, simply return it
+        Optional<String> siteUrl = JvmSettings.SITE_URL.lookupOptional();
+        if (siteUrl.isPresent()) {
+            return siteUrl.get();
         }
-        String hostName = System.getProperty(FQDN);
-        if (hostName == null) {
-            try {
-                hostName = InetAddress.getLocalHost().getCanonicalHostName();
-            } catch (UnknownHostException e) {
-                return null;
-            }
+        
+        // Otherwise try to lookup dataverse.fqdn setting and default to HTTPS
+        Optional<String> fqdn = JvmSettings.FQDN.lookupOptional();
+        if (fqdn.isPresent()) {
+            return "https://" + fqdn.get();
         }
-        hostUrl = "https://" + hostName;
-        return hostUrl;
+        
+        // Last resort - get the servers local name and use it.
+        // BEWARE - this is dangerous.
+        // 1) A server might have a different name than your repository URL.
+        // 2) The underlying reverse DNS lookup might point to a different name than your repository URL.
+        // 3) If this server has multiple IPs assigned, which one will it be for the lookup?
+        try {
+            return "https://" + InetAddress.getLocalHost().getCanonicalHostName();
+        } catch (UnknownHostException e) {
+            return null;
+        }
     }
     
     /**
@@ -276,22 +294,6 @@ public class SystemConfig {
      */
     public String getPageURLWithQueryString() {
         return PrettyContext.getCurrentInstance().getRequestURL().toURL() + PrettyContext.getCurrentInstance().getRequestQueryString().toQueryString();
-    }
-
-    /**
-     * The "official" server's fully-qualified domain name: 
-     */
-    public String getDataverseServer() {
-        // still reliese on a JVM option: 
-        String fqdn = System.getProperty(FQDN);
-        if (fqdn == null) {
-            try {
-                fqdn = InetAddress.getLocalHost().getCanonicalHostName();
-            } catch (UnknownHostException e) {
-                return null;
-            }
-        }
-        return fqdn;
     }
 
     public String getGuidesBaseUrl() {
@@ -765,7 +767,13 @@ public class SystemConfig {
          * Upload through Globus of large files
          */
 
-        GLOBUS("globus")
+        GLOBUS("globus"), 
+        
+        /**
+         * Upload folders of files through dvwebloader app
+         */
+
+        WEBLOADER("dvwebloader");
         ;
 
 
@@ -901,6 +909,10 @@ public class SystemConfig {
 
     public boolean isGlobusUpload(){
         return getMethodAvailable(FileUploadMethods.GLOBUS.toString(), true);
+    }
+    
+    public boolean isWebloaderUpload(){
+        return getMethodAvailable(FileUploadMethods.WEBLOADER.toString(), true);
     }
 
     // Controls if HTTP upload is enabled for both GUI and API.
