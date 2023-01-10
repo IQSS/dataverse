@@ -108,19 +108,19 @@
                                                     </button>
                                                     <ul class="dropdown-menu">
                                                         <li>
-                                                            <a jsf:id="endNoteLink-2" jsf:action="#{FilePage.fileDownloadService.downloadCitationXML(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}" >
-                                                                #{bundle['dataset.cite.downloadBtn.xml']}
-                                                            </a>
+                                                            <h:commandLink styleClass="btn-download" action="#{fileDownloadServiceBean.downloadCitationXML(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}">
+                                                                <h:outputText value="#{bundle['dataset.cite.downloadBtn.xml']}"/>
+                                                            </h:commandLink>
                                                         </li>
                                                         <li>
-                                                            <a jsf:id="risLink-2" jsf:actionListener="#{FilePage.fileDownloadService.downloadCitationRIS(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}">
-                                                                #{bundle['dataset.cite.downloadBtn.ris']}
-                                                            </a>
+                                                            <h:commandLink action="#{fileDownloadServiceBean.downloadCitationRIS(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}">
+                                                                <h:outputText value="#{bundle['dataset.cite.downloadBtn.ris']}"/>
+                                                            </h:commandLink>
                                                         </li>
                                                         <li>
-                                                            <a jsf:id="bibLink-2" jsf:actionListener="#{FilePage.fileDownloadService.downloadCitationBibtex(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}" target="_blank">
-                                                                #{bundle['dataset.cite.downloadBtn.bib']}
-                                                            </a>
+                                                            <h:commandLink action="#{fileDownloadServiceBean.downloadCitationBibtex(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}">
+                                                                <h:outputText value="#{bundle['dataset.cite.downloadBtn.bib']}"/>
+                                                            </h:commandLink>
                                                         </li>
                                                     </ul>
                                                 </div>
@@ -154,19 +154,19 @@
                                                     </button>
                                                     <ul class="dropdown-menu">
                                                         <li>
-                                                            <a jsf:id="endNoteLink" jsf:action="#{FilePage.fileDownloadService.downloadDatasetCitationXML(FilePage.fileMetadata.datasetVersion.dataset)}" >
-                                                                #{bundle['dataset.cite.downloadBtn.xml']}
-                                                            </a>
+                                                            <h:commandLink action="#{fileDownloadServiceBean.downloadDatasetCitationXML(FilePage.fileMetadata.datasetVersion.dataset)}" >
+                                                                <h:outputText value="#{bundle['dataset.cite.downloadBtn.xml']}"/>
+                                                            </h:commandLink>
                                                         </li>
                                                         <li>
-                                                            <a jsf:id="risLink" jsf:actionListener="#{FilePage.fileDownloadService.downloadDatasetCitationRIS(FilePage.fileMetadata.datasetVersion.dataset)}">
-                                                                #{bundle['dataset.cite.downloadBtn.ris']}
-                                                            </a>
+                                                            <h:commandLink action="#{fileDownloadServiceBean.downloadDatasetCitationRIS(FilePage.fileMetadata.datasetVersion.dataset)}">
+                                                                <h:outputText value="#{bundle['dataset.cite.downloadBtn.ris']}"/>
+                                                            </h:commandLink>
                                                         </li>
                                                         <li>
-                                                            <a jsf:id="bibLink" jsf:actionListener="#{FilePage.fileDownloadService.downloadDatasetCitationBibtex(FilePage.fileMetadata.datasetVersion.dataset)}" target="_blank">
-                                                                #{bundle['dataset.cite.downloadBtn.bib']}
-                                                            </a>
+                                                            <h:commandLink action="#{fileDownloadServiceBean.downloadDatasetCitationBibtex(FilePage.fileMetadata.datasetVersion.dataset)}">
+                                                                <h:outputText value="#{bundle['dataset.cite.downloadBtn.bib']}"/>
+                                                            </h:commandLink>
                                                         </li>
                                                     </ul>
                                                 </div>
