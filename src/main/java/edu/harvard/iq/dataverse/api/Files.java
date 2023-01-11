@@ -490,7 +490,6 @@ public class Files extends AbstractApiBean {
         
         JsonObjectBuilder job = JsonPrinter.json(fm);
         javax.json.JsonObject jsonObject = job.build();
-        String jsonString = jsonObject.toString();
 
         return Response.ok(Json.createObjectBuilder()
                 .add("status", STATUS_OK)
