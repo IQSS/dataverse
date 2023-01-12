@@ -1,0 +1,4 @@
+[default]
+region = us-east-1
+s3 =
+  signature_version = s3v4
