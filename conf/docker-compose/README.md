@@ -4,6 +4,7 @@
 
 * [docker-compose](https://docs.docker.com/compose/)
 * [Docker](https://docker.com) (or some other supported container engine)
+* [Maven](https://maven.apache.org/)
 
 ## Setup
 
@@ -26,7 +27,8 @@ Then copy the `traefik.key` and `traefik.crt` files into the `traefik` folder.
 
 ## Building
 
-Run `prepbuild.sh` once
+Run `build-containers.sh`.  This will copy a few files and setup the build environment before
+running maven builds for each of the container services.
 
 Pull and build the Docker containers
 
