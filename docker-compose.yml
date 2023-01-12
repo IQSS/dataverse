@@ -2,8 +2,7 @@ version: '3.5'
 services:
 
   postgres:
-    build:
-      context: ./conf/docker-compose/postgres/
+    image: gdcc/postgresql:unstable
     #ports:
     #  - 5432:5432
     restart: unless-stopped
@@ -23,8 +22,7 @@ services:
       retries: 5
 
   solr:
-    build:
-      context: ./conf/docker-compose/solr/
+    image: gdcc/solr:unstable
     restart: unless-stopped
     container_name: solr
     hostname: solr
@@ -44,8 +42,7 @@ services:
       start_period: 30s
 
   rserve:
-    build:
-      context: ./conf/docker-compose/rserve/
+    image: gdcc/rserve:unstable
     restart: unless-stopped
     container_name: rserve
     hostname: rserve
@@ -57,8 +54,7 @@ services:
     #   - 6311:6311
 
   dataverse:
-    build:
-      context: .
+    image: gdcc/dataverse:unstable
     restart: unless-stopped
     container_name: dataverse
     hostname: dataverse
@@ -67,6 +63,8 @@ services:
       - HOST_DNS_ADDRESS=${HOST_DNS_ADDRESS}
       - GLASSFISH_USER=${GLASSFISH_USER}
       - GLASSFISH_PASSWORD=${GLASSFISH_PASSWORD}
+      - GLASSFISH_ADMIN_USER=${GLASSFISH_ADMIN_USER}
+      - GLASSFISH_ADMIN_PASSWORD=${GLASSFISH_ADMIN_PASSWORD}
       - ADMIN_EMAIL=${ADMIN_EMAIL}
       - MAIL_SERVER=${MAIL_SERVER}
       - POSTGRES_ADMIN_PASSWORD=${POSTGRES_ADMIN_PASSWORD}
@@ -97,8 +95,8 @@ services:
     volumes:
       # https://guides.dataverse.org/en/latest/installation/advanced.html
       # logos and sitemap are initially empty on the very first startup
-      - ./conf/docker-compose/dataverse-logos-bind:/usr/local/payara5/glassfish/domains/domain1/docroot/logos/
-      - ./conf/docker-compose/dataverse-sitemap-bind:/usr/local/payara5/glassfish/domains/domain1/docroot/sitemap/
+      - ./conf/docker-compose/dataverse-logos-bind:/opt/payara/appserver/glassfish/domains/domain1/docroot/logos/
+      - ./conf/docker-compose/dataverse-sitemap-bind:/opt/payara/appserver/glassfish/domains/domain1/docroot/sitemap/
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.dataverse.rule=Host(`localhost`)"
@@ -115,8 +113,7 @@ services:
 
   # Traefik reverse proxy
   traefik:
-    build:
-      context: ./conf/docker-compose/traefik/
+    image: gdcc/traefik:unstable
     container_name: traefik
     hostname: traefik
     environment:
@@ -154,8 +151,7 @@ services:
   # alternatives include minio and others
   # https://github.com/chrislusf/seaweedfs/blob/master/docker/seaweedfs-compose.yml
   seaweedfs:
-    build:
-      context: ./conf/docker-compose/seaweedfs/
+    image: gdcc/seaweedfs:unstable
     restart: unless-stopped
     container_name: seaweedfs
     hostname: seaweedfs
