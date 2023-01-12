@@ -568,11 +568,16 @@ public class SettingsServiceBean {
         /*
          * Allow a custom JavaScript to control values of specific fields.
          */
-        ControlledVocabularyCustomJavaScript,
+        ControlledVocabularyCustomJavaScript, 
         /**
          * A compound setting for disabling signup for remote Auth providers:
          */
-        AllowRemoteAuthSignUp
+        AllowRemoteAuthSignUp,
+        /**
+         * The URL for the DvWebLoader tool (see github.com/gdcc/dvwebloader for details)
+         */
+        WebloaderUrl
+
         ;
 
         @Override
