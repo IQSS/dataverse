@@ -1,0 +1,3 @@
+.flattened-pom.xml
+/src/main/docker/traefik.crt
+/src/main/docker/traefik.key

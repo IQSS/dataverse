@@ -1,0 +1,6 @@
+tls:
+  stores:
+    default:
+      defaultCertificate:
+        certFile: /usr/local/share/ca-certificates/traefik.crt
+        keyFile: /usr/local/share/ca-certificates/traefik.key
