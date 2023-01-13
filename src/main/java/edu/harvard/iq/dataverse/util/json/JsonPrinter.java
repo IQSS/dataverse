@@ -37,6 +37,7 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.globus.FileDetailsHolder;
+import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
@@ -666,6 +667,32 @@ public class JsonPrinter {
                 ;
     }
     
+    public static JsonObjectBuilder json(HarvestingClient harvestingClient) {
+        if (harvestingClient == null) {
+            return null; 
+        }
+        
+        return jsonObjectBuilder().add("nickName", harvestingClient.getName()).
+                add("dataverseAlias", harvestingClient.getDataverse().getAlias()).
+                add("type", harvestingClient.getHarvestType()).
+                add("style", harvestingClient.getHarvestStyle()).
+                add("harvestUrl", harvestingClient.getHarvestingUrl()).
+                add("archiveUrl", harvestingClient.getArchiveUrl()).
+                add("archiveDescription", harvestingClient.getArchiveDescription()).
+                add("metadataFormat", harvestingClient.getMetadataPrefix()).
+                add("set", harvestingClient.getHarvestingSet()).
+                add("schedule", harvestingClient.isScheduled() ? harvestingClient.getScheduleDescription() : "none").
+                add("status", harvestingClient.isHarvestingNow() ? "inProgress" : "inActive").
+                add("customHeaders", harvestingClient.getCustomHttpHeaders()).
+                add("lastHarvest", harvestingClient.getLastHarvestTime() == null ? null : harvestingClient.getLastHarvestTime().toString()).
+                add("lastResult", harvestingClient.getLastResult()).
+                add("lastSuccessful", harvestingClient.getLastSuccessfulHarvestTime() == null ? null : harvestingClient.getLastSuccessfulHarvestTime().toString()).
+                add("lastNonEmpty", harvestingClient.getLastNonEmptyHarvestTime() == null ? null : harvestingClient.getLastNonEmptyHarvestTime().toString()).
+                add("lastDatasetsHarvested", harvestingClient.getLastHarvestedDatasetCount()). // == null ? "N/A" : harvestingClient.getLastHarvestedDatasetCount().toString()).
+                add("lastDatasetsDeleted", harvestingClient.getLastDeletedDatasetCount()). // == null ? "N/A" : harvestingClient.getLastDeletedDatasetCount().toString()).
+                add("lastDatasetsFailed", harvestingClient.getLastFailedDatasetCount()); // == null ? "N/A" : harvestingClient.getLastFailedDatasetCount().toString());
+    }
+    
     public static String format(Date d) {
         return (d == null) ? null : Util.getDateTimeFormat().format(d);
     }
@@ -702,7 +729,7 @@ public class JsonPrinter {
         }
         return tabularTags;
     }
-
+    
     private static class DatasetFieldsToJson implements DatasetFieldWalker.Listener {
 
         Deque<JsonObjectBuilder> objectStack = new LinkedList<>();

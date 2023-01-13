@@ -5,7 +5,6 @@ import io.gdcc.xoai.model.oaipmh.results.record.Header;
 import io.gdcc.xoai.model.oaipmh.results.MetadataFormat;
 import io.gdcc.xoai.model.oaipmh.results.Set;
 import io.gdcc.xoai.serviceprovider.ServiceProvider;
-import io.gdcc.xoai.serviceprovider.client.JdkHttpOaiClient;
 import io.gdcc.xoai.serviceprovider.exceptions.BadArgumentException;
 import io.gdcc.xoai.serviceprovider.exceptions.InvalidOAIResponse;
 import io.gdcc.xoai.serviceprovider.exceptions.NoSetHierarchyException;
@@ -26,12 +25,15 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
+import org.apache.http.message.BasicHeader;
 
 /**
  *
  * @author Leonid Andreev
  */
 public class OaiHandler implements Serializable {
+    private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler");
     
     public OaiHandler() {
         
@@ -65,6 +67,9 @@ public class OaiHandler implements Serializable {
         
         this.fromDate = harvestingClient.getLastNonEmptyHarvestTime();
         
+        this.customHeaders = makeCustomHeaders(harvestingClient.getCustomHttpHeaders());
+        //test: this.customHeaders = makeCustomHeaders("x-api-key: xxx-yyy-zzz\\ny-api-key: zzz-yyy-xxx");
+        
         this.harvestingClient = harvestingClient;
     }
     
@@ -74,6 +79,7 @@ public class OaiHandler implements Serializable {
     private String setName; 
     private Date   fromDate;
     private Boolean setListTruncated = false;
+    private List<org.apache.http.Header> customHeaders = null;
     
     private ServiceProvider serviceProvider; 
     
@@ -119,6 +125,14 @@ public class OaiHandler implements Serializable {
         return setListTruncated;
     }
     
+    public List<org.apache.http.Header> getCustomHeaders() {
+        return this.customHeaders;
+    }
+    
+    public void setCustomHeaders(List<org.apache.http.Header> customHeaders) {
+       this.customHeaders = customHeaders;
+    }
+    
     public ServiceProvider getServiceProvider() throws OaiHandlerException {
         if (serviceProvider == null) {
             if (baseOaiUrl == null) {
@@ -128,8 +142,17 @@ public class OaiHandler implements Serializable {
 
             context.withBaseUrl(baseOaiUrl);
             context.withGranularity(Granularity.Second);
-            // builds the client with the default parameters and the JDK http client:
-            context.withOAIClient(JdkHttpOaiClient.newBuilder().withBaseUrl(baseOaiUrl).build());
+            // builds the client based on the default client provided in xoai, 
+            // with the same default parameters and the JDK http client, with
+            // just the (optional) custom headers added:  
+            // (this is proof-of-concept implementation; there gotta be a prettier way to do this)
+            //context.withOAIClient(JdkHttpOaiClient.newBuilder().withBaseUrl(baseOaiUrl).build());
+            if (getCustomHeaders() != null) {
+                for (org.apache.http.Header customHeader : getCustomHeaders()) {
+                    logger.info("will add custom header; name: "+customHeader.getName()+", value: "+customHeader.getValue());
+                }
+            }
+            context.withOAIClient((new CustomJdkHttpXoaiClient.JdkHttpBuilder()).withBaseUrl(getBaseOaiUrl()).withCustomHeaders(getCustomHeaders()).build());
             serviceProvider = new ServiceProvider(context);
         }
         
@@ -292,5 +315,25 @@ public class OaiHandler implements Serializable {
         // not implemented yet
         // (we will need it, both for validating the remote server,
         // and to learn about its extended capabilities)
+    }
+    
+    private List<org.apache.http.Header> makeCustomHeaders(String headersString) {
+        if (headersString != null) {
+            List<org.apache.http.Header> ret = new ArrayList<>();
+            String[] parts = headersString.split("\\\\n");
+             
+            for (int i = 0; i < parts.length; i++) {
+                if (parts[i].indexOf(':') > 0) {
+                    String headerName = parts[i].substring(0, parts[i].indexOf(':'));
+                    String headerValue = parts[i].substring(parts[i].indexOf(':')+1).strip();
+                    ret.add(new BasicHeader(headerName, headerValue));
+                } 
+                // simply skipping it if malformed; or we could throw an exception - ?
+            }
+            if (!ret.isEmpty()) {
+                return ret;
+            }
+        }
+        return null; 
     }
 }
