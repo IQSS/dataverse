@@ -1497,6 +1497,7 @@ public class IndexServiceBean {
                 dataset = (Dataset) dvObject;
                 linkingDataverses = dsLinkingService.findLinkingDataverses(dataset.getId());
                 ancestorList = dataset.getOwner().getOwners();
+                ancestorList.add(dataset.getOwner()); //to show dataset in linking dv when parent dv is linked
             }
             if(dvObject.isInstanceofDataverse()){
                 dv = (Dataverse) dvObject;
