@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.UserNotification.Type;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -17,12 +18,16 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonString;
 import org.junit.Test;
 import org.junit.Before;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class JsonPrinterTest {
 
@@ -303,6 +308,15 @@ public class JsonPrinterTest {
             }
         }
 
+    }
+
+    @Test
+    public void testEnum() throws JsonParseException {
+        JsonArrayBuilder arr = JsonPrinter.enumsToJson(Arrays.asList(Type.REVOKEROLE, Type.ASSIGNROLE));
+        Set<String> typesSet = new HashSet<>(arr.build().getValuesAs(JsonString::getString));
+        assertTrue(typesSet.size() == 2);
+        assertTrue(typesSet.contains("REVOKEROLE"));
+        assertTrue(typesSet.contains("ASSIGNROLE"));
     }
 
 }

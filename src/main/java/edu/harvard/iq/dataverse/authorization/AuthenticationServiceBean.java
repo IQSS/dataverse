@@ -636,9 +636,8 @@ public class AuthenticationServiceBean {
         authenticatedUser.setAuthenticatedUserLookup(auusLookup);
 
         if (ShibAuthenticationProvider.PROVIDER_ID.equals(auusLookup.getAuthenticationProviderId())) {
-            Timestamp emailConfirmedNow = new Timestamp(new Date().getTime());
             // Email addresses for Shib users are confirmed by the Identity Provider.
-            authenticatedUser.setEmailConfirmed(emailConfirmedNow);
+            authenticatedUser.updateEmailConfirmedToNow();
             authenticatedUser = save(authenticatedUser);
         } else {
             /* @todo Rather than creating a token directly here it might be
@@ -648,6 +647,8 @@ public class AuthenticationServiceBean {
         
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "createUser")
             .setInfo(authenticatedUser.getIdentifier()));
+        
+        authenticatedUser.initialize();
 
         return authenticatedUser;
     }
@@ -665,6 +666,7 @@ public class AuthenticationServiceBean {
     
     public AuthenticatedUser updateAuthenticatedUser(AuthenticatedUser user, AuthenticatedUserDisplayInfo userDisplayInfo) {
         user.applyDisplayInfo(userDisplayInfo);
+        user.updateEmailConfirmedToNow();
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "updateUser")
             .setInfo(user.getIdentifier()));
         return update(user);
@@ -936,6 +938,16 @@ public class AuthenticationServiceBean {
         Query query = em.createQuery("SELECT wc FROM WorkflowComment wc WHERE wc.authenticatedUser.id = :auid");
         query.setParameter("auid", user.getId());       
         return query.getResultList();
+    }
+
+    public ApiToken getValidApiTokenForUser(AuthenticatedUser user) {
+        ApiToken apiToken = null;
+        apiToken = findApiTokenByUser(user);
+        if ((apiToken == null) || (apiToken.getExpireTime().before(new Date()))) {
+            logger.fine("Created apiToken for user: " + user.getIdentifier());
+            apiToken = generateApiTokenForUser(user);
+        }
+        return apiToken;
     }
 
 }

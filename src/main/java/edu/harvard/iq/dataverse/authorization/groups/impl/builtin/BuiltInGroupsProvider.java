@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.Collections;
 import java.util.Set;
-import org.hibernate.validator.internal.util.CollectionHelper;
 
 /**
  * Provider for the built-in, hard coded groups. This class is a singleton (no
@@ -56,7 +55,7 @@ public class BuiltInGroupsProvider implements GroupProvider<Group> {
     @Override
     public Set<Group> groupsFor(RoleAssignee ra) {
         if (ra instanceof AuthenticatedUser){
-            return CollectionHelper.asSet(AllUsers.get(), AuthenticatedUsers.get());
+            return Set.of(AllUsers.get(), AuthenticatedUsers.get());
         } else if ( ra instanceof User) {
             return Collections.singleton(AllUsers.get());
         } else {
@@ -72,6 +71,6 @@ public class BuiltInGroupsProvider implements GroupProvider<Group> {
 
     @Override
     public Set<Group> findGlobalGroups() {
-        return CollectionHelper.asSet(AllUsers.get(), AuthenticatedUsers.get());
+        return Set.of(AllUsers.get(), AuthenticatedUsers.get());
     }
 }

@@ -70,8 +70,9 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         //              When importing a released dataset, the latest version is marked as RELEASED.
 
         Dataset theDataset = getDataset();
-
         
+        validateOrDie(theDataset.getLatestVersion(), false);
+
         //ToDo - any reason to set the version in publish versus finalize? Failure in a prepub workflow or finalize will leave draft versions with an assigned version number as is.
         //Changing the dataset in this transaction also potentially makes a race condition with a prepub workflow, possibly resulting in an OptimisticLockException there.
         

@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.logging.Logger;
+import java.util.Locale;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.json.Json;
@@ -88,9 +89,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
     public static final String JSON_SUCCESS_FIELD_NAME = "success";
     public static final String JSON_ERROR_MSG_FIELD_NAME = "error_message";
     public static final String JSON_DATA_FIELD_NAME = "data";
-    
-    public static final String MSG_NO_RESULTS_FOUND = BundleUtil.getStringFromBundle("dataretrieverAPI.noMsgResultsFound");
-    
+
     /**
      * Constructor
      * 
@@ -276,7 +275,9 @@ public class DataRetrieverAPI extends AbstractApiBean {
         boolean DEBUG_MODE = false;
         boolean OTHER_USER = false;
 
-
+        String localeCode = session.getLocaleCode();
+        String noMsgResultsFound = BundleUtil.getStringFromPropertyFile("dataretrieverAPI.noMsgResultsFound",
+                "Bundle", new Locale(localeCode));
         
         // For, superusers, the searchUser may differ from the authUser
         //
@@ -357,7 +358,8 @@ public class DataRetrieverAPI extends AbstractApiBean {
         myDataFinder = new MyDataFinder(rolePermissionHelper,
                                         roleAssigneeService,
                                         dvObjectServiceBean, 
-                                        groupService);
+                                        groupService,
+                                        noMsgResultsFound);
         this.myDataFinder.runFindDataSteps(filterParams);
         if (myDataFinder.hasError()){
             return this.getJSONErrorString(myDataFinder.getErrorMessage(), myDataFinder.getErrorMessage());
@@ -384,7 +386,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         List<String> filterQueries = this.myDataFinder.getSolrFilterQueries();
         if (filterQueries==null){
             logger.fine("No ids found for this search");
-            return this.getJSONErrorString(DataRetrieverAPI.MSG_NO_RESULTS_FOUND, null);
+            return this.getJSONErrorString(noMsgResultsFound, null);
         }
         //msgt("myDataFinder.getSolrFilterQueries(): " + myDataFinder.getSolrFilterQueries().toString());
         
@@ -407,7 +409,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
                 //msgt("getNumResultsFound: " + this.solrQueryResponse.getNumResultsFound());
                 //msgt("getSolrSearchResults: " + this.solrQueryResponse.getSolrSearchResults().toString());
                 if (this.solrQueryResponse.getNumResultsFound()==0){
-                    return this.getJSONErrorString(DataRetrieverAPI.MSG_NO_RESULTS_FOUND, null);
+                    return this.getJSONErrorString(noMsgResultsFound, null);
                 }                
                          
         } catch (SearchException ex) {

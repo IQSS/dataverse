@@ -2,9 +2,11 @@ package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
+import static com.jayway.restassured.path.json.JsonPath.with;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import java.io.StringReader;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -16,6 +18,7 @@ import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -306,6 +309,103 @@ public class MoveIT {
         JsonObject linksAfterData = Json.createReader(new StringReader(getLinksAfter.asString())).readObject();
         Assert.assertEquals("OK", linksAfterData.getString("status"));
         Assert.assertEquals(0, linksAfterData.getJsonObject("data").getJsonArray("dataverses that link to dataset id " + datasetId).size());
+
+    }
+    
+    @Test
+    public void testMoveDatasetsPerms() {
+
+        /*
+        Verify that permissions set on a dataset remain 
+        after that dataaset is moved
+         */
+        Response createCurator = UtilIT.createRandomUser();
+        createCurator.prettyPrint();
+        createCurator.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String curatorUsername = UtilIT.getUsernameFromResponse(createCurator);
+        String curatorApiToken = UtilIT.getApiTokenFromResponse(createCurator);
+
+        Response createRando = UtilIT.createRandomUser();
+        createCurator.prettyPrint();
+        createCurator.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String randoUsername = UtilIT.getUsernameFromResponse(createRando);
+        String randoApiToken = UtilIT.getApiTokenFromResponse(createRando);
+
+        Response createCuratorDataverse1 = UtilIT.createRandomDataverse(curatorApiToken);
+        createCuratorDataverse1.prettyPrint();
+        createCuratorDataverse1.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String curatorDataverseAlias1 = UtilIT.getAliasFromResponse(createCuratorDataverse1);
+
+        Response createAuthor = UtilIT.createRandomUser();
+        createAuthor.prettyPrint();
+        createAuthor.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String authorUsername = UtilIT.getUsernameFromResponse(createAuthor);
+        String authorApiToken = UtilIT.getApiTokenFromResponse(createAuthor);
+
+        Response grantAuthorAddDataset = UtilIT.grantRoleOnDataverse(curatorDataverseAlias1, DataverseRole.DS_CONTRIBUTOR.toString(), "@" + authorUsername, curatorApiToken);
+        grantAuthorAddDataset.prettyPrint();
+        grantAuthorAddDataset.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.assignee", equalTo("@" + authorUsername))
+                .body("data._roleAlias", equalTo("dsContributor"));
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(curatorDataverseAlias1, authorApiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+
+        Response datasetAsJson = UtilIT.nativeGet(datasetId, authorApiToken);
+        datasetAsJson.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
+        assertEquals(10, identifier.length());
+
+        String protocol1 = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.protocol");
+        String authority1 = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.authority");
+        String identifier1 = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
+        String datasetPersistentId = protocol1 + ":" + authority1 + "/" + identifier1;
+
+        Response giveRandoPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, DataverseRole.CURATOR, "@" + randoUsername, curatorApiToken);
+        giveRandoPermission.prettyPrint();
+        assertEquals(200, giveRandoPermission.getStatusCode());
+
+        Response createAuthorDataverse1 = UtilIT.createRandomDataverse(curatorApiToken);
+        createAuthorDataverse1.prettyPrint();
+        createAuthorDataverse1.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String authorDataverseAlias1 = UtilIT.getAliasFromResponse(createAuthorDataverse1);
+
+        Response createSuperuser = UtilIT.createRandomUser();
+        createSuperuser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String superusername = UtilIT.getUsernameFromResponse(createSuperuser);
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
+        Response makeSuperuser = UtilIT.makeSuperUser(superusername);
+        makeSuperuser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response moveDataset1 = UtilIT.moveDataset(datasetId.toString(), authorDataverseAlias1, superuserApiToken);
+        moveDataset1.prettyPrint();
+        moveDataset1.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("Dataset moved successfully."));
+
+        Response roleAssignments = UtilIT.getRoleAssignmentsOnDataset(datasetId.toString(), null, superuserApiToken);
+        roleAssignments.prettyPrint();
+
+        /*
+        make sure the rando assigned role continues on the moved dataset
+        */
+        assertEquals(OK.getStatusCode(), roleAssignments.getStatusCode());
+        List<JsonObject> assignments = with(roleAssignments.body().asString()).param("curator", "curator").getJsonObject("data.findAll { data -> data._roleAlias == curator }");
+        assertEquals(1, assignments.size());
 
     }
 

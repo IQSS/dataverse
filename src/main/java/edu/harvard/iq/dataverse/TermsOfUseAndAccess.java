@@ -14,6 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
+import javax.persistence.Transient;
 
 import edu.harvard.iq.dataverse.license.License;
 
@@ -23,6 +24,7 @@ import edu.harvard.iq.dataverse.license.License;
  * @author skraffmi
  */
 @Entity
+@ValidateTermsOfUseAndAccess
 public class TermsOfUseAndAccess implements Serializable {
 
     @Id
@@ -287,11 +289,17 @@ public class TermsOfUseAndAccess implements Serializable {
         disclaimer = null;
     }
     
-    /**
-     * @todo What does the GUI use for a default license? What does the "native"
-     * API use? See also https://github.com/IQSS/dataverse/issues/1385
-     */
+    @Transient
+    private String validationMessage;
 
+    public String getValidationMessage() {
+        return validationMessage;
+    }
+
+    public void setValidationMessage(String validationMessage) {
+        this.validationMessage = validationMessage;
+    }
+    
     @Override
     public int hashCode() {
         int hash = 0;

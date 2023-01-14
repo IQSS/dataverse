@@ -29,7 +29,6 @@ import java.util.regex.Pattern;
 
 import org.apache.solr.client.solrj.SolrServerException;
 
-import com.beust.jcommander.Strings;
 import com.google.api.LabelDescriptor;
 
 @RequiredPermissions(Permission.PublishDataset)
@@ -78,7 +77,7 @@ public class SetCurationStatusCommand extends AbstractDatasetCommand<Dataset> {
 
     public Dataset save(CommandContext ctxt) throws CommandException {
 
-        getDataset().getEditVersion().setLastUpdateTime(getTimestamp());
+        getDataset().getOrCreateEditVersion().setLastUpdateTime(getTimestamp());
         getDataset().setModificationTime(getTimestamp());
 
         Dataset savedDataset = ctxt.em().merge(getDataset());

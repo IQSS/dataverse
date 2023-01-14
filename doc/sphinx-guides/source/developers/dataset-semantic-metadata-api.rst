@@ -1,5 +1,8 @@
 Dataset Semantic Metadata API
 =============================
+.. contents:: |toctitle|
+	:local:
+
 
 The OAI_ORE metadata export format represents Dataset metadata using json-ld (see the :doc:`/admin/metadataexport` section). As part of an RDA-supported effort to allow import of Datasets exported as Bags with an included OAI_ORE metadata file, 
 an experimental API has been created that provides a json-ld alternative to the v1.0 API calls to get/set/delete Dataset metadata in the :doc:`/api/native-api`.
@@ -48,11 +51,11 @@ To add json-ld formatted metadata for a Dataset, specify the Dataset ID (DATASET
  
   Example: Change the Dataset title 
  
-    curl -X PUT -H X-Dataverse-key:$API_TOKEN -H 'Content-Type: application/ld+json' -d '{"Title": "Submit menu test", "@context":{"Title": "http://purl.org/dc/terms/title"}}' "$SERVER_URL/api/datasets/$DATASET_ID/metadata?replace=true"
+    curl -X PUT -H X-Dataverse-key:$API_TOKEN -H 'Content-Type: application/ld+json' -d '{"title": "Submit menu test", "@context":{"title": "http://purl.org/dc/terms/title"}}' "$SERVER_URL/api/datasets/$DATASET_ID/metadata?replace=true"
 
   Example 2: Add a description using the DATASET PID
 
-    curl -X PUT -H X-Dataverse-key:$API_TOKEN -H 'Content-Type: application/ld+json' -d '{"citation:Description": {"dsDescription:Text": "New description"}, "@context":{"citation": "https://dataverse.org/schema/citation/","dsDescription": "https://dataverse.org/schema/citation/dsDescription#"}}' "$SERVER_URL/api/datasets/:persistentId/metadata?persistentId=$DATASET_PID"
+    curl -X PUT -H X-Dataverse-key:$API_TOKEN -H 'Content-Type: application/ld+json' -d '{"citation:dsDescription": {"citation:dsDescriptionValue": "New description"}, "@context":{"citation": "https://dataverse.org/schema/citation/"}}' "$SERVER_URL/api/datasets/:persistentId/metadata?persistentId=$DATASET_PID"
 
 You should expect a 200 ("OK") response indicating whether a draft Dataset version was created or an existing draft was updated.
 
@@ -74,7 +77,7 @@ To delete metadata for a Dataset, send a json-ld representation of the fields to
 
     curl -X PUT -H X-Dataverse-key:$API_TOKEN -H 'Content-Type: application/ld+json' -d '{"https://dataverse.org/schema/core#restrictions":"No restrictions"}' "$SERVER_URL/api/datasets/:persistentId/metadata/delete?persistentId=$DATASET_PID"
 
-Note, this example uses the term URI directly rather than adding an '@context' element. You can use either form in any of these API calls. 
+Note, this example uses the term URI directly rather than adding an ``@context`` element. You can use either form in any of these API calls. 
 
 You should expect a 200 ("OK") response indicating whether a draft Dataset version was created or an existing draft was updated.
 
@@ -99,5 +102,5 @@ With curl, this is done by adding the following header:
 
   curl -H X-Dataverse-key:$API_TOKEN -H 'Content-Type: application/ld+json' -X POST $SERVER_URL/api/dataverses/$DATAVERSE_ID/datasets --upload-file dataset-create.jsonld
 
-An example jsonld file is available at :download:`dataset-create.jsonld <../_static/api/dataset-create.jsonld>` 
+An example jsonld file is available at :download:`dataset-create.jsonld <../_static/api/dataset-create.jsonld>` (:download:`dataset-create_en.jsonld <../_static/api/dataset-create.jsonld>` is a version that sets the metadata language (see :ref:`:MetadataLanguages`) to English (en).)
   

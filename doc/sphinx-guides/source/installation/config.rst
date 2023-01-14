@@ -101,6 +101,31 @@ Password complexity rules for "builtin" accounts can be adjusted with a variety 
 - :ref:`:PVGoodStrength`
 - :ref:`:PVCustomPasswordResetAlertMessage`
 
+.. _ongoing-security:
+
+Ongoing Security of Your Installation
++++++++++++++++++++++++++++++++++++++
+
+Like any application, you should keep up-to-date with patches to both the Dataverse software and the platform (usually Linux) it runs on. Dataverse releases are announced on the dataverse-community_ mailing list, the Dataverse blog_, and in chat.dataverse.org_.
+
+.. _dataverse-community: https://groups.google.com/g/dataverse-community
+.. _blog: https://dataverse.org/blog
+.. _chat.dataverse.org: https://chat.dataverse.org
+
+In addition to these public channels, you can subscribe to receive security notices via email from the Dataverse team. These notices are sent to the ``contact_email`` in the installation spreadsheet_ and you can open an issue in the dataverse-installations_ repo to add or change the contact email. Security notices are also sent to people and organizations that prefer to remain anonymous. To be added to this private list, please email support@dataverse.org.
+
+.. _spreadsheet: https://docs.google.com/spreadsheets/d/1bfsw7gnHlHerLXuk7YprUT68liHfcaMxs1rFciA-mEo/edit#gid=0
+.. _dataverse-installations: https://github.com/IQSS/dataverse-installations
+
+For additional details about security practices by the Dataverse team, see the :doc:`/developers/security` section of the Developer Guide.
+
+.. _reporting-security-issues:
+
+Reporting Security Issues
++++++++++++++++++++++++++
+
+If you have a security issue to report, please email it to security@dataverse.org.
+
 .. _network-ports:
 
 Network Ports
@@ -157,7 +182,7 @@ and restart Payara. The prefix can be configured via the API (where it is referr
 
 Once this is done, you will be able to publish datasets and files, but the persistent identifiers will not be citable, and they will only resolve from the DataCite test environment (and then only if the Dataverse installation from which you published them is accessible - DOIs minted from your laptop will not resolve). Note that any datasets or files created using the test configuration cannot be directly migrated and would need to be created again once a valid DOI namespace is configured.
 
-To properly configure persistent identifiers for a production installation, an account and associated namespace must be acquired for a fee from a DOI or HDL provider. **DataCite** (https://www.datacite.org) is the recommended DOI provider (see https://dataverse.org/global-dataverse-community-consortium for more on joining DataCite) but **EZID** (http://ezid.cdlib.org) is an option for the University of California according to https://www.cdlib.org/cdlinfo/2017/08/04/ezid-doi-service-is-evolving/ . **Handle.Net** (https://www.handle.net) is the HDL provider.
+To properly configure persistent identifiers for a production installation, an account and associated namespace must be acquired for a fee from a DOI or HDL provider. **DataCite** (https://www.datacite.org) is the recommended DOI provider (see https://dataversecommunity.global for more on joining DataCite) but **EZID** (http://ezid.cdlib.org) is an option for the University of California according to https://www.cdlib.org/cdlinfo/2017/08/04/ezid-doi-service-is-evolving/ . **Handle.Net** (https://www.handle.net) is the HDL provider.
 
 Once you have your DOI or Handle account credentials and a namespace, configure your Dataverse installation to use them using the JVM options and database settings below.
 
@@ -238,12 +263,16 @@ As for the "Remote only" authentication mode, it means that:
 - ``:DefaultAuthProvider`` has been set to use the desired authentication provider
 - The "builtin" authentication provider has been disabled (:ref:`api-toggle-auth-provider`). Note that disabling the "builtin" authentication provider means that the API endpoint for converting an account from a remote auth provider will not work. Converting directly from one remote authentication provider to another (i.e. from GitHub to Google) is not supported. Conversion from remote is always to "builtin". Then the user initiates a conversion from "builtin" to remote. Note that longer term, the plan is to permit multiple login options to the same Dataverse installation account per https://github.com/IQSS/dataverse/issues/3487 (so all this talk of conversion will be moot) but for now users can only use a single login option, as explained in the :doc:`/user/account` section of the User Guide. In short, "remote only" might work for you if you only plan to use a single remote authentication provider such that no conversion between remote authentication providers will be necessary.
 
-File Storage: Using a Local Filesystem and/or Swift and/or object stores
-------------------------------------------------------------------------
+.. _file-storage:
+
+File Storage: Using a Local Filesystem and/or Swift and/or Object Stores and/or Trusted Remote Stores
+-----------------------------------------------------------------------------------------------------
 
 By default, a Dataverse installation stores all data files (files uploaded by end users) on the filesystem at ``/usr/local/payara5/glassfish/domains/domain1/files``. This path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.\<id\>.directory`` JVM option described below.
 
 A Dataverse installation can alternately store files in a Swift or S3-compatible object store, and can now be configured to support multiple stores at once. With a multi-store configuration, the location for new files can be controlled on a per-Dataverse collection basis.
+
+A Dataverse installation may also be configured to reference some files (e.g. large and/or sensitive data) stored in a web-accessible trusted remote store.
 
 The following sections describe how to set up various types of stores and how to configure for multiple stores.
 
@@ -474,7 +503,7 @@ named config in the same folder")
 Console Commands to Set Up Access Configuration
 ###############################################
 
-Begin by installing the CLI tool `pip <https://pip.pypa.io//en/latest/>`_ to install the
+Begin by installing the CLI tool `pip (package installer for Python) <https://pip.pypa.io/en/latest/>`_ to install the
 `AWS command line interface <https://aws.amazon.com/cli/>`_ if you don't have it.
 
 First, we'll get our access keys set up. If you already have your access keys configured, skip this step.
@@ -573,11 +602,10 @@ Credentials via MicroProfile Config
 
 Optionally, you may provide static credentials for each S3 storage using MicroProfile Config options:
 
-- ``dataverse.files.<id>.access-key`` for this storages "access key ID"
-- ``dataverse.files.<id>.secret-key`` for this storages "secret access key"
+- ``dataverse.files.<id>.access-key`` for this storage's "access key ID"
+- ``dataverse.files.<id>.secret-key`` for this storage's "secret access key"
 
-You may provide the values for these via any of the
-`supported config sources <https://docs.payara.fish/community/docs/documentation/microprofile/config/README.html>`_.
+You may provide the values for these via any `supported MicroProfile Config API source`_.
 
 **WARNING:**
 
@@ -600,7 +628,7 @@ Reported Working S3-Compatible Storage
   possibly slow) https://play.minio.io:9000 service.
 
 `StorJ Object Store <https://www.storj.io>`_
- StorJ is a distributed object store that can be configured with an S3 gateway. Per the S3 Storage instructions above, you'll first set up the StorJ S3 store by defining the id, type, and label. After following the general installation, set the following configurations to use a StorJ object store: ``dataverse.files.<id>.payload-signing=true`` and ``dataverse.files.<id>.chunked-encoding=false``.
+ StorJ is a distributed object store that can be configured with an S3 gateway. Per the S3 Storage instructions above, you'll first set up the StorJ S3 store by defining the id, type, and label. After following the general installation, set the following configurations to use a StorJ object store: ``dataverse.files.<id>.payload-signing=true`` and ``dataverse.files.<id>.chunked-encoding=false``. For step-by-step instructions see https://docs.storj.io/dcs/how-tos/dataverse-integration-guide/
 
  Note that for direct uploads and downloads, Dataverse redirects to the proxy-url but presigns the urls based on the ``dataverse.files.<id>.custom-endpoint-url``. Also, note that if you choose to enable ``dataverse.files.<id>.download-redirect`` the S3 URLs expire after 60 minutes by default. You can change that minute value to reflect a timeout value that’s more appropriate by using ``dataverse.files.<id>.url-expiration-minutes``.
 
@@ -613,14 +641,109 @@ For direct uploads and downloads, Dataverse redirects to the proxy-url but presi
 Additional configuration (appropriate CORS settings, proxy caching/timeout configuration, and proxy settings to pass headers to/from S3 and to avoid adding additional headers) will also be needed to enable use of a proxy with direct upload and download.
 For Amazon AWS, see comments in the edu.harvard.iq.dataverse.dataaccess.S3AccessIO class about support for AWS's bucket-specific DNS names.
  
-**HINT:** If you are successfully using an S3 storage implementation not yet listed above, please feel free to
+`SeaweedFS <https://github.com/chrislusf/seaweedfs>`_
+  SeaweedFS is a distributed storage system that has S3 compatibility. Set the S3 storage options as explained above. Make sure to set ``dataverse.files.<id>.path-style-access`` to ``true``. You will need to create the bucket beforehand. You can do this with the filer API using curl commands. For example, to create an empty bucket called ``dataverse``:
+  
+.. code-block:: bash
+
+  curl -X POST "http://localhost:8888/buckets/"
+  curl -X POST "http://localhost:8888/buckets/dataverse/"
+  
+You will also need to set an access and secret key. One way to do this is via a `static file <https://github.com/chrislusf/seaweedfs/wiki/Amazon-S3-API#static-configuration>`_. As an example, your ``config.json`` might look like this if you're using a bucket called ``dataverse``:
+  
+.. code-block:: json
+
+  {
+    "identities": [
+      {
+        "name": "anonymous",
+	"credentials": [
+	  {
+	    "accessKey": "secret",
+	    "secretKey": "secret"
+	  }
+	],
+	"actions": [
+	  "Read:dataverse",
+	  "List:dataverse",
+	  "Tagging:dataverse",
+	  "Write:dataverse"
+	]
+      }
+    ]
+  }
+
+And lastly, to start up the SeaweedFS server and various components you could use a command like this:
+  
+.. code-block:: bash
+
+  weed server -s3 -metricsPort=9327 -dir=/data -s3.config=/config.json
+
+**Additional Reported Working S3-Compatible Storage**
+
+If you are successfully using an S3 storage implementation not yet listed above, please feel free to
 `open an issue at Github <https://github.com/IQSS/dataverse/issues/new>`_ and describe your setup.
-We will be glad to add it here.
+We will be glad to add it.
+
 
 Migrating from Local Storage to S3
 ##################################
 
 Is currently documented on the :doc:`/developers/deployment` page.
+
+.. _trusted-remote-storage:
+
+Trusted Remote Storage
+++++++++++++++++++++++
+
+In addition to having the type "remote" and requiring a label, Trusted Remote Stores are defined in terms of a baseURL - all files managed by this store must be at a path starting with this URL, and a baseStore - a file, s3, or swift store that can be used to store additional ancillary dataset files (e.g. metadata exports, thumbnails, auxiliary files, etc.).
+These and other available options are described in the table below.
+
+Trusted remote stores can range from being a static trusted website to a sophisticated service managing access requests and logging activity
+and/or managing access to a secure enclave.  See :doc:`/developers/big-data-support` for additional information on how to use a trusted remote store. For specific remote stores, consult their documentation when configuring the remote store in your Dataverse installation.
+
+Note that in the current implementation, activites where Dataverse needs access to data bytes, e.g. to create thumbnails or validate hash values at publication will fail if a remote store does not allow Dataverse access. Implementers of such trusted remote stores should consider using Dataverse's settings to disable ingest, validation of files at publication, etc. as needed.
+
+Once you have configured a trusted remote store, you can point your users to the :ref:`add-remote-file-api` section of the API Guide.
+
+.. table::
+    :align: left
+
+    ===========================================  ==================  ==========================================================================  ===================
+    JVM Option                                   Value               Description                                                                 Default value
+    ===========================================  ==================  ==========================================================================  ===================
+    dataverse.files.<id>.type                    ``remote``          **Required** to mark this storage as remote.                                (none)
+    dataverse.files.<id>.label                   <?>                 **Required** label to be shown in the UI for this storage.                  (none)
+    dataverse.files.<id>.base-url                <?>                 **Required** All files must have URLs of the form <baseUrl>/* .             (none)
+    dataverse.files.<id>.base-store              <?>                 **Optional** The id of a base store (of type file, s3, or swift).           (the default store)
+    dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download (should usually be true).                            ``false``
+    dataverse.files.<id>.secret-key               <?>                 A key used to sign download requests sent to the remote store. Optional.   (none)
+    dataverse.files.<id>.url-expiration-minutes  <?>                 If direct downloads and using signing: time until links expire. Optional.   60
+    dataverse.files.<id>.remote-store-name       <?>                 A short name used in the UI to indicate where a file is located. Optional.  (none)
+    dataverse.files.<id>.remote-store-url        <?>                 A url to an info page about the remote store used in the UI. Optional.      (none)
+    
+    ===========================================  ==================  ==========================================================================  ===================
+
+.. _temporary-file-storage:
+
+Temporary Upload File Storage
++++++++++++++++++++++++++++++
+
+When uploading files via the API or Web UI, you need to be aware that multiple steps are involved to enable
+features like ingest processing, transfer to a permanent storage, checking for duplicates, unzipping etc.
+
+All of these processes are triggered after finishing transfers over the wire and moving the data into a temporary
+(configurable) location on disk at :ref:`${dataverse.files.directory} <dataverse.files.directory>`\ ``/temp``.
+
+Before being moved there,
+
+- JSF Web UI uploads are stored at :ref:`${dataverse.files.uploads} <dataverse.files.uploads>`, defaulting to
+  ``/usr/local/payara5/glassfish/domains/domain1/uploads`` folder in a standard installation. This place is
+  configurable and might be set to a separate disk volume where stale uploads are purged periodically.
+- API uploads are stored at the system's temporary files location indicated by the Java system property
+  ``java.io.tmpdir``, defaulting to ``/tmp`` on Linux. If this location is backed by a `tmpfs <https://www.kernel.org/doc/html/latest/filesystems/tmpfs.html>`_
+  on your machine, large file uploads via API will cause RAM and/or swap usage bursts. You might want to point this to
+  a different location, restrict maximum size of it, and monitor for stale uploads.
 
 
 .. _Branding Your Installation:
@@ -628,56 +751,107 @@ Is currently documented on the :doc:`/developers/deployment` page.
 Branding Your Installation
 --------------------------
 
-The name of your root Dataverse collection is the brand of your Dataverse installation and appears in various places such as notifications and support links, as outlined in the :ref:`systemEmail` section below. To further brand your installation and make it your own, the Dataverse Software provides configurable options for easy-to-add (and maintain) custom branding for your Dataverse installation. Here are the custom branding and content options you can add:
+A Dataverse installation can be branded in a number of ways.
 
+A simple option for branding your installation is to adjust the theme of a Dataverse collection. You can change colors, add a logo, add a tagline, or add a website link to the Dataverse collection header section of the page. These options are outlined under :ref:`theme` in the :doc:`/user/dataverse-management` section of the User Guide.
+
+More advanced customization is described below and covers the following areas.
+
+- Custom installation name/brand
+- Custom header
+- Navbar settings
 - Custom welcome/homepage
-- Logo image to navbar
-- Header
-- Footer
+- Custom footer
+- Footer settings
 - CSS stylesheet
 
 Downloadable sample HTML and CSS files are provided below which you can edit as you see fit. It's up to you to create a directory in which to store these files, such as ``/var/www/dataverse`` in the examples below.
 
-You may also want to look at samples at https://github.com/shlake/LibraDataHomepage from community member Sherry Lake as well as her poster from the Dataverse Project Community Meeting 2018 called "Branding Your Local Dataverse Installation": https://github.com/IQSS/dataverse/files/2128735/UVaHomePage.pdf
+Additional samples from community member Sherry Lake are available at https://github.com/shlake/LibraDataHomepage.
 
-A simpler option to brand and customize your installation is to utilize the Dataverse collection theme, which each Dataverse collection has, that allows you to change colors, add a logo, tagline or website link to the Dataverse collection header section of the page. Those options are outlined in the :doc:`/user/dataverse-management` section of the User Guide.
+.. _parts-of-webpage:
 
-Custom Homepage
-+++++++++++++++
+Parts of a Dataverse Installation Webpage
++++++++++++++++++++++++++++++++++++++++++
 
-The Dataverse Software allows you to use a custom homepage or welcome page in place of the default root Dataverse collection page. This allows for complete control over the look and feel of your installation's homepage.
+Before reading about the available customization options, you might want to familiarize yourself with the parts of a Dataverse installation webpage.
 
-Download this sample: :download:`custom-homepage.html </_static/installation/files/var/www/dataverse/branding/custom-homepage.html>` and place it at ``/var/www/dataverse/branding/custom-homepage.html``.
+The image below indicates that the page layout consists of three main blocks: a header block, a content block, and a footer block:
 
-Once you have the location of your custom homepage HTML file, run this curl command to add it to your settings:
+|dvPageBlocks|
 
-``curl -X PUT -d '/var/www/dataverse/branding/custom-homepage.html' http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
+.. To edit, use dvBrandingCustBlocks.drawio with https://app.diagrams.net
+.. |dvPageBlocks| image:: ./img/dvBrandingCustBlocks.png
+   :class: img-responsive
 
-If you prefer to start with less of a blank slate, you can review the custom homepage used by the Harvard Dataverse Repository, which includes branding messaging, action buttons, search input, subject links, and recent dataset links. This page was built to utilize the :doc:`/api/metrics` to deliver dynamic content to the page via Javascript. The files can be found at https://github.com/IQSS/dataverse.harvard.edu
+Installation Name/Brand Name
+++++++++++++++++++++++++++++
 
-Note that the ``custom-homepage.html`` file provided has multiple elements that assume your root Dataverse collection still has an alias of "root". While you were branding your root Dataverse collection, you may have changed the alias to "harvard" or "librascholar" or whatever and you should adjust the custom homepage code as needed.
+It's common for a Dataverse installation to have some sort of installation name or brand name like "HeiDATA", "Libra Data", or "MELDATA".
 
-For more background on what this curl command above is doing, see the :ref:`database-settings` section below. If you decide you'd like to remove this setting, use the following curl command:
+The installation name appears in various places such as notifications, support links, and metadata exports.
 
-``curl -X DELETE http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
+Out of the box, the installation name comes from the name of root Dataverse collection ("Root" by default). You can simply change the name of this collection to set the installation name you want.
+
+Alternatively, you can have independent names for the root Dataverse collection and the installation name by having the installation name come from the :ref:`:InstallationName` setting.
+
+Note that you can use :ref:`systemEmail` to control the name that appears in the "from" address of email messages sent by a Dataverse installation. This overrides the name of the root Dataverse collection and :ref:`:InstallationName`.
+
+If you have an image for your installation name, you can use it as the "Custom Navbar Logo", described below.
+
+Header Block
+++++++++++++
+
+Within the header block, you have a navbar (which will always be displayed) and you may insert a custom header that will be displayed above the navbar.
+
+Navbar
+^^^^^^
+
+The navbar is the component displayed by default on the header block and will be present on every Dataverse webpage.
+
+The navbar encompasses several configurable settings (described below) that manage user interaction with a Dataverse installation.
 
 Custom Navbar Logo
-++++++++++++++++++
+##################
 
-The Dataverse Software allows you to replace the default Dataverse Project icon and name branding in the navbar with your own custom logo. Note that this logo is separate from the *root dataverse theme* logo.
+The Dataverse Software allows you to replace the default Dataverse Project icon and name branding in the navbar with your own custom logo. Note that this logo is separate from the logo used in the theme of the root Dataverse collection (see :ref:`theme`).
 
 The custom logo image file is expected to be small enough to fit comfortably in the navbar, no more than 50 pixels in height and 160 pixels in width. Create a ``navbar`` directory in your Payara ``logos`` directory and place your custom logo there. By default, your logo image file will be located at ``/usr/local/payara5/glassfish/domains/domain1/docroot/logos/navbar/logo.png``.
 
-Once you have the location of your custom logo image file, run this curl command to add it to your settings:
+Given this location for the custom logo image file, run this curl command to add it to your settings:
 
 ``curl -X PUT -d '/logos/navbar/logo.png' http://localhost:8080/api/admin/settings/:LogoCustomizationFile``
 
+To revert to the default configuration and have the Dataverse Project icon be displayed, run the following command:
+
+``curl -X DELETE http://localhost:8080/api/admin/settings/:LogoCustomizationFile``
+
+About URL
+#########
+
+Refer to :ref:`:NavbarAboutUrl` for setting a fully-qualified URL which will be used for the "About" link in the navbar.
+
+User Guide URL
+##############
+
+Refer to :ref:`:NavbarGuidesUrl`, :ref:`:GuidesBaseUrl`, and :ref:`:GuidesVersion` for setting a fully-qualified URL which will be used for the "User Guide" link in the navbar.
+
+Support URL
+###########
+
+Refer to :ref:`:NavbarSupportUrl` for setting to a fully-qualified URL which will be used for the "Support" link in the navbar.
+
+Sign Up
+#######
+
+Refer to :ref:`:SignUpUrl` and :ref:`conf-allow-signup` for setting a relative path URL to which users will be sent for sign up and for controlling the ability for creating local user accounts.
+
 Custom Header
-+++++++++++++
+^^^^^^^^^^^^^
 
-Download this sample: :download:`custom-header.html </_static/installation/files/var/www/dataverse/branding/custom-header.html>` and place it at ``/var/www/dataverse/branding/custom-header.html``.
+As a starting point you can download :download:`custom-header.html </_static/installation/files/var/www/dataverse/branding/custom-header.html>` and place it at ``/var/www/dataverse/branding/custom-header.html``.
 
-Once you have the location of your custom header HTML file, run this curl command to add it to your settings:
+Given this location for the custom header HTML file, run this curl command to add it to your settings:
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-header.html' http://localhost:8080/api/admin/settings/:HeaderCustomizationFile``
 
@@ -687,24 +861,68 @@ If you have enabled a custom header or navbar logo, you might prefer to disable 
 
 Please note: Disabling the display of the root Dataverse collection theme also disables your ability to edit it. Remember that Dataverse collection owners can set their Dataverse collections to "inherit theme" from the root. Those Dataverse collections will continue to inherit the root Dataverse collection theme (even though it no longer displays on the root). If you would like to edit the root Dataverse collection theme in the future, you will have to re-enable it first.
 
-
-Custom Footer
+Content Block
 +++++++++++++
 
-Download this sample: :download:`custom-footer.html </_static/installation/files/var/www/dataverse/branding/custom-footer.html>` and place it at ``/var/www/dataverse/branding/custom-footer.html``.
+As shown in the image under :ref:`parts-of-webpage`, the content block is the area below the header and above the footer.
 
-Once you have the location of your custom footer HTML file, run this curl command to add it to your settings:
+By default, when you view the homepage of a Dataverse installation, the content block shows the root Dataverse collection. This page contains the data available in the Dataverse installation (e.g. dataverses and datasets) and the functionalities that allow the user to interact with the platform (e.g. search, create/edit data and metadata, etc.).
+
+Rather than showing the root Dataverse collection on the homepage, the content block can show a custom homepage instead. Read on for details.
+
+Custom Homepage
+^^^^^^^^^^^^^^^
+
+When you configure a custom homepage, it **replaces** the root Dataverse collection in the content block, serving as a welcome page. This allows for complete control over the look and feel of the content block for your installation's homepage.
+
+As a starting point, download :download:`custom-homepage.html </_static/installation/files/var/www/dataverse/branding/custom-homepage.html>` and place it at ``/var/www/dataverse/branding/custom-homepage.html``.
+
+Given this location for the custom homepage HTML file, run this curl command to add it to your settings:
+
+``curl -X PUT -d '/var/www/dataverse/branding/custom-homepage.html' http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
+
+Note that the ``custom-homepage.html`` file provided has multiple elements that assume your root Dataverse collection still has an alias of "root". While you were branding your root Dataverse collection, you may have changed the alias to "harvard" or "librascholar" or whatever and you should adjust the custom homepage code as needed.
+
+Note: If you prefer to start with less of a blank slate, you can review the custom homepage used by the Harvard Dataverse Repository, which includes branding messaging, action buttons, search input, subject links, and recent dataset links. This page was built to utilize the :doc:`/api/metrics` to deliver dynamic content to the page via Javascript. The files can be found at https://github.com/IQSS/dataverse.harvard.edu
+
+If you decide you'd like to remove this setting, use the following curl command:
+
+``curl -X DELETE http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
+
+Footer Block
+++++++++++++
+
+Within the footer block you have the default footer section (which will always be displayed) and you can insert a custom footer that will be displayed below the default footer.
+
+Default Footer
+^^^^^^^^^^^^^^
+
+The default footer is the component displayed by default on the footer block and will be present on every Dataverse webpage. Its configuration options are described below.
+
+Footer Copyright
+################
+
+Refer to :ref:`:FooterCopyright` to add customized text to the Copyright section of the default Dataverse footer
+
+Custom Footer
+^^^^^^^^^^^^^
+
+As mentioned above, the custom footer appears below the default footer.
+
+As a starting point, download :download:`custom-footer.html </_static/installation/files/var/www/dataverse/branding/custom-footer.html>` and place it at ``/var/www/dataverse/branding/custom-footer.html``.
+
+Given this location for the custom footer HTML file, run this curl command to add it to your settings:
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-footer.html' http://localhost:8080/api/admin/settings/:FooterCustomizationFile``
 
 Custom Stylesheet
 +++++++++++++++++
 
-You can style your custom homepage, footer and header content with a custom CSS file. With advanced CSS know-how, you can achieve custom branding and page layouts by utilizing ``position``, ``padding`` or ``margin`` properties.
+You can style your custom homepage, footer, and header content with a custom CSS file. With advanced CSS know-how, you can achieve custom branding and page layouts by utilizing ``position``, ``padding`` or ``margin`` properties.
 
-Download this sample: :download:`custom-stylesheet.css </_static/installation/files/var/www/dataverse/branding/custom-stylesheet.css>` and place it at ``/var/www/dataverse/branding/custom-stylesheet.css``.
+As a starting point, download :download:`custom-stylesheet.css </_static/installation/files/var/www/dataverse/branding/custom-stylesheet.css>` and place it at ``/var/www/dataverse/branding/custom-stylesheet.css``.
 
-Once you have the location of your custom CSS file, run this curl command to add it to your settings:
+Given this location for the custom CSS file, run this curl command to add it to your settings:
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-stylesheet.css' http://localhost:8080/api/admin/settings/:StyleCustomizationFile``
 
@@ -730,7 +948,8 @@ Allowing the Language Used for Dataset Metadata to be Specified
 Since dataset metadata can only be entered in one language, and administrators may wish to limit which languages metadata can be entered in, Dataverse also offers a separate setting defining allowed metadata languages.
 The presence of the :ref:`:MetadataLanguages` database setting identifies the available options (which can be different from those in the :Languages setting above, with fewer or more options).
 
-Dataverse collection admins can select from these options to indicate which language should be used for new Datasets created with that specific collection. If they do not, users will be asked when creating a dataset to select the language they want to use when entering metadata. 
+Dataverse collection admins can select from these options to indicate which language should be used for new Datasets created with that specific collection. If they do not, users will be asked when creating a dataset to select the language they want to use when entering metadata.
+Similarly, when this setting is defined, Datasets created/imported/migrated are required to specify a metadataLanguage compatible with the collection's requirement.
 
 When creating or editing a dataset, users will be asked to enter the metadata in that language. The metadata language selected will also be shown when dataset metadata is viewed and will be included in metadata exports (as appropriate for each format) for published datasets:
 
@@ -804,6 +1023,16 @@ Some external tools are also ready to be translated, especially if they are usin
 
 .. _dataverse-internationalization-wg: https://groups.google.com/forum/#!forum/dataverse-internationalization-wg
 
+
+Tools for Translators
++++++++++++++++++++++
+
+The list below depicts a set of tools that can be used to ease the amount of work necessary for translating the Dataverse software by facilitating this collaborative effort and enabling the reuse of previous work:
+
+- `Weblate for the Dataverse Software <https://weblate.dataverse.org/>`_, made available in the scope of the `SSHOC <https://sshopencloud.eu/>`_ project.
+
+- `easyTranslationHelper <https://github.com/universidadeaveiro/easyTranslationHelper>`_, a tool developed by `University of Aveiro <https://www.ua.pt/>`_.
+
 .. _Web-Analytics-Code:
 
 Web Analytics Code
@@ -851,11 +1080,21 @@ Once this script is running, you can look in the Google Analytics console (Realt
 Configuring Licenses
 --------------------
 
-Out of the box, users select from the following licenses or terms:
+On a new Dataverse installation, users may select from the following licenses or terms:
 
 - CC0 1.0 (default)
 - CC BY 4.0
 - Custom Dataset Terms
+
+(Note that existing Dataverse installations which are upgraded from 5.9 or previous will only offer CC0 1.0, added automatically during the upgrade to version 5.10.)
+
+If the Dataverse Installation supports multiple languages, the license name/description translations should be added to the ``License`` properties files. (See :ref:`i18n` for more on properties files and internationalization in general.)
+To create the key, the license name has to be converted to lowercase, replace space with underscore.
+
+Example::
+
+  license.cc0_1.0.description=Creative Commons CC0 1.0 Universal Public Domain Dedication.
+  license.cc0_1.0.name=CC0 1.0
 
 You have a lot of control over which licenses and terms are available. You can remove licenses and add new ones. You can decide which license is the default. You can remove "Custom Dataset Terms" as a option. You can remove all licenses and make "Custom Dataset Terms" the only option.
 
@@ -905,23 +1144,66 @@ Disabling Custom Dataset Terms
 
 See :ref:`:AllowCustomTermsOfUse` for how to disable the "Custom Dataset Terms" option.
 
+.. _ChangeLicenseSortOrder:
+
+Sorting licenses
+----------------
+
+The default order of licenses in the dropdown in the user interface is as follows:
+
+* The default license is shown first
+* Followed by the remaining installed licenses in the order of installation
+* The custom license is at the end
+
+Only the order of the installed licenses can be changed with the API calls. The default license always remains first and the custom license last.
+
+The order of licenses can be changed by setting the ``sortOrder`` property of a license. For the purpose of making sorting easier and to allow grouping of the licenses, ``sortOrder`` property does not have to be unique. Licenses with the same ``sortOrder`` are sorted by their ID, i.e., first by the sortOrder, then by the ID. Nevertheless, you can set a unique ``sortOrder`` for every license in order to sort them fully manually.
+
+The ``sortOrder`` is an whole number and is used to sort licenses in ascending fashion.
+
+Changing the sorting order of a license specified by the license ``$ID`` is done by superusers using the following API call:
+
+.. code-block:: bash
+
+  export SORT_ORDER=100
+  curl -X PUT -H 'Content-Type: application/json' -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/licenses/$ID/:sortOrder/$SORT_ORDER
+.. _BagIt File Handler:
+
+BagIt File Handler
+------------------
+
+BagIt file handler detects and transforms zip files with a BagIt package format into Dataverse DataFiles. The system validates the checksums of the files in the package payload as described in the first manifest file with a hash algorithm that we support. Take a look at `BagChecksumType class <https://github.com/IQSS/dataverse/tree/develop/src/main/java/edu/harvard/iq/dataverse/util/bagit/BagChecksumType.java>`_ for the list of the currently supported hash algorithms.
+
+The checksum validation uses a thread pool to improve performance. This thread pool can be adjusted to your Dataverse installation requirements.
+
+BagIt file handler configuration settings:
+
+- :ref:`:BagItHandlerEnabled`
+- :ref:`:BagValidatorJobPoolSize`
+- :ref:`:BagValidatorMaxErrors`
+- :ref:`:BagValidatorJobWaitInterval`
+
 .. _BagIt Export:
 
 BagIt Export
 ------------
 
-Your Dataverse installation may be configured to submit a copy of published Datasets, packaged as `Research Data Alliance conformant <https://www.rd-alliance.org/system/files/Research%20Data%20Repository%20Interoperability%20WG%20-%20Final%20Recommendations_reviewed_0.pdf>`_ zipped `BagIt <https://tools.ietf.org/html/draft-kunze-bagit-17>`_ bags to `Chronopolis <https://libraries.ucsd.edu/chronopolis/>`_ via `DuraCloud <https://duraspace.org/duracloud/>`_ or alternately to any folder on the local filesystem.
+Your Dataverse installation may be configured to submit a copy of published Datasets, packaged as `Research Data Alliance conformant <https://www.rd-alliance.org/system/files/Research%20Data%20Repository%20Interoperability%20WG%20-%20Final%20Recommendations_reviewed_0.pdf>`_ zipped `BagIt <https://tools.ietf.org/html/draft-kunze-bagit-17>`_ archival Bags (sometimes called BagPacks) to `Chronopolis <https://libraries.ucsd.edu/chronopolis/>`_ via `DuraCloud <https://duraspace.org/duracloud/>`_ or alternately to any folder on the local filesystem.
+
+These archival Bags include all of the files and metadata in a given dataset version and are sufficient to recreate the dataset, e.g. in a new Dataverse instance, or postentially in another RDA-conformant repository.
 
 The Dataverse Software offers an internal archive workflow which may be configured as a PostPublication workflow via an admin API call to manually submit previously published Datasets and prior versions to a configured archive such as Chronopolis. The workflow creates a `JSON-LD <http://www.openarchives.org/ore/0.9/jsonld>`_ serialized `OAI-ORE <https://www.openarchives.org/ore/>`_ map file, which is also available as a metadata export format in the Dataverse Software web interface.
 
-At present, the DPNSubmitToArchiveCommand, LocalSubmitToArchiveCommand, and GoogleCloudSubmitToArchive are the only implementations extending the AbstractSubmitToArchiveCommand and using the configurable mechanisms discussed below.
+At present, archiving classes include the DuraCloudSubmitToArchiveCommand, LocalSubmitToArchiveCommand, GoogleCloudSubmitToArchive, and S3SubmitToArchiveCommand , which all extend the AbstractSubmitToArchiveCommand and use the configurable mechanisms discussed below. (A DRSSubmitToArchiveCommand, which works with Harvard's DRS also exists and, while specific to DRS, is a useful example of how Archivers can support single-version-only semantics and support archiving only from specified collections (with collection specific parameters)). 
+
+All current options support the archival status APIs and the same status is available in the dataset page version table (for contributors/those who could view the unpublished dataset, with more detail available to superusers).
 
 .. _Duracloud Configuration:
 
 Duracloud Configuration
 +++++++++++++++++++++++
 
-Also note that while the current Chronopolis implementation generates the bag and submits it to the archive's DuraCloud interface, the step to make a 'snapshot' of the space containing the Bag (and verify it's successful submission) are actions a curator must take in the DuraCloud interface.
+Also note that while the current Chronopolis implementation generates the archival Bag and submits it to the archive's DuraCloud interface, the step to make a 'snapshot' of the space containing the archival Bag (and verify it's successful submission) are actions a curator must take in the DuraCloud interface.
 
 The minimal configuration to support an archiver integration involves adding a minimum of two Dataverse Software Keys and any required Payara jvm options. The example instructions here are specific to the DuraCloud Archiver\:
 
@@ -931,7 +1213,7 @@ The minimal configuration to support an archiver integration involves adding a m
 
 \:ArchiverSettings - the archiver class can access required settings including existing Dataverse installation settings and dynamically defined ones specific to the class. This setting is a comma-separated list of those settings. For example\:
 
-``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":DuraCloudHost, :DuraCloudPort, :DuraCloudContext"``
+``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":DuraCloudHost, :DuraCloudPort, :DuraCloudContext, :BagGeneratorThreads"``
 
 The DPN archiver defines three custom settings, one of which is required (the others have defaults):
 
@@ -940,6 +1222,12 @@ The DPN archiver defines three custom settings, one of which is required (the ot
 ``curl http://localhost:8080/api/admin/settings/:DuraCloudHost -X PUT -d "qdr.duracloud.org"``
 
 :DuraCloudPort and :DuraCloudContext are also defined if you are not using the defaults ("443" and "duracloud" respectively). (Note\: these settings are only in effect if they are listed in the \:ArchiverSettings. Otherwise, they will not be passed to the DuraCloud Archiver class.)
+
+It also can use one setting that is common to all Archivers: :BagGeneratorThreads
+
+``curl http://localhost:8080/api/admin/settings/:BagGeneratorThreads -X PUT -d '8'``
+
+By default, the Bag generator zips two datafiles at a time when creating the archival Bag. This setting can be used to lower that to 1, i.e. to decrease system load, or to increase it, e.g. to 4 or 8, to speed processing of many small files.
 
 Archivers may require JVM options as well. For the Chronopolis archiver, the username and password associated with your organization's Chronopolis/DuraCloud account should be configured in Payara:
 
@@ -956,28 +1244,28 @@ ArchiverClassName - the fully qualified class to be used for archiving. For exam
 
 ``curl -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.LocalSubmitToArchiveCommand" http://localhost:8080/api/admin/settings/:ArchiverClassName``
 
-\:BagItLocalPath - the path to where you want to store BagIt. For example\:
+\:BagItLocalPath - the path to where you want to store the archival Bags. For example\:
 
 ``curl -X PUT -d /home/path/to/storage http://localhost:8080/api/admin/settings/:BagItLocalPath``
 
 \:ArchiverSettings - the archiver class can access required settings including existing Dataverse installation settings and dynamically defined ones specific to the class. This setting is a comma-separated list of those settings. For example\:
 
-``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":BagItLocalPath"``
+``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":BagItLocalPath, :BagGeneratorThreads"``
 
-:BagItLocalPath is the file path that you've set in :ArchiverSettings.
+:BagItLocalPath is the file path that you've set in :ArchiverSettings. See the DuraCloud  Configuration section for a description of :BagGeneratorThreads.
 
 .. _Google Cloud Configuration:
 
 Google Cloud Configuration
 ++++++++++++++++++++++++++
 
-The Google Cloud Archiver can send Dataverse Project Bags to a bucket in Google's cloud, including those in the 'Coldline' storage class (cheaper, with slower access) 
+The Google Cloud Archiver can send Dataverse Archival Bags to a bucket in Google's cloud, including those in the 'Coldline' storage class (cheaper, with slower access) 
 
 ``curl http://localhost:8080/api/admin/settings/:ArchiverClassName -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.GoogleCloudSubmitToArchiveCommand"``
 
-``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":GoogleCloudBucket, :GoogleCloudProject"``
+``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":GoogleCloudBucket, :GoogleCloudProject, :BagGeneratorThreads"``
 
-The Google Cloud Archiver defines two custom settings, both are required. The credentials for your account, in the form of a json key file, must also be obtained and stored locally (see below):
+The Google Cloud Archiver defines two custom settings, both are required. It can also use the :BagGeneratorThreads setting as described in the DuraCloud Configuration section above. The credentials for your account, in the form of a json key file, must also be obtained and stored locally (see below):
 
 In order to use the Google Cloud Archiver, you must have a Google account. You will need to create a project and bucket within that account and provide those values in the settings:
 
@@ -995,24 +1283,65 @@ For example:
 
 ``cp <your key file> /usr/local/payara5/glassfish/domains/domain1/files/googlecloudkey.json``
 
+.. _S3 Archiver Configuration:
+
+S3 Configuration
+++++++++++++++++
+
+The S3 Archiver can send Dataverse Archival Bag to a bucket at any S3 endpoint. The configuration for the S3 Archiver is independent of any S3 store that may be configured in Dataverse and may, for example, leverage colder (cheaper, slower access) storage. 
+
+``curl http://localhost:8080/api/admin/settings/:ArchiverClassName -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.S3SubmitToArchiveCommand"``
+
+``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":S3ArchiverConfig, :BagGeneratorThreads"``
+
+The S3 Archiver defines one custom setting, a required :S3ArchiverConfig. It can also use the :BagGeneratorThreads setting as described in the DuraCloud Configuration section above.
+
+The credentials for your S3 account, can be stored in a profile in a standard credentials file (e.g. ~/.aws/credentials) referenced via "profile" key in the :S3ArchiverConfig setting (will default to the default entry), or can via MicroProfile settings as described for S3 stores (dataverse.s3archiver.access-key and dataverse.s3archiver.secret-key)
+
+The :S3ArchiverConfig setting is a JSON object that must include an "s3_bucket_name" and may include additional S3-related parameters as described for S3 Stores, including "profile", "connection-pool-size","custom-endpoint-url", "custom-endpoint-region", "path-style-access", "payload-signing", and "chunked-encoding".
+
+\:S3ArchiverConfig - minimally includes the name of the bucket to use. For example:
+
+``curl http://localhost:8080/api/admin/settings/:S3ArchiverConfig -X PUT -d '{"s3_bucket_name":"archival-bucket"}'``
+
+\:S3ArchiverConfig - example to also set the name of an S3 profile to use. For example:
+
+``curl http://localhost:8080/api/admin/settings/:S3ArchiverConfig -X PUT -d '{"s3_bucket_name":"archival-bucket", "profile":"archiver"}'``
+
 .. _Archiving API Call:
 
-API Call
-++++++++
+BagIt Export API Calls
+++++++++++++++++++++++
 
-Once this configuration is complete, you, as a user with the *PublishDataset* permission, should be able to use the API call to manually submit a DatasetVersion for processing:
+Once this configuration is complete, you, as a user with the *PublishDataset* permission, should be able to use the admin API call to manually submit a DatasetVersion for processing:
 
-``curl -H "X-Dataverse-key: <key>" http://localhost:8080/api/admin/submitDataVersionToArchive/{id}/{version}``
+``curl -X POST -H "X-Dataverse-key: <key>" http://localhost:8080/api/admin/submitDatasetVersionToArchive/{id}/{version}``
 
 where:
 
-``{id}`` is the DatasetId (or ``:persistentId`` with the ``?persistentId="<DOI>"`` parameter), and
+``{id}`` is the DatasetId (the database id of the dataset) and
 
 ``{version}`` is the friendly version number, e.g. "1.2".
 
-The submitDataVersionToArchive API (and the workflow discussed below) attempt to archive the dataset version via an archive specific method. For Chronopolis, a DuraCloud space named for the dataset (it's DOI with ':' and '.' replaced with '-') is created and two files are uploaded to it: a version-specific datacite.xml metadata file and a BagIt bag containing the data and an OAI-ORE map file. (The datacite.xml file, stored outside the Bag as well as inside is intended to aid in discovery while the ORE map file is 'complete', containing all user-entered metadata and is intended as an archival record.)
+or in place of the DatasetID, you can use the string ``:persistentId`` as the ``{id}`` and add the DOI/PID as a query parameter like this: ``?persistentId="<DOI>"``. Here is how the full command would look:
 
-In the Chronopolis case, since the transfer from the DuraCloud front-end to archival storage in Chronopolis can take significant time, it is currently up to the admin/curator to submit a 'snap-shot' of the space within DuraCloud and to monitor its successful transfer. Once transfer is complete the space should be deleted, at which point the Dataverse Software API call can be used to submit a Bag for other versions of the same Dataset. (The space is reused, so that archival copies of different Dataset versions correspond to different snapshots of the same DuraCloud space.).
+``curl -X POST -H "X-Dataverse-key: <key>" http://localhost:8080/api/admin/submitDatasetVersionToArchive/:persistentId/{version}?persistentId="<DOI>"``
+
+The submitDatasetVersionToArchive API (and the workflow discussed below) attempt to archive the dataset version via an archive specific method. For Chronopolis, a DuraCloud space named for the dataset (its DOI with ":" and "." replaced with "-", e.g. ``doi-10-5072-fk2-tgbhlb``) is created and two files are uploaded to it: a version-specific datacite.xml metadata file and a BagIt bag containing the data and an OAI-ORE map file. (The datacite.xml file, stored outside the Bag as well as inside, is intended to aid in discovery while the ORE map file is "complete", containing all user-entered metadata and is intended as an archival record.)
+
+In the Chronopolis case, since the transfer from the DuraCloud front-end to archival storage in Chronopolis can take significant time, it is currently up to the admin/curator to submit a 'snap-shot' of the space within DuraCloud and to monitor its successful transfer. Once transfer is complete the space should be deleted, at which point the Dataverse Software API call can be used to submit a Bag for other versions of the same dataset. (The space is reused, so that archival copies of different dataset versions correspond to different snapshots of the same DuraCloud space.).
+
+A batch version of this admin API call is also available:
+
+``curl -X POST -H "X-Dataverse-key: <key>" 'http://localhost:8080/api/admin/archiveAllUnarchivedDatasetVersions?listonly=true&limit=10&latestonly=true'``
+
+The archiveAllUnarchivedDatasetVersions call takes 3 optional configuration parameters.
+
+* listonly=true will cause the API to list dataset versions that would be archived but will not take any action.
+* limit=<n> will limit the number of dataset versions archived in one API call to ``<=`` <n>. 
+* latestonly=true will limit archiving to only the latest published versions of datasets instead of archiving all unarchived versions.
+
+Note that because archiving is done asynchronously, the calls above will return OK even if the user does not have the *PublishDataset* permission on the dataset(s) involved. Failures are indicated in the log and the archivalStatus calls in the native API can be used to check the status as well.
 
 PostPublication Workflow
 ++++++++++++++++++++++++
@@ -1126,35 +1455,89 @@ When changing values these values with ``asadmin``, you'll need to delete the ol
 
 It's also possible to change these values by stopping Payara, editing ``payara5/glassfish/domains/domain1/config/domain.xml``, and restarting Payara.
 
+.. _dataverse.fqdn:
+
 dataverse.fqdn
 ++++++++++++++
 
-If the Dataverse installation has multiple DNS names, this option specifies the one to be used as the "official" host name. For example, you may want to have dataverse.example.edu, and not the less appealing server-123.socsci.example.edu to appear exclusively in all the registered global identifiers, Data Deposit API records, etc.
+If the Dataverse installation has multiple DNS names, this option specifies the one to be used as the "official"
+hostname. For example, you may want to have ``dataverse.example.edu``, and not the less appealing
+``server-123.example.edu`` to appear exclusively in all the registered global identifiers, etc.
 
-The password reset feature requires ``dataverse.fqdn`` to be configured.
+- Email confirmation links
+- Password reset links
+- Generating a Private URL
+- PID minting
+- Exporting to Schema.org format (and showing JSON-LD in HTML's <meta/> tag)
+- Exporting to DDI format
+- Which Dataverse installation an "external tool" should return to
+- URLs embedded in SWORD API responses
+- ...
 
-.. note::
+Usually it will follow the pattern ``https://<full-qualified-domain-name>/<some-place-to-go-to>``.
+*Only* the FQDN part of your Dataverse installation URL can be determined by setting ``dataverse.fqdn``.
 
-	Do note that whenever the system needs to form a service URL, by default, it will be formed with ``https://`` and port 443. I.e.,
-	``https://{dataverse.fqdn}/``
-	If that does not suit your setup, you can define an additional option, ``dataverse.siteUrl``, explained below.
+**Notes:**
+
+- The URL will default to using ``https://`` and no additional port information. If that does not suit your setup, you
+  can define an additional option, ``dataverse.siteUrl``, :ref:`explained below <dataverse.siteUrl>`, which always
+  takes precedence.
+- Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FQDN``.
+  Defaults to ``localhost`` when used with ``mp.config.profile=ct``
 
 .. _dataverse.siteUrl:
 
 dataverse.siteUrl
 +++++++++++++++++
 
-.. note::
+``dataverse.siteUrl`` is used to configure the URL for your Dataverse installation that you plan to advertise to your
+users. As explained in the :ref:`installation <importance-of-siteUrl>` docs, this setting is critical for the correct
+operation of your installation. For example, your site URL could be https://dataverse.example.edu . That is, even though
+the server might also be available at uglier URLs such as https://server-123.example.edu, the site URL is the
+"official" URL.
 
-	and specify the protocol and port number you would prefer to be used to advertise the URL for your Dataverse installation.
-	For example, configured in domain.xml:
-	``<jvm-options>-Ddataverse.fqdn=dataverse.example.edu</jvm-options>``
-	``<jvm-options>-Ddataverse.siteUrl=http://${dataverse.fqdn}:8080</jvm-options>``
+That said, some environments may require using a different URL pattern to access your installation. You might need to
+use HTTP without "S", a non-standard port and so on. This is especially useful in development or testing environments.
+
+You can provide any custom tailored site URL via ``dataverse.siteUrl``, which always takes precedence.
+Example: ``dataverse.siteUrl=http://localhost:8080``
+
+If you wish to change your site URL by changing the domain configuration, you should edit your ``domain.xml`` directly
+to avoid problems with colons in commands. Find a line similar to
+``<jvm-options>-Ddataverse.siteUrl=https://dataverse.example.edu</jvm-options>`` and change it. You can specify the
+protocol, host, and port number and should not include a trailing slash.
+
+**Notes:**
+
+- This setting may be used in combination with variable replacement, referencing :ref:`dataverse.fqdn` with
+  ``./asadmin create-jvm-options "\-Ddataverse.siteUrl=http\://\${dataverse.fqdn}\:8080"``
+- Remember to restart Payara after editing ``domain.xml``.
+- Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SITEURL``.
+  Defaults to ``http://${dataverse.fqdn}:8080`` when used with ``mp.config.profile=ct``
+- We are absolutely aware that it's confusing to have both ``dataverse.fqdn`` and ``dataverse.siteUrl``.
+  https://github.com/IQSS/dataverse/issues/6636 is about resolving this confusion.
+
+
+.. _dataverse.files.directory:
 
 dataverse.files.directory
 +++++++++++++++++++++++++
 
 This is how you configure the path Dataverse uses for temporary files. (File store specific dataverse.files.\<id\>.directory options set the permanent data storage locations.)
+
+.. _dataverse.files.uploads:
+
+dataverse.files.uploads
++++++++++++++++++++++++
+
+Configure a folder to store the incoming file stream during uploads (before transfering to `${dataverse.files.directory}/temp`).
+Please also see :ref:`temporary-file-storage` for more details.
+You can use an absolute path or a relative, which is relative to the application server domain directory.
+
+Defaults to ``./uploads``, which resolves to ``/usr/local/payara5/glassfish/domains/domain1/uploads`` in a default
+installation.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FILES_UPLOADS``.
 
 dataverse.auth.password-reset-timeout-in-minutes
 ++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1212,30 +1595,118 @@ Defaults to ``5432``, the default PostgreSQL port.
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_DB_PORT``.
 
+.. _dataverse.solr.host:
+
+dataverse.solr.host
++++++++++++++++++++
+
+The hostname of a Solr server to connect to. Remember to restart / redeploy Dataverse after changing the setting
+(as with :ref:`:SolrHostColonPort`).
+
+Defaults to ``localhost``.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SOLR_HOST``.
+Defaults to ``solr``, when used with ``mp.config.profile=ct`` (:ref:`see below <:ApplicationServerSettings>`).
+
+dataverse.solr.port
++++++++++++++++++++
+
+The Solr server port to connect to. Remember to restart / redeploy Dataverse after changing the setting
+(as with :ref:`:SolrHostColonPort`).
+
+Defaults to ``8983``, the default Solr port.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SOLR_PORT``.
+
+dataverse.solr.core
++++++++++++++++++++
+
+The name of the Solr core to use for this Dataverse installation. Might be used to switch to a different core quickly.
+Remember to restart / redeploy Dataverse after changing the setting (as with :ref:`:SolrHostColonPort`).
+
+Defaults to ``collection1``.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SOLR_CORE``.
+
+dataverse.solr.protocol
++++++++++++++++++++++++
+
+The Solr server URL protocol for the connection. Remember to restart / redeploy Dataverse after changing the setting
+(as with :ref:`:SolrHostColonPort`).
+
+Defaults to ``http``, but might be set to ``https`` for extra secure Solr installations.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SOLR_PROTOCOL``.
+
+dataverse.solr.path
++++++++++++++++++++
+
+The path part of the Solr endpoint URL (e.g. ``/solr/collection1`` of ``http://localhost:8389/solr/collection1``).
+Might be used to target a Solr API at non-default places. Remember to restart / redeploy Dataverse after changing the
+setting (as with :ref:`:SolrHostColonPort`).
+
+Defaults to ``/solr/${dataverse.solr.core}``, interpolating the core name when used. Make sure to include the variable
+when using it to configure your core name!
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SOLR_PATH``.
+
 dataverse.rserve.host
 +++++++++++++++++++++
 
-Host name for Rserve, used for tasks that require use of R (to ingest RData files and to save tabular data as RData frames).
+Host name for Rserve, used for tasks that require use of R (to ingest RData
+files and to save tabular data as RData frames).
+
+Defaults to ``localhost``.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment
+variable ``DATAVERSE_RSERVE_HOST``.
 
 dataverse.rserve.port
 +++++++++++++++++++++
 
-Port number for Rserve, used for tasks that require use of R (to ingest RData files and to save tabular data as RData frames).
+Port number for Rserve, used for tasks that require use of R (to ingest RData
+files and to save tabular data as RData frames).
+
+Defaults to ``6311`` when not configured or no valid integer.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment
+variable ``DATAVERSE_RSERVE_PORT``.
 
 dataverse.rserve.user
 +++++++++++++++++++++
 
-Username for Rserve, used for tasks that require use of R (to ingest RData files and to save tabular data as RData frames).
+Username for Rserve, used for tasks that require use of R (to ingest RData
+files and to save tabular data as RData frames).
+
+Defaults to ``rserve``.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment
+variable ``DATAVERSE_RSERVE_USER``.
 
 dataverse.rserve.password
 +++++++++++++++++++++++++
 
-Password for Rserve, used for tasks that require use of R (to ingest RData files and to save tabular data as RData frames).
+Password for Rserve, used for tasks that require use of R (to ingest RData
+files and to save tabular data as RData frames).
+
+Defaults to ``rserve``.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment
+variable ``DATAVERSE_RSERVE_PASSWORD``.
 
 dataverse.rserve.tempdir
 ++++++++++++++++++++++++
 
-Temporary directory used by Rserve (defaults to /tmp/Rserv). Note that this location is local to the host on which Rserv is running (specified in ``dataverse.rserve.host`` above). When talking to Rserve, Dataverse needs to know this location in order to generate absolute path names of the files on the other end. 
+Temporary directory used by Rserve (defaults to ``/tmp/Rserv``). Note that this
+location is local to the host on which Rserv is running (specified in
+``dataverse.rserve.host`` above). When talking to Rserve, Dataverse needs to
+know this location in order to generate absolute path names of the files on the
+other end.
+
+Defaults to ``/tmp/Rserv``.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment
+variable ``DATAVERSE_RSERVE_TEMPDIR``.
 
 .. _dataverse.dropbox.key:
 
@@ -1267,10 +1738,6 @@ doi.baseurlstring
 +++++++++++++++++
 
 As of this writing, "https://mds.datacite.org" (DataCite) and "https://ezid.cdlib.org" (EZID) are the main valid values.
-
-While the above two options are recommended because they have been tested by the Dataverse Project Team, it is also possible to use a DataCite Client API as a proxy to DataCite. In this case, requests made to the Client API are captured and passed on to DataCite for processing. The application will interact with the DataCite Client API exactly as if it were interacting directly with the DataCite API, with the only difference being the change to the base endpoint URL.
-
-For example, the Australian Data Archive (ADA) successfully uses the Australian National Data Service (ANDS) API (a proxy for DataCite) to mint their DOIs through their Dataverse installation using a ``doi.baseurlstring`` value of "https://researchdata.ands.org.au/api/doi/datacite" as documented at https://documentation.ands.org.au/display/DOC/ANDS+DataCite+Client+API . As ADA did for ANDS DOI minting, any DOI provider (and their corresponding DOI configuration parameters) other than DataCite must be tested with the Dataverse Software to establish whether or not it will function properly.
 
 Out of the box, the Dataverse Software is configured to use a test MDS DataCite base URL string. You can delete it like this:
 
@@ -1413,6 +1880,39 @@ This setting is useful in cases such as running your Dataverse installation behi
 	"HTTP_VIA",
 	"REMOTE_ADDR"
 
+
+.. _dataverse.api.signature-secret:
+
+dataverse.api.signature-secret
+++++++++++++++++++++++++++++++
+
+Context: Dataverse has the ability to create "Signed URLs" for it's API calls. Using a signed URLs is more secure than
+providing API tokens, which are long-lived and give the holder all of the permissions of the user. In contrast, signed URLs
+are time limited and only allow the action of the API call in the URL. See :ref:`api-exttools-auth` and
+:ref:`api-native-signed-url` for more details. 
+
+The key used to sign a URL is created from the API token of the creating user plus a signature-secret provided by an administrator.
+**Using a signature-secret is highly recommended.** This setting defaults to an empty string. Using a non-empty 
+signature-secret makes it impossible for someone who knows an API token from forging signed URLs and provides extra security by 
+making the overall signing key longer.
+
+Since the signature-secret is sensitive, you should treat it like a password. Here is an example how to set your shared secret 
+with the secure method "password alias":
+
+.. code-block:: shell
+
+  echo "AS_ADMIN_ALIASPASSWORD=change-me-super-secret" > /tmp/password.txt
+  asadmin create-password-alias --passwordfile /tmp/password.txt dataverse.api.signature-secret
+  rm /tmp/password.txt
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
+``DATAVERSE_API_SIGNATURE_SECRET``.
+
+**WARNING:** For security, do not use the sources "environment variable" or "system property" (JVM option) in a
+production context! Rely on password alias, secrets directory or cloud based sources instead!
+
+
+
 .. _:ApplicationServerSettings:
 
 Application Server Settings
@@ -1426,6 +1926,21 @@ To facilitate large file upload and download, the Dataverse Software installer b
 ``./asadmin set server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds=3600``
 
 and restart Payara to apply your change.
+
+mp.config.profile
++++++++++++++++++
+
+MicroProfile Config 2.0 defines the `concept of "profiles" <https://download.eclipse.org/microprofile/microprofile-config-2.0/microprofile-config-spec-2.0.html#configprofile>`_.
+They can be used to change configuration values by context. This is used in Dataverse to change some configuration
+defaults when used inside container context rather classic installations.
+
+As per the spec, you will need to set the configuration value ``mp.config.profile`` to ``ct`` as early as possible.
+This is best done with a system property:
+
+``./asadmin create-system-properties 'mp.config.profile=ct'``
+
+You might also create your own profiles and use these, please refer to the upstream documentation linked above.
+
 
 .. _database-settings:
 
@@ -1506,7 +2021,7 @@ This is the email address that "system" emails are sent from such as password re
 
 ``curl -X PUT -d 'LibraScholar SWAT Team <support@librascholar.edu>' http://localhost:8080/api/admin/settings/:SystemEmail``
 
-Note that only the email address is required, which you can supply without the ``<`` and ``>`` signs, but if you include the text, it's the way to customize the name of your support team, which appears in the "from" address in emails as well as in help text in the UI.
+Note that only the email address is required, which you can supply without the ``<`` and ``>`` signs, but if you include the text, it's the way to customize the name of your support team, which appears in the "from" address in emails as well as in help text in the UI. If you don't include the text, the installation name (see :ref:`Branding Your Installation`) will appear in the "from" address.
 
 Please note that if you're having any trouble sending email, you can refer to "Troubleshooting" under :doc:`installation-main`.
 
@@ -1544,6 +2059,8 @@ See :ref:`Branding Your Installation` above.
 +++++++++++++++++
 
 See :ref:`Web-Analytics-Code` above.
+
+.. _:FooterCopyright:
 
 :FooterCopyright
 ++++++++++++++++
@@ -1788,14 +2305,18 @@ This will *force* a re-export of every published, local dataset, regardless of w
 
 The call returns a status message informing the administrator, that the process has been launched (``{"status":"WORKFLOW_IN_PROGRESS"}``). The administrator can check the progress of the process via log files: ``[Payara directory]/glassfish/domains/domain1/logs/export_[time stamp].log``.
 
+.. _:NavbarAboutUrl:
+
 :NavbarAboutUrl
 +++++++++++++++
 
-Set ``NavbarAboutUrl`` to a fully-qualified URL which will be used for the "About" link in the navbar.
+Set ``:NavbarAboutUrl`` to a fully-qualified URL which will be used for the "About" link in the navbar.
 
 Note: The "About" link will not appear in the navbar until this option is set.
 
 ``curl -X PUT -d http://dataverse.example.edu http://localhost:8080/api/admin/settings/:NavbarAboutUrl``
+
+.. _:NavbarGuidesUrl:
 
 :NavbarGuidesUrl
 ++++++++++++++++
@@ -1806,12 +2327,16 @@ Note: by default, the URL is composed from the settings ``:GuidesBaseUrl`` and `
 
 ``curl -X PUT -d http://example.edu/fancy-dataverse-guide http://localhost:8080/api/admin/settings/:NavbarGuidesUrl``
 
+.. _:GuidesBaseUrl:
+
 :GuidesBaseUrl
 ++++++++++++++
 
-Set ``GuidesBaseUrl`` to override the default value "http://guides.dataverse.org". If you are interested in writing your own version of the guides, you may find the :doc:`/developers/documentation` section of the Developer Guide helpful.
+Set ``:GuidesBaseUrl`` to override the default value "http://guides.dataverse.org". If you are interested in writing your own version of the guides, you may find the :doc:`/developers/documentation` section of the Developer Guide helpful.
 
 ``curl -X PUT -d http://dataverse.example.edu http://localhost:8080/api/admin/settings/:GuidesBaseUrl``
+
+.. _:GuidesVersion:
 
 :GuidesVersion
 ++++++++++++++
@@ -1819,6 +2344,8 @@ Set ``GuidesBaseUrl`` to override the default value "http://guides.dataverse.org
 Set ``:GuidesVersion`` to override the version number in the URL of guides. For example, rather than http://guides.dataverse.org/en/4.6/user/account.html the version is overriden to http://guides.dataverse.org/en/1234-new-feature/user/account.html in the example below:
 
 ``curl -X PUT -d 1234-new-feature http://localhost:8080/api/admin/settings/:GuidesVersion``
+
+.. _:NavbarSupportUrl:
 
 :NavbarSupportUrl
 +++++++++++++++++
@@ -1902,12 +2429,16 @@ Limit the number of files in a zip that your Dataverse installation will accept.
 
 ``curl -X PUT -d 2048 http://localhost:8080/api/admin/settings/:ZipUploadFilesLimit``
 
+.. _:SolrHostColonPort:
+
 :SolrHostColonPort
 ++++++++++++++++++
 
 By default your Dataverse installation will attempt to connect to Solr on port 8983 on localhost. Use this setting to change the hostname or port. You must restart Payara after making this change.
 
 ``curl -X PUT -d localhost:8983 http://localhost:8080/api/admin/settings/:SolrHostColonPort``
+
+**Note:** instead of using a database setting, you could alternatively use JVM settings like :ref:`dataverse.solr.host`.
 
 :SolrFullTextIndexing
 +++++++++++++++++++++
@@ -1923,10 +2454,12 @@ If ``:SolrFullTextIndexing`` is set to true, the content of files of any size wi
 
 ``curl -X PUT -d 314572800 http://localhost:8080/api/admin/settings/:SolrMaxFileSizeForFullTextIndexing``
 
+.. _:SignUpUrl:
+
 :SignUpUrl
 ++++++++++
 
-The relative path URL to which users will be sent for signup. The default setting is below.
+The relative path URL to which users will be sent for sign up. The default setting is below.
 
 ``curl -X PUT -d '/dataverseuser.xhtml?editMode=CREATE' http://localhost:8080/api/admin/settings/:SignUpUrl``
 
@@ -1962,7 +2495,7 @@ Set whether a user will see the custom text when publishing all versions of a da
 :SearchHighlightFragmentSize
 ++++++++++++++++++++++++++++
 
-Set ``SearchHighlightFragmentSize`` to override the default value of 100 from https://wiki.apache.org/solr/HighlightingParameters#hl.fragsize . In practice, a value of "320" seemed to fix the issue at https://github.com/IQSS/dataverse/issues/2191
+Set ``:SearchHighlightFragmentSize`` to override the default value of 100 from https://wiki.apache.org/solr/HighlightingParameters#hl.fragsize . In practice, a value of "320" seemed to fix the issue at https://github.com/IQSS/dataverse/issues/2191
 
 ``curl -X PUT -d 320 http://localhost:8080/api/admin/settings/:SearchHighlightFragmentSize``
 
@@ -2001,6 +2534,31 @@ Here is an example of setting the default auth provider back to ``builtin``:
 Set to false to disallow local accounts from being created. See also the sections on :doc:`shibboleth` and :doc:`oauth2`.
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:AllowSignUp``
+
+.. _:AllowRemoteAuthSignUp:
+
+:AllowRemoteAuthSignUp
+++++++++++++++++++++++
+
+This is a **compound** setting that enables or disables sign up for new accounts for individual OAuth2 authentication methods (such as Orcid, Google and GitHub). This way it is possible to continue allowing logins via an OAuth2 provider for already existing accounts, without letting new users create accounts with this method.
+
+By default, if the setting is not present, all configured OAuth sign ups are allowed. If the setting is present, but the value for this specific method is not specified, it is assumed that the sign ups are allowed for it.
+
+Examples:
+
+This curl command...
+
+``curl -X PUT -d '{"default":"false"}' http://localhost:8080/api/admin/settings/:AllowRemoteAuthSignUp``
+
+...disables all OAuth sign ups.
+
+This curl command...
+
+``curl -X PUT -d '{"default":"true","google":"false"}' http://localhost:8080/api/admin/settings/:AllowRemoteAuthSignUp``
+
+...keeps sign ups open for all the OAuth login providers except google. (That said, note that the ``"default":"true"`` part in this example is redundant, since it would default to true anyway for all the methods other than google.)
+
+See also :doc:`oauth2`.
 
 :FileFixityChecksumAlgorithm
 ++++++++++++++++++++++++++++
@@ -2196,6 +2754,30 @@ In the case you get garbled characters in Shibboleth-supplied fields (e.g. given
 
 If you managed to get correct accented characters from shibboleth while this setting is _false_, please contact us with your application server and Shibboleth configuration!
 
+:ShibAffiliationOrder
++++++++++++++++++++++
+
+Will select the last or first value of an array in affiliation, the array separator can be set using ``:ShibAffiliationSeparator`` .
+
+To select the last value : 
+
+``curl -X PUT -d "lastAffiliation" http://localhost:8080/api/admin/settings/:ShibAffiliationOrder``
+
+To select the first value :
+
+``curl -X PUT -d "firstAffiliation" http://localhost:8080/api/admin/settings/:ShibAffiliationOrder``
+
+
+:ShibAffiliationSeparator
++++++++++++++++++++++++++
+
+Set the separator to be used for ``:ShibAffiliationOrder``.
+Default separator : ";"
+
+To change the separator :
+
+``curl -X PUT -d ";" http://localhost:8080/api/admin/settings/:ShibAffiliationSeparator``
+
 .. _:ComputeBaseUrl:
 
 :ComputeBaseUrl
@@ -2247,6 +2829,7 @@ The URL for your Repository Storage Abstraction Layer (RSAL) installation. This 
 This setting controls which upload methods are available to users of your Dataverse installation. The following upload methods are available:
 
 - ``native/http``: Corresponds to "Upload with HTTP via your browser" and APIs that use HTTP (SWORD and native).
+- ``dvwebloader``: Corresponds to :ref:`folder-upload`. Note that ``dataverse.files.<id>.upload-redirect`` must be set to "true" on an S3 store for this method to show up in the UI. In addition, :ref:`:WebloaderUrl` must be set. CORS allowed on the S3 bucket. See :ref:`cors-s3-bucket`.
 - ``dcm/rsync+ssh``: Corresponds to "Upload with rsync+ssh via Data Capture Module (DCM)". A lot of setup is required, as explained in the :doc:`/developers/big-data-support` section of the Developer Guide.
 
 Out of the box only ``native/http`` is enabled and will work without further configuration. To add multiple upload method, separate them using a comma like this:
@@ -2383,13 +2966,56 @@ To enable redirects to the zipper on a different server:
 
 ``curl -X PUT -d 'https://zipper.example.edu/cgi-bin/zipdownload' http://localhost:8080/api/admin/settings/:CustomZipDownloadServiceUrl``
 
+:CreateDataFilesMaxErrorsToDisplay
+++++++++++++++++++++++++++++++++++
+
+Number of errors to display to the user when creating DataFiles from a file upload. It defaults to 5 errors.
+
+``curl -X PUT -d '1' http://localhost:8080/api/admin/settings/:CreateDataFilesMaxErrorsToDisplay``
+
+.. _:BagItHandlerEnabled:
+
+:BagItHandlerEnabled
+++++++++++++++++++++
+
+Part of the database settings to configure the BagIt file handler. Enables the BagIt file handler. By default, the handler is disabled.
+
+``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:BagItHandlerEnabled``
+
+.. _:BagValidatorJobPoolSize:
+
+:BagValidatorJobPoolSize
+++++++++++++++++++++++++
+
+Part of the database settings to configure the BagIt file handler. The number of threads the checksum validation class uses to validate a single zip file. Defaults to 4 threads
+
+``curl -X PUT -d '10' http://localhost:8080/api/admin/settings/:BagValidatorJobPoolSize``
+
+.. _:BagValidatorMaxErrors:
+
+:BagValidatorMaxErrors
+++++++++++++++++++++++
+
+Part of the database settings to configure the BagIt file handler. The maximum number of errors allowed before the validation job aborts execution. This is to avoid processing the whole BagIt package. Defaults to 5 errors.
+
+``curl -X PUT -d '2' http://localhost:8080/api/admin/settings/:BagValidatorMaxErrors``
+
+.. _:BagValidatorJobWaitInterval:
+
+:BagValidatorJobWaitInterval
+++++++++++++++++++++++++++++
+
+Part of the database settings to configure the BagIt file handler. This is the period in seconds to check for the number of errors during validation. Defaults to 10.
+
+``curl -X PUT -d '60' http://localhost:8080/api/admin/settings/:BagValidatorJobWaitInterval``
+
 :ArchiverClassName
 ++++++++++++++++++
 
 Your Dataverse installation can export archival "Bag" files to an extensible set of storage systems (see :ref:`BagIt Export` above for details about this and for further explanation of the other archiving related settings below).
-This setting specifies which storage system to use by identifying the particular Java class that should be run. Current options include DuraCloudSubmitToArchiveCommand, LocalSubmitToArchiveCommand, and GoogleCloudSubmitToArchiveCommand.
+This setting specifies which storage system to use by identifying the particular Java class that should be run. Current configuration options include DuraCloudSubmitToArchiveCommand, LocalSubmitToArchiveCommand, GoogleCloudSubmitToArchiveCommand, and S3SubmitToArchiveCommand.
 
-``curl -X PUT -d 'LocalSubmitToArchiveCommand' http://localhost:8080/api/admin/settings/:ArchiverClassName`` 
+For examples, see the specific configuration above in :ref:`BagIt Export`.
  
 :ArchiverSettings
 +++++++++++++++++
@@ -2398,6 +3024,13 @@ Each Archiver class may have its own custom settings. Along with setting which A
 For example, the LocalSubmitToArchiveCommand only uses the :BagItLocalPath setting. To allow the class to use that setting, this setting must set as:
 
 ``curl -X PUT -d ':BagItLocalPath' http://localhost:8080/api/admin/settings/:ArchiverSettings`` 
+
+:BagGeneratorThreads
+++++++++++++++++++++
+
+An archiver setting shared by several implementations (e.g. DuraCloud, Google, and Local) that can make Bag generation use fewer or more threads in zipping datafiles that the default of 2
+ 
+``curl http://localhost:8080/api/admin/settings/:BagGeneratorThreads -X PUT -d '8'``
 
 :DuraCloudHost
 ++++++++++++++
@@ -2414,18 +3047,24 @@ These three settings define the host, port, and context used by the DuraCloudSub
 This is the local file system path to be used with the LocalSubmitToArchiveCommand class. It is recommended to use an absolute path. See the :ref:`Local Path Configuration` section above.
 
 :GoogleCloudBucket
-++++++++++++++++++ 
+++++++++++++++++++
 :GoogleCloudProject
 +++++++++++++++++++
 
 These are the bucket and project names to be used with the GoogleCloudSubmitToArchiveCommand class. Further information is in the :ref:`Google Cloud Configuration` section above.
+
+:S3ArchiverConfig
++++++++++++++++++
+
+This is the JSON configuration object setting to be used with the S3SubmitToArchiveCommand class. Further information is in the :ref:`S3 Archiver Configuration` section above.
+
 
 .. _:InstallationName:
 
 :InstallationName
 +++++++++++++++++
 
-By default, the name of the root Dataverse collection is used as the 'brandname' of the repository, i.e. in emails and metadata exports. If set, :InstallationName overrides this default, allowing the root collection name and brandname to be set independently. (Note that, since metadata export files are cached, they will have to be reexported (see :doc:`/admin/metadataexport`) before they incorporate a change in this setting.)
+As explained under :ref:`Branding Your Installation`, by default, the name of the root Dataverse collection is used as the "brand name" of the installation, i.e. in emails and metadata exports. If set, ``:InstallationName`` overrides this default, allowing the root collection name and brandname to be set independently. (Note that, since metadata export files are cached, they will have to be reexported (see :doc:`/admin/metadataexport`) before they incorporate a change in this setting.)
 
 :ExportInstallationAsDistributorOnlyWhenNotSet
 ++++++++++++++++++++++++++++++++++++++++++++++
@@ -2492,6 +3131,23 @@ Scripts that implement this association for specific service protocols are maint
 
 ``curl -X PUT --upload-file cvoc-conf.json http://localhost:8080/api/admin/settings/:CVocConf``
 
+.. _:ControlledVocabularyCustomJavaScript:
+
+:ControlledVocabularyCustomJavaScript
++++++++++++++++++++++++++++++++++++++
+
+``:ControlledVocabularyCustomJavaScript`` allows a JavaScript file to be loaded into the dataset page for the purpose of showing controlled vocabulary as a list (with optionally translated values) such as author names.
+
+To specify the URL for a custom script ``covoc.js`` to be loaded from an external site:
+
+``curl -X PUT -d 'https://example.com/js/covoc.js' http://localhost:8080/api/admin/settings/:ControlledVocabularyCustomJavaScript``
+
+To remove the custom script URL:
+
+``curl -X DELETE http://localhost:8080/api/admin/settings/:ControlledVocabularyCustomJavaScript``
+
+Please note that :ref:`:CVocConf` is a better option if the list is large or needs to be searchable from an external service using protocols such as SKOSMOS.
+
 .. _:AllowedCurationLabels:
 
 :AllowedCurationLabels
@@ -2505,6 +3161,14 @@ This functionality is disabled when this setting is empty/not set.
 Each set of labels is identified by a curationLabelSet name and a JSON Array of the labels allowed in that set.
 
 ``curl -X PUT -d '{"Standard Process":["Author contacted", "Privacy Review", "Awaiting paper publication", "Final Approval"], "Alternate Process":["State 1","State 2","State 3"]}' http://localhost:8080/api/admin/settings/:AllowedCurationLabels``
+
+If the Dataverse Installation supports multiple languages, the curation label translations should be added to the ``CurationLabels`` properties files. (See :ref:`i18n` for more on properties files and internationalization in general.)
+Since the Curation labels are free text, while creating the key, it has to be converted to lowercase, replace space with underscore.
+
+Example::
+
+  standard_process=Standard Process
+  author_contacted=Author contacted
 
 .. _:AllowCustomTermsOfUse:
 
@@ -2560,7 +3224,7 @@ For example:
 
 ``curl -X PUT -d /usr/local/bin/ds_validator.sh http://localhost:8080/api/admin/settings/:DatasetMetadataValidatorScript``
 
-In some ways this duplicates a workflow mechanism, since it is possible to define a workflow with additonal validation steps. But please note that the important difference is that this external validation happens *synchronously*, while the user is wating; while a workflow is performed asynchronously with a lock placed on the dataset. This can be useful to some installations, in some situations. But it also means that the script provided should be expected to always work reasonably fast - ideally, in seconds, rather than minutes, etc. 
+In some ways this duplicates a workflow mechanism, since it is possible to define a workflow with additional validation steps. But please note that the important difference is that this external validation happens *synchronously*, while the user is wating; while a workflow is performed asynchronously with a lock placed on the dataset. This can be useful to some installations, in some situations. But it also means that the script provided should be expected to always work reasonably fast - ideally, in seconds, rather than minutes, etc.
 
 :DatasetMetadataValidationFailureMsg
 ++++++++++++++++++++++++++++++++++++
@@ -2576,3 +3240,102 @@ For example:
 ++++++++++++++++++++++++++++++++
 
 When set to ``true``, this setting allows a superuser to publish and/or update Dataverse collections and datasets bypassing the external validation checks (specified by the settings above). In an event where an external script is reporting validation failures that appear to be in error, this option gives an admin with superuser privileges a quick way to publish the dataset or update a collection for the user. 
+
+:FileCategories
++++++++++++++++
+
+Overrides the default list of file categories that is used in the UI when adding tags to files. The default list is Documentation, Data, and Code.
+
+This setting is a comma-separated list of the new tags.
+
+To override the default list with Docs, Data, Code, and Workflow:
+
+``curl -X PUT -d 'Docs,Data,Code,Workflow' http://localhost:8080/api/admin/settings/:FileCategories``
+
+To remove the override and go back to the default list:
+
+``curl -X PUT -d '' http://localhost:8080/api/admin/settings/:FileCategories``
+
+.. _:ShowMuteOptions:
+
+:ShowMuteOptions
+++++++++++++++++
+
+Allows users to mute notifications by showing additional configuration options in the Notifications tab of the account page (see :ref:`account-notifications` in the User Guide). By default, this setting is "false" and users cannot mute any notifications (this feature is not shown in the user interface).
+
+For configuration details, see :ref:`mute-notifications`.
+
+.. _:AlwaysMuted:
+
+:AlwaysMuted
+++++++++++++
+
+Overrides the default empty list of always muted notifications. Always muted notifications cannot be unmuted by the users. Always muted notifications are not shown in the notification settings for the users.
+
+For configuration details, see :ref:`mute-notifications`.
+
+.. _:NeverMuted:
+
+:NeverMuted
++++++++++++
+
+Overrides the default empty list of never muted notifications. Never muted notifications cannot be muted by the users. Always muted notifications are grayed out and are not adjustable by the user.
+
+For configuration details, see :ref:`mute-notifications`.
+
+:LDNMessageHosts
+++++++++++++++++
+
+The comma-separated list of hosts allowed to send Dataverse Linked Data Notification messages. See :doc:`/api/linkeddatanotification` for details. ``*`` allows messages from anywhere (not recommended for production). By default, messages are not accepted from anywhere.
+
+
+:LDN_TARGET
++++++++++++
+
+The URL of an LDN Inbox to which the LDN Announce workflow step will send messages. See :doc:`/developers/workflows` for details.
+
+:LDNAnnounceRequiredFields
+++++++++++++++++++++++++++
+
+The list of parent dataset field names for which the LDN Announce workflow step should send messages. See :doc:`/developers/workflows` for details.
+
+.. _:GlobusBasicToken:
+
+:GlobusBasicToken
++++++++++++++++++
+
+GlobusBasicToken encodes credentials for Globus integration. See :ref:`globus-support` for details.
+
+:GlobusEndpoint
++++++++++++++++
+
+GlobusEndpoint is Globus endpoint id used with Globus integration. See :ref:`globus-support` for details.
+
+:GlobusStores
++++++++++++++
+
+A comma-separated list of the S3 stores that are configured to support Globus integration. See :ref:`globus-support` for details.
+
+:GlobusAppURL
++++++++++++++
+
+The URL where the `dataverse-globus <https://github.com/scholarsportal/dataverse-globus>`_ "transfer" app has been deployed to support Globus integration. See :ref:`globus-support` for details.
+
+:GlobusPollingInterval
+++++++++++++++++++++++
+
+The interval in seconds between Dataverse calls to Globus to check on upload progress. Defaults to 50 seconds. See :ref:`globus-support` for details.
+
+:GlobusSingleFileTransfer
++++++++++++++++++++++++++
+
+A true/false option to add a Globus transfer option to the file download menu which is not yet fully supported in the dataverse-globus app. See :ref:`globus-support` for details.
+
+.. _:WebloaderUrl:
+
+:WebloaderUrl
++++++++++++++
+
+The URL for main HTML file in https://github.com/gdcc/dvwebloader when that app is deployed. See also :ref:`:UploadMethods` for another required settings.
+
+.. _supported MicroProfile Config API source: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Overview.html

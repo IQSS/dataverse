@@ -9,9 +9,12 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.util.ArrayList;
 
 import java.util.List;
 import java.util.Map;
@@ -35,6 +38,8 @@ public class SwordServiceBean {
     DatasetFieldServiceBean datasetFieldService;
     @Inject
     LicenseServiceBean licenseServiceBean;
+    @EJB
+    SystemConfig systemConfig;
 
     /**
      * Mutate the dataset version, adding a datasetContact (email address) from
@@ -149,10 +154,17 @@ public class SwordServiceBean {
     public void setDatasetLicenseAndTermsOfUse(DatasetVersion datasetVersionToMutate, SwordEntry swordEntry) throws SwordError {
         Map<String, List<String>> dcterms = swordEntry.getDublinCore();
         List<String> listOfLicensesProvided = dcterms.get("license");
+        List<String> rights = dcterms.get("rights");
+        if (rights != null && !systemConfig.isAllowCustomTerms()) {
+            throw new SwordError("Custom Terms (dcterms:rights) are not allowed.");
+        }
+
         TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
         datasetVersionToMutate.setTermsOfUseAndAccess(terms);
+        terms.setDatasetVersion(datasetVersionToMutate);
+        
         if (listOfLicensesProvided == null) {
-            License existingLicense = datasetVersionToMutate.getTermsOfUseAndAccess().getLicense();
+            License existingLicense = DatasetUtil.getLicense(datasetVersionToMutate);
             if (existingLicense != null) {
                 // leave the license alone but set terms of use
                 setTermsOfUse(datasetVersionToMutate, dcterms, existingLicense);
@@ -169,7 +181,9 @@ public class SwordServiceBean {
                     }
                 }
                 terms.setLicense(defaultLicense);
-                setTermsOfUse(datasetVersionToMutate, dcterms, null);
+                terms.setFileAccessRequest(datasetVersionToMutate.getTermsOfUseAndAccess().isFileAccessRequest());
+                terms.setDatasetVersion(datasetVersionToMutate);
+                setTermsOfUse(datasetVersionToMutate, dcterms, defaultLicense);
             }
             return;
         }
@@ -186,7 +200,13 @@ public class SwordServiceBean {
             setTermsOfUse(datasetVersionToMutate, dcterms, null);
         } else {
             License licenseToSet = licenseServiceBean.getByNameOrUri(licenseProvided);
-            if (licenseToSet == null) throw new SwordError("Couldn't find an active license with: " + licenseProvided);
+            if (licenseToSet == null || !licenseToSet.isActive()) {
+                List<String> licenses = new ArrayList<>();
+                for (License license : licenseServiceBean.listAllActive()) {
+                    licenses.add(license.getName());
+                }
+                throw new SwordError("Couldn't find an active license with: " + licenseProvided + ". Valid licenses: " + licenses);
+            }
             terms.setLicense(licenseToSet);
             setTermsOfUse(datasetVersionToMutate, dcterms, licenseToSet);
         }
@@ -204,7 +224,7 @@ public class SwordServiceBean {
             int numRightsProvided = listOfRightsProvided.size();
             if (providedLicense != null) {
                 if (numRightsProvided > 0) {
-                    throw new SwordError("Terms of Use (dcterms:rights) can not be specified in combination with a license. A Custom License can be used instead.");
+                    throw new SwordError("Terms of Use (dcterms:rights) cannot be specified in combination with a license.");
                 }
             } else {
                 if (numRightsProvided != 1) {

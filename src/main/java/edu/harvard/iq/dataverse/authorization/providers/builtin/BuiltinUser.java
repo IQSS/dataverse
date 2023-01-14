@@ -1,10 +1,9 @@
 package edu.harvard.iq.dataverse.authorization.providers.builtin;
 
-import edu.harvard.iq.dataverse.ValidateEmail;
-import edu.harvard.iq.dataverse.ValidateUserName;
+import edu.harvard.iq.dataverse.validation.ValidateUserName;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetData;
-import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
+
 import java.io.Serializable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -18,8 +17,8 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
-import org.hibernate.validator.constraints.NotBlank;
 
 /**
  *
@@ -42,10 +41,8 @@ public class BuiltinUser implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @NotBlank(message = "{user.enterUsername}")
-    @Size(min=2, max=60, message = "{user.usernameLength}")
-    @ValidateUserName(message = "{user.illegalCharacters}")
+    
+    @ValidateUserName
     @Column(nullable = false, unique=true)  
     private String userName;
     
