@@ -41,7 +41,7 @@ public class IngestUtilTest {
         Dataset dataset = makeDataset();
 
         // create dataset version
-        DatasetVersion datasetVersion = dataset.getEditVersion();
+        DatasetVersion datasetVersion = dataset.getOrCreateEditVersion();
         datasetVersion.setCreateTime(dateFmt.parse("20001012"));
         datasetVersion.setLastUpdateTime(datasetVersion.getLastUpdateTime());
         datasetVersion.setId(MocksFactory.nextId());
@@ -145,7 +145,7 @@ public class IngestUtilTest {
         Dataset dataset = makeDataset();
 
         // create dataset version
-        DatasetVersion datasetVersion = dataset.getEditVersion();
+        DatasetVersion datasetVersion = dataset.getOrCreateEditVersion();
         datasetVersion.setCreateTime(dateFmt.parse("20001012"));
         datasetVersion.setLastUpdateTime(datasetVersion.getLastUpdateTime());
         datasetVersion.setId(MocksFactory.nextId());
@@ -250,7 +250,7 @@ public class IngestUtilTest {
         Dataset dataset = makeDataset();
 
         // create dataset version
-        DatasetVersion datasetVersion = dataset.getEditVersion();
+        DatasetVersion datasetVersion = dataset.getOrCreateEditVersion();
         datasetVersion.setCreateTime(dateFmt.parse("20001012"));
         datasetVersion.setLastUpdateTime(datasetVersion.getLastUpdateTime());
         datasetVersion.setId(MocksFactory.nextId());
@@ -388,7 +388,7 @@ public class IngestUtilTest {
         Dataset dataset = makeDataset();
 
         // create dataset version
-        DatasetVersion datasetVersion = dataset.getEditVersion();
+        DatasetVersion datasetVersion = dataset.getOrCreateEditVersion();
         datasetVersion.setCreateTime(dateFmt.parse("20001012"));
         datasetVersion.setLastUpdateTime(datasetVersion.getLastUpdateTime());
         datasetVersion.setId(MocksFactory.nextId());
@@ -474,7 +474,7 @@ public class IngestUtilTest {
         Dataset dataset = makeDataset();
 
         // create dataset version
-        DatasetVersion datasetVersion = dataset.getEditVersion();
+        DatasetVersion datasetVersion = dataset.getOrCreateEditVersion();
         datasetVersion.setCreateTime(dateFmt.parse("20001012"));
         datasetVersion.setLastUpdateTime(datasetVersion.getLastUpdateTime());
         datasetVersion.setId(MocksFactory.nextId());

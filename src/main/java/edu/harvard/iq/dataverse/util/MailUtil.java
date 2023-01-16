@@ -34,8 +34,12 @@ public class MailUtil {
         List<String> rootDvNameAsList = Arrays.asList(BrandingUtil.getInstallationBrandName());
         String datasetDisplayName = "";
 
-        if (objectOfNotification != null && (objectOfNotification instanceof Dataset)  ) {
-            datasetDisplayName = ((Dataset)objectOfNotification).getDisplayName();
+        if (objectOfNotification != null) {
+            if (objectOfNotification instanceof Dataset) {
+                datasetDisplayName = ((Dataset) objectOfNotification).getDisplayName();
+            } else if (objectOfNotification instanceof DatasetVersion) {
+                datasetDisplayName = ((DatasetVersion) objectOfNotification).getDataset().getDisplayName();
+            }
         }
 
         switch (userNotification.getType()) {

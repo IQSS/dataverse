@@ -18,6 +18,7 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.ejb.Stateless;
 import jakarta.json.JsonArray;
@@ -197,12 +198,17 @@ public class Users extends AbstractApiBean {
         String tokenFromRequestAPI = getRequestApiKey();
 
         AuthenticatedUser authenticatedUser = findUserByApiToken(tokenFromRequestAPI);
+        // This allows use of the :me API call from an active login session. Not sure
+        // this is a good idea
         if (authenticatedUser == null) {
-            return error(Response.Status.BAD_REQUEST, "User with token " + tokenFromRequestAPI + " not found.");
-        } else {
-            return ok(json(authenticatedUser));
+            try {
+                authenticatedUser = findAuthenticatedUserOrDie();
+            } catch (WrappedResponse ex) {
+                Logger.getLogger(Users.class.getName()).log(Level.SEVERE, null, ex);
+                return error(Response.Status.BAD_REQUEST, "User with token " + tokenFromRequestAPI + " not found.");
+            }
         }
-
+        return ok(json(authenticatedUser));
     }
 
     @POST

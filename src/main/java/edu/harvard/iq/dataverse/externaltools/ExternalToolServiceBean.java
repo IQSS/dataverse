@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.Type;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.URLTokenUtil.ReservedWord;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.Scope;
 
 import java.io.StringReader;
@@ -149,8 +150,7 @@ public class ExternalToolServiceBean {
         if (manifest == null || manifest.isEmpty()) {
             throw new IllegalArgumentException("External tool manifest was null or empty!");
         }
-        JsonReader jsonReader = Json.createReader(new StringReader(manifest));
-        JsonObject jsonObject = jsonReader.readObject();
+        JsonObject jsonObject = JsonUtil.getJsonObject(manifest);
         //Note: ExternalToolServiceBeanTest tests are dependent on the order of these retrievals
         String displayName = getRequiredTopLevelField(jsonObject, DISPLAY_NAME);
         String toolName = getOptionalTopLevelField(jsonObject, TOOL_NAME);
@@ -167,6 +167,8 @@ public class ExternalToolServiceBean {
         String toolUrl = getRequiredTopLevelField(jsonObject, TOOL_URL);
         JsonObject toolParametersObj = jsonObject.getJsonObject(TOOL_PARAMETERS);
         JsonArray queryParams = toolParametersObj.getJsonArray("queryParameters");
+        JsonArray allowedApiCallsArray = jsonObject.getJsonArray(ALLOWED_API_CALLS);
+ 
         boolean allRequiredReservedWordsFound = false;
         if (scope.equals(Scope.FILE)) {
             List<ReservedWord> requiredReservedWordCandidates = new ArrayList<>();
@@ -219,8 +221,12 @@ public class ExternalToolServiceBean {
 
         }
         String toolParameters = toolParametersObj.toString();
+        String allowedApiCalls = null;
+        if(allowedApiCallsArray !=null) {
+            allowedApiCalls = allowedApiCallsArray.toString();
+        }
 
-        return new ExternalTool(displayName, toolName, description, externalToolTypes, scope, toolUrl, toolParameters, contentType);
+        return new ExternalTool(displayName, toolName, description, externalToolTypes, scope, toolUrl, toolParameters, contentType, allowedApiCalls);
     }
 
     private static String getRequiredTopLevelField(JsonObject jsonObject, String key) {

@@ -108,6 +108,8 @@ import jakarta.enterprise.inject.spi.CDI;
 import java.util.Arrays;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import ucar.nc2.NetcdfFile;
+import ucar.nc2.NetcdfFiles;
 
 /**
  * a 4.0 implementation of the DVN FileUtil;
@@ -467,6 +469,11 @@ public class FileUtil implements java.io.Serializable  {
                 fileType = "application/fits";
             }
         }
+
+        // step 3: Check if NetCDF or HDF5
+        if (fileType == null) {
+            fileType = checkNetcdfOrHdf5(f);
+        }
        
         // step 3: check the mime type of this file with Jhove
         if (fileType == null){
@@ -667,6 +674,43 @@ public class FileUtil implements java.io.Serializable  {
         }
         logger.fine("end isGraphML()");
         return isGraphML;
+    }
+
+    public static String checkNetcdfOrHdf5(File file) {
+        try ( NetcdfFile netcdfFile = NetcdfFiles.open(file.getAbsolutePath())) {
+            if (netcdfFile == null) {
+                // Can't open as a NetCDF or HDF5 file.
+                return null;
+            }
+            String type = netcdfFile.getFileTypeId();
+            if (type == null) {
+                return null;
+            }
+            switch (type) {
+                case "NetCDF":
+                    return "application/netcdf";
+                case "NetCDF-4":
+                    return "application/netcdf";
+                case "HDF5":
+                    return "application/x-hdf5";
+                default:
+                    break;
+            }
+        } catch (IOException ex) {
+            /**
+             * When an HDF4 file is passed, it won't be detected. Instead, we've
+             * seen exceptions like this:
+             *
+             * ucar.nc2.internal.iosp.hdf4.H4header makeDimension WARNING:
+             * **dimension length=0 for TagVGroup= *refno=124 tag= VG (1965)
+             * Vgroup length=28 class= Dim0.0 name= ixx using data 123
+             *
+             * java.lang.IllegalArgumentException: Dimension length =0 must be >
+             * 0
+             */
+            return null;
+        }
+        return null;
     }
 
     // from MD5Checksum.java

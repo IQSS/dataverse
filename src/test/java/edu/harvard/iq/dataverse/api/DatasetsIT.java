@@ -65,6 +65,7 @@ import jakarta.ws.rs.core.Response.Status;
 import static jakarta.ws.rs.core.Response.Status.NO_CONTENT;
 import static org.junit.Assert.assertEquals;
 import org.hamcrest.CoreMatchers;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -74,7 +75,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.matchers.JUnitMatchers.containsString;
+
 
 public class DatasetsIT {
 
@@ -265,14 +266,15 @@ public class DatasetsIT {
         addSubjectViaNative = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, apiToken);
         addSubjectViaNative.prettyPrint();
         addSubjectViaNative.then().assertThat()
-                .statusCode(OK.getStatusCode());
+                .statusCode(OK.getStatusCode()).body(containsString("Mathematical Sciences"));
         
 
         String pathToJsonFileSingle = "doc/sphinx-guides/source/_static/api/dataset-simple-update-metadata.json";
         Response addSubjectSingleViaNative = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileSingle, apiToken);
-        addSubjectSingleViaNative.prettyPrint();
+        String responseString = addSubjectSingleViaNative.prettyPrint();
         addSubjectSingleViaNative.then().assertThat()
-                .statusCode(OK.getStatusCode());
+                .statusCode(OK.getStatusCode()).body(containsString("Mathematical Sciences")).body(containsString("Social Sciences"));
+        
 
 
         //Trying to blank out required field should fail...
@@ -3018,7 +3020,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         }
         assertEquals(OK.getStatusCode(), status);
 
-        if (!UtilIT.sleepForReindex(datasetPersistentId, apiToken, 3000)) {
+        if (!UtilIT.sleepForReindex(datasetPersistentId, apiToken, 3)) {
             logger.info("Still indexing after 3 seconds");
         }
 

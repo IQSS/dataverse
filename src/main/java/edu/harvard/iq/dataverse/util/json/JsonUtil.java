@@ -63,4 +63,10 @@ public class JsonUtil {
             return Json.createReader(rdr).readObject();
         }
     }
+    
+    public static jakarta.json.JsonArray getJsonArray(String serializedJson) {
+        try (StringReader rdr = new StringReader(serializedJson)) {
+            return Json.createReader(rdr).readArray();
+        }
+    }
 }

@@ -173,7 +173,12 @@ public class SettingsServiceBean {
          *
          */
         SearchRespectPermissionRoot,
-        /** Solr hostname and port, such as "localhost:8983". */
+        /**
+         * Solr hostname and port, such as "localhost:8983".
+         * @deprecated New installations should not use this database setting, but use {@link JvmSettings#SOLR_HOST}
+         *             and {@link JvmSettings#SOLR_PORT}.
+         */
+        @Deprecated(forRemoval = true, since = "2022-12-23")
         SolrHostColonPort,
         /** Enable full-text indexing in solr up to max file size */
         SolrFullTextIndexing, //true or false (default)
@@ -562,7 +567,16 @@ public class SettingsServiceBean {
         /*
          * Allow a custom JavaScript to control values of specific fields.
          */
-        ControlledVocabularyCustomJavaScript
+        ControlledVocabularyCustomJavaScript, 
+        /**
+         * A compound setting for disabling signup for remote Auth providers:
+         */
+        AllowRemoteAuthSignUp,
+        /**
+         * The URL for the DvWebLoader tool (see github.com/gdcc/dvwebloader for details)
+         */
+        WebloaderUrl
+
         ;
 
         @Override
@@ -667,7 +681,39 @@ public class SettingsServiceBean {
     	   }
 
        }
+       
+    /**
+     * Same, but with Booleans 
+     * (returns null if not set; up to the calling method to decide what that should
+     * default to in each specific case)
+     * Example:
+     * :AllowRemoteAuthSignUp	{"default":"true","google":"false"}
+     */
     
+    public Boolean getValueForCompoundKeyAsBoolean(Key key, String param) {
+
+        String val = this.getValueForKey(key);
+
+        if (val == null) {
+            return null;
+        }
+
+        try (StringReader rdr = new StringReader(val)) {
+            JsonObject settings = Json.createReader(rdr).readObject();
+            if (settings.containsKey(param)) {
+                return Boolean.parseBoolean(settings.getString(param));
+            } else if (settings.containsKey("default")) {
+                return Boolean.parseBoolean(settings.getString("default"));
+            } else {
+                return null;
+            }
+
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Incorrect setting.  Could not convert \"{0}\" from setting {1} to boolean: {2}", new Object[]{val, key.toString(), e.getMessage()});
+            return null;
+        }
+
+    }
     /**
      * Return the value stored, or the default value, in case no setting by that
      * name exists. The main difference between this method and the other {@code get()}s

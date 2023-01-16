@@ -40,12 +40,13 @@ public class ClientHarvestRun implements Serializable {
         this.id = id;
     }
 
-    public enum RunResultType { SUCCESS, FAILURE, INPROGRESS };
+    public enum RunResultType { SUCCESS, FAILURE, INPROGRESS, INTERRUPTED };
     
     private static String RESULT_LABEL_SUCCESS = "SUCCESS";
     private static String RESULT_LABEL_FAILURE = "FAILED";
     private static String RESULT_LABEL_INPROGRESS = "IN PROGRESS";
     private static String RESULT_DELETE_IN_PROGRESS = "DELETE IN PROGRESS";
+    private static String RESULT_LABEL_INTERRUPTED = "INTERRUPTED";
     
     @ManyToOne
     @JoinColumn(nullable = false)
@@ -76,6 +77,8 @@ public class ClientHarvestRun implements Serializable {
             return RESULT_LABEL_FAILURE;
         } else if (isInProgress()) {
             return RESULT_LABEL_INPROGRESS;
+        } else if (isInterrupted()) {
+            return RESULT_LABEL_INTERRUPTED;
         }
         return null;
     }
@@ -84,8 +87,8 @@ public class ClientHarvestRun implements Serializable {
         if (harvestingClient != null && harvestingClient.isDeleteInProgress()) {
             return RESULT_DELETE_IN_PROGRESS;
         }
-        if (isSuccess()) {
-            String resultLabel = RESULT_LABEL_SUCCESS;
+        if (isSuccess() || isInterrupted()) {
+            String resultLabel = getResultLabel();
             
             resultLabel = resultLabel.concat("; "+harvestedDatasetCount+" harvested, ");
             resultLabel = resultLabel.concat(deletedDatasetCount+" deleted, ");
@@ -128,6 +131,14 @@ public class ClientHarvestRun implements Serializable {
         harvestResult = RunResultType.INPROGRESS;
     }
 
+    public boolean isInterrupted() {
+        return RunResultType.INTERRUPTED == harvestResult;
+    }
+    
+    public void setInterrupted() {
+        harvestResult = RunResultType.INTERRUPTED;
+    }
+    
     // Time of this harvest attempt:
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date startTime;

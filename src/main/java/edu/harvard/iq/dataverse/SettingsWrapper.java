@@ -107,6 +107,8 @@ public class SettingsWrapper implements java.io.Serializable {
     
     private Boolean rsyncOnly = null;
     
+    private Boolean webloaderUpload = null;
+    
     private String metricsUrl = null; 
     
     private Boolean dataFilePIDSequentialDependent = null;
@@ -336,6 +338,13 @@ public class SettingsWrapper implements java.io.Serializable {
         }
         return globusAppUrl;
         
+    }
+    
+    public boolean isWebloaderUpload() {
+        if (webloaderUpload == null) {
+            webloaderUpload = systemConfig.isWebloaderUpload();
+        }
+        return webloaderUpload;
     }
     
     public boolean isRsyncOnly() {

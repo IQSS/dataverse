@@ -190,7 +190,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
             // if mode = REPLACE, remove all filemetadata from the dataset version and start fresh
             if (mode.equalsIgnoreCase(ImportMode.REPLACE.name())) {
                 try {
-                    DatasetVersion workingVersion = dataset.getEditVersion();
+                    DatasetVersion workingVersion = dataset.getOrCreateEditVersion();
                     List<FileMetadata> fileMetadataList = workingVersion.getFileMetadatas();
                     jobLogger.log(Level.INFO, "Removing any existing file metadata since mode = REPLACE");
                     for (FileMetadata fmd : fileMetadataList) {

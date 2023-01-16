@@ -6,9 +6,9 @@ import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
 
-import static edu.harvard.iq.dataverse.util.SystemConfig.SITE_URL;
 import static edu.harvard.iq.dataverse.util.SystemConfig.FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS;
 
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
@@ -28,9 +28,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
+
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
+
+import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
@@ -64,10 +67,11 @@ public class SchemaDotOrgExporterTest {
      * Test of exportDataset method, of class SchemaDotOrgExporter.
      */
     @Test
+    @JvmSetting(key = JvmSettings.SITE_URL, value = "https://librascholar.org")
     public void testExportDataset() throws Exception {
         File datasetVersionJson = new File("src/test/resources/json/dataset-finch2.json");
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
-        License license = new License("CC0 1.0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0/"), URI.create("/resources/images/cc0.png"), true);
+        License license = new License("CC0 1.0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0/"), URI.create("/resources/images/cc0.png"), true, 1l);
         license.setDefault(true);
 
         JsonReader jsonReader1 = Json.createReader(new StringReader(datasetVersionAsJson));
@@ -92,7 +96,6 @@ public class SchemaDotOrgExporterTest {
         Dataverse dataverse = new Dataverse();
         dataverse.setName("LibraScholar");
         dataset.setOwner(dataverse);
-        System.setProperty(SITE_URL, "https://librascholar.org");
         boolean hideFileUrls = false;
         if (hideFileUrls) {
             System.setProperty(FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS, "true");
@@ -406,9 +409,10 @@ public class SchemaDotOrgExporterTest {
             new ControlledVocabularyValue(1l, "ark", publicationIdTypes),
             new ControlledVocabularyValue(2l, "arXiv", publicationIdTypes),
             new ControlledVocabularyValue(3l, "bibcode", publicationIdTypes),
-            new ControlledVocabularyValue(4l, "doi", publicationIdTypes),
-            new ControlledVocabularyValue(5l, "ean13", publicationIdTypes),
-            new ControlledVocabularyValue(6l, "handle", publicationIdTypes)
+            new ControlledVocabularyValue(4l, "cstr", publicationIdTypes),
+            new ControlledVocabularyValue(5l, "doi", publicationIdTypes),
+            new ControlledVocabularyValue(6l, "ean13", publicationIdTypes),
+            new ControlledVocabularyValue(7l, "handle", publicationIdTypes)
             // Etc. There are more.
         ));
         publicationChildTypes.add(datasetFieldTypeSvc.add(publicationIdTypes));

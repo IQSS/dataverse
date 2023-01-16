@@ -1382,7 +1382,7 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
         }
 
-        dataset.getEditVersion().getTermsOfUseAndAccess().setFileAccessRequest(allowRequest);
+        dataset.getOrCreateEditVersion().getTermsOfUseAndAccess().setFileAccessRequest(allowRequest);
 
         try {
             engineSvc.submit(new UpdateDatasetVersionCommand(dataset, dataverseRequest));
