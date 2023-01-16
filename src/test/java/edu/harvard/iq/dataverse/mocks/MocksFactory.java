@@ -83,7 +83,7 @@ public class MocksFactory {
         if ( df.getFileMetadatas() != null ) {
             df.getFileMetadatas().add( fmd );
         } else {
-            df.setFileMetadatas( new LinkedList(Arrays.asList(fmd)) );
+            df.setFileMetadatas( new LinkedList<>(List.of(fmd)) );
         }
         
         return fmd;
@@ -142,6 +142,7 @@ public class MocksFactory {
     public static Dataset makeDataset() {
         Dataset ds = new Dataset();
         ds.setId( nextId() );
+        ds.setAuthority("mockedAuthority");
         ds.setIdentifier("sample-ds-" + ds.getId() );
         ds.setCategoriesByName( Arrays.asList("CatOne", "CatTwo", "CatThree") );
         final List<DataFile> files = makeFiles(10);
