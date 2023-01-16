@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.export;
 
-import com.jayway.restassured.path.xml.XmlPath;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import java.io.ByteArrayInputStream;
@@ -16,6 +15,8 @@ import javax.json.JsonReader;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import static junit.framework.Assert.assertEquals;
+
+import io.restassured.path.xml.XmlPath;
 import org.junit.Test;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;

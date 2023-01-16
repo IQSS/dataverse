@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.response.Response;
+import io.restassured.RestAssured;
+import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.engine.command.impl.LocalSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static javax.ws.rs.core.Response.Status.CREATED;

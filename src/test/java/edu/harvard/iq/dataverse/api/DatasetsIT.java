@@ -1,16 +1,16 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import static com.jayway.restassured.RestAssured.given;
-import com.jayway.restassured.http.ContentType;
-import com.jayway.restassured.response.Response;
+import io.restassured.RestAssured;
+import static io.restassured.RestAssured.given;
+import io.restassured.http.ContentType;
+import io.restassured.response.Response;
 import java.util.logging.Logger;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.junit.Ignore;
-import com.jayway.restassured.path.json.JsonPath;
+import io.restassured.path.json.JsonPath;
 
 import java.util.List;
 import java.util.Map;
@@ -33,9 +33,9 @@ import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
-import com.jayway.restassured.parsing.Parser;
-import static com.jayway.restassured.path.json.JsonPath.with;
-import com.jayway.restassured.path.xml.XmlPath;
+import io.restassured.parsing.Parser;
+import static io.restassured.path.json.JsonPath.with;
+import io.restassured.path.xml.XmlPath;
 import static edu.harvard.iq.dataverse.api.UtilIT.equalToCI;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.datavariable.VarGroup;
