@@ -63,7 +63,10 @@ public enum JvmSettings {
     // API SETTINGS
     SCOPE_API(PREFIX, "api"),
     API_SIGNING_SECRET(SCOPE_API, "signing-secret"),
-    API_ALLOW_SESSION_AUTH(SCOPE_API, "allowSessionAuth")
+
+    // FEATURE GATES SETTINGS
+    SCOPE_GATES(PREFIX, "feature"),
+    GATE_API_SESSION_AUTH(SCOPE_GATES, "api-session-auth")
     
     ;
     
