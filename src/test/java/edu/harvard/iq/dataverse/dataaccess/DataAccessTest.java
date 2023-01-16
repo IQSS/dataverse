@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
+import edu.harvard.iq.dataverse.util.testing.SystemProperty;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -53,9 +54,9 @@ public class DataAccessTest {
   }
 
   @Test
+  @SystemProperty(key = "dataverse.files.file.type", value="file")
+  @SystemProperty(key = "dataverse.files.storage-driver-id", value="file")
   void testCreateNewStorageIO_createsFileAccessIObyDefault() throws IOException {
-	System.setProperty("dataverse.files.file.type", "file");
-	System.setProperty("dataverse.files.storage-driver-id", "file");
     StorageIO<Dataset> storageIo = DataAccess.createNewStorageIO(dataset, "valid-tag");
     assertTrue(storageIo.getClass().equals(FileAccessIO.class));
   }

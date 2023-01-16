@@ -1,38 +1,40 @@
 package edu.harvard.iq.dataverse.dataset;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileCategory;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
-import java.io.InputStream;
+import edu.harvard.iq.dataverse.util.testing.SystemProperty;
+import org.junit.jupiter.api.Test;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.Test;
-import static org.junit.Assert.*;
 
-public class DatasetUtilTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+class DatasetUtilTest {
 
     /**
      * Test of getThumbnailCandidates method, of class DatasetUtil.
      */
     @Test
-    public void testGetThumbnailCandidates() {
+    @SystemProperty(key = "dataverse.files.testfile.type", value = "file")
+    void testGetThumbnailCandidates() {
         assertEquals(new ArrayList<>(), DatasetUtil.getThumbnailCandidates(null, false, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE));
 
         Dataset dataset = MocksFactory.makeDataset();
         DataFile dataFile = MocksFactory.makeDataFile();
         dataFile.setContentType("image/");
         dataFile.setOwner(dataset);
-        System.setProperty("dataverse.files.testfile.type", "file");
         dataFile.setStorageIdentifier("testfile://src/test/resources/images/coffeeshop.png");
 
-        System.out.println(ImageThumbConverter.isThumbnailAvailable(dataFile));
+        //System.out.println(ImageThumbConverter.isThumbnailAvailable(dataFile));
         DatasetVersion version = dataset.getCreateVersion(null);
         List<FileMetadata> fmds = new ArrayList<>();
         fmds.add(MocksFactory.addFileMetadata(dataFile));
@@ -41,12 +43,12 @@ public class DatasetUtilTest {
     }
 
     @Test
-    public void testGetThumbnailNullDataset() {
+    @SystemProperty(key = "dataverse.files.testfile.type", value = "file")
+    void testGetThumbnailNullDataset() {
         assertNull(DatasetUtil.getThumbnail(null, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE));
         assertNull(DatasetUtil.getThumbnail(null, null, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE));
 
         Dataset dataset = MocksFactory.makeDataset();
-        System.setProperty("dataverse.files.testfile.type", "file");
         dataset.setStorageIdentifier("testfile://");
         dataset.setUseGenericThumbnail(true);
 
@@ -55,8 +57,8 @@ public class DatasetUtilTest {
     }
 
     @Test
-    public void testGetThumbnailRestricted() {
-        System.out.println("testGetThumbnailRestricted");
+    void testGetThumbnailRestricted() {
+        //System.out.println("testGetThumbnailRestricted");
         Dataset dataset = new Dataset();
         DataFile thumbnailFile = new DataFile();
         thumbnailFile.setId(42l);
@@ -69,7 +71,7 @@ public class DatasetUtilTest {
      * Test of deleteDatasetLogo method, of class DatasetUtil.
      */
     @Test
-    public void testDeleteDatasetLogo() {
+    void testDeleteDatasetLogo() {
         assertEquals(false, DatasetUtil.deleteDatasetLogo(null));
         assertEquals(false, DatasetUtil.deleteDatasetLogo(new Dataset()));
     }
@@ -78,7 +80,7 @@ public class DatasetUtilTest {
      * Test of getDefaultThumbnailFile method, of class DatasetUtil.
      */
     @Test
-    public void testGetDefaultThumbnailFile() {
+    void testGetDefaultThumbnailFile() {
         assertNull(DatasetUtil.attemptToAutomaticallySelectThumbnailFromDataFiles(null, null));
     }
 
@@ -87,7 +89,7 @@ public class DatasetUtilTest {
      * DatasetUtil.
      */
     @Test
-    public void testPersistDatasetLogoToStorageAndCreateThumbnail() {
+    void testPersistDatasetLogoToStorageAndCreateThumbnail() {
         assertNull(DatasetUtil.persistDatasetLogoToStorageAndCreateThumbnails(null, null));
         //Todo: a test for this that test main logic
     }
@@ -96,7 +98,7 @@ public class DatasetUtilTest {
      * Test of getThumbnailAsInputStream method, of class DatasetUtil.
      */
     @Test
-    public void testGetThumbnailAsInputStream() {
+    void testGetThumbnailAsInputStream() {
         assertNull(DatasetUtil.getThumbnailAsInputStream(null, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE));
     }
 
@@ -104,13 +106,13 @@ public class DatasetUtilTest {
      * Test of isDatasetLogoPresent method, of class DatasetUtil.
      */
     @Test
-    public void testIsDatasetLogoPresent() {
+    void testIsDatasetLogoPresent() {
         Dataset dataset = MocksFactory.makeDataset();
         assertEquals(false, DatasetUtil.isDatasetLogoPresent(dataset, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE));
     }
 
     @Test
-    public void testGetDatasetSummaryField_defaultSelectionWithAndWithoutMatches() {
+    void testGetDatasetSummaryField_defaultSelectionWithAndWithoutMatches() {
         DatasetVersion version = new DatasetVersion();
         List<DatasetField> fields = new ArrayList<DatasetField>();
 
@@ -127,7 +129,7 @@ public class DatasetUtilTest {
     }
 
     @Test
-    public void testGetDatasetSummaryField_defaultSelectionWithoutDatasetFields() {
+    void testGetDatasetSummaryField_defaultSelectionWithoutDatasetFields() {
         DatasetVersion version = new DatasetVersion();
         List<DatasetField> fields = new ArrayList<DatasetField>();
         version.setDatasetFields(fields);
@@ -137,7 +139,7 @@ public class DatasetUtilTest {
     }
 
     @Test
-    public void testGetDatasetSummaryField_withSelectionWithoutDatasetFields() {
+    void testGetDatasetSummaryField_withSelectionWithoutDatasetFields() {
         DatasetVersion version = new DatasetVersion();
         List<DatasetField> fields = new ArrayList<DatasetField>();
         version.setDatasetFields(fields);
@@ -146,7 +148,7 @@ public class DatasetUtilTest {
     }
 
     @Test
-    public void testGetDatasetSummaryField_withSelectionWithoutMatches() {
+    void testGetDatasetSummaryField_withSelectionWithoutMatches() {
         DatasetVersion version = new DatasetVersion();
         List<DatasetField> fields = new ArrayList<DatasetField>();
 
